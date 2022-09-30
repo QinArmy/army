@@ -43,6 +43,13 @@ public interface DialectStatement extends Statement {
 
     }
 
+    interface _StaticWithCommaClause<CR, SR> {
+
+        CR comma(String name);
+
+        SR space();
+    }
+
 
     /**
      * <p>

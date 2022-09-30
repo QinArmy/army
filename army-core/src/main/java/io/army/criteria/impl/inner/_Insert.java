@@ -1,5 +1,6 @@
 package io.army.criteria.impl.inner;
 
+import io.army.criteria.LiteralMode;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.SelectItem;
 import io.army.criteria.SubQuery;
@@ -51,7 +52,8 @@ public interface _Insert extends _Statement {
 
         boolean isMigration();
 
-        boolean isPreferLiteral();
+
+        LiteralMode literalMode();
     }
 
 
@@ -121,8 +123,6 @@ public interface _Insert extends _Statement {
 
     interface _AssignmentInsert extends _Insert, _InsertOption, _AssignmentStatementSpec {
 
-
-        boolean isPreferLiteral();
 
     }
 

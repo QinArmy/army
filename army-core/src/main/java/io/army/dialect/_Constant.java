@@ -136,6 +136,8 @@ public interface _Constant {
 
     String SPACE_AT = " @";
 
+    String SPACE_ZERO = " 0";
+
     char LEFT_PAREN = '(';
 
     char RIGHT_PAREN = ')';

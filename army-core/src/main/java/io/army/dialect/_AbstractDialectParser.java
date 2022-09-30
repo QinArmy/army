@@ -1251,12 +1251,13 @@ public abstract class _AbstractDialectParser implements ArmyParser {
         this.safeObjectName(field, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL);
 
-        if ((context instanceof _InsertContext && ((_InsertContext) context).isPreferLiteral())
-                || !context.hasParam()) {
-            sqlBuilder.append(_Constant.SPACE);
-            this.literal(field, updateTimeValue, sqlBuilder);
-        } else {
+        if (context instanceof _InsertContext) {
+            ((StatementContext) context)
+                    .appendInsertValue(((_InsertContext) context).literalMode(), field, updateTimeValue);
+        } else if (context.hasParam()) {
             context.appendParam(SingleParam.build(field, updateTimeValue));
+        } else {
+            this.literal(field, updateTimeValue, sqlBuilder.append(_Constant.SPACE));
         }
 
         if ((field = table.tryGetField(_MetaBridge.VERSION)) != null) {

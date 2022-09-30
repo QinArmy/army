@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
+import io.army.criteria.LiteralMode;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
@@ -24,7 +25,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
     final NullHandleMode nullHandleMode;
 
-    final boolean preferLiteral;
+    final LiteralMode literalMode;
 
     final boolean duplicateKeyClause;
 
@@ -64,8 +65,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         this.migration = nonChildStmt.isMigration();
         final NullHandleMode handleMode = nonChildStmt.nullHandle();
         this.nullHandleMode = handleMode == null ? NullHandleMode.INSERT_DEFAULT : handleMode;
-        this.preferLiteral = nonChildStmt.isPreferLiteral();
-
+        this.literalMode = nonChildStmt.literalMode();
         this.duplicateKeyClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec;
         this.insertTable = nonChildStmt.table();
         assert this.insertTable instanceof SingleTableMeta;
@@ -117,7 +117,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         this.migration = stmt.isMigration();
         final NullHandleMode handleMode = stmt.nullHandle();
         this.nullHandleMode = handleMode == null ? NullHandleMode.INSERT_DEFAULT : handleMode;
-        this.preferLiteral = stmt.isPreferLiteral();
+        this.literalMode = stmt.literalMode();
 
         this.duplicateKeyClause = stmt instanceof _Insert._SupportConflictClauseSpec;
         this.insertTable = stmt.table();
@@ -125,7 +125,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         assert this.insertTable instanceof ChildTableMeta
                 && this.migration == parentContext.migration
                 && this.nullHandleMode == parentContext.nullHandleMode
-                && this.preferLiteral == parentContext.preferLiteral
+                && this.literalMode == parentContext.literalMode
                 && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta();
 
         final List<FieldMeta<?>> fieldList = stmt.fieldList();
@@ -148,15 +148,15 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     }
 
     @Override
-    public final boolean isPreferLiteral() {
-        return this.preferLiteral;
+    public final LiteralMode literalMode() {
+        return this.literalMode;
     }
 
     @Override
     public final void appendFieldList() {
         assert !this.columnListClauseEnd;
 
-        final ArmyParser dialect = this.parser;
+        final ArmyParser parser = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_LEFT_PAREN);
 
@@ -176,7 +176,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
             } else {
                 sqlBuilder.append(_Constant.SPACE);
             }
-            dialect.safeObjectName(field, sqlBuilder);
+            parser.safeObjectName(field, sqlBuilder);
             actualIndex++;
             outputColumnSize = actualIndex;
         }
@@ -191,7 +191,12 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     @Override
     public final void appendValueList() {
         assert this.columnListClauseEnd && !this.valuesClauseEnd;
-        this.doAppendValuesList(this.outputColumnSize, this.fieldList);
+
+        final int outputColumnSize, outValueSize;
+        outputColumnSize = this.outputColumnSize;
+        outValueSize = this.doAppendValuesList(outputColumnSize, this.fieldList);
+        assert outValueSize == outputColumnSize;
+
         this.valuesClauseEnd = true;
     }
 
@@ -251,7 +256,10 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     }
 
 
-    abstract void doAppendValuesList(int outputColumnSize, List<FieldMeta<?>> fieldList);
+    /**
+     * @return output values size
+     */
+    abstract int doAppendValuesList(int outputColumnSize, List<FieldMeta<?>> fieldList);
 
     final boolean isValuesClauseEnd() {
         return this.valuesClauseEnd;

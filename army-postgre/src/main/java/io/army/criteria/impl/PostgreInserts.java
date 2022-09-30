@@ -14,7 +14,6 @@ import io.army.dialect._SqlContext;
 import io.army.dialect.postgre.PostgreDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.struct.CodeEnum;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -36,7 +35,7 @@ abstract class PostgreInserts extends InsertSupport {
     }
 
     static <C> PostgreInsert._DynamicSubInsert<C> dynamicSubInsert(final String name, CriteriaContext outContext, @Nullable C criteria) {
-        return new DynamicCteSubInsertIntoClause<>(name, outContext, criteria);
+        return new DynamicSubInsertIntoClause<>(name, outContext, criteria);
     }
 
     static <C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert> PostgreInsert._StaticSubOptionSpec<C, I, Q> staticSubInsert(CriteriaContext outContext
@@ -674,7 +673,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._CteAliasLeftParenSpec<C> comma(final @Nullable String name) {
+        public PostgreInsert._StaticCteLeftParenSpec<C> comma(final @Nullable String name) {
             final StaticCteComplexCommandClause<C> staticPrimaryClause = this.primaryComplexClause;
             if (name == null) {
                 throw CriteriaContextStack.nullPointer(staticPrimaryClause.context);
@@ -698,9 +697,9 @@ abstract class PostgreInserts extends InsertSupport {
     }//StaticCteInsertCommaClause
 
     private static final class StaticCteComplexCommandClause<C>
-            extends CriteriaSupports.ParenStringConsumerClause<C, PostgreInsert._CteAsClause<C>>
-            implements PostgreInsert._CteAliasLeftParenSpec<C>
-            , PostgreInsert._CteComplexCommandSpec<C> {
+            extends CriteriaSupports.ParenStringConsumerClause<C, PostgreInsert._StaticCteAsClause<C>>
+            implements PostgreInsert._StaticCteLeftParenSpec<C>
+            , PostgreInsert._StaticCteComplexCommandSpec<C> {
 
         private final PrimaryInsertIntoClause<C> primaryClause;
         private final StaticCteInsertCommaClause<C> commaClause;
@@ -719,37 +718,37 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._CteComplexCommandSpec<C> as() {
+        public PostgreInsert._StaticCteComplexCommandSpec<C> as() {
             return this;
         }
 
         @Override
-        public PostgreInsert._CteInsertIntoClause<C, PostgreInsert._CteInsert<C>, PostgreInsert._CteReturningInsert<C>> preferLiteral(boolean prefer) {
-            return PostgreInserts.staticSubInsert(this.context, this.criteria, this::handleSubInsert, this::handleSubReturningInsert)
-                    .preferLiteral(prefer);
+        public PostgreInsert._CteInsertIntoClause<C, PostgreInsert._CteInsert<C>, PostgreInsert._CteReturningInsert<C>> preferLiteral(LiteralMode mode) {
+            return PostgreInserts.staticSubInsert(this.context, this.criteria, this::insertEnd, this::returningInsertEnd)
+                    .preferLiteral(mode);
         }
 
         @Override
         public PostgreInsert._StaticSubNullOptionSpec<C, PostgreInsert._CteInsert<C>, PostgreInsert._CteReturningInsert<C>> migration(boolean migration) {
-            return PostgreInserts.staticSubInsert(this.context, this.criteria, this::handleSubInsert, this::handleSubReturningInsert)
+            return PostgreInserts.staticSubInsert(this.context, this.criteria, this::insertEnd, this::returningInsertEnd)
                     .migration(migration);
         }
 
         @Override
         public PostgreInsert._StaticSubPreferLiteralSpec<C, PostgreInsert._CteInsert<C>, PostgreInsert._CteReturningInsert<C>> nullHandle(NullHandleMode mode) {
-            return PostgreInserts.staticSubInsert(this.context, this.criteria, this::handleSubInsert, this::handleSubReturningInsert)
+            return PostgreInserts.staticSubInsert(this.context, this.criteria, this::insertEnd, this::returningInsertEnd)
                     .nullHandle(mode);
         }
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<C, T, PostgreInsert._CteInsert<C>, PostgreInsert._CteReturningInsert<C>> insertInto(TableMeta<T> table) {
-            return PostgreInserts.staticSubInsert(this.context, this.criteria, this::handleSubInsert, this::handleSubReturningInsert)
+            return PostgreInserts.staticSubInsert(this.context, this.criteria, this::insertEnd, this::returningInsertEnd)
                     .insertInto(table);
         }
 
 
         @Override
-        PostgreInsert._CteAsClause<C> stringConsumerEnd(final List<String> stringList) {
+        PostgreInsert._StaticCteAsClause<C> stringConsumerEnd(final List<String> stringList) {
             if (this.columnAliasList != null || stringList.size() == 0) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
@@ -759,7 +758,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
 
-        private PostgreInsert._CteInsert<C> handleSubInsert(final SubInsert insert) {
+        private PostgreInsert._CteInsert<C> insertEnd(final SubInsert insert) {
             CriteriaUtils.createAndAddCte(this.context, this.name, this.columnAliasList, insert);
             //clear for next cte
             this.name = null;
@@ -767,7 +766,7 @@ abstract class PostgreInserts extends InsertSupport {
             return this.commaClause;
         }
 
-        private PostgreInsert._CteReturningInsert<C> handleSubReturningInsert(final SubReturningInsert insert) {
+        private PostgreInsert._CteReturningInsert<C> returningInsertEnd(final SubReturningInsert insert) {
             CriteriaUtils.createAndAddCte(this.context, this.name, this.columnAliasList, insert);
             //clear for next cte
             this.name = null;
@@ -794,7 +793,7 @@ abstract class PostgreInserts extends InsertSupport {
 
 
         @Override
-        public PostgreInsert._CteAliasLeftParenSpec<C> with(final @Nullable String name) {
+        public PostgreInsert._StaticCteLeftParenSpec<C> with(final @Nullable String name) {
             final CriteriaContext context = this.context;
             if (name == null) {
                 throw CriteriaContextStack.nullPointer(context);
@@ -805,7 +804,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._CteAliasLeftParenSpec<C> withRecursive(final @Nullable String name) {
+        public PostgreInsert._StaticCteLeftParenSpec<C> withRecursive(final @Nullable String name) {
             final CriteriaContext context = this.context;
             if (name == null) {
                 throw CriteriaContextStack.nullPointer(context);
@@ -882,13 +881,13 @@ abstract class PostgreInserts extends InsertSupport {
     private static final class DynamicSubInsertIntoClause<C>
             extends NonQueryWithCteOption<
             C,
-            PostgreInsert._SubNullOptionSpec<C, SubInsert, SubReturningInsert>,
-            PostgreInsert._SubPreferLiteralSpec<C, SubInsert, SubReturningInsert>,
-            PostgreInsert._SubWithCteSpec<C, SubInsert, SubReturningInsert>,
+            PostgreInsert._DynamicSubNullOptionSpec<C, SubInsert, SubReturningInsert>,
+            PostgreInsert._DynamicSubPreferLiteralSpec<C, SubInsert, SubReturningInsert>,
+            PostgreInsert._DynamicSubWithCteSpec<C, SubInsert, SubReturningInsert>,
             PostgreCteBuilder,
             PostgreInsert._CteInsertIntoClause<C, SubInsert, SubReturningInsert>>
             implements PostgreInsert._DynamicSubInsert<C>
-            , Statement._RightParenClause<PostgreInsert._SubOptionSpec<C, SubInsert, SubReturningInsert>> {
+            , Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> {
 
         private final C criteria;
 
@@ -908,7 +907,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public Statement._RightParenClause<PostgreInsert._SubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(String string) {
+        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(String string) {
             if (this.columnAliasList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
@@ -917,43 +916,43 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public Statement._CommaStringDualSpec<PostgreInsert._SubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(String string1, String string2) {
+        public Statement._CommaStringDualSpec<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(String string1, String string2) {
             return CriteriaSupports.stringQuadra(this.context, this.criteria, this::columnAliasClauseEnd)
                     .leftParen(string1, string2);
         }
 
         @Override
-        public Statement._CommaStringQuadraSpec<PostgreInsert._SubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(String string1, String string2, String string3, String string4) {
+        public Statement._CommaStringQuadraSpec<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(String string1, String string2, String string3, String string4) {
             return CriteriaSupports.stringQuadra(this.context, this.criteria, this::columnAliasClauseEnd)
                     .leftParen(string1, string2, string3, string4);
         }
 
         @Override
-        public Statement._RightParenClause<PostgreInsert._SubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(Consumer<Consumer<String>> consumer) {
+        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(Consumer<Consumer<String>> consumer) {
             return CriteriaSupports.stringQuadra(this.context, this.criteria, this::columnAliasClauseEnd)
                     .leftParen(consumer);
         }
 
         @Override
-        public Statement._RightParenClause<PostgreInsert._SubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(BiConsumer<C, Consumer<String>> consumer) {
+        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(BiConsumer<C, Consumer<String>> consumer) {
             return CriteriaSupports.stringQuadra(this.context, this.criteria, this::columnAliasClauseEnd)
                     .leftParen(consumer);
         }
 
         @Override
-        public Statement._RightParenClause<PostgreInsert._SubOptionSpec<C, SubInsert, SubReturningInsert>> leftParenIf(Consumer<Consumer<String>> consumer) {
+        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParenIf(Consumer<Consumer<String>> consumer) {
             return CriteriaSupports.stringQuadra(this.context, this.criteria, this::columnAliasClauseEnd)
                     .leftParenIf(consumer);
         }
 
         @Override
-        public Statement._RightParenClause<PostgreInsert._SubOptionSpec<C, SubInsert, SubReturningInsert>> leftParenIf(BiConsumer<C, Consumer<String>> consumer) {
+        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParenIf(BiConsumer<C, Consumer<String>> consumer) {
             return CriteriaSupports.stringQuadra(this.context, this.criteria, this::columnAliasClauseEnd)
                     .leftParenIf(consumer);
         }
 
         @Override
-        public PostgreInsert._SubOptionSpec<C, SubInsert, SubReturningInsert> rightParen() {
+        public PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert> rightParen() {
             return this;
         }
 
@@ -970,7 +969,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
 
-        private PostgreInsert._SubOptionSpec<C, SubInsert, SubReturningInsert> columnAliasClauseEnd(final List<String> aliasList) {
+        private PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert> columnAliasClauseEnd(final List<String> aliasList) {
             if (this.columnAliasList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
@@ -1873,19 +1872,11 @@ abstract class PostgreInserts extends InsertSupport {
 
     private static final class SubDomainInsertStatement extends DomainInsertStatement<SubInsert, SubReturningInsert>
             implements SubInsert
-            , SubInsert._SubInsertSpec
-            , _Insert._SubInsert {
+            , SubInsert._SubInsertSpec {
 
-        private final CodeEnum discriminatorValue;
 
-        private SubDomainInsertStatement(SubComplexValuesClause<?, ?> clause) {
+        private SubDomainInsertStatement(SubComplexValuesClause<?, ?, ?, ?> clause) {
             super(clause);
-            this.discriminatorValue = clause.discriminatorValue;
-        }
-
-        @Override
-        public CodeEnum discriminatorValue() {
-            return this.discriminatorValue;
         }
 
     }//SubDomainInsertStatement
@@ -1894,19 +1885,11 @@ abstract class PostgreInserts extends InsertSupport {
     private static final class SubDomainReturningInsertStatement
             extends DomainInsertStatement<SubInsert, SubReturningInsert>
             implements SubReturningInsert
-            , SubReturningInsert._SubReturningInsertSpec
-            , _Insert._SubInsert {
+            , SubReturningInsert._SubReturningInsertSpec {
 
-        private final CodeEnum discriminatorValue;
 
-        private SubDomainReturningInsertStatement(SubComplexValuesClause<?, ?> clause) {
+        private SubDomainReturningInsertStatement(SubComplexValuesClause<?, ?, ?, ?> clause) {
             super(clause);
-            this.discriminatorValue = clause.discriminatorValue;
-        }
-
-        @Override
-        public CodeEnum discriminatorValue() {
-            return this.discriminatorValue;
         }
 
     }//SubDomainReturningInsertStatement
@@ -2009,20 +1992,12 @@ abstract class PostgreInserts extends InsertSupport {
     private static final class SubValueInsertStatement
             extends ValueInsertStatement<SubInsert, SubReturningInsert>
             implements SubInsert
-            , SubInsert._SubInsertSpec
-            , _Insert._SubInsert {
+            , SubInsert._SubInsertSpec {
 
-        private final CodeEnum discriminatorValue;
-
-        private SubValueInsertStatement(SubComplexValuesClause<?, ?> clause) {
+        private SubValueInsertStatement(SubComplexValuesClause<?, ?, ?, ?> clause) {
             super(clause);
-            this.discriminatorValue = clause.discriminatorValue;
         }
 
-        @Override
-        public CodeEnum discriminatorValue() {
-            return this.discriminatorValue;
-        }
 
     }//SubValueInsertStatement
 
@@ -2030,19 +2005,10 @@ abstract class PostgreInserts extends InsertSupport {
     private static final class SubValueReturningInsertStatement
             extends ValueInsertStatement<SubInsert, SubReturningInsert>
             implements SubReturningInsert
-            , SubReturningInsert._SubReturningInsertSpec
-            , _Insert._SubInsert {
+            , SubReturningInsert._SubReturningInsertSpec {
 
-        private final CodeEnum discriminatorValue;
-
-        private SubValueReturningInsertStatement(SubComplexValuesClause<?, ?> clause) {
+        private SubValueReturningInsertStatement(SubComplexValuesClause<?, ?, ?, ?> clause) {
             super(clause);
-            this.discriminatorValue = clause.discriminatorValue;
-        }
-
-        @Override
-        public CodeEnum discriminatorValue() {
-            return this.discriminatorValue;
         }
 
     }//SubValueReturningInsertStatement
@@ -2208,19 +2174,10 @@ abstract class PostgreInserts extends InsertSupport {
 
     private static final class SubQueryInsertStatement extends QueryInsertStatement<SubInsert, SubReturningInsert>
             implements SubInsert
-            , SubInsert._SubInsertSpec
-            , _PostgreInsert._SubInsert {
+            , SubInsert._SubInsertSpec {
 
-        private final CodeEnum discriminatorValue;
-
-        private SubQueryInsertStatement(SubComplexValuesClause<?, ?> clause) {
+        private SubQueryInsertStatement(SubComplexValuesClause<?, ?, ?, ?> clause) {
             super(clause);
-            this.discriminatorValue = clause.discriminatorValue;
-        }
-
-        @Override
-        public CodeEnum discriminatorValue() {
-            return this.discriminatorValue;
         }
 
 
@@ -2228,19 +2185,10 @@ abstract class PostgreInserts extends InsertSupport {
 
     private static final class SubQueryReturningInsertStatement extends QueryInsertStatement<SubInsert, SubReturningInsert>
             implements SubReturningInsert
-            , SubReturningInsert._SubReturningInsertSpec
-            , _PostgreInsert._SubInsert {
+            , SubReturningInsert._SubReturningInsertSpec {
 
-        private final CodeEnum discriminatorValue;
-
-        private SubQueryReturningInsertStatement(SubComplexValuesClause<?, ?> clause) {
+        private SubQueryReturningInsertStatement(SubComplexValuesClause<?, ?, ?, ?> clause) {
             super(clause);
-            this.discriminatorValue = clause.discriminatorValue;
-        }
-
-        @Override
-        public CodeEnum discriminatorValue() {
-            return this.discriminatorValue;
         }
 
 

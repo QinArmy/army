@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.criteria.LiteralMode;
 import io.army.criteria.Selection;
 import io.army.criteria.SubQuery;
 import io.army.criteria.Visible;
@@ -105,9 +106,9 @@ final class QueryInsertContext extends StatementContext implements _QueryInsertC
     }
 
     @Override
-    public boolean isPreferLiteral() {
-        // query insert don't prefer literal,always false
-        return false;
+    public LiteralMode literalMode() {
+        // query insert don't prefer literal,always DEFAULT
+        return LiteralMode.DEFAULT;
     }
 
     @Override

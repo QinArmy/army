@@ -47,7 +47,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      * @since 1.0
      */
     interface _PreferLiteralClause<PO> {
-        PO preferLiteral(boolean prefer);
+        PO preferLiteral(LiteralMode mode);
     }
 
     interface _MigrationOptionClause<OR> {

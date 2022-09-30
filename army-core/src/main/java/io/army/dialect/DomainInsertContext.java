@@ -5,13 +5,13 @@ import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadWrapper;
+import io.army.criteria.LiteralMode;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
-import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.SimpleStmt;
@@ -76,7 +76,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
 
     @Override
-    void doAppendValuesList(final int outputColumnSize, final List<FieldMeta<?>> fieldList) {
+    int doAppendValuesList(final int outputColumnSize, final List<FieldMeta<?>> fieldList) {
 
         final List<?> domainList = this.domainList;
         final int rowSize = domainList.size();
@@ -87,7 +87,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         final ArmyParser dialect = this.parser;
         final Map<FieldMeta<?>, _Expression> defaultValueMap;
 
-        final boolean preferLiteral = this.preferLiteral;
+        final LiteralMode literalMode = this.literalMode;
         final boolean migration = this.migration;
         final boolean mockEnv = dialect.isMockEnv();
         final NullHandleMode nullHandleMode = this.nullHandleMode;
@@ -99,11 +99,11 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
         final boolean manageVisible;
         final FieldMeta<?> discriminator = domainTable.discriminator();
-        final int discriminatorValue;
+        final String spaceDiscriminator;
         if (domainTable instanceof ChildTableMeta) {
-            discriminatorValue = domainTable.discriminatorValue().code();
+            spaceDiscriminator = _Constant.SPACE + Integer.toString(domainTable.discriminatorValue().code());
         } else {
-            discriminatorValue = 0;
+            spaceDiscriminator = " 0";
         }
         if (insertTable instanceof ChildTableMeta) {
             assert insertTable == domainTable;
@@ -145,7 +145,8 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
 
             delayIdParam = null;//clear
-            outputValueSize = 0;//reset
+            assert outputValueSize == 0 || outputValueSize == outputColumnSize;
+            outputValueSize = -1;//reset
             for (int fieldIndex = 0, actualFieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
                 field = fieldList.get(fieldIndex);
                 if (!migration && !field.insertable()) {
@@ -159,18 +160,11 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
                 outputValueSize = actualFieldIndex;
                 if (field == discriminator) {
                     assert insertTable instanceof ParentTableMeta;
-                    sqlBuilder.append(_Constant.SPACE)
-                            .append(discriminatorValue);
+                    sqlBuilder.append(spaceDiscriminator);
                 } else if ((value = accessor.get(currentDomain, field.fieldName())) != null) {
-                    if (preferLiteral && field.mappingType() instanceof _ArmyNoInjectionMapping) {//TODO field codec
-                        sqlBuilder.append(_Constant.SPACE);
-                        dialect.literal(field, value, sqlBuilder);
-                    } else {
-                        this.appendParam(SingleParam.build(field, value));
-                    }
+                    this.appendInsertValue(literalMode, field, value);
                 } else if (field instanceof PrimaryFieldMeta
                         && insertTable instanceof ChildTableMeta) {//child id must be managed by army
-
                     if (field.generatorType() == GeneratorType.POST) {
                         assert delayIdParam == null;
                         delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, currentDomain, accessor);
@@ -178,10 +172,8 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
                     } else if (!mockEnv) {
                         //no bug,never here,here generatorType == GeneratorType.PRECEDE
                         throw new IllegalStateException(String.format("no generate value for %s", field));
-                    } else if (preferLiteral) {
-                        sqlBuilder.append(_Constant.SPACE_NULL);
                     } else {
-                        this.appendParam(SingleParam.build(field, null));
+                        this.appendInsertValue(literalMode, field, null);
                     }
                 } else if ((expression = defaultValueMap.get(field)) != null) {
                     expression.appendSql(this);
@@ -190,22 +182,15 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
                     if (migration && !field.nullable()) {
                         throw _Exceptions.nonNullField(field);
                     }
-                    if (preferLiteral) {
-                        sqlBuilder.append(_Constant.SPACE_NULL);
-                    } else {
-                        this.appendParam(SingleParam.build(field, null));
-                    }
+                    this.appendInsertValue(literalMode, field, null);
                 } else if (nullHandleMode == NullHandleMode.INSERT_DEFAULT) {
                     sqlBuilder.append(_Constant.SPACE_DEFAULT);
                 } else if (nullHandleMode != NullHandleMode.INSERT_NULL) {
-                    //no bug,never here
-                    throw new IllegalStateException(String.format("nullHandleMode[%s] error.", nullHandleMode));
+                    throw _Exceptions.unexpectedEnum(nullHandleMode);
                 } else if (!field.nullable()) {
                     throw _Exceptions.nonNullField(field);
-                } else if (preferLiteral) {
-                    sqlBuilder.append(_Constant.SPACE_NULL);
                 } else {
-                    this.appendParam(SingleParam.build(field, null));
+                    this.appendInsertValue(literalMode, field, null);
                 }
 
             }//inner for
@@ -214,8 +199,8 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
         }//outer for
 
-
         wrapper.domain = null; //finally must clear
+        return outputValueSize;
     }
 
 

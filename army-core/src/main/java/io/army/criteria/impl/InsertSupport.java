@@ -7,6 +7,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.Stmt;
@@ -72,7 +73,7 @@ abstract class InsertSupport {
 
         private boolean migration;
 
-        private boolean preferLiteral;
+        private LiteralMode literalMode;
 
         InsertOptionsImpl(CriteriaContext criteriaContext) {
             this.context = criteriaContext;
@@ -87,8 +88,8 @@ abstract class InsertSupport {
 
         @SuppressWarnings("unchecked")
         @Override
-        public final PR preferLiteral(boolean prefer) {
-            this.preferLiteral = prefer;
+        public final PR preferLiteral(LiteralMode mode) {
+            this.literalMode = mode;
             return (PR) this;
         }
 
@@ -103,8 +104,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final boolean isPreferLiteral() {
-            return this.preferLiteral;
+        public final LiteralMode literalMode() {
+            return this.literalMode;
         }
 
 
@@ -515,7 +516,7 @@ abstract class InsertSupport {
             implements Insert._ColumnDefaultClause<C, T, DR>, _Insert._ValuesSyntaxInsert {
 
 
-        final boolean preferLiteral;
+        final LiteralMode literalMode;
 
         final NullHandleMode nullHandleMode;
 
@@ -528,7 +529,7 @@ abstract class InsertSupport {
             } else {
                 this.nullHandleMode = null;
             }
-            this.preferLiteral = options.isPreferLiteral();
+            this.literalMode = options.literalMode();
         }
 
         @Override
@@ -539,10 +540,23 @@ abstract class InsertSupport {
             }
             final ArmyExpression valueExp;
             if (value == null) {
-                if (this.preferLiteral) {
-                    valueExp = (ArmyExpression) SQLs.nullWord();
-                } else {
-                    valueExp = (ArmyExpression) SQLs.param(field, null);
+                switch (this.literalMode) {
+                    case DEFAULT:
+                        valueExp = (ArmyExpression) SQLs.param(field, null);
+                        break;
+                    case ALL:
+                        valueExp = (ArmyExpression) SQLs.nullWord();
+                        break;
+                    case PREFERENCE: {
+                        if (field.mappingType() instanceof _ArmyNoInjectionMapping) {
+                            valueExp = (ArmyExpression) SQLs.nullWord();
+                        } else {
+                            valueExp = (ArmyExpression) SQLs.param(field, null);
+                        }
+                    }
+                    break;
+                    default:
+                        throw _Exceptions.unexpectedEnum(this.nullHandleMode);
                 }
             } else if (value instanceof DataField) {
                 String m = "column default value must be non-field";
@@ -693,8 +707,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final boolean isPreferLiteral() {
-            return this.preferLiteral;
+        public final LiteralMode literalMode() {
+            return this.literalMode;
         }
 
         final void endColumnDefaultClause() {
@@ -1609,13 +1623,13 @@ abstract class InsertSupport {
 
         final boolean migration;
 
-        final boolean preferLiteral;
+        final LiteralMode literalMode;
 
         AssignmentInsertClause(InsertOptions options, TableMeta<T> table) {
             super(options.getContext(), table);
 
             this.migration = options.isMigration();
-            this.preferLiteral = options.isPreferLiteral();
+            this.literalMode = options.literalMode();
         }
 
 
@@ -1630,8 +1644,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final boolean isPreferLiteral() {
-            return this.preferLiteral;
+        public final LiteralMode literalMode() {
+            return this.literalMode;
         }
 
 
@@ -2055,7 +2069,7 @@ abstract class InsertSupport {
 
         private final NullHandleMode nullHandleMode;
 
-        private final boolean preferLiteral;
+        private final LiteralMode literalMode;
 
         private final List<FieldMeta<?>> fieldList;
 
@@ -2068,7 +2082,7 @@ abstract class InsertSupport {
 
             this.migration = clause.isMigration();
             this.nullHandleMode = clause.nullHandle();
-            this.preferLiteral = clause.isPreferLiteral();
+            this.literalMode = clause.literalMode();
             this.fieldList = clause.fieldList();
 
             this.fieldMap = clause.fieldMap();
@@ -2087,8 +2101,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final boolean isPreferLiteral() {
-            return this.preferLiteral;
+        public final LiteralMode literalMode() {
+            return this.literalMode;
         }
 
         @Override
@@ -2127,7 +2141,7 @@ abstract class InsertSupport {
 
         private final boolean migration;
 
-        private final boolean preferLiteral;
+        private final LiteralMode preferLiteral;
 
         private final List<_Pair<FieldMeta<?>, _Expression>> rowPairList;
 
@@ -2136,7 +2150,7 @@ abstract class InsertSupport {
         AbstractAssignmentInsertStatement(_AssignmentInsert clause) {
             super(clause);
             this.migration = clause.isMigration();
-            this.preferLiteral = clause.isPreferLiteral();
+            this.preferLiteral = clause.literalMode();
             this.rowPairList = clause.pairList();
 
             this.fieldMap = clause.pairMap();
@@ -2148,7 +2162,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final boolean isPreferLiteral() {
+        public final LiteralMode literalMode() {
             return this.preferLiteral;
         }
 

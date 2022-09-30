@@ -29,11 +29,11 @@ public abstract class Postgres extends PostgreFuncSyntax {
     }
 
 
-    public static PostgreInsert._SubOptionSpec<Void> domainSubInsert() {
+    public static PostgreInsert._DynamicSubOptionSpec<Void> domainSubInsert() {
         throw new UnsupportedOperationException();
     }
 
-    public static <C> PostgreInsert._SubOptionSpec<C> domainSubInsert(C criteria) {
+    public static <C> PostgreInsert._DynamicSubOptionSpec<C> domainSubInsert(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();
     }

@@ -1,13 +1,13 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
+import io.army.criteria.LiteralMode;
 import io.army.criteria.SqlValueParam;
 import io.army.criteria.Visible;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
-import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.SimpleStmt;
@@ -41,7 +41,7 @@ final class AssignmentInsertContext extends StatementContext
 
     private final boolean migration;
 
-    private final boolean preferLiteral;
+    private final LiteralMode literalMode;
 
     private final boolean duplicateKeyClause;
 
@@ -89,7 +89,7 @@ final class AssignmentInsertContext extends StatementContext
         assert this.insertTable instanceof SingleTableMeta;
 
         this.migration = nonChildStmt.isMigration();
-        this.preferLiteral = nonChildStmt.isPreferLiteral();
+        this.literalMode = nonChildStmt.literalMode();
         this.duplicateKeyClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec;
         this.pairList = nonChildStmt.pairList();
 
@@ -139,12 +139,12 @@ final class AssignmentInsertContext extends StatementContext
 
         this.insertTable = stmt.table();
         this.migration = stmt.isMigration();
-        this.preferLiteral = stmt.isPreferLiteral();
+        this.literalMode = stmt.literalMode();
         this.duplicateKeyClause = stmt instanceof _Insert._SupportConflictClauseSpec;
 
         assert this.insertTable instanceof ChildTableMeta
                 && this.migration == parentContext.migration
-                && this.preferLiteral == parentContext.preferLiteral
+                && this.literalMode == parentContext.literalMode
                 && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta();
 
         this.pairList = stmt.pairList();
@@ -169,8 +169,8 @@ final class AssignmentInsertContext extends StatementContext
     }
 
     @Override
-    public boolean isPreferLiteral() {
-        return this.preferLiteral;
+    public LiteralMode literalMode() {
+        return this.literalMode;
     }
 
     @Override
@@ -304,7 +304,7 @@ final class AssignmentInsertContext extends StatementContext
         final int fieldSize = fieldList.size();
         assert fieldSize > 0;
 
-        final boolean preferLiteral = this.preferLiteral;
+        final LiteralMode literalMode = this.literalMode;
         final boolean mockEnv = dialect.isMockEnv();
 
         FieldMeta<?> field;
@@ -338,18 +338,11 @@ final class AssignmentInsertContext extends StatementContext
                     //no bug,never here
                     throw _Exceptions.unexpectedEnum(generatorType);
                 }
-            } else if ((value = generatedMap.get(field)) == null) {
-                assert mockEnv;
-                if (preferLiteral) {
-                    sqlBuilder.append(_Constant.SPACE_NULL);
-                } else {
-                    this.appendParam(SingleParam.build(field, null));
-                }
-            } else if (preferLiteral && field.mappingType() instanceof _ArmyNoInjectionMapping) {// TODO field codec
-                sqlBuilder.append(_Constant.SPACE);
-                dialect.literal(field, value, sqlBuilder);
+            } else if ((value = generatedMap.get(field)) != null) {
+                this.appendInsertValue(literalMode, field, value);
             } else {
-                this.appendParam(SingleParam.build(field, value));
+                assert mockEnv;
+                this.appendInsertValue(literalMode, field, null);
             }
 
         }

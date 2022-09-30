@@ -5,6 +5,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
+import io.army.criteria.impl.inner._Statement;
 import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
@@ -13,7 +14,6 @@ import io.army.mapping.*;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.SingleParam;
-import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -1325,7 +1325,7 @@ public abstract class SQLs extends StandardSyntax {
     }//BetweenPair
 
 
-    static class CteImpl implements _Cte {
+    static final class CteImpl implements _Cte {
 
         final String name;
 
@@ -1342,43 +1342,33 @@ public abstract class SQLs extends StandardSyntax {
 
         CteImpl(String name, List<String> columnNameList, SubStatement subStatement) {
             this.name = name;
-            this.columnNameList = _CollectionUtils.asUnmodifiableList(columnNameList);
-            if (subStatement instanceof SubQuery) {
-                final int columnAliasCount, selectionCount;
-                columnAliasCount = columnNameList.size();
-                selectionCount = CriteriaUtils.selectionCount((SubQuery) subStatement);
-                if (columnAliasCount != selectionCount) {
-                    String m;
-                    m = String.format("cte column alias count[%s] and selection count[%s] of SubQuery not match."
-                            , columnAliasCount, selectionCount);
-                    throw new CriteriaException(m);
-                }
-
-            }
+            this.columnNameList = columnNameList;
             this.subStatement = subStatement;
         }
 
         @Override
-        public final String name() {
+        public String name() {
             return this.name;
         }
 
         @Override
-        public final List<String> columnNameList() {
+        public List<String> columnNameList() {
             return this.columnNameList;
         }
 
         @Override
-        public final SubStatement subStatement() {
+        public SubStatement subStatement() {
             return this.subStatement;
         }
 
         @Override
-        public final List<? extends SelectItem> selectItemList() {
+        public List<? extends SelectItem> selectItemList() {
             final SubStatement subStatement = this.subStatement;
             final List<? extends SelectItem> list;
             if (subStatement instanceof DerivedTable) {
                 list = ((DerivedTable) subStatement).selectItemList();
+            } else if (subStatement instanceof _Statement._ReturningListSpec) {
+                list = ((_Statement._ReturningListSpec) subStatement).returningList();
             } else {
                 list = Collections.emptyList();
             }
