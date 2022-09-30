@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.DataField;
 import io.army.criteria.SqlValueParam;
 import io.army.criteria.SubQuery;
-import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -25,7 +24,7 @@ final class UnaryPredicate extends OperationPredicate {
 
     }
 
-    static UnaryPredicate create(final UnaryOperator operator, final _Expression expression) {
+    static UnaryPredicate create(final UnaryOperator operator, final ArmyExpression expression) {
         if (expression instanceof SubQuery) {
             throw new IllegalArgumentException("expression couldn't be sub query.");
         }

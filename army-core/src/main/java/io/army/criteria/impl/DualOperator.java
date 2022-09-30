@@ -18,12 +18,12 @@ enum DualOperator {
     RIGHT_SHIFT(" >>"),
     /*################################## blow expression dual operator method ##################################*/
 
-    EQ(" ="),
-    NOT_EQ(" !="),
-    LT(" <"),
-    LE(" <="),
-    GE(" >="),
-    GT(" >"),
+    EQUAL(" ="),
+    NOT_EQUAL(" !="),
+    LESS(" <"),
+    LESS_EQUAL(" <="),
+    GREAT_EQUAL(" >="),
+    GREAT(" >"),
     IN(" IN"),
     NOT_IN(" NOT IN"),
     LIKE(" LIKE"),

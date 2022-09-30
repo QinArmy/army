@@ -7,7 +7,6 @@ import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
-import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.Stmt;
@@ -533,48 +532,25 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final DR defaultValue(final FieldMeta<T> field, final @Nullable Object value) {
+        public final DR defaultValue(final FieldMeta<T> field, final @Nullable Expression value) {
             if (this.migration) {
                 String m = "migration mode not support default value clause";
                 throw CriteriaContextStack.criteriaError(this.context, m);
             }
-            final ArmyExpression valueExp;
-            if (value == null) {
-                switch (this.literalMode) {
-                    case DEFAULT:
-                        valueExp = (ArmyExpression) SQLs.param(field, null);
-                        break;
-                    case ALL:
-                        valueExp = (ArmyExpression) SQLs.nullWord();
-                        break;
-                    case PREFERENCE: {
-                        if (field.mappingType() instanceof _ArmyNoInjectionMapping) {
-                            valueExp = (ArmyExpression) SQLs.nullWord();
-                        } else {
-                            valueExp = (ArmyExpression) SQLs.param(field, null);
-                        }
-                    }
-                    break;
-                    default:
-                        throw _Exceptions.unexpectedEnum(this.nullHandleMode);
-                }
-            } else if (value instanceof DataField) {
-                String m = "column default value must be non-field";
-                throw CriteriaContextStack.criteriaError(this.context, m);
-            } else if (!(value instanceof Expression)) {
-                valueExp = (ArmyExpression) SQLs.param(field, value);
-            } else if (value instanceof ArmyExpression) {
-                valueExp = (ArmyExpression) value;
-            } else {
+
+            if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.context);
             }
-
+            final ArmyExpression valueExp;
+            valueExp = (ArmyExpression) value;
             this.validateField(field, valueExp);
 
             Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
             if (commonExpMap == null) {
                 commonExpMap = new HashMap<>();
                 this.commonExpMap = commonExpMap;
+            } else if (!(commonExpMap instanceof HashMap)) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             if (commonExpMap.putIfAbsent(field, valueExp) != null) {
                 String m = String.format("duplication default for %s.", field);
@@ -583,96 +559,24 @@ abstract class InsertSupport {
             return (DR) this;
         }
 
-
         @Override
-        public final DR defaultLiteral(FieldMeta<T> field, @Nullable Object value) {
-            return this.defaultValue(field, SQLs._nullableLiteral(field, value));
+        public final DR defaultValue(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator) {
+            return this.defaultValue(field, operator.apply(this.criteria, field));
         }
 
         @Override
-        public final DR defaultExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
-            final Expression expression;
-            expression = function.apply(this.criteria);
-            if (expression == null) {
-                throw CriteriaContextStack.nonArmyExp(this.context);
-            }
-            return this.defaultValue(field, expression);
+        public final DR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value) {
+            return this.defaultValue(field, operator.apply(field, SQLs._safeParam(value)));
         }
 
         @Override
-        public final DR defaultExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
-            final Expression expression;
-            expression = supplier.get();
-            if (expression == null) {
-                throw CriteriaContextStack.nonArmyExp(this.context);
-            }
-            return this.defaultValue(field, expression);
+        public final DR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
+            return this.defaultValue(field, operator.apply(field, supplier.get()));
         }
 
         @Override
-        public final DR defaultNull(FieldMeta<T> field) {
-            return this.defaultValue(field, SQLs.nullWord());
-        }
-
-
-        @Override
-        public final DR ifDefaultValue(FieldMeta<T> field, Function<C, ?> function) {
-            final Object value;
-            value = function.apply(this.criteria);
-            if (value != null) {
-                this.defaultValue(field, value);
-            }
-            return (DR) this;
-        }
-
-        @Override
-        public final DR ifDefaultValue(FieldMeta<T> field, Supplier<?> supplier) {
-            final Object value;
-            value = supplier.get();
-            if (value != null) {
-                this.defaultValue(field, value);
-            }
-            return (DR) this;
-        }
-
-        @Override
-        public final DR ifDefaultValue(FieldMeta<T> field, Function<String, ?> function, String keyName) {
-            final Object value;
-            value = function.apply(keyName);
-            if (value != null) {
-                this.defaultValue(field, value);
-            }
-            return (DR) this;
-        }
-
-        @Override
-        public final DR ifDefaultLiteral(FieldMeta<T> field, Supplier<?> supplier) {
-            final Object value;
-            value = supplier.get();
-            if (value != null) {
-                this.defaultValue(field, SQLs._nonNullLiteral(field, value));
-            }
-            return (DR) this;
-        }
-
-        @Override
-        public final DR ifDefaultLiteral(FieldMeta<T> field, Function<C, ?> function) {
-            final Object value;
-            value = function.apply(this.criteria);
-            if (value != null) {
-                this.defaultValue(field, SQLs._nonNullLiteral(field, value));
-            }
-            return (DR) this;
-        }
-
-        @Override
-        public final DR ifDefaultLiteral(FieldMeta<T> field, Function<String, ?> function, String keyName) {
-            final Object value;
-            value = function.apply(keyName);
-            if (value != null) {
-                this.defaultValue(field, SQLs._nonNullLiteral(field, value));
-            }
-            return (DR) this;
+        public final DR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+            return this.defaultValue(field, operator.apply(field, function.apply(keyName)));
         }
 
         @Override
@@ -1088,18 +992,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Supplier<?> supplier) {
-            return this.comma(field, SQLs._nullableParam(field, supplier.get()));
-        }
-
-        @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Function<C, ?> function) {
-            return this.comma(field, SQLs._nullableParam(field, function.apply(this.criteria)));
-        }
-
-        @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Function<String, ?> function, String keyName) {
-            return this.comma(field, SQLs._nullableParam(field, function.apply(keyName)));
+        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator) {
+            return this.comma(field, operator.apply(this.criteria, field));
         }
 
         @Override
@@ -1137,18 +1031,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Supplier<?> supplier) {
-            return this.comma(field, SQLs._nullableParam(field, supplier.get()));
-        }
-
-        @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Function<C, ?> function) {
-            return this.comma(field, SQLs._nullableParam(field, function.apply(this.criteria)));
-        }
-
-        @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Function<String, ?> function, String keyName) {
-            return this.comma(field, SQLs._nullableParam(field, function.apply(keyName)));
+        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator) {
+            return this.comma(field, operator.apply(this.criteria, field));
         }
 
         @Override
@@ -1241,16 +1125,6 @@ abstract class InsertSupport {
         }
 
         @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, Supplier<?> supplier) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, Function<String, ?> function, String keyName) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Object value) {
             throw new UnsupportedOperationException();
         }
@@ -1327,16 +1201,6 @@ abstract class InsertSupport {
                 throw duplicationValuePair(this.context, field);
             }
             return this;
-        }
-
-        @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, Supplier<?> supplier) {
-            return this.accept(field, SQLs._nullableParam(field, supplier.get()));
-        }
-
-        @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, Function<String, ?> function, String keyName) {
-            return this.accept(field, SQLs._nullableParam(field, function.apply(keyName)));
         }
 
         @Override
@@ -1497,16 +1361,6 @@ abstract class InsertSupport {
 
         @Override
         public final PairConsumer<T> accept(FieldMeta<T> field, Expression value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public final PairConsumer<T> accept(FieldMeta<T> field, Supplier<?> supplier) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public final PairConsumer<T> accept(FieldMeta<T> field, Function<String, ?> function, String keyName) {
             throw new UnsupportedOperationException();
         }
 

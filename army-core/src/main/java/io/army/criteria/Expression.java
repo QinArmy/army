@@ -1,11 +1,13 @@
 package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -27,33 +29,26 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      *
      * @param operand right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
      */
-    IPredicate equal(Object operand);
+    IPredicate equal(Expression operand);
 
-    /**
-     * <p>
-     * Equivalence : this.equal({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    IPredicate equalLiteral(Object operand);
+    IPredicate equal(Supplier<? extends Expression> supplier);
 
-    /**
-     * <p>
-     * Equivalence : this.equal({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    IPredicate equal(Function<? super Expression, ? extends Expression> function);
+
+    <C> IPredicate equal(BiFunction<C, ? super Expression, ? extends Expression> function);
+
+    <T> IPredicate equal(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> IPredicate equal(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    IPredicate equal(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     IPredicate equalNamed(String paramName);
-
-    /**
-     * relational operate with {@code =}
-     */
-    <C> IPredicate equalExp(Function<C, ? extends Expression> function);
-
-    IPredicate equalExp(Supplier<? extends Expression> supplier);
 
     /**
      * relational operate with {@code = ANY}
      */
-    <C> IPredicate equalAny(Function<C, ? extends SubQuery> supplier);
+    <C> IPredicate equalAny(Function<C, ? extends SubQuery> function);
 
     /**
      * relational operate with {@code = ANY}
@@ -70,57 +65,52 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      */
     IPredicate equalSome(Supplier<? extends SubQuery> subQuery);
 
-    IPredicate lessThan(Object operand);
 
-    /**
-     * <p>
-     * Equivalence : this.lessThan({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    IPredicate lessThanLiteral(Object operand);
+    IPredicate less(Expression operand);
 
-    /**
-     * <p>
-     * Equivalence : this.lessThan({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
-    IPredicate lessThanNamed(String paramName);
+    IPredicate less(Supplier<? extends Expression> supplier);
 
-    <C> IPredicate lessThanExp(Function<C, ? extends Expression> function);
+    IPredicate less(Function<? super Expression, ? extends Expression> function);
 
-    IPredicate lessThanExp(Supplier<? extends Expression> supplier);
+    <C> IPredicate less(BiFunction<C, ? super Expression, ? extends Expression> function);
 
-    <C> IPredicate lessThanAny(Function<C, ? extends SubQuery> function);
+    <T> IPredicate less(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
 
-    IPredicate lessThanAny(Supplier<? extends SubQuery> supplier);
+    <T> IPredicate less(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
 
-    <C> IPredicate lessThanSome(Function<C, ? extends SubQuery> function);
+    IPredicate less(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
-    IPredicate lessThanSome(Supplier<? extends SubQuery> supplier);
+    IPredicate lessNamed(String paramName);
 
-    <C> IPredicate lessThanAll(Function<C, ? extends SubQuery> function);
+    <C> IPredicate lessAny(Function<C, ? extends SubQuery> function);
 
-    IPredicate lessThanAll(Supplier<? extends SubQuery> supplier);
+    IPredicate lessAny(Supplier<? extends SubQuery> supplier);
 
-    IPredicate lessEqual(Object operand);
+    <C> IPredicate lessSome(Function<C, ? extends SubQuery> function);
 
-    /**
-     * <p>
-     * Equivalence : this.lessEqual({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    IPredicate lessEqualLiteral(Object operand);
+    IPredicate lessSome(Supplier<? extends SubQuery> supplier);
 
-    /**
-     * <p>
-     * Equivalence : this.lessEqual({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    <C> IPredicate lessAll(Function<C, ? extends SubQuery> function);
+
+    IPredicate lessAll(Supplier<? extends SubQuery> supplier);
+
+
+    IPredicate lessEqual(Expression operand);
+
+    IPredicate lessEqual(Supplier<? extends Expression> supplier);
+
+    IPredicate lessEqual(Function<? super Expression, ? extends Expression> function);
+
+    <C> IPredicate lessEqual(BiFunction<C, ? super Expression, ? extends Expression> function);
+
+    <T> IPredicate lessEqual(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> IPredicate lessEqual(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    IPredicate lessEqual(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     IPredicate lessEqualNamed(String paramName);
 
-    <C> IPredicate lessEqualExp(Function<C, ? extends Expression> function);
-
-    IPredicate lessEqualExp(Supplier<? extends Expression> supplier);
 
     <C> IPredicate lessEqualAny(Function<C, ? extends SubQuery> function);
 
@@ -134,65 +124,51 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate lessEqualAll(Supplier<? extends SubQuery> supplier);
 
-    IPredicate greatThan(Object operand);
 
-    /**
-     * <p>
-     * Equivalence : this.greatThan({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    IPredicate greatThanLiteral(Object operand);
-
-    /**
-     * <p>
-     * Equivalence : this.greatThan({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
-    IPredicate greatThanNamed(String paramName);
+    IPredicate great(Expression operand);
 
 
-    /**
-     * relational operate with {@code =}
-     */
-    <C> IPredicate greatThanExp(Function<C, ? extends Expression> function);
+    IPredicate great(Supplier<? extends Expression> supplier);
 
-    IPredicate greatThanExp(Supplier<? extends Expression> supplier);
+    IPredicate great(Function<? super Expression, ? extends Expression> function);
 
-    <C> IPredicate greatThanAny(Function<C, ? extends SubQuery> function);
+    <C> IPredicate great(BiFunction<C, ? super Expression, ? extends Expression> function);
 
-    IPredicate greatThanAny(Supplier<? extends SubQuery> supplier);
+    <T> IPredicate great(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
 
-    <C> IPredicate greatThanSome(Function<C, ? extends SubQuery> function);
+    <T> IPredicate great(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
 
-    IPredicate greatThanSome(Supplier<? extends SubQuery> supplier);
+    IPredicate great(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
-    <C> IPredicate greatThanAll(Function<C, ? extends SubQuery> function);
+    IPredicate greatNamed(String paramName);
 
-    IPredicate greatThanAll(Supplier<? extends SubQuery> supplier);
+    <C> IPredicate greatAny(Function<C, ? extends SubQuery> function);
 
-    IPredicate greatEqual(Object operand);
+    IPredicate greatAny(Supplier<? extends SubQuery> supplier);
 
-    /**
-     * <p>
-     * Equivalence : this.greatEqual({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    IPredicate greatEqualLiteral(Object operand);
+    <C> IPredicate greatSome(Function<C, ? extends SubQuery> function);
 
-    /**
-     * <p>
-     * Equivalence : this.greatEqual({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
-    IPredicate greatEqualNamed(String operand);
+    IPredicate greatSome(Supplier<? extends SubQuery> supplier);
 
+    <C> IPredicate greatAll(Function<C, ? extends SubQuery> function);
 
-    /**
-     * relational operate with {@code =}
-     */
-    <C> IPredicate greatEqualExp(Function<C, ? extends Expression> function);
+    IPredicate greatAll(Supplier<? extends SubQuery> supplier);
 
-    IPredicate greatEqualExp(Supplier<? extends Expression> supplier);
+    IPredicate greatEqual(Expression operand);
+
+    IPredicate greatEqual(Supplier<? extends Expression> supplier);
+
+    IPredicate greatEqual(Function<? super Expression, ? extends Expression> function);
+
+    <C> IPredicate greatEqual(BiFunction<C, ? super Expression, ? extends Expression> function);
+
+    <T> IPredicate greatEqual(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> IPredicate greatEqual(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    IPredicate greatEqual(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
+    IPredicate greatEqualNamed(String paramName);
 
     <C> IPredicate greatEqualAny(Function<C, ? extends SubQuery> function);
 
@@ -206,29 +182,22 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate greatEqualAll(Supplier<? extends SubQuery> supplier);
 
-    IPredicate notEqual(Object operand);
 
-    /**
-     * <p>
-     * Equivalence : this.notEqual({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    IPredicate notEqualLiteral(Object operand);
+    IPredicate notEqual(Expression operand);
 
-    /**
-     * <p>
-     * Equivalence : this.notEqual({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    IPredicate notEqual(Supplier<? extends Expression> supplier);
+
+    IPredicate notEqual(Function<? super Expression, ? extends Expression> function);
+
+    <C> IPredicate notEqual(BiFunction<C, ? super Expression, ? extends Expression> function);
+
+    <T> IPredicate notEqual(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> IPredicate notEqual(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    IPredicate notEqual(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     IPredicate notEqualNamed(String paramName);
-
-
-    /**
-     * relational operate with {@code =}
-     */
-    <C> IPredicate notEqualExp(Function<C, ? extends Expression> function);
-
-    IPredicate notEqualExp(Supplier<? extends Expression> supplier);
 
     <C> IPredicate notEqualAny(Function<C, ? extends SubQuery> function);
 
@@ -242,11 +211,21 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate notEqualAll(Supplier<? extends SubQuery> supplier);
 
-    IPredicate between(Object firstOperand, Object secondOperand);
+    IPredicate between(Expression first, Expression second);
 
-    IPredicate betweenLiteral(Object firstOperand, Object secondOperand);
+    IPredicate between(BiFunction<? super Expression, Object, ? extends Expression> operator, Object first, Object second);
 
-    <C> IPredicate between(Function<C, ExpressionPair> function);
+    IPredicate between(BiFunction<? super Expression, Object, ? extends Expression> operator, Supplier<?> firstSupplier, Supplier<?> secondSupplier);
+
+    IPredicate between(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+
+    IPredicate between(Supplier<ExpressionPair> supplier);
+
+    IPredicate between(Function<Expression, ExpressionPair> function);
+
+    <C> IPredicate between(BiFunction<C, Expression, ExpressionPair> function);
+
+    IPredicate betweenNamed(String firstParamName, String secondParamName);
 
 
     IPredicate isNull();
@@ -258,14 +237,19 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      * Parameters will be wrapped with {@link SQLs#preferLiteralParams(TypeMeta, Collection)}.
      * </p>
      */
-    IPredicate in(Object operand);
+    IPredicate in(Expression operand);
 
-    /**
-     * <p>
-     * Equivalence : this.in({@link SQLs#params(TypeMeta, Collection)})
-     * </p>
-     */
-    IPredicate inOptimizing(Object operand);
+    IPredicate in(Supplier<? extends Expression> supplier);
+
+    IPredicate in(Function<? super Expression, ? extends Expression> function);
+
+    <C> IPredicate in(BiFunction<C, ? super Expression, ? extends Expression> function);
+
+    <T, O extends Collection<T>> IPredicate in(BiFunction<? super Expression, O, ? extends Expression> operator, O operand);
+
+    <T, O extends Collection<T>> IPredicate in(BiFunction<? super Expression, O, ? extends Expression> operator, Supplier<O> supplier);
+
+    IPredicate in(BiFunction<? super Expression, Collection<?>, Expression> operator, Function<String, ?> function, String keyName);
 
     /**
      * <p>
@@ -274,166 +258,142 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      */
     IPredicate inNamed(String paramName, int size);
 
-    <C> IPredicate inExp(Function<C, ? extends Expression> function);
-
-    IPredicate inExp(Supplier<? extends Expression> supplier);
-
     /**
      * <p>
      * Parameters will be wrapped with {@link SQLs#preferLiteralParams(TypeMeta, Collection)}.
      * </p>
      */
-    IPredicate notIn(Object operand);
+    IPredicate notIn(Expression operand);
 
-    /**
-     * <p>
-     * Equivalence : this.notIn({@link SQLs#params(TypeMeta, Collection)})
-     * </p>
-     */
-    IPredicate notInOptimizing(Object operand);
+    IPredicate notIn(Supplier<? extends Expression> supplier);
 
-    /**
-     * <p>
-     * Equivalence : this.notIn({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    IPredicate notIn(Function<? super Expression, ? extends Expression> function);
+
+    <C> IPredicate notIn(BiFunction<C, ? super Expression, ? extends Expression> function);
+
+    <T, O extends Collection<T>> IPredicate notIn(BiFunction<? super Expression, O, ? extends Expression> operator, O operand);
+
+    <T, O extends Collection<T>> IPredicate notIn(BiFunction<? super Expression, O, ? extends Expression> operator, Supplier<O> supplier);
+
+    IPredicate notIn(BiFunction<? super Expression, Collection<?>, Expression> operator, Function<String, ?> function, String keyName);
+
     IPredicate notInNamed(String paramName, int size);
 
-    <C> IPredicate notInExp(Function<C, ? extends Expression> function);
+    IPredicate like(Expression pattern);
 
-    IPredicate notInExp(Supplier<? extends Expression> supplier);
+    IPredicate like(Supplier<? extends Expression> supplier);
 
+    IPredicate like(Function<? super Expression, ? extends Expression> function);
 
-    IPredicate like(Object pattern);
+    <C> IPredicate like(BiFunction<C, ? super Expression, ? extends Expression> function);
 
-    /**
-     * <p>
-     * Equivalence : this.like({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    <T> IPredicate like(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> IPredicate like(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    IPredicate like(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     IPredicate likeNamed(String paramName);
 
-    <C> IPredicate likeExp(Function<C, ? extends Expression> function);
 
-    IPredicate likeExp(Supplier<? extends Expression> supplier);
+    IPredicate notLike(Expression pattern);
 
+    IPredicate notLike(Supplier<? extends Expression> supplier);
 
-    IPredicate notLike(Object pattern);
+    IPredicate notLike(Function<? super Expression, ? extends Expression> function);
 
+    <C> IPredicate notLike(BiFunction<C, ? super Expression, ? extends Expression> function);
 
-    /**
-     * <p>
-     * Equivalence : this.notLike({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    <T> IPredicate notLike(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> IPredicate notLike(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    IPredicate notLike(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     IPredicate notLikeNamed(String paramName);
 
-    <C> IPredicate notLikeExp(Function<C, ? extends Expression> function);
 
-    IPredicate notLikeExp(Supplier<? extends Expression> supplier);
+    Expression mod(Expression operand);
 
+    Expression mod(Supplier<? extends Expression> supplier);
 
-    Expression mod(Object operand);
+    Expression mod(Function<? super Expression, ? extends Expression> function);
 
-    /**
-     * <p>
-     * Equivalence : this.mod({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    Expression modLiteral(Object operand);
+    <C> Expression mod(BiFunction<C, ? super Expression, ? extends Expression> function);
 
-    /**
-     * <p>
-     * Equivalence : this.mod({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    <T> Expression mod(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> Expression mod(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    Expression mod(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     Expression modNamed(String paramName);
 
 
-    <C> Expression modExp(Function<C, ? extends Expression> function);
+    Expression times(Expression operand);
 
-    Expression modExp(Supplier<? extends Expression> supplier);
+    Expression times(Supplier<? extends Expression> supplier);
 
-    Expression times(Object multiplicand);
+    Expression times(Function<? super Expression, ? extends Expression> function);
 
-    /**
-     * <p>
-     * Equivalence : this.multiply({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    Expression timesLiteral(Object multiplicand);
+    <C> Expression times(BiFunction<C, ? super Expression, ? extends Expression> function);
 
-    /**
-     * <p>
-     * Equivalence : this.multiply({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    <T> Expression times(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> Expression times(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    Expression times(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     Expression timesNamed(String paramName);
 
-    <C> Expression timesExp(Function<C, ? extends Expression> function);
 
-    Expression timesExp(Supplier<? extends Expression> supplier);
+    Expression plus(Expression operand);
 
-    Expression plus(Object augend);
+    Expression plus(Supplier<? extends Expression> supplier);
 
-    /**
-     * <p>
-     * Equivalence : this.plus({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    Expression plusLiteral(Object augend);
+    Expression plus(Function<? super Expression, ? extends Expression> function);
 
-    /**
-     * <p>
-     * Equivalence : this.plus({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    <C> Expression plus(BiFunction<C, ? super Expression, ? extends Expression> function);
+
+    <T> Expression plus(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> Expression plus(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    Expression plus(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     Expression plusNamed(String paramName);
 
-    <C> Expression plusExp(Function<C, ? extends Expression> function);
+    Expression minus(Expression minuend);
 
-    Expression plusExp(Supplier<? extends Expression> supplier);
+    Expression minus(Supplier<? extends Expression> supplier);
 
-    Expression minus(Object minuend);
+    Expression minus(Function<? super Expression, ? extends Expression> function);
 
-    /**
-     * <p>
-     * Equivalence : this.minus({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    Expression minusLiteral(Object minuend);
+    <C> Expression minus(BiFunction<C, ? super Expression, ? extends Expression> function);
 
-    /**
-     * <p>
-     * Equivalence : this.minus({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    <T> Expression minus(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> Expression minus(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    Expression minus(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     Expression minusNamed(String paramName);
 
+    Expression divide(Expression divisor);
 
-    <C> Expression minusExp(Function<C, ? extends Expression> function);
+    Expression divide(Supplier<? extends Expression> supplier);
 
-    Expression minusExp(Supplier<? extends Expression> supplier);
+    Expression divide(Function<? super Expression, ? extends Expression> function);
 
-    Expression divide(Object divisor);
+    <C> Expression divide(BiFunction<C, ? super Expression, ? extends Expression> function);
 
-    /**
-     * <p>
-     * Equivalence : this.divide({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    Expression divideLiteral(Object divisor);
+    <T> Expression divide(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
 
-    /**
-     * <p>
-     * Equivalence : this.divide({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    <T> Expression divide(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    Expression divide(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     Expression divideNamed(String paramName);
-
-    <C> Expression divideExp(Function<C, ? extends Expression> function);
-
-    Expression divideExp(Supplier<? extends Expression> supplier);
 
     Expression negate();
 
@@ -442,91 +402,65 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      *
      * @return {@link BigInteger} expression
      */
-    Expression bitwiseAnd(Object operand);
+    Expression bitwiseAnd(Expression operand);
 
-    /**
-     * <p>
-     * Equivalence : this.bitwiseAnd({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    Expression bitwiseAndLiteral(Object operand);
+    Expression bitwiseAnd(Supplier<? extends Expression> supplier);
 
-    /**
-     * <p>
-     * Equivalence : this.bitwiseAnd({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    Expression bitwiseAnd(Function<Expression, ? extends Expression> function);
+
+    <C> Expression bitwiseAnd(BiFunction<C, Expression, ? extends Expression> function);
+
+    Expression bitwiseAnd(BiFunction<Expression, Collection<?>, Expression> operator, Collection<?> operand);
+
+    Expression bitwiseAnd(BiFunction<Expression, Collection<?>, Expression> operator, Supplier<Collection<?>> supplier);
+
+    Expression bitwiseAnd(BiFunction<Expression, Collection<?>, Expression> operator, Function<String, ?> function, String keyName);
+
     Expression bitwiseAndNamed(String paramName);
 
-    /**
-     * Bitwise AND
-     *
-     * @param function the type maybe different from this.
-     * @return {@link BigInteger} expression
-     */
-    <C> Expression bitwiseAndExp(Function<C, ? extends Expression> function);
-
-    Expression bitwiseAndExp(Supplier<? extends Expression> supplier);
 
     /**
      * Bitwise OR
      *
      * @return {@link BigInteger} expression
      */
-    Expression bitwiseOr(Object operand);
+    Expression bitwiseOr(Expression operand);
 
-    /**
-     * <p>
-     * Equivalence : this.bitwiseOr({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    Expression bitwiseOrLiteral(Object operand);
+    Expression bitwiseOr(Supplier<? extends Expression> supplier);
 
-    /**
-     * <p>
-     * Equivalence : this.bitwiseOr({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    Expression bitwiseOr(Function<? super Expression, ? extends Expression> function);
+
+    <C> Expression bitwiseOr(BiFunction<C, ? super Expression, ? extends Expression> function);
+
+    <T> Expression bitwiseOr(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> Expression bitwiseOr(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    Expression bitwiseOr(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     Expression bitwiseOrNamed(String paramName);
 
-    /**
-     * Bitwise OR
-     *
-     * @return {@link BigInteger} expression
-     */
-    <C> Expression bitwiseOrExp(Function<C, ? extends Expression> function);
-
-    Expression bitwiseOrExp(Supplier<? extends Expression> supplier);
 
     /**
      * Bitwise XOR
      *
      * @return {@link BigInteger} expression
      */
-    Expression xor(Object operand);
+    Expression xor(Expression operand);
 
-    /**
-     * <p>
-     * Equivalence : this.xor({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    Expression xorLiteral(Object operand);
+    Expression xor(Supplier<? extends Expression> supplier);
 
-    /**
-     * <p>
-     * Equivalence : this.xor({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    Expression xor(Function<? super Expression, ? extends Expression> function);
+
+    <C> Expression xor(BiFunction<C, ? super Expression, ? extends Expression> function);
+
+    <T> Expression xor(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> Expression xor(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    Expression xor(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     Expression xorNamed(String paramName);
-
-    /**
-     * Bitwise XOR
-     *
-     * @return {@link BigInteger} expression
-     */
-    <C> Expression xorExp(Function<C, ? extends Expression> function);
-
-    Expression xorExp(Supplier<? extends Expression> supplier);
 
     /**
      * Bitwise Inversion
@@ -540,61 +474,42 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      *
      * @return {@link BigInteger} expression
      */
-    Expression rightShift(Object bitNumber);
+    Expression rightShift(Expression bitNumber);
 
-    /**
-     * <p>
-     * Equivalence : this.rightShift({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    Expression rightShiftLiteral(Object bitNumber);
+    Expression rightShift(Supplier<? extends Expression> supplier);
 
-    /**
-     * <p>
-     * Equivalence : this.rightShift({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    Expression rightShift(Function<? super Expression, ? extends Expression> function);
+
+    <C> Expression rightShift(BiFunction<C, ? super Expression, ? extends Expression> function);
+
+    <T> Expression rightShift(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> Expression rightShift(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    Expression rightShift(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     Expression rightShiftNamed(String paramName);
 
     /**
-     * Shifts a  number to the right.
-     *
-     * @return {@link BigInteger} expression
-     */
-    <C> Expression rightShiftExp(Function<C, ? extends Expression> function);
-
-    Expression rightShiftExp(Supplier<? extends Expression> supplier);
-
-    /**
      * Shifts a  number to the left.
      *
      * @return {@link BigInteger} expression
      */
-    Expression leftShift(Object bitNumber);
+    Expression leftShift(Expression bitNumber);
 
-    /**
-     * <p>
-     * Equivalence : this.leftShift({@link SQLs#param(TypeMeta, Object)})
-     * </p>
-     */
-    Expression leftShiftLiteral(Object bitNumber);
+    Expression leftShift(Supplier<? extends Expression> supplier);
 
-    /**
-     * <p>
-     * Equivalence : this.leftShift({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+    Expression leftShift(Function<? super Expression, ? extends Expression> function);
+
+    <C> Expression leftShift(BiFunction<C, ? super Expression, ? extends Expression> function);
+
+    <T> Expression leftShift(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
+
+    <T> Expression leftShift(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
+
+    Expression leftShift(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
     Expression leftShiftNamed(String paramName);
-
-
-    /**
-     * Shifts a  number to the left.
-     *
-     * @return {@link BigInteger} expression
-     */
-    <C> Expression leftShiftExp(Function<C, ? extends Expression> function);
-
-    Expression leftShiftExp(Supplier<? extends Expression> supplier);
 
     @Override
     Expression asType(TypeMeta paramMeta);

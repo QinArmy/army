@@ -131,7 +131,7 @@ final class QueryInsertContext extends StatementContext implements _QueryInsertC
     public void appendFieldList() {
         assert !this.columnListClauseEnd;
 
-        final ArmyParser dialect = this.parser;
+        final ArmyParser parser = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_LEFT_PAREN);
 
@@ -145,7 +145,7 @@ final class QueryInsertContext extends StatementContext implements _QueryInsertC
                 sqlBuilder.append(_Constant.SPACE);
             }
 
-            dialect.safeObjectName(fieldList.get(i), sqlBuilder);
+            parser.safeObjectName(fieldList.get(i), sqlBuilder);
         }
 
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);

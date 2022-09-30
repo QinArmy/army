@@ -447,8 +447,31 @@ public abstract class SQLs extends StandardSyntax {
      * Create strict param expression
      * </p>
      */
-    public static Expression param(final TypeMeta paramMeta, final @Nullable Object value) {
-        return ParamExpression.single(paramMeta, value);
+    public static Expression param(final MappingType type, final @Nullable Object value) {
+        return ParamExpression.single(type, value);
+    }
+
+    /**
+     * <p>
+     * Create strict param expression
+     * </p>
+     *
+     * @see #literal(TypeInfer, Object)
+     */
+    public static Expression param(final TypeInfer typeExp, final @Nullable Object value) {
+        final Expression result;
+        if (typeExp instanceof TableField) {
+            if (value instanceof Supplier) {
+                result = ParamExpression.single((TableField) typeExp, ((Supplier<?>) value).get());
+            } else {
+                result = ParamExpression.single((TableField) typeExp, value);
+            }
+        } else if (value instanceof Supplier) {
+            result = ParamExpression.single(typeExp.typeMeta(), ((Supplier<?>) value).get());
+        } else {
+            result = ParamExpression.single(typeExp.typeMeta(), value);
+        }
+        return result;
     }
 
 
@@ -490,8 +513,14 @@ public abstract class SQLs extends StandardSyntax {
      * Create strict collection param expression
      * </p>
      */
-    public static Expression params(TypeMeta paramMeta, Collection<?> value) {
-        return ParamExpression.multi(paramMeta, value, false);
+    public static Expression params(final TypeInfer typeExp, final Collection<?> values) {
+        final Expression result;
+        if (typeExp instanceof TableField) {
+            result = ParamExpression.multi((TableField) typeExp, values, false);
+        } else {
+            result = ParamExpression.multi(typeExp.typeMeta(), values, false);
+        }
+        return result;
     }
 
     /**
@@ -569,8 +598,14 @@ public abstract class SQLs extends StandardSyntax {
      * @see SQLs#batchDomainDelete()
      * @see SQLs#batchDomainDelete(Object)
      */
-    public static Expression namedParam(TypeMeta paramMeta, String name) {
-        return ParamExpression.namedNonNullSingle(paramMeta, name);
+    public static Expression namedParam(final TypeInfer typeExp, final String name) {
+        final Expression result;
+        if (typeExp instanceof TableField) {
+            result = ParamExpression.namedNonNullSingle((TableField) typeExp, name);
+        } else {
+            result = ParamExpression.namedNonNullSingle(typeExp.typeMeta(), name);
+        }
+        return result;
     }
 
     static Expression _namedParam(DataField field, String name) {
@@ -623,12 +658,37 @@ public abstract class SQLs extends StandardSyntax {
         return LiteralExpression.single(_MappingFactory.getDefault(value.getClass()), value);
     }
 
-    public static Expression literal(TypeMeta paramMeta, Object value) {
-        return LiteralExpression.single(paramMeta, value);
+    public static Expression literal(MappingType type, Object value) {
+        return LiteralExpression.single(type, value);
     }
 
-    public static Expression literals(TypeMeta paramMeta, Collection<?> values) {
-        return LiteralExpression.multi(paramMeta, values);
+    /**
+     * @see #param(TypeInfer, Object)
+     */
+    public static Expression literal(final TypeInfer typeExp, final Object value) {
+        final Expression result;
+        if (typeExp instanceof TableField) {
+            if (value instanceof Supplier) {
+                result = LiteralExpression.single((TableField) typeExp, ((Supplier<?>) value).get());
+            } else {
+                result = LiteralExpression.single((TableField) typeExp, value);
+            }
+        } else if (value instanceof Supplier) {
+            result = LiteralExpression.single(typeExp.typeMeta(), ((Supplier<?>) value).get());
+        } else {
+            result = LiteralExpression.single(typeExp.typeMeta(), value);
+        }
+        return result;
+    }
+
+    public static Expression literals(TypeInfer typeExp, Collection<?> values) {
+        final Expression result;
+        if (typeExp instanceof TableField) {
+            result = LiteralExpression.single((TableField) typeExp, values);
+        } else {
+            result = LiteralExpression.single(typeExp.typeMeta(), values);
+        }
+        return result;
     }
 
     public static Expression literals(TypeMeta paramMeta, Supplier<? extends Collection<?>> supplier) {
@@ -1302,25 +1362,15 @@ public abstract class SQLs extends StandardSyntax {
     /**
      * @see #expPair(Object, Object)
      */
-    private static final class ExpressionPairImpl implements ExpressionPair {
+    static final class ExpressionPairImpl implements ExpressionPair {
 
-        private final Expression first;
+        final Expression first;
 
-        private final Expression second;
+        final Expression second;
 
         private ExpressionPairImpl(Expression first, Expression second) {
             this.first = first;
             this.second = second;
-        }
-
-        @Override
-        public Expression first() {
-            return this.first;
-        }
-
-        @Override
-        public Expression second() {
-            return this.second;
         }
     }//BetweenPair
 

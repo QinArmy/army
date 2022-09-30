@@ -71,7 +71,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     public final boolean isOptimistic() {
         final boolean match;
         final DualPredicate predicate;
-        if (!(this instanceof DualPredicate) || (predicate = (DualPredicate) this).operator != DualOperator.EQ) {
+        if (!(this instanceof DualPredicate) || (predicate = (DualPredicate) this).operator != DualOperator.EQUAL) {
             match = false;
         } else if (predicate.left instanceof TableField
                 && _MetaBridge.VERSION.equals(((TableField) predicate.left).fieldName())) {
@@ -96,7 +96,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
         final TableField leftField, rightField;
 
 
-        if (!(this instanceof DualPredicate) || (predicate = (DualPredicate) this).operator != DualOperator.EQ) {
+        if (!(this instanceof DualPredicate) || (predicate = (DualPredicate) this).operator != DualOperator.EQUAL) {
             parentId = null;
         } else if (!(predicate.left instanceof TableField && predicate.right instanceof TableField)) {
             parentId = null;

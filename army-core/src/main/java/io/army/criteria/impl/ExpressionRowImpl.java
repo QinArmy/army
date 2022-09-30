@@ -61,32 +61,32 @@ final class ExpressionRowImpl implements ExpressionRow, _SelfDescribed {
 
     @Override
     public IPredicate eq(SubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.EQ, rowSubQuery);
+        return new RowPredicate(this, DualOperator.EQUAL, rowSubQuery);
     }
 
     @Override
     public IPredicate notEq(SubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.NOT_EQ, rowSubQuery);
+        return new RowPredicate(this, DualOperator.NOT_EQUAL, rowSubQuery);
     }
 
     @Override
     public IPredicate lt(SubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.LT, rowSubQuery);
+        return new RowPredicate(this, DualOperator.LESS, rowSubQuery);
     }
 
     @Override
     public IPredicate le(SubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.LE, rowSubQuery);
+        return new RowPredicate(this, DualOperator.LESS_EQUAL, rowSubQuery);
     }
 
     @Override
     public IPredicate gt(SubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.GT, rowSubQuery);
+        return new RowPredicate(this, DualOperator.GREAT, rowSubQuery);
     }
 
     @Override
     public IPredicate ge(SubQuery rowSubQuery) {
-        return new RowPredicate(this, DualOperator.GE, rowSubQuery);
+        return new RowPredicate(this, DualOperator.GREAT_EQUAL, rowSubQuery);
     }
 
     @Override

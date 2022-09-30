@@ -15,12 +15,12 @@ final class DualPredicate extends OperationPredicate {
     static DualPredicate create(final ArmyExpression left, final DualOperator operator, final Expression right) {
         final DualPredicate predicate;
         switch (operator) {
-            case EQ:
-            case NOT_EQ:
-            case LT:
-            case LE:
-            case GT:
-            case GE:
+            case EQUAL:
+            case NOT_EQUAL:
+            case LESS:
+            case LESS_EQUAL:
+            case GREAT:
+            case GREAT_EQUAL:
             case LIKE:
             case NOT_LIKE:
             case IN:

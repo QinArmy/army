@@ -6,7 +6,7 @@ import io.army.dialect._SqlContext;
 
 class BetweenPredicate extends OperationPredicate {
 
-    static BetweenPredicate between(Expression left, Expression center, Expression right) {
+    static BetweenPredicate create(Expression left, Expression center, Expression right) {
         return new BetweenPredicate(left, center, right);
     }
 

@@ -8,6 +8,7 @@ import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 
 import java.util.Collection;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -43,162 +44,208 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate equal(Object operand) {
-        return DualPredicate.create(this, DualOperator.EQ, SQLs._nonNullParam(this, operand));
+    public final IPredicate equal(Expression operand) {
+        return DualPredicate.create(this, DualOperator.EQUAL, operand);
     }
 
     @Override
-    public final IPredicate equalLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.EQ, SQLs._nonNullLiteral(this, operand));
+    public IPredicate equal(Supplier<? extends Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.EQUAL, supplier.get());
     }
 
     @Override
-    public final IPredicate equalNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.EQ, SQLs.namedParam(this.typeMeta(), paramName));
+    public IPredicate equal(Function<? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.EQUAL, function.apply(this));
     }
 
     @Override
-    public final <C> IPredicate equalExp(Function<C, ? extends Expression> function) {
-        return DualPredicate.create(this, DualOperator.EQ, function.apply(CriteriaContextStack.getTopCriteria()));
+    public <C> IPredicate equal(BiFunction<C, ? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.EQUAL, function.apply(CriteriaContextStack.getTopCriteria(), this));
     }
 
     @Override
-    public final IPredicate equalExp(Supplier<? extends Expression> supplier) {
-        return DualPredicate.create(this, DualOperator.EQ, supplier.get());
+    public <T> IPredicate equal(BiFunction<? super Expression, T, ? extends Expression> operator, T operand) {
+        return DualPredicate.create(this, DualOperator.EQUAL, operator.apply(this, operand));
     }
 
     @Override
-    public final <C> IPredicate equalAny(Function<C, ? extends SubQuery> subQuery) {
+    public <T> IPredicate equal(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier) {
+        return DualPredicate.create(this, DualOperator.EQUAL, operator.apply(this, supplier.get()));
+    }
+
+    @Override
+    public IPredicate equal(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+        return DualPredicate.create(this, DualOperator.EQUAL, operator.apply(this, function.apply(keyName)));
+    }
+
+    @Override
+    public IPredicate equalNamed(String paramName) {
+        return DualPredicate.create(this, DualOperator.EQUAL, SQLs.namedParam(this, paramName));
+    }
+
+    @Override
+    public final <C> IPredicate equalAny(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
-        query = subQuery.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.ANY, query);
+        query = function.apply(CriteriaContextStack.getTopCriteria());
+        return SubQueryPredicate.create(this, DualOperator.EQUAL, SubQueryOperator.ANY, query);
     }
 
     @Override
     public final IPredicate equalAny(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.ANY, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.EQUAL, SubQueryOperator.ANY, supplier.get());
     }
 
     @Override
     public final <C> IPredicate equalSome(Function<C, ? extends SubQuery> subQuery) {
         final SubQuery query;
         query = subQuery.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.SOME, query);
+        return SubQueryPredicate.create(this, DualOperator.EQUAL, SubQueryOperator.SOME, query);
     }
 
     @Override
     public final IPredicate equalSome(Supplier<? extends SubQuery> subQuery) {
-        return SubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.SOME, subQuery.get());
+        return SubQueryPredicate.create(this, DualOperator.EQUAL, SubQueryOperator.SOME, subQuery.get());
     }
 
     @Override
-    public final IPredicate lessThan(Object operand) {
-        return DualPredicate.create(this, DualOperator.LT, SQLs._nonNullParam(this, operand));
+    public IPredicate less(Expression operand) {
+        return DualPredicate.create(this, DualOperator.LESS, operand);
     }
 
     @Override
-    public final IPredicate lessThanLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.LT, SQLs._nonNullLiteral(this, operand));
+    public IPredicate less(Supplier<? extends Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.LESS, supplier.get());
     }
 
     @Override
-    public final IPredicate lessThanNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.LT, SQLs.namedParam(this.typeMeta(), paramName));
+    public IPredicate less(Function<? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.LESS, function.apply(this));
     }
 
     @Override
-    public final <C> IPredicate lessThanExp(Function<C, ? extends Expression> function) {
-        return DualPredicate.create(this, DualOperator.LT, function.apply(CriteriaContextStack.getTopCriteria()));
+    public <C> IPredicate less(BiFunction<C, ? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.LESS, function.apply(CriteriaContextStack.getTopCriteria(), this));
     }
 
     @Override
-    public final IPredicate lessThanExp(Supplier<? extends Expression> supplier) {
-        return DualPredicate.create(this, DualOperator.LT, SQLs._nonNullParam(this, supplier.get()));
+    public <T> IPredicate less(BiFunction<? super Expression, T, ? extends Expression> operator, T operand) {
+        return DualPredicate.create(this, DualOperator.LESS, operator.apply(this, operand));
     }
 
     @Override
-    public final <C> IPredicate lessThanAny(Function<C, ? extends SubQuery> function) {
+    public <T> IPredicate less(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier) {
+        return DualPredicate.create(this, DualOperator.LESS, operator.apply(this, supplier.get()));
+    }
+
+    @Override
+    public IPredicate less(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+        return DualPredicate.create(this, DualOperator.LESS, operator.apply(this, function.apply(keyName)));
+    }
+
+    @Override
+    public IPredicate lessNamed(String paramName) {
+        return DualPredicate.create(this, DualOperator.LESS, SQLs.namedParam(this, paramName));
+    }
+
+    @Override
+    public final <C> IPredicate lessAny(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ANY, query);
+        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.ANY, query);
     }
 
     @Override
-    public final IPredicate lessThanAny(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ANY, supplier.get());
+    public final IPredicate lessAny(Supplier<? extends SubQuery> supplier) {
+        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.ANY, supplier.get());
     }
 
     @Override
-    public final <C> IPredicate lessThanSome(Function<C, ? extends SubQuery> function) {
+    public final <C> IPredicate lessSome(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.SOME, query);
+        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.SOME, query);
     }
 
     @Override
-    public final IPredicate lessThanSome(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.SOME, supplier.get());
+    public final IPredicate lessSome(Supplier<? extends SubQuery> supplier) {
+        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.SOME, supplier.get());
     }
 
     @Override
-    public final <C> IPredicate lessThanAll(Function<C, ? extends SubQuery> function) {
+    public final <C> IPredicate lessAll(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ALL, query);
+        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.ALL, query);
     }
 
     @Override
-    public final IPredicate lessThanAll(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ALL, supplier.get());
+    public final IPredicate lessAll(Supplier<? extends SubQuery> supplier) {
+        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.ALL, supplier.get());
+    }
+
+
+    @Override
+    public final IPredicate lessEqual(Expression operand) {
+        return DualPredicate.create(this, DualOperator.LESS_EQUAL, operand);
     }
 
     @Override
-    public final IPredicate lessEqual(Object operand) {
-        return DualPredicate.create(this, DualOperator.LE, SQLs._nonNullParam(this, operand));
+    public IPredicate lessEqual(Supplier<? extends Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.LESS_EQUAL, supplier.get());
     }
 
     @Override
-    public final IPredicate lessEqualLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.LE, SQLs._nonNullLiteral(this, operand));
+    public IPredicate lessEqual(Function<? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.LESS_EQUAL, function.apply(this));
     }
 
     @Override
-    public final IPredicate lessEqualNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.LE, SQLs.namedParam(this.typeMeta(), paramName));
+    public <C> IPredicate lessEqual(BiFunction<C, ? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.LESS_EQUAL, function.apply(CriteriaContextStack.getTopCriteria(), this));
     }
 
     @Override
-    public final <C> IPredicate lessEqualExp(Function<C, ? extends Expression> function) {
-        return DualPredicate.create(this, DualOperator.LE, function.apply(CriteriaContextStack.getTopCriteria()));
+    public <T> IPredicate lessEqual(BiFunction<? super Expression, T, ? extends Expression> operator, T operand) {
+        return DualPredicate.create(this, DualOperator.LESS_EQUAL, operator.apply(this, operand));
     }
 
     @Override
-    public final IPredicate lessEqualExp(Supplier<? extends Expression> supplier) {
-        return DualPredicate.create(this, DualOperator.LE, supplier.get());
+    public <T> IPredicate lessEqual(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier) {
+        return DualPredicate.create(this, DualOperator.LESS_EQUAL, operator.apply(this, supplier.get()));
+    }
+
+    @Override
+    public IPredicate lessEqual(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+        return DualPredicate.create(this, DualOperator.LESS_EQUAL, operator.apply(this, function.apply(keyName)));
+    }
+
+    @Override
+    public IPredicate lessEqualNamed(String paramName) {
+        return DualPredicate.create(this, DualOperator.LESS_EQUAL, SQLs.namedParam(this, paramName));
     }
 
     @Override
     public final <C> IPredicate lessEqualAny(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ANY, query);
+        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.ANY, query);
     }
 
     @Override
     public final IPredicate lessEqualAny(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ANY, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.ANY, supplier.get());
     }
 
     @Override
     public final <C> IPredicate lessEqualSome(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.SOME, query);
+        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.SOME, query);
     }
 
     @Override
     public final IPredicate lessEqualSome(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.SOME, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.SOME, supplier.get());
     }
 
 
@@ -206,221 +253,300 @@ abstract class OperationExpression implements ArmyExpression {
     public final <C> IPredicate lessEqualAll(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ALL, query);
+        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.ALL, query);
     }
 
     @Override
     public final IPredicate lessEqualAll(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ALL, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.ALL, supplier.get());
+    }
+
+
+    @Override
+    public final IPredicate great(Expression operand) {
+        return DualPredicate.create(this, DualOperator.GREAT, operand);
     }
 
     @Override
-    public final IPredicate greatThan(Object operand) {
-        return DualPredicate.create(this, DualOperator.GT, SQLs._nonNullParam(this, operand));
+    public IPredicate great(Supplier<? extends Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.GREAT, supplier.get());
     }
 
     @Override
-    public final IPredicate greatThanLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.GT, SQLs._nonNullLiteral(this, operand));
+    public IPredicate great(Function<? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.GREAT, function.apply(this));
     }
 
     @Override
-    public final IPredicate greatThanNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.GT, SQLs.namedParam(this.typeMeta(), paramName));
+    public <C> IPredicate great(BiFunction<C, ? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.GREAT, function.apply(CriteriaContextStack.getTopCriteria(), this));
     }
 
     @Override
-    public final <C> IPredicate greatThanExp(Function<C, ? extends Expression> function) {
-        return DualPredicate.create(this, DualOperator.GT, function.apply(CriteriaContextStack.getTopCriteria()));
+    public <T> IPredicate great(BiFunction<? super Expression, T, ? extends Expression> operator, T operand) {
+        return DualPredicate.create(this, DualOperator.GREAT, operator.apply(this, operand));
     }
 
     @Override
-    public final IPredicate greatThanExp(Supplier<? extends Expression> supplier) {
-        return DualPredicate.create(this, DualOperator.GT, supplier.get());
+    public <T> IPredicate great(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier) {
+        return DualPredicate.create(this, DualOperator.GREAT, operator.apply(this, supplier.get()));
     }
 
     @Override
-    public final <C> IPredicate greatThanAny(Function<C, ? extends SubQuery> function) {
+    public IPredicate great(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+        return DualPredicate.create(this, DualOperator.GREAT, operator.apply(this, function.apply(keyName)));
+    }
+
+    @Override
+    public IPredicate greatNamed(String paramName) {
+        return DualPredicate.create(this, DualOperator.GREAT, SQLs.namedParam(this, paramName));
+    }
+
+
+    @Override
+    public final <C> IPredicate greatAny(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ANY, query);
+        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.ANY, query);
     }
 
     @Override
-    public final IPredicate greatThanAny(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ANY, supplier.get());
+    public final IPredicate greatAny(Supplier<? extends SubQuery> supplier) {
+        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.ANY, supplier.get());
     }
 
 
     @Override
-    public final <C> IPredicate greatThanSome(Function<C, ? extends SubQuery> function) {
+    public final <C> IPredicate greatSome(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.SOME, query);
+        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.SOME, query);
     }
 
     @Override
-    public final IPredicate greatThanSome(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.SOME, supplier.get());
+    public final IPredicate greatSome(Supplier<? extends SubQuery> supplier) {
+        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.SOME, supplier.get());
     }
 
     @Override
-    public final <C> IPredicate greatThanAll(Function<C, ? extends SubQuery> function) {
+    public final <C> IPredicate greatAll(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ALL, query);
+        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.ALL, query);
     }
 
     @Override
-    public final IPredicate greatThanAll(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ALL, supplier.get());
+    public final IPredicate greatAll(Supplier<? extends SubQuery> supplier) {
+        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.ALL, supplier.get());
+    }
+
+
+    @Override
+    public final IPredicate greatEqual(Expression operand) {
+        return DualPredicate.create(this, DualOperator.GREAT_EQUAL, operand);
     }
 
     @Override
-    public final IPredicate greatEqual(Object operand) {
-        return DualPredicate.create(this, DualOperator.GE, SQLs._nonNullParam(this, operand));
+    public IPredicate greatEqual(Supplier<? extends Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.GREAT_EQUAL, supplier.get());
     }
 
     @Override
-    public final IPredicate greatEqualLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.GE, SQLs._nonNullLiteral(this, operand));
+    public IPredicate greatEqual(Function<? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.GREAT_EQUAL, function.apply(this));
     }
 
     @Override
-    public final IPredicate greatEqualNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.GE, SQLs.namedParam(this.typeMeta(), paramName));
+    public <C> IPredicate greatEqual(BiFunction<C, ? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.GREAT_EQUAL, function.apply(CriteriaContextStack.getTopCriteria(), this));
     }
 
     @Override
-    public final <C> IPredicate greatEqualExp(Function<C, ? extends Expression> function) {
-        return DualPredicate.create(this, DualOperator.GE, function.apply(CriteriaContextStack.getTopCriteria()));
+    public <T> IPredicate greatEqual(BiFunction<? super Expression, T, ? extends Expression> operator, T operand) {
+        return DualPredicate.create(this, DualOperator.GREAT_EQUAL, operator.apply(this, operand));
     }
 
     @Override
-    public final IPredicate greatEqualExp(Supplier<? extends Expression> supplier) {
-        return DualPredicate.create(this, DualOperator.GE, supplier.get());
+    public <T> IPredicate greatEqual(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier) {
+        return DualPredicate.create(this, DualOperator.GREAT_EQUAL, operator.apply(this, supplier.get()));
+    }
+
+    @Override
+    public IPredicate greatEqual(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+        return DualPredicate.create(this, DualOperator.GREAT_EQUAL, operator.apply(this, function.apply(keyName)));
+    }
+
+    @Override
+    public IPredicate greatEqualNamed(String paramName) {
+        return DualPredicate.create(this, DualOperator.GREAT_EQUAL, SQLs.namedParam(this, paramName));
     }
 
     @Override
     public final <C> IPredicate greatEqualAny(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ANY, query);
+        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.ANY, query);
     }
 
     @Override
     public final IPredicate greatEqualAny(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ANY, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.ANY, supplier.get());
     }
 
     @Override
     public final <C> IPredicate greatEqualSome(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.SOME, query);
+        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.SOME, query);
     }
 
     @Override
     public final IPredicate greatEqualSome(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.SOME, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.SOME, supplier.get());
     }
 
     @Override
     public final <C> IPredicate greatEqualAll(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ALL, query);
+        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.ALL, query);
     }
 
     @Override
     public final IPredicate greatEqualAll(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ALL, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.ALL, supplier.get());
     }
 
 
     @Override
-    public final IPredicate notEqual(Object operand) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs._nonNullParam(this, operand));
+    public final IPredicate notEqual(Expression operand) {
+        return DualPredicate.create(this, DualOperator.NOT_EQUAL, operand);
     }
 
     @Override
-    public final IPredicate notEqualLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs._nonNullLiteral(this, operand));
+    public IPredicate notEqual(Supplier<? extends Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.NOT_EQUAL, supplier.get());
     }
 
     @Override
-    public final IPredicate notEqualNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.namedParam(this.typeMeta(), paramName));
+    public IPredicate notEqual(Function<? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.NOT_EQUAL, function.apply(this));
     }
 
     @Override
-    public final <C> IPredicate notEqualExp(Function<C, ? extends Expression> function) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, function.apply(CriteriaContextStack.getTopCriteria()));
+    public <C> IPredicate notEqual(BiFunction<C, ? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.NOT_EQUAL, function.apply(CriteriaContextStack.getTopCriteria(), this));
     }
 
     @Override
-    public final IPredicate notEqualExp(Supplier<? extends Expression> supplier) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, supplier.get());
+    public <T> IPredicate notEqual(BiFunction<? super Expression, T, ? extends Expression> operator, T operand) {
+        return DualPredicate.create(this, DualOperator.NOT_EQUAL, operator.apply(this, operand));
+    }
+
+    @Override
+    public <T> IPredicate notEqual(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier) {
+        return DualPredicate.create(this, DualOperator.NOT_EQUAL, operator.apply(this, supplier.get()));
+    }
+
+    @Override
+    public IPredicate notEqual(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+        return DualPredicate.create(this, DualOperator.NOT_EQUAL, operator.apply(this, function.apply(keyName)));
+    }
+
+    @Override
+    public IPredicate notEqualNamed(String paramName) {
+        return DualPredicate.create(this, DualOperator.NOT_EQUAL, SQLs.namedParam(this, paramName));
     }
 
     @Override
     public final <C> IPredicate notEqualAny(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ANY, query);
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.ANY, query);
     }
 
     @Override
     public final IPredicate notEqualAny(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ANY, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.ANY, supplier.get());
     }
 
     @Override
     public final <C> IPredicate notEqualSome(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.SOME, query);
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.SOME, query);
     }
 
     @Override
     public final IPredicate notEqualSome(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.SOME, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.SOME, supplier.get());
     }
 
     @Override
     public final <C> IPredicate notEqualAll(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ALL, query);
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.ALL, query);
     }
 
     @Override
     public final IPredicate notEqualAll(Supplier<? extends SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ALL, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.ALL, supplier.get());
     }
 
     @Override
-    public final IPredicate between(Object firstOperand, Object secondOperand) {
-        final Expression first, second;
-        first = SQLs._nonNullParam(this, firstOperand);
-        second = SQLs._nonNullParam(this, secondOperand);
-        return BetweenPredicate.between(this, first, second);
+    public IPredicate between(Expression first, Expression second) {
+        return BetweenPredicate.create(this, first, second);
     }
 
     @Override
-    public final IPredicate betweenLiteral(final Object firstOperand, final Object secondOperand) {
-        final Expression first, second;
-        first = SQLs._nonNullLiteral(this, firstOperand);
-        second = SQLs._nonNullLiteral(this, secondOperand);
-        return BetweenPredicate.between(this, first, second);
+    public IPredicate between(BiFunction<? super Expression, Object, ? extends Expression> operator, Object first, Object second) {
+        final Expression firstExp, secondExp;
+        firstExp = operator.apply(this, SQLs._safeParam(first));
+        secondExp = operator.apply(this, SQLs._safeParam(second));
+        return BetweenPredicate.create(this, firstExp, secondExp);
     }
 
     @Override
-    public final <C> IPredicate between(Function<C, ExpressionPair> function) {
-        final ExpressionPair pair;
-        pair = function.apply(CriteriaContextStack.getTopCriteria());
-        assert pair != null;
-        return BetweenPredicate.between(this, pair.first(), pair.second());
+    public IPredicate between(BiFunction<? super Expression, Object, ? extends Expression> operator, Supplier<?> firstSupplier, Supplier<?> secondSupplier) {
+        final Expression firstExp, secondExp;
+        firstExp = operator.apply(this, firstSupplier.get());
+        secondExp = operator.apply(this, secondSupplier.get());
+        return BetweenPredicate.create(this, firstExp, secondExp);
+    }
+
+    @Override
+    public IPredicate between(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
+        final Expression firstExp, secondExp;
+        firstExp = operator.apply(this, function.apply(firstKey));
+        secondExp = operator.apply(this, function.apply(secondKey));
+        return BetweenPredicate.create(this, firstExp, secondExp);
+    }
+
+    @Override
+    public IPredicate between(Supplier<ExpressionPair> supplier) {
+        final SQLs.ExpressionPairImpl pair;
+        pair = (SQLs.ExpressionPairImpl) supplier.get();
+        return BetweenPredicate.create(this, pair.first, pair.second);
+    }
+
+    @Override
+    public IPredicate between(Function<Expression, ExpressionPair> function) {
+        final SQLs.ExpressionPairImpl pair;
+        pair = (SQLs.ExpressionPairImpl) function.apply(this);
+        return BetweenPredicate.create(this, pair.first, pair.second);
+    }
+
+    @Override
+    public <C> IPredicate between(BiFunction<C, Expression, ExpressionPair> function) {
+        final SQLs.ExpressionPairImpl pair;
+        pair = (SQLs.ExpressionPairImpl) function.apply(CriteriaContextStack.getTopCriteria(), this);
+        return BetweenPredicate.create(this, pair.first, pair.second);
+    }
+
+    @Override
+    public IPredicate betweenNamed(String firstParamName, String secondParamName) {
+        return BetweenPredicate.create(this, SQLs.namedParam(this, firstParamName), SQLs.namedParam(this, secondParamName));
     }
 
     @Override
@@ -433,95 +559,51 @@ abstract class OperationExpression implements ArmyExpression {
         return UnaryPredicate.create(UnaryOperator.IS_NOT_NULL, this);
     }
 
+
     @Override
-    public final IPredicate in(final Object operand) {
-        final Expression exp;
-        if (operand instanceof Expression) {
-            exp = (Expression) operand;
-        } else if (operand instanceof Collection) {
-            exp = SQLs.params(this.typeMeta(), (Collection<?>) operand);
-        } else if (operand instanceof SubQuery) {
-            throw _Exceptions.nonScalarSubQuery((SubQuery) operand);
-        } else {
-            throw nonCollectionError(DualOperator.IN, operand);
+    public IPredicate in(Expression operand) {
+        return DualPredicate.create(this, DualOperator.IN, operand);
+    }
+
+    @Override
+    public IPredicate in(Supplier<? extends Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.IN, supplier.get());
+    }
+
+    @Override
+    public IPredicate in(Function<? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.IN, function.apply(this));
+    }
+
+    @Override
+    public <C> IPredicate in(BiFunction<C, ? super Expression, ? extends Expression> function) {
+        return DualPredicate.create(this, DualOperator.IN, function.apply(CriteriaContextStack.getTopCriteria(), this));
+    }
+
+    @Override
+    public <T, O extends Collection<T>> IPredicate in(BiFunction<? super Expression, O, ? extends Expression> operator, O operand) {
+        return DualPredicate.create(this, DualOperator.IN, operator.apply(this, operand));
+    }
+
+    @Override
+    public <T, O extends Collection<T>> IPredicate in(BiFunction<? super Expression, O, ? extends Expression> operator, Supplier<O> supplier) {
+        return DualPredicate.create(this, DualOperator.IN, operator.apply(this, supplier.get()));
+    }
+
+    @Override
+    public IPredicate in(BiFunction<? super Expression, Collection<?>, Expression> operator, Function<String, ?> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (!(value instanceof Collection)) {
+
         }
-        return DualPredicate.create(this, DualOperator.IN, exp);
-    }
-
-    @Override
-    public final IPredicate inOptimizing(final Object operand) {
-        final Expression exp;
-        if (operand instanceof Expression) {
-            exp = (Expression) operand;
-        } else if (operand instanceof Collection) {
-            exp = SQLs.preferLiteralParams(this.typeMeta(), (Collection<?>) operand);
-        } else if (operand instanceof SubQuery) {
-            throw _Exceptions.nonScalarSubQuery((SubQuery) operand);
-        } else {
-            throw nonCollectionError(DualOperator.IN, operand);
-        }
-        return DualPredicate.create(this, DualOperator.IN, exp);
+        return DualPredicate.create(this, DualOperator.IN, operator.apply(this, (Collection<?>) value));
     }
 
 
     @Override
-    public final IPredicate inNamed(String paramName, int size) {
-        return DualPredicate.create(this, DualOperator.IN, SQLs.namedParams(this.typeMeta(), paramName, size));
-    }
-
-    @Override
-    public final <C> IPredicate inExp(Function<C, ? extends Expression> function) {
-        return this.in(function.apply(CriteriaContextStack.getTopCriteria()));
-    }
-
-    @Override
-    public final IPredicate inExp(Supplier<? extends Expression> supplier) {
-        return this.in(supplier.get());
-    }
-
-    @Override
-    public final IPredicate notIn(Object operand) {
-        final Expression exp;
-        if (operand instanceof Expression) {
-            exp = (Expression) operand;
-        } else if (operand instanceof Collection) {
-            exp = SQLs.params(this.typeMeta(), (Collection<?>) operand);
-        } else if (operand instanceof SubQuery) {
-            throw _Exceptions.nonScalarSubQuery((SubQuery) operand);
-        } else {
-            throw nonCollectionError(DualOperator.NOT_IN, operand);
-        }
-        return DualPredicate.create(this, DualOperator.NOT_IN, exp);
-    }
-
-    @Override
-    public final IPredicate notInOptimizing(Object operand) {
-        final Expression exp;
-        if (operand instanceof Expression) {
-            exp = (Expression) operand;
-        } else if (operand instanceof Collection) {
-            exp = SQLs.preferLiteralParams(this.typeMeta(), (Collection<?>) operand);
-        } else if (operand instanceof SubQuery) {
-            throw _Exceptions.nonScalarSubQuery((SubQuery) operand);
-        } else {
-            throw nonCollectionError(DualOperator.NOT_IN, operand);
-        }
-        return DualPredicate.create(this, DualOperator.NOT_IN, exp);
-    }
-
-    @Override
-    public final IPredicate notInNamed(String paramName, int size) {
-        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.namedParams(this.typeMeta(), paramName, size));
-    }
-
-    @Override
-    public final <C> IPredicate notInExp(Function<C, ? extends Expression> function) {
-        return this.notIn(function.apply(CriteriaContextStack.getTopCriteria()));
-    }
-
-    @Override
-    public final IPredicate notInExp(Supplier<? extends Expression> supplier) {
-        return this.notIn(supplier.get());
+    public IPredicate inNamed(String paramName, int size) {
+        return null;
     }
 
     @Override

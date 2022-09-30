@@ -91,27 +91,15 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      */
     interface _ColumnDefaultClause<C, T, CR> {
 
-        CR defaultValue(FieldMeta<T> field, @Nullable Object value);
+        CR defaultValue(FieldMeta<T> field, Expression value);
 
-        CR defaultLiteral(FieldMeta<T> field, @Nullable Object value);
+        CR defaultValue(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator);
 
-        CR defaultExp(FieldMeta<T> field, Function<C, ? extends Expression> function);
+        CR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value);
 
-        CR defaultExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
+        CR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier);
 
-        CR defaultNull(FieldMeta<T> field);
-
-        CR ifDefaultValue(FieldMeta<T> field, Supplier<?> supplier);
-
-        CR ifDefaultValue(FieldMeta<T> field, Function<C, ?> function);
-
-        CR ifDefaultValue(FieldMeta<T> field, Function<String, ?> function, String keyName);
-
-        CR ifDefaultLiteral(FieldMeta<T> field, Supplier<?> supplier);
-
-        CR ifDefaultLiteral(FieldMeta<T> field, Function<C, ?> function);
-
-        CR ifDefaultLiteral(FieldMeta<T> field, Function<String, ?> function, String keyName);
+        CR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
     }
 
@@ -161,11 +149,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Expression value);
 
-        _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Supplier<?> supplier);
-
-        _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Function<C, ?> function);
-
-        _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Function<String, ?> function, String keyName);
+        _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator);
 
         _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value);
 
@@ -180,11 +164,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Expression value);
 
-        _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Supplier<?> supplier);
-
-        _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Function<C, ?> function);
-
-        _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Function<String, ?> function, String keyName);
+        _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator);
 
         _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value);
 

@@ -95,5 +95,6 @@
 19. 为什么 static with clause 只能出现在 primary statement api 中?
     * 如果 sub statement 出现 static with clause 将影响整个 sql api 代码的可读性,这违背了 army 的价值观
 
-
+20. expression 赋值 五个方法设计思想是什么?
+    * 这五个方法要写在 army 文档中,让 application developer 形成共识.
 

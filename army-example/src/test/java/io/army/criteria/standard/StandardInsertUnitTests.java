@@ -1,6 +1,7 @@
 package io.army.criteria.standard;
 
 import io.army.criteria.Insert;
+import io.army.criteria.LiteralMode;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Database;
@@ -24,13 +25,13 @@ public class StandardInsertUnitTests {
         final Insert stmt;
         stmt = SQLs.primaryInsert()
 //                .migration(true)
-                .preferLiteral(true)
+                .preferLiteral(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .leftParen(ChinaRegion_.regionGdp, ChinaRegion_.parentId)
                 .rightParen()
-                .defaultLiteral(ChinaRegion_.regionGdp, "88888.88")
-                .defaultLiteral(ChinaRegion_.visible, true)
-                .defaultLiteral(ChinaRegion_.parentId, 0)
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .defaultValue(ChinaRegion_.parentId, SQLs::literal, 0)
                 .values(this::createRegionList)
                 .asInsert();
 
@@ -45,7 +46,7 @@ public class StandardInsertUnitTests {
 
         final Insert stmt;
         stmt = SQLs.primaryInsert()
-                .preferLiteral(true)
+                .preferLiteral(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .values(provinceList)
                 .child()
@@ -61,20 +62,20 @@ public class StandardInsertUnitTests {
     @Test
     public void valueInsertParent() {
         final Insert stmt;
-        stmt = SQLs.valueInsert()
-                .preferLiteral(true)
+        stmt = SQLs.primaryInsert()
+                .preferLiteral(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
-                .defaultLiteral(ChinaRegion_.regionGdp, "88888.88")
-                .defaultLiteral(ChinaRegion_.visible, true)
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
 
-                .leftParen(ChinaRegion_.name, "武当山")
-                .commaLiteral(ChinaRegion_.regionGdp, "6666.66")
-                .comma(ChinaRegion_.parentId, 0)
+                .leftParen(ChinaRegion_.name, SQLs::param, "武当山")
+                .comma(ChinaRegion_.regionGdp, SQLs::literal, "6666.66")
+                .comma(ChinaRegion_.parentId, SQLs::literal, 0)
                 .rightParen()
 
-                .leftParen(ChinaRegion_.name, "光明顶")
-                .comma(ChinaRegion_.parentId, 0)
+                .leftParen(ChinaRegion_.name, SQLs::param, "光明顶")
+                .comma(ChinaRegion_.parentId, SQLs::literal, 0)
                 .rightParen()
                 .asInsert();
 
@@ -84,32 +85,32 @@ public class StandardInsertUnitTests {
     @Test
     public void valueInsertChild() {
         final Insert stmt;
-        stmt = SQLs.valueInsert()
-                .preferLiteral(true)
+        stmt = SQLs.primaryInsert()
+                .preferLiteral(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
-                .defaultLiteral(ChinaRegion_.regionGdp, "88888.88")
-                .defaultLiteral(ChinaRegion_.visible, true)
+                .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
 
-                .leftParen(ChinaRegion_.name, "武当山")
-                .commaLiteral(ChinaRegion_.regionGdp, "6666.66")
-                .comma(ChinaRegion_.parentId, 0)
+                .leftParen(ChinaRegion_.name, SQLs::literal, "武当山")
+                .comma(ChinaRegion_.regionGdp, SQLs::literal, "6666.66")
+                .comma(ChinaRegion_.parentId, SQLs::param, 0)
                 .rightParen()
 
-                .leftParen(ChinaRegion_.name, "光明顶")
-                .comma(ChinaRegion_.parentId, 0)
+                .leftParen(ChinaRegion_.name, SQLs::literal, "光明顶")
+                .comma(ChinaRegion_.parentId, SQLs::param, 0)
                 .rightParen()
 
                 .child()
 
                 .insertInto(ChinaCity_.T)
-                .defaultValue(ChinaCity_.mayorName, "")
+                .defaultValue(ChinaCity_.mayorName, SQLs::param, "")
                 .values()
 
-                .leftParen(ChinaCity_.mayorName, "远浪舰长")
+                .leftParen(ChinaCity_.mayorName, SQLs::param, "远浪舰长")
                 .rightParen()
 
-                .leftParen(ChinaCity_.mayorName, "远浪舰长")
+                .leftParen(ChinaCity_.mayorName, SQLs::literal, "远浪舰长")
                 .rightParen()
 
                 .asInsert();
