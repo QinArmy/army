@@ -541,8 +541,7 @@ public abstract class SQLs extends StandardSyntax {
         final Object value;
         value = function.apply(keyName);
         if (!(value instanceof Collection)) {
-            String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());
-            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+            throw CriteriaUtils.nonCollectionValue(keyName);
         }
         return ParamExpression.multi(paramMeta, (Collection<?>) value, false);
     }
@@ -639,8 +638,14 @@ public abstract class SQLs extends StandardSyntax {
         return ParamExpression.namedNonNullSingle(paramMeta, field.fieldName());
     }
 
-    public static Expression namedParams(TypeMeta paramMeta, String name, int size) {
-        return ParamExpression.namedMulti(paramMeta, name, size);
+    public static Expression namedParams(final TypeInfer typeExp, final String name, final int size) {
+        final Expression result;
+        if (typeExp instanceof TableField) {
+            ParamExpression.namedMulti((TableField) typeExp, name, size);
+        } else {
+            ParamExpression.namedMulti(typeExp.typeMeta(), name, size);
+        }
+        return result;
     }
 
     public static Expression namedParams(DataField field, int size) {

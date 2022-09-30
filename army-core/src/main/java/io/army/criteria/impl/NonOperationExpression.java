@@ -1009,7 +1009,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression inversion() {
+    public final Expression invert() {
         throw unsupportedOperation();
     }
 

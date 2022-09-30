@@ -9,7 +9,7 @@ enum DualOperator {
     PLUS(" +"),
     MINUS(" -"),
     MOD(" %"),
-    MULTIPLY(" *"),
+    TIMES(" *"),
     DIVIDE(" /"),
     BITWISE_AND(" &"),
     BITWISE_OR(" |"),

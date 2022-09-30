@@ -32,7 +32,7 @@ final class DualExpression extends OperationExpression {
         switch (operator) {
             case PLUS:
             case MINUS:
-            case MULTIPLY:
+            case TIMES:
             case DIVIDE:
             case MOD:
             case BITWISE_AND:
@@ -78,7 +78,7 @@ final class DualExpression extends OperationExpression {
         switch (this.operator) {
             case PLUS:
             case MINUS:
-            case MULTIPLY:
+            case TIMES:
             case DIVIDE:
             case MOD:
                 outerBracket = leftInnerBracket = rightInnerBracket = false;

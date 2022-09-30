@@ -543,6 +543,11 @@ abstract class CriteriaUtils {
         throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
     }
 
+    static CriteriaException nonCollectionValue(String keyName) {
+        String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());
+        return CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+    }
+
 
     private static CriteriaException unknownSelectItem(final RowSet left, final SelectItem item) {
         return CriteriaContextStack.criteriaError(((CriteriaContextSpec) left).getContext()

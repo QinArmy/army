@@ -21,8 +21,7 @@ enum UnaryOperator {
         }
 
     },
-    NEGATED {
-
+    NEGATE {
         @Override
         public String rendered() {
             return " -";

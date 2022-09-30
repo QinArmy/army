@@ -22,7 +22,7 @@ final class UnaryExpression extends OperationExpression {
     static UnaryExpression create(ArmyExpression expression, UnaryOperator operator) {
         switch (operator) {
             case INVERT:
-            case NEGATED: {
+            case NEGATE: {
                 if (expression.isNullValue()) {
                     throw _Exceptions.operatorRightIsNullable(operator);
                 }
@@ -52,7 +52,7 @@ final class UnaryExpression extends OperationExpression {
     public void appendSql(final _SqlContext context) {
         final boolean outerBracket;
         switch (this.operator) {
-            case NEGATED:
+            case NEGATE:
                 outerBracket = false;
                 break;
             case INVERT:
@@ -94,7 +94,7 @@ final class UnaryExpression extends OperationExpression {
     public String toString() {
         final boolean outerBracket;
         switch (this.operator) {
-            case NEGATED:
+            case NEGATE:
                 outerBracket = false;
                 break;
             case INVERT:

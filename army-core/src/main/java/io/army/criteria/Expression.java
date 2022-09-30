@@ -251,11 +251,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate in(BiFunction<? super Expression, Collection<?>, Expression> operator, Function<String, ?> function, String keyName);
 
-    /**
-     * <p>
-     * Equivalence : this.in({@link SQLs#namedParam(TypeMeta, String)})
-     * </p>
-     */
+
     IPredicate inNamed(String paramName, int size);
 
     /**
@@ -406,15 +402,15 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression bitwiseAnd(Supplier<? extends Expression> supplier);
 
-    Expression bitwiseAnd(Function<Expression, ? extends Expression> function);
+    Expression bitwiseAnd(Function<? super Expression, ? extends Expression> function);
 
-    <C> Expression bitwiseAnd(BiFunction<C, Expression, ? extends Expression> function);
+    <C> Expression bitwiseAnd(BiFunction<C, ? super Expression, ? extends Expression> function);
 
-    Expression bitwiseAnd(BiFunction<Expression, Collection<?>, Expression> operator, Collection<?> operand);
+    <T> Expression bitwiseAnd(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand);
 
-    Expression bitwiseAnd(BiFunction<Expression, Collection<?>, Expression> operator, Supplier<Collection<?>> supplier);
+    <T> Expression bitwiseAnd(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
 
-    Expression bitwiseAnd(BiFunction<Expression, Collection<?>, Expression> operator, Function<String, ?> function, String keyName);
+    Expression bitwiseAnd(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
     Expression bitwiseAndNamed(String paramName);
 
@@ -439,8 +435,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     Expression bitwiseOr(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
     Expression bitwiseOrNamed(String paramName);
-
-
     /**
      * Bitwise XOR
      *
@@ -467,7 +461,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      *
      * @return {@link BigInteger} expression
      */
-    Expression inversion();
+    Expression invert();
 
     /**
      * Shifts a  number to the right.
