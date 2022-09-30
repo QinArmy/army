@@ -571,7 +571,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate inNamed(String paramName, int size) {
-        return DualPredicate.create(this, DualOperator.IN, SQLs.namedParams(this, paramName, size));
+        return DualPredicate.create(this, DualOperator.IN, SQLs.namedMultiParams(this, paramName, size));
     }
 
 
@@ -618,7 +618,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate notInNamed(String paramName, int size) {
-        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.namedParams(this, paramName, size));
+        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.namedMultiParams(this, paramName, size));
     }
 
 

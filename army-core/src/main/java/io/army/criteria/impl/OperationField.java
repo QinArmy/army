@@ -58,12 +58,12 @@ abstract class OperationField extends OperationExpression implements TableField 
 
     @Override
     public final IPredicate inNamed(int size) {
-        return DualPredicate.create(this, DualOperator.IN, SQLs.namedParams(this, size));
+        return DualPredicate.create(this, DualOperator.IN, SQLs.namedMultiParams(this, size));
     }
 
     @Override
     public final IPredicate notInNamed(int size) {
-        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.namedParams(this, size));
+        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.namedMultiParams(this, size));
     }
 
     @Override

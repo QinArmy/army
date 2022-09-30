@@ -110,11 +110,8 @@ public abstract class SQLs extends StandardSyntax {
      * </p>
      *
      * @see #namedParam(DataField)
-     * @see #namedParam(TypeMeta, String)
-     * @see #namedParams(DataField, int)
-     * @see #namedParams(TypeMeta, String, int)
+     * @see #namedMultiParams(DataField, int)
      * @see #namedNullableParam(DataField)
-     * @see #namedNullableParam(TypeMeta, String)
      */
     public static Update._StandardBatchDomainUpdateClause<Void> batchDomainUpdate() {
         return StandardUpdate.batchDomain(null);
@@ -127,12 +124,6 @@ public abstract class SQLs extends StandardSyntax {
      *
      * @param criteria a criteria object , map or bean
      * @param <C>      criteria java type used to create dynamic batch update and sub query
-     * @see #namedParam(DataField)
-     * @see #namedParam(TypeMeta, String)
-     * @see #namedParams(DataField, int)
-     * @see #namedParams(TypeMeta, String, int)
-     * @see #namedNullableParam(DataField)
-     * @see #namedNullableParam(TypeMeta, String)
      */
     public static <C> Update._StandardBatchDomainUpdateClause<C> batchDomainUpdate(C criteria) {
         Objects.requireNonNull(criteria);
@@ -145,11 +136,8 @@ public abstract class SQLs extends StandardSyntax {
      * </p>
      *
      * @see #namedParam(DataField)
-     * @see #namedParam(TypeMeta, String)
-     * @see #namedParams(DataField, int)
-     * @see #namedParams(TypeMeta, String, int)
+     * @see #namedMultiParams(DataField, int)
      * @see #namedNullableParam(DataField)
-     * @see #namedNullableParam(TypeMeta, String)
      */
     public static Update._StandardBatchSingleUpdateClause<Void> batchSingleUpdate() {
         return StandardUpdate.batchSingle(null);
@@ -163,11 +151,8 @@ public abstract class SQLs extends StandardSyntax {
      * @param criteria a criteria object , map or bean
      * @param <C>      criteria java type used to create dynamic batch update and sub query
      * @see #namedParam(DataField)
-     * @see #namedParam(TypeMeta, String)
-     * @see #namedParams(DataField, int)
-     * @see #namedParams(TypeMeta, String, int)
+     * @see #namedMultiParams(DataField, int)
      * @see #namedNullableParam(DataField)
-     * @see #namedNullableParam(TypeMeta, String)
      */
     public static <C> Update._StandardBatchSingleUpdateClause<C> batchSingleUpdate(C criteria) {
         Objects.requireNonNull(criteria);
@@ -189,10 +174,7 @@ public abstract class SQLs extends StandardSyntax {
      * </p>
      *
      * @see #namedParam(DataField)
-     * @see #namedParam(TypeMeta, String)
-     * @see #namedParams(TypeMeta, String, int)
      * @see #namedNullableParam(DataField)
-     * @see #namedNullableParam(TypeMeta, String)
      */
     public static Delete.StandardBatchDeleteSpec<Void> batchDomainDelete() {
         return StandardDelete.batch(null);
@@ -206,10 +188,7 @@ public abstract class SQLs extends StandardSyntax {
      * @param criteria a criteria object , map or bean
      * @param <C>      criteria java type used to create dynamic batch update and sub query
      * @see #namedParam(DataField)
-     * @see #namedParam(TypeMeta, String)
-     * @see #namedParams(TypeMeta, String, int)
      * @see #namedNullableParam(DataField)
-     * @see #namedNullableParam(TypeMeta, String)
      */
     public static <C> Delete.StandardBatchDeleteSpec<C> batchDomainDelete(C criteria) {
         Objects.requireNonNull(criteria);
@@ -252,6 +231,7 @@ public abstract class SQLs extends StandardSyntax {
      *
      * @param value {@link Expression} or parameter
      */
+    @Deprecated
     static Expression _nonNullParam(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
         if (value == null) {
@@ -287,56 +267,28 @@ public abstract class SQLs extends StandardSyntax {
         return expression;
     }
 
+    @Deprecated
     static ArmyExpression _funcParam(final TypeMeta typeMeta, final @Nullable Object value) {
-        final ArmyExpression expression;
-        if (value instanceof Expression) {
-            expression = (ArmyExpression) value;
-        } else {
-            expression = (ArmyExpression) SQLs.param(typeMeta, value);
-        }
-        return expression;
+        throw new UnsupportedOperationException();
     }
 
     /**
      * @see #_funcParam(Object)
      * @see #_funcLiteral(Object)
      */
+    @Deprecated
     static ArmyExpression _funcParamList(final TypeMeta typeMeta, final @Nullable Object value) {
-        final ArmyExpression expression;
-        if (value == null) {
-            expression = (ArmyExpression) SQLs.param(IntegerType.INSTANCE, null);
-        } else if (value instanceof Expression) {
-            expression = (ArmyExpression) value;
-        } else if (value instanceof List) {
-            expression = (ArmyExpression) SQLs.params(typeMeta, (List<?>) value);
-        } else {
-            expression = (ArmyExpression) SQLs.param(typeMeta, value);
-        }
-        return expression;
+        throw new UnsupportedOperationException();
     }
 
+    @Deprecated
     static ArmyExpression _funcLiteral(final @Nullable Object value) {
-        final ArmyExpression expression;
-        if (value == null) {
-            expression = (ArmyExpression) nullWord();
-        } else if (value instanceof Expression) {
-            expression = (ArmyExpression) value;
-        } else {
-            expression = (ArmyExpression) literal(value);
-        }
-        return expression;
+        throw new UnsupportedOperationException();
     }
 
+    @Deprecated
     static ArmyExpression _funcLiteral(final TypeMeta typeMeta, final @Nullable Object value) {
-        final ArmyExpression expression;
-        if (value == null) {
-            expression = (ArmyExpression) nullWord();
-        } else if (value instanceof Expression) {
-            expression = (ArmyExpression) value;
-        } else {
-            expression = (ArmyExpression) literal(typeMeta, value);
-        }
-        return expression;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -353,6 +305,7 @@ public abstract class SQLs extends StandardSyntax {
      *
      * @param value {@link Expression} or parameter
      */
+    @Deprecated
     static Expression _nullableParam(final Expression type, final @Nullable Object value) {
         final Expression expression;
         if (value instanceof Expression) {
@@ -376,6 +329,7 @@ public abstract class SQLs extends StandardSyntax {
      *
      * @param exp {@link Expression} or parameter
      */
+    @Deprecated
     static ArmyExpression _nonNullExp(final @Nullable Object exp) {
         final Expression expression;
         if (exp == null) {
@@ -394,6 +348,7 @@ public abstract class SQLs extends StandardSyntax {
     /**
      * package method that is used by army developer.
      */
+    @Deprecated
     static Expression _nonNullLiteral(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
         if (value == null) {
@@ -411,6 +366,7 @@ public abstract class SQLs extends StandardSyntax {
     /**
      * package method that is used by army developer.
      */
+    @Deprecated
     static ArmyExpression _nullableLiteral(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
         if (value == null) {
@@ -426,14 +382,10 @@ public abstract class SQLs extends StandardSyntax {
         return (ArmyExpression) resultExpression;
     }
 
-    @Deprecated
-    public static Expression nullParam(TypeMeta type) {
-        return ParamExpression.single(type, null);
-    }
 
     /**
      * <p>
-     * Value must be below type:
+     * Value must be below types:
      *     <ul>
      *         <li>{@link Boolean}</li>
      *         <li>{@link String}</li>
@@ -445,6 +397,7 @@ public abstract class SQLs extends StandardSyntax {
      *         <li>{@link Float}</li>
      *         <li>{@link java.math.BigDecimal}</li>
      *         <li>{@link java.math.BigInteger}</li>
+     *         <li>{@code  byte[]}</li>
      *         <li>{@link BitSet}</li>
      *         <li>{@link io.army.struct.CodeEnum}</li>
      *         <li>{@link io.army.struct.TextEnum}</li>
@@ -460,7 +413,6 @@ public abstract class SQLs extends StandardSyntax {
      *         <li>{@link java.time.Year}</li>
      *         <li>{@link java.time.YearMonth}</li>
      *         <li>{@link java.time.MonthDay}</li>
-     *         <li>{@code  byte[]}</li>
      *     </ul>
      * </p>
      *
@@ -474,8 +426,15 @@ public abstract class SQLs extends StandardSyntax {
 
     /**
      * <p>
-     * Create strict param expression
+     * Create parameter expression, parameter expression output parameter placeholder({@code ?})
      * </p>
+     *
+     * @param type  non-nul
+     * @param value nullable
+     * @see #param(MappingType, Object)
+     * @see #param(TypeInfer, Object)
+     * @see #literal(MappingType, Object)
+     * @see #literal(TypeInfer, Object)
      */
     public static Expression param(final MappingType type, final @Nullable Object value) {
         return ParamExpression.single(type, value);
@@ -483,10 +442,13 @@ public abstract class SQLs extends StandardSyntax {
 
     /**
      * <p>
-     * Create strict parameter expression
+     * Create parameter expression, parameter expression output parameter placeholder({@code ?})
      * </p>
      *
      * @param value nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will invoked.
+     * @see #param(MappingType, Object)
+     * @see #param(TypeInfer, Object)
+     * @see #literal(MappingType, Object)
      * @see #literal(TypeInfer, Object)
      */
     public static Expression param(final TypeInfer typeExp, final @Nullable Object value) {
@@ -508,73 +470,75 @@ public abstract class SQLs extends StandardSyntax {
 
     /**
      * <p>
-     * Create optimizing collection param expression
+     * Create multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
+     * ? , ? , ? ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
      * </p>
+     *
+     * @param type   non-null,the type of element of values.
+     * @param values non-null and non-empty
+     * @see #multiParams(MappingType, Collection)
+     * @see #multiParams(TypeInfer, Collection)
+     * @see #multiParams(TypeMeta, Function, String)
+     * @see #multiLiterals(MappingType, Collection)
+     * @see #multiLiterals(TypeInfer, Collection)
+     * @see #multiLiterals(TypeInfer, Function, String)
      */
-    public static Expression preferLiteralParams(TypeMeta paramMeta, Collection<?> value) {
-        return ParamExpression.multi(paramMeta, value, true);
+    public static Expression multiParams(final MappingType type, final Collection<?> values) {
+        return ParamExpression.multi(type, values);
     }
 
     /**
      * <p>
-     * Create optimizing collection param expression
+     * Create multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
+     * ? , ? , ? ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
      * </p>
+     *
+     * @param typeExp non-null,the type of element of values.
+     * @param values  non-null and non-empty
+     * @see #multiParams(MappingType, Collection)
+     * @see #multiParams(TypeInfer, Collection)
+     * @see #multiParams(TypeMeta, Function, String)
+     * @see #multiLiterals(MappingType, Collection)
+     * @see #multiLiterals(TypeInfer, Collection)
+     * @see #multiLiterals(TypeInfer, Function, String)
      */
-    public static Expression preferLiteralParams(TypeMeta paramMeta, Supplier<? extends Collection<?>> supplier) {
-        return ParamExpression.multi(paramMeta, supplier.get(), true);
-    }
-
-    /**
-     * <p>
-     * Create optimizing collection param expression
-     * </p>
-     */
-    public static Expression preferLiteralParams(TypeMeta paramMeta, Function<String, ?> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (!(value instanceof Collection)) {
-            String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());
-            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
-        }
-        return ParamExpression.multi(paramMeta, (Collection<?>) value, true);
-    }
-
-    /**
-     * <p>
-     * Create strict collection param expression
-     * </p>
-     */
-    public static Expression params(final TypeInfer typeExp, final Collection<?> values) {
+    public static Expression multiParams(final TypeInfer typeExp, final Collection<?> values) {
         final Expression result;
         if (typeExp instanceof TableField) {
-            result = ParamExpression.multi((TableField) typeExp, values, false);
+            result = ParamExpression.multi((TableField) typeExp, values);
         } else {
-            result = ParamExpression.multi(typeExp.typeMeta(), values, false);
+            result = ParamExpression.multi(typeExp.typeMeta(), values);
         }
         return result;
     }
 
-    /**
-     * <p>
-     * Create strict collection param expression
-     * </p>
-     */
-    public static Expression params(TypeMeta paramMeta, Supplier<? extends Collection<?>> supplier) {
-        return ParamExpression.multi(paramMeta, supplier.get(), false);
-    }
 
     /**
      * <p>
-     * Create strict collection param expression
+     * Create multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
+     * ? , ? , ? ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
      * </p>
+     *
+     * @param type     non-null,the type of element of values.
+     * @param function non-null, {@link Function#apply(Object keyName)} return non-null and non-empty {@link Collection}
+     * @param keyName  non-null
+     * @see #multiParams(MappingType, Collection)
+     * @see #multiParams(TypeInfer, Collection)
+     * @see #multiParams(TypeMeta, Function, String)
+     * @see #multiLiterals(MappingType, Collection)
+     * @see #multiLiterals(TypeInfer, Collection)
+     * @see #multiLiterals(TypeInfer, Function, String)
      */
-    public static Expression params(TypeMeta paramMeta, Function<String, ?> function, String keyName) {
+    public static Expression multiParams(TypeMeta type, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (!(value instanceof Collection)) {
             throw CriteriaUtils.nonCollectionValue(keyName);
         }
-        return ParamExpression.multi(paramMeta, (Collection<?>) value, false);
+        return ParamExpression.multi(type, (Collection<?>) value);
     }
 
 
@@ -682,9 +646,9 @@ public abstract class SQLs extends StandardSyntax {
 
     /**
      * <p>
-     * Create named nullable parameter expression for batch update(or delete)
+     * Create named nullable parameter expression for batch update(or delete) and values(assignment) insert
      * </p>
-     *
+     * @return named nullable parameter expression
      * @see #namedParam(MappingType, String)
      * @see #namedParam(TypeInfer, String)
      * @see #namedParam(DataField)
@@ -713,7 +677,9 @@ public abstract class SQLs extends StandardSyntax {
      * <p>
      * Create named nullable parameter expression for batch update(or delete)
      * </p>
-     *
+     * @param field non-null,field as the type of nullable parameter
+     *              ,{@link  DataField#fieldName()} as the key name of {@link Map} or the field name of java bean.
+     * @return named nullable parameter expression
      * @see #namedParam(MappingType, String)
      * @see #namedParam(TypeInfer, String)
      * @see #namedParam(DataField)
@@ -730,6 +696,7 @@ public abstract class SQLs extends StandardSyntax {
     public static Expression namedNullableParam(final DataField field) {
         final Expression result;
         if (field instanceof TableField) {
+            //for field codec
             result = ParamExpression.namedNullableSingle((TableField) field, field.fieldName());
         } else {
             result = ParamExpression.namedNullableSingle(field.typeMeta(), field.fieldName());
@@ -737,25 +704,93 @@ public abstract class SQLs extends StandardSyntax {
         return result;
     }
 
+    /**
+     * <p>
+     * Create named non-null multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
+     * ? , ? , ? ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
+     * </p>
+     * <p>
+     * Named multi parameter expression is used in batch update(or delete) and values insert.
+     * </p>
+     *
+     * @param type non-null,the type of element of {@link Collection}
+     * @param name non-null,the key name of {@link Map} or the field name of java bean.
+     * @param size positive,the size of {@link Collection}
+     * @return named non-null multi parameter expression
+     * @see #namedMultiParams(MappingType, String, int)
+     * @see #namedMultiParams(TypeInfer, String, int)
+     * @see #namedMultiParams(DataField, int)
+     * @see #namedMultiLiterals(MappingType, String, int)
+     * @see #namedMultiLiterals(TypeInfer, String, int)
+     * @see #namedMultiLiterals(DataField, int)
+     */
+    public static Expression namedMultiParams(final MappingType type, final String name, final int size) {
+        return ParamExpression.namedMulti(type, name, size);
+    }
 
-    public static Expression namedParams(final TypeInfer typeExp, final String name, final int size) {
+    /**
+     * <p>
+     * Create named non-null multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
+     * ? , ? , ? ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
+     * </p>
+     * <p>
+     * Named multi parameter expression is used in batch update(or delete) and values insert.
+     * </p>
+     *
+     * @param typeExp non-null,the type of element of {@link Collection}
+     * @param name    non-null,the key name of {@link Map} or the field name of java bean.
+     * @param size    positive,the size of {@link Collection}
+     * @return named non-null multi parameter expression
+     * @see #namedMultiParams(MappingType, String, int)
+     * @see #namedMultiParams(TypeInfer, String, int)
+     * @see #namedMultiParams(DataField, int)
+     * @see #namedMultiLiterals(MappingType, String, int)
+     * @see #namedMultiLiterals(TypeInfer, String, int)
+     * @see #namedMultiLiterals(DataField, int)
+     */
+    public static Expression namedMultiParams(final TypeInfer typeExp, final String name, final int size) {
         final Expression result;
         if (typeExp instanceof TableField) {
-            ParamExpression.namedMulti((TableField) typeExp, name, size);
+            //for field codec
+            result = ParamExpression.namedMulti((TableField) typeExp, name, size);
         } else {
-            ParamExpression.namedMulti(typeExp.typeMeta(), name, size);
+            result = ParamExpression.namedMulti(typeExp.typeMeta(), name, size);
         }
         return result;
     }
 
-    public static Expression namedParams(DataField field, int size) {
-        final TypeMeta paramMeta;
+    /**
+     * <p>
+     * Create named non-null multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
+     * ? , ? , ? ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
+     * </p>
+     * <p>
+     * Named multi parameter expression is used in batch update(or delete) and values insert.
+     * </p>
+     *
+     * @param field non-null,field as the type of element of {@link Collection}
+     *              ,{@link  DataField#fieldName()} as the key name of {@link Map} or the field name of java bean.
+     * @param size  positive,the size of {@link Collection}
+     * @return named non-null multi parameter expression
+     * @see #namedMultiParams(MappingType, String, int)
+     * @see #namedMultiParams(TypeInfer, String, int)
+     * @see #namedMultiParams(DataField, int)
+     * @see #namedMultiLiterals(MappingType, String, int)
+     * @see #namedMultiLiterals(TypeInfer, String, int)
+     * @see #namedMultiLiterals(DataField, int)
+     */
+    public static Expression namedMultiParams(final DataField field, final int size) {
+        final Expression result;
         if (field instanceof TableField) {
-            paramMeta = (TypeMeta) field;
+            //for field codec
+            result = ParamExpression.namedMulti((TableField) field, field.fieldName(), size);
         } else {
-            paramMeta = field.typeMeta();
+            result = ParamExpression.namedMulti(field.typeMeta(), field.fieldName(), size);
         }
-        return ParamExpression.namedMulti(paramMeta, field.fieldName(), size);
+        return result;
     }
 
     /**
@@ -772,6 +807,7 @@ public abstract class SQLs extends StandardSyntax {
      *         <li>{@link Float}</li>
      *         <li>{@link java.math.BigDecimal}</li>
      *         <li>{@link java.math.BigInteger}</li>
+     *         <li>{@code  byte[]}</li>
      *         <li>{@link BitSet}</li>
      *         <li>{@link io.army.struct.CodeEnum}</li>
      *         <li>{@link io.army.struct.TextEnum}</li>
@@ -787,7 +823,6 @@ public abstract class SQLs extends StandardSyntax {
      *         <li>{@link java.time.Year}</li>
      *         <li>{@link java.time.YearMonth}</li>
      *         <li>{@link java.time.MonthDay}</li>
-     *         <li>{@code  byte[]}</li>
      *     </ul>
      * </p>
      *
@@ -801,11 +836,14 @@ public abstract class SQLs extends StandardSyntax {
 
     /**
      * <p>
-     * Create literal expression
+     * Create literal expression,literal expression will output literal of value
      * </p>
      *
      * @param type  non-null
      * @param value nullable
+     * @see #param(MappingType, Object)
+     * @see #param(TypeInfer, Object)
+     * @see #literal(MappingType, Object)
      * @see #literal(TypeInfer, Object)
      */
     public static Expression literal(final MappingType type, final @Nullable Object value) {
@@ -814,12 +852,15 @@ public abstract class SQLs extends StandardSyntax {
 
     /**
      * <p>
-     * Create strict literal expression
+     * Create literal expression,literal expression will output literal of value
      * </p>
      *
      * @param typeExp non-null
      * @param value   nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will invoked.
+     * @see #param(MappingType, Object)
      * @see #param(TypeInfer, Object)
+     * @see #literal(MappingType, Object)
+     * @see #literal(TypeInfer, Object)
      */
     public static Expression literal(final TypeInfer typeExp, final @Nullable Object value) {
         final Expression result;
@@ -837,7 +878,43 @@ public abstract class SQLs extends StandardSyntax {
         return result;
     }
 
-    public static Expression multiLiteral(final TypeInfer typeExp, final Collection<?> values) {
+    /**
+     * <p>
+     * Create multi literal expression, multi literal expression will output multi LITERAL like below:
+     * LITERAL , LITERAL , LITERAL ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
+     * </p>
+     *
+     * @param type   non-null,the type of element of values.
+     * @param values non-null and non-empty
+     * @see #multiParams(MappingType, Collection)
+     * @see #multiParams(TypeInfer, Collection)
+     * @see #multiParams(TypeMeta, Function, String)
+     * @see #multiLiterals(MappingType, Collection)
+     * @see #multiLiterals(TypeInfer, Collection)
+     * @see #multiLiterals(TypeInfer, Function, String)
+     */
+    public static Expression multiLiterals(final MappingType type, final Collection<?> values) {
+        return LiteralExpression.multi(type, values);
+    }
+
+    /**
+     * <p>
+     * Create multi literal expression, multi literal expression will output multi LITERAL like below:
+     * LITERAL , LITERAL , LITERAL ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
+     * </p>
+     *
+     * @param typeExp non-null,the type of element of values.
+     * @param values  non-null and non-empty
+     * @see #multiParams(MappingType, Collection)
+     * @see #multiParams(TypeInfer, Collection)
+     * @see #multiParams(TypeMeta, Function, String)
+     * @see #multiLiterals(MappingType, Collection)
+     * @see #multiLiterals(TypeInfer, Collection)
+     * @see #multiLiterals(TypeInfer, Function, String)
+     */
+    public static Expression multiLiterals(final TypeInfer typeExp, final Collection<?> values) {
         final Expression result;
         if (typeExp instanceof TableField) {
             result = LiteralExpression.multi((TableField) typeExp, values);
@@ -847,7 +924,24 @@ public abstract class SQLs extends StandardSyntax {
         return result;
     }
 
-    public static Expression multiLiteral(final TypeInfer typeExp, final Function<String, ?> function, final String keyName) {
+    /**
+     * <p>
+     * Create multi literal expression, multi literal expression will output multi LITERAL like below:
+     * LITERAL , LITERAL , LITERAL ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
+     * </p>
+     *
+     * @param typeExp  non-null,the type of element of values.
+     * @param function non-null,{@link Function#apply(Object keyName)} return non-null and non-empty {@link Collection}
+     * @param keyName  non-null
+     * @see #multiParams(MappingType, Collection)
+     * @see #multiParams(TypeInfer, Collection)
+     * @see #multiParams(TypeMeta, Function, String)
+     * @see #multiLiterals(MappingType, Collection)
+     * @see #multiLiterals(TypeInfer, Collection)
+     * @see #multiLiterals(TypeInfer, Function, String)
+     */
+    public static Expression multiLiterals(final TypeInfer typeExp, Function<String, ?> function, String keyName) {
         final Object values;
         values = function.apply(keyName);
         if (!(values instanceof Collection)) {
@@ -1058,19 +1152,91 @@ public abstract class SQLs extends StandardSyntax {
 
     /**
      * <p>
-     * Create named non-null multi literal expression. This expression can only be used in values insert statement.
+     * Create named non-null multi literal expression, multi literal expression will output multi LITERAL like below:
+     * LITERAL , LITERAL , LITERAL ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
      * </p>
      * <p>
-     * Note: this method couldn't be used in batch update(delete) statement.
+     * This expression can only be used in values insert statement,this method couldn't be used in batch update(delete) statement.
      * </p>
      *
-     * @param paramMeta non-null
-     * @param name      non-null
-     * @param size      non-null,the size of {@link Collection}
+     * @param type non-null,the type of element of {@link Collection}
+     * @param name non-null,the key name of {@link Map} or the field name of java bean.
+     * @param size non-null,the size of {@link Collection}
      * @return named non-null multi literal expression
+     * @see #namedMultiParams(MappingType, String, int)
+     * @see #namedMultiParams(TypeInfer, String, int)
+     * @see #namedMultiParams(DataField, int)
+     * @see #namedMultiLiterals(MappingType, String, int)
+     * @see #namedMultiLiterals(TypeInfer, String, int)
+     * @see #namedMultiLiterals(DataField, int)
      */
-    public static Expression namedLiterals(TypeMeta paramMeta, String name, int size) {
-        return LiteralExpression.namedMulti(paramMeta, name, size);
+    public static Expression namedMultiLiterals(MappingType type, String name, int size) {
+        return LiteralExpression.namedMulti(type, name, size);
+    }
+
+    /**
+     * <p>
+     * Create named non-null multi literal expression, multi literal expression will output multi LITERAL like below:
+     * LITERAL , LITERAL , LITERAL ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
+     * </p>
+     * <p>
+     * This expression can only be used in values insert statement,this method couldn't be used in batch update(delete) statement.
+     * </p>
+     *
+     * @param typeExp non-null,the type of element of {@link Collection}
+     * @param name    non-null,the key name of {@link Map} or the field name of java bean.
+     * @param size    positive,the size of {@link Collection}
+     * @return named non-null multi literal expression
+     * @see #namedMultiParams(MappingType, String, int)
+     * @see #namedMultiParams(TypeInfer, String, int)
+     * @see #namedMultiParams(DataField, int)
+     * @see #namedMultiLiterals(MappingType, String, int)
+     * @see #namedMultiLiterals(TypeInfer, String, int)
+     * @see #namedMultiLiterals(DataField, int)
+     */
+    public static Expression namedMultiLiterals(final TypeInfer typeExp, final String name, final int size) {
+        final Expression result;
+        if (typeExp instanceof TableField) {
+            //for field codec
+            result = LiteralExpression.namedMulti((TableField) typeExp, name, size);
+        } else {
+            result = LiteralExpression.namedMulti(typeExp.typeMeta(), name, size);
+        }
+        return result;
+    }
+
+    /**
+     * <p>
+     * Create named non-null multi literal expression, multi literal expression will output multi LITERAL like below:
+     * LITERAL , LITERAL , LITERAL ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
+     * </p>
+     * <p>
+     * This expression can only be used in values insert statement,this method couldn't be used in batch update(delete) statement.
+     * </p>
+     *
+     * @param field non-null,field as the type of element of {@link Collection}
+     *              ,{@link  DataField#fieldName()} as the key name of {@link Map} or the field name of java bean.
+     * @param size  positive,the size of {@link Collection}
+     * @return named non-null multi literal expression
+     * @see #namedMultiParams(MappingType, String, int)
+     * @see #namedMultiParams(TypeInfer, String, int)
+     * @see #namedMultiParams(DataField, int)
+     * @see #namedMultiLiterals(MappingType, String, int)
+     * @see #namedMultiLiterals(TypeInfer, String, int)
+     * @see #namedMultiLiterals(DataField, int)
+     */
+    public static Expression namedMultiLiterals(final DataField field, final int size) {
+        final Expression result;
+        if (field instanceof TableField) {
+            //for field codec
+            result = LiteralExpression.namedMulti((TableField) field, field.fieldName(), size);
+        } else {
+            result = LiteralExpression.namedMulti(field.typeMeta(), field.fieldName(), size);
+        }
+        return result;
     }
 
 
@@ -1153,34 +1319,8 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    public static ExpressionPair expPair(final Object first, final Object second) {
-        final Expression firstExp, secondExp;
-        if (first instanceof Expression) {
-            firstExp = (Expression) first;
-        } else {
-            firstExp = SQLs.param(first);
-        }
-        if (second instanceof Expression) {
-            secondExp = (Expression) second;
-        } else {
-            secondExp = SQLs.param(second);
-        }
-        return new ExpressionPairImpl(firstExp, secondExp);
-    }
-
-    public static ExpressionPair expPair(TypeMeta paramMeta, final Object first, final Object second) {
-        final Expression firstExp, secondExp;
-        if (first instanceof Expression) {
-            firstExp = (Expression) first;
-        } else {
-            firstExp = SQLs.param(paramMeta, first);
-        }
-        if (second instanceof Expression) {
-            secondExp = (Expression) second;
-        } else {
-            secondExp = SQLs.param(paramMeta, second);
-        }
-        return new ExpressionPairImpl(firstExp, secondExp);
+    public static ExpressionPair expPair(final Expression first, final Expression second) {
+        return new ExpressionPairImpl(first, second);
     }
 
 
@@ -1196,7 +1336,7 @@ public abstract class SQLs extends StandardSyntax {
      * @return NULL expression that output key word {@code NULL}.
      */
     public static Expression nullWord() {
-        return SQLs.NullWord.INSTANCE;
+        return NullWord.INSTANCE;
     }
 
     public static Expression trueWord() {
@@ -1713,9 +1853,8 @@ public abstract class SQLs extends StandardSyntax {
 
     }//StringTypeNull
 
-
     /**
-     * @see #expPair(Object, Object)
+     * @see #expPair(Expression, Expression)
      */
     static final class ExpressionPairImpl implements ExpressionPair {
 
@@ -1723,11 +1862,13 @@ public abstract class SQLs extends StandardSyntax {
 
         final Expression second;
 
-        private ExpressionPairImpl(Expression first, Expression second) {
+        private ExpressionPairImpl(@Nullable Expression first, @Nullable Expression second) {
+            assert first != null;
+            assert second != null;
             this.first = first;
             this.second = second;
         }
-    }//BetweenPair
+    }//ExpressionPairImpl
 
 
     static final class CteImpl implements _Cte {

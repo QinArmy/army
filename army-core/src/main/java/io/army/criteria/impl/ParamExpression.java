@@ -6,15 +6,11 @@ import io.army.criteria.SqlValueParam;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.TypeMeta;
 import io.army.stmt.MultiParam;
 import io.army.stmt.SingleParam;
-import io.army.util._CollectionUtils;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 abstract class ParamExpression extends OperationExpression implements SQLParam {
 
@@ -24,9 +20,9 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
         return new SingleParamExpression(paramMeta, value);
     }
 
-    static ParamExpression multi(final @Nullable TypeMeta paramMeta, Collection<?> values, boolean preferLiteral) {
+    static ParamExpression multi(final @Nullable TypeMeta paramMeta, Collection<?> values) {
         assert paramMeta != null && values.size() > 0;
-        return new MultiParamExpression(paramMeta, values, preferLiteral);
+        return new MultiParamExpression(paramMeta, values);
     }
 
 
@@ -58,17 +54,17 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
     }
 
 
-     static final class SingleParamExpression extends ParamExpression
-             implements SingleParam, SqlValueParam.SingleNonNamedValue {
+    static final class SingleParamExpression extends ParamExpression
+            implements SingleParam, SqlValueParam.SingleNonNamedValue {
 
-         private final Object value;
+        private final Object value;
 
-         private SingleParamExpression(TypeMeta paramMeta, @Nullable Object value) {
-             super(paramMeta);
-             this.value = value;
-         }
+        private SingleParamExpression(TypeMeta paramMeta, @Nullable Object value) {
+            super(paramMeta);
+            this.value = value;
+        }
 
-         @Override
+        @Override
         public Object value() {
             return this.value;
         }
@@ -105,17 +101,14 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
     }//SingleParamExpression
 
 
-     static final class MultiParamExpression extends ParamExpression
-             implements MultiParam, SqlValueParam.MultiValue, MultiValueExpression {
+    static final class MultiParamExpression extends ParamExpression
+            implements MultiParam, SqlValueParam.MultiValue, MultiValueExpression {
 
-         private final List<?> valueList;
+        private final List<?> valueList;
 
-         private final boolean preferLiteral;
-
-         private MultiParamExpression(TypeMeta paramMeta, Collection<?> values, boolean preferLiteral) {
-             super(paramMeta);
-             this.valueList = _CollectionUtils.asUnmodifiableList(values);
-             this.preferLiteral = preferLiteral;
+        private MultiParamExpression(TypeMeta paramMeta, Collection<?> values) {
+            super(paramMeta);
+            this.valueList = Collections.unmodifiableList(new ArrayList<>(values));
         }
 
         @Override
@@ -130,19 +123,14 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final TypeMeta paramMeta = this.paramMeta;
-            if (this.preferLiteral && paramMeta.mappingType() instanceof _ArmyNoInjectionMapping) {//TODO field codec
-                LiteralExpression.appendMultiLiteral(context, this.paramMeta, this.valueList);
-            } else {
-                context.appendParam(this);
-            }
-
+            context.appendParam(this);
         }
 
 
         @Override
         public void appendSqlWithParens(final _SqlContext context) {
-            final StringBuilder sqlBuilder = context.sqlBuilder()
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE_LEFT_PAREN);
             this.appendSql(context);
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -150,7 +138,7 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.paramMeta, this.valueList, this.preferLiteral);
+            return Objects.hash(this.paramMeta, this.valueList);
         }
 
         @Override
@@ -160,9 +148,8 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
                 match = true;
             } else if (obj instanceof MultiParamExpression) {
                 final MultiParamExpression o = (MultiParamExpression) obj;
-                match = o.paramMeta == this.paramMeta
-                        && o.valueList.equals(this.valueList)
-                        && o.preferLiteral == this.preferLiteral;
+                match = o.paramMeta.equals(this.paramMeta)
+                        && o.valueList.equals(this.valueList);
             } else {
                 match = false;
             }
@@ -171,8 +158,15 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
 
         @Override
         public String toString() {
-            return LiteralExpression.multiLiteralToString(new StringBuilder(), this.valueList)
-                    .toString();
+            final int size = this.valueList.size();
+            final StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE);
+                }
+                builder.append(" ?");
+            }
+            return builder.toString();
         }
 
 
