@@ -35,7 +35,7 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
         return new NamedSingleParam(paramMeta, name);
     }
 
-    static ParamExpression namedNonNullSingle(@Nullable TypeMeta paramMeta, @Nullable String name) {
+    static ParamExpression namedSingle(@Nullable TypeMeta paramMeta, @Nullable String name) {
         assert paramMeta != null && name != null;
         return new NameNonNullSingleParam(paramMeta, name);
     }

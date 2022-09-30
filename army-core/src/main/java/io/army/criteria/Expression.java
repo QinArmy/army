@@ -43,8 +43,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate equal(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
-    IPredicate equalNamed(String paramName);
-
     /**
      * relational operate with {@code = ANY}
      */
@@ -80,8 +78,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate less(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
-    IPredicate lessNamed(String paramName);
-
     <C> IPredicate lessAny(Function<C, ? extends SubQuery> function);
 
     IPredicate lessAny(Supplier<? extends SubQuery> supplier);
@@ -108,8 +104,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     <T> IPredicate lessEqual(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
 
     IPredicate lessEqual(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
-
-    IPredicate lessEqualNamed(String paramName);
 
 
     <C> IPredicate lessEqualAny(Function<C, ? extends SubQuery> function);
@@ -140,8 +134,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate great(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
-    IPredicate greatNamed(String paramName);
-
     <C> IPredicate greatAny(Function<C, ? extends SubQuery> function);
 
     IPredicate greatAny(Supplier<? extends SubQuery> supplier);
@@ -167,8 +159,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     <T> IPredicate greatEqual(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
 
     IPredicate greatEqual(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
-
-    IPredicate greatEqualNamed(String paramName);
 
     <C> IPredicate greatEqualAny(Function<C, ? extends SubQuery> function);
 
@@ -196,8 +186,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     <T> IPredicate notEqual(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
 
     IPredicate notEqual(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
-
-    IPredicate notEqualNamed(String paramName);
 
     <C> IPredicate notEqualAny(Function<C, ? extends SubQuery> function);
 
@@ -289,8 +277,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate like(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
-    IPredicate likeNamed(String paramName);
-
 
     IPredicate notLike(Expression pattern);
 
@@ -305,8 +291,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     <T> IPredicate notLike(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
 
     IPredicate notLike(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
-
-    IPredicate notLikeNamed(String paramName);
 
 
     Expression mod(Expression operand);
@@ -323,8 +307,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression mod(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
-    Expression modNamed(String paramName);
-
 
     Expression times(Expression operand);
 
@@ -339,8 +321,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     <T> Expression times(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
 
     Expression times(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
-
-    Expression timesNamed(String paramName);
 
 
     Expression plus(Expression operand);
@@ -357,8 +337,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression plus(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
-    Expression plusNamed(String paramName);
-
     Expression minus(Expression minuend);
 
     Expression minus(Supplier<? extends Expression> supplier);
@@ -373,8 +351,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression minus(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
-    Expression minusNamed(String paramName);
-
     Expression divide(Expression divisor);
 
     Expression divide(Supplier<? extends Expression> supplier);
@@ -388,8 +364,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     <T> Expression divide(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
 
     Expression divide(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
-
-    Expression divideNamed(String paramName);
 
     Expression negate();
 
@@ -412,9 +386,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression bitwiseAnd(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
-    Expression bitwiseAndNamed(String paramName);
-
-
     /**
      * Bitwise OR
      *
@@ -434,7 +405,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression bitwiseOr(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
-    Expression bitwiseOrNamed(String paramName);
     /**
      * Bitwise XOR
      *
@@ -453,8 +423,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     <T> Expression xor(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
 
     Expression xor(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
-
-    Expression xorNamed(String paramName);
 
     /**
      * Bitwise Inversion
@@ -482,8 +450,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression rightShift(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
-    Expression rightShiftNamed(String paramName);
-
     /**
      * Shifts a  number to the left.
      *
@@ -502,8 +468,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     <T> Expression leftShift(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier);
 
     Expression leftShift(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
-
-    Expression leftShiftNamed(String paramName);
 
     @Override
     Expression asType(TypeMeta paramMeta);

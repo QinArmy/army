@@ -93,11 +93,15 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         CR defaultValue(FieldMeta<T> field, Expression value);
 
+        CR defaultValue(FieldMeta<T> field, Supplier<? extends Expression> supplier);
+
+        CR defaultValue(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function);
+
         CR defaultValue(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator);
 
-        CR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value);
+        <E> CR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value);
 
-        CR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier);
+        <E> CR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier);
 
         CR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
@@ -149,11 +153,15 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Expression value);
 
+        _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Supplier<? extends Expression> supplier);
+
+        _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function);
+
         _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator);
 
-        _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value);
+        <E> _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value);
 
-        _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier);
+        <E> _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier);
 
         _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
@@ -164,11 +172,15 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Expression value);
 
+        _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Supplier<? extends Expression> supplier);
+
+        _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function);
+
         _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator);
 
-        _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value);
+        <E> _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value);
 
-        _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier);
+        <E> _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier);
 
         _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
@@ -233,8 +245,6 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         SR space(Function<C, ? extends SubQuery> function);
     }
-
-
 
 
 }

@@ -308,7 +308,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
 
     @Override
     public final SR setNullable(F field) {
-        return this.addFieldAndExp(field, null, SQLs.nullableNamedParam(field));
+        return this.addFieldAndExp(field, null, SQLs.namedNullableParam(field));
     }
 
     @Override
@@ -318,7 +318,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
 
     @Override
     public final SR setNullableNamed(F field, String parameterName) {
-        return this.addFieldAndExp(field, null, SQLs._nullableNamedParam(field, parameterName));
+        return this.addFieldAndExp(field, null, SQLs.namedNullableParam(field, parameterName));
     }
 
     @Override

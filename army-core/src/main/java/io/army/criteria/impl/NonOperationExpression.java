@@ -105,11 +105,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate equalNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final <C> IPredicate equalAny(Function<C, ? extends SubQuery> supplier) {
         throw unsupportedOperation();
     }
@@ -162,11 +157,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate less(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate lessNamed(String paramName) {
         throw unsupportedOperation();
     }
 
@@ -237,11 +227,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate lessEqualNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final <C> IPredicate lessEqualAny(Function<C, ? extends SubQuery> function) {
         throw unsupportedOperation();
     }
@@ -303,11 +288,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate great(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate greatNamed(String paramName) {
         throw unsupportedOperation();
     }
 
@@ -378,11 +358,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate greatEqualNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final <C> IPredicate greatEqualAny(Function<C, ? extends SubQuery> function) {
         throw unsupportedOperation();
     }
@@ -444,11 +419,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate notEqual(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate notEqualNamed(String paramName) {
         throw unsupportedOperation();
     }
 
@@ -638,11 +608,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate likeNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final IPredicate notLike(Expression pattern) {
         throw unsupportedOperation();
     }
@@ -678,12 +643,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate notLikeNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-
-    @Override
     public final Expression mod(Expression operand) {
         throw unsupportedOperation();
     }
@@ -717,12 +676,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     public final Expression mod(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
         throw unsupportedOperation();
     }
-
-    @Override
-    public final Expression modNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
     @Override
     public final Expression times(Expression operand) {
         throw unsupportedOperation();
@@ -755,11 +708,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final Expression times(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression timesNamed(String paramName) {
         throw unsupportedOperation();
     }
 
@@ -799,11 +747,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression plusNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final Expression minus(Expression minuend) {
         throw unsupportedOperation();
     }
@@ -835,11 +778,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final Expression minus(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression minusNamed(String paramName) {
         throw unsupportedOperation();
     }
 
@@ -879,11 +817,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression divideNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final Expression negate() {
         throw unsupportedOperation();
     }
@@ -898,33 +831,29 @@ abstract class NonOperationExpression implements ArmyExpression {
         throw unsupportedOperation();
     }
 
+
     @Override
-    public final Expression bitwiseAnd(Function<Expression, ? extends Expression> function) {
+    public final Expression bitwiseAnd(Function<? super Expression, ? extends Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> Expression bitwiseAnd(BiFunction<C, Expression, ? extends Expression> function) {
+    public final <C> Expression bitwiseAnd(BiFunction<C, ? super Expression, ? extends Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression bitwiseAnd(BiFunction<Expression, Collection<?>, Expression> operator, Collection<?> operand) {
+    public final <T> Expression bitwiseAnd(BiFunction<? super Expression, T, ? extends Expression> operator, @Nullable T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression bitwiseAnd(BiFunction<Expression, Collection<?>, Expression> operator, Supplier<Collection<?>> supplier) {
+    public final <T> Expression bitwiseAnd(BiFunction<? super Expression, T, ? extends Expression> operator, Supplier<T> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression bitwiseAnd(BiFunction<Expression, Collection<?>, Expression> operator, Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression bitwiseAndNamed(String paramName) {
+    public final Expression bitwiseAnd(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
         throw unsupportedOperation();
     }
 
@@ -964,11 +893,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression bitwiseOrNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final Expression xor(Expression operand) {
         throw unsupportedOperation();
     }
@@ -1002,12 +926,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     public final Expression xor(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
         throw unsupportedOperation();
     }
-
-    @Override
-    public final Expression xorNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
     @Override
     public final Expression invert() {
         throw unsupportedOperation();
@@ -1049,11 +967,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression rightShiftNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final Expression leftShift(Expression bitNumber) {
         throw unsupportedOperation();
     }
@@ -1087,12 +1000,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     public final Expression leftShift(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
         throw unsupportedOperation();
     }
-
-    @Override
-    public final Expression leftShiftNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
     @Override
     public final Expression bracket() {
         throw unsupportedOperation();

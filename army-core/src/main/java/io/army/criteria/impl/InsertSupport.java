@@ -560,17 +560,27 @@ abstract class InsertSupport {
         }
 
         @Override
+        public final DR defaultValue(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+            return this.defaultValue(field, supplier.get());
+        }
+
+        @Override
+        public final DR defaultValue(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
+            return this.defaultValue(field, function.apply(field));
+        }
+
+        @Override
         public final DR defaultValue(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator) {
             return this.defaultValue(field, operator.apply(this.criteria, field));
         }
 
         @Override
-        public final DR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value) {
-            return this.defaultValue(field, operator.apply(field, SQLs._safeParam(value)));
+        public final <E> DR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value) {
+            return this.defaultValue(field, operator.apply(field, value));
         }
 
         @Override
-        public final DR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
+        public final <E> DR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
             return this.defaultValue(field, operator.apply(field, supplier.get()));
         }
 
@@ -992,18 +1002,28 @@ abstract class InsertSupport {
         }
 
         @Override
+        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+            return this.comma(field, supplier.get());
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
+            return this.comma(field, function.apply(field));
+        }
+
+        @Override
         public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator) {
             return this.comma(field, operator.apply(this.criteria, field));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value) {
-            return this.comma(field, operator.apply(field, SQLs._safeParam(value)));
+        public final <E> Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value) {
+            return this.comma(field, operator.apply(field, value));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
-            return comma(field, operator.apply(field, supplier.get()));
+        public final <E> Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
+            return this.comma(field, operator.apply(field, supplier.get()));
         }
 
         @Override
@@ -1031,18 +1051,28 @@ abstract class InsertSupport {
         }
 
         @Override
+        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+            return this.comma(field, supplier.get());
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
+            return this.comma(field, function.apply(field));
+        }
+
+        @Override
         public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator) {
             return this.comma(field, operator.apply(this.criteria, field));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value) {
-            return this.comma(field, operator.apply(field, SQLs._safeParam(value)));
+        public final <E> Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value) {
+            return this.comma(field, operator.apply(field, value));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
-            return comma(field, operator.apply(field, supplier.get()));
+        public final <E> Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
+            return this.comma(field, operator.apply(field, supplier.get()));
         }
 
         @Override
@@ -1100,6 +1130,7 @@ abstract class InsertSupport {
 
     }//StaticValueColumnClause
 
+    @Deprecated
     static abstract class DynamicValueInsertValueClauseShort<C, T, RR, VR>
             extends ColumnDefaultClause<C, T, RR, RR>
             implements Insert._DynamicValuesClause<C, T, VR>
@@ -1125,18 +1156,28 @@ abstract class InsertSupport {
         }
 
         @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Object value) {
-            throw new UnsupportedOperationException();
+        public PairConsumer<T> accept(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+            return null;
         }
 
         @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
-            throw new UnsupportedOperationException();
+        public PairConsumer<T> accept(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
+            return null;
+        }
+
+        @Override
+        public <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, E value) {
+            return null;
+        }
+
+        @Override
+        public <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
+            return null;
         }
 
         @Override
         public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
-            throw new UnsupportedOperationException();
+            return null;
         }
 
         @Override
@@ -1204,12 +1245,22 @@ abstract class InsertSupport {
         }
 
         @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value) {
-            return this.accept(field, operator.apply(field, SQLs._safeParam(value)));
+        public PairConsumer<T> accept(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+            return this.accept(field, supplier.get());
         }
 
         @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
+        public PairConsumer<T> accept(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
+            return this.accept(field, function.apply(field));
+        }
+
+        @Override
+        public <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value) {
+            return this.accept(field, operator.apply(field, value));
+        }
+
+        @Override
+        public <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
             return this.accept(field, operator.apply(field, supplier.get()));
         }
 
@@ -1365,12 +1416,22 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Object value) {
+        public final PairConsumer<T> accept(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
+        public final PairConsumer<T> accept(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public final <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, E value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public final <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
             throw new UnsupportedOperationException();
         }
 
@@ -2198,8 +2259,6 @@ abstract class InsertSupport {
      * Check insert statement for safety.
      * </p>
      *
-     * @see ReturningInsertStatement#asReturningInsert()
-     * @see InsertStatement#asInsert()
      */
     private static void insertStatementGuard(final _Insert statement) {
         if (!(statement instanceof _Insert._ChildInsert)) {

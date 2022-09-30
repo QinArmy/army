@@ -30,7 +30,7 @@ abstract class LiteralExpression extends OperationExpression {
         return new MultiLiteralExpression(paramMeta, values);
     }
 
-    static LiteralExpression nullableNamedSingle(final @Nullable TypeMeta paramMeta, final @Nullable String name) {
+    static LiteralExpression namedNullableSingle(final @Nullable TypeMeta paramMeta, final @Nullable String name) {
         assert paramMeta != null && name != null;
         return new NamedSingleLiteral(paramMeta, name);
     }

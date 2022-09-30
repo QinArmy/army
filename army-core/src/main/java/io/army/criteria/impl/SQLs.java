@@ -113,8 +113,8 @@ public abstract class SQLs extends StandardSyntax {
      * @see #namedParam(TypeMeta, String)
      * @see #namedParams(DataField, int)
      * @see #namedParams(TypeMeta, String, int)
-     * @see #nullableNamedParam(DataField)
-     * @see #nullableNamedParam(TypeMeta, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedNullableParam(TypeMeta, String)
      */
     public static Update._StandardBatchDomainUpdateClause<Void> batchDomainUpdate() {
         return StandardUpdate.batchDomain(null);
@@ -131,8 +131,8 @@ public abstract class SQLs extends StandardSyntax {
      * @see #namedParam(TypeMeta, String)
      * @see #namedParams(DataField, int)
      * @see #namedParams(TypeMeta, String, int)
-     * @see #nullableNamedParam(DataField)
-     * @see #nullableNamedParam(TypeMeta, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedNullableParam(TypeMeta, String)
      */
     public static <C> Update._StandardBatchDomainUpdateClause<C> batchDomainUpdate(C criteria) {
         Objects.requireNonNull(criteria);
@@ -148,8 +148,8 @@ public abstract class SQLs extends StandardSyntax {
      * @see #namedParam(TypeMeta, String)
      * @see #namedParams(DataField, int)
      * @see #namedParams(TypeMeta, String, int)
-     * @see #nullableNamedParam(DataField)
-     * @see #nullableNamedParam(TypeMeta, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedNullableParam(TypeMeta, String)
      */
     public static Update._StandardBatchSingleUpdateClause<Void> batchSingleUpdate() {
         return StandardUpdate.batchSingle(null);
@@ -166,8 +166,8 @@ public abstract class SQLs extends StandardSyntax {
      * @see #namedParam(TypeMeta, String)
      * @see #namedParams(DataField, int)
      * @see #namedParams(TypeMeta, String, int)
-     * @see #nullableNamedParam(DataField)
-     * @see #nullableNamedParam(TypeMeta, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedNullableParam(TypeMeta, String)
      */
     public static <C> Update._StandardBatchSingleUpdateClause<C> batchSingleUpdate(C criteria) {
         Objects.requireNonNull(criteria);
@@ -191,8 +191,8 @@ public abstract class SQLs extends StandardSyntax {
      * @see #namedParam(DataField)
      * @see #namedParam(TypeMeta, String)
      * @see #namedParams(TypeMeta, String, int)
-     * @see #nullableNamedParam(DataField)
-     * @see #nullableNamedParam(TypeMeta, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedNullableParam(TypeMeta, String)
      */
     public static Delete.StandardBatchDeleteSpec<Void> batchDomainDelete() {
         return StandardDelete.batch(null);
@@ -208,8 +208,8 @@ public abstract class SQLs extends StandardSyntax {
      * @see #namedParam(DataField)
      * @see #namedParam(TypeMeta, String)
      * @see #namedParams(TypeMeta, String, int)
-     * @see #nullableNamedParam(DataField)
-     * @see #nullableNamedParam(TypeMeta, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedNullableParam(TypeMeta, String)
      */
     public static <C> Delete.StandardBatchDeleteSpec<C> batchDomainDelete(C criteria) {
         Objects.requireNonNull(criteria);
@@ -431,14 +431,44 @@ public abstract class SQLs extends StandardSyntax {
         return ParamExpression.single(type, null);
     }
 
-
     /**
      * <p>
-     * Create strict param expression
+     * Value must be below type:
+     *     <ul>
+     *         <li>{@link Boolean}</li>
+     *         <li>{@link String}</li>
+     *         <li>{@link Integer}</li>
+     *         <li>{@link Long}</li>
+     *         <li>{@link Short}</li>
+     *         <li>{@link Byte}</li>
+     *         <li>{@link Double}</li>
+     *         <li>{@link Float}</li>
+     *         <li>{@link java.math.BigDecimal}</li>
+     *         <li>{@link java.math.BigInteger}</li>
+     *         <li>{@link BitSet}</li>
+     *         <li>{@link io.army.struct.CodeEnum}</li>
+     *         <li>{@link io.army.struct.TextEnum}</li>
+     *         <li>{@link java.time.LocalTime}</li>
+     *         <li>{@link java.time.LocalDate}</li>
+     *         <li>{@link java.time.LocalDateTime}</li>
+     *         <li>{@link java.time.OffsetDateTime}</li>
+     *         <li>{@link java.time.ZonedDateTime}</li>
+     *         <li>{@link java.time.OffsetTime}</li>
+     *         <li>{@link java.time.ZoneId}</li>
+     *         <li>{@link java.time.Month}</li>
+     *         <li>{@link java.time.DayOfWeek}</li>
+     *         <li>{@link java.time.Year}</li>
+     *         <li>{@link java.time.YearMonth}</li>
+     *         <li>{@link java.time.MonthDay}</li>
+     *         <li>{@code  byte[]}</li>
+     *     </ul>
      * </p>
+     *
+     * @param value non null
+     * @return parameter expression
+     * @see #literal(Object)
      */
     public static Expression param(final Object value) {
-        Objects.requireNonNull(value);
         return ParamExpression.single(_MappingFactory.getDefault(value.getClass()), value);
     }
 
@@ -453,9 +483,10 @@ public abstract class SQLs extends StandardSyntax {
 
     /**
      * <p>
-     * Create strict param expression
+     * Create strict parameter expression
      * </p>
      *
+     * @param value nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will invoked.
      * @see #literal(TypeInfer, Object)
      */
     public static Expression param(final TypeInfer typeExp, final @Nullable Object value) {
@@ -549,94 +580,163 @@ public abstract class SQLs extends StandardSyntax {
 
     /**
      * <p>
-     * Create nullable named parameter expression for batch update(or delete)
+     * Create named non-null parameter expression for batch update(delete) and values insert.
      * </p>
      *
-     * @see Update._BatchSetClause
+     * @see #namedParam(MappingType, String)
+     * @see #namedParam(TypeInfer, String)
+     * @see #namedParam(DataField)
+     * @see #namedNullableParam(MappingType, String)
+     * @see #namedNullableParam(TypeInfer, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedLiteral(MappingType, String)
+     * @see #namedLiteral(TypeInfer, String)
+     * @see #namedLiteral(DataField)
+     * @see #namedNullableLiteral(MappingType, String)
+     * @see #namedNullableLiteral(TypeInfer, String)
+     * @see #namedNullableLiteral(DataField)
      */
-    public static Expression nullableNamedParam(TypeMeta paramMeta, String name) {
-        return ParamExpression.namedNullableSingle(paramMeta, name);
+    public static Expression namedParam(final MappingType type, final String name) {
+        return ParamExpression.namedSingle(type, name);
     }
-
-    static Expression _nullableNamedParam(DataField field, String name) {
-        final TypeMeta paramMeta;
-        if (field instanceof TableField) {
-            paramMeta = (TableField) field;
-        } else {
-            paramMeta = field.typeMeta();
-        }
-        return ParamExpression.namedNullableSingle(paramMeta, name);
-    }
-
 
     /**
      * <p>
-     * Create nullable named parameter expression for batch update(or delete)
+     * Create named non-null parameter expression for batch update(delete) and values insert.
      * </p>
      *
-     * @see Update._BatchSetClause
-     */
-    public static Expression nullableNamedParam(final DataField field) {
-        final TypeMeta paramMeta;
-        if (field instanceof TableField) {
-            paramMeta = (TableField) field;
-        } else {
-            paramMeta = field.typeMeta();
-        }
-        return ParamExpression.namedNullableSingle(paramMeta, field.fieldName());
-    }
-
-
-    /**
-     * <p>
-     * Create non-null named parameter expression for batch update(or delete)
-     * </p>
-     *
-     * @see SQLs#batchDomainUpdate()
-     * @see SQLs#batchDomainUpdate(Object)
-     * @see SQLs#batchDomainDelete()
-     * @see SQLs#batchDomainDelete(Object)
+     * @see #namedParam(MappingType, String)
+     * @see #namedParam(TypeInfer, String)
+     * @see #namedParam(DataField)
+     * @see #namedNullableParam(MappingType, String)
+     * @see #namedNullableParam(TypeInfer, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedLiteral(MappingType, String)
+     * @see #namedLiteral(TypeInfer, String)
+     * @see #namedLiteral(DataField)
+     * @see #namedNullableLiteral(MappingType, String)
+     * @see #namedNullableLiteral(TypeInfer, String)
+     * @see #namedNullableLiteral(DataField)
      */
     public static Expression namedParam(final TypeInfer typeExp, final String name) {
         final Expression result;
         if (typeExp instanceof TableField) {
-            result = ParamExpression.namedNonNullSingle((TableField) typeExp, name);
+            result = ParamExpression.namedSingle((TableField) typeExp, name);
         } else {
-            result = ParamExpression.namedNonNullSingle(typeExp.typeMeta(), name);
+            result = ParamExpression.namedSingle(typeExp.typeMeta(), name);
         }
         return result;
-    }
-
-    static Expression _namedParam(DataField field, String name) {
-        final TypeMeta paramMeta;
-        if (field instanceof TableField) {
-            paramMeta = (TableField) field;
-        } else {
-            paramMeta = field.typeMeta();
-        }
-        return ParamExpression.namedNonNullSingle(paramMeta, name);
     }
 
 
     /**
      * <p>
-     * Create non-null named parameter expression for batch update(or delete)
+     * Create named non-null parameter expression for batch update(delete) and values insert.
      * </p>
      *
-     * @see SQLs#batchDomainUpdate()
-     * @see SQLs#batchDomainUpdate(Object)
-     * @see SQLs#batchDomainDelete()
-     * @see SQLs#batchDomainDelete(Object)
+     * @see #namedParam(MappingType, String)
+     * @see #namedParam(TypeInfer, String)
+     * @see #namedParam(DataField)
+     * @see #namedNullableParam(MappingType, String)
+     * @see #namedNullableParam(TypeInfer, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedLiteral(MappingType, String)
+     * @see #namedLiteral(TypeInfer, String)
+     * @see #namedLiteral(DataField)
+     * @see #namedNullableLiteral(MappingType, String)
+     * @see #namedNullableLiteral(TypeInfer, String)
+     * @see #namedNullableLiteral(DataField)
      */
-    public static Expression namedParam(DataField field) {
-        final TypeMeta paramMeta;
+    public static Expression namedParam(final DataField field) {
+        final Expression result;
         if (field instanceof TableField) {
-            paramMeta = (TableField) field;
+            result = ParamExpression.namedSingle((TableField) field, field.fieldName());
         } else {
-            paramMeta = field.typeMeta();
+            result = ParamExpression.namedSingle(field.typeMeta(), field.fieldName());
         }
-        return ParamExpression.namedNonNullSingle(paramMeta, field.fieldName());
+        return result;
     }
+
+
+    /**
+     * <p>
+     * Create named nullable parameter expression for batch update(delete) and values insert.
+     * </p>
+     *
+     * @see #namedParam(MappingType, String)
+     * @see #namedParam(TypeInfer, String)
+     * @see #namedParam(DataField)
+     * @see #namedNullableParam(MappingType, String)
+     * @see #namedNullableParam(TypeInfer, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedLiteral(MappingType, String)
+     * @see #namedLiteral(TypeInfer, String)
+     * @see #namedLiteral(DataField)
+     * @see #namedNullableLiteral(MappingType, String)
+     * @see #namedNullableLiteral(TypeInfer, String)
+     * @see #namedNullableLiteral(DataField)
+     */
+    public static Expression namedNullableParam(MappingType type, String name) {
+        return ParamExpression.namedNullableSingle(type, name);
+    }
+
+    /**
+     * <p>
+     * Create named nullable parameter expression for batch update(or delete)
+     * </p>
+     *
+     * @see #namedParam(MappingType, String)
+     * @see #namedParam(TypeInfer, String)
+     * @see #namedParam(DataField)
+     * @see #namedNullableParam(MappingType, String)
+     * @see #namedNullableParam(TypeInfer, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedLiteral(MappingType, String)
+     * @see #namedLiteral(TypeInfer, String)
+     * @see #namedLiteral(DataField)
+     * @see #namedNullableLiteral(MappingType, String)
+     * @see #namedNullableLiteral(TypeInfer, String)
+     * @see #namedNullableLiteral(DataField)
+     */
+    public static Expression namedNullableParam(final TypeInfer typeExp, final String name) {
+        final Expression result;
+        if (typeExp instanceof TableField) {
+            result = ParamExpression.namedNullableSingle((TableField) typeExp, name);
+        } else {
+            result = ParamExpression.namedNullableSingle(typeExp.typeMeta(), name);
+        }
+        return result;
+    }
+
+
+    /**
+     * <p>
+     * Create named nullable parameter expression for batch update(or delete)
+     * </p>
+     *
+     * @see #namedParam(MappingType, String)
+     * @see #namedParam(TypeInfer, String)
+     * @see #namedParam(DataField)
+     * @see #namedNullableParam(MappingType, String)
+     * @see #namedNullableParam(TypeInfer, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedLiteral(MappingType, String)
+     * @see #namedLiteral(TypeInfer, String)
+     * @see #namedLiteral(DataField)
+     * @see #namedNullableLiteral(MappingType, String)
+     * @see #namedNullableLiteral(TypeInfer, String)
+     * @see #namedNullableLiteral(DataField)
+     */
+    public static Expression namedNullableParam(final DataField field) {
+        final Expression result;
+        if (field instanceof TableField) {
+            result = ParamExpression.namedNullableSingle((TableField) field, field.fieldName());
+        } else {
+            result = ParamExpression.namedNullableSingle(field.typeMeta(), field.fieldName());
+        }
+        return result;
+    }
+
 
     public static Expression namedParams(final TypeInfer typeExp, final String name, final int size) {
         final Expression result;
@@ -658,19 +758,70 @@ public abstract class SQLs extends StandardSyntax {
         return ParamExpression.namedMulti(paramMeta, field.fieldName(), size);
     }
 
-    public static Expression literal(Object value) {
-        Objects.requireNonNull(value);
+    /**
+     * <p>
+     * Value must be below types:
+     *     <ul>
+     *         <li>{@link Boolean}</li>
+     *         <li>{@link String}</li>
+     *         <li>{@link Integer}</li>
+     *         <li>{@link Long}</li>
+     *         <li>{@link Short}</li>
+     *         <li>{@link Byte}</li>
+     *         <li>{@link Double}</li>
+     *         <li>{@link Float}</li>
+     *         <li>{@link java.math.BigDecimal}</li>
+     *         <li>{@link java.math.BigInteger}</li>
+     *         <li>{@link BitSet}</li>
+     *         <li>{@link io.army.struct.CodeEnum}</li>
+     *         <li>{@link io.army.struct.TextEnum}</li>
+     *         <li>{@link java.time.LocalTime}</li>
+     *         <li>{@link java.time.LocalDate}</li>
+     *         <li>{@link java.time.LocalDateTime}</li>
+     *         <li>{@link java.time.OffsetDateTime}</li>
+     *         <li>{@link java.time.ZonedDateTime}</li>
+     *         <li>{@link java.time.OffsetTime}</li>
+     *         <li>{@link java.time.ZoneId}</li>
+     *         <li>{@link java.time.Month}</li>
+     *         <li>{@link java.time.DayOfWeek}</li>
+     *         <li>{@link java.time.Year}</li>
+     *         <li>{@link java.time.YearMonth}</li>
+     *         <li>{@link java.time.MonthDay}</li>
+     *         <li>{@code  byte[]}</li>
+     *     </ul>
+     * </p>
+     *
+     * @param value non null
+     * @return literal expression
+     * @see #param(Object)
+     */
+    public static Expression literal(final Object value) {
         return LiteralExpression.single(_MappingFactory.getDefault(value.getClass()), value);
     }
 
-    public static Expression literal(MappingType type, Object value) {
+    /**
+     * <p>
+     * Create literal expression
+     * </p>
+     *
+     * @param type  non-null
+     * @param value nullable
+     * @see #literal(TypeInfer, Object)
+     */
+    public static Expression literal(final MappingType type, final @Nullable Object value) {
         return LiteralExpression.single(type, value);
     }
 
     /**
+     * <p>
+     * Create strict literal expression
+     * </p>
+     *
+     * @param typeExp non-null
+     * @param value   nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will invoked.
      * @see #param(TypeInfer, Object)
      */
-    public static Expression literal(final TypeInfer typeExp, final Object value) {
+    public static Expression literal(final TypeInfer typeExp, final @Nullable Object value) {
         final Expression result;
         if (typeExp instanceof TableField) {
             if (value instanceof Supplier) {
@@ -686,41 +837,242 @@ public abstract class SQLs extends StandardSyntax {
         return result;
     }
 
-    public static Expression literals(TypeInfer typeExp, Collection<?> values) {
+    public static Expression multiLiteral(final TypeInfer typeExp, final Collection<?> values) {
         final Expression result;
         if (typeExp instanceof TableField) {
-            result = LiteralExpression.single((TableField) typeExp, values);
+            result = LiteralExpression.multi((TableField) typeExp, values);
         } else {
-            result = LiteralExpression.single(typeExp.typeMeta(), values);
+            result = LiteralExpression.multi(typeExp.typeMeta(), values);
         }
         return result;
     }
 
-    public static Expression literals(TypeMeta paramMeta, Supplier<? extends Collection<?>> supplier) {
-        return LiteralExpression.multi(paramMeta, supplier.get());
-    }
-
-    public static Expression literals(TypeMeta paramMeta, Function<String, ?> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (!(value instanceof Collection)) {
-            String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());
-            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+    public static Expression multiLiteral(final TypeInfer typeExp, final Function<String, ?> function, final String keyName) {
+        final Object values;
+        values = function.apply(keyName);
+        if (!(values instanceof Collection)) {
+            throw CriteriaUtils.nonCollectionValue(keyName);
         }
-        return LiteralExpression.multi(paramMeta, (Collection<?>) value);
+        final Expression result;
+        if (typeExp instanceof TableField) {
+            result = LiteralExpression.multi((TableField) typeExp, (Collection<?>) values);
+        } else {
+            result = LiteralExpression.multi(typeExp.typeMeta(), (Collection<?>) values);
+        }
+        return result;
     }
 
-    public static Expression namedLiteral(TypeMeta paramMeta, String name) {
-        return LiteralExpression.namedSingle(paramMeta, name);
+
+    /**
+     * <p>
+     * Create named non-null literal expression. This expression can only be used in values insert statement.
+     * </p>
+     * <p>
+     * Note: this method couldn't be used in batch update(delete) statement.
+     * </p>
+     *
+     * @param type non-null
+     * @param name non-null
+     * @return non-null named literal expression
+     * @see #namedParam(MappingType, String)
+     * @see #namedParam(TypeInfer, String)
+     * @see #namedParam(DataField)
+     * @see #namedNullableParam(MappingType, String)
+     * @see #namedNullableParam(TypeInfer, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedLiteral(MappingType, String)
+     * @see #namedLiteral(TypeInfer, String)
+     * @see #namedLiteral(DataField)
+     * @see #namedNullableLiteral(MappingType, String)
+     * @see #namedNullableLiteral(TypeInfer, String)
+     * @see #namedNullableLiteral(DataField)
+     */
+    public static Expression namedLiteral(final MappingType type, final String name) {
+        return LiteralExpression.namedSingle(type, name);
     }
 
-    public static Expression nullableNamedLiteral(TypeMeta paramMeta, String name) {
-        return LiteralExpression.nullableNamedSingle(paramMeta, name);
+    /**
+     * <p>
+     * Create named non-null literal expression. This expression can only be used in values insert statement.
+     * </p>
+     * <p>
+     * Note: this method couldn't be used in batch update(delete) statement.
+     * </p>
+     *
+     * @param typeExp non-null
+     * @param name    non-null
+     * @return non-null named literal expression
+     * @see #namedParam(MappingType, String)
+     * @see #namedParam(TypeInfer, String)
+     * @see #namedParam(DataField)
+     * @see #namedNullableParam(MappingType, String)
+     * @see #namedNullableParam(TypeInfer, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedLiteral(MappingType, String)
+     * @see #namedLiteral(TypeInfer, String)
+     * @see #namedLiteral(DataField)
+     * @see #namedNullableLiteral(MappingType, String)
+     * @see #namedNullableLiteral(TypeInfer, String)
+     * @see #namedNullableLiteral(DataField)
+     */
+    public static Expression namedLiteral(final TypeInfer typeExp, final String name) {
+        final Expression result;
+        if (typeExp instanceof TableField) {
+            result = LiteralExpression.namedSingle((TableField) typeExp, name);
+        } else {
+            result = LiteralExpression.namedSingle(typeExp.typeMeta(), name);
+        }
+        return result;
     }
 
+
+    /**
+     * <p>
+     * Create named non-null literal expression. This expression can only be used in values insert statement.
+     * </p>
+     * <p>
+     * Note: this method couldn't be used in batch update(delete) statement.
+     * </p>
+     *
+     * @param field non-null
+     * @return non-null named literal expression
+     * @see #namedParam(MappingType, String)
+     * @see #namedParam(TypeInfer, String)
+     * @see #namedParam(DataField)
+     * @see #namedNullableParam(MappingType, String)
+     * @see #namedNullableParam(TypeInfer, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedLiteral(MappingType, String)
+     * @see #namedLiteral(TypeInfer, String)
+     * @see #namedLiteral(DataField)
+     * @see #namedNullableLiteral(MappingType, String)
+     * @see #namedNullableLiteral(TypeInfer, String)
+     * @see #namedNullableLiteral(DataField)
+     */
+    public static Expression namedLiteral(final DataField field) {
+        final Expression result;
+        if (field instanceof TableField) {
+            result = LiteralExpression.namedSingle((TableField) field, field.fieldName());
+        } else {
+            result = LiteralExpression.namedSingle(field.typeMeta(), field.fieldName());
+        }
+        return result;
+    }
+
+
+    /**
+     * <p>
+     * Create named nullable literal expression. This expression can only be used in values insert statement.
+     * </p>
+     * <p>
+     * Note: this method couldn't be used in batch update(delete) statement.
+     * </p>
+     *
+     * @param type non-null
+     * @param name non-null
+     * @return named nullable literal expression
+     * @see #namedParam(MappingType, String)
+     * @see #namedParam(TypeInfer, String)
+     * @see #namedParam(DataField)
+     * @see #namedNullableParam(MappingType, String)
+     * @see #namedNullableParam(TypeInfer, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedLiteral(MappingType, String)
+     * @see #namedLiteral(TypeInfer, String)
+     * @see #namedLiteral(DataField)
+     * @see #namedNullableLiteral(MappingType, String)
+     * @see #namedNullableLiteral(TypeInfer, String)
+     * @see #namedNullableLiteral(DataField)
+     */
+    public static Expression namedNullableLiteral(final MappingType type, final String name) {
+        return LiteralExpression.namedNullableSingle(type, name);
+    }
+
+    /**
+     * <p>
+     * Create named nullable literal expression. This expression can only be used in values insert statement.
+     * </p>
+     * <p>
+     * Note: this method couldn't be used in batch update(delete) statement.
+     * </p>
+     *
+     * @param typeExp non-null
+     * @param name    non-null
+     * @return named nullable literal expression
+     * @see #namedParam(MappingType, String)
+     * @see #namedParam(TypeInfer, String)
+     * @see #namedParam(DataField)
+     * @see #namedNullableParam(MappingType, String)
+     * @see #namedNullableParam(TypeInfer, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedLiteral(MappingType, String)
+     * @see #namedLiteral(TypeInfer, String)
+     * @see #namedLiteral(DataField)
+     * @see #namedNullableLiteral(MappingType, String)
+     * @see #namedNullableLiteral(TypeInfer, String)
+     * @see #namedNullableLiteral(DataField)
+     */
+    public static Expression namedNullableLiteral(final TypeInfer typeExp, final String name) {
+        final Expression result;
+        if (typeExp instanceof TableField) {
+            result = LiteralExpression.namedNullableSingle((TableField) typeExp, name);
+        } else {
+            result = LiteralExpression.namedNullableSingle(typeExp.typeMeta(), name);
+        }
+        return result;
+    }
+
+    /**
+     * <p>
+     * Create named nullable literal expression. This expression can only be used in values insert statement.
+     * </p>
+     * <p>
+     * Note: this method couldn't be used in batch update(delete) statement.
+     * </p>
+     *
+     * @param field non-null
+     * @return non-null named literal expression
+     * @see #namedParam(MappingType, String)
+     * @see #namedParam(TypeInfer, String)
+     * @see #namedParam(DataField)
+     * @see #namedNullableParam(MappingType, String)
+     * @see #namedNullableParam(TypeInfer, String)
+     * @see #namedNullableParam(DataField)
+     * @see #namedLiteral(MappingType, String)
+     * @see #namedLiteral(TypeInfer, String)
+     * @see #namedLiteral(DataField)
+     * @see #namedNullableLiteral(MappingType, String)
+     * @see #namedNullableLiteral(TypeInfer, String)
+     * @see #namedNullableLiteral(DataField)
+     */
+    public static Expression namedNullableLiteral(final DataField field) {
+        final Expression result;
+        if (field instanceof TableField) {
+            result = LiteralExpression.namedNullableSingle((TableField) field, field.fieldName());
+        } else {
+            result = LiteralExpression.namedNullableSingle(field.typeMeta(), field.fieldName());
+        }
+        return result;
+    }
+
+
+    /**
+     * <p>
+     * Create named non-null multi literal expression. This expression can only be used in values insert statement.
+     * </p>
+     * <p>
+     * Note: this method couldn't be used in batch update(delete) statement.
+     * </p>
+     *
+     * @param paramMeta non-null
+     * @param name      non-null
+     * @param size      non-null,the size of {@link Collection}
+     * @return named non-null multi literal expression
+     */
     public static Expression namedLiterals(TypeMeta paramMeta, String name, int size) {
         return LiteralExpression.namedMulti(paramMeta, name, size);
     }
+
 
     static Expression star() {
         return StarLiteral.INSTANCE;
@@ -766,10 +1118,8 @@ public abstract class SQLs extends StandardSyntax {
         final Expression valueExp;
         if (value instanceof Expression) {
             valueExp = (Expression) value;
-        } else if (field instanceof TableField) {
-            valueExp = SQLs.param((TableField) field, value);
         } else {
-            valueExp = SQLs.param(field.typeMeta(), value);
+            valueExp = SQLs.param(field, value);
         }
         final ArmyItemPair itemPair;
         if (operator == null) {

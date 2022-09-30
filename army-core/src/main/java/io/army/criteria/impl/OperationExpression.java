@@ -77,11 +77,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate equalNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.EQUAL, SQLs.namedParam(this, paramName));
-    }
-
-    @Override
     public final <C> IPredicate equalAny(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
@@ -138,11 +133,6 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final IPredicate less(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
         return DualPredicate.create(this, DualOperator.LESS, operator.apply(this, function.apply(keyName)));
-    }
-
-    @Override
-    public final IPredicate lessNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.LESS, SQLs.namedParam(this, paramName));
     }
 
     @Override
@@ -218,11 +208,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate lessEqualNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.LESS_EQUAL, SQLs.namedParam(this, paramName));
-    }
-
-    @Override
     public final <C> IPredicate lessEqualAny(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
@@ -293,11 +278,6 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final IPredicate great(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
         return DualPredicate.create(this, DualOperator.GREAT, operator.apply(this, function.apply(keyName)));
-    }
-
-    @Override
-    public final IPredicate greatNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.GREAT, SQLs.namedParam(this, paramName));
     }
 
 
@@ -375,11 +355,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate greatEqualNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.GREAT_EQUAL, SQLs.namedParam(this, paramName));
-    }
-
-    @Override
     public final <C> IPredicate greatEqualAny(Function<C, ? extends SubQuery> function) {
         final SubQuery query;
         query = function.apply(CriteriaContextStack.getTopCriteria());
@@ -449,11 +424,6 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final IPredicate notEqual(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
         return DualPredicate.create(this, DualOperator.NOT_EQUAL, operator.apply(this, function.apply(keyName)));
-    }
-
-    @Override
-    public final IPredicate notEqualNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.NOT_EQUAL, SQLs.namedParam(this, paramName));
     }
 
     @Override
@@ -688,12 +658,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate likeNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.LIKE, SQLs.namedParam(this, paramName));
-    }
-
-
-    @Override
     public final IPredicate notLike(Expression operand) {
         return DualPredicate.create(this, DualOperator.NOT_LIKE, operand);
     }
@@ -726,11 +690,6 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final IPredicate notLike(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
         return DualPredicate.create(this, DualOperator.NOT_LIKE, operator.apply(this, function.apply(keyName)));
-    }
-
-    @Override
-    public final IPredicate notLikeNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.NOT_LIKE, SQLs.namedParam(this, paramName));
     }
 
 
@@ -770,12 +729,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression modNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.MOD, SQLs.namedParam(this, paramName));
-    }
-
-
-    @Override
     public final Expression times(Expression operand) {
         return DualExpression.create(this, DualOperator.TIMES, operand);
     }
@@ -809,12 +762,6 @@ abstract class OperationExpression implements ArmyExpression {
     public final Expression times(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
         return DualExpression.create(this, DualOperator.TIMES, operator.apply(this, function.apply(keyName)));
     }
-
-    @Override
-    public final Expression timesNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.TIMES, SQLs.namedParam(this, paramName));
-    }
-
 
     @Override
     public final Expression plus(Expression operand) {
@@ -852,12 +799,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression plusNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.PLUS, SQLs.namedParam(this, paramName));
-    }
-
-
-    @Override
     public final Expression minus(Expression operand) {
         return DualExpression.create(this, DualOperator.MINUS, operand);
     }
@@ -893,12 +834,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression minusNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.MINUS, SQLs.namedParam(this, paramName));
-    }
-
-
-    @Override
     public final Expression divide(Expression operand) {
         return DualExpression.create(this, DualOperator.DIVIDE, operand);
     }
@@ -932,12 +867,6 @@ abstract class OperationExpression implements ArmyExpression {
     public final Expression divide(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
         return DualExpression.create(this, DualOperator.DIVIDE, operator.apply(this, function.apply(keyName)));
     }
-
-    @Override
-    public final Expression divideNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.namedParam(this, paramName));
-    }
-
     @Override
     public final Expression negate() {
         return UnaryExpression.create(this, UnaryOperator.NEGATE);
@@ -979,12 +908,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression bitwiseAndNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.namedParam(this, paramName));
-    }
-
-
-    @Override
     public final Expression bitwiseOr(Expression operand) {
         return DualExpression.create(this, DualOperator.BITWISE_OR, operand);
     }
@@ -1020,12 +943,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression bitwiseOrNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.namedParam(this, paramName));
-    }
-
-
-    @Override
     public final Expression xor(Expression operand) {
         return DualExpression.create(this, DualOperator.XOR, operand);
     }
@@ -1058,11 +975,6 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final Expression xor(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
         return DualExpression.create(this, DualOperator.XOR, operator.apply(this, function.apply(keyName)));
-    }
-
-    @Override
-    public final Expression xorNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.XOR, SQLs.namedParam(this, paramName));
     }
 
     @Override
@@ -1106,12 +1018,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression rightShiftNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.namedParam(this, paramName));
-    }
-
-
-    @Override
     public final Expression leftShift(Expression operand) {
         return DualExpression.create(this, DualOperator.LEFT_SHIFT, operand);
     }
@@ -1145,12 +1051,6 @@ abstract class OperationExpression implements ArmyExpression {
     public final Expression leftShift(BiFunction<? super Expression, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
         return DualExpression.create(this, DualOperator.LEFT_SHIFT, operator.apply(this, function.apply(keyName)));
     }
-
-    @Override
-    public final Expression leftShiftNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.namedParam(this, paramName));
-    }
-
 
     @Override
     public final Expression asType(final @Nullable TypeMeta paramMeta) {
