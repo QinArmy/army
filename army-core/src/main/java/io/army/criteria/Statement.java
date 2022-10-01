@@ -1,7 +1,7 @@
 package io.army.criteria;
 
 import io.army.dialect.Dialect;
-import io.army.function.PredicateWithMap;
+import io.army.function.TePredicate;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
@@ -336,18 +336,39 @@ public interface Statement {
 
         WA where(Function<Expression, IPredicate> expOperator, Expression operand);
 
-        WA where(Function<Function<Expression, Expression>, IPredicate> expOperator, Function<Expression, Expression> function);
-
         WA where(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier);
 
-        <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+        WA where(Function<Expression, IPredicate> expOperator, Function<C, Expression> function);
 
-        <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> operand);
+        <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
 
-        WA where(PredicateWithMap expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+        <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+
+        WA where(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+
+        WA where(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Object first, Object second);
+
+        WA where(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Supplier<?> firstSupplier, Supplier<?> secondSupplier);
+
+        WA where(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+
+        WA whereIf(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier);
+
+        WA whereIf(Function<Expression, IPredicate> expOperator, Function<C, Expression> function);
+
+        <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
+
+        <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+
+        WA whereIf(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+
+        WA whereIf(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Object first, Object second);
+
+        WA whereIf(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Supplier<?> firstSupplier, Supplier<?> secondSupplier);
+
+        WA whereIf(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
 
 
-        <T> WA where(BiFunction<Expression, Expression, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Supplier<?> firstSupplier, Supplier<?> secondSupplier)
     }
 
     /**
@@ -398,32 +419,40 @@ public interface Statement {
      */
     interface _WhereAndClause<C, WA> extends _MinWhereAndClause<C, WA> {
 
+        WA and(Function<Expression, IPredicate> expOperator, Expression operand);
 
-        WA and(Function<Object, IPredicate> operator, DataField operand);
+        WA and(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier);
 
-        WA and(Function<Object, IPredicate> operator, Supplier<?> operand);
+        WA and(Function<Expression, IPredicate> expOperator, Function<C, Expression> function);
 
-        WA and(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName);
+        <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
 
-        WA and(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+        <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
-        WA and(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
+        WA and(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
-        WA ifNonNullAnd(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand);
+        WA and(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Object first, Object second);
 
-        WA ifNonNullAnd(Function<Object, ? extends Expression> firstOperator, @Nullable Object firstOperand
-                , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand);
+        WA and(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Supplier<?> firstSupplier, Supplier<?> secondSupplier);
 
-        WA ifAnd(Function<Object, IPredicate> operator, Supplier<?> operand);
+        WA and(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
 
-        WA ifAnd(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName);
+        WA ifAnd(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier);
 
-        WA ifAnd(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+        WA ifAnd(Function<Expression, IPredicate> expOperator, Function<C, Expression> function);
 
-        WA ifAnd(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
+        <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
 
-        WA ifAnd(Function<Object, ? extends Expression> firstOperator, Supplier<?> firstOperand
-                , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand);
+        <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+
+        WA ifAnd(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+
+        WA ifAnd(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, @Nullable Object first, @Nullable Object second);
+
+        WA ifAnd(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Supplier<?> firstSupplier, Supplier<?> secondSupplier);
+
+        WA ifAnd(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+
 
     }
 
