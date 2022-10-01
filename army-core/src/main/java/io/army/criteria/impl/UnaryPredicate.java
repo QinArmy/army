@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.DataField;
-import io.army.criteria.ScalarExpression;
 import io.army.criteria.SqlValueParam;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._SelfDescribed;
@@ -12,7 +11,7 @@ import io.army.util._Exceptions;
 
 final class UnaryPredicate extends OperationPredicate {
 
-    static UnaryPredicate fromSubQuery(UnaryOperator operator, @Nullable ScalarExpression subQuery) {
+    static UnaryPredicate fromSubQuery(UnaryOperator operator, @Nullable SubQuery subQuery) {
         assert subQuery != null;
         switch (operator) {
             case NOT_EXISTS:

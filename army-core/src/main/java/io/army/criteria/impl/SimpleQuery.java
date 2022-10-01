@@ -259,13 +259,18 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final <E extends SqlOperand> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.and(expOperator.apply(supplier.get()));
     }
 
     @Override
-    public final <E extends SqlOperand> WA where(Function<E, IPredicate> expOperator, Function<C, E> function) {
+    public final <E> WA where(Function<E, IPredicate> expOperator, Function<C, E> function) {
         return this.and(expOperator.apply(function.apply(this.criteria)));
+    }
+
+    @Override
+    public final WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator, BiFunction<DataField, String, Expression> namedOperator) {
+        return this.and(fieldOperator.apply(namedOperator));
     }
 
     @Override
@@ -310,12 +315,12 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
 
     @Override
-    public final <E extends SqlOperand> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.and(expOperator.apply(supplier.get()));
     }
 
     @Override
-    public final <E extends SqlOperand> WA whereIf(Function<E, IPredicate> expOperator, Function<C, E> function) {
+    public final <E> WA whereIf(Function<E, IPredicate> expOperator, Function<C, E> function) {
         return this.and(expOperator.apply(function.apply(this.criteria)));
     }
 
@@ -394,13 +399,18 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
 
     @Override
-    public final <E extends SqlOperand> WA and(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E> WA and(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.and(expOperator.apply(supplier.get()));
     }
 
     @Override
-    public final <E extends SqlOperand> WA and(Function<E, IPredicate> expOperator, Function<C, E> function) {
+    public final <E> WA and(Function<E, IPredicate> expOperator, Function<C, E> function) {
         return this.and(expOperator.apply(function.apply(this.criteria)));
+    }
+
+    @Override
+    public final WA and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator, BiFunction<DataField, String, Expression> namedOperator) {
+        return this.and(fieldOperator.apply(namedOperator));
     }
 
     @Override
@@ -479,7 +489,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final <E extends SqlOperand> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         final E expression;
         expression = supplier.get();
         if (expression != null) {
@@ -489,7 +499,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final <E extends SqlOperand> WA ifAnd(Function<E, IPredicate> expOperator, Function<C, E> function) {
+    public final <E> WA ifAnd(Function<E, IPredicate> expOperator, Function<C, E> function) {
         final E expression;
         expression = function.apply(this.criteria);
         if (expression != null) {
@@ -497,6 +507,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         }
         return (WA) this;
     }
+
 
     @Override
     public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand) {

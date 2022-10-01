@@ -200,11 +200,11 @@ public class MySQLCriteriaUnitTests {
                     .partition()
                     .leftParen("p1")
                     .rightParen()
-                    .where(ChinaRegion_.name.equalNamed()) // batch parameter
-                    .and(ChinaRegion_.regionGdp.greatEqualNamed())// batch parameter
+                    .where(ChinaRegion_.name::equal, SQLs::namedParam) // batch parameter
+                    .and(ChinaRegion_.regionGdp::equal, SQLs::namedParam)// batch parameter
                     .and(ChinaRegion_.updateTime::between, SQLs::literal, map::get, "startTime", "endTIme")// common parameter
                     .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")// common parameter
-                    .orderBy(ChinaRegion_.name.desc(), ChinaRegion_.id)
+                    .orderBy(ChinaRegion_.name.desc())
                     .ifLimit(map::get, "rowCount")
                     .paramList(paramList)
                     .asDelete();
@@ -604,7 +604,7 @@ public class MySQLCriteriaUnitTests {
                     .where(BankUser_.id::in, SQLs::multiLiterals, (Collection<?>) criteria.get("ids"))
                     .and(BankAccount_.createTime::between, SQLs::literal, criteria::get, "startTime", "endTime")
                     .and(BankUser_.updateTime::greatEqual, SQLs::literal, LocalDateTime.now())
-                    .and(SQLs::exists, () -> MySQLs.scalarSubQuery()
+                    .and(SQLs::exists, () -> MySQLs.subQuery()
                             .select(RegisterRecord_.id)
                             .from(RegisterRecord_.T, "r")
                             .where(RegisterRecord_.userId::equal, BankUser_.id)

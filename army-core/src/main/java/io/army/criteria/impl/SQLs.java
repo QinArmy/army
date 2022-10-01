@@ -1320,17 +1320,17 @@ public abstract class SQLs extends StandardSyntax {
     /*################################## blow sql key word operate method ##################################*/
 
     /**
-     * @param scalar non-null
+     * @param subQuery non-null
      */
-    public static IPredicate exists(ScalarExpression scalar) {
-        return UnaryPredicate.fromSubQuery(UnaryOperator.EXISTS, scalar);
+    public static IPredicate exists(SubQuery subQuery) {
+        return UnaryPredicate.fromSubQuery(UnaryOperator.EXISTS, subQuery);
     }
 
     /**
-     * @param scalar non-null
+     * @param subQuery non-null
      */
-    public static IPredicate notExists(ScalarExpression scalar) {
-        return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, scalar);
+    public static IPredicate notExists(SubQuery subQuery) {
+        return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, subQuery);
     }
 
 

@@ -40,19 +40,8 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final <C> IPredicate or(Function<C, IPredicate> function) {
-        return this.or(function.apply(CriteriaContextStack.getTopCriteria()));
-    }
-
-
-    @Override
-    public final <E extends Expression> IPredicate or(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E> IPredicate or(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.or(expOperator.apply(supplier.get()));
-    }
-
-    @Override
-    public final <C, E extends Expression> IPredicate or(Function<E, IPredicate> expOperator, Function<C, E> function) {
-        return this.or(expOperator.apply(function.apply(CriteriaContextStack.getTopCriteria())));
     }
 
     @Override
@@ -119,34 +108,9 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final <C> IPredicate ifOr(Function<C, IPredicate> function) {
-        final IPredicate predicate, result;
-        predicate = function.apply(CriteriaContextStack.getTopCriteria());
-        if (predicate == null) {
-            result = this;
-        } else {
-            result = OrPredicate.create(this, predicate);
-        }
-        return result;
-    }
-
-    @Override
-    public final <E extends Expression> IPredicate ifOr(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E> IPredicate ifOr(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         final E expression;
         expression = supplier.get();
-        final IPredicate result;
-        if (expression == null) {
-            result = this;
-        } else {
-            result = this.or(expOperator.apply(expression));
-        }
-        return result;
-    }
-
-    @Override
-    public final <C, E extends Expression> IPredicate ifOr(Function<E, IPredicate> expOperator, Function<C, E> function) {
-        final E expression;
-        expression = function.apply(CriteriaContextStack.getTopCriteria());
         final IPredicate result;
         if (expression == null) {
             result = this;
@@ -255,14 +219,10 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final <E extends Expression> IPredicate and(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E> IPredicate and(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.and(expOperator.apply(supplier.get()));
     }
 
-    @Override
-    public final <C, E extends Expression> IPredicate and(Function<E, IPredicate> expOperator, Function<C, E> function) {
-        return this.and(expOperator.apply(function.apply(CriteriaContextStack.getTopCriteria())));
-    }
 
     @Override
     public final <T> IPredicate and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand) {

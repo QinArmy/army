@@ -18,11 +18,7 @@ public interface IPredicate extends Expression {
 
     IPredicate or(Supplier<IPredicate> supplier);
 
-    <C> IPredicate or(Function<C, IPredicate> function);
-
-    <E extends Expression> IPredicate or(Function<E, IPredicate> expOperator, Supplier<E> supplier);
-
-    <C, E extends Expression> IPredicate or(Function<E, IPredicate> expOperator, Function<C, E> function);
+    <E> IPredicate or(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
     <T> IPredicate or(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
 
@@ -40,11 +36,7 @@ public interface IPredicate extends Expression {
 
     IPredicate ifOr(Supplier<IPredicate> supplier);
 
-    <C> IPredicate ifOr(Function<C, IPredicate> function);
-
-    <E extends Expression> IPredicate ifOr(Function<E, IPredicate> expOperator, Supplier<E> supplier);
-
-    <C, E extends Expression> IPredicate ifOr(Function<E, IPredicate> expOperator, Function<C, E> function);
+    <E> IPredicate ifOr(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
     <T> IPredicate ifOr(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
 
@@ -78,12 +70,7 @@ public interface IPredicate extends Expression {
     /**
      * @see Statement._WhereAndClause#and(Function, Supplier)
      */
-    <E extends Expression> IPredicate and(Function<E, IPredicate> expOperator, Supplier<E> supplier);
-
-    /**
-     * @see Statement._WhereAndClause#and(Function, Function)
-     */
-    <C, E extends Expression> IPredicate and(Function<E, IPredicate> expOperator, Function<C, E> function);
+    <E> IPredicate and(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
     /**
      * @see Statement._WhereAndClause#and(BiFunction, BiFunction, Object)
