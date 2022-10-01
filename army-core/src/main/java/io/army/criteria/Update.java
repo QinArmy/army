@@ -8,6 +8,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
+import java.util.List;
 import java.util.function.*;
 
 /**
@@ -36,20 +37,35 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
          */
         SR setPairs(BiConsumer<C, Consumer<ItemPair>> consumer);
 
-        SR setExp(F field, Expression value);
+        SR set(F field, Expression value);
 
-        SR setExp(F field, Supplier<? extends Expression> supplier);
+        SR set(F field, Supplier<Expression> supplier);
 
-        SR setExp(F field, Function<C, ? extends Expression> function);
+        SR set(F field, Function<C, Expression> function);
 
-        SR ifSetExp(F field, Supplier<? extends Expression> supplier);
+        <T> SR set(F field, BiFunction<F, T, Expression> valueOperator, @Nullable T value);
 
-        SR ifSetExp(F field, Function<C, ? extends Expression> function);
+        <T> SR set(F field, BiFunction<F, T, Expression> valueOperator, Supplier<T> supplier);
 
+        SR set(F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        SR setDefault(F field);
+        <T> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, T, Expression> valueOperator, @Nullable T value);
 
-        SR setNull(F field);
+        <T> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, T, Expression> valueOperator, Supplier<T> supplier);
+
+        SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        <T> SR ifSet(F field, BiFunction<F, T, Expression> valueOperator, @Nullable T value);
+
+        <T> SR ifSet(F field, BiFunction<F, T, Expression> valueOperator, Supplier<T> supplier);
+
+        SR ifSet(F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        <T> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, T, Expression> valueOperator, @Nullable T value);
+
+        <T> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, T, Expression> valueOperator, Supplier<T> supplier);
+
+        SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
     }
 
@@ -60,50 +76,6 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
      */
     interface _SimpleSetClause<C, F extends DataField, SR> extends _SetClause<C, F, SR> {
 
-        SR set(F field, @Nullable Object value);
-
-        SR setLiteral(F field, @Nullable Object value);
-
-        SR setPlus(F field, Object value);
-
-        SR setMinus(F field, Object value);
-
-        SR setPlusLiteral(F field, Object value);
-
-        SR setMinusLiteral(F field, Object value);
-
-        SR set(F field, BiFunction<DataField, Object, ItemPair> operator, Object value);
-
-        SR setExp(F field, BiFunction<DataField, Object, ItemPair> operator, Supplier<? extends Expression> supplier);
-
-        SR setExp(F field, BiFunction<DataField, Object, ItemPair> operator, Function<C, ? extends Expression> function);
-
-        SR setLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Object value);
-
-        SR ifSet(F field, Supplier<?> supplier);
-
-        SR ifSet(F field, Function<String, ?> function, String keyName);
-
-        SR ifSet(F field, BiFunction<DataField, Object, ItemPair> operator, Supplier<?> supplier);
-
-        SR ifSet(F field, BiFunction<DataField, Object, ItemPair> operator, Function<C, ?> function);
-
-        SR ifSet(F field, BiFunction<DataField, Object, ItemPair> operator, Function<String, ?> function, String keyName);
-
-        SR ifNonNullSet(F field, BiFunction<DataField, Object, ItemPair> operator, @Nullable Object operand);
-
-        SR ifSetLiteral(F field, Supplier<?> supplier);
-
-        SR ifSetLiteral(F field, Function<String, ?> function, String keyName);
-
-        SR ifSetLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Supplier<?> supplier);
-
-        SR ifNonNullSetLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, @Nullable Object operand);
-
-        SR ifSetLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Function<C, ?> function);
-
-        SR ifSetLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Function<String, ?> function, String keyName);
-
     }
 
 
@@ -113,36 +85,25 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
      */
     interface _BatchSetClause<C, F extends DataField, SR> extends _SetClause<C, F, SR> {
 
-        SR set(F field);
+        SR set(F field, BiFunction<F, String, Expression> valueOperator);
 
-        SR setNullable(F field);
+        SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, String, Expression> valueOperator);
 
-        SR setNamed(F field, String parameterName);
+        SR setList(List<F> fieldList, BiFunction<F, String, Expression> valueOperator);
 
-        SR setNullableNamed(F field, String parameterName);
+        SR setList(List<F> fieldList, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, String, Expression> valueOperator);
 
-        SR setPlus(F field);
+        SR ifSetList(List<F> fieldList, BiFunction<F, String, Expression> valueOperator);
 
-        SR setMinus(F field);
+        SR ifSetList(List<F> fieldList, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, String, Expression> valueOperator);
 
-        SR set(F field, BiFunction<DataField, Object, ItemPair> operator);
-
-        SR setNamed(F field, BiFunction<DataField, Object, ItemPair> operator, String parameterName);
-
-        SR setFields(Consumer<Consumer<F>> consumer);
-
-        SR setFields(BiConsumer<C, Consumer<F>> consumer);
-
-        SR setNullableFields(Consumer<Consumer<F>> consumer);
-
-        SR setNullableFields(BiConsumer<C, Consumer<F>> consumer);
     }
 
     interface _UpdateWhereAndClause<C, WA> extends Statement._WhereAndClause<C, WA> {
 
-        <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, T operator2);
+        <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, Number operator2);
 
-        <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable T operator2);
+        <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number operator2);
 
     }
 
@@ -171,7 +132,7 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
     interface _StandardDomainUpdateClause<C> {
 
-      <T> _StandardSetClause<C, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias);
+        <T> _StandardSetClause<C, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias);
 
     }
 

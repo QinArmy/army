@@ -8,6 +8,7 @@ import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.*;
 import io.army.example.common.Criteria;
 import io.army.example.pill.domain.User_;
+import io.army.meta.FieldMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -30,7 +31,7 @@ public class MySQLCriteriaUnitTests {
         final Update stmt;
         stmt = MySQLs.singleUpdate()
                 .update(ChinaRegion_.T, "t")
-                .set(ChinaRegion_.name, "五指礁")
+                .set(ChinaRegion_.name, SQLs::param, "五指礁")
                 .where(ChinaRegion_.name::equal, SQLs::param, "")
                 .and(ChinaRegion_.regionType.equal(SQLs::literal, RegionType.CITY).or(ChinaRegion_.regionGdp.greatEqual(SQLs::literal, "3333")))
                 .orderBy(ChinaRegion_.id.desc())
@@ -71,8 +72,8 @@ public class MySQLCriteriaUnitTests {
                 .leftParen("uni_name_region_type")
                 .rightParen()
 
-                .set(ChinaRegion_.name, "五指礁")
-                .setPlusLiteral(ChinaRegion_.regionGdp, 100)
+                .set(ChinaRegion_.name, SQLs::param, "五指礁")
+                .set(ChinaRegion_.regionGdp, SQLs::literal, 100)
                 .where(ChinaRegion_.name::equal, SQLs::literal, "")
                 .and(ChinaRegion_.parentId.equal(SQLs::param, map.get("parentId")).or(ChinaRegion_.regionType.equal(SQLs::literal, RegionType.CITY)))
                 .and(ChinaRegion_.regionGdp::plus, SQLs::literal, 100, Expression::greatEqual, 0)
@@ -102,13 +103,14 @@ public class MySQLCriteriaUnitTests {
         paramList.add(paramMap);
 
 
+        final List<FieldMeta<ChinaRegion<?>>> fieldList = new ArrayList<>();
+        fieldList.add(ChinaRegion_.name);
+        fieldList.add(ChinaRegion_.regionGdp);
         final Update stmt;
         stmt = MySQLs.batchSingleUpdate()
                 .update(ChinaRegion_.T, "t")
-                .setFields(clause -> {
-                    clause.accept(ChinaRegion_.name);
-                    clause.accept(ChinaRegion_.regionGdp);
-                })
+                .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
+                .setList(fieldList, SQLs::namedNullableParam)
                 .where(ChinaRegion_.id.equalNamed())
                 .limit(10)
                 .paramList(paramList)
@@ -364,8 +366,8 @@ public class MySQLCriteriaUnitTests {
                     .leftParen("idx_account_id")
                     .rightParen()
                     .on(BankUser_.id::equal, BankAccount_.id)
-                    .ifSet(BankUser_.nickName, map::get, "newNickName")
-                    .ifNonNullSetLiteral(BankAccount_.balance, SQLs::plusEqual, amount)
+                    .ifSet(BankUser_.nickName, SQLs::param, map::get, "newNickName")
+                    .ifSet(BankAccount_.balance, SQLs::plusEqual, SQLs::literal, amount)
                     .where(BankUser_.partnerUserId::equal, SQLs::literal, map::get, "identityId")
                     .ifAnd(BankUser_.nickName::equal, SQLs::param, map::get, "oldNickName")
                     .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", "endTime")
@@ -398,6 +400,8 @@ public class MySQLCriteriaUnitTests {
     public void multiUpdateChildFromLeft() {
         //daoMethod mock dao method
         final Consumer<Map<String, Object>> daoMethod = map -> {
+            final BigDecimal amount;
+            amount = (BigDecimal) map.get("amount");
 
             final Update stmt;
             stmt = MySQLs.multiUpdate()
@@ -405,13 +409,13 @@ public class MySQLCriteriaUnitTests {
                     .join(Person_.T, "p").on(BankUser_.id::equal, Person_.id)
                     .join(PartnerUser_.T, "up").on(BankUser_.id::equal, PartnerUser_.id)
                     .join(BankAccount_.T, "a").on(BankUser_.id::equal, BankAccount_.userId)
-                    .set(BankUser_.nickName, map.get("newNickName"))
-                    .ifSet(BankAccount_.balance, SQLs::plusEqual, map::get, "amount")
+                    .set(BankUser_.nickName, SQLs::param, map.get("newNickName"))
+                    .ifSet(BankAccount_.balance, SQLs::plusEqual, SQLs::literal, amount)
                     .where(BankUser_.partnerUserId::equal, SQLs::literal, map::get, "identityId")
                     .ifAnd(BankUser_.nickName::equal, SQLs::param, map::get, "oldNickName")
                     .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", "endTime")
                     .ifAnd(BankAccount_.version::equal, SQLs::literal, map::get, "version")
-                    .ifAnd(BankAccount_.balance::plus, SQLs::literal, map.get("amount"), Expression::greatEqual, 0)
+                    .ifAnd(BankAccount_.balance::plus, SQLs::literal, amount, Expression::greatEqual, 0)
                     .asUpdate();
 
             printStmt(stmt);
@@ -446,9 +450,9 @@ public class MySQLCriteriaUnitTests {
                     .update(PartnerUser_.T, "up")
                     .join(BankUser_.T, "u").on(BankUser_.id::equal, PartnerUser_.id)
                     .join(BankAccount_.T, "a").on(BankUser_.id::equal, BankAccount_.userId)
-                    .set(BankUser_.nickName, map.get("newNickName"))
-                    .set(PartnerUser_.legalPersonId, "66666666")
-                    .ifSet(BankAccount_.balance, SQLs::plusEqual, map::get, "amount")
+                    .set(BankUser_.nickName, SQLs::param, map::get, "newNickName")
+                    .set(PartnerUser_.legalPersonId, SQLs::literal, "66666666")
+                    .ifSet(BankAccount_.balance, SQLs::plusEqual, SQLs::literal, map::get, "amount")
                     .where(BankUser_.partnerUserId::equal, SQLs::literal, map::get, "identityId")
                     .ifAnd(BankUser_.nickName::equal, SQLs::literal, map::get, "oldNickName")
                     .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", "endTime")
@@ -524,8 +528,8 @@ public class MySQLCriteriaUnitTests {
                     .rightParen()
 
                     .on(User_.id::equal, BankAccount_.id)
-                    .set(User_.nickName)
-                    .setPlus(BankAccount_.balance)
+                    .set(User_.createTime, SQLs::namedParam)
+                    .set(BankAccount_.balance, SQLs::plusEqual, SQLs::namedParam)
                     .where(User_.identityId::equal, SQLs::literal, map::get, "identityId")
                     .ifAnd(User_.nickName::equal, SQLs::literal, map::get, "oldNickName")
                     .and(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", "endTime")

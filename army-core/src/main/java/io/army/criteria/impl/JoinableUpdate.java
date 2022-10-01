@@ -34,8 +34,6 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         , _Update {
 
 
-    final CriteriaContext criteriaContext;
-
     private final boolean supportRowLeftItem;
 
     private List<_ItemPair> itemPairList;
@@ -45,25 +43,22 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
     private Boolean prepared;
 
 
-    JoinableUpdate(CriteriaContext criteriaContext) {
-        super(criteriaContext);
+    JoinableUpdate(CriteriaContext context) {
+        super(context);
         assert this instanceof MultiUpdate;
-
-        this.criteriaContext = criteriaContext;
         this.supportRowLeftItem = this.isSupportRowLeftItem();
 
         if (this instanceof SubStatement) {
-            CriteriaContextStack.push(criteriaContext);
+            CriteriaContextStack.push(context);
         } else {
-            CriteriaContextStack.setContextStack(criteriaContext);
+            CriteriaContextStack.setContextStack(context);
         }
     }
 
-    JoinableUpdate(CriteriaContext criteriaContext, ClauseCreator<FP, JT, JS, JP> clauseCreator) {
-        super(criteriaContext, clauseCreator);
+    JoinableUpdate(CriteriaContext context, ClauseCreator<FP, JT, JS, JP> clauseCreator) {
+        super(context, clauseCreator);
         assert this instanceof SingleUpdate;
 
-        this.criteriaContext = criteriaContext;
         this.supportRowLeftItem = this.isSupportRowLeftItem();
         //single update no CriteriaContextStack operation
     }
@@ -84,284 +79,159 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
     }
 
     @Override
-    public final SR setExp(final F field, final Expression value) {
-        return this.addFieldAndExp(field, null, value);
+    public final SR set(final F field, final @Nullable Expression value) {
+        if (value == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.addItemPair(SQLs._itemPair(field, null, value));
     }
 
     @Override
-    public final SR setExp(F field, Supplier<? extends Expression> supplier) {
-        return this.addFieldAndExp(field, null, supplier.get());
+    public final SR set(F field, Supplier<Expression> supplier) {
+        return this.set(field, supplier.get());
     }
 
     @Override
-    public final SR setExp(F field, Function<C, ? extends Expression> function) {
-        return this.addFieldAndExp(field, null, function.apply(this.criteria));
+    public final SR set(F field, Function<C, Expression> function) {
+        return this.set(field, function.apply(this.criteria));
     }
 
     @Override
-    public final SR ifSetExp(F field, Supplier<? extends Expression> supplier) {
-        final Expression exp;
-        exp = supplier.get();
-        if (exp != null) {
-            this.addFieldAndExp(field, null, exp);
+    public final <T> SR set(F field, BiFunction<F, T, Expression> valueOperator, @Nullable T value) {
+        return this.addItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+    }
+
+    @Override
+    public final <T> SR set(F field, BiFunction<F, T, Expression> valueOperator, Supplier<T> supplier) {
+        return this.addItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, supplier.get())));
+    }
+
+    @Override
+    public final SR set(F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        return this.addItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, function.apply(keyName))));
+    }
+
+    @Override
+    public final <T> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, T, Expression> valueOperator, @Nullable T value) {
+        return this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+    }
+
+    @Override
+    public final <T> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, T, Expression> valueOperator, Supplier<T> supplier) {
+        return this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, supplier.get())));
+    }
+
+    @Override
+    public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        return this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, function.apply(keyName))));
+    }
+
+    @Override
+    public final <T> SR ifSet(F field, BiFunction<F, T, Expression> valueOperator, @Nullable T value) {
+        if (value != null) {
+            this.addItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
         }
         return (SR) this;
     }
 
     @Override
-    public final SR ifSetExp(F field, Function<C, ? extends Expression> function) {
-        final Expression exp;
-        exp = function.apply(this.criteria);
-        if (exp != null) {
-            this.addFieldAndExp(field, null, exp);
+    public final <T> SR ifSet(F field, BiFunction<F, T, Expression> valueOperator, Supplier<T> supplier) {
+        final T value;
+        value = supplier.get();
+        if (value != null) {
+            this.addItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
         }
         return (SR) this;
     }
 
     @Override
-    public final SR setDefault(F field) {
-        return this.addFieldAndExp(field, null, SQLs.defaultWord());
+    public final SR ifSet(F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (value != null) {
+            this.addItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+        }
+        return (SR) this;
     }
 
     @Override
-    public final SR setNull(F field) {
-        return this.addFieldAndExp(field, null, SQLs.nullWord());
+    public <T> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, T, Expression> valueOperator, @Nullable T value) {
+        if (value != null) {
+            this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final <T> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, T, Expression> valueOperator, Supplier<T> supplier) {
+        final T value;
+        value = supplier.get();
+        if (value != null) {
+            this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (value != null) {
+            this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+        }
+        return (SR) this;
     }
 
     /*################################## blow _SimpleSetClause method ##################################*/
-
-    @Override
-    public final SR set(F field, @Nullable Object value) {
-        return this.addFieldAndExp(field, null, SQLs._nullableParam(field, value));
-    }
-
-
-    @Override
-    public final SR setLiteral(F field, @Nullable Object value) {
-        return this.addFieldAndExp(field, null, SQLs._nullableLiteral(field, value));
-    }
-
-    @Override
-    public final SR setPlus(F field, Object value) {
-        return this.addFieldAndExp(field, SQLs::plusEqual, SQLs._nonNullParam(field, value));
-    }
-
-    @Override
-    public final SR setMinus(F field, Object value) {
-        return this.addFieldAndExp(field, SQLs::minusEqual, SQLs._nonNullParam(field, value));
-    }
-
-    @Override
-    public final SR setPlusLiteral(F field, Object value) {
-        return this.addFieldAndExp(field, SQLs::plusEqual, SQLs._nonNullLiteral(field, value));
-    }
-
-    @Override
-    public final SR setMinusLiteral(F field, Object value) {
-        return this.addFieldAndExp(field, SQLs::minusEqual, SQLs._nonNullLiteral(field, value));
-    }
-
-    @Override
-    public final SR set(F field, BiFunction<DataField, Object, ItemPair> operator, Object value) {
-        return this.addFieldAndExp(field, operator, SQLs._nonNullParam(field, value));
-    }
-
-    @Override
-    public final SR setExp(F field, BiFunction<DataField, Object, ItemPair> operator, Supplier<? extends Expression> supplier) {
-        return this.addFieldAndExp(field, operator, supplier.get());
-    }
-
-    @Override
-    public final SR setExp(F field, BiFunction<DataField, Object, ItemPair> operator, Function<C, ? extends Expression> function) {
-        return this.addFieldAndExp(field, operator, function.apply(this.criteria));
-    }
-
-    @Override
-    public final SR setLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Object value) {
-        return this.addFieldAndExp(field, operator, SQLs._nonNullParam(field, value));
-    }
-
-    @Override
-    public final SR ifSet(F field, Supplier<?> supplier) {
-        final Object value;
-        value = supplier.get();
-        if (value != null) {
-            this.addFieldAndExp(field, null, SQLs._nonNullParam(field, value));
-        }
-        return (SR) this;
-    }
-
-    @Override
-    public final SR ifSet(F field, Function<String, ?> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (value != null) {
-            this.addFieldAndExp(field, null, SQLs._nonNullParam(field, value));
-        }
-        return (SR) this;
-    }
-
-    @Override
-    public final SR ifSet(F field, BiFunction<DataField, Object, ItemPair> operator, Supplier<?> supplier) {
-        final Object value;
-        value = supplier.get();
-        if (value != null) {
-            this.addFieldAndExp(field, operator, SQLs._nonNullParam(field, value));
-        }
-        return (SR) this;
-    }
-
-    @Override
-    public final SR ifSet(F field, BiFunction<DataField, Object, ItemPair> operator, Function<C, ?> function) {
-        final Object value;
-        value = function.apply(this.criteria);
-        if (value != null) {
-            this.addFieldAndExp(field, operator, SQLs._nonNullParam(field, value));
-        }
-        return (SR) this;
-    }
-
-    @Override
-    public final SR ifSet(F field, BiFunction<DataField, Object, ItemPair> operator, Function<String, ?> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (value != null) {
-            this.addFieldAndExp(field, operator, SQLs._nonNullParam(field, value));
-        }
-        return (SR) this;
-    }
-
-    @Override
-    public final SR ifNonNullSet(F field, BiFunction<DataField, Object, ItemPair> operator, @Nullable Object operand) {
-        if (operand != null) {
-            this.addFieldAndExp(field, operator, SQLs._nonNullParam(field, operand));
-        }
-        return (SR) this;
-    }
-
-    @Override
-    public final SR ifSetLiteral(F field, Supplier<?> supplier) {
-        final Object value;
-        value = supplier.get();
-        if (value != null) {
-            this.addFieldAndExp(field, null, SQLs._nonNullLiteral(field, value));
-        }
-        return (SR) this;
-    }
-
-    @Override
-    public final SR ifSetLiteral(F field, Function<String, ?> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (value != null) {
-            this.addFieldAndExp(field, null, SQLs._nonNullLiteral(field, value));
-        }
-        return (SR) this;
-    }
-
-    @Override
-    public final SR ifSetLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Supplier<?> supplier) {
-        final Object value;
-        value = supplier.get();
-        if (value != null) {
-            this.addFieldAndExp(field, operator, SQLs._nonNullLiteral(field, value));
-        }
-        return (SR) this;
-    }
-
-
-    @Override
-    public final SR ifNonNullSetLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, @Nullable Object operand) {
-        if (operand != null) {
-            this.addFieldAndExp(field, operator, SQLs._nonNullLiteral(field, operand));
-        }
-        return (SR) this;
-    }
-
-    @Override
-    public final SR ifSetLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Function<C, ?> function) {
-        final Object value;
-        value = function.apply(this.criteria);
-        if (value != null) {
-            this.addFieldAndExp(field, operator, SQLs._nonNullLiteral(field, value));
-        }
-        return (SR) this;
-    }
-
-    @Override
-    public final SR ifSetLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Function<String, ?> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (value != null) {
-            this.addFieldAndExp(field, operator, SQLs._nonNullLiteral(field, value));
-        }
-        return (SR) this;
-    }
 
 
     /*################################## blow _BatchSetClause method ##################################*/
 
     @Override
-    public final SR set(F field) {
-        return this.addFieldAndExp(field, null, SQLs.namedParam(field));
+    public final SR set(F field, BiFunction<F, String, Expression> valueOperator) {
+        return this.addItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, field.fieldName())));
     }
 
     @Override
-    public final SR setNullable(F field) {
-        return this.addFieldAndExp(field, null, SQLs.namedNullableParam(field));
+    public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, String, Expression> valueOperator) {
+        return this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, field.fieldName())));
     }
 
     @Override
-    public final SR setNamed(F field, String parameterName) {
-        return this.addFieldAndExp(field, null, SQLs._namedParam(field, parameterName));
-    }
-
-    @Override
-    public final SR setNullableNamed(F field, String parameterName) {
-        return this.addFieldAndExp(field, null, SQLs.namedNullableParam(field, parameterName));
-    }
-
-    @Override
-    public final SR setPlus(F field) {
-        return this.addFieldAndExp(field, SQLs::plusEqual, SQLs.namedParam(field));
-    }
-
-    @Override
-    public final SR setMinus(F field) {
-        return this.addFieldAndExp(field, SQLs::minusEqual, SQLs.namedParam(field));
-    }
-
-    @Override
-    public final SR set(F field, BiFunction<DataField, Object, ItemPair> operator) {
-        return this.addFieldAndExp(field, operator, SQLs.namedParam(field));
-    }
-
-    @Override
-    public final SR setNamed(F field, BiFunction<DataField, Object, ItemPair> operator, String parameterName) {
-        return this.addFieldAndExp(field, operator, SQLs._namedParam(field, parameterName));
-    }
-
-    @Override
-    public final SR setFields(Consumer<Consumer<F>> consumer) {
-        consumer.accept(this::set);
+    public final SR setList(List<F> fieldList, BiFunction<F, String, Expression> valueOperator) {
+        if (fieldList.size() == 0) {
+            throw CriteriaContextStack.criteriaError(this.context, "fieldList is null");
+        }
+        for (F field : fieldList) {
+            this.addItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, field.fieldName())));
+        }
         return (SR) this;
     }
 
     @Override
-    public final SR setFields(BiConsumer<C, Consumer<F>> consumer) {
-        consumer.accept(this.criteria, this::set);
+    public final SR setList(List<F> fieldList, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, String, Expression> valueOperator) {
+        if (fieldList.size() == 0) {
+            throw CriteriaContextStack.criteriaError(this.context, "fieldList is null");
+        }
+        for (F field : fieldList) {
+            this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, field.fieldName())));
+        }
         return (SR) this;
     }
 
     @Override
-    public final SR setNullableFields(Consumer<Consumer<F>> consumer) {
-        consumer.accept(this::setNullable);
+    public final SR ifSetList(List<F> fieldList, BiFunction<F, String, Expression> valueOperator) {
+        for (F field : fieldList) {
+            this.addItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, field.fieldName())));
+        }
         return (SR) this;
     }
 
     @Override
-    public final SR setNullableFields(BiConsumer<C, Consumer<F>> consumer) {
-        consumer.accept(this.criteria, this::setNullable);
+    public final SR ifSetList(List<F> fieldList, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, String, Expression> valueOperator) {
+        for (F field : fieldList) {
+            this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, field.fieldName())));
+        }
         return (SR) this;
     }
 
@@ -379,13 +249,13 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
     public final U asUpdate() {
         _Assert.nonPrepared(this.prepared);
         if (this instanceof SubStatement) {
-            CriteriaContextStack.pop(this.criteriaContext);
+            CriteriaContextStack.pop(this.context);
         } else {
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
+            CriteriaContextStack.clearContextStack(this.context);
         }
         if (this instanceof SingleUpdate) {
             /// only single update clear context.
-            this.criteriaContext.clear();
+            this.context.clear();
         }
         super.asDmlStatement();
 
@@ -448,58 +318,17 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
     abstract Dialect dialect();
 
 
-    private SR addFieldAndExp(final F field, final @Nullable BiFunction<DataField, Object, ItemPair> operator
-            , final @Nullable Expression operand) {
-        if (operand == null) {
-            throw CriteriaContextStack.nullPointer(this.criteriaContext);
-        }
-        if (!(operand instanceof ArmyExpression)) {
-            throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
-        }
-        final ItemPair itemPair;
-        if (operator == null) {
-            itemPair = SQLs._itemPair(field, null, operand);
-        } else {
-            itemPair = operator.apply(field, operand);
-            if (!(itemPair instanceof SQLs.ArmyItemPair)) {
-                throw illegalItemPair(itemPair);
-            }
-        }
-
-        if (this instanceof _MultiUpdate) {
-            this.doAddItemPair((SQLs.ArmyItemPair) itemPair);
-        } else if (!(field instanceof FieldMeta)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-        } else if (this instanceof _DomainUpdate) {
-            if (((FieldMeta<?>) field).tableMeta() instanceof ChildTableMeta) {
-                this.doAddChildItemPair((SQLs.ArmyItemPair) itemPair);
-            } else {
-                this.doAddItemPair((SQLs.ArmyItemPair) itemPair);
-            }
-        } else if (this instanceof _SingleUpdate) {
-            if (((FieldMeta<?>) field).tableMeta() instanceof ChildTableMeta) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            this.doAddItemPair((SQLs.ArmyItemPair) itemPair);
-        } else {
-            //no bug,never here
-            throw new IllegalStateException("unknown update statement");
-        }
-        return (SR) this;
-    }
-
-
-    private void addItemPair(final ItemPair pair) {
+    private SR addItemPair(final ItemPair pair) {
         if (!(pair instanceof SQLs.ArmyItemPair)) {
             throw illegalItemPair(pair);
         }
-        if (pair instanceof SQLs.FieldItemPair) {
+        if (pair instanceof SQLs.FieldItemPair) {//TODO validate update mode,nullable etc.
             final DataField field = ((SQLs.FieldItemPair) pair).field;
             if (this instanceof _MultiUpdate) {
                 this.doAddItemPair((SQLs.ArmyItemPair) pair);
             } else if (!(field instanceof FieldMeta)) {
                 String m = "not multi-table update support only %s" + FieldMeta.class.getName();
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw CriteriaContextStack.criteriaError(this.context, m);
             } else if (this instanceof _DomainUpdate) {
                 if (((TableField) field).tableMeta() instanceof ChildTableMeta) {
                     this.doAddChildItemPair((SQLs.ArmyItemPair) pair);
@@ -511,7 +340,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
                 throw new IllegalStateException("unknown update statement");
             } else if (((TableField) field).tableMeta() instanceof ChildTableMeta) {
                 String m = "single update don't support child field";
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw CriteriaContextStack.criteriaError(this.context, m);
             } else {
                 this.doAddItemPair((SQLs.ArmyItemPair) pair);
             }
@@ -519,14 +348,14 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
             //no bug,never here
             throw new IllegalStateException("unknown ItemPair");
         } else if (!this.supportRowLeftItem) {
-            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::dontSupportRowLeftItem
+            throw CriteriaContextStack.criteriaError(this.context, _Exceptions::dontSupportRowLeftItem
                     , this.dialect());
         } else if (this instanceof _MultiUpdate || !isChildTable((SQLs.RowItemPair) pair)) {
             this.doAddItemPair((SQLs.ArmyItemPair) pair);
         } else {
             this.doAddChildItemPair((SQLs.ArmyItemPair) pair);
         }
-
+        return (SR) this;
     }
 
     private void doAddChildItemPair(final SQLs.ArmyItemPair pair) {
@@ -535,7 +364,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
             childItemPairList = new ArrayList<>();
             this.childItemPairList = childItemPairList;
         } else if (!(childItemPairList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         childItemPairList.add(pair);
     }
@@ -546,14 +375,14 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
             itemPairList = new ArrayList<>();
             this.itemPairList = itemPairList;
         } else if (!(itemPairList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         itemPairList.add(pair);
     }
 
     private CriteriaException illegalItemPair(@Nullable ItemPair itemPair) {
         String m = String.format("%s Illegal %s", _ClassUtils.safeClassName(itemPair), ItemPair.class.getName());
-        throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+        throw CriteriaContextStack.criteriaError(this.context, m);
     }
 
     private static boolean isChildTable(final SQLs.RowItemPair pair) {

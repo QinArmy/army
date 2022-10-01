@@ -84,7 +84,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
         this.partitionList = _CollectionUtils.safeList(clause.partitionList);
 
         if (this.table == null || this.tableAlias == null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
 
     }
@@ -137,25 +137,25 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
 
     @Override
     public final OR orderBy(Consumer<Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
                 .orderBy(consumer);
     }
 
     @Override
     public final OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
                 .orderBy(consumer);
     }
 
     @Override
     public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
                 .ifOrderBy(consumer);
     }
 
     @Override
     public final OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
                 .ifOrderBy(consumer);
     }
 
@@ -170,37 +170,37 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
 
     @Override
     public final LR limit(Supplier<? extends Number> supplier) {
-        this.rowCount = MySQLUtils.asLimitParam(this.criteriaContext, supplier.get());
+        this.rowCount = MySQLUtils.asLimitParam(this.context, supplier.get());
         return (LR) this;
     }
 
     @Override
     public final LR limit(Function<C, ? extends Number> function) {
-        this.rowCount = MySQLUtils.asLimitParam(this.criteriaContext, function.apply(this.criteria));
+        this.rowCount = MySQLUtils.asLimitParam(this.context, function.apply(this.criteria));
         return (LR) this;
     }
 
     @Override
     public final LR limit(Function<String, ?> function, String keyName) {
-        this.rowCount = MySQLUtils.asLimitParam(this.criteriaContext, function.apply(keyName));
+        this.rowCount = MySQLUtils.asLimitParam(this.context, function.apply(keyName));
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Supplier<? extends Number> supplier) {
-        this.rowCount = MySQLUtils.asIfLimitParam(this.criteriaContext, supplier.get());
+        this.rowCount = MySQLUtils.asIfLimitParam(this.context, supplier.get());
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Function<C, ? extends Number> function) {
-        this.rowCount = MySQLUtils.asIfLimitParam(this.criteriaContext, function.apply(this.criteria));
+        this.rowCount = MySQLUtils.asIfLimitParam(this.context, function.apply(this.criteria));
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Function<String, ?> function, String keyName) {
-        this.rowCount = MySQLUtils.asIfLimitParam(this.criteriaContext, function.apply(keyName));
+        this.rowCount = MySQLUtils.asIfLimitParam(this.context, function.apply(keyName));
         return (LR) this;
     }
 
@@ -231,7 +231,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
         }
 
         if (this instanceof BatchUpdate && ((BatchUpdate<C, T>) this).paramList == null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
     }
 
@@ -268,7 +268,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
     public final TableMeta<?> table() {
         final TableMeta<?> table = this.table;
         if (table == null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         return table;
     }
@@ -287,7 +287,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
     public final List<? extends _IndexHint> indexHintList() {
         final List<MySQLIndexHint> indexHintList = this.indexHintList;
         if (indexHintList == null || indexHintList instanceof ArrayList) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         return indexHintList;
     }
@@ -322,7 +322,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
     private MySQLQuery._IndexHintForOrderByClause<C, UT> getIndexHintClause() {
         MySQLQuery._IndexHintForOrderByClause<C, UT> indexHintClause = this.indexHintClause;
         if (indexHintClause == null) {
-            indexHintClause = MySQLSupports.indexHintClause(this.criteriaContext, this::addIndexHint);
+            indexHintClause = MySQLSupports.indexHintClause(this.context, this::addIndexHint);
             this.indexHintClause = indexHintClause;
         }
         return indexHintClause;
@@ -334,7 +334,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
             indexHintList = new ArrayList<>();
             this.indexHintList = indexHintList;
         } else if (!(indexHintList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         indexHintList.add(indexHint);
         return (UT) this;
@@ -342,7 +342,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
 
     private OR orderByEnd(final List<ArmySortItem> itemList) {
         if (this.orderByList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         this.orderByList = itemList;
         return (OR) this;

@@ -257,7 +257,9 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable T operator2) {
+    public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1
+            , BiFunction<Expression, T, Expression> operator, @Nullable T operand1
+            , BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number operator2) {
         if (operand1 == null || operator2 == null) {
             throw CriteriaContextStack.nullPointer(this.context);
         }
@@ -266,7 +268,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         if (expression == null) {
             throw CriteriaContextStack.nullPointer(this.context);
         }
-        return this.and(expOperator2.apply(expression, operator.apply(expression, operator2)));
+        return this.and(expOperator2.apply(expression, SQLs.literal(operator2)));
     }
 
     @Override
@@ -365,14 +367,14 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable T operator2) {
+    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number operator2) {
         if (operand1 != null || operator2 != null) {
             final Expression expression;
             expression = expOperator1.apply(operator, operand1);
             if (expression == null) {
                 throw CriteriaContextStack.nullPointer(this.context);
             }
-            this.and(expOperator2.apply(expression, operator.apply(expression, operator2)));
+            this.and(expOperator2.apply(expression, SQLs.literal(operator2)));
         }
         return (WA) this;
     }

@@ -189,7 +189,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException nonNullField(TableField field) {
+    public static CriteriaException nonNullField(DataField field) {
         return new CriteriaException(String.format("%s is non-null.", field));
     }
 
@@ -243,7 +243,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException nonUpdatableField(FieldMeta<?> field) {
+    public static CriteriaException nonUpdatableField(DataField field) {
         String m;
         m = String.format("%s %s isn't %s.", field, UpdateMode.class.getSimpleName(), UpdateMode.UPDATABLE);
         return new CriteriaException(m);

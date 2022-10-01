@@ -114,9 +114,7 @@ public abstract class SQLs extends StandardSyntax {
      * Batch domain update
      * </p>
      *
-     * @see #namedParam(DataField)
      * @see #namedMultiParams(DataField, int)
-     * @see #namedNullableParam(DataField)
      */
     public static Update._StandardBatchDomainUpdateClause<Void> batchDomainUpdate() {
         return StandardUpdate.batchDomain(null);
@@ -140,9 +138,7 @@ public abstract class SQLs extends StandardSyntax {
      * Batch domain update
      * </p>
      *
-     * @see #namedParam(DataField)
      * @see #namedMultiParams(DataField, int)
-     * @see #namedNullableParam(DataField)
      */
     public static Update._StandardBatchSingleUpdateClause<Void> batchSingleUpdate() {
         return StandardUpdate.batchSingle(null);
@@ -155,9 +151,7 @@ public abstract class SQLs extends StandardSyntax {
      *
      * @param criteria a criteria object , map or bean
      * @param <C>      criteria java type used to create dynamic batch update and sub query
-     * @see #namedParam(DataField)
      * @see #namedMultiParams(DataField, int)
-     * @see #namedNullableParam(DataField)
      */
     public static <C> Update._StandardBatchSingleUpdateClause<C> batchSingleUpdate(C criteria) {
         Objects.requireNonNull(criteria);
@@ -177,9 +171,6 @@ public abstract class SQLs extends StandardSyntax {
      * <p>
      * Batch domain delete
      * </p>
-     *
-     * @see #namedParam(DataField)
-     * @see #namedNullableParam(DataField)
      */
     public static Delete.StandardBatchDeleteSpec<Void> batchDomainDelete() {
         return StandardDelete.batch(null);
@@ -192,8 +183,6 @@ public abstract class SQLs extends StandardSyntax {
      *
      * @param criteria a criteria object , map or bean
      * @param <C>      criteria java type used to create dynamic batch update and sub query
-     * @see #namedParam(DataField)
-     * @see #namedNullableParam(DataField)
      */
     public static <C> Delete.StandardBatchDeleteSpec<C> batchDomainDelete(C criteria) {
         Objects.requireNonNull(criteria);
@@ -554,16 +543,12 @@ public abstract class SQLs extends StandardSyntax {
      *
      * @see #namedParam(MappingType, String)
      * @see #namedParam(TypeInfer, String)
-     * @see #namedParam(DataField)
      * @see #namedNullableParam(MappingType, String)
      * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedNullableParam(DataField)
      * @see #namedLiteral(MappingType, String)
      * @see #namedLiteral(TypeInfer, String)
-     * @see #namedLiteral(DataField)
      * @see #namedNullableLiteral(MappingType, String)
      * @see #namedNullableLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(DataField)
      */
     public static Expression namedParam(final MappingType type, final String name) {
         return ParamExpression.namedSingle(type, name);
@@ -576,16 +561,12 @@ public abstract class SQLs extends StandardSyntax {
      *
      * @see #namedParam(MappingType, String)
      * @see #namedParam(TypeInfer, String)
-     * @see #namedParam(DataField)
      * @see #namedNullableParam(MappingType, String)
      * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedNullableParam(DataField)
      * @see #namedLiteral(MappingType, String)
      * @see #namedLiteral(TypeInfer, String)
-     * @see #namedLiteral(DataField)
      * @see #namedNullableLiteral(MappingType, String)
      * @see #namedNullableLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(DataField)
      */
     public static Expression namedParam(final TypeInfer typeExp, final String name) {
         final Expression result;
@@ -600,50 +581,17 @@ public abstract class SQLs extends StandardSyntax {
 
     /**
      * <p>
-     * Create named non-null parameter expression for batch update(delete) and values insert.
-     * </p>
-     *
-     * @see #namedParam(MappingType, String)
-     * @see #namedParam(TypeInfer, String)
-     * @see #namedParam(DataField)
-     * @see #namedNullableParam(MappingType, String)
-     * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedNullableParam(DataField)
-     * @see #namedLiteral(MappingType, String)
-     * @see #namedLiteral(TypeInfer, String)
-     * @see #namedLiteral(DataField)
-     * @see #namedNullableLiteral(MappingType, String)
-     * @see #namedNullableLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(DataField)
-     */
-    public static Expression namedParam(final DataField field) {
-        final Expression result;
-        if (field instanceof TableField) {
-            result = ParamExpression.namedSingle((TableField) field, field.fieldName());
-        } else {
-            result = ParamExpression.namedSingle(field.typeMeta(), field.fieldName());
-        }
-        return result;
-    }
-
-
-    /**
-     * <p>
      * Create named nullable parameter expression for batch update(delete) and values insert.
      * </p>
      *
      * @see #namedParam(MappingType, String)
      * @see #namedParam(TypeInfer, String)
-     * @see #namedParam(DataField)
      * @see #namedNullableParam(MappingType, String)
      * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedNullableParam(DataField)
      * @see #namedLiteral(MappingType, String)
      * @see #namedLiteral(TypeInfer, String)
-     * @see #namedLiteral(DataField)
      * @see #namedNullableLiteral(MappingType, String)
      * @see #namedNullableLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(DataField)
      */
     public static Expression namedNullableParam(MappingType type, String name) {
         return ParamExpression.namedNullableSingle(type, name);
@@ -653,19 +601,16 @@ public abstract class SQLs extends StandardSyntax {
      * <p>
      * Create named nullable parameter expression for batch update(or delete) and values(assignment) insert
      * </p>
+     *
      * @return named nullable parameter expression
      * @see #namedParam(MappingType, String)
      * @see #namedParam(TypeInfer, String)
-     * @see #namedParam(DataField)
      * @see #namedNullableParam(MappingType, String)
      * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedNullableParam(DataField)
      * @see #namedLiteral(MappingType, String)
      * @see #namedLiteral(TypeInfer, String)
-     * @see #namedLiteral(DataField)
      * @see #namedNullableLiteral(MappingType, String)
      * @see #namedNullableLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(DataField)
      */
     public static Expression namedNullableParam(final TypeInfer typeExp, final String name) {
         final Expression result;
@@ -677,37 +622,6 @@ public abstract class SQLs extends StandardSyntax {
         return result;
     }
 
-
-    /**
-     * <p>
-     * Create named nullable parameter expression for batch update(or delete)
-     * </p>
-     * @param field non-null,field as the type of nullable parameter
-     *              ,{@link  DataField#fieldName()} as the key name of {@link Map} or the field name of java bean.
-     * @return named nullable parameter expression
-     * @see #namedParam(MappingType, String)
-     * @see #namedParam(TypeInfer, String)
-     * @see #namedParam(DataField)
-     * @see #namedNullableParam(MappingType, String)
-     * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedNullableParam(DataField)
-     * @see #namedLiteral(MappingType, String)
-     * @see #namedLiteral(TypeInfer, String)
-     * @see #namedLiteral(DataField)
-     * @see #namedNullableLiteral(MappingType, String)
-     * @see #namedNullableLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(DataField)
-     */
-    public static Expression namedNullableParam(final DataField field) {
-        final Expression result;
-        if (field instanceof TableField) {
-            //for field codec
-            result = ParamExpression.namedNullableSingle((TableField) field, field.fieldName());
-        } else {
-            result = ParamExpression.namedNullableSingle(field.typeMeta(), field.fieldName());
-        }
-        return result;
-    }
 
     /**
      * <p>
@@ -975,16 +889,12 @@ public abstract class SQLs extends StandardSyntax {
      * @return non-null named literal expression
      * @see #namedParam(MappingType, String)
      * @see #namedParam(TypeInfer, String)
-     * @see #namedParam(DataField)
      * @see #namedNullableParam(MappingType, String)
      * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedNullableParam(DataField)
      * @see #namedLiteral(MappingType, String)
      * @see #namedLiteral(TypeInfer, String)
-     * @see #namedLiteral(DataField)
      * @see #namedNullableLiteral(MappingType, String)
      * @see #namedNullableLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(DataField)
      */
     public static Expression namedLiteral(final MappingType type, final String name) {
         return LiteralExpression.namedSingle(type, name);
@@ -1003,16 +913,12 @@ public abstract class SQLs extends StandardSyntax {
      * @return non-null named literal expression
      * @see #namedParam(MappingType, String)
      * @see #namedParam(TypeInfer, String)
-     * @see #namedParam(DataField)
      * @see #namedNullableParam(MappingType, String)
      * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedNullableParam(DataField)
      * @see #namedLiteral(MappingType, String)
      * @see #namedLiteral(TypeInfer, String)
-     * @see #namedLiteral(DataField)
      * @see #namedNullableLiteral(MappingType, String)
      * @see #namedNullableLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(DataField)
      */
     public static Expression namedLiteral(final TypeInfer typeExp, final String name) {
         final Expression result;
@@ -1020,40 +926,6 @@ public abstract class SQLs extends StandardSyntax {
             result = LiteralExpression.namedSingle((TableField) typeExp, name);
         } else {
             result = LiteralExpression.namedSingle(typeExp.typeMeta(), name);
-        }
-        return result;
-    }
-
-
-    /**
-     * <p>
-     * Create named non-null literal expression. This expression can only be used in values insert statement.
-     * </p>
-     * <p>
-     * Note: this method couldn't be used in batch update(delete) statement.
-     * </p>
-     *
-     * @param field non-null
-     * @return non-null named literal expression
-     * @see #namedParam(MappingType, String)
-     * @see #namedParam(TypeInfer, String)
-     * @see #namedParam(DataField)
-     * @see #namedNullableParam(MappingType, String)
-     * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedNullableParam(DataField)
-     * @see #namedLiteral(MappingType, String)
-     * @see #namedLiteral(TypeInfer, String)
-     * @see #namedLiteral(DataField)
-     * @see #namedNullableLiteral(MappingType, String)
-     * @see #namedNullableLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(DataField)
-     */
-    public static Expression namedLiteral(final DataField field) {
-        final Expression result;
-        if (field instanceof TableField) {
-            result = LiteralExpression.namedSingle((TableField) field, field.fieldName());
-        } else {
-            result = LiteralExpression.namedSingle(field.typeMeta(), field.fieldName());
         }
         return result;
     }
@@ -1072,16 +944,12 @@ public abstract class SQLs extends StandardSyntax {
      * @return named nullable literal expression
      * @see #namedParam(MappingType, String)
      * @see #namedParam(TypeInfer, String)
-     * @see #namedParam(DataField)
      * @see #namedNullableParam(MappingType, String)
      * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedNullableParam(DataField)
      * @see #namedLiteral(MappingType, String)
      * @see #namedLiteral(TypeInfer, String)
-     * @see #namedLiteral(DataField)
      * @see #namedNullableLiteral(MappingType, String)
      * @see #namedNullableLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(DataField)
      */
     public static Expression namedNullableLiteral(final MappingType type, final String name) {
         return LiteralExpression.namedNullableSingle(type, name);
@@ -1100,16 +968,12 @@ public abstract class SQLs extends StandardSyntax {
      * @return named nullable literal expression
      * @see #namedParam(MappingType, String)
      * @see #namedParam(TypeInfer, String)
-     * @see #namedParam(DataField)
      * @see #namedNullableParam(MappingType, String)
      * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedNullableParam(DataField)
      * @see #namedLiteral(MappingType, String)
      * @see #namedLiteral(TypeInfer, String)
-     * @see #namedLiteral(DataField)
      * @see #namedNullableLiteral(MappingType, String)
      * @see #namedNullableLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(DataField)
      */
     public static Expression namedNullableLiteral(final TypeInfer typeExp, final String name) {
         final Expression result;
@@ -1117,39 +981,6 @@ public abstract class SQLs extends StandardSyntax {
             result = LiteralExpression.namedNullableSingle((TableField) typeExp, name);
         } else {
             result = LiteralExpression.namedNullableSingle(typeExp.typeMeta(), name);
-        }
-        return result;
-    }
-
-    /**
-     * <p>
-     * Create named nullable literal expression. This expression can only be used in values insert statement.
-     * </p>
-     * <p>
-     * Note: this method couldn't be used in batch update(delete) statement.
-     * </p>
-     *
-     * @param field non-null
-     * @return non-null named literal expression
-     * @see #namedParam(MappingType, String)
-     * @see #namedParam(TypeInfer, String)
-     * @see #namedParam(DataField)
-     * @see #namedNullableParam(MappingType, String)
-     * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedNullableParam(DataField)
-     * @see #namedLiteral(MappingType, String)
-     * @see #namedLiteral(TypeInfer, String)
-     * @see #namedLiteral(DataField)
-     * @see #namedNullableLiteral(MappingType, String)
-     * @see #namedNullableLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(DataField)
-     */
-    public static Expression namedNullableLiteral(final DataField field) {
-        final Expression result;
-        if (field instanceof TableField) {
-            result = LiteralExpression.namedNullableSingle((TableField) field, field.fieldName());
-        } else {
-            result = LiteralExpression.namedNullableSingle(field.typeMeta(), field.fieldName());
         }
         return result;
     }
@@ -1315,11 +1146,11 @@ public abstract class SQLs extends StandardSyntax {
         return new RowItemPair(fieldList, subQuery);
     }
 
-    public static ItemPair plusEqual(final DataField field, final @Nullable Object value) {
+    public static ItemPair plusEqual(final DataField field, final Expression value) {
         return SQLs._itemPair(field, AssignOperator.PLUS_EQUAL, value);
     }
 
-    public static ItemPair minusEqual(final DataField field, final @Nullable Object value) {
+    public static ItemPair minusEqual(final DataField field, final Expression value) {
         return SQLs._itemPair(field, AssignOperator.MINUS_EQUAL, value);
     }
 
@@ -1488,10 +1319,16 @@ public abstract class SQLs extends StandardSyntax {
 
     /*################################## blow sql key word operate method ##################################*/
 
+    /**
+     * @param scalar non-null
+     */
     public static IPredicate exists(ScalarExpression scalar) {
         return UnaryPredicate.fromSubQuery(UnaryOperator.EXISTS, scalar);
     }
 
+    /**
+     * @param scalar non-null
+     */
     public static IPredicate notExists(ScalarExpression scalar) {
         return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, scalar);
     }

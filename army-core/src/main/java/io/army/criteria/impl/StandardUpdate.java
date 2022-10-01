@@ -55,7 +55,7 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
         this.table = table;
         this.tableAlias = tableAlias;
 
-        CriteriaContextStack.setContextStack(this.criteriaContext);
+        CriteriaContextStack.setContextStack(this.context);
     }
 
     @Override
@@ -72,10 +72,10 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
     @Override
     final void onAsUpdate() {
         if (this.table == null || this.tableAlias == null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         if (this instanceof BatchUpdate && ((BatchUpdate<C, F>) this).paramList == null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
     }
 
