@@ -458,7 +458,7 @@ public abstract class SQLs extends StandardSyntax {
      */
     public static Expression param(final TypeInfer typeExp, final @Nullable Object value) {
         final Expression result;
-        if (typeExp instanceof TableField) {
+        if (typeExp instanceof TableField) {  //for field codec
             if (value instanceof Supplier) {
                 result = ParamExpression.single((TableField) typeExp, ((Supplier<?>) value).get());
             } else {
@@ -511,7 +511,7 @@ public abstract class SQLs extends StandardSyntax {
      */
     public static Expression multiParams(final TypeInfer typeExp, final Collection<?> values) {
         final Expression result;
-        if (typeExp instanceof TableField) {
+        if (typeExp instanceof TableField) {  //for field codec
             result = ParamExpression.multi((TableField) typeExp, values);
         } else {
             result = ParamExpression.multi(typeExp.typeMeta(), values);
@@ -1488,23 +1488,14 @@ public abstract class SQLs extends StandardSyntax {
 
     /*################################## blow sql key word operate method ##################################*/
 
-    public static IPredicate exists(Supplier<? extends SubQuery> supplier) {
-        return UnaryPredicate.fromSubQuery(UnaryOperator.EXISTS, supplier.get());
+    public static IPredicate exists(ScalarExpression scalar) {
+        return UnaryPredicate.fromSubQuery(UnaryOperator.EXISTS, scalar);
     }
 
-    public static <C> IPredicate exists(Function<C, ? extends SubQuery> function) {
-        return UnaryPredicate.fromSubQuery(UnaryOperator.EXISTS, function.apply(CriteriaContextStack.getTopCriteria()));
+    public static IPredicate notExists(ScalarExpression scalar) {
+        return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, scalar);
     }
 
-    public static IPredicate notExists(Supplier<? extends SubQuery> supplier) {
-        return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, supplier.get());
-    }
-
-    public static <C> IPredicate notExists(Function<C, ? extends SubQuery> function) {
-        final C criteria;
-        criteria = CriteriaContextStack.getTopCriteria();
-        return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, function.apply(criteria));
-    }
 
 
     /*-------------------below Aggregate Function-------------------*/

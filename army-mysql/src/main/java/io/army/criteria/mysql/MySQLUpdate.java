@@ -81,7 +81,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _SingleWhereAndSpec<C> extends _WhereAndClause<C, _SingleWhereAndSpec<C>>
+    interface _SingleWhereAndSpec<C> extends Update._UpdateWhereAndClause<C, _SingleWhereAndSpec<C>>
             , _OrderBySpec<C> {
 
     }
@@ -263,7 +263,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _BatchSingleWhereAndSpec<C> extends _WhereAndClause<C, _BatchSingleWhereAndSpec<C>>
+    interface _BatchSingleWhereAndSpec<C> extends Update._UpdateWhereAndClause<C, _BatchSingleWhereAndSpec<C>>
             , _BatchOrderBySpec<C> {
 
     }
@@ -458,7 +458,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _MultiWhereAndSpec<C> extends _WhereAndClause<C, _MultiWhereAndSpec<C>>
+    interface _MultiWhereAndSpec<C> extends Update._UpdateWhereAndClause<C, _MultiWhereAndSpec<C>>
             , _UpdateSpec {
 
 
@@ -677,7 +677,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _BatchMultiWhereAndSpec<C> extends _WhereAndClause<C, _BatchMultiWhereAndSpec<C>>
+    interface _BatchMultiWhereAndSpec<C> extends Update._UpdateWhereAndClause<C, _BatchMultiWhereAndSpec<C>>
             , _BatchParamClause<C, _UpdateSpec> {
 
 

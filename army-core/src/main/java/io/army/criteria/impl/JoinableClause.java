@@ -896,7 +896,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final FJ on(Function<Object, IPredicate> operator, DataField operandField) {
+        public final FJ on(Function<Expression, IPredicate> operator, DataField operandField) {
             final OperationPredicate predicate;
             predicate = (OperationPredicate) operator.apply(operandField);
             return this.onClauseEnd(Collections.singletonList(predicate));

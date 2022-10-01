@@ -2,7 +2,6 @@ package io.army.criteria;
 
 import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
-import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.DatabaseObject;
@@ -62,16 +61,13 @@ public interface TableField extends DataField, FieldSelection, TypeMeta, SetLeft
     @Nullable
     GeneratorType generatorType();
 
-    /**
-     * relational operate with {@code =} {@link SQLs#nullableNamedParam(TableField)}
-     */
     IPredicate equalNamed();
 
-    IPredicate lessThanNamed();
+    IPredicate lessNamed();
 
     IPredicate lessEqualNamed();
 
-    IPredicate greatThanNamed();
+    IPredicate greatNamed();
 
     IPredicate greatEqualNamed();
 

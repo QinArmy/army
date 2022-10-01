@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.DataField;
+import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Statement;
 
@@ -28,7 +29,7 @@ import java.util.function.Function;
      }
 
      @Override
-     public final OR on(Function<Object, IPredicate> operator, DataField operandField) {
+     public final OR on(Function<Expression, IPredicate> operator, DataField operandField) {
          return this.stmt;
      }
 

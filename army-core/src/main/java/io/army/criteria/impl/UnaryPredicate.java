@@ -1,19 +1,19 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.DataField;
+import io.army.criteria.ScalarExpression;
 import io.army.criteria.SqlValueParam;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.util._Exceptions;
-
-import java.util.Objects;
 
 final class UnaryPredicate extends OperationPredicate {
 
-    static UnaryPredicate fromSubQuery(UnaryOperator operator, SubQuery subQuery) {
-        Objects.requireNonNull(subQuery);
+    static UnaryPredicate fromSubQuery(UnaryOperator operator, @Nullable ScalarExpression subQuery) {
+        assert subQuery != null;
         switch (operator) {
             case NOT_EXISTS:
             case EXISTS:

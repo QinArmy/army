@@ -2,9 +2,11 @@ package io.army.criteria.mysql;
 
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Hint;
+import io.army.criteria.LiteralMode;
 import io.army.criteria.ReplaceInsert;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.MySQLs;
+import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
@@ -42,7 +44,7 @@ public class MySQLReplaceUnitTests {
 
         ReplaceInsert stmt;
         stmt = MySQLs.domainReplace()
-                .literalMode(true)
+                .literalMode(LiteralMode.PREFERENCE)
                 .replace(hintSupplier, Collections.singletonList(MySQLModifier.DELAYED))
                 .into(BankUser_.T)
                 .partition()
@@ -51,7 +53,7 @@ public class MySQLReplaceUnitTests {
                 .leftParen(BankUser_.nickName, BankUser_.certificateId)
                 .comma(BankUser_.registerRecordId)
                 .rightParen()
-                .defaultLiteral(BankUser_.visible, true)
+                .defaultValue(BankUser_.visible, SQLs::literal, true)
                 .values(this::createUserList)
                 .asInsert();
 
@@ -71,7 +73,7 @@ public class MySQLReplaceUnitTests {
 
         ReplaceInsert stmt;
         stmt = MySQLs.domainReplace()
-                .literalMode(true)
+                .literalMode(LiteralMode.PREFERENCE)
                 .replace(hintSupplier, Collections.singletonList(MySQLModifier.LOW_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition()
@@ -80,7 +82,7 @@ public class MySQLReplaceUnitTests {
                 .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp)
                 .comma(ChinaRegion_.parentId)
                 .rightParen()
-                .defaultLiteral(ChinaRegion_.visible, true)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(this::createReginList)
                 .asInsert();
 

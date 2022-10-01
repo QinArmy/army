@@ -31,8 +31,8 @@ public class MySQLCriteriaUnitTests {
         stmt = MySQLs.singleUpdate()
                 .update(ChinaRegion_.T, "t")
                 .set(ChinaRegion_.name, "五指礁")
-                .where(ChinaRegion_.name.equal(""))
-                .and(ChinaRegion_.regionType.equalLiteral(RegionType.CITY).or(ChinaRegion_.regionGdp.greatEqual("3333")))
+                .where(ChinaRegion_.name::equal, SQLs::param, "")
+                .and(ChinaRegion_.regionType.equal(SQLs::literal, RegionType.CITY).or(ChinaRegion_.regionGdp.greatEqual(SQLs::literal, "3333")))
                 .orderBy(ChinaRegion_.id.desc())
                 .limit(criteria::getRowCount)
                 .asUpdate();
@@ -73,9 +73,9 @@ public class MySQLCriteriaUnitTests {
 
                 .set(ChinaRegion_.name, "五指礁")
                 .setPlusLiteral(ChinaRegion_.regionGdp, 100)
-                .where(ChinaRegion_.name.equal(""))
-                .and(ChinaRegion_.parentId.equal(map.get("parentId")).or(ChinaRegion_.regionType.equalLiteral(RegionType.CITY)))
-                .and(ChinaRegion_.regionGdp.plusLiteral(100).greatEqualLiteral(0))
+                .where(ChinaRegion_.name::equal, SQLs::literal, "")
+                .and(ChinaRegion_.parentId.equal(SQLs::param, map.get("parentId")).or(ChinaRegion_.regionType.equal(SQLs::literal, RegionType.CITY)))
+                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, 100, Expression::greatEqual, 0)
                 .orderBy(ChinaRegion_.name.desc())
                 .limit(map::get, "rowCount")
                 .asUpdate();
@@ -138,9 +138,9 @@ public class MySQLCriteriaUnitTests {
                     .partition()
                     .leftParen("p1")
                     .rightParen()
-                    .where(ChinaRegion_.createTime::betweenLiteral, map::get, "startTime", "endTIme")
-                    .and(ChinaRegion_.updateTime::between, map::get, "startTime", "endTIme")
-                    .ifAnd(ChinaRegion_.version::equalLiteral, map::get, "version")
+                    .where(ChinaRegion_.createTime::between, SQLs::literal, map::get, "startTime", "endTIme")
+                    .and(ChinaRegion_.updateTime::between, SQLs::param, map::get, "startTime", "endTIme")
+                    .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")
                     .orderBy(ChinaRegion_.name.desc(), ChinaRegion_.id)
                     .ifLimit(map::get, "rowCount")
                     .asDelete();
@@ -200,8 +200,8 @@ public class MySQLCriteriaUnitTests {
                     .rightParen()
                     .where(ChinaRegion_.name.equalNamed()) // batch parameter
                     .and(ChinaRegion_.regionGdp.greatEqualNamed())// batch parameter
-                    .and(ChinaRegion_.updateTime::between, map::get, "startTime", "endTIme")// common parameter
-                    .ifAnd(ChinaRegion_.version::equalLiteral, map::get, "version")// common parameter
+                    .and(ChinaRegion_.updateTime::between, SQLs::literal, map::get, "startTime", "endTIme")// common parameter
+                    .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")// common parameter
                     .orderBy(ChinaRegion_.name.desc(), ChinaRegion_.id)
                     .ifLimit(map::get, "rowCount")
                     .paramList(paramList)
@@ -254,9 +254,9 @@ public class MySQLCriteriaUnitTests {
                     .rightParen()
                     .as("r").on(ChinaCity_.id::equal, ChinaRegion_.id)
                     .join(BankUser_.T, "u").on(BankUser_.id::equal, ChinaCity_.id)// delete lonely parent testing
-                    .where(ChinaRegion_.createTime::betweenLiteral, map::get, "startTime", "endTIme")
-                    .and(ChinaRegion_.updateTime::between, map::get, "startTime", "endTIme")
-                    .ifAnd(ChinaRegion_.version::equalLiteral, map::get, "version")
+                    .where(ChinaRegion_.createTime::between, SQLs::literal, map::get, "startTime", "endTIme")
+                    .and(ChinaRegion_.updateTime::between, SQLs::literal, map::get, "startTime", "endTIme")
+                    .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")
                     .asDelete();
 
             printStmt(stmt);
@@ -312,9 +312,9 @@ public class MySQLCriteriaUnitTests {
                     .rightParen()
                     .as("r").on(ChinaCity_.id::equal, ChinaRegion_.id)
                     .where(ChinaRegion_.id.equalNamed())
-                    .and(ChinaRegion_.createTime::betweenLiteral, map::get, "startTime", "endTIme")
-                    .and(ChinaRegion_.updateTime::between, map::get, "startTime", "endTIme")
-                    .ifAnd(ChinaRegion_.version::equalLiteral, map::get, "version")
+                    .and(ChinaRegion_.createTime::between, SQLs::literal, map::get, "startTime", "endTIme")
+                    .and(ChinaRegion_.updateTime::between, SQLs::literal, map::get, "startTime", "endTIme")
+                    .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")
                     .paramList(paramList)
                     .asDelete();
 
@@ -366,11 +366,11 @@ public class MySQLCriteriaUnitTests {
                     .on(BankUser_.id::equal, BankAccount_.id)
                     .ifSet(BankUser_.nickName, map::get, "newNickName")
                     .ifNonNullSetLiteral(BankAccount_.balance, SQLs::plusEqual, amount)
-                    .where(BankUser_.partnerUserId::equalLiteral, map::get, "identityId")
-                    .ifAnd(BankUser_.nickName::equal, map::get, "oldNickName")
-                    .ifAnd(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")
-                    .ifAnd(BankAccount_.version::equalLiteral, map::get, "version")
-                    .ifNonNullAnd(BankAccount_.balance::plus, amount, Expression::greatEqualLiteral, 0)
+                    .where(BankUser_.partnerUserId::equal, SQLs::literal, map::get, "identityId")
+                    .ifAnd(BankUser_.nickName::equal, SQLs::param, map::get, "oldNickName")
+                    .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", "endTime")
+                    .ifAnd(BankAccount_.version::equal, SQLs::literal, map::get, "version")
+                    .ifAnd(BankAccount_.balance::plus, SQLs::literal, amount, Expression::greatEqual, 0)
                     .asUpdate();
 
             printStmt(stmt);
@@ -407,11 +407,11 @@ public class MySQLCriteriaUnitTests {
                     .join(BankAccount_.T, "a").on(BankUser_.id::equal, BankAccount_.userId)
                     .set(BankUser_.nickName, map.get("newNickName"))
                     .ifSet(BankAccount_.balance, SQLs::plusEqual, map::get, "amount")
-                    .where(BankUser_.partnerUserId::equalLiteral, map::get, "identityId")
-                    .ifAnd(BankUser_.nickName::equal, map::get, "oldNickName")
-                    .ifAnd(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")
-                    .ifAnd(BankAccount_.version::equalLiteral, map::get, "version")
-                    .ifNonNullAnd(BankAccount_.balance::plus, map.get("amount"), Expression::greatEqualLiteral, 0)
+                    .where(BankUser_.partnerUserId::equal, SQLs::literal, map::get, "identityId")
+                    .ifAnd(BankUser_.nickName::equal, SQLs::param, map::get, "oldNickName")
+                    .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", "endTime")
+                    .ifAnd(BankAccount_.version::equal, SQLs::literal, map::get, "version")
+                    .ifAnd(BankAccount_.balance::plus, SQLs::literal, map.get("amount"), Expression::greatEqual, 0)
                     .asUpdate();
 
             printStmt(stmt);
@@ -449,11 +449,11 @@ public class MySQLCriteriaUnitTests {
                     .set(BankUser_.nickName, map.get("newNickName"))
                     .set(PartnerUser_.legalPersonId, "66666666")
                     .ifSet(BankAccount_.balance, SQLs::plusEqual, map::get, "amount")
-                    .where(BankUser_.partnerUserId::equalLiteral, map::get, "identityId")
-                    .ifAnd(BankUser_.nickName::equal, map::get, "oldNickName")
-                    .ifAnd(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")
-                    .ifAnd(BankAccount_.version::equalLiteral, map::get, "version")
-                    .ifNonNullAnd(BankAccount_.balance::plus, map.get("amount"), Expression::greatEqualLiteral, 0)
+                    .where(BankUser_.partnerUserId::equal, SQLs::literal, map::get, "identityId")
+                    .ifAnd(BankUser_.nickName::equal, SQLs::literal, map::get, "oldNickName")
+                    .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", "endTime")
+                    .ifAnd(BankAccount_.version::equal, SQLs::literal, map::get, "version")
+                    .ifAnd(BankAccount_.balance::plus, SQLs::literal, map.get("amount"), Expression::greatEqual, 0)
                     .asUpdate();
 
             printStmt(stmt);
@@ -526,11 +526,11 @@ public class MySQLCriteriaUnitTests {
                     .on(User_.id::equal, BankAccount_.id)
                     .set(User_.nickName)
                     .setPlus(BankAccount_.balance)
-                    .where(User_.identityId::equalLiteral, map::get, "identityId")
-                    .ifAnd(User_.nickName::equal, map::get, "oldNickName")
-                    .and(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")
-                    .ifAnd(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")
-                    .ifAnd(BankAccount_.version::equalLiteral, map::get, "version")
+                    .where(User_.identityId::equal, SQLs::literal, map::get, "identityId")
+                    .ifAnd(User_.nickName::equal, SQLs::literal, map::get, "oldNickName")
+                    .and(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", "endTime")
+                    .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", "endTime")
+                    .ifAnd(BankAccount_.version::equal, SQLs::literal, map::get, "version")
                     .paramList(paramList)
                     .asUpdate();
 
@@ -562,14 +562,14 @@ public class MySQLCriteriaUnitTests {
     public void singleSelect() {
 
         final Consumer<Map<String, Object>> mockDaoMethod = criteria -> {
-
+            List<Long> idList = new ArrayList<>();
             final Select stmt;
             stmt = MySQLs.query()
                     .select(SQLs.group(Captcha_.T, "c"))
                     .from(Captcha_.T, "c")
-                    .where(Captcha_.id.inOptimizing(criteria.get("ids")))
-                    .and(Captcha_.createTime::between, criteria::get, "startTime", "endTime")
-                    .and(Captcha_.deadline.greatEqualLiteral(LocalDateTime.now()))
+                    .where(Captcha_.id::in, SQLs::multiLiterals, idList)
+                    .and(Captcha_.createTime::between, SQLs::literal, criteria::get, "startTime", "endTime")
+                    .and(Captcha_.deadline::greatEqual, SQLs::literal, LocalDateTime.now())
                     .asQuery();
 
             printStmt(stmt);
@@ -592,20 +592,19 @@ public class MySQLCriteriaUnitTests {
     @Test
     public void multiSelect() {
         final Consumer<Map<String, Object>> mockDaoMethod = criteria -> {
-
             final Select stmt;
             stmt = MySQLs.query()
                     .select(SQLs.group(BankUser_.T, "u"))
                     .from(BankUser_.T, "u")
                     .join(BankAccount_.T, "a").on(BankUser_.id::equal, BankAccount_.id)
-                    .where(BankUser_.id.inOptimizing(criteria.get("ids")))
-                    .and(BankAccount_.createTime::between, criteria::get, "startTime", "endTime")
-                    .and(BankUser_.updateTime.greatEqualLiteral(LocalDateTime.now()))
-                    .and(SQLs.exists(() -> MySQLs.subQuery()
+                    .where(BankUser_.id::in, SQLs::multiLiterals, (Collection<?>) criteria.get("ids"))
+                    .and(BankAccount_.createTime::between, SQLs::literal, criteria::get, "startTime", "endTime")
+                    .and(BankUser_.updateTime::greatEqual, SQLs::literal, LocalDateTime.now())
+                    .and(SQLs::exists, () -> MySQLs.scalarSubQuery()
                             .select(RegisterRecord_.id)
                             .from(RegisterRecord_.T, "r")
                             .where(RegisterRecord_.userId::equal, BankUser_.id)
-                            .asQuery()))
+                            .asQuery())
                     .asQuery();
 
             printStmt(stmt);
@@ -629,7 +628,7 @@ public class MySQLCriteriaUnitTests {
     public void parentDomainInsert() {
         final Insert stmt;
         stmt = MySQLs.domainInsert()
-                .literalMode(true)
+                .literalMode(LiteralMode.PREFERENCE)
                 .insert(Collections::emptyList, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 //.insertInto(ChinaCity_.T)

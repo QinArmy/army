@@ -138,8 +138,16 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
         SR setNullableFields(BiConsumer<C, Consumer<F>> consumer);
     }
 
+    interface _UpdateWhereAndClause<C, WA> extends Statement._WhereAndClause<C, WA> {
 
-    interface _StandardWhereAndSpec<C> extends _WhereAndClause<C, _StandardWhereAndSpec<C>>, _UpdateSpec {
+        <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, T operator2);
+
+        <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable T operator2);
+
+    }
+
+
+    interface _StandardWhereAndSpec<C> extends _UpdateWhereAndClause<C, _StandardWhereAndSpec<C>>, _UpdateSpec {
 
     }
 

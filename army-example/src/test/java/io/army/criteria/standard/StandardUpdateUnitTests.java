@@ -1,8 +1,6 @@
 package io.army.criteria.standard;
 
-import io.army.criteria.PrimaryStatement;
-import io.army.criteria.Update;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
@@ -38,9 +36,9 @@ public class StandardUpdateUnitTests {
                 .update(ChinaRegion_.T, "c")
                 .set(ChinaRegion_.name, "武侠江湖")
                 .setPlusLiteral(ChinaRegion_.regionGdp, addGdp)
-                .where(ChinaRegion_.id::between, map::get, "firstId", "secondId")
-                .and(ChinaRegion_.name.equal("江湖"))
-                .and(ChinaRegion_.regionGdp.plus(addGdp).greatEqualLiteral(BigDecimal.ZERO))
+                .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", "secondId")
+                .and(ChinaRegion_.name::equal, SQLs::literal, "江湖")
+                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, new BigDecimal(1000), Expression::greatEqual, BigDecimal.ZERO)
                 .asUpdate();
 
         printStmt(stmt);
@@ -56,13 +54,21 @@ public class StandardUpdateUnitTests {
                 .setPlusLiteral(ChinaProvince_.regionGdp, addGdp)
                 .set(ChinaProvince_.provincialCapital, "光明顶")
                 .set(ChinaProvince_.governor, "张无忌")
-                .where(ChinaProvince_.id.equalLiteral(1))
-                .and(ChinaProvince_.name.equal("江湖"))
-                .and(ChinaProvince_.regionGdp.plus(addGdp).greatEqual(BigDecimal.ZERO))
-                .and(ChinaProvince_.governor.equal("阳顶天").or(list -> {
-                    list.add(ChinaProvince_.governor.equal("石教主"));
-                    list.add(ChinaProvince_.governor.equal("钟教主").and(ChinaProvince_.governor.equal("老钟")));
-                    list.add(ChinaProvince_.governor.equal("方腊"));
+                .where(ChinaProvince_.id::equal, SQLs::literal, 1)
+                .and(ChinaProvince_.name::equal, SQLs::param, "江湖")
+                .and(ChinaProvince_.regionGdp::plus, SQLs::literal, addGdp, Expression::greatEqual, BigDecimal.ZERO)
+                .and(ChinaProvince_.governor.equal(SQLs::param, "阳顶天").or(consumer -> {
+                    IPredicate predicate;
+
+                    predicate = ChinaProvince_.governor.equal(SQLs::param, "石教主");
+                    consumer.accept(predicate);
+
+                    predicate = ChinaProvince_.governor.equal(SQLs::param, "钟教主")
+                            .and(ChinaProvince_.governor::equal, SQLs::param, "老钟");
+                    consumer.accept(predicate);
+
+                    predicate = ChinaProvince_.governor.equal(SQLs::param, "方腊");
+                    consumer.accept(predicate);
                 }))
                 .asUpdate();
 
@@ -78,8 +84,8 @@ public class StandardUpdateUnitTests {
                 .setPlus(ChinaProvince_.regionGdp)
                 .set(ChinaProvince_.governor)
                 .where(ChinaProvince_.id.equalNamed())
-                .and(ChinaProvince_.regionGdp.plusNamed().greatEqual(BigDecimal.ZERO))
-                .and(ChinaProvince_.version.equal(0))
+                .and(ChinaProvince_.regionGdp.plusNamed().greatEqual(SQLs::literal, BigDecimal.ZERO))
+                .and(ChinaProvince_.version::equal, SQLs::literal, 0)
                 .paramList(this::createProvinceList)
                 .asUpdate();
 
@@ -99,8 +105,8 @@ public class StandardUpdateUnitTests {
                 .set(User_.identityType, IdentityType.PERSON)
                 .set(User_.identityId, 888)
                 .set(User_.nickName, "令狐冲")
-                .where(User_.id.equal(1))
-                .and(User_.nickName.equal("zoro"))
+                .where(User_.id::equal, SQLs::literal, 1)
+                .and(User_.nickName::equal, SQLs::literal, "zoro")
                 .asUpdate();
 
         printStmt(stmt);

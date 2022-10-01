@@ -53,7 +53,7 @@ public class MySQLValuesUnitTests {
                 .from(() -> this.createSimpleValues(MySQLs::subValues)
                         .asValues(), "s")
                 .join(ChinaRegion_.T, "c").on(SQLs.ref("s", "column_0")::equal, ChinaRegion_.id)
-                .where(ChinaRegion_.id.equalLiteral(1))
+                .where(ChinaRegion_.id::equal, SQLs::literal, 1)
                 .asQuery();
 
         printStmt(stmt);
@@ -72,7 +72,7 @@ public class MySQLValuesUnitTests {
                                 .asValues())
                         .asValues(), "s")
                 .join(ChinaRegion_.T, "c").on(SQLs.ref("s", "column_0")::equal, ChinaRegion_.id)
-                .where(ChinaRegion_.id.equalLiteral(1))
+                .where(ChinaRegion_.id::equal, SQLs::literal, 1)
                 .asQuery();
 
         printStmt(stmt);
@@ -92,22 +92,22 @@ public class MySQLValuesUnitTests {
 
                 .row()
                 .leftParen(1, "海问香", new BigDecimal("9999.88"), LocalDate.now())
-                .comma(DayOfWeek.MONDAY, SQLs.trueWord(), SQLs.literal(1).plusLiteral(3))
+                .comma(DayOfWeek.MONDAY, SQLs.trueWord(), SQLs.literal(1).plus(SQLs::literal, 3))
                 .rightParen()
 
                 .row()
                 .leftParen(2, "大仓", new BigDecimal("9999.66"), LocalDate.now().plusDays(1))
-                .comma(DayOfWeek.SUNDAY, SQLs.trueWord(), SQLs.literal(13).minusLiteral(3))
+                .comma(DayOfWeek.SUNDAY, SQLs.trueWord(), SQLs.literal(13).minus(SQLs::literal, 3))
                 .rightParen()
 
                 .row()
                 .leftParen(3, "卡拉肖克·玲", new BigDecimal("6666.88"), LocalDate.now().minusDays(3))
-                .comma(DayOfWeek.FRIDAY, SQLs.trueWord(), SQLs.literal(3).minusLiteral(3))
+                .comma(DayOfWeek.FRIDAY, SQLs.trueWord(), SQLs.literal(3).minus(SQLs::literal, 3))
                 .rightParen()
 
                 .row()
                 .leftParen(4, "幽弥狂", new BigDecimal("8888.88"), LocalDate.now().minusDays(8))
-                .comma(DayOfWeek.TUESDAY, SQLs.trueWord(), SQLs.literal(81).divideLiteral(3))
+                .comma(DayOfWeek.TUESDAY, SQLs.trueWord(), SQLs.literal(81).divide(SQLs::literal, 3))
                 .rightParen()
 
                 .orderBy(SQLs.ref("column_1"), SQLs.literal(2).desc())

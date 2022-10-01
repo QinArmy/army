@@ -3,8 +3,10 @@ package io.army.criteria.mysql;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Hint;
 import io.army.criteria.Insert;
+import io.army.criteria.LiteralMode;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.MySQLs;
+import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
@@ -50,7 +52,7 @@ public class MySQLInsertUnitTests {
 
         Insert stmt;
         stmt = MySQLs.domainInsert()
-                .literalMode(true)
+                .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition()
@@ -59,7 +61,7 @@ public class MySQLInsertUnitTests {
                 .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp)
                 .comma(ChinaRegion_.parentId)
                 .rightParen()
-                .defaultLiteral(ChinaRegion_.visible, true)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(this::createReginList)
                 .onDuplicateKey()
                 .update(ChinaRegion_.name, "光明顶")
@@ -86,13 +88,13 @@ public class MySQLInsertUnitTests {
 
         final Insert stmt;
         stmt = MySQLs.domainInsert()
-                .literalMode(true)
+                .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
                 .into(User_.T)
                 .partition()
                 .leftParen("p1")
                 .rightParen()
-                .defaultLiteral(User_.visible, true)
+                .defaultValue(User_.visible, SQLs::literal, true)
                 .values(personList)
                 .onDuplicateKey()
                 .update(User_.identityId, 0)
@@ -100,7 +102,7 @@ public class MySQLInsertUnitTests {
                 .child()
 
                 .insertInto(Person_.T)
-                .defaultValue(Person_.birthday, LocalDate.now())
+                .defaultValue(Person_.birthday, SQLs::literal, LocalDate.now())
                 .values(personList)
                 .onDuplicateKey()
                 .update(Person_.birthday, 0L)
@@ -122,7 +124,7 @@ public class MySQLInsertUnitTests {
 
         Insert stmt;
         stmt = MySQLs.assignmentInsert()
-                .literalMode(false)
+                .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition()

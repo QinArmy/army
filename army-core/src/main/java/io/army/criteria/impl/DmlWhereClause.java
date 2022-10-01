@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Statement;
+import io.army.criteria.Update;
 import io.army.criteria.impl.inner._Dml;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.function.TePredicate;
@@ -24,7 +25,7 @@ import java.util.function.*;
 @SuppressWarnings("unchecked")
 abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         extends JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
-        implements Statement, Statement._WhereClause<C, WR, WA>, Statement._WhereAndClause<C, WA>, _Dml {
+        implements Statement, Statement._WhereClause<C, WR, WA>, Update._UpdateWhereAndClause<C, WA>, _Dml {
 
 
     private List<_Predicate> predicateList = new ArrayList<>();
@@ -75,12 +76,12 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final WA where(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier) {
+    public final <E extends Expression> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.and(expOperator.apply(supplier.get()));
     }
 
     @Override
-    public final WA where(Function<Expression, IPredicate> expOperator, Function<C, Expression> function) {
+    public final <E extends Expression> WA where(Function<E, IPredicate> expOperator, Function<C, E> function) {
         return this.and(expOperator.apply(function.apply(this.criteria)));
     }
 
@@ -126,12 +127,12 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
 
 
     @Override
-    public final WA whereIf(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier) {
+    public final <E extends Expression> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.ifAnd(expOperator, supplier);
     }
 
     @Override
-    public final WA whereIf(Function<Expression, IPredicate> expOperator, Function<C, Expression> function) {
+    public final <E extends Expression> WA whereIf(Function<E, IPredicate> expOperator, Function<C, E> function) {
         return this.ifAnd(expOperator, function);
     }
 
@@ -190,13 +191,14 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         return this.and(expOperator.apply(operand));
     }
 
+
     @Override
-    public final WA and(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier) {
+    public final <E extends Expression> WA and(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.and(expOperator.apply(supplier.get()));
     }
 
     @Override
-    public final WA and(Function<Expression, IPredicate> expOperator, Function<C, Expression> function) {
+    public final <E extends Expression> WA and(Function<E, IPredicate> expOperator, Function<C, E> function) {
         return this.and(expOperator.apply(function.apply(this.criteria)));
     }
 
@@ -255,6 +257,19 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
+    public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable T operator2) {
+        if (operand1 == null || operator2 == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        final Expression expression;
+        expression = expOperator1.apply(operator, operand1);
+        if (expression == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator2.apply(expression, operator.apply(expression, operator2)));
+    }
+
+    @Override
     public final WA ifAnd(Supplier<IPredicate> supplier) {
         final IPredicate predicate;
         predicate = supplier.get();
@@ -276,8 +291,8 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
 
 
     @Override
-    public final WA ifAnd(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier) {
-        final Expression expression;
+    public final <E extends Expression> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+        final E expression;
         expression = supplier.get();
         if (expression != null) {
             this.and(expOperator.apply(expression));
@@ -286,8 +301,8 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final WA ifAnd(Function<Expression, IPredicate> expOperator, Function<C, Expression> function) {
-        final Expression expression;
+    public final <E extends Expression> WA ifAnd(Function<E, IPredicate> expOperator, Function<C, E> function) {
+        final E expression;
         expression = function.apply(this.criteria);
         if (expression != null) {
             this.and(expOperator.apply(expression));
@@ -345,6 +360,19 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         final Object first, second;
         if ((first = function.apply(firstKey)) != null && (second = function.apply(secondKey)) != null) {
             this.and(expOperator.apply(operator, first, second));
+        }
+        return (WA) this;
+    }
+
+    @Override
+    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable T operator2) {
+        if (operand1 != null || operator2 != null) {
+            final Expression expression;
+            expression = expOperator1.apply(operator, operand1);
+            if (expression == null) {
+                throw CriteriaContextStack.nullPointer(this.context);
+            }
+            this.and(expOperator2.apply(expression, operator.apply(expression, operator2)));
         }
         return (WA) this;
     }

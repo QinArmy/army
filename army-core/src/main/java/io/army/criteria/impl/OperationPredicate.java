@@ -10,13 +10,11 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
+import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * This class is base class of all {@link IPredicate} implementation .
@@ -46,13 +44,14 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
         return this.or(function.apply(CriteriaContextStack.getTopCriteria()));
     }
 
+
     @Override
-    public final IPredicate or(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier) {
+    public final <E extends Expression> IPredicate or(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.or(expOperator.apply(supplier.get()));
     }
 
     @Override
-    public final <C> IPredicate or(Function<Expression, IPredicate> expOperator, Function<C, Expression> function) {
+    public final <C, E extends Expression> IPredicate or(Function<E, IPredicate> expOperator, Function<C, E> function) {
         return this.or(expOperator.apply(function.apply(CriteriaContextStack.getTopCriteria())));
     }
 
@@ -89,7 +88,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public IPredicate or(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
+    public final IPredicate or(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
         final Object first, second;
         if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
             throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
@@ -102,8 +101,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
         final List<IPredicate> list = new ArrayList<>();
         consumer.accept(list::add);
         if (list.size() == 0) {
-            String m = String.format("You don't add any %s", IPredicate.class.getName());
-            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), _Exceptions::predicateListIsEmpty);
         }
         return OrPredicate.create(this, list);
     }
@@ -133,8 +131,8 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final IPredicate ifOr(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier) {
-        final Expression expression;
+    public final <E extends Expression> IPredicate ifOr(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+        final E expression;
         expression = supplier.get();
         final IPredicate result;
         if (expression == null) {
@@ -146,8 +144,8 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public <C> IPredicate ifOr(Function<Expression, IPredicate> expOperator, Function<C, Expression> function) {
-        final Expression expression;
+    public final <C, E extends Expression> IPredicate ifOr(Function<E, IPredicate> expOperator, Function<C, E> function) {
+        final E expression;
         expression = function.apply(CriteriaContextStack.getTopCriteria());
         final IPredicate result;
         if (expression == null) {
@@ -183,7 +181,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public IPredicate ifOr(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+    public final IPredicate ifOr(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
         final Object operand;
         operand = function.apply(keyName);
         final IPredicate result;
@@ -244,8 +242,94 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
+    public final IPredicate and(final @Nullable IPredicate predicate) {
+        if (predicate == null) {
+            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+        }
+        return AndPredicate.create(this, predicate);
+    }
+
+    @Override
+    public final IPredicate and(Function<Expression, IPredicate> expOperator, Expression operand) {
+        return this.and(expOperator.apply(operand));
+    }
+
+    @Override
+    public final <E extends Expression> IPredicate and(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+        return this.and(expOperator.apply(supplier.get()));
+    }
+
+    @Override
+    public final <C, E extends Expression> IPredicate and(Function<E, IPredicate> expOperator, Function<C, E> function) {
+        return this.and(expOperator.apply(function.apply(CriteriaContextStack.getTopCriteria())));
+    }
+
+    @Override
+    public final <T> IPredicate and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand) {
+        return this.and(expOperator.apply(operator, operand));
+    }
+
+    @Override
+    public final <T> IPredicate and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+        return this.and(expOperator.apply(operator, supplier.get()));
+    }
+
+    @Override
+    public final IPredicate and(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+        return this.and(expOperator.apply(operator, function.apply(keyName)));
+    }
+
+    @Override
+    public final <T> IPredicate and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
+        if (first == null || second == null) {
+            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+        }
+        return this.and(expOperator.apply(operator, first, second));
+    }
+
+    @Override
+    public final <T> IPredicate and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
+        final T first, second;
+        if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
+            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+        }
+        return this.and(expOperator.apply(operator, first, second));
+    }
+
+    @Override
+    public final IPredicate and(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
+        final Object first, second;
+        if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
+            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+        }
+        return this.and(expOperator.apply(operator, first, second));
+    }
+
+    @Override
+    public final IPredicate and(Consumer<Consumer<IPredicate>> consumer) {
+        final List<IPredicate> list = new ArrayList<>();
+        consumer.accept(list::add);
+        if (list.size() == 0) {
+            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), _Exceptions::predicateListIsEmpty);
+        }
+        return AndPredicate.create(this, list);
+    }
+
+    @Override
     public final IPredicate not() {
         return NotPredicate.not(this);
+    }
+
+    @Override
+    public final IPredicate ifNot(BooleanSupplier supplier) {
+        final IPredicate result;
+        if (supplier.getAsBoolean()) {
+            result = NotPredicate.not(this);
+            ;
+        } else {
+            result = this;
+        }
+        return result;
     }
 
     @Override

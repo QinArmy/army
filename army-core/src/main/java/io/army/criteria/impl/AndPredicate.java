@@ -4,18 +4,18 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.IPredicate;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 final class AndPredicate extends OperationPredicate {
 
 
-    static AndPredicate create(OperationPredicate left, IPredicate right) {
-        Objects.requireNonNull(right);
+    static AndPredicate create(OperationPredicate left, @Nullable IPredicate right) {
+        assert right != null;
         return new AndPredicate(left, Collections.singletonList((OperationPredicate) right));
     }
 

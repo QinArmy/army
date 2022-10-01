@@ -22,7 +22,7 @@ abstract class OperationField extends OperationExpression implements TableField 
     }
 
     @Override
-    public final IPredicate lessThanNamed() {
+    public final IPredicate lessNamed() {
         return this.less(SQLs.namedParam(this));
     }
 
@@ -32,7 +32,7 @@ abstract class OperationField extends OperationExpression implements TableField 
     }
 
     @Override
-    public final IPredicate greatThanNamed() {
+    public final IPredicate greatNamed() {
         return this.great(SQLs.namedParam(this));
     }
 

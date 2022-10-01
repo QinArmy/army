@@ -54,7 +54,7 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
     }
 
     @Override
-    public final OR on(Function<Object, IPredicate> operator, DataField operandField) {
+    public final OR on(Function<Expression, IPredicate> operator, DataField operandField) {
         if (this.predicateList != null) {
             throw CriteriaContextStack.castCriteriaApi(this.getCriteriaContext());
         }

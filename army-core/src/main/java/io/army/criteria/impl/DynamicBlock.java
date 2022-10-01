@@ -57,7 +57,7 @@ abstract class DynamicBlock<C> implements JoinItemBlock<C>, ItemBlock<C>, Statem
     }
 
     @Override
-    public final JoinItemBlock<C> on(Function<Object, IPredicate> operator, DataField operandField) {
+    public final JoinItemBlock<C> on(Function<Expression, IPredicate> operator, DataField operandField) {
         final OperationPredicate predicate;
         predicate = (OperationPredicate) operator.apply(operandField);
         return this.onClauseEnd(Collections.singletonList(predicate));
