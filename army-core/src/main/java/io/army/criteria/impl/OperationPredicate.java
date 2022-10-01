@@ -2,6 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.function.TePredicate;
+import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -11,6 +13,7 @@ import io.army.modelgen._MetaBridge;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -26,40 +29,218 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final IPredicate or(IPredicate predicate) {
+    public final IPredicate or(final @Nullable IPredicate predicate) {
+        if (predicate == null) {
+            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+        }
         return OrPredicate.create(this, predicate);
     }
 
     @Override
-    public final IPredicate or(List<IPredicate> predicates) {
-        return OrPredicate.create(this, predicates);
+    public final IPredicate or(Supplier<IPredicate> supplier) {
+        return this.or(supplier.get());
     }
 
     @Override
-    public final <C> IPredicate or(Function<C, List<IPredicate>> function) {
-        return OrPredicate.create(this, function.apply(CriteriaContextStack.getTopCriteria()));
+    public final <C> IPredicate or(Function<C, IPredicate> function) {
+        return this.or(function.apply(CriteriaContextStack.getTopCriteria()));
     }
 
     @Override
-    public final IPredicate or(Supplier<List<IPredicate>> supplier) {
-        return OrPredicate.create(this, supplier.get());
+    public final IPredicate or(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier) {
+        return this.or(expOperator.apply(supplier.get()));
     }
 
     @Override
-    public final IPredicate or(Consumer<List<IPredicate>> consumer) {
-        List<IPredicate> list = new ArrayList<>();
-        consumer.accept(list);
+    public final <C> IPredicate or(Function<Expression, IPredicate> expOperator, Function<C, Expression> function) {
+        return this.or(expOperator.apply(function.apply(CriteriaContextStack.getTopCriteria())));
+    }
+
+    @Override
+    public final <T> IPredicate or(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand) {
+        return this.or(expOperator.apply(operator, operand));
+    }
+
+    @Override
+    public final <T> IPredicate or(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+        return this.or(expOperator.apply(operator, supplier.get()));
+    }
+
+    @Override
+    public final IPredicate or(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+        return this.or(expOperator.apply(operator, function.apply(keyName)));
+    }
+
+    @Override
+    public final <T> IPredicate or(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
+        if (first == null || second == null) {
+            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+        }
+        return this.or(expOperator.apply(operator, first, second));
+    }
+
+    @Override
+    public final <T> IPredicate or(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
+        final T first, second;
+        if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
+            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+        }
+        return this.or(expOperator.apply(operator, first, second));
+    }
+
+    @Override
+    public IPredicate or(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
+        final Object first, second;
+        if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
+            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+        }
+        return this.or(expOperator.apply(operator, first, second));
+    }
+
+    @Override
+    public final IPredicate or(Consumer<Consumer<IPredicate>> consumer) {
+        final List<IPredicate> list = new ArrayList<>();
+        consumer.accept(list::add);
+        if (list.size() == 0) {
+            String m = String.format("You don't add any %s", IPredicate.class.getName());
+            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+        }
         return OrPredicate.create(this, list);
     }
 
     @Override
-    public final IPredicate and(IPredicate predicate) {
-        return AndPredicate.create(this, predicate);
+    public final IPredicate ifOr(Supplier<IPredicate> supplier) {
+        final IPredicate predicate, result;
+        predicate = supplier.get();
+        if (predicate == null) {
+            result = this;
+        } else {
+            result = OrPredicate.create(this, predicate);
+        }
+        return result;
     }
 
     @Override
-    public final IPredicate and(List<IPredicate> predicates) {
-        return AndPredicate.create(this, predicates);
+    public final <C> IPredicate ifOr(Function<C, IPredicate> function) {
+        final IPredicate predicate, result;
+        predicate = function.apply(CriteriaContextStack.getTopCriteria());
+        if (predicate == null) {
+            result = this;
+        } else {
+            result = OrPredicate.create(this, predicate);
+        }
+        return result;
+    }
+
+    @Override
+    public final IPredicate ifOr(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier) {
+        final Expression expression;
+        expression = supplier.get();
+        final IPredicate result;
+        if (expression == null) {
+            result = this;
+        } else {
+            result = this.or(expOperator.apply(expression));
+        }
+        return result;
+    }
+
+    @Override
+    public <C> IPredicate ifOr(Function<Expression, IPredicate> expOperator, Function<C, Expression> function) {
+        final Expression expression;
+        expression = function.apply(CriteriaContextStack.getTopCriteria());
+        final IPredicate result;
+        if (expression == null) {
+            result = this;
+        } else {
+            result = this.or(expOperator.apply(expression));
+        }
+        return result;
+    }
+
+    @Override
+    public final <T> IPredicate ifOr(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+        final IPredicate result;
+        if (operand == null) {
+            result = this;
+        } else {
+            result = this.or(expOperator.apply(operator, operand));
+        }
+        return result;
+    }
+
+    @Override
+    public final <T> IPredicate ifOr(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+        final T operand;
+        operand = supplier.get();
+        final IPredicate result;
+        if (operand == null) {
+            result = this;
+        } else {
+            result = this.or(expOperator.apply(operator, operand));
+        }
+        return result;
+    }
+
+    @Override
+    public IPredicate ifOr(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+        final Object operand;
+        operand = function.apply(keyName);
+        final IPredicate result;
+        if (operand == null) {
+            result = this;
+        } else {
+            result = this.or(expOperator.apply(operator, operand));
+        }
+        return result;
+    }
+
+    @Override
+    public final <T> IPredicate ifOr(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
+        final IPredicate result;
+        if (first == null || second == null) {
+            result = this;
+        } else {
+            result = this.or(expOperator.apply(operator, first, second));
+        }
+        return result;
+    }
+
+    @Override
+    public final <T> IPredicate ifOr(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
+        final T first, second;
+        final IPredicate result;
+        if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
+            result = this;
+        } else {
+            result = this.or(expOperator.apply(operator, first, second));
+        }
+        return result;
+    }
+
+    @Override
+    public final IPredicate ifOr(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
+        final Object first, second;
+        final IPredicate result;
+        if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
+            result = this;
+        } else {
+            result = this.or(expOperator.apply(operator, first, second));
+        }
+        return result;
+    }
+
+    @Override
+    public final IPredicate ifOr(Consumer<Consumer<IPredicate>> consumer) {
+        final List<IPredicate> list = new ArrayList<>();
+        consumer.accept(list::add);
+        final IPredicate result;
+        if (list.size() == 0) {
+            result = this;
+        } else {
+            result = OrPredicate.create(this, list);
+        }
+        return result;
     }
 
     @Override

@@ -47,7 +47,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate equal(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate equal(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualPredicate.create(this, DualOperator.EQUAL, operator.apply(this, operand));
     }
 
@@ -81,7 +81,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate less(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate less(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualPredicate.create(this, DualOperator.LESS, operator.apply(this, operand));
     }
 
@@ -128,7 +128,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate lessEqual(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate lessEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualPredicate.create(this, DualOperator.LESS_EQUAL, operator.apply(this, operand));
     }
 
@@ -177,7 +177,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate great(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate great(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualPredicate.create(this, DualOperator.GREAT, operator.apply(this, operand));
     }
 
@@ -227,7 +227,7 @@ abstract class OperationExpression implements ArmyExpression {
 
 
     @Override
-    public final <T> IPredicate greatEqual(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate greatEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualPredicate.create(this, DualOperator.GREAT_EQUAL, operator.apply(this, operand));
     }
 
@@ -275,7 +275,7 @@ abstract class OperationExpression implements ArmyExpression {
 
 
     @Override
-    public final <T> IPredicate notEqual(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate notEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualPredicate.create(this, DualOperator.NOT_EQUAL, operator.apply(this, operand));
     }
 
@@ -321,10 +321,10 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate between(BiFunction<Expression, Object, Expression> operator, Object first, Object second) {
+    public final <T> IPredicate between(BiFunction<Expression, T, Expression> operator, T first, T second) {
         final Expression firstExp, secondExp;
-        firstExp = operator.apply(this, SQLs._safeParam(first));
-        secondExp = operator.apply(this, SQLs._safeParam(second));
+        firstExp = operator.apply(this, first);
+        secondExp = operator.apply(this, second);
         return BetweenPredicate.create(this, firstExp, secondExp);
     }
 
@@ -390,7 +390,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate like(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate like(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualPredicate.create(this, DualOperator.LIKE, operator.apply(this, operand));
     }
 
@@ -400,7 +400,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate notLike(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate notLike(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualPredicate.create(this, DualOperator.NOT_LIKE, operator.apply(this, operand));
     }
 
@@ -425,7 +425,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression mod(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression mod(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.MOD, operator.apply(this, operand));
     }
 
@@ -460,7 +460,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression times(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression times(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.TIMES, operator.apply(this, operand));
     }
 
@@ -495,7 +495,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression plus(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression plus(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.PLUS, operator.apply(this, operand));
     }
 
@@ -530,7 +530,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression minus(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression minus(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.MINUS, operator.apply(this, operand));
     }
 
@@ -565,7 +565,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression divide(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression divide(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.DIVIDE, operator.apply(this, operand));
     }
 
@@ -605,7 +605,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.BITWISE_AND, operator.apply(this, operand));
     }
 
@@ -640,7 +640,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.BITWISE_OR, operator.apply(this, operand));
     }
 
@@ -675,7 +675,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression xor(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression xor(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.XOR, operator.apply(this, operand));
     }
 
@@ -715,7 +715,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.RIGHT_SHIFT, operator.apply(this, operand));
     }
 
@@ -750,7 +750,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.LEFT_SHIFT, operator.apply(this, operand));
     }
 

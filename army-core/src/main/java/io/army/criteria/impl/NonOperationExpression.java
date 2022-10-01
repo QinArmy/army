@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
 
 import java.util.Collection;
@@ -75,7 +74,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate equal(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate equal(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -106,7 +105,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate less(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate less(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -147,7 +146,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate lessEqual(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate lessEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -187,7 +186,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate great(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate great(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -228,7 +227,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate greatEqual(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate greatEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -268,7 +267,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate notEqual(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate notEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -308,7 +307,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate between(BiFunction<Expression, Object, Expression> operator, Object first, Object second) {
+    public final <T> IPredicate between(BiFunction<Expression, T, Expression> operator, T first, T second) {
         throw unsupportedOperation();
     }
 
@@ -360,7 +359,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate like(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate like(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -370,7 +369,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> IPredicate notLike(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> IPredicate notLike(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -396,7 +395,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression mod(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression mod(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -431,7 +430,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression times(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression times(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -466,7 +465,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression plus(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression plus(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -501,7 +500,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression minus(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression minus(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -536,7 +535,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression divide(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression divide(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -577,7 +576,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -612,7 +611,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -647,7 +646,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression xor(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression xor(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -687,7 +686,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -722,7 +721,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 

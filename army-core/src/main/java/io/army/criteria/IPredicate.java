@@ -1,6 +1,9 @@
 package io.army.criteria;
 
-import java.util.List;
+import io.army.function.TePredicate;
+import io.army.lang.Nullable;
+
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -16,65 +19,49 @@ public interface IPredicate extends Expression {
      */
     IPredicate or(IPredicate predicate);
 
-    /**
-     * Logical OR
-     * <p>
-     * This method representing expression (this OR  predicates[0] OR predicates[1] OR ... OR predicates[n])
-     * </p>
-     *
-     * @param predicates return list that non-null,possibly empty.
-     */
-    IPredicate or(List<IPredicate> predicates);
+    IPredicate or(Supplier<IPredicate> supplier);
 
-    /**
-     * Logical OR
-     * <p>
-     * This method representing expression (this OR  predicates[0] OR predicates[1] OR ... OR predicates[n])
-     * </p>
-     *
-     * @param function return list that non-null,possibly empty.
-     */
-    <C> IPredicate or(Function<C, List<IPredicate>> function);
+    <C> IPredicate or(Function<C, IPredicate> function);
 
-    /**
-     * Logical OR
-     * <p>
-     * This method representing expression (this OR  predicates[0] OR predicates[1] OR ... OR predicates[n])
-     * </p>
-     *
-     * @param supplier return list that non-null,possibly empty.
-     */
-    IPredicate or(Supplier<List<IPredicate>> supplier);
+    IPredicate or(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier);
 
-    /**
-     * Logical OR
-     * <p>
-     * This method representing expression (this OR  predicates[0] OR predicates[1] OR ... OR predicates[n])
-     * </p>
-     *
-     * @param consumer you can add 0-n {@link IPredicate}
-     */
-    IPredicate or(Consumer<List<IPredicate>> consumer);
+    <C> IPredicate or(Function<Expression, IPredicate> expOperator, Function<C, Expression> function);
 
-    /**
-     * Logical ADN
-     * <p>
-     * This method representing expression this ADN predicate
-     * </p>
-     *
-     * @param predicate non-null
-     */
-    IPredicate and(IPredicate predicate);
+    <T> IPredicate or(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
 
-    /**
-     * Logical ADN
-     * <p>
-     * This method representing expression this OR  predicates[0] ADN predicates[1] ADN ... ADN predicates[n]
-     * </p>
-     *
-     * @param predicates non-null,non-empty.
-     */
-    IPredicate and(List<IPredicate> predicates);
+    <T> IPredicate or(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+
+    IPredicate or(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+
+    <T> IPredicate or(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, T first, T second);
+
+    <T> IPredicate or(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier);
+
+    IPredicate or(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+
+    IPredicate or(Consumer<Consumer<IPredicate>> consumer);
+
+    IPredicate ifOr(Supplier<IPredicate> supplier);
+
+    <C> IPredicate ifOr(Function<C, IPredicate> function);
+
+    IPredicate ifOr(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier);
+
+    <C> IPredicate ifOr(Function<Expression, IPredicate> expOperator, Function<C, Expression> function);
+
+    <T> IPredicate ifOr(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+
+    <T> IPredicate ifOr(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+
+    IPredicate ifOr(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+
+    <T> IPredicate ifOr(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second);
+
+    <T> IPredicate ifOr(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier);
+
+    IPredicate ifOr(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+
+    IPredicate ifOr(Consumer<Consumer<IPredicate>> consumer);
 
 
     /**

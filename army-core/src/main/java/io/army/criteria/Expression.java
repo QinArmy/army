@@ -1,6 +1,5 @@
 package io.army.criteria;
 
-import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 
@@ -55,7 +54,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate less(Expression operand);
 
-    <T> IPredicate less(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> IPredicate less(BiFunction<Expression, T, Expression> operator, T operand);
 
     <C> IPredicate lessAny(Function<C, SubQuery> function);
 
@@ -72,7 +71,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate lessEqual(Expression operand);
 
-    <T> IPredicate lessEqual(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> IPredicate lessEqual(BiFunction<Expression, T, Expression> operator, T operand);
 
     <C> IPredicate lessEqualAny(Function<C, SubQuery> function);
 
@@ -88,7 +87,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate great(Expression operand);
 
-    <T> IPredicate great(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> IPredicate great(BiFunction<Expression, T, Expression> operator, T operand);
 
     <C> IPredicate greatAny(Function<C, SubQuery> function);
 
@@ -104,7 +103,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate greatEqual(Expression operand);
 
-    <T> IPredicate greatEqual(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> IPredicate greatEqual(BiFunction<Expression, T, Expression> operator, T operand);
 
     <C> IPredicate greatEqualAny(Function<C, SubQuery> function);
 
@@ -121,7 +120,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate notEqual(Expression operand);
 
-    <T> IPredicate notEqual(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> IPredicate notEqual(BiFunction<Expression, T, Expression> operator, T operand);
 
     <C> IPredicate notEqualAny(Function<C, SubQuery> function);
 
@@ -137,7 +136,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate between(Expression first, Expression second);
 
-    IPredicate between(BiFunction<Expression, Object, Expression> operator, Object first, Object second);
+    <T> IPredicate between(BiFunction<Expression, T, Expression> operator, T first, T second);
 
     IPredicate between(Supplier<ExpressionPair> supplier);
 
@@ -164,11 +163,11 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate like(Expression pattern);
 
-    <T> IPredicate like(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> IPredicate like(BiFunction<Expression, T, Expression> operator, T operand);
 
     IPredicate notLike(Expression pattern);
 
-    <T> IPredicate notLike(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> IPredicate notLike(BiFunction<Expression, T, Expression> operator, T operand);
 
     Expression mod(Expression operand);
 
@@ -178,7 +177,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     <C> Expression mod(BiFunction<C, Expression, Expression> function);
 
-    <T> Expression mod(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> Expression mod(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression mod(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
@@ -194,7 +193,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     <C> Expression times(BiFunction<C, Expression, Expression> function);
 
-    <T> Expression times(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> Expression times(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression times(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
@@ -209,7 +208,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     <C> Expression plus(BiFunction<C, Expression, Expression> function);
 
-    <T> Expression plus(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> Expression plus(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression plus(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
@@ -223,7 +222,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     <C> Expression minus(BiFunction<C, Expression, Expression> function);
 
-    <T> Expression minus(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> Expression minus(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression minus(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
@@ -237,7 +236,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     <C> Expression divide(BiFunction<C, Expression, Expression> function);
 
-    <T> Expression divide(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> Expression divide(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression divide(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
@@ -258,7 +257,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     <C> Expression bitwiseAnd(BiFunction<C, Expression, Expression> function);
 
-    <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
@@ -277,7 +276,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     <C> Expression bitwiseOr(BiFunction<C, Expression, Expression> function);
 
-    <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
@@ -296,7 +295,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     <C> Expression xor(BiFunction<C, Expression, Expression> function);
 
-    <T> Expression xor(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> Expression xor(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression xor(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
@@ -322,7 +321,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     <C> Expression rightShift(BiFunction<C, Expression, Expression> function);
 
-    <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
@@ -341,7 +340,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     <C> Expression leftShift(BiFunction<C, Expression, Expression> function);
 
-    <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
