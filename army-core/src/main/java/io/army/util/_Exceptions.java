@@ -290,9 +290,9 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("unknown %s type.", query.getClass().getName()));
     }
 
-    public static CriteriaException setTargetAndValuePartNotMatch(SetLeftItem target, SetRightItem value) {
+    public static CriteriaException setTargetAndValuePartNotMatch(SetLeftItem target, SqlOperand value) {
         return new CriteriaException(String.format("%s[%s] and %s[%s] not match.", SetLeftItem.class.getName(), target
-                , SetRightItem.class.getName(), value));
+                , SqlOperand.class.getName(), value));
     }
 
     public static CriteriaException selfJoinNonQualifiedField(FieldMeta<?> field) {

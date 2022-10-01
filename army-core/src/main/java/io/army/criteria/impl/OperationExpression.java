@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
+import io.army.function.TeExpression;
 import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
 
@@ -52,27 +53,13 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> IPredicate equalAny(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.EQUAL, SubQueryOperator.ANY, query);
+    public final IPredicate equalAny(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.EQUAL, SubQueryOperator.ANY, subQuery);
     }
 
     @Override
-    public final IPredicate equalAny(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.EQUAL, SubQueryOperator.ANY, supplier.get());
-    }
-
-    @Override
-    public final <C> IPredicate equalSome(Function<C, SubQuery> subQuery) {
-        final SubQuery query;
-        query = subQuery.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.EQUAL, SubQueryOperator.SOME, query);
-    }
-
-    @Override
-    public final IPredicate equalSome(Supplier<SubQuery> subQuery) {
-        return SubQueryPredicate.create(this, DualOperator.EQUAL, SubQueryOperator.SOME, subQuery.get());
+    public final IPredicate equalSome(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.EQUAL, SubQueryOperator.SOME, subQuery);
     }
 
     @Override
@@ -85,40 +72,21 @@ abstract class OperationExpression implements ArmyExpression {
         return DualPredicate.create(this, DualOperator.LESS, operator.apply(this, operand));
     }
 
+
     @Override
-    public final <C> IPredicate lessAny(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.ANY, query);
+    public final IPredicate lessAny(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.ANY, subQuery);
+    }
+
+
+    @Override
+    public final IPredicate lessSome(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.SOME, subQuery);
     }
 
     @Override
-    public final IPredicate lessAny(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.ANY, supplier.get());
-    }
-
-    @Override
-    public final <C> IPredicate lessSome(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.SOME, query);
-    }
-
-    @Override
-    public final IPredicate lessSome(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.SOME, supplier.get());
-    }
-
-    @Override
-    public final <C> IPredicate lessAll(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.ALL, query);
-    }
-
-    @Override
-    public final IPredicate lessAll(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.ALL, supplier.get());
+    public final IPredicate lessAll(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.LESS, SubQueryOperator.ALL, subQuery);
     }
 
 
@@ -134,40 +102,20 @@ abstract class OperationExpression implements ArmyExpression {
 
 
     @Override
-    public final <C> IPredicate lessEqualAny(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.ANY, query);
-    }
-
-    @Override
-    public final IPredicate lessEqualAny(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.ANY, supplier.get());
-    }
-
-    @Override
-    public final <C> IPredicate lessEqualSome(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.SOME, query);
-    }
-
-    @Override
-    public final IPredicate lessEqualSome(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.SOME, supplier.get());
+    public final IPredicate lessEqualAny(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.ANY, subQuery);
     }
 
 
     @Override
-    public final <C> IPredicate lessEqualAll(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.ALL, query);
+    public final IPredicate lessEqualSome(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.SOME, subQuery);
     }
 
+
     @Override
-    public final IPredicate lessEqualAll(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.ALL, supplier.get());
+    public final IPredicate lessEqualAll(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.LESS_EQUAL, SubQueryOperator.ALL, subQuery);
     }
 
 
@@ -183,40 +131,20 @@ abstract class OperationExpression implements ArmyExpression {
 
 
     @Override
-    public final <C> IPredicate greatAny(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.ANY, query);
-    }
-
-    @Override
-    public final IPredicate greatAny(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.ANY, supplier.get());
+    public final IPredicate greatAny(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.ANY, subQuery);
     }
 
 
     @Override
-    public final <C> IPredicate greatSome(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.SOME, query);
+    public final IPredicate greatSome(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.SOME, subQuery);
     }
 
-    @Override
-    public final IPredicate greatSome(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.SOME, supplier.get());
-    }
 
     @Override
-    public final <C> IPredicate greatAll(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.ALL, query);
-    }
-
-    @Override
-    public final IPredicate greatAll(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.ALL, supplier.get());
+    public final IPredicate greatAll(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.GREAT, SubQueryOperator.ALL, subQuery);
     }
 
 
@@ -231,40 +159,21 @@ abstract class OperationExpression implements ArmyExpression {
         return DualPredicate.create(this, DualOperator.GREAT_EQUAL, operator.apply(this, operand));
     }
 
+
     @Override
-    public final <C> IPredicate greatEqualAny(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.ANY, query);
+    public final IPredicate greatEqualAny(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.ANY, subQuery);
     }
 
     @Override
-    public final IPredicate greatEqualAny(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.ANY, supplier.get());
+    public final IPredicate greatEqualSome(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.SOME, subQuery);
     }
 
-    @Override
-    public final <C> IPredicate greatEqualSome(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.SOME, query);
-    }
 
     @Override
-    public final IPredicate greatEqualSome(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.SOME, supplier.get());
-    }
-
-    @Override
-    public final <C> IPredicate greatEqualAll(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.ALL, query);
-    }
-
-    @Override
-    public final IPredicate greatEqualAll(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.ALL, supplier.get());
+    public final IPredicate greatEqualAll(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.GREAT_EQUAL, SubQueryOperator.ALL, subQuery);
     }
 
 
@@ -280,39 +189,19 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> IPredicate notEqualAny(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.ANY, query);
+    public final IPredicate notEqualAny(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.ANY, subQuery);
+    }
+
+
+    @Override
+    public final IPredicate notEqualSome(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.SOME, subQuery);
     }
 
     @Override
-    public final IPredicate notEqualAny(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.ANY, supplier.get());
-    }
-
-    @Override
-    public final <C> IPredicate notEqualSome(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.SOME, query);
-    }
-
-    @Override
-    public final IPredicate notEqualSome(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.SOME, supplier.get());
-    }
-
-    @Override
-    public final <C> IPredicate notEqualAll(Function<C, SubQuery> function) {
-        final SubQuery query;
-        query = function.apply(CriteriaContextStack.getTopCriteria());
-        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.ALL, query);
-    }
-
-    @Override
-    public final IPredicate notEqualAll(Supplier<SubQuery> supplier) {
-        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.ALL, supplier.get());
+    public final IPredicate notEqualAll(SubQuery subQuery) {
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQUAL, SubQueryOperator.ALL, subQuery);
     }
 
     @Override
@@ -336,10 +225,6 @@ abstract class OperationExpression implements ArmyExpression {
         return BetweenPredicate.create(this, pair.first, pair.second);
     }
 
-    @Override
-    public final IPredicate betweenNamed(String firstParamName, String secondParamName) {
-        return BetweenPredicate.create(this, SQLs.namedParam(this, firstParamName), SQLs.namedParam(this, secondParamName));
-    }
 
     @Override
     public final IPredicate isNull() {
@@ -362,11 +247,11 @@ abstract class OperationExpression implements ArmyExpression {
         return DualPredicate.create(this, DualOperator.IN, operator.apply(this, operand));
     }
 
-    @Override
-    public final IPredicate inNamed(String paramName, int size) {
-        return DualPredicate.create(this, DualOperator.IN, SQLs.namedMultiParams(this, paramName, size));
-    }
 
+    @Override
+    public final IPredicate in(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size) {
+        return DualPredicate.create(this, DualOperator.IN, namedOperator.apply(this, paramName, size));
+    }
 
     @Override
     public final IPredicate notIn(Expression operand) {
@@ -379,8 +264,8 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate notInNamed(String paramName, int size) {
-        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.namedMultiParams(this, paramName, size));
+    public final IPredicate notIn(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size) {
+        return DualPredicate.create(this, DualOperator.NOT_IN, namedOperator.apply(this, paramName, size));
     }
 
 
@@ -420,11 +305,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression mod(BiFunction<C, Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.MOD, function.apply(CriteriaContextStack.getTopCriteria(), this));
-    }
-
-    @Override
     public final <T> Expression mod(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.MOD, operator.apply(this, operand));
     }
@@ -452,11 +332,6 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final Expression times(Function<Expression, Expression> function) {
         return DualExpression.create(this, DualOperator.TIMES, function.apply(this));
-    }
-
-    @Override
-    public final <C> Expression times(BiFunction<C, Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.TIMES, function.apply(CriteriaContextStack.getTopCriteria(), this));
     }
 
     @Override
@@ -490,11 +365,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression plus(BiFunction<C, Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.PLUS, function.apply(CriteriaContextStack.getTopCriteria(), this));
-    }
-
-    @Override
     public final <T> Expression plus(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.PLUS, operator.apply(this, operand));
     }
@@ -524,10 +394,6 @@ abstract class OperationExpression implements ArmyExpression {
         return DualExpression.create(this, DualOperator.MINUS, function.apply(this));
     }
 
-    @Override
-    public final <C> Expression minus(BiFunction<C, Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.MINUS, function.apply(CriteriaContextStack.getTopCriteria(), this));
-    }
 
     @Override
     public final <T> Expression minus(BiFunction<Expression, T, Expression> operator, T operand) {
@@ -557,11 +423,6 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final Expression divide(Function<Expression, Expression> function) {
         return DualExpression.create(this, DualOperator.DIVIDE, function.apply(this));
-    }
-
-    @Override
-    public final <C> Expression divide(BiFunction<C, Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.DIVIDE, function.apply(CriteriaContextStack.getTopCriteria(), this));
     }
 
     @Override
@@ -600,11 +461,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression bitwiseAnd(BiFunction<C, Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, function.apply(CriteriaContextStack.getTopCriteria(), this));
-    }
-
-    @Override
     public final <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.BITWISE_AND, operator.apply(this, operand));
     }
@@ -635,11 +491,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression bitwiseOr(BiFunction<C, Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, function.apply(CriteriaContextStack.getTopCriteria(), this));
-    }
-
-    @Override
     public final <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.BITWISE_OR, operator.apply(this, operand));
     }
@@ -667,11 +518,6 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final Expression xor(Function<Expression, Expression> function) {
         return DualExpression.create(this, DualOperator.XOR, function.apply(this));
-    }
-
-    @Override
-    public final <C> Expression xor(BiFunction<C, Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.XOR, function.apply(CriteriaContextStack.getTopCriteria(), this));
     }
 
     @Override
@@ -710,11 +556,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression rightShift(BiFunction<C, Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, function.apply(CriteriaContextStack.getTopCriteria(), this));
-    }
-
-    @Override
     public final <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.RIGHT_SHIFT, operator.apply(this, operand));
     }
@@ -742,11 +583,6 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final Expression leftShift(Function<Expression, Expression> function) {
         return DualExpression.create(this, DualOperator.LEFT_SHIFT, function.apply(this));
-    }
-
-    @Override
-    public final <C> Expression leftShift(BiFunction<C, Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, function.apply(CriteriaContextStack.getTopCriteria(), this));
     }
 
     @Override

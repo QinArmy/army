@@ -85,6 +85,9 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
      */
     interface _BatchSetClause<C, F extends DataField, SR> extends _SetClause<C, F, SR> {
 
+        /**
+         * @see #set(DataField, BiFunction, Object)
+         */
         SR set(F field, BiFunction<F, String, Expression> valueOperator);
 
         SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, String, Expression> valueOperator);

@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.function.TeExpression;
 import io.army.meta.TypeMeta;
 
 import java.util.Collection;
@@ -79,22 +80,12 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> IPredicate equalAny(Function<C, SubQuery> supplier) {
+    public final IPredicate equalAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate equalAny(Supplier<SubQuery> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <C> IPredicate equalSome(Function<C, SubQuery> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate equalSome(Supplier<SubQuery> subQuery) {
+    public final IPredicate equalSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
@@ -110,32 +101,17 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> IPredicate lessAny(Function<C, SubQuery> function) {
+    public final IPredicate lessAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate lessAny(Supplier<SubQuery> supplier) {
+    public final IPredicate lessSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate lessSome(Function<C, SubQuery> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate lessSome(Supplier<SubQuery> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <C> IPredicate lessAll(Function<C, SubQuery> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate lessAll(Supplier<SubQuery> supplier) {
+    public final IPredicate lessAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
@@ -151,32 +127,17 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> IPredicate lessEqualAny(Function<C, SubQuery> function) {
+    public final IPredicate lessEqualAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate lessEqualAny(Supplier<SubQuery> supplier) {
+    public final IPredicate lessEqualSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate lessEqualSome(Function<C, SubQuery> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate lessEqualSome(Supplier<SubQuery> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <C> IPredicate lessEqualAll(Function<C, SubQuery> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate lessEqualAll(Supplier<SubQuery> supplier) {
+    public final IPredicate lessEqualAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
@@ -191,32 +152,17 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> IPredicate greatAny(Function<C, SubQuery> function) {
+    public final IPredicate greatAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate greatAny(Supplier<SubQuery> supplier) {
+    public final IPredicate greatSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate greatSome(Function<C, SubQuery> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate greatSome(Supplier<SubQuery> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <C> IPredicate greatAll(Function<C, SubQuery> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate greatAll(Supplier<SubQuery> supplier) {
+    public final IPredicate greatAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
@@ -232,32 +178,17 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> IPredicate greatEqualAny(Function<C, SubQuery> function) {
+    public final IPredicate greatEqualAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate greatEqualAny(Supplier<SubQuery> supplier) {
+    public final IPredicate greatEqualSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate greatEqualSome(Function<C, SubQuery> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate greatEqualSome(Supplier<SubQuery> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <C> IPredicate greatEqualAll(Function<C, SubQuery> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate greatEqualAll(Supplier<SubQuery> supplier) {
+    public final IPredicate greatEqualAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
@@ -272,32 +203,17 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> IPredicate notEqualAny(Function<C, SubQuery> function) {
+    public final IPredicate notEqualAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate notEqualAny(Supplier<SubQuery> supplier) {
+    public final IPredicate notEqualSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate notEqualSome(Function<C, SubQuery> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate notEqualSome(Supplier<SubQuery> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <C> IPredicate notEqualAll(Function<C, SubQuery> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate notEqualAll(Supplier<SubQuery> supplier) {
+    public final IPredicate notEqualAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
@@ -317,11 +233,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate betweenNamed(String firstParamName, String secondParamName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final IPredicate in(Expression operand) {
         throw unsupportedOperation();
     }
@@ -331,9 +242,8 @@ abstract class NonOperationExpression implements ArmyExpression {
         throw unsupportedOperation();
     }
 
-
     @Override
-    public final IPredicate inNamed(String paramName, int size) {
+    public final IPredicate in(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size) {
         throw unsupportedOperation();
     }
 
@@ -347,9 +257,8 @@ abstract class NonOperationExpression implements ArmyExpression {
         throw unsupportedOperation();
     }
 
-
     @Override
-    public final IPredicate notInNamed(String paramName, int size) {
+    public final IPredicate notIn(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size) {
         throw unsupportedOperation();
     }
 
@@ -390,11 +299,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression mod(BiFunction<C, Expression, Expression> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final <T> Expression mod(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
@@ -421,11 +325,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final Expression times(Function<Expression, Expression> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <C> Expression times(BiFunction<C, Expression, Expression> function) {
         throw unsupportedOperation();
     }
 
@@ -458,12 +357,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     public final Expression plus(Function<Expression, Expression> function) {
         throw unsupportedOperation();
     }
-
-    @Override
-    public final <C> Expression plus(BiFunction<C, Expression, Expression> function) {
-        throw unsupportedOperation();
-    }
-
     @Override
     public final <T> Expression plus(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
@@ -491,11 +384,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final Expression minus(Function<Expression, Expression> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <C> Expression minus(BiFunction<C, Expression, Expression> function) {
         throw unsupportedOperation();
     }
 
@@ -528,12 +416,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     public final Expression divide(Function<Expression, Expression> function) {
         throw unsupportedOperation();
     }
-
-    @Override
-    public final <C> Expression divide(BiFunction<C, Expression, Expression> function) {
-        throw unsupportedOperation();
-    }
-
     @Override
     public final <T> Expression divide(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
@@ -571,11 +453,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression bitwiseAnd(BiFunction<C, Expression, Expression> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
@@ -602,11 +479,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final Expression bitwiseOr(Function<Expression, Expression> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <C> Expression bitwiseOr(BiFunction<C, Expression, Expression> function) {
         throw unsupportedOperation();
     }
 
@@ -639,12 +511,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     public final Expression xor(Function<Expression, Expression> function) {
         throw unsupportedOperation();
     }
-
-    @Override
-    public final <C> Expression xor(BiFunction<C, Expression, Expression> function) {
-        throw unsupportedOperation();
-    }
-
     @Override
     public final <T> Expression xor(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
@@ -681,11 +547,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression rightShift(BiFunction<C, Expression, Expression> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
@@ -712,11 +573,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final Expression leftShift(Function<Expression, Expression> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <C> Expression leftShift(BiFunction<C, Expression, Expression> function) {
         throw unsupportedOperation();
     }
 

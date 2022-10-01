@@ -19,7 +19,7 @@ import io.army.util._Exceptions;
 import java.util.Objects;
 
 
-final class QualifiedFieldImpl<T> extends OperationField
+final class QualifiedFieldImpl<T> extends OperationDataField
         implements QualifiedField<T>, _Selection {
 
     static <T> QualifiedField<T> create(final String tableAlias, final FieldMeta<T> field) {

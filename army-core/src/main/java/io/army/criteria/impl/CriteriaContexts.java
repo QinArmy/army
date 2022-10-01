@@ -1334,7 +1334,7 @@ abstract class CriteriaContexts {
     }//OtherPrimaryContext
 
 
-    private static final class DerivedSelection extends OperationExpression
+    private static final class DerivedSelection extends OperationDataField
             implements DerivedField, _Selection {
 
         private final String tableName;
@@ -1434,7 +1434,7 @@ abstract class CriteriaContexts {
     }//DerivedSelection
 
 
-    private static final class RefDerivedField extends OperationExpression
+    private static final class RefDerivedField extends OperationDataField
             implements DerivedField, _Selection {
 
         final String tableName;

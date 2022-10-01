@@ -336,9 +336,9 @@ public interface Statement {
 
         WA where(Function<Expression, IPredicate> expOperator, Expression operand);
 
-        <E extends Expression> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier);
+        <E extends SqlOperand> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
-        <E extends Expression> WA where(Function<E, IPredicate> expOperator, Function<C, E> function);
+        <E extends SqlOperand> WA where(Function<E, IPredicate> expOperator, Function<C, E> function);
 
         <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
 
@@ -352,9 +352,9 @@ public interface Statement {
 
         WA where(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
 
-        <E extends Expression> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier);
+        <E extends SqlOperand> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
-        <E extends Expression> WA whereIf(Function<E, IPredicate> expOperator, Function<C, E> function);
+        <E extends SqlOperand> WA whereIf(Function<E, IPredicate> expOperator, Function<C, E> function);
 
         <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
 
@@ -421,9 +421,9 @@ public interface Statement {
 
         WA and(Function<Expression, IPredicate> expOperator, Expression operand);
 
-        <E extends Expression> WA and(Function<E, IPredicate> expOperator, Supplier<E> supplier);
+        <E extends SqlOperand> WA and(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
-        <E extends Expression> WA and(Function<E, IPredicate> expOperator, Function<C, E> function);
+        <E extends SqlOperand> WA and(Function<E, IPredicate> expOperator, Function<C, E> function);
 
         <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
 
@@ -437,9 +437,9 @@ public interface Statement {
 
         WA and(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
 
-        <E extends Expression> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier);
+        <E extends SqlOperand> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
-        <E extends Expression> WA ifAnd(Function<E, IPredicate> expOperator, Function<C, E> function);
+        <E extends SqlOperand> WA ifAnd(Function<E, IPredicate> expOperator, Function<C, E> function);
 
         <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
 

@@ -61,45 +61,6 @@ public interface TableField extends DataField, FieldSelection, TypeMeta, SetLeft
     @Nullable
     GeneratorType generatorType();
 
-    IPredicate equalNamed();
-
-    IPredicate lessNamed();
-
-    IPredicate lessEqualNamed();
-
-    IPredicate greatNamed();
-
-    IPredicate greatEqualNamed();
-
-    IPredicate notEqualNamed();
-
-    IPredicate likeNamed();
-
-    IPredicate notLikeNamed();
-
-    IPredicate inNamed(int size);
-
-    IPredicate notInNamed(int size);
-
-    Expression modNamed();
-
-    Expression plusNamed();
-
-    Expression minusNamed();
-
-    Expression multiplyNamed();
-
-    Expression divideNamed();
-
-    Expression bitwiseAndNamed();
-
-    Expression bitwiseOrNamed();
-
-    Expression xorNamed();
-
-    Expression rightShiftNamed();
-
-    Expression leftShiftNamed();
 
 
     @Override

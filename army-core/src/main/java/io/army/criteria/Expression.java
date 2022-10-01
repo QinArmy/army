@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.function.TeExpression;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 
@@ -16,7 +17,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRightItem {
+public interface Expression extends SelectionSpec, TypeInfer, SortItem, SqlOperand {
 
 
     /**
@@ -34,114 +35,72 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     /**
      * relational operate with {@code = ANY}
      */
-    <C> IPredicate equalAny(Function<C, SubQuery> function);
-
-    /**
-     * relational operate with {@code = ANY}
-     */
-    IPredicate equalAny(Supplier<SubQuery> supplier);
+    IPredicate equalAny(SubQuery subQuery);
 
     /**
      * relational operate with {@code = SOME}
      */
-    <C> IPredicate equalSome(Function<C, SubQuery> function);
-
-    /**
-     * relational operate with {@code = SOME}
-     */
-    IPredicate equalSome(Supplier<SubQuery> subQuery);
+    IPredicate equalSome(SubQuery subQuery);
 
 
     IPredicate less(Expression operand);
 
     <T> IPredicate less(BiFunction<Expression, T, Expression> operator, T operand);
 
-    <C> IPredicate lessAny(Function<C, SubQuery> function);
+    IPredicate lessAny(SubQuery subQuery);
 
-    IPredicate lessAny(Supplier<SubQuery> supplier);
+    IPredicate lessSome(SubQuery subQuery);
 
-    <C> IPredicate lessSome(Function<C, SubQuery> function);
-
-    IPredicate lessSome(Supplier<SubQuery> supplier);
-
-    <C> IPredicate lessAll(Function<C, SubQuery> function);
-
-    IPredicate lessAll(Supplier<SubQuery> supplier);
+    IPredicate lessAll(SubQuery subQuery);
 
 
     IPredicate lessEqual(Expression operand);
 
     <T> IPredicate lessEqual(BiFunction<Expression, T, Expression> operator, T operand);
 
-    <C> IPredicate lessEqualAny(Function<C, SubQuery> function);
+    IPredicate lessEqualAny(SubQuery subQuery);
 
-    IPredicate lessEqualAny(Supplier<SubQuery> supplier);
 
-    <C> IPredicate lessEqualSome(Function<C, SubQuery> function);
+    IPredicate lessEqualSome(SubQuery subQuery);
 
-    IPredicate lessEqualSome(Supplier<SubQuery> supplier);
-
-    <C> IPredicate lessEqualAll(Function<C, SubQuery> function);
-
-    IPredicate lessEqualAll(Supplier<SubQuery> supplier);
+    IPredicate lessEqualAll(SubQuery subQuery);
 
     IPredicate great(Expression operand);
 
     <T> IPredicate great(BiFunction<Expression, T, Expression> operator, T operand);
 
-    <C> IPredicate greatAny(Function<C, SubQuery> function);
+    IPredicate greatAny(SubQuery subQuery);
 
-    IPredicate greatAny(Supplier<SubQuery> supplier);
+    IPredicate greatSome(SubQuery subQuery);
 
-    <C> IPredicate greatSome(Function<C, SubQuery> function);
-
-    IPredicate greatSome(Supplier<SubQuery> supplier);
-
-    <C> IPredicate greatAll(Function<C, SubQuery> function);
-
-    IPredicate greatAll(Supplier<SubQuery> supplier);
+    IPredicate greatAll(SubQuery subQuery);
 
     IPredicate greatEqual(Expression operand);
 
     <T> IPredicate greatEqual(BiFunction<Expression, T, Expression> operator, T operand);
 
-    <C> IPredicate greatEqualAny(Function<C, SubQuery> function);
+    IPredicate greatEqualAny(SubQuery subQuery);
 
-    IPredicate greatEqualAny(Supplier<SubQuery> supplier);
+    IPredicate greatEqualSome(SubQuery subQuery);
 
-    <C> IPredicate greatEqualSome(Function<C, SubQuery> function);
-
-    IPredicate greatEqualSome(Supplier<SubQuery> supplier);
-
-    <C> IPredicate greatEqualAll(Function<C, SubQuery> function);
-
-    IPredicate greatEqualAll(Supplier<SubQuery> supplier);
+    IPredicate greatEqualAll(SubQuery subQuery);
 
 
     IPredicate notEqual(Expression operand);
 
     <T> IPredicate notEqual(BiFunction<Expression, T, Expression> operator, T operand);
 
-    <C> IPredicate notEqualAny(Function<C, SubQuery> function);
+    IPredicate notEqualAny(SubQuery subQuery);
 
-    IPredicate notEqualAny(Supplier<SubQuery> supplier);
+    IPredicate notEqualSome(SubQuery subQuery);
 
-    <C> IPredicate notEqualSome(Function<C, SubQuery> function);
-
-    IPredicate notEqualSome(Supplier<SubQuery> supplier);
-
-    <C> IPredicate notEqualAll(Function<C, SubQuery> function);
-
-    IPredicate notEqualAll(Supplier<SubQuery> supplier);
+    IPredicate notEqualAll(SubQuery subQuery);
 
     IPredicate between(Expression first, Expression second);
 
     <T> IPredicate between(BiFunction<Expression, T, Expression> operator, T first, T second);
 
     IPredicate between(Supplier<ExpressionPair> supplier);
-
-    IPredicate betweenNamed(String firstParamName, String secondParamName);
-
 
     IPredicate isNull();
 
@@ -152,14 +111,15 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     <T, O extends Collection<T>> IPredicate in(BiFunction<Expression, O, Expression> operator, O operand);
 
 
-    IPredicate inNamed(String paramName, int size);
+    IPredicate in(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size);
 
 
     IPredicate notIn(Expression operand);
 
     <T, O extends Collection<T>> IPredicate notIn(BiFunction<Expression, O, Expression> operator, O operand);
 
-    IPredicate notInNamed(String paramName, int size);
+
+    IPredicate notIn(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size);
 
     IPredicate like(Expression pattern);
 
@@ -175,8 +135,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression mod(Function<Expression, Expression> function);
 
-    <C> Expression mod(BiFunction<C, Expression, Expression> function);
-
     <T> Expression mod(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression mod(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
@@ -191,8 +149,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     Expression times(Function<Expression, Expression> function);
 
 
-    <C> Expression times(BiFunction<C, Expression, Expression> function);
-
     <T> Expression times(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression times(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
@@ -206,8 +162,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression plus(Function<Expression, Expression> function);
 
-    <C> Expression plus(BiFunction<C, Expression, Expression> function);
-
     <T> Expression plus(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression plus(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
@@ -220,8 +174,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression minus(Function<Expression, Expression> function);
 
-    <C> Expression minus(BiFunction<C, Expression, Expression> function);
-
     <T> Expression minus(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression minus(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
@@ -233,8 +185,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     Expression divide(Supplier<Expression> supplier);
 
     Expression divide(Function<Expression, Expression> function);
-
-    <C> Expression divide(BiFunction<C, Expression, Expression> function);
 
     <T> Expression divide(BiFunction<Expression, T, Expression> operator, T operand);
 
@@ -255,8 +205,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression bitwiseAnd(Function<Expression, Expression> function);
 
-    <C> Expression bitwiseAnd(BiFunction<C, Expression, Expression> function);
-
     <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand);
 
     <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
@@ -273,8 +221,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     Expression bitwiseOr(Supplier<Expression> supplier);
 
     Expression bitwiseOr(Function<Expression, Expression> function);
-
-    <C> Expression bitwiseOr(BiFunction<C, Expression, Expression> function);
 
     <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand);
 
@@ -293,7 +239,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression xor(Function<Expression, Expression> function);
 
-    <C> Expression xor(BiFunction<C, Expression, Expression> function);
 
     <T> Expression xor(BiFunction<Expression, T, Expression> operator, T operand);
 
@@ -319,7 +264,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression rightShift(Function<Expression, Expression> function);
 
-    <C> Expression rightShift(BiFunction<C, Expression, Expression> function);
 
     <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, T operand);
 
@@ -338,7 +282,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression leftShift(Function<Expression, Expression> function);
 
-    <C> Expression leftShift(BiFunction<C, Expression, Expression> function);
 
     <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, T operand);
 

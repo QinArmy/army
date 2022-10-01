@@ -20,7 +20,7 @@
     * 因为多余,如果需要这个一个方法还不如直接调用 SQLs.literal() 方法.
 
 
-6. 为什么不在 语法 api 的 where 子句 不提供 or 子句 而只提供 and 子句?
+6. 为什么不在 语法 api 的 where 子句 提供 or 子句 而只提供 and 子句?
     * 因为输出的 sql 不会有不必要的括号,hibernate 就提供了 or 子句,输出的 sql 才会 那么多不必要的括号.
     * 因为这样设计可以把整个框架的结构变简单,比如 追加 visible 列时总是有效且不会出错.
     * or 子句只能在 io.army.criteria.IPredicate 提供,这样可以保证 or 子句始终被括号包裹成一个整体.
@@ -97,5 +97,5 @@
 
 20. 为什么 删除 SQLs.namedParam(DataField),SQlLs.namedNullableParam(DataField),SQlLs.namedLiteral(DataField)
     ,SQlLs.namedNullableLiteral(DataField) method?
-    * 因为 加上 set(F field,Function) 和 set(F field,BiFunction) 后, jvm 无法准确识别,容易问题.
+    * 因为 加上 set(F field,Function) 和 set(F field,BiFunction) 后, jvm 无法准确识别,容易出问题.
 

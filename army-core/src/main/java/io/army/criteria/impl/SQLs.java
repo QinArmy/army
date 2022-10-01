@@ -1497,9 +1497,9 @@ public abstract class SQLs extends StandardSyntax {
 
     static abstract class ArmyItemPair implements _ItemPair {
 
-        final SetRightItem right;
+        final SqlOperand right;
 
-        private ArmyItemPair(SetRightItem right) {
+        private ArmyItemPair(SqlOperand right) {
             this.right = right;
         }
     }//ArmyItemPair

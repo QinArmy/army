@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
-import io.army.criteria.IPredicate;
-import io.army.criteria.Statement;
-import io.army.criteria.Update;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Dml;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.function.TePredicate;
@@ -76,12 +73,12 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <E extends Expression> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E extends SqlOperand> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.and(expOperator.apply(supplier.get()));
     }
 
     @Override
-    public final <E extends Expression> WA where(Function<E, IPredicate> expOperator, Function<C, E> function) {
+    public final <E extends SqlOperand> WA where(Function<E, IPredicate> expOperator, Function<C, E> function) {
         return this.and(expOperator.apply(function.apply(this.criteria)));
     }
 
@@ -127,12 +124,12 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
 
 
     @Override
-    public final <E extends Expression> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E extends SqlOperand> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.ifAnd(expOperator, supplier);
     }
 
     @Override
-    public final <E extends Expression> WA whereIf(Function<E, IPredicate> expOperator, Function<C, E> function) {
+    public final <E extends SqlOperand> WA whereIf(Function<E, IPredicate> expOperator, Function<C, E> function) {
         return this.ifAnd(expOperator, function);
     }
 
@@ -193,12 +190,12 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
 
 
     @Override
-    public final <E extends Expression> WA and(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E extends SqlOperand> WA and(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.and(expOperator.apply(supplier.get()));
     }
 
     @Override
-    public final <E extends Expression> WA and(Function<E, IPredicate> expOperator, Function<C, E> function) {
+    public final <E extends SqlOperand> WA and(Function<E, IPredicate> expOperator, Function<C, E> function) {
         return this.and(expOperator.apply(function.apply(this.criteria)));
     }
 
@@ -293,7 +290,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
 
 
     @Override
-    public final <E extends Expression> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E extends SqlOperand> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         final E expression;
         expression = supplier.get();
         if (expression != null) {
@@ -303,7 +300,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <E extends Expression> WA ifAnd(Function<E, IPredicate> expOperator, Function<C, E> function) {
+    public final <E extends SqlOperand> WA ifAnd(Function<E, IPredicate> expOperator, Function<C, E> function) {
         final E expression;
         expression = function.apply(this.criteria);
         if (expression != null) {

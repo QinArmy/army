@@ -128,10 +128,9 @@ abstract class MySQLInserts extends InsertSupport {
             implements Insert._CommaFieldValuePairClause<C, T, UR>
             , MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, T, UR>
             , MySQLInsert._StaticOnDuplicateKeyFieldClause<C, T, UR>
-            , MySQLInsert._DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<T>, DR>
-            , PairConsumer<T> {
+            , MySQLInsert._DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<T>, DR> {
 
-        final CriteriaContext criteriaContext;
+        final CriteriaContext context;
 
         final C criteria;
 
@@ -146,8 +145,8 @@ abstract class MySQLInserts extends InsertSupport {
         private List<_Pair<FieldMeta<?>, _Expression>> duplicatePairList;
 
         private DuplicateKeyUpdateClause(ClauseBeforeRowAlias clause) {
-            this.criteriaContext = clause.getContext();
-            this.criteria = this.criteriaContext.criteria();
+            this.context = clause.getContext();
+            this.criteria = this.context.criteria();
             this.clause = clause;
             this.table = clause.table();
         }
@@ -210,7 +209,13 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public final DR onDuplicateKeyUpdate(Consumer<PairConsumer<T>> consumer) {
             this.optionalOnDuplicateKey = false;
-            consumer.accept(this);
+            final DynamicPairsConstructor<T> constructor;
+            constructor = new DynamicPairsConstructor<>(this.context, this.clause::validateField);
+            constructor.row();
+            consumer.accept(constructor);
+
+            List<_Pair<FieldMeta<?>, _Expression>> duplicatePairList;//TODO
+            constructor.endPairConsumer();
             return (DR) this;
         }
 
@@ -235,23 +240,6 @@ abstract class MySQLInserts extends InsertSupport {
             return (DR) this;
         }
 
-        @Override
-        public final PairConsumer<T> accept(FieldMeta<T> field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableParam(field, value));
-            return this;
-        }
-
-        @Override
-        public final PairConsumer<T> acceptLiteral(FieldMeta<T> field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableLiteral(field, value));
-            return this;
-        }
-
-        @Override
-        public final PairConsumer<T> acceptExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
-            this.addValuePair(field, supplier.get());
-            return this;
-        }
 
 
         final List<_Pair<FieldMeta<?>, _Expression>> endDuplicateKeyClause() {
@@ -259,13 +247,13 @@ abstract class MySQLInserts extends InsertSupport {
             if (pairList == null) {
                 if (!this.optionalOnDuplicateKey) {
                     String m = "You don't add any field and value pair";
-                    throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                    throw CriteriaContextStack.criteriaError(this.context, m);
                 }
                 pairList = Collections.emptyList();
             } else if (pairList instanceof ArrayList) {
                 pairList = Collections.unmodifiableList(pairList);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.duplicatePairList = pairList;
             return pairList;
@@ -274,20 +262,20 @@ abstract class MySQLInserts extends InsertSupport {
         private void addValuePair(final FieldMeta<T> field, final @Nullable Expression value) {
 
             if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+                throw CriteriaContextStack.nonArmyExp(this.context);
             }
 
             if (field.tableMeta() != this.table) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
             }
             if (field.updateMode() != UpdateMode.UPDATABLE) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonUpdatableField, field);
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::nonUpdatableField, field);
             }
 
             switch (field.fieldName()) {
                 case _MetaBridge.UPDATE_TIME:
                 case _MetaBridge.VERSION:
-                    throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::armyManageField, field);
+                    throw CriteriaContextStack.criteriaError(this.context, _Exceptions::armyManageField, field);
             }
 
             Map<FieldMeta<?>, Boolean> filedMap = this.fieldMap;
@@ -296,7 +284,7 @@ abstract class MySQLInserts extends InsertSupport {
                 this.fieldMap = filedMap;
             }
             if (filedMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                throw duplicationValuePair(this.criteriaContext, field);
+                throw duplicationValuePair(this.context, field);
             }
 
             List<_Pair<FieldMeta<?>, _Expression>> pairList = this.duplicatePairList;
