@@ -334,13 +334,7 @@ abstract class CriteriaUtils {
     }
 
     static int standardModifier(final SQLs.Modifier distinct) {
-        final int level;
-        if (distinct == SQLs.ALL || distinct == SQLs.DISTINCT) {
-            level = 1;
-        } else {
-            level = -1;
-        }
-        return level;
+        return (distinct == SQLs.DISTINCT || distinct == SQLs.ALL) ? 1 : -1;
     }
 
     static CriteriaException limitParamError(CriteriaContext criteriaContext, @Nullable Object value) {
@@ -360,6 +354,10 @@ abstract class CriteriaUtils {
     }
 
 
+    /**
+     * @deprecated 加上 context
+     */
+    @Deprecated
     static List<Object> paramList(final @Nullable List<?> paramList) {
         final int size;
         if (paramList == null || (size = paramList.size()) == 0) {

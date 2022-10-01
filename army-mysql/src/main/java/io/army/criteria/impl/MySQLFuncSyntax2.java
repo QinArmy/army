@@ -38,7 +38,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         final Expression func;
         if (distinct == null) {
             func = SQLFunctions.oneArgFunc(funcName, exp, DoubleType.INSTANCE);
-        } else if (distinct == SQLs.Modifier.DISTINCT) {
+        } else if (distinct == SQLs.DISTINCT) {
             final List<Object> argList = new ArrayList<>(3);
             argList.add(distinct);
             argList.add(SQLFunctions.FuncWord.COMMA);

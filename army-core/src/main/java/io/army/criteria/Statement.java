@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 import io.army.dialect.Dialect;
+import io.army.function.PredicateWithMap;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
@@ -333,27 +334,20 @@ public interface Statement {
      */
     interface _WhereClause<C, WR, WA> extends _MinWhereClause<C, WR, WA> {
 
-        WA where(Function<Object, IPredicate> operator, DataField operand);
+        WA where(Function<Expression, IPredicate> expOperator, Expression operand);
 
-        WA where(Function<Object, IPredicate> operator, Supplier<?> operand);
+        WA where(Function<Function<Expression, Expression>, IPredicate> expOperator, Function<Expression, Expression> function);
 
-        WA where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName);
+        WA where(Function<Expression, IPredicate> expOperator, Supplier<Expression> supplier);
 
-        WA where(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+        <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
 
-        WA where(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
+        <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> operand);
 
-        WA whereIfNonNull(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand);
-
-        WA whereIf(Function<Object, IPredicate> operator, Supplier<?> operand);
-
-        WA whereIf(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName);
-
-        WA whereIf(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
-
-        WA whereIf(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
+        WA where(PredicateWithMap expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
 
+        <T> WA where(BiFunction<Expression, Expression, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Supplier<?> firstSupplier, Supplier<?> secondSupplier)
     }
 
     /**

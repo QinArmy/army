@@ -629,7 +629,7 @@ public class MySQLCriteriaUnitTests {
     public void parentDomainInsert() {
         final Insert stmt;
         stmt = MySQLs.domainInsert()
-                .preferLiteral(true)
+                .literalMode(true)
                 .insert(Collections::emptyList, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 //.insertInto(ChinaCity_.T)

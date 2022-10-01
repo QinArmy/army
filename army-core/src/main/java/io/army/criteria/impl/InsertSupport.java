@@ -87,7 +87,7 @@ abstract class InsertSupport {
 
         @SuppressWarnings("unchecked")
         @Override
-        public final PR preferLiteral(LiteralMode mode) {
+        public final PR literalMode(LiteralMode mode) {
             this.literalMode = mode;
             return (PR) this;
         }

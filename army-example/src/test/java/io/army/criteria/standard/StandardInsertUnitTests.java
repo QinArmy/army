@@ -25,7 +25,7 @@ public class StandardInsertUnitTests {
         final Insert stmt;
         stmt = SQLs.primaryInsert()
 //                .migration(true)
-                .preferLiteral(LiteralMode.PREFERENCE)
+                .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .leftParen(ChinaRegion_.regionGdp, ChinaRegion_.parentId)
                 .rightParen()
@@ -46,7 +46,7 @@ public class StandardInsertUnitTests {
 
         final Insert stmt;
         stmt = SQLs.primaryInsert()
-                .preferLiteral(LiteralMode.PREFERENCE)
+                .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .values(provinceList)
                 .child()
@@ -63,7 +63,7 @@ public class StandardInsertUnitTests {
     public void valueInsertParent() {
         final Insert stmt;
         stmt = SQLs.primaryInsert()
-                .preferLiteral(LiteralMode.PREFERENCE)
+                .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
@@ -86,7 +86,7 @@ public class StandardInsertUnitTests {
     public void valueInsertChild() {
         final Insert stmt;
         stmt = SQLs.primaryInsert()
-                .preferLiteral(LiteralMode.PREFERENCE)
+                .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
@@ -116,6 +116,25 @@ public class StandardInsertUnitTests {
                 .asInsert();
 
         printStmt(stmt);
+    }
+
+    @Test
+    public void queryInsertParent() {
+        final Insert stmt;
+        stmt = SQLs.primaryInsert()
+                .insertInto(ChinaRegion_.T)
+                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
+                .rightParen()
+
+                .space()
+
+                .select(ChinaRegion_.id, ChinaRegion_.createTime)
+                .from(ChinaRegion_.T, "r")
+                .asQuery()
+                .asInsert();
+
+        printStmt(stmt);
+
     }
 
 

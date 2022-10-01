@@ -39,33 +39,38 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    public enum Modifier implements SQLWords {
+    public static final class Modifier implements SQLWords {
 
-        ALL,
-        DISTINCT;
+        private final String words;
 
-
-        @Override
-        public final String render() {
-            return this.name();
+        /**
+         * private constructor
+         */
+        private Modifier(String words) {
+            this.words = words;
         }
 
         @Override
-        public final String toString() {
+        public String render() {
+            return this.words;
+        }
+
+        @Override
+        public String toString() {
             return _StringUtils.builder()
                     .append(SQLs.class.getSimpleName())
                     .append(_Constant.POINT)
                     .append(SQLs.Modifier.class.getSimpleName())
                     .append(_Constant.POINT)
-                    .append(this.name())
+                    .append(this.words)
                     .toString();
         }
 
     }//Modifier
 
-    public static final Modifier ALL = Modifier.ALL;
+    public static final Modifier ALL = new Modifier("ALL");
 
-    public static final Modifier DISTINCT = Modifier.DISTINCT;
+    public static final Modifier DISTINCT = new Modifier("DISTINCT");
 
 
     public static StandardInsert._PrimaryOptionSpec<Void> primaryInsert() {

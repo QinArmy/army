@@ -4,6 +4,6 @@ public enum LiteralMode {
 
     DEFAULT,
     PREFERENCE,
-    ALL,
+    LITERAL,
 
 }

@@ -42,7 +42,7 @@ public class MySQLReplaceUnitTests {
 
         ReplaceInsert stmt;
         stmt = MySQLs.domainReplace()
-                .preferLiteral(true)
+                .literalMode(true)
                 .replace(hintSupplier, Collections.singletonList(MySQLModifier.DELAYED))
                 .into(BankUser_.T)
                 .partition()
@@ -71,7 +71,7 @@ public class MySQLReplaceUnitTests {
 
         ReplaceInsert stmt;
         stmt = MySQLs.domainReplace()
-                .preferLiteral(true)
+                .literalMode(true)
                 .replace(hintSupplier, Collections.singletonList(MySQLModifier.LOW_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition()

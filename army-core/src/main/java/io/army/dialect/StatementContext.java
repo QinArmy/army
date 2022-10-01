@@ -232,7 +232,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
                 }
             }
             break;
-            case ALL: {
+            case LITERAL: {
                 if (value == null) {
                     this.sqlBuilder.append(_Constant.SPACE_NULL);
                 } else {

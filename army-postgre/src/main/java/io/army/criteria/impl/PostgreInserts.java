@@ -723,9 +723,9 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._CteInsertIntoClause<C, PostgreInsert._CteInsert<C>, PostgreInsert._CteReturningInsert<C>> preferLiteral(LiteralMode mode) {
+        public PostgreInsert._CteInsertIntoClause<C, PostgreInsert._CteInsert<C>, PostgreInsert._CteReturningInsert<C>> literalMode(LiteralMode mode) {
             return PostgreInserts.staticSubInsert(this.context, this.criteria, this::insertEnd, this::returningInsertEnd)
-                    .preferLiteral(mode);
+                    .literalMode(mode);
         }
 
         @Override

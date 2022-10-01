@@ -50,7 +50,7 @@ public class MySQLInsertUnitTests {
 
         Insert stmt;
         stmt = MySQLs.domainInsert()
-                .preferLiteral(true)
+                .literalMode(true)
                 .insert(hintSupplier, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition()
@@ -86,7 +86,7 @@ public class MySQLInsertUnitTests {
 
         final Insert stmt;
         stmt = MySQLs.domainInsert()
-                .preferLiteral(true)
+                .literalMode(true)
                 .insert(hintSupplier, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
                 .into(User_.T)
                 .partition()
@@ -122,7 +122,7 @@ public class MySQLInsertUnitTests {
 
         Insert stmt;
         stmt = MySQLs.assignmentInsert()
-                .preferLiteral(false)
+                .literalMode(false)
                 .insert(hintSupplier, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition()
