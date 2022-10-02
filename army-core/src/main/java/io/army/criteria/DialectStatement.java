@@ -14,6 +14,8 @@ public interface DialectStatement extends Statement {
 
     interface _CteBuilder {
 
+        boolean isRecursive();
+
     }
 
     interface _DynamicWithCteClause<C, B extends _CteBuilder, WE> {
@@ -43,9 +45,13 @@ public interface DialectStatement extends Statement {
 
     }
 
-    interface _StaticWithCommaClause<CR, SR> {
+
+    interface _StaticWithCommaClause<CR> {
 
         CR comma(String name);
+    }
+
+    interface _StaticSpaceClause<SR> {
 
         SR space();
     }

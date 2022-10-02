@@ -43,27 +43,27 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
         SR set(F field, Function<C, Expression> function);
 
-        <T> SR set(F field, BiFunction<F, T, Expression> valueOperator, @Nullable T value);
+        <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, @Nullable E value);
 
-        <T> SR set(F field, BiFunction<F, T, Expression> valueOperator, Supplier<T> supplier);
+        <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier);
 
         SR set(F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        <T> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, T, Expression> valueOperator, @Nullable T value);
+        <E> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, E, Expression> valueOperator, @Nullable E value);
 
-        <T> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, T, Expression> valueOperator, Supplier<T> supplier);
+        <E> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier);
 
         SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        <T> SR ifSet(F field, BiFunction<F, T, Expression> valueOperator, @Nullable T value);
+        <E> SR ifSet(F field, BiFunction<F, E, Expression> valueOperator, @Nullable E value);
 
-        <T> SR ifSet(F field, BiFunction<F, T, Expression> valueOperator, Supplier<T> supplier);
+        <E> SR ifSet(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier);
 
         SR ifSet(F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        <T> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, T, Expression> valueOperator, @Nullable T value);
+        <E> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, E, Expression> valueOperator, @Nullable E value);
 
-        <T> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, T, Expression> valueOperator, Supplier<T> supplier);
+        <E> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier);
 
         SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 

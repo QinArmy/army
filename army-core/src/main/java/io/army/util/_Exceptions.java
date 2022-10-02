@@ -96,6 +96,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("Unknown %s", field));
     }
 
+    public static CriteriaException unsupportedFieldType(DataField field) {
+        return new CriteriaException(String.format("unsupported field type %s", field));
+    }
+
     public static CriteriaException unknownTableAlias(String alias) {
         return new CriteriaException(String.format("Unknown table alias %s", alias));
     }

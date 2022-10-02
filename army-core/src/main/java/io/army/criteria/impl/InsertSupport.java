@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.annotation.GeneratorType;
+import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
@@ -38,11 +39,15 @@ abstract class InsertSupport {
 
     }
 
-    interface WithValueSyntaxOptions extends ValueSyntaxOptions {
+    interface WithClauseOptions extends CriteriaContextSpec {
 
         boolean isRecursive();
 
         List<_Cte> cteList();
+    }
+
+    interface WithValueSyntaxOptions extends ValueSyntaxOptions, WithClauseOptions {
+
 
     }
 
@@ -104,7 +109,8 @@ abstract class InsertSupport {
 
         @Override
         public final LiteralMode literalMode() {
-            return this.literalMode;
+            final LiteralMode mode = this.literalMode;
+            return mode == null ? LiteralMode.DEFAULT : mode;
         }
 
 
@@ -230,12 +236,21 @@ abstract class InsertSupport {
         /**
          * @param cteList unmodified list
          */
-        final void doWithCte(final boolean recursive, final List<_Cte> cteList) {
+        @Deprecated
+        final void withClauseEnd(final boolean recursive, final List<_Cte> cteList) {
             if (this.cteList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.recursive = recursive;
             this.cteList = cteList;
+        }
+
+        final void endStaticWithClause(final boolean recursive) {
+            if (this.cteList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.recursive = recursive;
+            this.cteList = this.context.endWithClause(true);
         }
 
 
@@ -250,6 +265,153 @@ abstract class InsertSupport {
 
 
     }//NonQueryWithCteOption
+
+    static abstract class ChildDynamicWithClause<C, B extends DialectStatement._CteBuilder, WE>
+            implements DialectStatement._DynamicWithCteClause<C, B, WE>
+            , WithValueSyntaxOptions {
+
+        final CriteriaContext context;
+
+        private final boolean migaration;
+
+        private final NullHandleMode nullHandleMode;
+
+        private final LiteralMode literalMode;
+
+        private boolean recursive;
+
+        private List<_Cte> cteList;
+
+        ChildDynamicWithClause(ValueSyntaxOptions options) {
+            this.context = options.getContext();
+            this.migaration = options.isMigration();
+            this.nullHandleMode = options.nullHandle();
+            this.literalMode = options.literalMode();
+        }
+
+        @Override
+        public final WE with(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, true);
+        }
+
+        @Override
+        public final WE with(BiConsumer<C, B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(this.context.criteria(), builder);
+            return this.endDynamicWithClause(builder, true);
+        }
+
+        @Override
+        public final WE withRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, true);
+        }
+
+        @Override
+        public final WE withRecursive(BiConsumer<C, B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(this.context.criteria(), builder);
+            return this.endDynamicWithClause(builder, true);
+        }
+
+        @Override
+        public final WE ifWith(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, false);
+        }
+
+        @Override
+        public final WE ifWith(BiConsumer<C, B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(this.context.criteria(), builder);
+            return this.endDynamicWithClause(builder, false);
+        }
+
+        @Override
+        public final WE ifWithRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, false);
+        }
+
+        @Override
+        public final WE ifWithRecursive(BiConsumer<C, B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(this.context.criteria(), builder);
+            return this.endDynamicWithClause(builder, false);
+        }
+
+        @Override
+        public final CriteriaContext getContext() {
+            return this.context;
+        }
+
+        @Override
+        public final NullHandleMode nullHandle() {
+            return this.nullHandleMode;
+        }
+
+        @Override
+        public final boolean isMigration() {
+            return this.migaration;
+        }
+
+        @Override
+        public final LiteralMode literalMode() {
+            return this.literalMode;
+        }
+
+        @Override
+        public final boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public final List<_Cte> cteList() {
+            List<_Cte> cteList = this.cteList;
+            if (cteList == null) {
+                cteList = Collections.emptyList();
+            }
+            return cteList;
+        }
+
+
+        final void endStaticWithClause(final boolean recursive) {
+            if (this.cteList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.recursive = recursive;
+            this.cteList = this.context.endWithClause(true);
+        }
+
+
+        abstract B createCteBuilder(boolean recursive);
+
+
+        @SuppressWarnings("unchecked")
+        private WE endDynamicWithClause(final B builder, final boolean required) {
+            if (this.cteList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.recursive = builder.isRecursive();
+            this.cteList = this.context.endWithClause(required);
+            return (WE) this;
+        }
+
+
+    }//DynamicWithClause
 
 
     static abstract class ColumnsClause<C, T, RR>
@@ -1618,20 +1780,30 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    abstract class ConflictUpdateSetClause<C, T, SR> implements Update._SetClause<C, FieldMeta<T>, SR> {
+    static abstract class ConflictUpdateSetClause<C, T, SR> implements Update._SetClause<C, FieldMeta<T>, SR>
+            , CriteriaContextSpec {
 
         final CriteriaContext context;
 
         final C criteria;
 
-        final TableMeta<T> table;
+        final TableMeta<T> insertTable;
+
+        private final boolean supportRow;
 
         private List<ItemPair> itemPairList;
 
-        ConflictUpdateSetClause(CriteriaContext context, TableMeta<T> table) {
+
+        ConflictUpdateSetClause(CriteriaContext context, TableMeta<T> insertTable, boolean supportRow) {
             this.context = context;
             this.criteria = context.criteria();
-            this.table = table;
+            this.insertTable = insertTable;
+            this.supportRow = supportRow;
+        }
+
+        @Override
+        public final CriteriaContext getContext() {
+            return this.context;
         }
 
         @Override
@@ -1646,74 +1818,343 @@ abstract class InsertSupport {
             return (SR) this;
         }
 
+
         @Override
-        public final SR setExp(FieldMeta<T> field, Expression value) {
+        public final SR set(FieldMeta<T> field, Expression value) {
             return this.addFieldValuePair(field, value);
         }
 
         @Override
-        public final SR setExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+        public final SR set(FieldMeta<T> field, Supplier<Expression> supplier) {
             return this.addFieldValuePair(field, supplier.get());
         }
 
         @Override
-        public final SR setExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
+        public final SR set(FieldMeta<T> field, Function<C, Expression> function) {
             return this.addFieldValuePair(field, function.apply(this.criteria));
         }
 
         @Override
-        public final SR ifSetExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
-            final Expression value;
+        public final <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value) {
+            return this.addFieldValuePair(field, valueOperator.apply(field, value));
+        }
+
+        @Override
+        public final <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
+                , Supplier<E> supplier) {
+            return this.addFieldValuePair(field, valueOperator.apply(field, supplier.get()));
+        }
+
+        @Override
+        public final SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator
+                , Function<String, ?> function, String keyName) {
+            return this.addFieldValuePair(field, valueOperator.apply(field, function.apply(keyName)));
+        }
+
+        @Override
+        public final <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator
+                , BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value) {
+            return this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+        }
+
+        @Override
+        public final <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator
+                , BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier) {
+            return this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, supplier.get())));
+        }
+
+        @Override
+        public final SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator
+                , BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function
+                , String keyName) {
+            return this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, function.apply(keyName))));
+        }
+
+        @Override
+        public final <E> SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
+                , @Nullable E value) {
+            if (value != null) {
+                this.addFieldValuePair(field, valueOperator.apply(field, value));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final <E> SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
+                , Supplier<E> supplier) {
+            final E value;
             value = supplier.get();
             if (value != null) {
-                this.addFieldValuePair(field, value);
+                this.addFieldValuePair(field, valueOperator.apply(field, value));
             }
             return (SR) this;
         }
 
         @Override
-        public final SR ifSetExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
-            final Expression value;
-            value = function.apply(this.criteria);
+        public final SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator
+                , Function<String, ?> function, String keyName) {
+            final Object value;
+            value = function.apply(keyName);
             if (value != null) {
-                this.addFieldValuePair(field, value);
+                this.addFieldValuePair(field, valueOperator.apply(field, value));
             }
             return (SR) this;
         }
 
         @Override
-        public final SR setDefault(FieldMeta<T> field) {
-            return this.addFieldValuePair(field, SQLs.defaultWord());
+        public final <E> SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator
+                , BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value) {
+            if (value != null) {
+                this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+            }
+            return (SR) this;
         }
 
         @Override
-        public final SR setNull(FieldMeta<T> field) {
-            return this.addFieldValuePair(field, SQLs.nullWord());
+        public final <E> SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator
+                , BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier) {
+            final E value;
+            value = supplier.get();
+            if (value != null) {
+                this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+            }
+            return (SR) this;
         }
 
-        private SR addFieldValuePair(FieldMeta<T> field, Expression value) {
+        @Override
+        public final SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator
+                , BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function
+                , String keyName) {
+            final Object value;
+            value = function.apply(keyName);
+            if (value != null) {
+                this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+            }
+            return (SR) this;
+        }
+
+        /**
+         * @return a unmodified list
+         */
+        final List<ItemPair> endUpdateSetClause() {
+            List<ItemPair> itemPairList = this.itemPairList;
+            if (itemPairList instanceof ArrayList) {
+                itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
+                this.itemPairList = itemPairList;
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return itemPairList;
+        }
+
+
+        final void addSafeRowPair(final SQLs.RowItemPair pair) {
             List<ItemPair> itemPairList = this.itemPairList;
             if (itemPairList == null) {
-                this.itemPairList = itemPairList = new ArrayList<>();
+                itemPairList = new ArrayList<>();
+                this.itemPairList = itemPairList;
+            } else if (!(itemPairList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            itemPairList.add(pair);
+        }
+
+        private SR addFieldValuePair(final FieldMeta<T> field, final @Nullable Expression value) {
+            if (field.updateMode() == UpdateMode.IMMUTABLE) {
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
+            } else if (!(value instanceof ArmyExpression)) {
+                throw CriteriaContextStack.nonArmyExp(this.context);
+            } else if (!field.nullable() && ((ArmyExpression) value).isNullValue()) {
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
+            }
+            List<ItemPair> itemPairList = this.itemPairList;
+            if (itemPairList == null) {
+                itemPairList = new ArrayList<>();
+                this.itemPairList = itemPairList;
             }
             itemPairList.add(SQLs._itemPair(field, null, value));
-
             return (SR) this;
         }
 
-        private void addItemPair(final ItemPair pair) {
-            if (!(pair instanceof SQLs.ArmyItemPair)) {
+        private SR addItemPair(final ItemPair pair) {
+            final SQLs.FieldItemPair fieldPair;
+            final FieldMeta<?> field;
+            if (pair instanceof SQLs.RowItemPair) {
+                this.validateRowPair((SQLs.RowItemPair) pair);
+            } else if (!(pair instanceof SQLs.FieldItemPair)) {
                 throw CriteriaContextStack.criteriaError(this.context, "Illegal ItemPair");
+            } else if (!((fieldPair = (SQLs.FieldItemPair) pair).field instanceof FieldMeta)) {
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::unsupportedFieldType
+                        , fieldPair.field);
+            } else if ((field = (FieldMeta<?>) fieldPair.field).updateMode() == UpdateMode.IMMUTABLE) {
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
+            } else if (!field.nullable() && ((ArmyExpression) fieldPair.right).isNullValue()) {
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
             }
             List<ItemPair> itemPairList = this.itemPairList;
             if (itemPairList == null) {
                 this.itemPairList = itemPairList = new ArrayList<>();
             }
             itemPairList.add(pair);
+            return (SR) this;
+        }
+
+        private void validateRowPair(final SQLs.RowItemPair pair) {
+            final List<DataField> fieldList = pair.fieldList;
+            final SubQuery query = (SubQuery) pair.right;
+            if (((_Query) query).selectionSize() != fieldList.size()) {
+                final Supplier<CriteriaException> supplier;
+                supplier = () -> _Exceptions.rowSetSelectionAndFieldSizeNotMatch(((_Query) query).selectionSize()
+                        , fieldList.size(), this.insertTable);
+                throw CriteriaContextStack.criteriaError(this.context, supplier);
+            }
+            FieldMeta<?> field;
+            final TableMeta<?> insertTable = this.insertTable;
+            for (DataField dataField : fieldList) {
+                if (!(dataField instanceof FieldMeta)) {
+                    throw CriteriaContextStack.criteriaError(this.context, _Exceptions::unsupportedFieldType
+                            , dataField);
+                }
+                field = (FieldMeta<?>) dataField;
+                if (field.tableMeta() != insertTable) {
+                    throw CriteriaContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
+                } else if (field.updateMode() == UpdateMode.IMMUTABLE) {
+                    throw CriteriaContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
+                }
+            }
+
+        }
+
+    }//ConflictUpdateSetClause
+
+    @SuppressWarnings("unchecked")
+    static abstract class ConflictUpdateWhereClause<C, T, SR, WR, WA> extends ConflictUpdateSetClause<C, T, SR>
+            implements Statement._MinQueryWhereClause<C, WR, WA>
+            , Statement._MinWhereAndClause<C, WA> {
+
+        private List<_Predicate> predicateList;
+
+        ConflictUpdateWhereClause(CriteriaContext context, TableMeta<T> table) {
+            super(context, table);
+        }
+
+        @Override
+        public final WR where(Consumer<Consumer<IPredicate>> consumer) {
+            consumer.accept(this::and);
+            if (this.predicateList == null) {
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
+            }
+            return (WR) this;
+        }
+
+        @Override
+        public final WR where(BiConsumer<C, Consumer<IPredicate>> consumer) {
+            consumer.accept(this.criteria, this::and);
+            if (this.predicateList == null) {
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
+            }
+            return (WR) this;
+        }
+
+        @Override
+        public final WA where(IPredicate predicate) {
+            return this.and(predicate);
+        }
+
+        @Override
+        public final WA where(Supplier<IPredicate> supplier) {
+            return this.and(supplier.get());
+        }
+
+        @Override
+        public final WA where(Function<C, IPredicate> function) {
+            return this.and(function.apply(this.criteria));
+        }
+
+        @Override
+        public final WA whereIf(Supplier<IPredicate> supplier) {
+            return this.ifAnd(supplier);
+        }
+
+        @Override
+        public final WA whereIf(Function<C, IPredicate> function) {
+            return this.ifAnd(function);
+        }
+
+        @Override
+        public final WR ifWhere(Consumer<Consumer<IPredicate>> consumer) {
+            consumer.accept(this::and);
+            return (WR) this;
+        }
+
+        @Override
+        public final WR ifWhere(BiConsumer<C, Consumer<IPredicate>> consumer) {
+            consumer.accept(this.criteria, this::and);
+            return (WR) this;
+        }
+
+        @Override
+        public final WA and(final @Nullable IPredicate predicate) {
+            if (predicate == null) {
+                throw CriteriaContextStack.nullPointer(this.context);
+            }
+            List<_Predicate> predicateList = this.predicateList;
+            if (predicateList == null) {
+                predicateList = new ArrayList<>();
+                this.predicateList = predicateList;
+            } else if (!(predicateList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            predicateList.add((OperationPredicate) predicate);
+            return (WA) this;
+        }
+
+        @Override
+        public final WA and(Supplier<IPredicate> supplier) {
+            return this.and(supplier.get());
+        }
+
+        @Override
+        public final WA and(Function<C, IPredicate> function) {
+            return this.and(function.apply(this.criteria));
+        }
+
+        @Override
+        public final WA ifAnd(Supplier<IPredicate> supplier) {
+            final IPredicate predicate;
+            predicate = supplier.get();
+            if (predicate != null) {
+                this.and(predicate);
+            }
+            return (WA) this;
+        }
+
+        @Override
+        public final WA ifAnd(Function<C, IPredicate> function) {
+            final IPredicate predicate;
+            predicate = function.apply(this.criteria);
+            if (predicate != null) {
+                this.and(predicate);
+            }
+            return (WA) this;
+        }
+
+        final List<_Predicate> endWhereAndSetClause() {
+
+            List<_Predicate> predicateList = this.predicateList;
+            if (predicateList == null) {
+                this.predicateList = predicateList = Collections.emptyList();
+            } else if (predicateList instanceof ArrayList) {
+                this.predicateList = predicateList = _CollectionUtils.unmodifiableList(predicateList);
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return predicateList;
         }
 
 
-    }//ConflictUpdateSetClause
+    }//ConflictUpdateWhereClause
+
 
     @SuppressWarnings("unchecked")
     static class MinWhereClause<C, WR, WA> implements Statement._MinQueryWhereClause<C, WR, WA>
@@ -2258,7 +2699,6 @@ abstract class InsertSupport {
      * <p>
      * Check insert statement for safety.
      * </p>
-     *
      */
     private static void insertStatementGuard(final _Insert statement) {
         if (!(statement instanceof _Insert._ChildInsert)) {
