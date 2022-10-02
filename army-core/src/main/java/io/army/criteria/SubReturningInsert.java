@@ -7,7 +7,7 @@ package io.army.criteria;
  * @see SubInsert
  * @since 1.0
  */
-public interface SubReturningInsert extends DialectStatement, DqlStatement.DqlInsert, SubStatement {
+public interface SubReturningInsert extends DialectStatement, DqlInsert, SubStatement {
 
     interface _SubReturningInsertSpec extends DqlStatement._DqlInsertSpec<SubReturningInsert> {
 

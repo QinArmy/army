@@ -72,11 +72,11 @@ public abstract class SQLs extends StandardSyntax {
     public static final Modifier DISTINCT = new Modifier("DISTINCT");
 
 
-    public static StandardInsert._PrimaryOptionSpec<Void> primaryInsert() {
+    public static StandardInsert._PrimaryOptionSpec<Void> singleInsert() {
         return StandardInserts.primaryInsert(null);
     }
 
-    public static <C> StandardInsert._PrimaryOptionSpec<C> primaryInsert(C criteria) {
+    public static <C> StandardInsert._PrimaryOptionSpec<C> singleInsert(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardInserts.primaryInsert(criteria);
     }

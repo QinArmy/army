@@ -20,6 +20,17 @@ import io.army.util._Exceptions;
 import java.util.*;
 import java.util.function.*;
 
+/**
+ * <p>
+ * This class hold the base class(interface) of the implementation of all insert syntax interfaces.
+ * </p>
+ * <p>
+ * Below is chinese signature:<br/>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
+ *
+ * @since 1.0
+ */
 abstract class InsertSupport {
 
     InsertSupport() {
@@ -272,7 +283,7 @@ abstract class InsertSupport {
 
         final CriteriaContext context;
 
-        private final boolean migaration;
+        private final boolean migration;
 
         private final NullHandleMode nullHandleMode;
 
@@ -284,7 +295,7 @@ abstract class InsertSupport {
 
         ChildDynamicWithClause(ValueSyntaxOptions options) {
             this.context = options.getContext();
-            this.migaration = options.isMigration();
+            this.migration = options.isMigration();
             this.nullHandleMode = options.nullHandle();
             this.literalMode = options.literalMode();
         }
@@ -365,7 +376,7 @@ abstract class InsertSupport {
 
         @Override
         public final boolean isMigration() {
-            return this.migaration;
+            return this.migration;
         }
 
         @Override
@@ -383,6 +394,7 @@ abstract class InsertSupport {
             List<_Cte> cteList = this.cteList;
             if (cteList == null) {
                 cteList = Collections.emptyList();
+                this.cteList = cteList;
             }
             return cteList;
         }
@@ -2323,7 +2335,7 @@ abstract class InsertSupport {
 
     }//MinWhereClause
 
-    private static abstract class AbstractInsertStatement<I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private static abstract class AbstractInsertStatement<I extends DmlInsert, Q extends DqlInsert>
             implements _Insert
             , Statement.StatementMockSpec
             , Statement
@@ -2386,7 +2398,7 @@ abstract class InsertSupport {
         @SuppressWarnings("unchecked")
         @Override
         public final I asInsert() {
-            if (!(this instanceof DmlStatement.DmlInsert)) {
+            if (!(this instanceof DmlInsert)) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.asInsertStatement();
@@ -2396,7 +2408,7 @@ abstract class InsertSupport {
         @SuppressWarnings("unchecked")
         @Override
         public final Q asReturningInsert() {
-            if (!(this instanceof DqlStatement.DqlInsert)) {
+            if (!(this instanceof DqlInsert)) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.asInsertStatement();
@@ -2447,7 +2459,7 @@ abstract class InsertSupport {
     }//AbstractInsertStatement
 
 
-    static abstract class AbstractValueSyntaxStatement<I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    static abstract class AbstractValueSyntaxStatement<I extends DmlInsert, Q extends DqlInsert>
             extends AbstractInsertStatement<I, Q>
             implements _Insert._ValuesSyntaxInsert {
 
@@ -2510,8 +2522,8 @@ abstract class InsertSupport {
     }//AbstractValueSyntaxStatement
 
 
-    static abstract class ValueSyntaxInsertStatement<I extends DmlStatement.DmlInsert>
-            extends AbstractValueSyntaxStatement<I, DqlStatement.DqlInsert> {
+    static abstract class ValueSyntaxInsertStatement<I extends DmlInsert>
+            extends AbstractValueSyntaxStatement<I, DqlInsert> {
 
         ValueSyntaxInsertStatement(_ValuesSyntaxInsert clause) {
             super(clause);
@@ -2522,7 +2534,7 @@ abstract class InsertSupport {
     }//ValueInsertStatement
 
 
-    private static abstract class AbstractAssignmentInsertStatement<I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private static abstract class AbstractAssignmentInsertStatement<I extends DmlInsert, Q extends DqlInsert>
             extends AbstractInsertStatement<I, Q> implements _Insert._AssignmentInsert {
 
         private final boolean migration;
@@ -2564,8 +2576,8 @@ abstract class InsertSupport {
 
     }//AbstractAssignmentInsertStatement
 
-    static abstract class AssignmentInsertStatement<I extends DmlStatement.DmlInsert>
-            extends AbstractAssignmentInsertStatement<I, DqlStatement.DqlInsert> {
+    static abstract class AssignmentInsertStatement<I extends DmlInsert>
+            extends AbstractAssignmentInsertStatement<I, DqlInsert> {
 
         AssignmentInsertStatement(_AssignmentInsert clause) {
             super(clause);
@@ -2574,7 +2586,7 @@ abstract class InsertSupport {
     }//AssignmentInsertStatement
 
 
-    static abstract class AbstractQuerySyntaxInsertStatement<I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    static abstract class AbstractQuerySyntaxInsertStatement<I extends DmlInsert, Q extends DqlInsert>
             extends AbstractInsertStatement<I, Q>
             implements _Insert._QueryInsert {
 
@@ -2609,8 +2621,8 @@ abstract class InsertSupport {
     }//AbstractQuerySyntaxInsertStatement
 
 
-    static abstract class QuerySyntaxInsertStatement<I extends DmlStatement.DmlInsert>
-            extends AbstractQuerySyntaxInsertStatement<I, DqlStatement.DqlInsert> {
+    static abstract class QuerySyntaxInsertStatement<I extends DmlInsert>
+            extends AbstractQuerySyntaxInsertStatement<I, DqlInsert> {
 
 
         QuerySyntaxInsertStatement(_QueryInsert clause) {
@@ -2622,9 +2634,9 @@ abstract class InsertSupport {
     }//QueryInsertStatement
 
 
-    static abstract class QuerySyntaxReturningInsertStatement<Q extends DqlStatement.DqlInsert>
-            extends AbstractQuerySyntaxInsertStatement<DmlStatement.DmlInsert, Q>
-            implements DqlStatement.DqlInsert {
+    static abstract class QuerySyntaxReturningInsertStatement<Q extends DqlInsert>
+            extends AbstractQuerySyntaxInsertStatement<DmlInsert, Q>
+            implements DqlInsert {
 
         QuerySyntaxReturningInsertStatement(_QueryInsert clause) {
             super(clause);

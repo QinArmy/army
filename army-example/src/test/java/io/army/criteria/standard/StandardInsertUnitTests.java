@@ -23,7 +23,7 @@ public class StandardInsertUnitTests {
     @Test
     public void domainInsertParent() {
         final Insert stmt;
-        stmt = SQLs.primaryInsert()
+        stmt = SQLs.singleInsert()
 //                .migration(true)
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -45,7 +45,7 @@ public class StandardInsertUnitTests {
         provinceList = this.createProvinceList();
 
         final Insert stmt;
-        stmt = SQLs.primaryInsert()
+        stmt = SQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .values(provinceList)
@@ -62,7 +62,7 @@ public class StandardInsertUnitTests {
     @Test
     public void valueInsertParent() {
         final Insert stmt;
-        stmt = SQLs.primaryInsert()
+        stmt = SQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
@@ -85,7 +85,7 @@ public class StandardInsertUnitTests {
     @Test
     public void valueInsertChild() {
         final Insert stmt;
-        stmt = SQLs.primaryInsert()
+        stmt = SQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
@@ -121,7 +121,7 @@ public class StandardInsertUnitTests {
     @Test
     public void queryInsertParent() {
         final Insert stmt;
-        stmt = SQLs.primaryInsert()
+        stmt = SQLs.singleInsert()
                 .insertInto(ChinaRegion_.T)
                 .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
                 .rightParen()

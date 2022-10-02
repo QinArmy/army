@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-public interface MergeInsert extends DmlStatement, DmlStatement.DmlInsert {
+public interface MergeInsert extends DmlStatement, DmlInsert {
 
 
 }

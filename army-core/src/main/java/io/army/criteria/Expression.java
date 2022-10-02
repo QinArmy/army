@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.criteria.impl.SQLs;
 import io.army.function.TeExpression;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
@@ -30,6 +31,28 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SqlOpera
      */
     IPredicate equal(Expression operand);
 
+    /**
+     * <p>
+     * operator detail:
+     *     <ul>
+     *         <li>the first argument of operator is this</li>
+     *         li>the second argument of operator is operand</li>
+     *     </ul>
+     * </p>
+     * <p>
+     *     operator possibly is the reference of below method:
+     *     <ul>
+     *         <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *         <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *         <li>{@link SQLs#namedParam(TypeInfer, String)}</li>
+     *         <li>{@link SQLs#namedLiteral(TypeInfer, String)},only used in insert syntax</li>
+     *         <li>custom method</li>
+     *     </ul>
+     * </p>
+     *
+     * @param operator the reference of method,Note: it's the reference of method,not lambda.
+     * @param operand  non-null,it will pass to operator as the second argument of operator
+     */
     <T> IPredicate equal(BiFunction<Expression, T, Expression> operator, T operand);
 
     /**

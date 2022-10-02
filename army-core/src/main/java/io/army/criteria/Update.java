@@ -142,7 +142,7 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
     /*################################## blow batch update interface ##################################*/
 
-    interface _StandardBatchWhereAndSpec<C> extends _WhereAndClause<C, _StandardBatchWhereAndSpec<C>>
+    interface _StandardBatchWhereAndSpec<C> extends _UpdateWhereAndClause<C, _StandardBatchWhereAndSpec<C>>
             , _BatchParamClause<C, _UpdateSpec> {
 
     }

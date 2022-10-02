@@ -50,7 +50,7 @@ abstract class PostgreInserts extends InsertSupport {
         return new DynamicSubInsertIntoClause<>(name, outContext, criteria);
     }
 
-    static <C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert> PostgreInsert._StaticSubOptionSpec<C, I, Q> staticSubInsert(CriteriaContext outContext, @Nullable C criteria
+    static <C, I extends DmlInsert, Q extends DqlInsert> PostgreInsert._StaticSubOptionSpec<C, I, Q> staticSubInsert(CriteriaContext outContext, @Nullable C criteria
             , Function<SubInsert, I> dmlFunc, Function<SubReturningInsert, Q> dqlFunc) {
         return new StaticSubInsertIntoClause<>(outContext, criteria, dmlFunc, dqlFunc);
     }
@@ -140,7 +140,7 @@ abstract class PostgreInserts extends InsertSupport {
 
     }
 
-    private interface NonParentTargetWhereClauseSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private interface NonParentTargetWhereClauseSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends TargetWhereClauseSpec {
 
         PostgreInsert._ReturningSpec<C, I, Q> _doNothing(List<_Predicate> predicateList);
@@ -150,7 +150,7 @@ abstract class PostgreInserts extends InsertSupport {
     }
 
 
-    private static final class NonParentConflictAction<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private static final class NonParentConflictAction<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends InsertSupport.MinWhereClause<
             C,
             PostgreInsert._NonParentConflictActionClause<C, T, I, Q>,
@@ -180,7 +180,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//NonParentConflictAction
 
 
-    private static final class NonParentConflictTargetItem<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private static final class NonParentConflictTargetItem<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends ConflictTargetItem<
             T,
             PostgreInsert._ConflictOpClassSpec<C, T, I, Q>,
@@ -290,7 +290,7 @@ abstract class PostgreInserts extends InsertSupport {
     /**
      * @see AbstractOnConflictClause
      */
-    private interface PostgreInsertValuesClauseSpec<C, CT, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private interface PostgreInsertValuesClauseSpec<C, CT, I extends DmlInsert, Q extends DqlInsert>
             extends CriteriaContextSpec {
 
         PostgreInsert._ParentReturningClause<C, CT, I, Q> onConflictClauseEnd(_PostgreInsert._ConflictActionClauseResult result);
@@ -299,7 +299,7 @@ abstract class PostgreInserts extends InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    private static abstract class AbstractOnConflictClause<C, T, CT, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert, LR, OC, UR, SR, WR, WA>
+    private static abstract class AbstractOnConflictClause<C, T, CT, I extends DmlInsert, Q extends DqlInsert, LR, OC, UR, SR, WR, WA>
             extends InsertSupport.ConflictUpdateWhereClause<C, T, SR, WR, WA>
             implements PostgreInsert._ConflictActionClause<WR, UR>
             , PostgreInsert._ConflictItemClause<T, LR, OC>
@@ -429,7 +429,7 @@ abstract class PostgreInserts extends InsertSupport {
 
     }//AbstractOnConflictClause
 
-    private static final class OnConflictClause<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private static final class OnConflictClause<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends AbstractOnConflictClause<
             C,
             T,
@@ -650,7 +650,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//StaticParentCteCommaClause
 
 
-    private static final class StaticCteComplexCommandClause<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private static final class StaticCteComplexCommandClause<C, I extends DmlInsert, Q extends DqlInsert>
             extends CriteriaSupports.ParenStringConsumerClause<C, PostgreInsert._StaticCteAsClause<C, I, Q>>
             implements PostgreInsert._StaticCteLeftParenSpec<C, I, Q>
             , PostgreInsert._StaticCteComplexCommandSpec<C, I, Q> {
@@ -845,7 +845,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//ChildInsertIntoClause
 
 
-    private static final class StaticSubInsertIntoClause<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private static final class StaticSubInsertIntoClause<C, I extends DmlInsert, Q extends DqlInsert>
             extends NonQueryInsertOptionsImpl<
             PostgreInsert._StaticSubNullOptionSpec<C, I, Q>,
             PostgreInsert._StaticSubPreferLiteralSpec<C, I, Q>,
@@ -890,13 +890,14 @@ abstract class PostgreInserts extends InsertSupport {
     private static final class DynamicSubInsertIntoClause<C>
             extends NonQueryWithCteOption<
             C,
-            PostgreInsert._DynamicSubNullOptionSpec<C, SubInsert, SubReturningInsert>,
-            PostgreInsert._DynamicSubPreferLiteralSpec<C, SubInsert, SubReturningInsert>,
-            PostgreInsert._DynamicSubWithCteSpec<C, SubInsert, SubReturningInsert>,
+            PostgreInsert._DynamicSubNullOptionSpec<C, DmlInsert, DqlInsert>,
+            PostgreInsert._DynamicSubPreferLiteralSpec<C, DmlInsert, DqlInsert>,
+            PostgreInsert._DynamicSubWithCteSpec<C, DmlInsert, DqlInsert>,
             PostgreCteBuilder,
-            PostgreInsert._CteInsertIntoClause<C, SubInsert, SubReturningInsert>>
+            PostgreInsert._CteInsertIntoClause<C, DmlInsert, DqlInsert>>
             implements PostgreInsert._DynamicSubInsert<C>
-            , Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> {
+            , Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, DmlInsert, DqlInsert>>
+            , DmlInsert, DqlInsert {
 
         private final C criteria;
 
@@ -916,7 +917,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(String string) {
+        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, DmlInsert, DqlInsert>> leftParen(String string) {
             if (this.columnAliasList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
@@ -925,50 +926,50 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public Statement._CommaStringDualSpec<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(String string1, String string2) {
+        public Statement._CommaStringDualSpec<PostgreInsert._DynamicSubOptionSpec<C, DmlInsert, DqlInsert>> leftParen(String string1, String string2) {
             return CriteriaSupports.stringQuadra(this.context, this.criteria, this::columnAliasClauseEnd)
                     .leftParen(string1, string2);
         }
 
         @Override
-        public Statement._CommaStringQuadraSpec<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(String string1, String string2, String string3, String string4) {
+        public Statement._CommaStringQuadraSpec<PostgreInsert._DynamicSubOptionSpec<C, DmlInsert, DqlInsert>> leftParen(String string1, String string2, String string3, String string4) {
             return CriteriaSupports.stringQuadra(this.context, this.criteria, this::columnAliasClauseEnd)
                     .leftParen(string1, string2, string3, string4);
         }
 
         @Override
-        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(Consumer<Consumer<String>> consumer) {
+        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, DmlInsert, DqlInsert>> leftParen(Consumer<Consumer<String>> consumer) {
             return CriteriaSupports.stringQuadra(this.context, this.criteria, this::columnAliasClauseEnd)
                     .leftParen(consumer);
         }
 
         @Override
-        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParen(BiConsumer<C, Consumer<String>> consumer) {
+        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, DmlInsert, DqlInsert>> leftParen(BiConsumer<C, Consumer<String>> consumer) {
             return CriteriaSupports.stringQuadra(this.context, this.criteria, this::columnAliasClauseEnd)
                     .leftParen(consumer);
         }
 
         @Override
-        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParenIf(Consumer<Consumer<String>> consumer) {
+        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, DmlInsert, DqlInsert>> leftParenIf(Consumer<Consumer<String>> consumer) {
             return CriteriaSupports.stringQuadra(this.context, this.criteria, this::columnAliasClauseEnd)
                     .leftParenIf(consumer);
         }
 
         @Override
-        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> leftParenIf(BiConsumer<C, Consumer<String>> consumer) {
+        public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, DmlInsert, DqlInsert>> leftParenIf(BiConsumer<C, Consumer<String>> consumer) {
             return CriteriaSupports.stringQuadra(this.context, this.criteria, this::columnAliasClauseEnd)
                     .leftParenIf(consumer);
         }
 
         @Override
-        public PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert> rightParen() {
+        public PostgreInsert._DynamicSubOptionSpec<C, DmlInsert, DqlInsert> rightParen() {
             return this;
         }
 
 
         @Override
-        public <T> PostgreInsert._TableAliasSpec<C, T, SubInsert, SubReturningInsert> insertInto(TableMeta<T> table) {
-            return new SubComplexValuesClause<>(this, table, this::sameInsert, this::sameReturningInsert);
+        public <T> PostgreInsert._TableAliasSpec<C, T, DmlInsert, DqlInsert> insertInto(TableMeta<T> table) {
+            return new SubComplexValuesClause<>(this, table, this::subInsertEnd, this::subReturnInsertEnd);
         }
 
 
@@ -978,7 +979,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
 
-        private PostgreInsert._DynamicSubOptionSpec<C, SubInsert, SubReturningInsert> columnAliasClauseEnd(final List<String> aliasList) {
+        private PostgreInsert._DynamicSubOptionSpec<C, DmlInsert, DqlInsert> columnAliasClauseEnd(final List<String> aliasList) {
             if (this.columnAliasList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
@@ -990,18 +991,20 @@ abstract class PostgreInserts extends InsertSupport {
             return this;
         }
 
-        private SubInsert sameInsert(final SubInsert insert) {
+        private DmlInsert subInsertEnd(final SubInsert insert) {
             final CriteriaContext outerContext = this.context.getOuterContext();
             assert outerContext != null;
             CriteriaUtils.createAndAddCte(outerContext, this.name, this.columnAliasList, insert);
-            return insert;
+            //couldn't return actual instance 'insert'
+            return this;
         }
 
-        private SubReturningInsert sameReturningInsert(final SubReturningInsert insert) {
+        private DqlInsert subReturnInsertEnd(final SubReturningInsert insert) {
             final CriteriaContext outerContext = this.context.getOuterContext();
             assert outerContext != null;
             CriteriaUtils.createAndAddCte(outerContext, this.name, this.columnAliasList, insert);
-            return insert;
+            //couldn't return actual instance 'insert'
+            return this;
         }
 
 
@@ -1044,7 +1047,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//OverridingMode
 
 
-    private static abstract class ComplexValuesClause<C, T, CT, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert, AR, CR, DR, VR>
+    private static abstract class ComplexValuesClause<C, T, CT, I extends DmlInsert, Q extends DqlInsert, AR, CR, DR, VR>
             extends ComplexInsertValuesClause<C, T, CR, DR, VR>
             implements Statement._AsClause<AR>
             , PostgreInsert._ParentReturningClause<C, CT, I, Q>
@@ -1166,7 +1169,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//ComplexValuesClause
 
 
-    private static final class NonParentStaticValuesLeftParenClause<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private static final class NonParentStaticValuesLeftParenClause<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends InsertSupport.StaticColumnValuePairClause<
             C,
             T,
@@ -1226,7 +1229,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//NonParentStaticValuesLeftParenClause
 
 
-    private static abstract class NonParentComplexValuesClause<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private static abstract class NonParentComplexValuesClause<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends ComplexValuesClause<
             C,
             T,
@@ -1414,7 +1417,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//PrimaryNonParentComplexValuesClause
 
 
-    private static final class SubComplexValuesClause<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private static final class SubComplexValuesClause<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends NonParentComplexValuesClause<C, T, I, Q>
             implements _Insert._SupportWithClauseInsert {
 
@@ -1670,7 +1673,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         @Override
         public PostgreInsert._ChildWithCteSpec<C, P> child() {
-            return null;
+            return new ChildInsertIntoClause<>(this);
         }
 
         @Override
@@ -1686,7 +1689,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//ParentComplexValuesClause
 
 
-    private static abstract class PostgreValueSyntaxInsertStatement<I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private static abstract class PostgreValueSyntaxInsertStatement<I extends DmlInsert, Q extends DqlInsert>
             extends AbstractValueSyntaxStatement<I, Q>
             implements PostgreInsert, _PostgreInsert {
 
@@ -1712,7 +1715,7 @@ abstract class PostgreInserts extends InsertSupport {
             this.overridingMode = clause.overridingMode;
 
             this.conflictAction = clause.conflictAction;
-            if (this instanceof DqlStatement.DqlInsert) {
+            if (this instanceof DqlInsert) {
                 this.returningList = clause.returningList();
                 assert this.returningList.size() > 0;
             } else {
@@ -1770,7 +1773,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//PrimaryValueSyntaxInsertStatement
 
 
-    static abstract class DomainInsertStatement<I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    static abstract class DomainInsertStatement<I extends DmlInsert, Q extends DqlInsert>
             extends PostgreValueSyntaxInsertStatement<I, Q>
             implements _PostgreInsert._PostgreDomainInsert {
 
@@ -1904,7 +1907,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//SubDomainReturningInsertStatement
 
 
-    static abstract class ValueInsertStatement<I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    static abstract class ValueInsertStatement<I extends DmlInsert, Q extends DqlInsert>
             extends PostgreValueSyntaxInsertStatement<I, Q>
             implements _PostgreInsert._PostgreValueInsert {
 
@@ -2023,7 +2026,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//SubValueReturningInsertStatement
 
 
-    static abstract class QueryInsertStatement<I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    static abstract class QueryInsertStatement<I extends DmlInsert, Q extends DqlInsert>
             extends InsertSupport.AbstractQuerySyntaxInsertStatement<I, Q>
             implements _PostgreInsert._PostgreQueryInsert, PostgreInsert {
 
@@ -2047,7 +2050,7 @@ abstract class PostgreInserts extends InsertSupport {
             this.overridingMode = clause.overridingMode;
 
             this.conflictAction = clause.conflictAction;
-            if (this instanceof DqlStatement.DqlInsert) {
+            if (this instanceof DqlInsert) {
                 this.returningList = clause.returningList();
                 assert this.returningList.size() > 0;
             } else {

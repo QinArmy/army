@@ -11,14 +11,14 @@ import java.util.function.Supplier;
 public interface PostgreInsert extends DialectStatement {
 
 
-    interface _StaticReturningCommaUnaryClause<Q extends DqlStatement.DqlInsert>
+    interface _StaticReturningCommaUnaryClause<Q extends DqlInsert>
             extends DqlStatement._DqlInsertSpec<Q> {
 
         _StaticReturningCommaUnaryClause<Q> comma(SelectItem selectItem);
     }
 
 
-    interface _StaticReturningCommaDualClause<Q extends DqlStatement.DqlInsert>
+    interface _StaticReturningCommaDualClause<Q extends DqlInsert>
             extends DqlStatement._DqlInsertSpec<Q> {
 
         DqlStatement._DqlInsertSpec<Q> comma(SelectItem selectItem);
@@ -27,7 +27,7 @@ public interface PostgreInsert extends DialectStatement {
 
     }
 
-    interface _ReturningClause<C, Q extends DqlStatement.DqlInsert> {
+    interface _ReturningClause<C, Q extends DqlInsert> {
 
         DqlStatement._DqlInsertSpec<Q> returningAll();
 
@@ -96,18 +96,18 @@ public interface PostgreInsert extends DialectStatement {
     }
 
 
-    interface _ReturningSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert> extends DmlStatement._DmlInsertSpec<I>
+    interface _ReturningSpec<C, I extends DmlInsert, Q extends DqlInsert> extends DmlStatement._DmlInsertSpec<I>
             , _ReturningClause<C, Q> {
 
     }
 
-    interface _DoUpdateWhereAndSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _DoUpdateWhereAndSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends Statement._MinWhereAndClause<C, _DoUpdateWhereAndSpec<C, T, I, Q>>
             , _ReturningSpec<C, I, Q> {
 
     }
 
-    interface _DoUpdateWhereSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _DoUpdateWhereSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends Statement._MinQueryWhereClause<C, _ReturningSpec<C, I, Q>, _DoUpdateWhereAndSpec<C, T, I, Q>>
             , _DoUpdateSetClause<C, T, I, Q>
             , _ReturningSpec<C, I, Q> {
@@ -115,46 +115,46 @@ public interface PostgreInsert extends DialectStatement {
     }
 
 
-    interface _DoUpdateSetClause<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _DoUpdateSetClause<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends Update._SetClause<C, FieldMeta<T>, _DoUpdateWhereSpec<C, T, I, Q>> {
 
 
     }
 
 
-    interface _NonParentConflictActionClause<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _NonParentConflictActionClause<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends _ConflictActionClause<_ReturningSpec<C, I, Q>, _DoUpdateSetClause<C, T, I, Q>> {
 
     }
 
-    interface _ConflictTargetWhereAndSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _ConflictTargetWhereAndSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends Statement._MinWhereAndClause<C, _ConflictTargetWhereAndSpec<C, T, I, Q>>
             , _NonParentConflictActionClause<C, T, I, Q> {
 
     }
 
-    interface _ConflictTargetWhereSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _ConflictTargetWhereSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends _NonParentConflictActionClause<C, T, I, Q>
             , Statement._MinQueryWhereClause<C, _NonParentConflictActionClause<C, T, I, Q>, _ConflictTargetWhereAndSpec<C, T, I, Q>> {
 
     }
 
 
-    interface _ConflictTargetCommaSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _ConflictTargetCommaSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends Statement._RightParenClause<_ConflictTargetWhereSpec<C, T, I, Q>>
             , _ConflictTargetCommaClause<T, _ConflictCollateSpec<C, T, I, Q>> {
 
     }
 
 
-    interface _ConflictOpClassSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _ConflictOpClassSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends _ConflictTargetCommaSpec<C, T, I, Q>
             , _ConflictOpClassClause<_ConflictTargetCommaSpec<C, T, I, Q>> {
 
     }
 
 
-    interface _ConflictCollateSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _ConflictCollateSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends _ConflictOpClassSpec<C, T, I, Q>
             , _ConflictCollateClause<_ConflictOpClassSpec<C, T, I, Q>> {
 
@@ -162,30 +162,30 @@ public interface PostgreInsert extends DialectStatement {
     }
 
 
-    interface _NonParentConflictItemClause<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _NonParentConflictItemClause<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends _ConflictItemClause<T, _ConflictCollateSpec<C, T, I, Q>, _NonParentConflictActionClause<C, T, I, Q>> {
 
     }
 
 
-    interface _OnConflictSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _OnConflictSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends _ReturningSpec<C, I, Q>
             , _OnConflictClause<_NonParentConflictItemClause<C, T, I, Q>> {
 
     }
 
 
-    interface _PostgreChildSpec<CT, I extends DmlStatement.DmlInsert>
+    interface _PostgreChildSpec<CT, I extends DmlInsert>
             extends Insert._ChildPartClause<CT>, DmlStatement._DmlInsertSpec<I> {
 
     }
 
-    interface _PostgreChildReturnSpec<CT, Q extends DqlStatement.DqlInsert> extends Insert._ChildPartClause<CT>
+    interface _PostgreChildReturnSpec<CT, Q extends DqlInsert> extends Insert._ChildPartClause<CT>
             , DqlStatement._DqlInsertSpec<Q> {
 
     }
 
-    interface _ParentReturningCommaUnaryClause<CT, Q extends DqlStatement.DqlInsert>
+    interface _ParentReturningCommaUnaryClause<CT, Q extends DqlInsert>
             extends _StaticReturningCommaUnaryClause<Q>, _PostgreChildReturnSpec<CT, Q> {
 
         _ParentReturningCommaUnaryClause<CT, Q> comma(SelectItem selectItem);
@@ -193,7 +193,7 @@ public interface PostgreInsert extends DialectStatement {
     }
 
 
-    interface _ParentReturningCommaDualClause<CT, Q extends DqlStatement.DqlInsert>
+    interface _ParentReturningCommaDualClause<CT, Q extends DqlInsert>
             extends _StaticReturningCommaDualClause<Q>, _PostgreChildReturnSpec<CT, Q> {
 
         _PostgreChildReturnSpec<CT, Q> comma(SelectItem selectItem);
@@ -202,7 +202,7 @@ public interface PostgreInsert extends DialectStatement {
 
     }
 
-    interface _ParentReturningClause<C, CT, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _ParentReturningClause<C, CT, I extends DmlInsert, Q extends DqlInsert>
             extends _ReturningClause<C, Q>, _PostgreChildSpec<CT, I> {
 
         @Override
@@ -297,18 +297,18 @@ public interface PostgreInsert extends DialectStatement {
 
     /*-------------------below insert syntax interfaces  -------------------*/
 
-    interface _ValuesLeftParenClause<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _ValuesLeftParenClause<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends Insert._StaticValueLeftParenClause<C, T, _ValuesLeftParenSpec<C, T, I, Q>> {
 
     }
 
-    interface _ValuesLeftParenSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _ValuesLeftParenSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends _ValuesLeftParenClause<C, T, I, Q>, _OnConflictSpec<C, T, I, Q> {
 
     }
 
 
-    interface _ValuesDefaultSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _ValuesDefaultSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends Insert._ColumnDefaultClause<C, T, _ValuesDefaultSpec<C, T, I, Q>>
             , Insert._DomainValueClause<C, T, _OnConflictSpec<C, T, I, Q>>
             , Insert._DynamicValuesClause<C, T, _OnConflictSpec<C, T, I, Q>>
@@ -317,24 +317,24 @@ public interface PostgreInsert extends DialectStatement {
     }
 
 
-    interface _SpaceSubQuerySpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _SpaceSubQuerySpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends Insert._SpaceSubQueryClause<C, _OnConflictSpec<C, T, I, Q>> {
 
     }
 
 
-    interface _ComplexColumnDefaultSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _ComplexColumnDefaultSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends _ValuesDefaultSpec<C, T, I, Q>, _SpaceSubQuerySpec<C, T, I, Q> {
 
     }
 
-    interface _OverridingValueSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _OverridingValueSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends _ValuesDefaultSpec<C, T, I, Q>
             , _OverridingValueClause<_ValuesDefaultSpec<C, T, I, Q>> {
 
     }
 
-    interface _ComplexOverridingValueSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _ComplexOverridingValueSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends _OverridingValueSpec<C, T, I, Q> {
 
         @Override
@@ -346,13 +346,13 @@ public interface PostgreInsert extends DialectStatement {
     }
 
 
-    interface _ColumnListSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _ColumnListSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends Insert._ColumnListClause<C, T, _ComplexOverridingValueSpec<C, T, I, Q>>
             , _OverridingValueSpec<C, T, I, Q> {
 
     }
 
-    interface _TableAliasSpec<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _TableAliasSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends Statement._AsClause<_ColumnListSpec<C, T, I, Q>>
             , _ColumnListSpec<C, T, I, Q> {
 
@@ -371,11 +371,11 @@ public interface PostgreInsert extends DialectStatement {
 
     }
 
-    interface _CteChildComma<C, P> extends DmlStatement.DmlInsert, _StaticChildInsertWithCommaClause<C, P> {
+    interface _CteChildComma<C, P> extends DmlInsert, _StaticChildInsertWithCommaClause<C, P> {
 
     }
 
-    interface _CteChildQueryComma<C, P> extends DqlStatement.DqlInsert, _StaticChildInsertWithCommaClause<C, P> {
+    interface _CteChildQueryComma<C, P> extends DqlInsert, _StaticChildInsertWithCommaClause<C, P> {
 
     }
 
@@ -459,7 +459,7 @@ public interface PostgreInsert extends DialectStatement {
     }
 
 
-    interface _CteInsertIntoClause<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert> {
+    interface _CteInsertIntoClause<C, I extends DmlInsert, Q extends DqlInsert> {
 
         <T> _TableAliasSpec<C, T, I, Q> insertInto(TableMeta<T> table);
 
@@ -471,11 +471,11 @@ public interface PostgreInsert extends DialectStatement {
 
     }
 
-    interface _CteComma<C> extends DmlStatement.DmlInsert, _StaticInsertWithCommaClause<C> {
+    interface _CteComma<C> extends DmlInsert, _StaticInsertWithCommaClause<C> {
 
     }
 
-    interface _CteQueryComma<C> extends DqlStatement.DqlInsert, _StaticInsertWithCommaClause<C> {
+    interface _CteQueryComma<C> extends DqlInsert, _StaticInsertWithCommaClause<C> {
 
     }
 
@@ -485,7 +485,7 @@ public interface PostgreInsert extends DialectStatement {
      * static cte syntax forbid the with clause of cte insert,because it destroy the Readability of code.
      * </p>
      */
-    interface _StaticSubPreferLiteralSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _StaticSubPreferLiteralSpec<C, I extends DmlInsert, Q extends DqlInsert>
             extends Insert._PreferLiteralClause<_CteInsertIntoClause<C, I, Q>>
             , _CteInsertIntoClause<C, I, Q> {
 
@@ -496,7 +496,7 @@ public interface PostgreInsert extends DialectStatement {
      * static cte syntax forbid the with clause of cte insert,because it destroy the Readability of code.
      * </p>
      */
-    interface _StaticSubNullOptionSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _StaticSubNullOptionSpec<C, I extends DmlInsert, Q extends DqlInsert>
             extends Insert._NullOptionClause<_StaticSubPreferLiteralSpec<C, I, Q>>
             , _StaticSubPreferLiteralSpec<C, I, Q> {
 
@@ -507,25 +507,25 @@ public interface PostgreInsert extends DialectStatement {
      * static cte syntax forbid the with clause of cte insert,because it destroy the Readability of code.
      * </p>
      */
-    interface _StaticSubOptionSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _StaticSubOptionSpec<C, I extends DmlInsert, Q extends DqlInsert>
             extends Insert._MigrationOptionClause<_StaticSubNullOptionSpec<C, I, Q>>
             , _StaticSubNullOptionSpec<C, I, Q> {
 
     }
 
 
-    interface _StaticCteComplexCommandSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _StaticCteComplexCommandSpec<C, I extends DmlInsert, Q extends DqlInsert>
             extends _StaticSubOptionSpec<C, I, Q> {
 
     }
 
-    interface _StaticCteAsClause<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _StaticCteAsClause<C, I extends DmlInsert, Q extends DqlInsert>
             extends Statement._StaticAsClaus<_StaticCteComplexCommandSpec<C, I, Q>> {
 
 
     }
 
-    interface _StaticCteLeftParenSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _StaticCteLeftParenSpec<C, I extends DmlInsert, Q extends DqlInsert>
             extends Statement._LeftParenStringQuadraSpec<C, _StaticCteAsClause<C, I, Q>>
             , _StaticCteAsClause<C, I, Q> {
 
@@ -560,33 +560,33 @@ public interface PostgreInsert extends DialectStatement {
     /*-------------------below dynamic sub insert syntax -------------------*/
 
 
-    interface _DynamicSubWithCteSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _DynamicSubWithCteSpec<C, I extends DmlInsert, Q extends DqlInsert>
             extends PostgreQuery._PostgreDynamicWithSpec<C, _CteInsertIntoClause<C, I, Q>>
             , _CteInsertIntoClause<C, I, Q> {
 
     }
 
 
-    interface _DynamicSubPreferLiteralSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _DynamicSubPreferLiteralSpec<C, I extends DmlInsert, Q extends DqlInsert>
             extends Insert._PreferLiteralClause<_DynamicSubWithCteSpec<C, I, Q>>
             , _DynamicSubWithCteSpec<C, I, Q> {
 
     }
 
-    interface _DynamicSubNullOptionSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _DynamicSubNullOptionSpec<C, I extends DmlInsert, Q extends DqlInsert>
             extends Insert._NullOptionClause<_DynamicSubPreferLiteralSpec<C, I, Q>>
             , _DynamicSubPreferLiteralSpec<C, I, Q> {
 
     }
 
-    interface _DynamicSubOptionSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    interface _DynamicSubOptionSpec<C, I extends DmlInsert, Q extends DqlInsert>
             extends Insert._MigrationOptionClause<_DynamicSubNullOptionSpec<C, I, Q>>
             , _DynamicSubNullOptionSpec<C, I, Q> {
 
     }
 
-    interface _DynamicSubInsert<C> extends _DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>
-            , Statement._LeftParenStringQuadraOptionalSpec<C, _DynamicSubOptionSpec<C, SubInsert, SubReturningInsert>> {
+    interface _DynamicSubInsert<C> extends _DynamicSubOptionSpec<C, DmlInsert, DqlInsert>
+            , Statement._LeftParenStringQuadraOptionalSpec<C, _DynamicSubOptionSpec<C, DmlInsert, DqlInsert>> {
 
 
     }

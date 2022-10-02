@@ -2,7 +2,9 @@ package io.army.dialect.postgre;
 
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.dialect._Constant;
 import io.army.meta.ServerMeta;
+import io.army.util._StringUtils;
 
 public enum PostgreDialect implements Dialect {
 
@@ -29,7 +31,11 @@ public enum PostgreDialect implements Dialect {
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", PostgreDialect.class.getSimpleName(), this.name());
+        return _StringUtils.builder()
+                .append(PostgreDialect.class.getName())
+                .append(_Constant.POINT)
+                .append(this.name())
+                .toString();
     }
 
 

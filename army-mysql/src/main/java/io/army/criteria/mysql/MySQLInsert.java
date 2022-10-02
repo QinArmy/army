@@ -1,6 +1,7 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
@@ -8,15 +9,12 @@ import io.army.meta.ParentTableMeta;
 import io.army.meta.SimpleTableMeta;
 
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">INSERT Statement</a>
  */
-public interface MySQLInsert extends Insert, DialectStatement {
+public interface MySQLInsert extends DialectStatement {
 
 
     interface _InsertClause<C, IR> {
@@ -27,30 +25,49 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
+    interface _ConflictUpdatePairClause<C, UR> {
+        /**
+         * @see SQLs#itemPair(DataField, Object)
+         */
+        UR update(Consumer<Consumer<ItemPair>> consumer);
 
+        /**
+         * @see SQLs#itemPair(DataField, Object)
+         */
+        UR update(BiConsumer<C, Consumer<ItemPair>> consumer);
 
-    interface _StaticOnDuplicateKeyFieldUpdateClause<C, T, UR> {
+        /**
+         * @see SQLs#itemPair(DataField, Object)
+         */
+        UR ifUpdate(Consumer<Consumer<ItemPair>> consumer);
 
-        UR update(FieldMeta<T> field, @Nullable Object value);
-
-        UR updateLiteral(FieldMeta<T> field, @Nullable Object value);
-
-        UR updateExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
-
-        UR updateExp(FieldMeta<T> field, Function<C, ? extends Expression> function);
+        /**
+         * @see SQLs#itemPair(DataField, Object)
+         */
+        UR ifUpdate(BiConsumer<C, Consumer<ItemPair>> consumer);
 
     }
 
-    interface _StaticOnDuplicateKeyAliasUpdateClause<C, T, UR>
-            extends _StaticOnDuplicateKeyFieldUpdateClause<C, T, UR> {
-        UR update(String columnAlias, @Nullable Object value);
 
-        UR updateLiteral(String columnAlias, @Nullable Object value);
+    interface _ConflictUpdateItemClause<C, T, UR> {
 
-        UR updateExp(String columnAlias, Supplier<? extends Expression> supplier);
+        UR update(FieldMeta<T> field, Expression value);
 
-        UR updateExp(String columnAlias, Function<C, ? extends Expression> function);
+        UR update(FieldMeta<T> field, Supplier<Expression> supplier);
 
+        UR update(FieldMeta<T> field, Function<C, Expression> function);
+
+        <E> UR update(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value);
+
+        <E> UR update(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
+
+        UR update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        <E> UR update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value);
+
+        <E> UR update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
+
+        UR update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator, BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
     }
 
 
@@ -59,7 +76,6 @@ public interface MySQLInsert extends Insert, DialectStatement {
         _StaticOnDuplicateKeyFieldUpdateClause<C, T, KR> onDuplicateKey();
 
     }
-
 
 
     interface _DynamicOnDuplicateKeyUpdateClause<C, CC extends PairConsumer<?>, UR> {

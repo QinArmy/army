@@ -34,8 +34,8 @@ public class StandardUpdateUnitTests {
         final Update stmt;
         stmt = SQLs.singleUpdate()
                 .update(ChinaRegion_.T, "c")
-                .set(ChinaRegion_.name, "武侠江湖")
-                .setPlusLiteral(ChinaRegion_.regionGdp, addGdp)
+                .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
+                .set(ChinaRegion_.regionGdp, SQLs::param, addGdp)
                 .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", "secondId")
                 .and(ChinaRegion_.name::equal, SQLs::literal, "江湖")
                 .and(ChinaRegion_.regionGdp::plus, SQLs::literal, new BigDecimal(1000), Expression::greatEqual, BigDecimal.ZERO)
@@ -46,17 +46,17 @@ public class StandardUpdateUnitTests {
 
     @Test
     public void updateChild() {
-        final BigDecimal addGdp = new BigDecimal("888.8");
+        final BigDecimal gdpAmount = new BigDecimal("888.8");
         final Update stmt;
         stmt = SQLs.domainUpdate()
                 .update(ChinaProvince_.T, "p")
-                .set(ChinaProvince_.name, "武侠江湖")
-                .setPlusLiteral(ChinaProvince_.regionGdp, addGdp)
-                .set(ChinaProvince_.provincialCapital, "光明顶")
-                .set(ChinaProvince_.governor, "张无忌")
+                .set(ChinaProvince_.name, SQLs::param, "武侠江湖")
+                .set(ChinaProvince_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
+                .set(ChinaProvince_.provincialCapital, SQLs::param, "光明顶")
+                .set(ChinaProvince_.governor, SQLs::param, "张无忌")
                 .where(ChinaProvince_.id::equal, SQLs::literal, 1)
                 .and(ChinaProvince_.name::equal, SQLs::param, "江湖")
-                .and(ChinaProvince_.regionGdp::plus, SQLs::literal, addGdp, Expression::greatEqual, BigDecimal.ZERO)
+                .and(ChinaProvince_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greatEqual, BigDecimal.ZERO)
                 .and(ChinaProvince_.governor.equal(SQLs::param, "阳顶天").or(consumer -> {
                     IPredicate predicate;
 
@@ -81,10 +81,10 @@ public class StandardUpdateUnitTests {
         final Update stmt;
         stmt = SQLs.batchDomainUpdate()
                 .update(ChinaProvince_.T, "p")
-                .setPlus(ChinaProvince_.regionGdp)
-                .set(ChinaProvince_.governor)
-                .where(ChinaProvince_.id.equalNamed())
-                .and(ChinaProvince_.regionGdp.plusNamed().greatEqual(SQLs::literal, BigDecimal.ZERO))
+                .set(ChinaProvince_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
+                .set(ChinaProvince_.governor, SQLs::namedNullableParam)
+                .where(ChinaProvince_.id::equal, SQLs::namedParam)
+                .and(ChinaProvince_.regionGdp::plus, SQLs::namedParam, ChinaProvince_.REGION_GDP, Expression::greatEqual, BigDecimal.ZERO)
                 .and(ChinaProvince_.version::equal, SQLs::literal, 0)
                 .paramList(this::createProvinceList)
                 .asUpdate();

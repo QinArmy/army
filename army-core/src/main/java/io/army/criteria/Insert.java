@@ -13,7 +13,7 @@ import java.util.function.*;
  *
  * @since 1.0
  */
-public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
+public interface Insert extends DmlStatement, DmlInsert {
 
 
     /**
@@ -30,6 +30,28 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      */
     interface _InsertSpec extends DmlStatement._DmlInsertSpec<Insert> {
 
+    }
+
+
+    interface _ConflictUpdateCommaItemClause<C, T, UR> {
+
+        UR comma(FieldMeta<T> field, Expression value);
+
+        UR comma(FieldMeta<T> field, Supplier<Expression> supplier);
+
+        UR comma(FieldMeta<T> field, Function<C, Expression> function);
+
+        <E> UR comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value);
+
+        <E> UR comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
+
+        UR comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        <E> UR comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value);
+
+        <E> UR comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
+
+        UR comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator, BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
     }
 
 

@@ -1,6 +1,6 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.DmlStatement;
+import io.army.criteria.DmlInsert;
 import io.army.criteria.Hint;
 import io.army.criteria.Insert;
 import io.army.criteria.ReplaceInsert;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface MySQLReplace extends ReplaceInsert, DmlStatement.DmlInsert {
+public interface MySQLReplace extends ReplaceInsert, DmlInsert {
 
 
     interface _ReplaceClause<C, RR> {
