@@ -22,7 +22,7 @@ abstract class CriteriaUtils {
     }
 
 
-    static _Cte createAndAddCte(final CriteriaContext context, final @Nullable String name
+    static void createAndAddCte(final CriteriaContext context, final @Nullable String name
             , final @Nullable List<String> columnAliasList, final SubStatement subStatement) {
         if (name == null) {
             throw CriteriaContextStack.castCriteriaApi(context);
@@ -34,7 +34,6 @@ abstract class CriteriaUtils {
             cte = new SQLs.CteImpl(name, columnAliasList, subStatement);
         }
         context.onAddCte(cte);
-        return cte;
     }
 
     static CriteriaContext getCriteriaContext(final Object statement) {

@@ -15,64 +15,23 @@ import java.util.Objects;
 public abstract class Postgres extends PostgreFuncSyntax {
 
 
+    /**
+     * private constructor
+     */
     private Postgres() {
     }
 
 
-    public static PostgreInsert._PrimaryOptionSpec<Void> domainInsert() {
-        throw new UnsupportedOperationException();
+    public static PostgreInsert._PrimaryOptionSpec<Void> singleInsert() {
+        return PostgreInserts.primaryInsert(null);
     }
 
-    public static <C> PostgreInsert._PrimaryOptionSpec<C> domainInsert(C criteria) {
+    /**
+     * @param criteria non-null criteria instance,java bean or {@link java.util.Map}.
+     */
+    public static <C> PostgreInsert._PrimaryOptionSpec<C> singleInsert(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
-    }
-
-
-    public static PostgreInsert._DynamicSubOptionSpec<Void> domainSubInsert() {
-        throw new UnsupportedOperationException();
-    }
-
-    public static <C> PostgreInsert._DynamicSubOptionSpec<C> domainSubInsert(C criteria) {
-        Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
-    }
-
-
-    public static PostgreInsert._ValueOptionSpec<Void> valueInsert() {
-        throw new UnsupportedOperationException();
-    }
-
-    public static <C> PostgreInsert._ValueOptionSpec<C> valueInsert(C criteria) {
-        Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
-    }
-
-    public static PostgreInsert._ValueSubOptionSpec<Void> valueSubInsert() {
-        throw new UnsupportedOperationException();
-    }
-
-    public static <C> PostgreInsert._ValueSubOptionSpec<C> valueSubInsert(C criteria) {
-        Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
-    }
-
-    public static PostgreInsert._QueryWithCteSpec<Void> queryInsert() {
-        throw new UnsupportedOperationException();
-    }
-
-    public static <C> PostgreInsert._QueryWithCteSpec<C> queryInsert(C criteria) {
-        Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
-    }
-
-    public static PostgreInsert._QuerySubWithCteSpec<Void> querySubInsert() {
-        throw new UnsupportedOperationException();
-    }
-
-    public static <C> PostgreInsert._QuerySubWithCteSpec<C> querySubInsert(C criteria) {
-        Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return PostgreInserts.primaryInsert(criteria);
     }
 
 

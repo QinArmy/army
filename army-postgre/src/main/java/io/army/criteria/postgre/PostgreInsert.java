@@ -480,18 +480,33 @@ public interface PostgreInsert extends DialectStatement {
     }
 
 
+    /**
+     * <p>
+     * static cte syntax forbid the with clause of cte insert,because it destroy the Readability of code.
+     * </p>
+     */
     interface _StaticSubPreferLiteralSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
             extends Insert._PreferLiteralClause<_CteInsertIntoClause<C, I, Q>>
             , _CteInsertIntoClause<C, I, Q> {
 
     }
 
+    /**
+     * <p>
+     * static cte syntax forbid the with clause of cte insert,because it destroy the Readability of code.
+     * </p>
+     */
     interface _StaticSubNullOptionSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
             extends Insert._NullOptionClause<_StaticSubPreferLiteralSpec<C, I, Q>>
             , _StaticSubPreferLiteralSpec<C, I, Q> {
 
     }
 
+    /**
+     * <p>
+     * static cte syntax forbid the with clause of cte insert,because it destroy the Readability of code.
+     * </p>
+     */
     interface _StaticSubOptionSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
             extends Insert._MigrationOptionClause<_StaticSubNullOptionSpec<C, I, Q>>
             , _StaticSubNullOptionSpec<C, I, Q> {

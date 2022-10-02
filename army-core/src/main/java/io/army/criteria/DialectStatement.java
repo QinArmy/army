@@ -12,13 +12,7 @@ import java.util.function.Supplier;
 
 public interface DialectStatement extends Statement {
 
-    interface _CteBuilder {
-
-        boolean isRecursive();
-
-    }
-
-    interface _DynamicWithCteClause<C, B extends _CteBuilder, WE> {
+    interface _DynamicWithCteClause<C, B extends CteBuilderSpec, WE> {
         WE with(Consumer<B> consumer);
 
         WE with(BiConsumer<C, B> consumer);

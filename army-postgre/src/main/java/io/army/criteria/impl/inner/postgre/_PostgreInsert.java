@@ -1,6 +1,5 @@
 package io.army.criteria.impl.inner.postgre;
 
-import io.army.criteria.ItemPair;
 import io.army.criteria.SQLWords;
 import io.army.criteria.SelectItem;
 import io.army.criteria.impl.inner._Insert;
@@ -26,7 +25,8 @@ public interface _PostgreInsert extends _Insert, _Insert._SupportReturningClause
     List<? extends SelectItem> returningList();
 
 
-    interface _ConflictActionClauseResult {
+    interface _ConflictActionClauseResult extends _Insert._ConflictActionClauseSpec
+            , _Insert._ConflictActionPredicateClauseSpec {
 
         @Nullable
         String constraintName();
@@ -38,9 +38,6 @@ public interface _PostgreInsert extends _Insert, _Insert._SupportReturningClause
 
         boolean isDoNothing();
 
-        List<ItemPair> updateSetClauseList();
-
-        List<_Predicate> updateSetPredicateList();
     }
 
     interface _PostgreDomainInsert extends _Insert._DomainInsert, _PostgreInsert {

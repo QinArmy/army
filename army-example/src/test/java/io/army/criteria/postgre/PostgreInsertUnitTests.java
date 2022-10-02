@@ -36,7 +36,7 @@ public class PostgreInsertUnitTests {
         final List<Person> personList;
         personList = this.createBankPersonList();
         final ReturningInsert stmt;
-        stmt = Postgres.domainInsert()
+        stmt = Postgres.singleInsert()
                 .insertInto(BankUser_.T).as("u")
                 .overridingSystemValue()
                 .values(personList)

@@ -142,7 +142,7 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class NonQueryWithCteOption<C, MR, NR, PR, B extends DialectStatement._CteBuilder, WE>
+    static abstract class NonQueryWithCteOption<C, MR, NR, PR, B extends CteBuilderSpec, WE>
             extends NonQueryInsertOptionsImpl<MR, NR, PR>
             implements DialectStatement._DynamicWithCteClause<C, B, WE>
             , WithValueSyntaxOptions {
@@ -266,7 +266,7 @@ abstract class InsertSupport {
 
     }//NonQueryWithCteOption
 
-    static abstract class ChildDynamicWithClause<C, B extends DialectStatement._CteBuilder, WE>
+    static abstract class ChildDynamicWithClause<C, B extends CteBuilderSpec, WE>
             implements DialectStatement._DynamicWithCteClause<C, B, WE>
             , WithValueSyntaxOptions {
 
@@ -393,7 +393,7 @@ abstract class InsertSupport {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.recursive = recursive;
-            this.cteList = this.context.endWithClause(true);
+            this.cteList = this.context.endWithClause(true);//static with syntax is required
         }
 
 
@@ -1781,7 +1781,8 @@ abstract class InsertSupport {
 
     @SuppressWarnings("unchecked")
     static abstract class ConflictUpdateSetClause<C, T, SR> implements Update._SetClause<C, FieldMeta<T>, SR>
-            , CriteriaContextSpec {
+            , CriteriaContextSpec
+            , _Insert._ConflictActionClauseSpec {
 
         final CriteriaContext context;
 
@@ -1933,12 +1934,24 @@ abstract class InsertSupport {
             return (SR) this;
         }
 
+        @Override
+        public final List<ItemPair> updateSetClauseList() {
+            final List<ItemPair> itemPairList = this.itemPairList;
+            if (itemPairList == null || itemPairList instanceof ArrayList) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return itemPairList;
+        }
+
         /**
          * @return a unmodified list
          */
         final List<ItemPair> endUpdateSetClause() {
             List<ItemPair> itemPairList = this.itemPairList;
-            if (itemPairList instanceof ArrayList) {
+            if (itemPairList == null) {
+                itemPairList = Collections.emptyList();
+                this.itemPairList = itemPairList;
+            } else if (itemPairList instanceof ArrayList) {
                 itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
                 this.itemPairList = itemPairList;
             } else {
@@ -1947,8 +1960,11 @@ abstract class InsertSupport {
             return itemPairList;
         }
 
+        abstract Dialect syntaxDialect();
+
 
         final void addSafeRowPair(final SQLs.RowItemPair pair) {
+            assert this.supportRow;
             List<ItemPair> itemPairList = this.itemPairList;
             if (itemPairList == null) {
                 itemPairList = new ArrayList<>();
@@ -1980,6 +1996,10 @@ abstract class InsertSupport {
             final SQLs.FieldItemPair fieldPair;
             final FieldMeta<?> field;
             if (pair instanceof SQLs.RowItemPair) {
+                if (!this.supportRow) {
+                    throw CriteriaContextStack.criteriaError(this.context, _Exceptions::dontSupportRowLeftItem
+                            , this.syntaxDialect());
+                }
                 this.validateRowPair((SQLs.RowItemPair) pair);
             } else if (!(pair instanceof SQLs.FieldItemPair)) {
                 throw CriteriaContextStack.criteriaError(this.context, "Illegal ItemPair");
@@ -2030,12 +2050,13 @@ abstract class InsertSupport {
     @SuppressWarnings("unchecked")
     static abstract class ConflictUpdateWhereClause<C, T, SR, WR, WA> extends ConflictUpdateSetClause<C, T, SR>
             implements Statement._MinQueryWhereClause<C, WR, WA>
-            , Statement._MinWhereAndClause<C, WA> {
+            , Statement._MinWhereAndClause<C, WA>
+            , _Insert._ConflictActionPredicateClauseSpec {
 
         private List<_Predicate> predicateList;
 
         ConflictUpdateWhereClause(CriteriaContext context, TableMeta<T> table) {
-            super(context, table);
+            super(context, table, true);
         }
 
         @Override
@@ -2139,7 +2160,16 @@ abstract class InsertSupport {
             return (WA) this;
         }
 
-        final List<_Predicate> endWhereAndSetClause() {
+        @Override
+        public final List<_Predicate> updateSetPredicateList() {
+            final List<_Predicate> predicateList = this.predicateList;
+            if (predicateList == null || predicateList instanceof ArrayList) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return predicateList;
+        }
+
+        final List<_Predicate> endWhereClause() {
 
             List<_Predicate> predicateList = this.predicateList;
             if (predicateList == null) {

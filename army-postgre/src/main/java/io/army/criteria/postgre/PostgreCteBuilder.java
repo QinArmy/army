@@ -1,8 +1,8 @@
 package io.army.criteria.postgre;
 
-import io.army.criteria.DialectStatement;
+import io.army.criteria.CteBuilderSpec;
 
-public interface PostgreCteBuilder extends DialectStatement._CteBuilder {
+public interface PostgreCteBuilder extends CteBuilderSpec {
 
     PostgreInsert._DynamicSubInsert<Void> cteInsert(String name);
 
