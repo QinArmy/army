@@ -20,7 +20,6 @@ import io.army.util._StringUtils;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -473,10 +472,8 @@ public abstract class SQLs extends StandardSyntax {
      * @param values non-null and non-empty
      * @see #multiParams(MappingType, Collection)
      * @see #multiParams(TypeInfer, Collection)
-     * @see #multiParams(TypeMeta, Function, String)
      * @see #multiLiterals(MappingType, Collection)
      * @see #multiLiterals(TypeInfer, Collection)
-     * @see #multiLiterals(TypeInfer, Function, String)
      */
     public static Expression multiParams(final MappingType type, final Collection<?> values) {
         return ParamExpression.multi(type, values);
@@ -493,10 +490,8 @@ public abstract class SQLs extends StandardSyntax {
      * @param values  non-null and non-empty
      * @see #multiParams(MappingType, Collection)
      * @see #multiParams(TypeInfer, Collection)
-     * @see #multiParams(TypeMeta, Function, String)
      * @see #multiLiterals(MappingType, Collection)
      * @see #multiLiterals(TypeInfer, Collection)
-     * @see #multiLiterals(TypeInfer, Function, String)
      */
     public static Expression multiParams(final TypeInfer typeExp, final Collection<?> values) {
         final Expression result;
@@ -509,31 +504,6 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    /**
-     * <p>
-     * Create multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
-     * ? , ? , ? ...
-     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
-     * </p>
-     *
-     * @param type     non-null,the type of element of values.
-     * @param function non-null, {@link Function#apply(Object keyName)} return non-null and non-empty {@link Collection}
-     * @param keyName  non-null
-     * @see #multiParams(MappingType, Collection)
-     * @see #multiParams(TypeInfer, Collection)
-     * @see #multiParams(TypeMeta, Function, String)
-     * @see #multiLiterals(MappingType, Collection)
-     * @see #multiLiterals(TypeInfer, Collection)
-     * @see #multiLiterals(TypeInfer, Function, String)
-     */
-    public static Expression multiParams(TypeMeta type, Function<String, ?> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (!(value instanceof Collection)) {
-            throw CriteriaUtils.nonCollectionValue(keyName);
-        }
-        return ParamExpression.multi(type, (Collection<?>) value);
-    }
 
 
     /**
@@ -808,10 +778,8 @@ public abstract class SQLs extends StandardSyntax {
      * @param values non-null and non-empty
      * @see #multiParams(MappingType, Collection)
      * @see #multiParams(TypeInfer, Collection)
-     * @see #multiParams(TypeMeta, Function, String)
      * @see #multiLiterals(MappingType, Collection)
      * @see #multiLiterals(TypeInfer, Collection)
-     * @see #multiLiterals(TypeInfer, Function, String)
      */
     public static Expression multiLiterals(final MappingType type, final Collection<?> values) {
         return LiteralExpression.multi(type, values);
@@ -828,10 +796,8 @@ public abstract class SQLs extends StandardSyntax {
      * @param values  non-null and non-empty
      * @see #multiParams(MappingType, Collection)
      * @see #multiParams(TypeInfer, Collection)
-     * @see #multiParams(TypeMeta, Function, String)
      * @see #multiLiterals(MappingType, Collection)
      * @see #multiLiterals(TypeInfer, Collection)
-     * @see #multiLiterals(TypeInfer, Function, String)
      */
     public static Expression multiLiterals(final TypeInfer typeExp, final Collection<?> values) {
         final Expression result;
@@ -843,37 +809,6 @@ public abstract class SQLs extends StandardSyntax {
         return result;
     }
 
-    /**
-     * <p>
-     * Create multi literal expression, multi literal expression will output multi LITERAL like below:
-     * LITERAL , LITERAL , LITERAL ...
-     * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
-     * </p>
-     *
-     * @param typeExp  non-null,the type of element of values.
-     * @param function non-null,{@link Function#apply(Object keyName)} return non-null and non-empty {@link Collection}
-     * @param keyName  non-null
-     * @see #multiParams(MappingType, Collection)
-     * @see #multiParams(TypeInfer, Collection)
-     * @see #multiParams(TypeMeta, Function, String)
-     * @see #multiLiterals(MappingType, Collection)
-     * @see #multiLiterals(TypeInfer, Collection)
-     * @see #multiLiterals(TypeInfer, Function, String)
-     */
-    public static Expression multiLiterals(final TypeInfer typeExp, Function<String, ?> function, String keyName) {
-        final Object values;
-        values = function.apply(keyName);
-        if (!(values instanceof Collection)) {
-            throw CriteriaUtils.nonCollectionValue(keyName);
-        }
-        final Expression result;
-        if (typeExp instanceof TableField) {
-            result = LiteralExpression.multi((TableField) typeExp, (Collection<?>) values);
-        } else {
-            result = LiteralExpression.multi(typeExp.typeMeta(), (Collection<?>) values);
-        }
-        return result;
-    }
 
 
     /**

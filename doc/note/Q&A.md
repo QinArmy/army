@@ -99,5 +99,6 @@
     ,SQlLs.namedNullableLiteral(DataField) method?
     * 因为 加上 set(F field,Function) 和 set(F field,BiFunction) 后, jvm 无法准确识别,容易出问题.
 
-21. 为什么 where 子句 and 子句 set 子句要设计那么多的，那么长的 函数接口参数,不烦吗?
-    * 因为只这样设计成函数类型的参数能才能将程序行为更好的组合,行为的自由组合方为编程的本质.
+21. 为什么 where 子句 and 子句 set 子句要设计那么多的，那么长的 函数接口参数?
+    * 因为只这样设计成函数类型的参数能才能将程序行为更好的组合.
+    * 能消除方法的圆括号,使代码更简洁

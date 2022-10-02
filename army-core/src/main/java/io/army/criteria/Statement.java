@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 import io.army.dialect.Dialect;
+import io.army.function.TeExpression;
 import io.army.function.TePredicate;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -342,11 +343,11 @@ public interface Statement {
 
         WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator, BiFunction<DataField, String, Expression> namedOperator);
 
-        <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
+        <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> valueOperator, T operand);
 
-        <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+        <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> supplier);
 
-        WA where(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+        WA where(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
         <T> WA where(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, T first, T second);
 
@@ -354,21 +355,30 @@ public interface Statement {
 
         WA where(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
 
+        WA where(TePredicate<TeExpression<Expression, String, Integer>, String, Integer> expOperator, TeExpression<Expression, String, Integer> namedOperator, String paramName, int size);
+
+        WA where(BiFunction<TeExpression<DataField, String, Integer>, Integer, IPredicate> expOperator, TeExpression<DataField, String, Integer> namedOperator, int size);
+
+
         <E> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
         <E> WA whereIf(Function<E, IPredicate> expOperator, Function<C, E> function);
 
-        <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
+        <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
 
         <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
         WA whereIf(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
-        <T> WA whereIf(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, T first, T second);
+        <T> WA whereIf(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second);
 
         <T> WA whereIf(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier);
 
         WA whereIf(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+
+        WA whereIf(TePredicate<TeExpression<Expression, String, Integer>, String, Integer> expOperator, TeExpression<Expression, String, Integer> namedOperator, @Nullable String paramName, @Nullable Integer size);
+
+        WA whereIf(BiFunction<TeExpression<DataField, String, Integer>, Integer, IPredicate> expOperator, TeExpression<DataField, String, Integer> namedOperator, @Nullable Integer size);
 
 
     }
@@ -441,6 +451,11 @@ public interface Statement {
 
         WA and(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
 
+        WA and(TePredicate<TeExpression<Expression, String, Integer>, String, Integer> expOperator, TeExpression<Expression, String, Integer> namedOperator, String paramName, int size);
+
+        WA and(BiFunction<TeExpression<DataField, String, Integer>, Integer, IPredicate> expOperator, TeExpression<DataField, String, Integer> namedOperator, int size);
+
+
         <E> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
         <E> WA ifAnd(Function<E, IPredicate> expOperator, Function<C, E> function);
@@ -456,6 +471,10 @@ public interface Statement {
         <T> WA ifAnd(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier);
 
         WA ifAnd(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+
+        WA ifAnd(TePredicate<TeExpression<Expression, String, Integer>, String, Integer> expOperator, TeExpression<Expression, String, Integer> namedOperator, @Nullable String paramName, @Nullable Integer size);
+
+        WA ifAnd(BiFunction<TeExpression<DataField, String, Integer>, Integer, IPredicate> expOperator, TeExpression<DataField, String, Integer> namedOperator, @Nullable Integer size);
 
 
     }

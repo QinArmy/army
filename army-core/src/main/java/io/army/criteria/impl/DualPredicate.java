@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.SqlValueParam;
 import io.army.dialect._SqlContext;
 import io.army.util._Exceptions;
 
@@ -25,6 +26,12 @@ final class DualPredicate extends OperationPredicate {
             case NOT_LIKE:
             case IN:
             case NOT_IN: {
+                if (right instanceof SqlValueParam.MultiValue
+                        && operator != DualOperator.IN
+                        && operator != DualOperator.NOT_IN) {
+                    String m = String.format("operator[%s] don't support multi  parameter(literal)", operator);
+                    throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+                }
                 final ArmyExpression rightExp = (ArmyExpression) right;
                 if (rightExp.isNullValue()) {
                     throw _Exceptions.operatorRightIsNullable(operator);

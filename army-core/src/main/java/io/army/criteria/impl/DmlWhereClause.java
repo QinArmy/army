@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Dml;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.function.TeExpression;
 import io.army.function.TePredicate;
 import io.army.lang.Nullable;
 import io.army.util._CollectionUtils;
@@ -37,33 +38,29 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
 
     @Override
     public final WR where(Consumer<Consumer<IPredicate>> consumer) {
-        consumer.accept(this::addPredicate);
+        consumer.accept(this::and);
         return (WR) this;
     }
 
     @Override
     public final WR where(BiConsumer<C, Consumer<IPredicate>> consumer) {
-        consumer.accept(this.criteria, this::addPredicate);
+        consumer.accept(this.criteria, this::and);
         return (WR) this;
     }
 
     @Override
-    public final WA where(@Nullable IPredicate predicate) {
-        if (predicate == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
-        }
-        this.predicateList.add((OperationPredicate) predicate);
-        return (WA) this;
+    public final WA where(IPredicate predicate) {
+        return this.and(predicate);
     }
 
     @Override
     public final WA where(Supplier<IPredicate> supplier) {
-        return this.where(supplier.get());
+        return this.and(supplier.get());
     }
 
     @Override
     public final WA where(Function<C, IPredicate> function) {
-        return this.where(function.apply(this.criteria));
+        return this.and(function.apply(this.criteria));
     }
 
 
@@ -83,39 +80,88 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator, BiFunction<DataField, String, Expression> namedOperator) {
+    public final WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator
+            , BiFunction<DataField, String, Expression> namedOperator) {
         return this.and(fieldOperator.apply(namedOperator));
     }
 
     @Override
-    public final <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand) {
-        return this.and(expOperator, operator, operand);
+    public final <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> valueOperator, @Nullable T operand) {
+        if (operand == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(valueOperator, operand));
     }
 
     @Override
-    public final <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return this.and(expOperator, operator, supplier);
+    public final <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> supplier) {
+        final T operand;
+        operand = supplier.get();
+        if (operand == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(valueOperator, operand));
     }
 
     @Override
-    public final WA where(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return this.and(expOperator, operator, function, keyName);
+    public final WA where(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator
+            , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        final Object operand;
+        operand = function.apply(keyName);
+        if (operand == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(valueOperator, operand));
     }
 
     @Override
-    public final <T> WA where(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, T first, T second) {
-        return this.and(expOperator, operator, first, second);
+    public final <T> WA where(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T first
+            , @Nullable T second) {
+        if (first == null || second == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(operator, first, second));
     }
 
     @Override
-    public final <T> WA where(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
-        return this.and(expOperator, operator, firstSupplier, secondSupplier);
+    public final <T> WA where(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
+        final T first, second;
+        if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(operator, first, second));
     }
 
     @Override
-    public final WA where(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
-        return this.and(expOperator, operator, function, firstKey, secondKey);
+    public final WA where(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
+            , String secondKey) {
+        final Object first, second;
+        if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(operator, first, second));
     }
+
+    @Override
+    public final WA where(TePredicate<TeExpression<Expression, String, Integer>, String, Integer> expOperator
+            , TeExpression<Expression, String, Integer> namedOperator, @Nullable String paramName, int size) {
+        if (paramName == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(namedOperator, paramName, size));
+    }
+
+    @Override
+    public final WA where(BiFunction<TeExpression<DataField, String, Integer>, Integer, IPredicate> expOperator
+            , TeExpression<DataField, String, Integer> namedOperator, int size) {
+        return this.and(expOperator.apply(namedOperator, size));
+    }
+
 
     @Override
     public final WA whereIf(Supplier<IPredicate> supplier) {
@@ -139,34 +185,54 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
         return this.ifAnd(expOperator, operator, operand);
     }
 
     @Override
-    public final <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+    public final <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
         return this.ifAnd(expOperator, operator, supplier);
     }
 
     @Override
-    public final WA whereIf(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+    public final WA whereIf(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
         return this.ifAnd(expOperator, operator, function, keyName);
     }
 
     @Override
-    public final <T> WA whereIf(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, T first, T second) {
+    public final <T> WA whereIf(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
         return this.ifAnd(expOperator, operator, first, second);
     }
 
     @Override
-    public final <T> WA whereIf(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
+    public final <T> WA whereIf(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier
+            , Supplier<T> secondSupplier) {
         return this.ifAnd(expOperator, operator, firstSupplier, secondSupplier);
     }
 
     @Override
-    public final WA whereIf(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
+    public final WA whereIf(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
         return this.ifAnd(expOperator, operator, function, firstKey, secondKey);
     }
+
+    @Override
+    public final WA whereIf(TePredicate<TeExpression<Expression, String, Integer>, String, Integer> expOperator
+            , TeExpression<Expression, String, Integer> namedOperator, @Nullable String paramName, @Nullable Integer size) {
+        return this.ifAnd(expOperator, namedOperator, paramName, size);
+    }
+
+    @Override
+    public final WA whereIf(BiFunction<TeExpression<DataField, String, Integer>, Integer, IPredicate> expOperator
+            , TeExpression<DataField, String, Integer> namedOperator, @Nullable Integer size) {
+        return this.ifAnd(expOperator, namedOperator, size);
+    }
+
 
     @Override
     public final WA and(@Nullable IPredicate predicate) {
@@ -205,12 +271,14 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final WA and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator, BiFunction<DataField, String, Expression> namedOperator) {
+    public final WA and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator
+            , BiFunction<DataField, String, Expression> namedOperator) {
         return this.and(fieldOperator.apply(namedOperator));
     }
 
     @Override
-    public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
         if (operand == null) {
             throw CriteriaContextStack.nullPointer(this.context);
         }
@@ -218,7 +286,8 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+    public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
         final T operand;
         operand = supplier.get();
         if (operand == null) {
@@ -228,7 +297,8 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final WA and(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+    public final WA and(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
         final Object operand;
         operand = function.apply(keyName);
         if (operand == null) {
@@ -238,7 +308,8 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T> WA and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
+    public final <T> WA and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
         if (first == null || second == null) {
             throw CriteriaContextStack.nullPointer(this.context);
         }
@@ -246,7 +317,8 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T> WA and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
+    public final <T> WA and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
         final T first, second;
         if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
             throw CriteriaContextStack.nullPointer(this.context);
@@ -255,7 +327,9 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final WA and(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
+    public final WA and(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
+            , String firstKey, String secondKey) {
         final Object first, second;
         if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
             throw CriteriaContextStack.nullPointer(this.context);
@@ -264,10 +338,25 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
+    public final WA and(TePredicate<TeExpression<Expression, String, Integer>, String, Integer> expOperator
+            , TeExpression<Expression, String, Integer> namedOperator, @Nullable String paramName, int size) {
+        if (paramName == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(namedOperator, paramName, size));
+    }
+
+    @Override
+    public final WA and(BiFunction<TeExpression<DataField, String, Integer>, Integer, IPredicate> expOperator
+            , TeExpression<DataField, String, Integer> namedOperator, int size) {
+        return this.and(expOperator.apply(namedOperator, size));
+    }
+
+    @Override
     public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1
             , BiFunction<Expression, T, Expression> operator, @Nullable T operand1
-            , BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number operator2) {
-        if (operand1 == null || operator2 == null) {
+            , BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number numberOperand) {
+        if (operand1 == null || numberOperand == null) {
             throw CriteriaContextStack.nullPointer(this.context);
         }
         final Expression expression;
@@ -275,7 +364,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         if (expression == null) {
             throw CriteriaContextStack.nullPointer(this.context);
         }
-        return this.and(expOperator2.apply(expression, SQLs.literal(operator2)));
+        return this.and(expOperator2.apply(expression, SQLs.literal(numberOperand)));
     }
 
     @Override
@@ -320,7 +409,8 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
         if (operand != null) {
             this.and(expOperator.apply(operator, operand));
         }
@@ -328,7 +418,8 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
         final T operand;
         operand = supplier.get();
         if (operand != null) {
@@ -338,7 +429,8 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final WA ifAnd(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+    public final WA ifAnd(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
         final Object operand;
         operand = function.apply(keyName);
         if (operand != null) {
@@ -348,7 +440,8 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T> WA ifAnd(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
+    public final <T> WA ifAnd(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
         if (first != null && second != null) {
             this.and(expOperator.apply(operator, first, second));
         }
@@ -356,7 +449,8 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T> WA ifAnd(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
+    public final <T> WA ifAnd(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
         final T first, second;
         if ((first = firstSupplier.get()) != null && (second = secondSupplier.get()) != null) {
             this.and(expOperator.apply(operator, first, second));
@@ -365,7 +459,9 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final WA ifAnd(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
+    public final WA ifAnd(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
+            , String secondKey) {
         final Object first, second;
         if ((first = function.apply(firstKey)) != null && (second = function.apply(secondKey)) != null) {
             this.and(expOperator.apply(operator, first, second));
@@ -374,14 +470,35 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number operator2) {
-        if (operand1 != null || operator2 != null) {
+    public final WA ifAnd(TePredicate<TeExpression<Expression, String, Integer>, String, Integer> expOperator
+            , TeExpression<Expression, String, Integer> namedOperator, @Nullable String paramName
+            , @Nullable Integer size) {
+        if (paramName != null && size != null) {
+            this.and(expOperator.apply(namedOperator, paramName, size));
+        }
+        return (WA) this;
+    }
+
+    @Override
+    public final WA ifAnd(BiFunction<TeExpression<DataField, String, Integer>, Integer, IPredicate> expOperator
+            , TeExpression<DataField, String, Integer> namedOperator, @Nullable Integer size) {
+        if (size != null) {
+            this.and(expOperator.apply(namedOperator, size));
+        }
+        return (WA) this;
+    }
+
+    @Override
+    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1
+            , BiFunction<Expression, T, Expression> operator, @Nullable T operand1
+            , BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number numberOperand) {
+        if (operand1 != null && numberOperand != null) {
             final Expression expression;
             expression = expOperator1.apply(operator, operand1);
             if (expression == null) {
                 throw CriteriaContextStack.nullPointer(this.context);
             }
-            this.and(expOperator2.apply(expression, SQLs.literal(operator2)));
+            this.and(expOperator2.apply(expression, SQLs.literal(numberOperand)));
         }
         return (WA) this;
     }
@@ -409,14 +526,6 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         this.predicateList = null;
     }
 
-
-    private void addPredicate(final IPredicate predicate) {
-        final List<_Predicate> predicateList = this.predicateList;
-        if (!(predicateList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
-        }
-        predicateList.add((OperationPredicate) predicate);
-    }
 
 
 }

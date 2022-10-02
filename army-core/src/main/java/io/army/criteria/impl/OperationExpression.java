@@ -243,6 +243,11 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
+    public final IPredicate in(SubQuery subQuery) {
+        return SubQueryPredicate.inOperator(this, DualOperator.IN, subQuery);
+    }
+
+    @Override
     public final <T, O extends Collection<T>> IPredicate in(BiFunction<Expression, O, Expression> operator, O operand) {
         return DualPredicate.create(this, DualOperator.IN, operator.apply(this, operand));
     }
@@ -259,6 +264,11 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
+    public final IPredicate notIn(SubQuery subQuery) {
+        return SubQueryPredicate.inOperator(this, DualOperator.NOT_IN, subQuery);
+    }
+
+    @Override
     public final <T, O extends Collection<T>> IPredicate notIn(BiFunction<Expression, O, Expression> operator, O operand) {
         return DualPredicate.create(this, DualOperator.NOT_IN, operator.apply(this, operand));
     }
@@ -267,7 +277,6 @@ abstract class OperationExpression implements ArmyExpression {
     public final IPredicate notIn(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size) {
         return DualPredicate.create(this, DualOperator.NOT_IN, namedOperator.apply(this, paramName, size));
     }
-
 
     @Override
     public final IPredicate like(Expression operand) {

@@ -269,38 +269,70 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator, BiFunction<DataField, String, Expression> namedOperator) {
+    public final WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator
+            , BiFunction<DataField, String, Expression> namedOperator) {
         return this.and(fieldOperator.apply(namedOperator));
     }
 
     @Override
-    public final <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand) {
-        return this.and(expOperator, operator, operand);
+    public final <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> valueOperator, @Nullable T operand) {
+        if (operand == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(valueOperator, operand));
     }
 
     @Override
-    public final <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return this.and(expOperator, operator, supplier);
+    public final <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> supplier) {
+        final T operand;
+        operand = supplier.get();
+        if (operand == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(valueOperator, operand));
     }
 
     @Override
-    public final WA where(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return this.and(expOperator, operator, function, keyName);
+    public final WA where(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator
+            , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        final Object operand;
+        operand = function.apply(keyName);
+        if (operand == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(valueOperator, operand));
     }
 
     @Override
-    public final <T> WA where(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, T first, T second) {
-        return this.and(expOperator, operator, first, second);
+    public final <T> WA where(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
+        if (first == null || second == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(operator, first, second));
     }
 
     @Override
-    public final <T> WA where(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
-        return this.and(expOperator, operator, firstSupplier, secondSupplier);
+    public final <T> WA where(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
+        final T first, second;
+        if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(operator, first, second));
     }
 
     @Override
-    public final WA where(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
-        return this.and(expOperator, operator, function, firstKey, secondKey);
+    public final WA where(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
+            , String secondKey) {
+        final Object first, second;
+        if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
+            throw CriteriaContextStack.nullPointer(this.context);
+        }
+        return this.and(expOperator.apply(operator, first, second));
     }
 
     @Override
@@ -316,41 +348,51 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     @Override
     public final <E> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
-        return this.and(expOperator.apply(supplier.get()));
+        return this.ifAnd(expOperator, supplier);
     }
 
     @Override
     public final <E> WA whereIf(Function<E, IPredicate> expOperator, Function<C, E> function) {
-        return this.and(expOperator.apply(function.apply(this.criteria)));
+        return this.ifAnd(expOperator, function);
     }
 
     @Override
-    public final <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
         return this.ifAnd(expOperator, operator, operand);
     }
 
     @Override
-    public final <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+    public final <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
         return this.ifAnd(expOperator, operator, supplier);
     }
 
     @Override
-    public final WA whereIf(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+    public final WA whereIf(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
+            , String keyName) {
         return this.ifAnd(expOperator, operator, function, keyName);
     }
 
     @Override
-    public final <T> WA whereIf(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, T first, T second) {
+    public final <T> WA whereIf(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T first
+            , @Nullable T second) {
         return this.ifAnd(expOperator, operator, first, second);
     }
 
     @Override
-    public final <T> WA whereIf(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
+    public final <T> WA whereIf(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier
+            , Supplier<T> secondSupplier) {
         return this.ifAnd(expOperator, operator, firstSupplier, secondSupplier);
     }
 
     @Override
-    public final WA whereIf(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
+    public final WA whereIf(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
+            , String secondKey) {
         return this.ifAnd(expOperator, operator, function, firstKey, secondKey);
     }
 
@@ -409,12 +451,14 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final WA and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator, BiFunction<DataField, String, Expression> namedOperator) {
+    public final WA and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator
+            , BiFunction<DataField, String, Expression> namedOperator) {
         return this.and(fieldOperator.apply(namedOperator));
     }
 
     @Override
-    public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
         if (operand == null) {
             throw CriteriaContextStack.nullPointer(this.context);
         }
@@ -422,7 +466,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+    public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
         final T operand;
         operand = supplier.get();
         if (operand == null) {
@@ -432,7 +477,9 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final WA and(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+    public final WA and(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
+            , String keyName) {
         final Object operand;
         operand = function.apply(keyName);
         if (operand == null) {
@@ -442,7 +489,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final <T> WA and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
+    public final <T> WA and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
         if (first == null || second == null) {
             throw CriteriaContextStack.nullPointer(this.context);
         }
@@ -450,7 +498,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final <T> WA and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
+    public final <T> WA and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
         final T first, second;
         if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
             throw CriteriaContextStack.nullPointer(this.context);
@@ -459,7 +508,9 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final WA and(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
+    public final WA and(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
+            , String secondKey) {
         final Object first, second;
         if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
             throw CriteriaContextStack.nullPointer(this.context);
@@ -510,7 +561,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
 
     @Override
-    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
         if (operand != null) {
             this.and(expOperator.apply(operator, operand));
         }
@@ -518,7 +570,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
         final T operand;
         operand = supplier.get();
         if (operand != null) {
@@ -528,7 +581,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final WA ifAnd(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+    public final WA ifAnd(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
         final Object operand;
         operand = function.apply(keyName);
         if (operand != null) {
@@ -538,7 +592,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final <T> WA ifAnd(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
+    public final <T> WA ifAnd(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
         if (first != null && second != null) {
             this.and(expOperator.apply(operator, first, second));
         }
@@ -546,7 +601,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final <T> WA ifAnd(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
+    public final <T> WA ifAnd(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
         final T first, second;
         if ((first = firstSupplier.get()) != null && (second = secondSupplier.get()) != null) {
             this.and(expOperator.apply(operator, first, second));
@@ -555,7 +611,9 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final WA ifAnd(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
+    public final WA ifAnd(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
+            , String secondKey) {
         final Object first, second;
         if ((first = function.apply(firstKey)) != null && (second = function.apply(secondKey)) != null) {
             this.and(expOperator.apply(operator, first, second));

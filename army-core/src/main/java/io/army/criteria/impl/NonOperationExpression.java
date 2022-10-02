@@ -238,7 +238,17 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
+    public final IPredicate in(SubQuery subQuery) {
+        throw unsupportedOperation();
+    }
+
+    @Override
     public final <T, O extends Collection<T>> IPredicate in(BiFunction<Expression, O, Expression> operator, O operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate in(TeExpression<Expression, Function<String, ?>, String> valuesOperator, Function<String, ?> function, String keyName) {
         throw unsupportedOperation();
     }
 
@@ -253,12 +263,22 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
+    public final IPredicate notIn(SubQuery subQuery) {
+        throw unsupportedOperation();
+    }
+
+    @Override
     public final <T, O extends Collection<T>> IPredicate notIn(BiFunction<Expression, O, Expression> operator, O operand) {
         throw unsupportedOperation();
     }
 
     @Override
     public final IPredicate notIn(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate notIn(TeExpression<Expression, Function<String, ?>, String> valuesOperator, Function<String, ?> function, String keyName) {
         throw unsupportedOperation();
     }
 

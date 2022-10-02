@@ -111,7 +111,7 @@ public class MySQLCriteriaUnitTests {
                 .update(ChinaRegion_.T, "t")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
                 .setList(fieldList, SQLs::namedNullableParam)
-                .where(ChinaRegion_.id.equalNamed())
+                .where(ChinaRegion_.id::equal, SQLs::literal, paramMap::get, ChinaRegion_.ID)
                 .limit(10)
                 .paramList(paramList)
                 .asUpdate();
@@ -313,7 +313,7 @@ public class MySQLCriteriaUnitTests {
                     .leftParen("p1")
                     .rightParen()
                     .as("r").on(ChinaCity_.id::equal, ChinaRegion_.id)
-                    .where(ChinaRegion_.id.equalNamed())
+                    .where(ChinaRegion_.id::equal, SQLs::namedParam)
                     .and(ChinaRegion_.createTime::between, SQLs::literal, map::get, "startTime", "endTIme")
                     .and(ChinaRegion_.updateTime::between, SQLs::literal, map::get, "startTime", "endTIme")
                     .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")

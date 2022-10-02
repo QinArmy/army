@@ -108,16 +108,18 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SqlOpera
 
     IPredicate in(Expression operand);
 
-    <T, O extends Collection<T>> IPredicate in(BiFunction<Expression, O, Expression> operator, O operand);
+    IPredicate in(SubQuery subQuery);
 
+    <T, O extends Collection<T>> IPredicate in(BiFunction<Expression, O, Expression> operator, O operand);
 
     IPredicate in(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size);
 
 
     IPredicate notIn(Expression operand);
 
-    <T, O extends Collection<T>> IPredicate notIn(BiFunction<Expression, O, Expression> operator, O operand);
+    IPredicate notIn(SubQuery subQuery);
 
+    <T, O extends Collection<T>> IPredicate notIn(BiFunction<Expression, O, Expression> operator, O operand);
 
     IPredicate notIn(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size);
 
