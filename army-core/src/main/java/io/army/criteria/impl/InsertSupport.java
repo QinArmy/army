@@ -293,8 +293,8 @@ abstract class InsertSupport {
 
         private List<_Cte> cteList;
 
-        ChildDynamicWithClause(ValueSyntaxOptions options) {
-            this.context = options.getContext();
+        ChildDynamicWithClause(ValueSyntaxOptions options, CriteriaContext childContext) {
+            this.context = childContext;
             this.migration = options.isMigration();
             this.nullHandleMode = options.nullHandle();
             this.literalMode = options.literalMode();
@@ -944,7 +944,7 @@ abstract class InsertSupport {
 
 
         /**
-         * @see #domainListForSingle()
+         * @see #domainListForNonParent()
          * @see #domainListForChild(ComplexInsertValuesClause)
          */
         @Override
@@ -1081,8 +1081,8 @@ abstract class InsertSupport {
         /**
          * @return a unmodified list,new instance each time.
          */
-        final List<?> domainListForSingle() {
-            assert this.insertTable instanceof SingleTableMeta;
+        final List<?> domainListForNonParent() {
+            assert !(this.insertTable instanceof ParentTableMeta);
             final List<?> domainList = this.domainList;
             if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
@@ -1091,15 +1091,15 @@ abstract class InsertSupport {
         }
 
         /**
-         * @return a unmodified list,new instance each time.
+         * @return a original list
          */
-        final List<?> domainListForWithInsert() {
-            assert this instanceof _Insert._SupportWithClauseInsert;
+        final List<?> originalDomainList() {
+            assert !(this.insertTable instanceof SimpleTableMeta);
             final List<?> domainList = this.domainList;
             if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
-            return _CollectionUtils.asUnmodifiableList(domainList);
+            return domainList;
         }
 
         /**
@@ -2348,7 +2348,7 @@ abstract class InsertSupport {
             , Statement.StatementMockSpec
             , Statement
             , CriteriaContextSpec
-            , DmlStatement._DmlInsertSpec<I>, DqlStatement._DqlInsertSpec<Q> {
+            , DmlInsert._DmlInsertSpec<I>, DqlInsert._DqlInsertSpec<Q> {
 
         final CriteriaContext context;
 
@@ -2951,13 +2951,10 @@ abstract class InsertSupport {
         final List<?> childDomainList, parentDomainList;
         childDomainList = childStmt.domainList();
         parentDomainList = childStmt.parentStmt().domainList();
-        if (childDomainList != parentDomainList
-                && (childDomainList.size() != 1
-                || parentDomainList.size() != 1
-                || childDomainList.get(0) != parentDomainList.get(0))) {
-            String m = String.format("%s insert domain list and parent insert statement domain list not match"
-                    , childStmt.table());
-            throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) childStmt).getContext(), m);
+        if (childDomainList != parentDomainList) {
+            final CriteriaContext context;
+            context = ((CriteriaContextSpec) childStmt).getContext();
+            throw CriteriaUtils.childParentDomainListNotMatch(context, (ChildTableMeta<?>) childStmt.table());
         }
     }
 

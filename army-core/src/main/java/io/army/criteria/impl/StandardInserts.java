@@ -227,7 +227,7 @@ abstract class StandardInserts extends InsertSupport {
             final Insert._InsertSpec spec;
             switch (mode) {
                 case DOMAIN:
-                    spec = new DomainsInsertStatement(this, this.domainListForSingle());
+                    spec = new DomainsInsertStatement(this, this.domainListForNonParent());
                     break;
                 case VALUES:
                     spec = new ValuesInsertStatement(this);
@@ -302,7 +302,7 @@ abstract class StandardInserts extends InsertSupport {
 
         private DomainsInsertStatement(NonParentComplexValuesClause<?, ?> clause) {
             super(clause);
-            this.domainList = clause.domainListForSingle();
+            this.domainList = clause.domainListForNonParent();
         }
 
         private DomainsInsertStatement(ParentComplexValuesClause<?, ?, ?> parentClause, NonParentComplexValuesClause<?, ?> clause) {

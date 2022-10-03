@@ -15,12 +15,6 @@ package io.army.criteria;
 public interface DmlStatement extends PrimaryStatement {
 
 
-    interface _DmlInsertSpec<I extends DmlInsert> {
-
-        I asInsert();
-
-    }
-
     /**
      * This is base interface of below:
      * <ul>

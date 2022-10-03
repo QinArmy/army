@@ -429,6 +429,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("Standard api don't Hint");
     }
 
+    public static CriteriaException returningListEmpty() {
+        return new CriteriaException("returning dml no returning clause");
+    }
+
 
     public static ArmyException notServerVersion(ServerMeta meta) {
         String m = String.format("Currently,army don't support server[%s] yet.", meta);

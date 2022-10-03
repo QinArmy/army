@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
+import io.army.meta.ChildTableMeta;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 
@@ -522,6 +523,12 @@ abstract class CriteriaUtils {
 
     static CriteriaException cteListIsEmpty(CriteriaContext context) {
         return CriteriaContextStack.criteriaError(context, "WITH clause couldn't be empty.");
+    }
+
+    static CriteriaException childParentDomainListNotMatch(CriteriaContext context, ChildTableMeta<?> child) {
+        String m = String.format("%s insert domain list and parent insert statement domain list not match"
+                , child);
+        return CriteriaContextStack.criteriaError(context, m);
     }
 
 

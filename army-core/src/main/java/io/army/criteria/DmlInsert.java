@@ -14,4 +14,9 @@ package io.army.criteria;
 public interface DmlInsert {
 
 
+    interface _DmlInsertSpec<I extends DmlInsert> {
+
+        I asInsert();
+
+    }
 }
