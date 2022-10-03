@@ -11,7 +11,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-public interface StandardQuery extends Query, StandardStatement {
+public interface StandardQuery extends Query {
 
 
     /**
@@ -32,7 +32,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _UnionOrderBySpec<C, Q extends Query> extends _OrderByClause<C, _UnionLimitSpec<C, Q>>
+    interface _UnionOrderBySpec<C, Q extends Query> extends Statement._OrderByClause<C, _UnionLimitSpec<C, Q>>
             , _UnionLimitSpec<C, Q> {
 
     }
@@ -80,7 +80,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _UnionSpec<C, Q extends Query> extends _QuerySpec<Q>
-            , _QueryUnionClause<C, _UnionOrderBySpec<C, Q>, _StandardSelectClause<C, Q>> {
+            , _QueryUnionClause<C, _UnionOrderBySpec<C, Q>, _SelectSpec<C, Q>> {
 
     }
 
@@ -160,7 +160,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _OrderBySpec<C, Q extends Query> extends _LimitSpec<C, Q>
-            , _OrderByClause<C, _LimitSpec<C, Q>> {
+            , Statement._OrderByClause<C, _LimitSpec<C, Q>> {
 
     }
 
@@ -231,7 +231,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _WhereAndSpec<C, Q extends Query>
-            extends _WhereAndClause<C, _WhereAndSpec<C, Q>>, _GroupBySpec<C, Q> {
+            extends Statement._WhereAndClause<C, _WhereAndSpec<C, Q>>, _GroupBySpec<C, Q> {
 
 
     }
@@ -256,7 +256,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _WhereSpec<C, Q extends Query>
-            extends _QueryWhereClause<C, _GroupBySpec<C, Q>, _WhereAndSpec<C, Q>>, _GroupBySpec<C, Q> {
+            extends Statement._QueryWhereClause<C, _GroupBySpec<C, Q>, _WhereAndSpec<C, Q>>, _GroupBySpec<C, Q> {
 
     }
 
@@ -286,7 +286,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _JoinSpec<C, Q extends Query>
-            extends _StandardJoinClause<C, _JoinSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>>, _WhereSpec<C, Q> {
+            extends _StandardJoinClause<C, _JoinSpec<C, Q>, Statement._OnClause<C, _JoinSpec<C, Q>>>, _WhereSpec<C, Q> {
 
     }
 
@@ -309,7 +309,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _StandardFromSpec<C, Q extends Query> extends _FromClause<C, _JoinSpec<C, Q>, _JoinSpec<C, Q>>
+    interface _StandardFromSpec<C, Q extends Query> extends Statement._FromClause<C, _JoinSpec<C, Q>, _JoinSpec<C, Q>>
             , _UnionSpec<C, Q> {
 
     }
@@ -329,7 +329,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _StandardSelectClause<C, Q extends Query>
+    interface _SelectSpec<C, Q extends Query>
             extends Query.SelectClause<C, SQLs.Modifier, _StandardFromSpec<C, Q>> {
 
     }

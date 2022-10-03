@@ -37,6 +37,16 @@ abstract class InsertSupport {
         throw new UnsupportedOperationException();
     }
 
+    static void assertDomainList(List<?> parentOriginalDomainList, ComplexInsertValuesClause<?, ?, ?, ?, ?> childClause) {
+        final List<?> childOriginalList;
+        childOriginalList = childClause.originalDomainList();
+        if (childOriginalList != parentOriginalDomainList
+                && childOriginalList.get(0) != parentOriginalDomainList.get(0)) {
+            final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childClause.insertTable;
+            throw CriteriaUtils.childParentDomainListNotMatch(childClause.context, childTable);
+        }
+    }
+
 
     interface InsertOptions extends CriteriaContextSpec, _Insert._InsertOption {
 
@@ -424,6 +434,46 @@ abstract class InsertSupport {
 
 
     }//DynamicWithClause
+
+    static abstract class SimpleValuesSyntaxOptions implements ValueSyntaxOptions {
+
+        final CriteriaContext context;
+
+        private final NullHandleMode nullHandleMode;
+
+        private final boolean migration;
+
+        private final LiteralMode literalMode;
+
+        SimpleValuesSyntaxOptions(ValueSyntaxOptions options, CriteriaContext context) {
+            this.context = context;
+            this.nullHandleMode = options.nullHandle();
+            this.literalMode = options.literalMode();
+            this.migration = options.isMigration();
+        }
+
+        @Override
+        public final CriteriaContext getContext() {
+            return this.context;
+        }
+
+        @Override
+        public final NullHandleMode nullHandle() {
+            return this.nullHandleMode;
+        }
+
+        @Override
+        public final boolean isMigration() {
+            return this.migration;
+        }
+
+        @Override
+        public final LiteralMode literalMode() {
+            return this.literalMode;
+        }
+
+
+    }//SimpleValuesSyntaxOptions
 
 
     static abstract class ColumnsClause<C, T, RR>
@@ -2531,7 +2581,8 @@ abstract class InsertSupport {
 
 
     static abstract class ValueSyntaxInsertStatement<I extends DmlInsert>
-            extends AbstractValueSyntaxStatement<I, DqlInsert> {
+            extends AbstractValueSyntaxStatement<I, DqlInsert>
+            implements ValueSyntaxOptions {
 
         ValueSyntaxInsertStatement(_ValuesSyntaxInsert clause) {
             super(clause);
@@ -2543,7 +2594,7 @@ abstract class InsertSupport {
 
 
     private static abstract class AbstractAssignmentInsertStatement<I extends DmlInsert, Q extends DqlInsert>
-            extends AbstractInsertStatement<I, Q> implements _Insert._AssignmentInsert {
+            extends AbstractInsertStatement<I, Q> implements _Insert._AssignmentInsert, ValueSyntaxOptions {
 
         private final boolean migration;
 
@@ -2630,7 +2681,8 @@ abstract class InsertSupport {
 
 
     static abstract class QuerySyntaxInsertStatement<I extends DmlInsert>
-            extends AbstractQuerySyntaxInsertStatement<I, DqlInsert> {
+            extends AbstractQuerySyntaxInsertStatement<I, DqlInsert>
+            implements ValueSyntaxOptions {
 
 
         QuerySyntaxInsertStatement(_QueryInsert clause) {

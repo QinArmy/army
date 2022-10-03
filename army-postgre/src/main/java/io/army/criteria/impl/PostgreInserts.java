@@ -1409,15 +1409,6 @@ abstract class PostgreInserts extends InsertSupport {
 
     }//PrimaryChildDomainInsertStatement
 
-    private static void assertDomainList(List<?> parentOriginalDomainList, PostgreComplexInsertValuesClause<?, ?, ?, ?> childClause) {
-        final List<?> childOriginalList;
-        childOriginalList = childClause.originalDomainList();
-        if (childOriginalList != parentOriginalDomainList
-                && childOriginalList.get(0) != parentOriginalDomainList.get(0)) {
-            final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childClause.insertTable;
-            throw CriteriaUtils.childParentDomainListNotMatch(childClause.context, childTable);
-        }
-    }
 
     private static final class PrimaryParentDomainInsertStatement<C, P>
             extends DomainInsertStatement<PostgreInsert._ParentInsert<C, P>, ReturningInsert>

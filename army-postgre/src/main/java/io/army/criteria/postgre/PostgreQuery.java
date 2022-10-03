@@ -5,10 +5,9 @@ import io.army.criteria.Query;
 
 public interface PostgreQuery extends Query, DialectStatement {
 
-    interface _SelectSpec<C> {
+    interface _SelectSpec<C, Q extends Query> {
 
     }
-
 
     interface _PostgreDynamicWithSpec<C, SR>
             extends DialectStatement._DynamicWithCteClause<C, PostgreCteBuilder, SR> {

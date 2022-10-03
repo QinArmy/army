@@ -14,7 +14,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         StandardQuery._UnionOrderBySpec<C, Q>, //UR
         StandardQuery._UnionLimitSpec<C, Q>,//OR
         StandardQuery._UnionSpec<C, Q>,//LR
-        StandardQuery._StandardSelectClause<C, Q>>// SP
+        StandardQuery._SelectSpec<C, Q>>// SP
         implements StandardQuery._UnionOrderBySpec<C, Q>, StandardQuery {
 
     static <C, Q extends Query> _UnionOrderBySpec<C, Q> bracketQuery(final RowSet query) {
@@ -148,7 +148,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
     }
 
     @Override
-    final _StandardSelectClause<C, Q> asUnionAndRowSet(UnionType unionType) {
+    final _SelectSpec<C, Q> asUnionAndRowSet(UnionType unionType) {
         return StandardSimpleQuery.unionAndQuery(this.asQuery(), unionType);
     }
 

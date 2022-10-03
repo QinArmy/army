@@ -144,7 +144,7 @@ public interface Query extends RowSet {
         SP unionDistinct();
     }
 
-    interface _LimitClause<C, LR> extends _RowCountLimitClause<C, LR> {
+    interface _LimitClause<C, LR> extends Statement._RowCountLimitClause<C, LR> {
 
         LR limit(long offset, long rowCount);
 

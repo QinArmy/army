@@ -188,32 +188,32 @@ public abstract class SQLs extends StandardSyntax {
         return StandardDelete.batch(criteria);
     }
 
-    public static StandardQuery._StandardSelectClause<Void, Select> query() {
+    public static StandardQuery._SelectSpec<Void, Select> query() {
         return StandardSimpleQuery.query(null);
     }
 
 
-    public static <C> StandardQuery._StandardSelectClause<C, Select> query(C criteria) {
+    public static <C> StandardQuery._SelectSpec<C, Select> query(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.query(criteria);
     }
 
-    public static StandardQuery._StandardSelectClause<Void, SubQuery> subQuery() {
+    public static StandardQuery._SelectSpec<Void, SubQuery> subQuery() {
         return StandardSimpleQuery.subQuery(null);
     }
 
-    public static <C> StandardQuery._StandardSelectClause<C, SubQuery> subQuery(C criteria) {
+    public static <C> StandardQuery._SelectSpec<C, SubQuery> subQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.subQuery(criteria);
     }
 
 
-    public static StandardQuery._StandardSelectClause<Void, ScalarExpression> scalarSubQuery() {
+    public static StandardQuery._SelectSpec<Void, ScalarExpression> scalarSubQuery() {
         return StandardSimpleQuery.scalarSubQuery(null);
     }
 
 
-    public static <C> StandardQuery._StandardSelectClause<C, ScalarExpression> scalarSubQuery(C criteria) {
+    public static <C> StandardQuery._SelectSpec<C, ScalarExpression> scalarSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.scalarSubQuery(criteria);
     }

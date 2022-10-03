@@ -40,36 +40,40 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         StandardQuery._LimitSpec<C, Q>, // OR
         StandardQuery._LockSpec<C, Q>, // LR
         StandardQuery._UnionOrderBySpec<C, Q>, // UR
-        StandardQuery._StandardSelectClause<C, Q>> // SP
+        StandardQuery._SelectSpec<C, Q>> // SP
 
-        implements StandardQuery, StandardQuery._StandardSelectClause<C, Q>, StandardQuery._StandardFromSpec<C, Q>
+        implements StandardQuery, StandardQuery._SelectSpec<C, Q>, StandardQuery._StandardFromSpec<C, Q>
         , StandardQuery._JoinSpec<C, Q>, StandardQuery._WhereAndSpec<C, Q>, StandardQuery._HavingSpec<C, Q>
         , _StandardQuery {
 
 
-    static <C> _StandardSelectClause<C, Select> query(@Nullable C criteria) {
+    static <C> _SelectSpec<C, Select> query(@Nullable C criteria) {
         return new SimpleSelect<>(CriteriaContexts.primaryQueryContext(criteria));
     }
 
-    static <C> _StandardSelectClause<C, SubQuery> subQuery(@Nullable C criteria) {
+    static <C> _SelectSpec<C, SubQuery> subQuery(@Nullable C criteria) {
         return new SimpleSubQuery<>(CriteriaContexts.subQueryContext(criteria));
     }
 
-    static <C> _StandardSelectClause<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
+    static <C> _SelectSpec<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
         return new SimpleScalarSubQuery<>(CriteriaContexts.subQueryContext(criteria));
     }
+    
 
-    static <C, CT> StandardQuery._StandardSelectClause<C, StandardInsert._ParentInsertQuery<CT>> parentInsertQuery(@Nullable C criteria, Function<SubQuery, StandardInsert._ChildPartSpec<CT>> function) {
-        return new ParentInsertSubQuery<>(CriteriaContexts.subQueryContext(criteria), function);
-    }
-
-    static <C> StandardQuery._StandardSelectClause<C, StandardInsert._InsertQuery> insertQuery(@Nullable C criteria, Function<SubQuery, Insert._InsertSpec> function) {
+    @Deprecated
+    static <C> _SelectSpec<C, StandardInsert._InsertQuery> insertQuery(@Nullable C criteria, Function<SubQuery, Insert._InsertSpec> function) {
         return new InsertSubQuery<>(CriteriaContexts.subQueryContext(criteria), function);
     }
 
+    static <C, Q extends Query> _SelectSpec<C, Q> customSubQuery(@Nullable C criteria, CriteriaContext outerContext
+            , Function<SubQuery, Q> function) {
+        //TODO
+        throw new UnsupportedOperationException();
+    }
+
     @SuppressWarnings("unchecked")
-    static <C, Q extends Query> _StandardSelectClause<C, Q> unionAndQuery(Q query, UnionType unionType) {
-        final _StandardSelectClause<C, ?> spec;
+    static <C, Q extends Query> _SelectSpec<C, Q> unionAndQuery(Q query, UnionType unionType) {
+        final _SelectSpec<C, ?> spec;
         final CriteriaContext criteriaContext;
         if (query instanceof Select) {
             criteriaContext = CriteriaContexts.primaryQueryContextFrom(query);
@@ -83,7 +87,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         } else {
             throw _Exceptions.unknownRowSetType(query);
         }
-        return (_StandardSelectClause<C, Q>) spec;
+        return (_SelectSpec<C, Q>) spec;
     }
 
 
@@ -183,7 +187,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     @Override
-    final _StandardSelectClause<C, Q> asUnionAndRowSet(final UnionType unionType) {
+    final _SelectSpec<C, Q> asUnionAndRowSet(final UnionType unionType) {
         return StandardSimpleQuery.unionAndQuery(this.asQuery(), unionType);
     }
 
