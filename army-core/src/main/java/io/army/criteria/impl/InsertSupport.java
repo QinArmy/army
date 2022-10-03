@@ -2332,6 +2332,14 @@ abstract class InsertSupport {
             return predicateList;
         }
 
+        final List<_Predicate> predicateList() {
+            final List<_Predicate> predicateList = this.predicateList;
+            if (predicateList == null || predicateList instanceof ArrayList) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return predicateList;
+        }
+
 
     }//MinWhereClause
 

@@ -82,7 +82,7 @@ abstract class StandardInserts extends InsertSupport {
 
 
     private static final class NonParentComplexValuesClause<C, T>
-            extends InsertSupport.ComplexInsertValuesClause<
+            extends ComplexInsertValuesClause<
             C,
             T,
             StandardInsert._ComplexColumnDefaultSpec<C, T>,
@@ -193,7 +193,7 @@ abstract class StandardInserts extends InsertSupport {
 
 
     private static abstract class ParentComplexValuesClause<C, P, CT>
-            extends InsertSupport.ComplexInsertValuesClause<
+            extends ComplexInsertValuesClause<
             C,
             P,
             StandardInsert._ParentComplexColumnDefaultSpec<C, P, CT>,

@@ -56,75 +56,6 @@ abstract class PostgreInserts extends InsertSupport {
     }
 
 
-    @SuppressWarnings("unchecked")
-    private static abstract class ConflictTargetItem<T, CR, PR>
-            implements PostgreInsert._ConflictCollateClause<CR>
-            , PostgreInsert._ConflictOpClassClause<PR>
-            , CriteriaContextSpec
-            , _ConflictTargetItem {
-
-        private final IndexFieldMeta<T> indexColumn;
-
-        private String collationName;
-
-        private boolean opclass;
-
-        ConflictTargetItem(IndexFieldMeta<T> indexColumn) {
-            this.indexColumn = indexColumn;
-        }
-
-        @Override
-        public final void appendSql(final _SqlContext context) {
-            context.appendField(this.indexColumn);
-
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
-
-            final String collationName = this.collationName;
-            if (collationName != null) {
-                sqlBuilder.append(" COLLATE ");
-                context.parser().identifier(collationName, sqlBuilder);
-            }
-            if (this.opclass) {
-                sqlBuilder.append(" opclass");
-            }
-        }
-
-        @Override
-        public final CR collation(final @Nullable String collationName) {
-            if (collationName == null) {
-                throw CriteriaContextStack.nullPointer(this.getContext());
-            }
-            this.collationName = collationName;
-            return (CR) this;
-        }
-
-        @Override
-        public final CR collation(Supplier<String> supplier) {
-            this.collationName = supplier.get();
-            return this.collation(supplier.get());
-        }
-
-        @Override
-        public final CR ifCollation(Supplier<String> supplier) {
-            this.collationName = supplier.get();
-            return (CR) this;
-        }
-
-        @Override
-        public final PR opClass() {
-            this.opclass = true;
-            return (PR) this;
-        }
-
-        @Override
-        public final PR ifOpClass(BooleanSupplier supplier) {
-            this.opclass = supplier.getAsBoolean();
-            return (PR) this;
-        }
-
-    }//ConflictTargetItem
-
     /**
      * <p>
      * This interface is base interface of below:
@@ -150,10 +81,10 @@ abstract class PostgreInserts extends InsertSupport {
     }
 
 
-    private static final class NonParentConflictAction<C, T, I extends DmlInsert, Q extends DqlInsert>
+    private static final class ConflictActionClause1<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends InsertSupport.MinWhereClause<
             C,
-            PostgreInsert._NonParentConflictActionClause<C, T, I, Q>,
+            PostgreInsert._ConflictActionClause<C, T, I, Q>,
             PostgreInsert._ConflictTargetWhereAndSpec<C, T, I, Q>
             > implements PostgreInsert._ConflictTargetWhereSpec<C, T, I, Q>
             , PostgreInsert._ConflictTargetWhereAndSpec<C, T, I, Q> {
@@ -161,7 +92,7 @@ abstract class PostgreInserts extends InsertSupport {
         private final NonParentTargetWhereClauseSpec<C, T, I, Q> clause;
 
 
-        private NonParentConflictAction(NonParentTargetWhereClauseSpec<C, T, I, Q> clause) {
+        private ConflictActionClause1(NonParentTargetWhereClauseSpec<C, T, I, Q> clause) {
             super(clause.getContext());
             this.clause = clause;
         }
@@ -177,389 +108,326 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
 
-    }//NonParentConflictAction
+    }//ConflictActionClause
 
 
-    private static final class NonParentConflictTargetItem<C, T, I extends DmlInsert, Q extends DqlInsert>
-            extends ConflictTargetItem<
-            T,
-            PostgreInsert._ConflictOpClassSpec<C, T, I, Q>,
-            PostgreInsert._ConflictTargetCommaSpec<C, T, I, Q>>
-            implements PostgreInsert._ConflictCollateSpec<C, T, I, Q> {
+    private static final class ConflictTargetItem<C, T, I extends DmlInsert, Q extends DqlInsert>
+            implements PostgreInsert._ConflictCollateSpec<C, T, I, Q>
+            , _ConflictTargetItem {
 
-        private final NonParentTargetWhereClauseSpec<C, T, I, Q> clause;
+        private final OnConflictClause<C, T, I, Q> clause;
 
-        private NonParentConflictTargetItem(NonParentTargetWhereClauseSpec<C, T, I, Q> clause, IndexFieldMeta<T> indexColumn) {
-            super(indexColumn);
+        private final IndexFieldMeta<T> indexColumn;
+
+        private String collationName;
+
+        private Boolean opclass;
+
+        private ConflictTargetItem(OnConflictClause<C, T, I, Q> clause, IndexFieldMeta<T> indexColumn) {
             this.clause = clause;
+            this.indexColumn = indexColumn;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.appendField(this.indexColumn);
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            final String collationName = this.collationName;
+            if (collationName != null) {
+                sqlBuilder.append(" COLLATE ");
+                context.parser().identifier(collationName, sqlBuilder);
+            }
+            final Boolean opclass = this.opclass;
+            if (opclass != null && opclass) {
+                sqlBuilder.append(" opclass");
+            }
+        }
+
+        @Override
+        public PostgreInsert._ConflictOpClassSpec<C, T, I, Q> collation(final @Nullable String collationName) {
+            if (collationName == null) {
+                throw CriteriaContextStack.nullPointer(this.clause.valuesClause.context);
+            } else if (this.collationName != null || this.opclass != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.clause.valuesClause.context);
+            }
+            this.collationName = collationName;
+            return this;
+        }
+
+        @Override
+        public PostgreInsert._ConflictOpClassSpec<C, T, I, Q> collation(Supplier<String> supplier) {
+            return this.collation(supplier.get());
+        }
+
+        @Override
+        public PostgreInsert._ConflictOpClassSpec<C, T, I, Q> ifCollation(Supplier<String> supplier) {
+            final String collation;
+            collation = supplier.get();
+            if (collation != null) {
+                this.collation(collationName);
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreInsert._ConflictTargetCommaSpec<C, T, I, Q> opClass() {
+            if (this.opclass != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.clause.valuesClause.context);
+            }
+            this.opclass = Boolean.TRUE;
+            return this;
+        }
+
+        @Override
+        public PostgreInsert._ConflictTargetCommaSpec<C, T, I, Q> ifOpClass(BooleanSupplier supplier) {
+            if (this.opclass != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.clause.valuesClause.context);
+            }
+            if (supplier.getAsBoolean()) {
+                this.opclass = Boolean.TRUE;
+            } else {
+                this.opclass = Boolean.FALSE;
+            }
+            return this;
         }
 
         @Override
         public PostgreInsert._ConflictCollateSpec<C, T, I, Q> comma(IndexFieldMeta<T> indexColumn) {
-            final NonParentConflictTargetItem<C, T, I, Q> item;
-            item = new NonParentConflictTargetItem<>(this.clause, indexColumn);
-            this.clause.addConflictTargetItem(item);
-            return item;
+            if (this.opclass == null) {
+                this.opclass = Boolean.FALSE;
+            }
+            return this.clause.leftParen(indexColumn); // create and add
         }
 
         @Override
         public PostgreInsert._ConflictTargetWhereSpec<C, T, I, Q> rightParen() {
-            return new NonParentConflictAction<>(this.clause);
-        }
-
-        @Override
-        public CriteriaContext getContext() {
-            return this.clause.getContext();
-        }
-
-
-    }//NonParentConflictTargetItem
-
-
-    private interface ParentTargetWhereClauseSpec<C, P> extends TargetWhereClauseSpec {
-
-        PostgreInsert._ParentReturningSpec<C, P> _doNothing(List<_Predicate> predicateList);
-
-
-        PostgreInsert._ParentDoUpdateSetClause<C, P> _doUpdate(List<_Predicate> predicateList);
-
-
-    }//ParentTargetWhereClauseSpec
-
-    private static final class ParentConflictAction<C, P> extends InsertSupport.MinWhereClause<
-            C,
-            PostgreInsert._ParentConflictActionClause<C, P>,
-            PostgreInsert._ParentConflictTargetWhereAndSpec<C, P>
-            > implements PostgreInsert._ParentConflictTargetWhereSpec<C, P> {
-
-        private final ParentTargetWhereClauseSpec<C, P> clause;
-
-        private ParentConflictAction(ParentTargetWhereClauseSpec<C, P> clause) {
-            super(clause.getContext());
-            this.clause = clause;
-        }
-
-        @Override
-        public PostgreInsert._ParentReturningSpec<C, P> doNothing() {
-            return this.clause._doNothing(this.endWhereClause());
-        }
-
-        @Override
-        public PostgreInsert._ParentDoUpdateSetClause<C, P> doUpdate() {
-            return this.clause._doUpdate(this.endWhereClause());
-        }
-
-
-    }//ParentConflictAction
-
-    private static final class ParentConflictTargetItem<C, P>
-            extends ConflictTargetItem<
-            P,
-            PostgreInsert._ParentConflictOpClassSpec<C, P>,
-            PostgreInsert._ParentConflictTargetCommaSpec<C, P>>
-            implements PostgreInsert._ParentConflictCollateSpec<C, P> {
-
-        private final ParentTargetWhereClauseSpec<C, P> clause;
-
-        private ParentConflictTargetItem(ParentTargetWhereClauseSpec<C, P> clause, IndexFieldMeta<P> indexColumn) {
-            super(indexColumn);
-            this.clause = clause;
-        }
-
-        @Override
-        public PostgreInsert._ParentConflictCollateSpec<C, P> comma(IndexFieldMeta<P> indexColumn) {
-            final ParentConflictTargetItem<C, P> item = new ParentConflictTargetItem<>(this.clause, indexColumn);
-            this.clause.addConflictTargetItem(item);
-            return item;
-        }
-
-        @Override
-        public PostgreInsert._ParentConflictTargetWhereSpec<C, P> rightParen() {
-            return new ParentConflictAction<>(this.clause);
-        }
-
-        @Override
-        public CriteriaContext getContext() {
-            return this.clause.getContext();
-        }
-
-
-    }//ParentConflictTargetItem
-
-
-    /**
-     * @see AbstractOnConflictClause
-     */
-    private interface PostgreInsertValuesClauseSpec<C, CT, I extends DmlInsert, Q extends DqlInsert>
-            extends CriteriaContextSpec {
-
-        PostgreInsert._ParentReturningClause<C, CT, I, Q> onConflictClauseEnd(_PostgreInsert._ConflictActionClauseResult result);
-
-    }
-
-
-    @SuppressWarnings("unchecked")
-    private static abstract class AbstractOnConflictClause<C, T, CT, I extends DmlInsert, Q extends DqlInsert, LR, OC, UR, SR, WR, WA>
-            extends InsertSupport.ConflictUpdateWhereClause<C, T, SR, WR, WA>
-            implements PostgreInsert._ConflictActionClause<WR, UR>
-            , PostgreInsert._ConflictItemClause<T, LR, OC>
-            , Update._SetClause<C, FieldMeta<T>, SR>
-            , PostgreInsert._ParentReturningClause<C, CT, I, Q>
-            , TargetWhereClauseSpec
-            , _PostgreInsert._ConflictActionClauseResult {
-
-        final PostgreInsertValuesClauseSpec<C, CT, I, Q> clause;
-
-        private List<_ConflictTargetItem> targetItemList;
-        private String constraintName;
-
-        private boolean doNothing;
-
-        private AbstractOnConflictClause(PostgreInsertValuesClauseSpec<C, CT, I, Q> clause, TableMeta<T> table) {
-            super(clause.getContext(), table);
-            this.clause = clause;
-        }
-
-        @Override
-        public final OC onConstraint(final @Nullable String constraintName) {
-            if (constraintName == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+            if (this.opclass == null) {
+                this.opclass = Boolean.FALSE;
             }
-            this.constraintName = constraintName;
-            return (OC) this;
+            return this.clause.targetItemClauseEnd();
+        }
+
+
+    }//ConflictTargetItem
+
+
+    private static final class ConflictDoUpdateActionClause<C, T, I extends DmlInsert, Q extends DqlInsert>
+            extends InsertSupport.ConflictUpdateWhereClause<
+            C,
+            T,
+            PostgreInsert._DoUpdateWhereSpec<C, T, I, Q>,
+            PostgreInsert._ReturningSpec<C, I, Q>,
+            PostgreInsert._DoUpdateWhereAndSpec<C, I, Q>>
+            implements PostgreInsert._DoUpdateWhereSpec<C, T, I, Q>
+            , PostgreInsert._DoUpdateWhereAndSpec<C, I, Q> {
+
+        private final OnConflictClause<C, T, I, Q> onConflictClause;
+
+        private ConflictDoUpdateActionClause(OnConflictClause<C, T, I, Q> onConflictClause) {
+            super(onConflictClause.valuesClause.context, onConflictClause.valuesClause.insertTable);
+            this.onConflictClause = onConflictClause;
         }
 
 
         @Override
-        public final WR doNothing() {
-            this.doNothing = true;
-            this.endDoUpdateSetClause();
-            return (WR) this;
-        }
-
-        @Override
-        public final UR doUpdate() {
-            return (UR) this;
-        }
-
-        @Override
-        public final I asInsert() {
-            this.endDoUpdateSetClause();
-            return this.clause.onConflictClauseEnd(this)
-                    .asInsert();
-        }
-
-        @Override
-        public final PostgreInsert._PostgreChildReturnSpec<CT, Q> returningAll() {
-            this.endDoUpdateSetClause();
-            return this.clause.onConflictClauseEnd(this)
-                    .returningAll();
-        }
-
-        @Override
-        public final PostgreInsert._ParentReturningCommaUnaryClause<CT, Q> returning(SelectItem selectItem) {
-            this.endDoUpdateSetClause();
-            return this.clause.onConflictClauseEnd(this)
+        public DialectStatement._StaticReturningCommaUnaryClause<Q> returning(SelectItem selectItem) {
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
                     .returning(selectItem);
         }
 
         @Override
-        public final PostgreInsert._ParentReturningCommaDualClause<CT, Q> returning(SelectItem selectItem1, SelectItem selectItem2) {
-            this.endDoUpdateSetClause();
-            return this.clause.onConflictClauseEnd(this)
+        public DialectStatement._StaticReturningCommaDualClause<Q> returning(SelectItem selectItem1, SelectItem selectItem2) {
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
                     .returning(selectItem1, selectItem2);
         }
 
         @Override
-        public final PostgreInsert._PostgreChildReturnSpec<CT, Q> returning(Consumer<Consumer<SelectItem>> consumer) {
-            this.endDoUpdateSetClause();
-            return this.clause.onConflictClauseEnd(this)
+        public DqlStatement._DqlInsertSpec<Q> returningAll() {
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+                    .returningAll();
+        }
+
+        @Override
+        public DqlStatement._DqlInsertSpec<Q> returning(Consumer<Consumer<SelectItem>> consumer) {
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
                     .returning(consumer);
         }
 
         @Override
-        public final PostgreInsert._PostgreChildReturnSpec<CT, Q> returning(BiConsumer<C, Consumer<SelectItem>> consumer) {
-            this.endDoUpdateSetClause();
-            return this.clause.onConflictClauseEnd(this)
+        public DqlStatement._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<SelectItem>> consumer) {
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
                     .returning(consumer);
         }
 
-
         @Override
-        public final void addConflictTargetItem(final _ConflictTargetItem item) {
-            List<_ConflictTargetItem> targetItemList = this.targetItemList;
-            if (targetItemList == null) {
-                this.targetItemList = targetItemList = new ArrayList<>();
-            } else if (!(targetItemList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            targetItemList.add(item);
+        public I asInsert() {
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+                    .asInsert();
         }
 
         @Override
-        public final String constraintName() {
-            return this.constraintName;
-        }
-
-        @Override
-        public final List<_ConflictTargetItem> conflictTargetItemList() {
-            List<_ConflictTargetItem> targetItemList = this.targetItemList;
-            if (targetItemList == null) {
-                this.targetItemList = targetItemList = Collections.emptyList();
-            }
-            return targetItemList;
-        }
-
-
-        @Override
-        public final boolean isDoNothing() {
-            return this.doNothing;
-        }
-
-        @Override
-        final Dialect syntaxDialect() {
+        Dialect syntaxDialect() {
             return PostgreDialect.POSTGRE14;
         }
 
-        private void endDoUpdateSetClause() {
-            this.endUpdateSetClause();
-            this.endWhereClause();
-        }
 
+    }//ConflictDoUpdateActionClause
 
-    }//AbstractOnConflictClause
 
     private static final class OnConflictClause<C, T, I extends DmlInsert, Q extends DqlInsert>
-            extends AbstractOnConflictClause<
-            C,
-            T,
-            Void,
-            I,
-            Q,
-            PostgreInsert._ConflictCollateSpec<C, T, I, Q>,
-            PostgreInsert._NonParentConflictActionClause<C, T, I, Q>,
-            PostgreInsert._DoUpdateSetClause<C, T, I, Q>,
-            PostgreInsert._DoUpdateWhereSpec<C, T, I, Q>,
-            PostgreInsert._ReturningSpec<C, I, Q>,
-            PostgreInsert._DoUpdateWhereAndSpec<C, T, I, Q>>
+            extends InsertSupport.MinWhereClause<C, PostgreInsert._ConflictActionClause<C, T, I, Q>, PostgreInsert._ConflictTargetWhereAndSpec<C, T, I, Q>>
+            implements PostgreInsert._ConflictTargetOptionSpec<C, T, I, Q>
+            , PostgreInsert._ConflictTargetWhereSpec<C, T, I, Q>
+            , PostgreInsert._ConflictTargetWhereAndSpec<C, T, I, Q> {
 
-            implements PostgreInsert._NonParentConflictItemClause<C, T, I, Q>
-            , PostgreInsert._NonParentConflictActionClause<C, T, I, Q>
-            , PostgreInsert._DoUpdateWhereSpec<C, T, I, Q>
-            , PostgreInsert._DoUpdateWhereAndSpec<C, T, I, Q>
-            , NonParentTargetWhereClauseSpec<C, T, I, Q> {
+        private final PostgreComplexInsertValuesClause<C, T, I, Q> valuesClause;
 
-        private List<_Predicate> indexPredicateList;
+        private List<_ConflictTargetItem> targetItemList;
 
-        private OnConflictClause(NonParentComplexValuesClause<C, T, I, Q> clause) {
-            super(clause, clause.insertTable);
+        private String constraintName;
+
+        private boolean doNothing;
+
+        private OnConflictClause(PostgreComplexInsertValuesClause<C, T, I, Q> valuesClause) {
+            super(valuesClause.context);
+            this.valuesClause = valuesClause;
         }
 
         @Override
         public PostgreInsert._ConflictCollateSpec<C, T, I, Q> leftParen(IndexFieldMeta<T> indexColumn) {
-            final NonParentConflictTargetItem<C, T, I, Q> item;
-            item = new NonParentConflictTargetItem<>(this, indexColumn);
-            this.addConflictTargetItem(item);
+            List<_ConflictTargetItem> targetItemList = this.targetItemList;
+            if (targetItemList == null) {
+                targetItemList = new ArrayList<>();
+                this.targetItemList = targetItemList;
+            } else if (!(targetItemList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.valuesClause.context);
+            }
+            final ConflictTargetItem<C, T, I, Q> item = new ConflictTargetItem<>(this, indexColumn);
+            targetItemList.add(item);
             return item;
         }
 
         @Override
-        public Void child() {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
-        }
-
-        @Override
-        public List<_Predicate> indexPredicateList() {
-            return _CollectionUtils.safeList(this.indexPredicateList);
-        }
-
-        @Override
-        public PostgreInsert._ReturningSpec<C, I, Q> _doNothing(List<_Predicate> predicateList) {
-            if (this.indexPredicateList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+        public PostgreInsert._ConflictActionClause<C, T, I, Q> onConstraint(final @Nullable String constraintName) {
+            if (this.constraintName != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.valuesClause.context);
+            } else if (constraintName == null) {
+                throw CriteriaContextStack.nullPointer(this.valuesClause.context);
             }
-            this.indexPredicateList = predicateList;
+            this.constraintName = constraintName;
             return this;
         }
 
         @Override
-        public PostgreInsert._DoUpdateSetClause<C, T, I, Q> _doUpdate(List<_Predicate> predicateList) {
-            if (this.indexPredicateList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+        public PostgreInsert._ReturningSpec<C, I, Q> doNothing() {
+            this.endWhereClause();
+            this.doNothing = true;
+            return this.valuesClause.conflictClauseEnd(new ConflictActionClauseResult(this));
+        }
+
+        @Override
+        public PostgreInsert._DoUpdateSetClause<C, T, I, Q> doUpdate() {
+            this.endWhereClause();
+            return new ConflictDoUpdateActionClause<>(this);
+        }
+
+        private PostgreInsert._ConflictTargetWhereSpec<C, T, I, Q> targetItemClauseEnd() {
+            final List<_ConflictTargetItem> targetItemList = this.targetItemList;
+            if (targetItemList instanceof ArrayList) {
+                this.targetItemList = Collections.unmodifiableList(targetItemList);
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.valuesClause.context);
             }
-            this.indexPredicateList = predicateList;
             return this;
+        }
+
+        private PostgreInsert._ReturningSpec<C, I, Q> updateActionClauseEnd(List<ItemPair> itemPairList
+                , List<_Predicate> predicateList) {
+            return this.valuesClause
+                    .conflictClauseEnd(new ConflictActionClauseResult(this, itemPairList, predicateList));
         }
 
 
     }//OnConflictClause
 
 
-    private static final class ParentOnConflictClause<C, P> extends AbstractOnConflictClause<
-            C,
-            P,
-            PostgreInsert._ChildWithCteSpec<C, P>,
-            Insert,
-            ReturningInsert,
-            PostgreInsert._ParentConflictCollateSpec<C, P>,
-            PostgreInsert._ParentConflictActionClause<C, P>,
-            PostgreInsert._ParentDoUpdateSetClause<C, P>,
-            PostgreInsert._ParentDoUpdateWhereSpec<C, P>,
-            PostgreInsert._ParentReturningSpec<C, P>,
-            PostgreInsert._ParentDoUpdateWhereAndSpec<C, P>>
-            implements PostgreInsert._ParentConflictItemClause<C, P>
-            , PostgreInsert._ParentConflictActionClause<C, P>
-            , PostgreInsert._ParentDoUpdateWhereSpec<C, P>
-            , PostgreInsert._ParentDoUpdateWhereAndSpec<C, P>
-            , ParentTargetWhereClauseSpec<C, P> {
+    private static final class ConflictActionClauseResult implements _PostgreInsert._ConflictActionClauseResult {
 
-        private List<_Predicate> indexPredicateList;
+        private final List<_ConflictTargetItem> targetItemList;
 
-        private ParentOnConflictClause(ParentComplexValuesClause<C, P> clause) {
-            super(clause, clause.insertTable);
-        }
+        private final List<_Predicate> indexPredicateList;
 
+        private final String constraintName;
 
-        @Override
-        public PostgreInsert._ParentConflictCollateSpec<C, P> leftParen(IndexFieldMeta<P> indexColumn) {
-            final ParentConflictTargetItem<C, P> item;
-            item = new ParentConflictTargetItem<>(this, indexColumn);
-            this.addConflictTargetItem(item);
-            return item;
-        }
+        private final boolean doNothing;
 
-        @Override
-        public PostgreInsert._ChildWithCteSpec<C, P> child() {
-            return this.clause.onConflictClauseEnd(this)
-                    .child();
-        }
+        private final List<ItemPair> itemPairList;
 
+        private final List<_Predicate> updatePredicateList;
 
-        @Override
-        public PostgreInsert._ParentReturningSpec<C, P> _doNothing(List<_Predicate> predicateList) {
-            if (this.indexPredicateList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+        private ConflictActionClauseResult(OnConflictClause<?, ?, ?, ?> clause) {
+            this.targetItemList = _CollectionUtils.safeList(clause.targetItemList);
+            if (this.targetItemList instanceof ArrayList) {
+                throw CriteriaContextStack.castCriteriaApi(clause.valuesClause.context);
             }
-            this.indexPredicateList = predicateList;
-            return this;
+            this.indexPredicateList = clause.predicateList();
+            this.constraintName = clause.constraintName;
+            this.doNothing = clause.doNothing;
+
+            this.itemPairList = Collections.emptyList();
+            this.updatePredicateList = Collections.emptyList();
+        }
+
+        private ConflictActionClauseResult(OnConflictClause<?, ?, ?, ?> clause, List<ItemPair> itemPairList
+                , List<_Predicate> updatePredicateList) {
+            this.targetItemList = _CollectionUtils.safeList(clause.targetItemList);
+            if (this.targetItemList instanceof ArrayList) {
+                throw CriteriaContextStack.castCriteriaApi(clause.valuesClause.context);
+            }
+            this.indexPredicateList = clause.predicateList();
+            this.constraintName = clause.constraintName;
+            this.doNothing = clause.doNothing;
+
+            this.itemPairList = itemPairList;
+            this.updatePredicateList = updatePredicateList;
         }
 
         @Override
-        public PostgreInsert._ParentDoUpdateSetClause<C, P> _doUpdate(List<_Predicate> predicateList) {
-            if (this.indexPredicateList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            this.indexPredicateList = predicateList;
-            return this;
+        public List<ItemPair> updateSetClauseList() {
+            return this.itemPairList;
+        }
+
+        @Override
+        public List<_Predicate> updateSetPredicateList() {
+            return this.updatePredicateList;
+        }
+
+        @Override
+        public String constraintName() {
+            return this.constraintName;
+        }
+
+        @Override
+        public List<_ConflictTargetItem> conflictTargetItemList() {
+            return this.targetItemList;
         }
 
         @Override
         public List<_Predicate> indexPredicateList() {
-            return _CollectionUtils.safeList(this.indexPredicateList);
+            return this.indexPredicateList;
+        }
+
+        @Override
+        public boolean isDoNothing() {
+            return this.doNothing;
         }
 
 
-    }//ParentOnConflictClause
+    }//ConflictActionClauseResult
+
 
 
 
@@ -1047,6 +915,96 @@ abstract class PostgreInserts extends InsertSupport {
     }//OverridingMode
 
 
+    private static abstract class PostgreComplexInsertValuesClause<C, T, I extends DmlInsert, Q extends DqlInsert>
+            extends ComplexInsertValuesClause<
+            C,
+            T,
+            PostgreInsert._ComplexOverridingValueSpec<C, T, I, Q>,
+            PostgreInsert._ValuesDefaultSpec<C, T, I, Q>,
+            PostgreInsert._OnConflictSpec<C, T, I, Q>>
+            implements PostgreInsert._TableAliasSpec<C, T, I, Q>
+            , PostgreInsert._OnConflictSpec<C, T, I, Q> {
+
+        private _PostgreInsert._ConflictActionClauseResult actionResult;
+
+
+        private PostgreComplexInsertValuesClause(InsertOptions options, TableMeta<T> table) {
+            super(options, table);
+        }
+
+        @Override
+        public final PostgreInsert._ColumnListSpec<C, T, I, Q> as(String alias) {
+            return null;
+        }
+
+        @Override
+        public final PostgreInsert._ValuesDefaultSpec<C, T, I, Q> overridingSystemValue() {
+            return null;
+        }
+
+        @Override
+        public final PostgreInsert._ValuesDefaultSpec<C, T, I, Q> overridingUserValue() {
+            return null;
+        }
+
+        @Override
+        public final PostgreInsert._ValuesDefaultSpec<C, T, I, Q> ifOverridingSystemValue(BooleanSupplier supplier) {
+            return null;
+        }
+
+        @Override
+        public final PostgreInsert._ValuesDefaultSpec<C, T, I, Q> ifOverridingUserValue(BooleanSupplier supplier) {
+            return null;
+        }
+
+        @Override
+        public final PostgreInsert._ValuesLeftParenClause<C, T, I, Q> values() {
+            return new StaticValuesLeftParenClause<>(this);
+        }
+
+        @Override
+        public final PostgreInsert._ConflictTargetOptionSpec<C, T, I, Q> onConflict() {
+            return new OnConflictClause<>(this);
+        }
+
+        @Override
+        public final DialectStatement._StaticReturningCommaUnaryClause<Q> returning(SelectItem selectItem) {
+            return null;
+        }
+
+        @Override
+        public final DialectStatement._StaticReturningCommaDualClause<Q> returning(SelectItem selectItem1, SelectItem selectItem2) {
+            return null;
+        }
+
+        @Override
+        public final DqlStatement._DqlInsertSpec<Q> returningAll() {
+            return null;
+        }
+
+        @Override
+        public DqlStatement._DqlInsertSpec<Q> returning(Consumer<Consumer<SelectItem>> consumer) {
+            return null;
+        }
+
+        @Override
+        public final DqlStatement._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<SelectItem>> consumer) {
+            return null;
+        }
+
+
+        private PostgreInsert._ReturningSpec<C, I, Q> conflictClauseEnd(_PostgreInsert._ConflictActionClauseResult result) {
+            if (this.actionResult != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.actionResult = result;
+            return this;
+        }
+
+
+    }//PostgreComplexInsertValuesClause
+
+
     private static abstract class ComplexValuesClause<C, T, CT, I extends DmlInsert, Q extends DqlInsert, AR, CR, DR, VR>
             extends ComplexInsertValuesClause<C, T, CR, DR, VR>
             implements Statement._AsClause<AR>
@@ -1169,22 +1127,22 @@ abstract class PostgreInserts extends InsertSupport {
     }//ComplexValuesClause
 
 
-    private static final class NonParentStaticValuesLeftParenClause<C, T, I extends DmlInsert, Q extends DqlInsert>
+    private static final class StaticValuesLeftParenClause<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends InsertSupport.StaticColumnValuePairClause<
             C,
             T,
             PostgreInsert._ValuesLeftParenSpec<C, T, I, Q>>
             implements PostgreInsert._ValuesLeftParenSpec<C, T, I, Q> {
 
-        private final NonParentComplexValuesClause<C, T, I, Q> clause;
+        private final PostgreComplexInsertValuesClause<C, T, I, Q> clause;
 
-        private NonParentStaticValuesLeftParenClause(NonParentComplexValuesClause<C, T, I, Q> clause) {
+        private StaticValuesLeftParenClause(PostgreComplexInsertValuesClause<C, T, I, Q> clause) {
             super(clause.context, clause::validateField);
             this.clause = clause;
         }
 
         @Override
-        public PostgreInsert._NonParentConflictItemClause<C, T, I, Q> onConflict() {
+        public PostgreInsert._ConflictTargetOptionSpec<C, T, I, Q> onConflict() {
             this.clause.staticValuesClauseEnd(this.endValuesClause());
             return this.clause.onConflict();
         }
@@ -1228,90 +1186,6 @@ abstract class PostgreInserts extends InsertSupport {
 
     }//NonParentStaticValuesLeftParenClause
 
-
-    private static abstract class NonParentComplexValuesClause<C, T, I extends DmlInsert, Q extends DqlInsert>
-            extends ComplexValuesClause<
-            C,
-            T,
-            Void,
-            I,
-            Q,
-            PostgreInsert._ColumnListSpec<C, T, I, Q>,
-            PostgreInsert._ComplexOverridingValueSpec<C, T, I, Q>,
-            PostgreInsert._ValuesDefaultSpec<C, T, I, Q>,
-            PostgreInsert._OnConflictSpec<C, T, I, Q>>
-            implements PostgreInsert._TableAliasSpec<C, T, I, Q>
-            , PostgreInsert._ComplexOverridingValueSpec<C, T, I, Q>
-            , PostgreInsert._ComplexColumnDefaultSpec<C, T, I, Q>
-            , PostgreInsert._OnConflictSpec<C, T, I, Q>
-            , PostgreInsertValuesClauseSpec<C, Void, I, Q> {
-
-
-        private NonParentComplexValuesClause(WithValueSyntaxOptions options, TableMeta<T> table) {
-            super(options, table);
-        }
-
-
-        @Override
-        public final PostgreInsert._ComplexColumnDefaultSpec<C, T, I, Q> overridingSystemValue() {
-            this.overridingMode = OverridingMode.OVERRIDING_SYSTEM_VALUE;
-            return this;
-        }
-
-        @Override
-        public final PostgreInsert._ComplexColumnDefaultSpec<C, T, I, Q> overridingUserValue() {
-            this.overridingMode = OverridingMode.OVERRIDING_USER_VALUE;
-            return this;
-        }
-
-        @Override
-        public final PostgreInsert._ValuesDefaultSpec<C, T, I, Q> ifOverridingSystemValue(final BooleanSupplier supplier) {
-            if (supplier.getAsBoolean()) {
-                this.overridingMode = OverridingMode.OVERRIDING_SYSTEM_VALUE;
-            } else {
-                this.overridingMode = null;
-            }
-            return this;
-        }
-
-        @Override
-        public final PostgreInsert._ValuesDefaultSpec<C, T, I, Q> ifOverridingUserValue(final BooleanSupplier supplier) {
-            if (supplier.getAsBoolean()) {
-                this.overridingMode = OverridingMode.OVERRIDING_USER_VALUE;
-            } else {
-                this.overridingMode = null;
-            }
-            return this;
-        }
-
-
-        @Override
-        public final PostgreInsert._ValuesLeftParenClause<C, T, I, Q> values() {
-            return new NonParentStaticValuesLeftParenClause<>(this);
-        }
-
-
-        @Override
-        public final PostgreInsert._NonParentConflictItemClause<C, T, I, Q> onConflict() {
-            return new OnConflictClause<>(this);
-        }
-
-        @Override
-        public final Void child() {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
-        }
-
-        @Override
-        public final PostgreInsert._ParentReturningClause<C, Void, I, Q> onConflictClauseEnd(final _PostgreInsert._ConflictActionClauseResult result) {
-            if (this.conflictAction != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            this.conflictAction = result;
-            return this;
-        }
-
-
-    }//NonParentComplexValuesClause
 
     private static final class PrimaryComplexValuesClause<C, T>
             extends NonParentComplexValuesClause<C, T, Insert, ReturningInsert> {
@@ -1491,202 +1365,6 @@ abstract class PostgreInserts extends InsertSupport {
 
 
     }//SubComplexValuesClause
-
-
-    private static final class ParentStaticValuesLeftParenClause<C, P>
-            extends InsertSupport.StaticColumnValuePairClause<
-            C,
-            P,
-            PostgreInsert._ParentValuesLeftParenSpec<C, P>>
-            implements PostgreInsert._ParentValuesLeftParenSpec<C, P> {
-
-        private final ParentComplexValuesClause<C, P> clause;
-
-        private ParentStaticValuesLeftParenClause(ParentComplexValuesClause<C, P> clause) {
-            super(clause.context, clause::validateField);
-            this.clause = clause;
-        }
-
-        @Override
-        public PostgreInsert._ParentConflictItemClause<C, P> onConflict() {
-            this.clause.staticValuesClauseEnd(this.endValuesClause());
-            return this.clause.onConflict();
-        }
-
-        @Override
-        public PostgreInsert._PostgreChildReturnSpec<PostgreInsert._ChildWithCteSpec<C, P>, ReturningInsert> returningAll() {
-            this.clause.staticValuesClauseEnd(this.endValuesClause());
-            return this.clause.returningAll();
-        }
-
-        @Override
-        public PostgreInsert._ParentReturningCommaUnaryClause<PostgreInsert._ChildWithCteSpec<C, P>, ReturningInsert> returning(SelectItem selectItem) {
-            this.clause.staticValuesClauseEnd(this.endValuesClause());
-            return this.clause.returning(selectItem);
-        }
-
-        @Override
-        public PostgreInsert._ParentReturningCommaDualClause<PostgreInsert._ChildWithCteSpec<C, P>, ReturningInsert> returning(SelectItem selectItem1, SelectItem selectItem2) {
-            this.clause.staticValuesClauseEnd(this.endValuesClause());
-            return this.clause.returning(selectItem1, selectItem2);
-        }
-
-        @Override
-        public PostgreInsert._PostgreChildReturnSpec<PostgreInsert._ChildWithCteSpec<C, P>, ReturningInsert> returning(Consumer<Consumer<SelectItem>> consumer) {
-            this.clause.staticValuesClauseEnd(this.endValuesClause());
-            return this.clause.returning(consumer);
-        }
-
-        @Override
-        public PostgreInsert._PostgreChildReturnSpec<PostgreInsert._ChildWithCteSpec<C, P>, ReturningInsert> returning(BiConsumer<C, Consumer<SelectItem>> consumer) {
-            this.clause.staticValuesClauseEnd(this.endValuesClause());
-            return this.clause.returning(consumer);
-        }
-
-        @Override
-        public PostgreInsert._ChildWithCteSpec<C, P> child() {
-            this.clause.staticValuesClauseEnd(this.endValuesClause());
-            return this.clause.child();
-        }
-
-        @Override
-        public Insert asInsert() {
-            this.clause.staticValuesClauseEnd(this.endValuesClause());
-            return this.clause.asInsert();
-        }
-
-
-    }//NonParentStaticValuesLeftParenClause
-
-    private static final class ParentComplexValuesClause<C, P> extends ComplexValuesClause<
-            C,
-            P,
-            PostgreInsert._ChildWithCteSpec<C, P>,
-            Insert,
-            ReturningInsert,
-            PostgreInsert._ParentColumnListSpec<C, P>,
-            PostgreInsert._ParentComplexOverridingValueSpec<C, P>,
-            PostgreInsert._ParentValuesDefaultSpec<C, P>,
-            PostgreInsert._ParentOnConflictSpec<C, P>>
-            implements PostgreInsert._ParentTableAliasSpec<C, P>
-            , PostgreInsert._ParentComplexOverridingValueSpec<C, P>
-            , PostgreInsert._ParentComplexColumnDefaultSpec<C, P>
-            , PostgreInsert._ParentOnConflictSpec<C, P>
-            , PostgreInsertValuesClauseSpec<C, PostgreInsert._ChildWithCteSpec<C, P>, Insert, ReturningInsert> {
-
-
-        private ParentComplexValuesClause(PrimaryInsertIntoClause<C> options, ParentTableMeta<P> table) {
-            super(options, table);
-        }
-
-        @Override
-        public PostgreInsert._ParentComplexColumnDefaultSpec<C, P> overridingSystemValue() {
-            this.overridingMode = OverridingMode.OVERRIDING_SYSTEM_VALUE;
-            return this;
-        }
-
-        @Override
-        public PostgreInsert._ParentComplexColumnDefaultSpec<C, P> overridingUserValue() {
-            this.overridingMode = OverridingMode.OVERRIDING_USER_VALUE;
-            return this;
-        }
-
-        @Override
-        public PostgreInsert._ParentValuesDefaultSpec<C, P> ifOverridingSystemValue(final BooleanSupplier supplier) {
-            if (supplier.getAsBoolean()) {
-                this.overridingMode = OverridingMode.OVERRIDING_SYSTEM_VALUE;
-            } else {
-                this.overridingMode = null;
-            }
-            return this;
-        }
-
-        @Override
-        public PostgreInsert._ParentValuesDefaultSpec<C, P> ifOverridingUserValue(final BooleanSupplier supplier) {
-            if (supplier.getAsBoolean()) {
-                this.overridingMode = OverridingMode.OVERRIDING_USER_VALUE;
-            } else {
-                this.overridingMode = null;
-            }
-            return this;
-        }
-
-        @Override
-        public PostgreInsert._ParentValuesLeftParenClause<C, P> values() {
-            return new ParentStaticValuesLeftParenClause<>(this);
-        }
-
-
-        @Override
-        public PostgreInsert._ParentConflictItemClause<C, P> onConflict() {
-            return new ParentOnConflictClause<>(this);
-        }
-
-        @Override
-        public Insert asInsert() {
-            if (this.hasReturningClause()) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            final InsertMode mode;
-            mode = this.getInsertMode();
-            final Insert._InsertSpec spec;
-            switch (mode) {
-                case DOMAIN:
-                    spec = new PrimaryDomainInsertStatement(this, this.domainListForSingle());
-                    break;
-                case VALUES:
-                    spec = new PrimaryValueInsertStatement(this);
-                    break;
-                case QUERY:
-                    spec = new PrimaryQueryInsertStatement(this);
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(mode);
-            }
-            return spec.asInsert();
-        }
-
-        @Override
-        public ReturningInsert asReturningInsert() {
-            if (!this.hasReturningClause()) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            final InsertMode mode;
-            mode = this.getInsertMode();
-            final ReturningInsert._ReturningInsertSpec spec;
-            switch (mode) {
-                case DOMAIN:
-                    spec = new PrimaryDomainReturningInsertStatement(this, this.domainListForSingle());
-                    break;
-                case VALUES:
-                    spec = new PrimaryValueReturningInsertStatement(this);
-                    break;
-                case QUERY:
-                    spec = new PrimaryQueryReturningInsertStatement(this);
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(mode);
-            }
-            return spec.asReturningInsert();
-        }
-
-
-        @Override
-        public PostgreInsert._ChildWithCteSpec<C, P> child() {
-            return new ChildInsertIntoClause<>(this);
-        }
-
-        @Override
-        public PostgreInsert._ParentReturningClause<C, PostgreInsert._ChildWithCteSpec<C, P>, Insert, ReturningInsert> onConflictClauseEnd(final _PostgreInsert._ConflictActionClauseResult result) {
-            if (this.conflictAction != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            this.conflictAction = result;
-            return this;
-        }
-
-
-    }//ParentComplexValuesClause
 
 
     private static abstract class PostgreValueSyntaxInsertStatement<I extends DmlInsert, Q extends DqlInsert>

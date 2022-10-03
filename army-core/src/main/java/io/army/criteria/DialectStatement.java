@@ -12,6 +12,43 @@ import java.util.function.Supplier;
 
 public interface DialectStatement extends Statement {
 
+    interface _StaticReturningCommaUnaryClause<Q extends DqlInsert>
+            extends DqlStatement._DqlInsertSpec<Q> {
+
+        _StaticReturningCommaUnaryClause<Q> comma(SelectItem selectItem);
+
+    }
+
+
+    interface _StaticReturningCommaDualClause<Q extends DqlInsert>
+            extends DqlStatement._DqlInsertSpec<Q> {
+
+        DqlStatement._DqlInsertSpec<Q> comma(SelectItem selectItem);
+
+        _StaticReturningCommaDualClause<Q> comma(SelectItem selectItem1, SelectItem selectItem2);
+
+    }
+
+
+    interface _StaticReturningClause<I extends DmlInsert, Q extends DqlInsert> extends DmlStatement._DmlInsertSpec<I> {
+
+        _StaticReturningCommaUnaryClause<Q> returning(SelectItem selectItem);
+
+        _StaticReturningCommaDualClause<Q> returning(SelectItem selectItem1, SelectItem selectItem2);
+    }
+
+
+    interface _DynamicReturningClause<C, I extends DmlInsert, Q extends DqlInsert> extends DmlStatement._DmlInsertSpec<I> {
+
+        DqlStatement._DqlInsertSpec<Q> returningAll();
+
+        DqlStatement._DqlInsertSpec<Q> returning(Consumer<Consumer<SelectItem>> consumer);
+
+        DqlStatement._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<SelectItem>> consumer);
+
+    }
+
+
     interface _DynamicWithCteClause<C, B extends CteBuilderSpec, WE> {
         WE with(Consumer<B> consumer);
 
