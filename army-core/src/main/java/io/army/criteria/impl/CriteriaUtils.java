@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
@@ -529,6 +530,13 @@ abstract class CriteriaUtils {
         String m = String.format("%s insert domain list and parent insert statement domain list not match"
                 , child);
         return CriteriaContextStack.criteriaError(context, m);
+    }
+
+    static CriteriaException childParentRowNotMatch(_Insert._ValuesInsert child, _Insert._ValuesInsert parent) {
+        String m = String.format("%s row number[%s] and parent row number[%s] not match."
+                , child.table(), child.rowPairList().size(), parent.rowPairList().size());
+
+        return CriteriaContextStack.criteriaError(((CriteriaContextSpec) child).getContext(), m);
     }
 
 

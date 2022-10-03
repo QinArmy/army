@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner.postgre._ConflictTargetItem;
 import io.army.criteria.impl.inner.postgre._PostgreInsert;
@@ -56,59 +55,43 @@ abstract class PostgreInserts extends InsertSupport {
     }
 
 
-    /**
-     * <p>
-     * This interface is base interface of below:
-     *     <ul>
-     *         <li>{@link NonParentTargetWhereClauseSpec}</li>
-     *         <li>{@link ParentTargetWhereClauseSpec}</li>
-     *     </ul>
-     * </p>
-     */
-    private interface TargetWhereClauseSpec extends CriteriaContextSpec {
-
-        void addConflictTargetItem(_ConflictTargetItem item);
-
+    private static SubInsert createSubInsert(final PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
+        final DmlInsert._DmlInsertSpec<SubInsert> spec;
+        final InsertMode mode = clause.getInsertMode();
+        switch (mode) {
+            case DOMAIN:
+                spec = new SubDomainInsertStatement(clause);
+                break;
+            case VALUES:
+                spec = new SubValueInsertStatement(clause);
+                break;
+            case QUERY:
+                spec = new SubQueryInsertStatement(clause);
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+        return spec.asInsert();
     }
 
-    private interface NonParentTargetWhereClauseSpec<C, T, I extends DmlInsert, Q extends DqlInsert>
-            extends TargetWhereClauseSpec {
-
-        PostgreInsert._ReturningSpec<C, I, Q> _doNothing(List<_Predicate> predicateList);
-
-        PostgreInsert._DoUpdateSetClause<C, T, I, Q> _doUpdate(List<_Predicate> predicateList);
-
+    private static SubReturningInsert createSubReturningInsert(final PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
+        final DqlInsert._DqlInsertSpec<SubReturningInsert> spec;
+        final InsertMode mode = clause.getInsertMode();
+        switch (mode) {
+            case DOMAIN:
+                spec = new SubDomainReturningInsertStatement(clause);
+                break;
+            case VALUES:
+                spec = new SubValueReturningInsertStatement(clause);
+                break;
+            case QUERY:
+                spec = new SubQueryReturningInsertStatement(clause);
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+        return spec.asReturningInsert();
     }
-
-
-    private static final class ConflictActionClause1<C, T, I extends DmlInsert, Q extends DqlInsert>
-            extends InsertSupport.MinWhereClause<
-            C,
-            PostgreInsert._ConflictActionClause<C, T, I, Q>,
-            PostgreInsert._ConflictTargetWhereAndSpec<C, T, I, Q>
-            > implements PostgreInsert._ConflictTargetWhereSpec<C, T, I, Q>
-            , PostgreInsert._ConflictTargetWhereAndSpec<C, T, I, Q> {
-
-        private final NonParentTargetWhereClauseSpec<C, T, I, Q> clause;
-
-
-        private ConflictActionClause1(NonParentTargetWhereClauseSpec<C, T, I, Q> clause) {
-            super(clause.getContext());
-            this.clause = clause;
-        }
-
-        @Override
-        public PostgreInsert._ReturningSpec<C, I, Q> doNothing() {
-            return this.clause._doNothing(this.endWhereClause());
-        }
-
-        @Override
-        public PostgreInsert._DoUpdateSetClause<C, T, I, Q> doUpdate() {
-            return this.clause._doUpdate(this.endWhereClause());
-        }
-
-
-    }//ConflictActionClause
 
 
     private static final class ConflictTargetItem<C, T, I extends DmlInsert, Q extends DqlInsert>
@@ -642,17 +625,17 @@ abstract class PostgreInserts extends InsertSupport {
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<C, T, Insert, ReturningInsert> insertInto(SimpleTableMeta<T> table) {
-            return new PostgreComplexInsertValuesClause<>(this, table, this::createInsert, this::createReturningInsert);
+            return new PostgreComplexInsertValuesClause<>(this, table, this::insertEnd, this::returningInsertEnd);
         }
 
         @Override
         public <P> PostgreInsert._TableAliasSpec<C, P, PostgreInsert._ParentInsert<C, P>, PostgreInsert._ParentReturnInsert<C, P>> insertInto(ParentTableMeta<P> table) {
-            return new PostgreComplexInsertValuesClause<>(this, table, this::createParentInsert, this::createParentReturningInsert);
+            return new PostgreComplexInsertValuesClause<>(this, table, this::parentInsertEnd, this::parentReturningInsertEnd);
         }
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<C, T, Insert, ReturningInsert> insertInto(ChildTableMeta<T> table) {
-            return new PostgreComplexInsertValuesClause<>(this, table, this::createInsert, this::createReturningInsert);
+            return new PostgreComplexInsertValuesClause<>(this, table, this::insertEnd, this::returningInsertEnd);
         }
 
         @Override
@@ -660,39 +643,47 @@ abstract class PostgreInserts extends InsertSupport {
             return PostgreSupports.cteBuilder(recursive, this.context);
         }
 
-        private <P> PostgreInsert._ParentInsert<C, P> createParentInsert(PostgreComplexInsertValuesClause<?, ?, PostgreInsert._ParentInsert<C, P>, ?> clause) {
-            final PrimaryParentDomainInsertStatement<C, P> parentStatement;
+        private <P> PostgreInsert._ParentInsert<C, P> parentInsertEnd(final PostgreComplexInsertValuesClause<?, ?, PostgreInsert._ParentInsert<C, P>, ?> clause) {
+            final DmlInsert._DmlInsertSpec<PostgreInsert._ParentInsert<C, P>> spec;
             final InsertMode mode;
             mode = clause.getInsertMode();
             switch (mode) {
                 case DOMAIN:
-                    parentStatement = new PrimaryParentDomainInsertStatement<>(clause);
+                    spec = new PrimaryParentDomainInsertStatement<>(clause);
                     break;
                 case VALUES:
+                    spec = new PrimaryParentValueInsertStatement<>(clause);
+                    break;
                 case QUERY:
+                    spec = new PrimaryParentQueryInsertStatement<>(clause);
+                    break;
                 default:
                     throw _Exceptions.unexpectedEnum(mode);
             }
-            return parentStatement.asInsert();
+            return spec.asInsert();
         }
 
-        private <P> PostgreInsert._ParentReturnInsert<C, P> createParentReturningInsert(PostgreComplexInsertValuesClause<?, ?, ?, PostgreInsert._ParentReturnInsert<C, P>> clause) {
-            final PrimaryParentDomainReturningInsertStatement<C, P> parentStatement;
+        private <P> PostgreInsert._ParentReturnInsert<C, P> parentReturningInsertEnd(PostgreComplexInsertValuesClause<?, ?, ?, PostgreInsert._ParentReturnInsert<C, P>> clause) {
+            final DqlInsert._DqlInsertSpec<PostgreInsert._ParentReturnInsert<C, P>> spec;
             final InsertMode mode;
             mode = clause.getInsertMode();
             switch (mode) {
                 case DOMAIN:
-                    parentStatement = new PrimaryParentDomainReturningInsertStatement<>(clause);
+                    spec = new PrimaryParentDomainReturningInsertStatement<>(clause);
                     break;
                 case VALUES:
+                    spec = new PrimaryParentValueReturningInsertStatement<>(clause);
+                    break;
                 case QUERY:
+                    spec = new PrimaryParentQueryReturningInsertStatement<>(clause);
+                    break;
                 default:
                     throw _Exceptions.unexpectedEnum(mode);
             }
-            return parentStatement.asReturningInsert();
+            return spec.asReturningInsert();
         }
 
-        private Insert createInsert(PostgreComplexInsertValuesClause<?, ?, Insert, ?> clause) {
+        private Insert insertEnd(PostgreComplexInsertValuesClause<?, ?, Insert, ?> clause) {
             final DmlInsert._DmlInsertSpec<Insert> spec;
             final InsertMode mode;
             mode = clause.getInsertMode();
@@ -701,14 +692,18 @@ abstract class PostgreInserts extends InsertSupport {
                     spec = new PrimaryDomainInsertStatement(clause);
                     break;
                 case VALUES:
+                    spec = new PrimaryValueInsertStatement(clause);
+                    break;
                 case QUERY:
+                    spec = new PrimaryQueryInsertStatement(clause);
+                    break;
                 default:
                     throw _Exceptions.unexpectedEnum(mode);
             }
             return spec.asInsert();
         }
 
-        private ReturningInsert createReturningInsert(PostgreComplexInsertValuesClause<?, ?, ?, ReturningInsert> clause) {
+        private ReturningInsert returningInsertEnd(PostgreComplexInsertValuesClause<?, ?, ?, ReturningInsert> clause) {
             final DqlInsert._DqlInsertSpec<ReturningInsert> spec;
             final InsertMode mode;
             mode = clause.getInsertMode();
@@ -717,7 +712,11 @@ abstract class PostgreInserts extends InsertSupport {
                     spec = new PrimaryDomainReturningInsertStatement(clause);
                     break;
                 case VALUES:
+                    spec = new PrimaryValueReturningInsertStatement(clause);
+                    break;
                 case QUERY:
+                    spec = new PrimaryQueryReturningInsertStatement(clause);
+                    break;
                 default:
                     throw _Exceptions.unexpectedEnum(mode);
             }
@@ -809,7 +808,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<C, T, I, Q> insertInto(TableMeta<T> table) {
-            return new SubComplexValuesClause<>(this, table, dmlFunction, dqlFunction);
+            return new PostgreComplexInsertValuesClause<>(this, table, this::subInsertEnd, this::subReturningInsertEnd);
         }
 
         @Override
@@ -821,6 +820,14 @@ abstract class PostgreInserts extends InsertSupport {
         public List<_Cte> cteList() {
             //static with cte don't support WITH clause
             return Collections.emptyList();
+        }
+
+        private I subInsertEnd(final PostgreComplexInsertValuesClause<?, ?, I, ?> clause) {
+            return this.dmlFunction.apply(createSubInsert(clause));
+        }
+
+        private Q subReturningInsertEnd(final PostgreComplexInsertValuesClause<?, ?, ?, Q> clause) {
+            return this.dqlFunction.apply(createSubReturningInsert(clause));
         }
 
     }//StaticSubInsertIntoClause
@@ -908,7 +915,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<C, T, DmlInsert, DqlInsert> insertInto(TableMeta<T> table) {
-            return new SubComplexValuesClause<>(this, table, this::subInsertEnd, this::subReturnInsertEnd);
+            return new PostgreComplexInsertValuesClause<>(this, table, this::subInsertEnd, this::subReturnInsertEnd);
         }
 
 
@@ -930,18 +937,23 @@ abstract class PostgreInserts extends InsertSupport {
             return this;
         }
 
-        private DmlInsert subInsertEnd(final SubInsert insert) {
+        private DmlInsert subInsertEnd(final PostgreComplexInsertValuesClause<?, ?, DmlInsert, ?> clause) {
+            final SubInsert subInsert;
+            subInsert = createSubInsert(clause);
             final CriteriaContext outerContext = this.context.getOuterContext();
             assert outerContext != null;
-            CriteriaUtils.createAndAddCte(outerContext, this.name, this.columnAliasList, insert);
+            CriteriaUtils.createAndAddCte(outerContext, this.name, this.columnAliasList, subInsert);
             //couldn't return actual instance 'insert'
             return this;
         }
 
-        private DqlInsert subReturnInsertEnd(final SubReturningInsert insert) {
+        private DqlInsert subReturnInsertEnd(final PostgreComplexInsertValuesClause<?, ?, ?, DqlInsert> clause) {
+            final SubReturningInsert subReturningInsert;
+            subReturningInsert = createSubReturningInsert(clause);
+
             final CriteriaContext outerContext = this.context.getOuterContext();
             assert outerContext != null;
-            CriteriaUtils.createAndAddCte(outerContext, this.name, this.columnAliasList, insert);
+            CriteriaUtils.createAndAddCte(outerContext, this.name, this.columnAliasList, subReturningInsert);
             //couldn't return actual instance 'insert'
             return this;
         }
@@ -979,14 +991,6 @@ abstract class PostgreInserts extends InsertSupport {
 
     }//OverridingMode
 
-
-    private interface PostgreInsertOptions<I extends DmlInsert, Q extends DqlInsert> extends WithValueSyntaxOptions {
-
-        I createInsert(PostgreComplexInsertValuesClause<?, ?, I, Q> clause);
-
-        Q createReturnInsert(PostgreComplexInsertValuesClause<?, ?, I, Q> clause);
-
-    }
 
     private static final class PostgreComplexInsertValuesClause<C, T, I extends DmlInsert, Q extends DqlInsert>
             extends ComplexInsertValuesClause<
@@ -1152,6 +1156,9 @@ abstract class PostgreInserts extends InsertSupport {
 
         @Override
         public I asInsert() {
+            if (this.selectItemList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
             return this.dmlFunction.apply(this);
         }
 
@@ -1249,187 +1256,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
 
-    }//NonParentStaticValuesLeftParenClause
-
-
-    private static final class PrimaryComplexValuesClause<C, T>
-            extends NonParentComplexValuesClause<C, T, Insert, ReturningInsert> {
-
-        private final ParentComplexValuesClause<C, ?> parentClause;
-
-        private PrimaryComplexValuesClause(PrimaryInsertIntoClause<C> options, SimpleTableMeta<T> table) {
-            super(options, table);
-            this.parentClause = null;
-        }
-
-        private PrimaryComplexValuesClause(PrimaryInsertIntoClause<C> options, ChildTableMeta<T> table) {
-            super(options, table);
-            this.parentClause = null;
-        }
-
-        private PrimaryComplexValuesClause(ParentComplexValuesClause<C, ?> parentClause, ChildInsertIntoClause<C, ?> childIntoClause, ChildTableMeta<T> table) {
-            super(childIntoClause, table);
-            this.parentClause = parentClause;
-        }
-
-        @Override
-        public Insert asInsert() {
-            if (this.hasReturningClause()) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            final ParentComplexValuesClause<C, ?> parentClause = this.parentClause;
-            final InsertMode mode;
-            mode = this.assertInsertMode(parentClause);
-            final Insert._InsertSpec spec;
-            switch (mode) {
-                case DOMAIN: {
-                    if (parentClause == null) {
-                        spec = new PrimaryDomainInsertStatement(this);
-                    } else {
-                        spec = new ChildDomainInsertStatement(parentClause, this);
-                    }
-                }
-                break;
-                case VALUES: {
-                    if (parentClause == null) {
-                        spec = new PrimaryValueInsertStatement(this);
-                    } else {
-                        spec = new ChildValueInsertStatement(parentClause, this);
-                    }
-                }
-                break;
-                case QUERY: {
-                    if (parentClause == null) {
-                        spec = new PrimaryQueryInsertStatement(this);
-                    } else {
-                        spec = new ChildQueryInsertStatement(parentClause, this);
-                    }
-                }
-                break;
-                default:
-                    throw _Exceptions.unexpectedEnum(mode);
-            }
-            return spec.asInsert();
-        }
-
-        @Override
-        public ReturningInsert asReturningInsert() {
-            if (!this.hasReturningClause()) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            final ParentComplexValuesClause<C, ?> parentClause = this.parentClause;
-            final InsertMode mode;
-            mode = this.assertInsertMode(parentClause);
-            final ReturningInsert._ReturningInsertSpec spec;
-            switch (mode) {
-                case DOMAIN: {
-                    if (parentClause == null) {
-                        spec = new PrimaryDomainReturningInsertStatement(this);
-                    } else {
-                        spec = new ChildDomainReturningInsertStatement(parentClause, this);
-                    }
-                }
-                break;
-                case VALUES: {
-                    if (parentClause == null) {
-                        spec = new PrimaryValueReturningInsertStatement(this);
-                    } else {
-                        spec = new ChildValueReturningInsertStatement(parentClause, this);
-                    }
-                }
-                break;
-                case QUERY: {
-                    if (parentClause == null) {
-                        spec = new PrimaryQueryReturningInsertStatement(this);
-                    } else {
-                        spec = new ChildQueryReturningInsertStatement(parentClause, this);
-                    }
-                }
-                break;
-                default:
-                    throw _Exceptions.unexpectedEnum(mode);
-            }
-            return spec.asReturningInsert();
-        }
-
-
-    }//PrimaryNonParentComplexValuesClause
-
-
-    private static final class SubComplexValuesClause<C, T, I extends DmlInsert, Q extends DqlInsert>
-            extends NonParentComplexValuesClause<C, T, I, Q>
-            implements _Insert._SupportWithClauseInsert {
-
-        private final Function<SubInsert, I> dmlFunction;
-
-        private final Function<SubReturningInsert, Q> dqlFunction;
-
-
-        private SubComplexValuesClause(DynamicSubInsertIntoClause<C> options, TableMeta<T> table
-                , Function<SubInsert, I> dmlFunction, Function<SubReturningInsert, Q> dqlFunction) {
-            super(options, table);
-            this.dmlFunction = dmlFunction;
-            this.dqlFunction = dqlFunction;
-        }
-
-        private SubComplexValuesClause(StaticSubInsertIntoClause<C, I, Q> options, TableMeta<T> table
-                , Function<SubInsert, I> dmlFunction, Function<SubReturningInsert, Q> dqlFunction) {
-            super(options, table);
-            this.dmlFunction = dmlFunction;
-            this.dqlFunction = dqlFunction;
-        }
-
-
-        @Override
-        public I asInsert() {
-            if (this.hasReturningClause()) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            final InsertMode mode;
-            mode = this.getInsertMode();
-            final SubInsert._SubInsertSpec spec;
-            switch (mode) {
-                case DOMAIN:
-                    spec = new SubDomainInsertStatement(this);
-                    break;
-                case VALUES:
-                    spec = new SubValueInsertStatement(this);
-                    break;
-                case QUERY:
-                    spec = new SubQueryInsertStatement(this);
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(mode);
-            }
-            return this.dmlFunction.apply(spec.asInsert());
-        }
-
-        @Override
-        public Q asReturningInsert() {
-            if (!this.hasReturningClause()) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            final InsertMode mode;
-            mode = this.getInsertMode();
-            final SubReturningInsert._SubReturningInsertSpec spec;
-            switch (mode) {
-                case DOMAIN:
-                    spec = new SubDomainReturningInsertStatement(this);
-                    break;
-                case VALUES:
-                    spec = new SubValueReturningInsertStatement(this);
-                    break;
-                case QUERY:
-                    spec = new SubQueryReturningInsertStatement(this);
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(mode);
-            }
-            return this.dqlFunction.apply(spec.asReturningInsert());
-        }
-
-
-    }//SubComplexValuesClause
+    }//StaticValuesLeftParenClause
 
 
     private static abstract class PostgreValueSyntaxInsertStatement<I extends DmlInsert, Q extends DqlInsert>
@@ -1627,7 +1454,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         private ReturningInsert childReturningInsertEnd(PostgreComplexInsertValuesClause<?, ?, ?, ReturningInsert> childClause) {
             assertDomainList(this.originalDomainList, childClause);
-            return null;
+            return new PrimaryChildDomainReturningInsertStatement(this, childClause);
         }
 
 
@@ -1729,48 +1556,45 @@ abstract class PostgreInserts extends InsertSupport {
     }//PrimaryParentDomainReturningInsertStatement
 
 
-    private static final class ChildDomainInsertStatement extends ChildSyntaxDomainInsertStatement
-            implements Insert, Insert._InsertSpec {
-
-        private ChildDomainInsertStatement(ParentComplexValuesClause<?, ?> parentClause
-                , PrimaryComplexValuesClause<?, ?> clause) {
-            super(parentClause, clause);
-        }
-
-
-    }//ChildDomainInsertStatement
-
-    private static final class ChildDomainReturningInsertStatement extends ChildSyntaxDomainInsertStatement
-            implements ReturningInsert, ReturningInsert._ReturningInsertSpec {
-
-        private ChildDomainReturningInsertStatement(ParentComplexValuesClause<?, ?> parentClause
-                , PrimaryComplexValuesClause<?, ?> clause) {
-            super(parentClause, clause);
-        }
-
-    }//ChildDomainReturningInsertStatement
-
-
     private static final class SubDomainInsertStatement extends DomainInsertStatement<SubInsert, SubReturningInsert>
-            implements SubInsert
-            , SubInsert._SubInsertSpec {
+            implements SubInsert {
 
+        private final List<?> domainList;
 
-        private SubDomainInsertStatement(SubComplexValuesClause<?, ?, ?, ?> clause) {
+        private SubDomainInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
             super(clause);
+            if (clause.insertTable instanceof ParentTableMeta) {
+                this.domainList = _CollectionUtils.asUnmodifiableList(clause.originalDomainList());
+            } else {
+                this.domainList = clause.domainListForNonParent();
+            }
+        }
+
+        @Override
+        public List<?> domainList() {
+            return this.domainList;
         }
 
     }//SubDomainInsertStatement
 
-
     private static final class SubDomainReturningInsertStatement
             extends DomainInsertStatement<SubInsert, SubReturningInsert>
-            implements SubReturningInsert
-            , SubReturningInsert._SubReturningInsertSpec {
+            implements SubReturningInsert {
 
+        private final List<?> domainList;
 
-        private SubDomainReturningInsertStatement(SubComplexValuesClause<?, ?, ?, ?> clause) {
+        private SubDomainReturningInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
             super(clause);
+            if (clause.insertTable instanceof ParentTableMeta) {
+                this.domainList = _CollectionUtils.asUnmodifiableList(clause.originalDomainList());
+            } else {
+                this.domainList = clause.domainListForNonParent();
+            }
+        }
+
+        @Override
+        public List<?> domainList() {
+            return this.domainList;
         }
 
     }//SubDomainReturningInsertStatement
@@ -1780,9 +1604,9 @@ abstract class PostgreInserts extends InsertSupport {
             extends PostgreValueSyntaxInsertStatement<I, Q>
             implements _PostgreInsert._PostgreValueInsert {
 
-        private final List<Map<FieldMeta<?>, _Expression>> rowPairList;
+        final List<Map<FieldMeta<?>, _Expression>> rowPairList;
 
-        private ValueInsertStatement(ComplexValuesClause<?, ?, ?, ?, ?, ?, ?, ?, ?> clause) {
+        private ValueInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
             super(clause);
             this.rowPairList = clause.rowPairList();
         }
@@ -1796,86 +1620,150 @@ abstract class PostgreInserts extends InsertSupport {
     }//ValueInsertStatement
 
 
-    private static final class PrimaryValueInsertStatement extends ValueInsertStatement<Insert, ReturningInsert>
-            implements Insert, Insert._InsertSpec {
+    private static final class PrimaryValueInsertStatement
+            extends ValueInsertStatement<Insert, ReturningInsert>
+            implements Insert {
 
-        private PrimaryValueInsertStatement(PrimaryComplexValuesClause<?, ?> clause) {
-            super(clause);
-        }
-
-        private PrimaryValueInsertStatement(ParentComplexValuesClause<?, ?> clause) {
+        private PrimaryValueInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
             super(clause);
         }
 
     }//PrimaryValueInsertStatement
 
-    private static final class PrimaryValueReturningInsertStatement
+
+    private static final class PrimaryChildValueInsertStatement
             extends ValueInsertStatement<Insert, ReturningInsert>
-            implements ReturningInsert, ReturningInsert._ReturningInsertSpec {
+            implements _PostgreInsert._PostgreChildValueInsert
+            , Insert {
 
-        private PrimaryValueReturningInsertStatement(PrimaryComplexValuesClause<?, ?> clause) {
-            super(clause);
-        }
+        private final ValueInsertStatement<?, ?> parentStatement;
 
-        private PrimaryValueReturningInsertStatement(ParentComplexValuesClause<?, ?> clause) {
-            super(clause);
-        }
-
-    }//PrimaryValueReturningInsertStatement
-
-
-    private static abstract class ChildSyntaxValueInsertStatement
-            extends ValueInsertStatement<Insert, ReturningInsert>
-            implements _PostgreInsert._PostgreChildValueInsert {
-
-        private final ValueInsertStatement<Insert, ReturningInsert> parentStmt;
-
-        private ChildSyntaxValueInsertStatement(ParentComplexValuesClause<?, ?> parentClause
-                , final PrimaryComplexValuesClause<?, ?> clause) {
-            super(clause);
-            if (parentClause.hasReturningClause()) {
-                this.parentStmt = new PrimaryValueReturningInsertStatement(parentClause);
-            } else {
-                this.parentStmt = new PrimaryValueInsertStatement(parentClause);
-            }
-
+        private PrimaryChildValueInsertStatement(ValueInsertStatement<?, ?> parentStatement
+                , PostgreComplexInsertValuesClause<?, ?, ?, ?> childClause) {
+            super(childClause);
+            assert parentStatement instanceof PrimaryParentValueInsertStatement
+                    || parentStatement instanceof PrimaryParentValueReturningInsertStatement;
+            this.parentStatement = parentStatement;
         }
 
         @Override
-        public final _PostgreValueInsert parentStmt() {
-            return this.parentStmt;
+        public _PostgreValueInsert parentStmt() {
+            return this.parentStatement;
+        }
+
+    }//PrimaryChildValueInsertStatement
+
+
+    private static final class PrimaryParentValueInsertStatement<C, P>
+            extends ValueInsertStatement<PostgreInsert._ParentInsert<C, P>, ReturningInsert>
+            implements PostgreInsert._ParentInsert<C, P>
+            , ValueSyntaxOptions {
+
+        private PrimaryParentValueInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
+            super(clause);
+        }
+
+        @Override
+        public _ChildWithCteSpec<C, P> child() {
+            this.prepared();
+            return new ChildInsertIntoClause<>(this.context.criteria(), this, this::childInsertEnd
+                    , this::childReturningInsertEnd);
+        }
+
+        private Insert childInsertEnd(PostgreComplexInsertValuesClause<?, ?, ?, ?> childClause) {
+            if (childClause.rowPairList().size() != this.rowPairList.size()) {
+                throw CriteriaUtils.childParentRowNotMatch(childClause, this);
+            }
+            return new PrimaryChildValueInsertStatement(this, childClause)
+                    .asInsert();
+        }
+
+        private ReturningInsert childReturningInsertEnd(PostgreComplexInsertValuesClause<?, ?, ?, ?> childClause) {
+            if (childClause.rowPairList().size() != this.rowPairList.size()) {
+                throw CriteriaUtils.childParentRowNotMatch(childClause, this);
+            }
+            return new PrimaryChildValueReturningInsertStatement(this, childClause)
+                    .asReturningInsert();
         }
 
 
-    }//ChildSyntaxValueInsertStatement
+    }//PrimaryParentValueInsertStatement
 
-    private static final class ChildValueInsertStatement extends ChildSyntaxValueInsertStatement
-            implements Insert, Insert._InsertSpec {
+    private static final class PrimaryValueReturningInsertStatement
+            extends ValueInsertStatement<Insert, ReturningInsert>
+            implements ReturningInsert {
 
-        private ChildValueInsertStatement(ParentComplexValuesClause<?, ?> parentClause
-                , PrimaryComplexValuesClause<?, ?> clause) {
-            super(parentClause, clause);
-        }
-    }//ChildValueInsertStatement
-
-
-    private static final class ChildValueReturningInsertStatement extends ChildSyntaxValueInsertStatement
-            implements ReturningInsert, ReturningInsert._ReturningInsertSpec {
-
-        private ChildValueReturningInsertStatement(ParentComplexValuesClause<?, ?> parentClause
-                , PrimaryComplexValuesClause<?, ?> clause) {
-            super(parentClause, clause);
+        private PrimaryValueReturningInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
+            super(clause);
         }
 
-    }//ChildValueReturningInsertStatement
+
+    }//PrimaryValueReturningInsertStatement
+
+    private static final class PrimaryChildValueReturningInsertStatement
+            extends ValueInsertStatement<Insert, ReturningInsert>
+            implements _PostgreInsert._PostgreChildValueInsert, ReturningInsert {
+
+        private final ValueInsertStatement<?, ?> parentStatement;
+
+        private PrimaryChildValueReturningInsertStatement(ValueInsertStatement<?, ?> parentStatement
+                , PostgreComplexInsertValuesClause<?, ?, ?, ?> childClause) {
+            super(childClause);
+            assert parentStatement instanceof PrimaryParentValueInsertStatement
+                    || parentStatement instanceof PrimaryParentValueReturningInsertStatement;
+            parentStatement.prepared();
+            this.parentStatement = parentStatement;
+        }
+
+        @Override
+        public _PostgreValueInsert parentStmt() {
+            return this.parentStatement;
+        }
+
+
+    }//PrimaryChildValueReturningInsertStatement
+
+    private static final class PrimaryParentValueReturningInsertStatement<C, P>
+            extends ValueInsertStatement<Insert, PostgreInsert._ParentReturnInsert<C, P>>
+            implements PostgreInsert._ParentReturnInsert<C, P>
+            , ValueSyntaxOptions {
+
+        private PrimaryParentValueReturningInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
+            super(clause);
+        }
+
+        @Override
+        public _ChildWithCteSpec<C, P> child() {
+            this.prepared();
+            return new ChildInsertIntoClause<>(this.context.criteria(), this
+                    , this::childInsertEnd, this::childReturningInsertEnd);
+        }
+
+        private Insert childInsertEnd(PostgreComplexInsertValuesClause<?, ?, ?, ?> childClause) {
+            if (childClause.rowPairList().size() != this.rowPairList.size()) {
+                throw CriteriaUtils.childParentRowNotMatch(childClause, this);
+            }
+            return new PrimaryChildValueInsertStatement(this, childClause)
+                    .asInsert();
+        }
+
+        private ReturningInsert childReturningInsertEnd(PostgreComplexInsertValuesClause<?, ?, ?, ?> childClause) {
+            if (childClause.rowPairList().size() != this.rowPairList.size()) {
+                throw CriteriaUtils.childParentRowNotMatch(childClause, this);
+            }
+            return new PrimaryChildValueReturningInsertStatement(this, childClause)
+                    .asReturningInsert();
+        }
+
+
+    }//PrimaryParentValueReturningInsertStatement
 
 
     private static final class SubValueInsertStatement
             extends ValueInsertStatement<SubInsert, SubReturningInsert>
-            implements SubInsert
-            , SubInsert._SubInsertSpec {
+            implements SubInsert {
 
-        private SubValueInsertStatement(SubComplexValuesClause<?, ?, ?, ?> clause) {
+        private SubValueInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
             super(clause);
         }
 
@@ -1885,10 +1773,9 @@ abstract class PostgreInserts extends InsertSupport {
 
     private static final class SubValueReturningInsertStatement
             extends ValueInsertStatement<SubInsert, SubReturningInsert>
-            implements SubReturningInsert
-            , SubReturningInsert._SubReturningInsertSpec {
+            implements SubReturningInsert {
 
-        private SubValueReturningInsertStatement(SubComplexValuesClause<?, ?, ?, ?> clause) {
+        private SubValueReturningInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
             super(clause);
         }
 
@@ -1897,7 +1784,8 @@ abstract class PostgreInserts extends InsertSupport {
 
     static abstract class QueryInsertStatement<I extends DmlInsert, Q extends DqlInsert>
             extends InsertSupport.AbstractQuerySyntaxInsertStatement<I, Q>
-            implements _PostgreInsert._PostgreQueryInsert, PostgreInsert {
+            implements _PostgreInsert._PostgreQueryInsert, PostgreInsert
+            , ValueSyntaxOptions {
 
         private final boolean recursive;
 
@@ -1911,7 +1799,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         private final List<? extends SelectItem> returningList;
 
-        private QueryInsertStatement(ComplexValuesClause<?, ?, ?, ?, ?, ?, ?, ?, ?> clause) {
+        private QueryInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
             super(clause);
             this.recursive = clause.recursive;
             this.cteList = clause.cteList;
@@ -1920,8 +1808,7 @@ abstract class PostgreInserts extends InsertSupport {
 
             this.conflictAction = clause.conflictAction;
             if (this instanceof DqlInsert) {
-                this.returningList = clause.returningList();
-                assert this.returningList.size() > 0;
+                this.returningList = clause.effectiveReturningList();
             } else {
                 this.returningList = Collections.emptyList();
             }
@@ -1963,6 +1850,23 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
+        public NullHandleMode nullHandle() {
+            //always null,query insert don't support
+            return null;
+        }
+
+        @Override
+        public boolean isMigration() {
+            //always true,query insert  do this
+            return true;
+        }
+
+        @Override
+        public LiteralMode literalMode() {
+            return LiteralMode.DEFAULT;
+        }
+
+        @Override
         public final String toString() {
             final String s;
             if (this.isPrepared()) {
@@ -1978,97 +1882,143 @@ abstract class PostgreInserts extends InsertSupport {
 
 
     private static final class PrimaryQueryInsertStatement extends QueryInsertStatement<Insert, ReturningInsert>
-            implements Insert, Insert._InsertSpec {
+            implements Insert {
 
-        private PrimaryQueryInsertStatement(PrimaryComplexValuesClause<?, ?> clause) {
+        private PrimaryQueryInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
             super(clause);
         }
 
-        private PrimaryQueryInsertStatement(ParentComplexValuesClause<?, ?> clause) {
-            super(clause);
-        }
 
     }//PrimaryQueryInsertStatement
 
-    private static final class PrimaryQueryReturningInsertStatement
-            extends QueryInsertStatement<Insert, ReturningInsert>
-            implements ReturningInsert, ReturningInsert._ReturningInsertSpec {
+    private static final class PrimaryChildQueryInsertStatement extends QueryInsertStatement<Insert, ReturningInsert>
+            implements Insert, _PostgreInsert._PostgreChildQueryInsert {
 
-        private PrimaryQueryReturningInsertStatement(PrimaryComplexValuesClause<?, ?> clause) {
+        private final QueryInsertStatement<?, ?> parentStatement;
+
+        private PrimaryChildQueryInsertStatement(QueryInsertStatement<?, ?> parentStatement
+                , PostgreComplexInsertValuesClause<?, ?, ?, ?> childClause) {
+            super(childClause);
+            assert parentStatement instanceof PrimaryParentQueryInsertStatement
+                    || parentStatement instanceof PrimaryParentQueryReturningInsertStatement;
+            parentStatement.prepared();
+            this.parentStatement = parentStatement;
+        }
+
+        @Override
+        public _PostgreQueryInsert parentStmt() {
+            return this.parentStatement;
+        }
+
+    }//PrimaryChildQueryInsertStatement
+
+
+    private static final class PrimaryParentQueryInsertStatement<C, P>
+            extends QueryInsertStatement<PostgreInsert._ParentInsert<C, P>, ReturningInsert>
+            implements PostgreInsert._ParentInsert<C, P> {
+
+        private PrimaryParentQueryInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
             super(clause);
         }
 
-        private PrimaryQueryReturningInsertStatement(ParentComplexValuesClause<?, ?> clause) {
+        @Override
+        public _ChildWithCteSpec<C, P> child() {
+            this.prepared();
+            return new ChildInsertIntoClause<>(this.context.criteria(), this
+                    , this::childInsertEnd, this::childReturningInsertEnd);
+        }
+
+        private Insert childInsertEnd(PostgreComplexInsertValuesClause<?, ?, ?, ?> childClause) {
+            return new PrimaryChildQueryInsertStatement(this, childClause)
+                    .asInsert();
+        }
+
+        private ReturningInsert childReturningInsertEnd(PostgreComplexInsertValuesClause<?, ?, ?, ?> childClause) {
+            return new PrimaryChildQueryReturningInsertStatement(this, childClause)
+                    .asReturningInsert();
+        }
+
+
+    }//PrimaryParentQueryInsertStatement
+
+    private static final class PrimaryQueryReturningInsertStatement
+            extends QueryInsertStatement<Insert, ReturningInsert>
+            implements ReturningInsert {
+
+        private PrimaryQueryReturningInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
             super(clause);
         }
 
 
     }//PrimaryQueryReturningInsertStatement
 
+    private static final class PrimaryChildQueryReturningInsertStatement
+            extends QueryInsertStatement<Insert, ReturningInsert>
+            implements ReturningInsert, _PostgreInsert._PostgreChildQueryInsert {
 
-    private static final class ChildQueryInsertStatement extends QueryInsertStatement<Insert, ReturningInsert>
-            implements _PostgreInsert._PostgreChildQueryInsert, Insert, Insert._InsertSpec {
+        private final QueryInsertStatement<?, ?> parentStatement;
 
-        private final QueryInsertStatement<Insert, ReturningInsert> parentStmt;
-
-
-        private ChildQueryInsertStatement(ParentComplexValuesClause<?, ?> parentClause
-                , final PrimaryComplexValuesClause<?, ?> clause) {
-            super(clause);
-            if (parentClause.hasReturningClause()) {
-                this.parentStmt = new PrimaryQueryReturningInsertStatement(parentClause);
-            } else {
-                this.parentStmt = new PrimaryQueryInsertStatement(parentClause);
-            }
+        private PrimaryChildQueryReturningInsertStatement(QueryInsertStatement<?, ?> parentStatement
+                , PostgreComplexInsertValuesClause<?, ?, ?, ?> childClause) {
+            super(childClause);
+            assert parentStatement instanceof PrimaryParentQueryInsertStatement
+                    || parentStatement instanceof PrimaryParentQueryReturningInsertStatement;
+            parentStatement.prepared();
+            this.parentStatement = parentStatement;
         }
 
         @Override
         public _PostgreQueryInsert parentStmt() {
-            return this.parentStmt;
+            return this.parentStatement;
         }
 
-    } //ChildQueryInsertStatement
-
-    private static final class ChildQueryReturningInsertStatement extends QueryInsertStatement<Insert, ReturningInsert>
-            implements _PostgreInsert._PostgreChildQueryInsert
-            , ReturningInsert, ReturningInsert._ReturningInsertSpec {
-
-        private final QueryInsertStatement<Insert, ReturningInsert> parentStmt;
+    }//PrimaryQueryReturningInsertStatement
 
 
-        private ChildQueryReturningInsertStatement(ParentComplexValuesClause<?, ?> parentClause
-                , final PrimaryComplexValuesClause<?, ?> clause) {
+    private static final class PrimaryParentQueryReturningInsertStatement<C, P>
+            extends QueryInsertStatement<Insert, PostgreInsert._ParentReturnInsert<C, P>>
+            implements PostgreInsert._ParentReturnInsert<C, P> {
+
+        private PrimaryParentQueryReturningInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
             super(clause);
-            if (parentClause.hasReturningClause()) {
-                this.parentStmt = new PrimaryQueryReturningInsertStatement(parentClause);
-            } else {
-                this.parentStmt = new PrimaryQueryInsertStatement(parentClause);
-            }
         }
 
         @Override
-        public _PostgreQueryInsert parentStmt() {
-            return this.parentStmt;
+        public _ChildWithCteSpec<C, P> child() {
+            this.prepared();
+            return new ChildInsertIntoClause<>(this.context.criteria(), this
+                    , this::childInsertEnd, this::childReturningInsertEnd);
         }
 
-    } //ChildQueryReturningInsertStatement
+        private Insert childInsertEnd(PostgreComplexInsertValuesClause<?, ?, ?, ?> childClause) {
+            return new PrimaryChildQueryInsertStatement(this, childClause)
+                    .asInsert();
+        }
+
+        private ReturningInsert childReturningInsertEnd(PostgreComplexInsertValuesClause<?, ?, ?, ?> childClause) {
+            return new PrimaryChildQueryReturningInsertStatement(this, childClause)
+                    .asReturningInsert();
+        }
+
+
+    }//PrimaryQueryReturningInsertStatement
+
 
     private static final class SubQueryInsertStatement extends QueryInsertStatement<SubInsert, SubReturningInsert>
-            implements SubInsert
-            , SubInsert._SubInsertSpec {
+            implements SubInsert {
 
-        private SubQueryInsertStatement(SubComplexValuesClause<?, ?, ?, ?> clause) {
+        private SubQueryInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
             super(clause);
         }
 
 
     }//SubQueryInsertStatement
 
-    private static final class SubQueryReturningInsertStatement extends QueryInsertStatement<SubInsert, SubReturningInsert>
-            implements SubReturningInsert
-            , SubReturningInsert._SubReturningInsertSpec {
+    private static final class SubQueryReturningInsertStatement
+            extends QueryInsertStatement<SubInsert, SubReturningInsert>
+            implements SubReturningInsert {
 
-        private SubQueryReturningInsertStatement(SubComplexValuesClause<?, ?, ?, ?> clause) {
+        private SubQueryReturningInsertStatement(PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
             super(clause);
         }
 

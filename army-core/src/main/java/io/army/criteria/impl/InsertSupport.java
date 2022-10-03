@@ -1390,7 +1390,7 @@ abstract class InsertSupport {
                     throw CriteriaContextStack.castCriteriaApi(this.context);
                 }
                 valuePairList.add(Collections.unmodifiableMap(currentPairMap));
-            } else if (currentPairMap != null) {
+            } else if (currentPairMap != null || this.rowPairList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.rowMap = new HashMap<>();

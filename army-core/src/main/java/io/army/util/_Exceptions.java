@@ -433,6 +433,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("returning dml no returning clause");
     }
 
+    public static CriteriaException valueChildAndParentRowNumNotMatch(ChildTableMeta<?> table, int childRows, int parentRows) {
+        String m = String.format("%s insert row number[%s] and parent insert row number[%s] not match"
+                , table, childRows, parentRows);
+        return new CriteriaException(m);
+    }
+
 
     public static ArmyException notServerVersion(ServerMeta meta) {
         String m = String.format("Currently,army don't support server[%s] yet.", meta);
