@@ -626,4 +626,11 @@ public interface Statement {
     }
 
 
+    interface _DmlInsertSpec<I extends Item> extends Item {
+
+        I asInsert();
+
+    }
+
+
 }

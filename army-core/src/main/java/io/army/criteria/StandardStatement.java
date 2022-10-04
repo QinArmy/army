@@ -6,6 +6,7 @@ package io.army.criteria;
  * </p>
  *
  * @see StandardQuery
+ * @see StandardInsert
  * @since 1.0
  */
 public interface StandardStatement extends Statement {

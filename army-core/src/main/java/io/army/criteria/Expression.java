@@ -18,7 +18,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression extends SelectionSpec, TypeInfer, SortItem, SqlOperand {
+public interface Expression extends SelectionSpec, TypeInfer, SortItem, RightOperand {
 
 
     /**

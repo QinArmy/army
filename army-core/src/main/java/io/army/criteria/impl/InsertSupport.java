@@ -2398,7 +2398,7 @@ abstract class InsertSupport {
             , Statement.StatementMockSpec
             , Statement
             , CriteriaContextSpec
-            , DmlInsert._DmlInsertSpec<I>, DqlInsert._DqlInsertSpec<Q> {
+            , Statement._DmlInsertSpec<I>, DqlInsert._DqlInsertSpec<Q> {
 
         final CriteriaContext context;
 
@@ -2647,7 +2647,7 @@ abstract class InsertSupport {
 
     static abstract class AbstractQuerySyntaxInsertStatement<I extends DmlInsert, Q extends DqlInsert>
             extends AbstractInsertStatement<I, Q>
-            implements _Insert._QueryInsert {
+            implements _Insert._QueryInsert, ValueSyntaxOptions {
 
         private final List<FieldMeta<?>> fieldList;
 
@@ -2677,12 +2677,30 @@ abstract class InsertSupport {
             return this.query;
         }
 
+        @Override
+        public final NullHandleMode nullHandle() {
+            //always null,query insert don't support this
+            return null;
+        }
+
+        @Override
+        public final boolean isMigration() {
+            //always true,query insert do this
+            return true;
+        }
+
+        @Override
+        public final LiteralMode literalMode() {
+            //always DEFAULT,query insert don't support this
+            return LiteralMode.DEFAULT;
+        }
+
+
     }//AbstractQuerySyntaxInsertStatement
 
 
     static abstract class QuerySyntaxInsertStatement<I extends DmlInsert>
-            extends AbstractQuerySyntaxInsertStatement<I, DqlInsert>
-            implements ValueSyntaxOptions {
+            extends AbstractQuerySyntaxInsertStatement<I, DqlInsert> {
 
 
         QuerySyntaxInsertStatement(_QueryInsert clause) {

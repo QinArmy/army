@@ -30,7 +30,7 @@ public interface DialectStatement extends Statement {
     }
 
 
-    interface _StaticReturningClause<I extends DmlInsert, Q extends DqlInsert> extends DmlInsert._DmlInsertSpec<I> {
+    interface _StaticReturningClause<I extends DmlInsert, Q extends DqlInsert> extends _DmlInsertSpec<I> {
 
         _StaticReturningCommaUnaryClause<Q> returning(SelectItem selectItem);
 
@@ -38,7 +38,7 @@ public interface DialectStatement extends Statement {
     }
 
 
-    interface _DynamicReturningClause<C, I extends DmlInsert, Q extends DqlInsert> extends DmlInsert._DmlInsertSpec<I> {
+    interface _DynamicReturningClause<C, I extends DmlInsert, Q extends DqlInsert> extends _DmlInsertSpec<I> {
 
         DqlInsert._DqlInsertSpec<Q> returningAll();
 

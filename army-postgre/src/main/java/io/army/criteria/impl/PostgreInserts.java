@@ -56,7 +56,7 @@ abstract class PostgreInserts extends InsertSupport {
 
 
     private static SubInsert createSubInsert(final PostgreComplexInsertValuesClause<?, ?, ?, ?> clause) {
-        final DmlInsert._DmlInsertSpec<SubInsert> spec;
+        final Statement._DmlInsertSpec<SubInsert> spec;
         final InsertMode mode = clause.getInsertMode();
         switch (mode) {
             case DOMAIN:
@@ -644,7 +644,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         private <P> PostgreInsert._ParentInsert<C, P> parentInsertEnd(final PostgreComplexInsertValuesClause<?, ?, PostgreInsert._ParentInsert<C, P>, ?> clause) {
-            final DmlInsert._DmlInsertSpec<PostgreInsert._ParentInsert<C, P>> spec;
+            final Statement._DmlInsertSpec<PostgreInsert._ParentInsert<C, P>> spec;
             final InsertMode mode;
             mode = clause.getInsertMode();
             switch (mode) {
@@ -684,7 +684,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         private Insert insertEnd(PostgreComplexInsertValuesClause<?, ?, Insert, ?> clause) {
-            final DmlInsert._DmlInsertSpec<Insert> spec;
+            final Statement._DmlInsertSpec<Insert> spec;
             final InsertMode mode;
             mode = clause.getInsertMode();
             switch (mode) {

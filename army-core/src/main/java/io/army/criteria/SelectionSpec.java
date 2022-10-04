@@ -13,7 +13,7 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface SelectionSpec extends TypeInfer.TypeUpdateSpec {
+public interface SelectionSpec extends TypeInfer.TypeUpdateSpec, Item {
 
     /**
      * @param alias non-null,non-empty.

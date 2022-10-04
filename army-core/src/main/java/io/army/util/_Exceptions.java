@@ -294,9 +294,9 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("unknown %s type.", query.getClass().getName()));
     }
 
-    public static CriteriaException setTargetAndValuePartNotMatch(SetLeftItem target, SqlOperand value) {
+    public static CriteriaException setTargetAndValuePartNotMatch(SetLeftItem target, RightOperand value) {
         return new CriteriaException(String.format("%s[%s] and %s[%s] not match.", SetLeftItem.class.getName(), target
-                , SqlOperand.class.getName(), value));
+                , RightOperand.class.getName(), value));
     }
 
     public static CriteriaException selfJoinNonQualifiedField(FieldMeta<?> field) {

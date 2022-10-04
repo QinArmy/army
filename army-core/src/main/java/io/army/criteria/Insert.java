@@ -171,6 +171,10 @@ public interface Insert extends DmlStatement, DmlInsert {
 
     }
 
+    interface _ParentInsert<CT> extends Insert, _ChildPartClause<CT> {
+
+    }
+
 
     interface _StaticValueLeftParenClause<C, T, RR> {
 

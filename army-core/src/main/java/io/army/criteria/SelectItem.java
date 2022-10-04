@@ -14,6 +14,6 @@ package io.army.criteria;
  * @see SelectionGroup
  * @since 1.0
  */
-public interface SelectItem {
+public interface SelectItem extends Item {
 
 }

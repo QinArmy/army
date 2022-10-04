@@ -11,12 +11,7 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface DmlInsert {
+public interface DmlInsert extends Item {
 
 
-    interface _DmlInsertSpec<I extends DmlInsert> {
-
-        I asInsert();
-
-    }
 }

@@ -17,4 +17,9 @@ public interface Selection extends SelectItem, TypeInfer, SortItem {
     String alias();
 
 
+    static Selection THIS(Selection selection) {
+        return selection;
+    }
+
+
 }

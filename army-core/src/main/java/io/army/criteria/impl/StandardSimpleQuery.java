@@ -58,14 +58,14 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     static <C> _SelectSpec<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
         return new SimpleScalarSubQuery<>(CriteriaContexts.subQueryContext(criteria));
     }
-    
+
 
     @Deprecated
     static <C> _SelectSpec<C, StandardInsert._InsertQuery> insertQuery(@Nullable C criteria, Function<SubQuery, Insert._InsertSpec> function) {
         return new InsertSubQuery<>(CriteriaContexts.subQueryContext(criteria), function);
     }
 
-    static <C, Q extends Query> _SelectSpec<C, Q> customSubQuery(@Nullable C criteria, CriteriaContext outerContext
+    static <C, Q extends Item> _SelectSpec<C, Q> customSubQuery(@Nullable C criteria, CriteriaContext outerContext
             , Function<SubQuery, Q> function) {
         //TODO
         throw new UnsupportedOperationException();
