@@ -1065,16 +1065,7 @@ abstract class Functions {
     }
 
 
-    /**
-     * <p>
-     * Package method that is used by army developer.
-     * </p>
-     *
-     * @return return argument subQuery
-     */
-    static SubQuery _thisSubQuery(final SubQuery subQuery) {
-        return subQuery;
-    }
+
 
 
 

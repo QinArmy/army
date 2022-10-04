@@ -1,8 +1,6 @@
 package io.army.criteria;
 
-/**
- * @param <E> {@link ScalarSubQuery}'s query result Java Type.
- */
+@Deprecated
 public interface ScalarSubQuery extends SubQuery, TypeInfer {
 
     default Selection selection() {

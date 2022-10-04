@@ -131,7 +131,7 @@ public interface DialectStatement extends Statement {
     }
 
 
-    interface _DialectSelectClause<C, W extends SQLWords, SR> extends Query.SelectClause<C, W, SR> {
+    interface _DialectSelectClause<C, W extends SQLWords, SR> extends Query._SelectClause<C, W, SR> {
 
         SR select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Consumer<SelectItem>> consumer);
 

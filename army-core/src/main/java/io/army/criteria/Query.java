@@ -31,7 +31,7 @@ public interface Query extends RowSet {
     /*################################## blow select clause  interfaces ##################################*/
 
 
-    interface SelectClause<C, W extends SQLWords, SR> {
+    interface _SelectClause<C, W extends SQLWords, SR> {
 
         SR select(SelectItem selectItem);
 

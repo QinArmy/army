@@ -1296,6 +1296,20 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
+    /*-------------------below package method-------------------*/
+
+    /**
+     * <p>
+     * Package method that is used by army developer.
+     * </p>
+     *
+     * @return return the argument subQuery
+     */
+    static SubQuery _thisSubQuery(final SubQuery subQuery) {
+        return subQuery;
+    }
+
+
     /**
      * <p>
      * This class representing sql {@code DEFAULT} key word.

@@ -896,7 +896,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     final Q finallyAsQuery(final boolean fromAsQueryMethod) {
         final Q thisQuery, resultQuery;
         if (this instanceof ScalarSubQuery) {
-            thisQuery = (Q) ScalarQueryExpression.from((ScalarSubQuery) this);
+            thisQuery = (Q) ScalarExpression.from((ScalarSubQuery) this);
         } else {
             thisQuery = (Q) this;
         }

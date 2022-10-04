@@ -56,10 +56,6 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
             final UnionAndRowSet unionAndRowSet = (UnionAndRowSet) this;
 
             spec = createUnionRowSet(unionAndRowSet.leftRowSet(), unionAndRowSet.unionType(), simpleBracket(thisQuery));
-        } else if (!(thisQuery instanceof ScalarQueryExpression)) {
-            throw asQueryMethodError();
-        } else if (((ScalarQueryExpression) thisQuery).subQuery != this) {
-            throw asQueryMethodError();
         } else {
             final UnionAndRowSet unionAndRowSet = (UnionAndRowSet) this;
             spec = createUnionRowSet(unionAndRowSet.leftRowSet(), unionAndRowSet.unionType(), simpleBracket(thisQuery));

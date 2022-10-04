@@ -89,10 +89,10 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
     @Override
     public final TypeMeta typeMeta() {
         final Q left = this.left;
-        if (!(left instanceof ScalarExpression)) {
+        if (!(left instanceof io.army.criteria.ScalarExpression)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return ((ScalarExpression) left).typeMeta();
+        return ((io.army.criteria.ScalarExpression) left).typeMeta();
     }
 
 
@@ -106,7 +106,7 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
         }
         final Q query;
         if (this instanceof ScalarSubQuery) {
-            query = (Q) ScalarQueryExpression.from((ScalarSubQuery) this);
+            query = (Q) ScalarExpression.from((ScalarSubQuery) this);
         } else {
             query = (Q) this;
         }

@@ -11,7 +11,7 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface RowSet {
+public interface RowSet extends Item {
 
     interface _RowSetSpec<R extends RowSet> {
 

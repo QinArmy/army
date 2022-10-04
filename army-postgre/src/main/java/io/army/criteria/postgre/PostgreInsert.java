@@ -11,7 +11,7 @@ import java.util.function.Supplier;
  * This interface representing postgre insert statement.
  * </p>
  *
- * @see <a href="https://www.postgresql.org/docs/current/sql-insert.html">Postgre insert syntax</a>
+ * @see <a href="https://www.postgresql.org/docs/current/sql-insert.html">Postgre INSERT syntax</a>
  * @since 1.0
  */
 public interface PostgreInsert extends DialectStatement {
@@ -251,7 +251,7 @@ public interface PostgreInsert extends DialectStatement {
 
     /**
      * <p>
-     * static sub-statement syntax forbid the with clause of cte insert,because it destroy the Readability of code.
+     * static sub-statement syntax forbid the WITH clause of cte insert,because it destroy the Readability of code.
      * </p>
      */
     interface _StaticSubPreferLiteralSpec<C, I extends Item, Q extends Item>
@@ -262,7 +262,7 @@ public interface PostgreInsert extends DialectStatement {
 
     /**
      * <p>
-     * static sub-statement syntax forbid the with clause of cte insert,because it destroy the Readability of code.
+     * static sub-statement syntax forbid the WITH clause of cte insert,because it destroy the Readability of code.
      * </p>
      */
     interface _StaticSubNullOptionSpec<C, I extends Item, Q extends Item>
@@ -273,7 +273,7 @@ public interface PostgreInsert extends DialectStatement {
 
     /**
      * <p>
-     * static sub-statement syntax forbid the with clause of cte insert,because it destroy the Readability of code.
+     * static sub-statement syntax forbid the WITH clause of cte insert,because it destroy the Readability of code.
      * </p>
      */
     interface _StaticSubOptionSpec<C, I extends Item, Q extends Item>
@@ -331,7 +331,7 @@ public interface PostgreInsert extends DialectStatement {
 
     /**
      * <p>
-     * Dynamic sub-statement syntax forbid static WITH syntax,because it destroy the simpleness of SQL.
+     * sub-statement syntax forbid static WITH syntax,because it destroy the simpleness of SQL.
      * </p>
      */
     interface _DynamicSubWithCteSpec<C, I extends Item, Q extends Item>
