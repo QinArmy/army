@@ -228,7 +228,7 @@ public abstract class SQLs extends StandardSyntax {
     static Expression _nonNullParam(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
         if (value == null) {
-            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), _Exceptions::expressionIsNull);
+            throw ContextStack.criteriaError(ContextStack.peek(), _Exceptions::expressionIsNull);
         } else if (value instanceof Expression) {
             resultExpression = (Expression) value;
         } else if (type instanceof TableField) {
@@ -326,10 +326,10 @@ public abstract class SQLs extends StandardSyntax {
     static ArmyExpression _nonNullExp(final @Nullable Object exp) {
         final Expression expression;
         if (exp == null) {
-            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), _Exceptions::expressionIsNull);
+            throw ContextStack.criteriaError(ContextStack.peek(), _Exceptions::expressionIsNull);
         } else if (exp instanceof Expression) {
             if (!(exp instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(CriteriaContextStack.peek());
+                throw ContextStack.nonArmyExp(ContextStack.peek());
             }
             expression = (Expression) exp;
         } else {
@@ -345,7 +345,7 @@ public abstract class SQLs extends StandardSyntax {
     static Expression _nonNullLiteral(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
         if (value == null) {
-            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), _Exceptions::expressionIsNull);
+            throw ContextStack.criteriaError(ContextStack.peek(), _Exceptions::expressionIsNull);
         } else if (value instanceof Expression) {
             resultExpression = (Expression) value;
         } else if (type instanceof TableField) {
@@ -1133,15 +1133,15 @@ public abstract class SQLs extends StandardSyntax {
      * </p>
      */
     public static <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
-        return CriteriaContextStack.peek().qualifiedField(tableAlias, field);
+        return ContextStack.peek().qualifiedField(tableAlias, field);
     }
 
     public static DerivedField ref(String derivedTable, String derivedFieldName) {
-        return CriteriaContextStack.peek().ref(derivedTable, derivedFieldName);
+        return ContextStack.peek().ref(derivedTable, derivedFieldName);
     }
 
     public static DerivedField outerRef(String derivedTable, String derivedFieldName) {
-        return CriteriaContextStack.peek().outerRef(derivedTable, derivedFieldName);
+        return ContextStack.peek().outerRef(derivedTable, derivedFieldName);
     }
 
 
@@ -1151,7 +1151,7 @@ public abstract class SQLs extends StandardSyntax {
      * </p>
      */
     public static Expression ref(String selectionAlias) {
-        return CriteriaContextStack.peek().ref(selectionAlias);
+        return ContextStack.peek().ref(selectionAlias);
     }
 
     /**
@@ -1162,7 +1162,7 @@ public abstract class SQLs extends StandardSyntax {
      * @throws CriteriaException when var not exists
      */
     public static VarExpression var(String varName) {
-        return CriteriaContextStack.root().var(varName);
+        return ContextStack.root().var(varName);
     }
 
 
@@ -1175,11 +1175,11 @@ public abstract class SQLs extends StandardSyntax {
      */
     public static VarExpression createVar(String varName, TypeMeta paramMeta)
             throws CriteriaException {
-        return CriteriaContextStack.root().createVar(varName, paramMeta);
+        return ContextStack.root().createVar(varName, paramMeta);
     }
 
     public static CteItem refCte(String cteName) {
-        return CriteriaContextStack.peek().refCte(cteName);
+        return ContextStack.peek().refCte(cteName);
     }
 
     public static StandardQuery._StandardNestedLeftParenClause<Void> nestedItems() {

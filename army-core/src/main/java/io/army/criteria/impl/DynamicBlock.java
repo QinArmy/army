@@ -29,7 +29,7 @@ abstract class DynamicBlock<C> implements JoinItemBlock<C>, ItemBlock<C>, Statem
     private List<_Predicate> predicateList;
 
     DynamicBlock(@Nullable C criteria, TabularItem tableItem, String alias) {
-        this.criteriaContext = CriteriaContextStack.getCurrentContext(criteria);
+        this.criteriaContext = ContextStack.getCurrentContext(criteria);
         this.tableItem = tableItem;
         this.alias = alias;
     }
@@ -102,7 +102,7 @@ abstract class DynamicBlock<C> implements JoinItemBlock<C>, ItemBlock<C>, Statem
 
     private JoinItemBlock<C> onClauseEnd(final List<_Predicate> predicateList) {
         if (this.predicateList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         this.predicateList = predicateList;
         return this;
@@ -114,7 +114,7 @@ abstract class DynamicBlock<C> implements JoinItemBlock<C>, ItemBlock<C>, Statem
             predicateList = new ArrayList<>();
             this.predicateList = predicateList;
         } else if (!(predicateList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         predicateList.add((OperationPredicate) predicate);
     }
@@ -122,9 +122,9 @@ abstract class DynamicBlock<C> implements JoinItemBlock<C>, ItemBlock<C>, Statem
     private JoinItemBlock<C> endOnClause() {
         final List<_Predicate> predicateList = this.predicateList;
         if (predicateList == null) {
-            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::predicateListIsEmpty);
+            throw ContextStack.criteriaError(this.criteriaContext, _Exceptions::predicateListIsEmpty);
         } else if (!(predicateList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         this.predicateList = _CollectionUtils.unmodifiableList(predicateList);
         return this;

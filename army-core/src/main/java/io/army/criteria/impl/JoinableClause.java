@@ -570,7 +570,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         } else if (this instanceof Values) {
             stmt = d.dialectStmt((Values) this, visible);
         } else {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return d.printStmt(stmt, none);
     }
@@ -587,14 +587,14 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         } else if (this instanceof Values) {
             stmt = _MockDialects.from(dialect).dialectStmt((Values) this, visible);
         } else {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return stmt;
     }
 
     @Deprecated
     void crossJoinEvent(boolean success) {
-        throw CriteriaContextStack.castCriteriaApi(this.context);
+        throw ContextStack.castCriteriaApi(this.context);
     }
 
 
@@ -603,14 +603,14 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
             return (FJ) this;
         }
         if (!(block instanceof DynamicBlock)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         final DynamicBlock<?> dynamicBlock = (DynamicBlock<?>) block;
         if (dynamicBlock.criteriaContext != this.context) {
             throw CriteriaUtils.criteriaContextNotMatch(this.context);
         }
         if (dynamicBlock.hasOnClause() == (joinType == _JoinType.CROSS_JOIN)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         this.blockConsumer.accept(this.clauseCreator.createDynamicBlock(joinType, dynamicBlock));
         return (FJ) this;
@@ -647,37 +647,37 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
         @Override
         public Void createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-            throw CriteriaContextStack.castCriteriaApi(CriteriaContextStack.peek());
+            throw ContextStack.castCriteriaApi(ContextStack.peek());
         }
 
         @Override
         public _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
-            throw CriteriaContextStack.castCriteriaApi(CriteriaContextStack.peek());
+            throw ContextStack.castCriteriaApi(ContextStack.peek());
         }
 
         @Override
         public _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
-            throw CriteriaContextStack.castCriteriaApi(CriteriaContextStack.peek());
+            throw ContextStack.castCriteriaApi(ContextStack.peek());
         }
 
         @Override
         public _TableBlock createDynamicBlock(_JoinType joinType, DynamicBlock<?> block) {
-            throw CriteriaContextStack.castCriteriaApi(CriteriaContextStack.peek());
+            throw ContextStack.castCriteriaApi(ContextStack.peek());
         }
 
         @Override
         public Void createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-            throw CriteriaContextStack.castCriteriaApi(CriteriaContextStack.peek());
+            throw ContextStack.castCriteriaApi(ContextStack.peek());
         }
 
         @Override
         public Void createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
-            throw CriteriaContextStack.castCriteriaApi(CriteriaContextStack.peek());
+            throw ContextStack.castCriteriaApi(ContextStack.peek());
         }
 
         @Override
         public Void createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
-            throw CriteriaContextStack.castCriteriaApi(CriteriaContextStack.peek());
+            throw ContextStack.castCriteriaApi(ContextStack.peek());
         }
 
 
@@ -722,7 +722,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         @Override
         public final LP leftParen(TableMeta<?> table) {
             if (this.blockList.size() != 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return this.createNoOnTableClause(_JoinType.NONE, null, table);
         }
@@ -785,19 +785,19 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
         @Override
         public LP createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
 
         @Override
         public JP createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
 
         @Override
         public final List<_TableBlock> tableBlockList() {
             final List<_TableBlock> blockList = this.blockList;
             if (blockList == null || blockList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return blockList;
         }
@@ -806,7 +806,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         final NestedItems endNestedItems() {
             final List<_TableBlock> blockList = this.blockList;
             if (!(blockList instanceof ArrayList) || blockList.size() == 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.blockList = _CollectionUtils.unmodifiableList(blockList);
             return this;
@@ -816,7 +816,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         final _TableBlock getFirstBlock() {
             final List<_TableBlock> blockList = this.blockList;
             if (blockList.size() == 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return blockList.get(0);
         }
@@ -824,7 +824,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         private void addFirstBlock(_TableBlock block) {
             final List<_TableBlock> blockList = this.blockList;
             if (!(blockList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             blockList.add(block);
         }
@@ -939,14 +939,14 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
                 predicateList = Collections.emptyList();
                 this.predicateList = predicateList;
             } else if (predicateList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return predicateList;
         }
 
         private FJ onClauseEnd(final List<_Predicate> predicateList) {
             if (this.predicateList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.predicateList = predicateList;
             return (FJ) this;
@@ -958,7 +958,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
                 predicateList = new ArrayList<>();
                 this.predicateList = predicateList;
             } else if (!(predicateList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
 
             predicateList.add((OperationPredicate) predicate);
@@ -967,9 +967,9 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         private FJ endOnClause() {
             final List<_Predicate> predicateList = this.predicateList;
             if (predicateList == null) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
+                throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
             } else if (!(predicateList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.predicateList = _CollectionUtils.unmodifiableList(predicateList);
             return (FJ) this;

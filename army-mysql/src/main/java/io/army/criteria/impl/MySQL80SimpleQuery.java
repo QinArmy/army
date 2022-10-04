@@ -156,7 +156,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     @Override
     public final Window._SimpleAsClause<C, _WindowCommaSpec<C, Q>> window(final String windowName) {
         if (!_StringUtils.hasText(windowName)) {
-            throw CriteriaContextStack.criteriaError(this.context, _Exceptions::namedWindowNoText);
+            throw ContextStack.criteriaError(this.context, _Exceptions::namedWindowNoText);
         }
         final Window._SimpleAsClause<C, _WindowCommaSpec<C, Q>> window;
         window = SimpleWindow.forStmt(windowName, this.context, this::windowEnd);
@@ -462,7 +462,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     @Override
     public final _PartitionJoinClause<C, Q> createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return new PartitionJoinClause<>(joinType, table, this);
     }
@@ -470,7 +470,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     @Override
     public final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock;
         noOnBlock = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, this);
@@ -493,7 +493,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     @Override
     public final _PartitionOnClause<C, Q> createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return new PartitionOnClause<>(joinType, table, this);
     }
@@ -501,7 +501,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     @Override
     public final _QueryUseIndexOnSpec<C, Q> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return new OnTableBlock<>(joinType, null, table, tableAlias, this);
     }
@@ -523,7 +523,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private _QueryIndexHintClause<C, _QueryUseIndexJoinSpec<C, Q>> getUserIndexClause() {
         final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock = this.noOnBlock;
         if (noOnBlock == null || this.context.lastTableBlockWithoutOnClause() != noOnBlock) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return noOnBlock.getUseIndexClause();
     }
@@ -534,7 +534,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         if (windowList == null) {
             this.windowList = windowList = new ArrayList<>();
         } else if (!(windowList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         windowList.add((Window) window);
         return this;
@@ -542,16 +542,16 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private void addWindow(final @Nullable Window window) {
         if (window == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         if (SimpleWindow.isIllegalWindow(window, this.context)) {
-            throw CriteriaContextStack.criteriaError(this.context, "Not MySQL window");
+            throw ContextStack.criteriaError(this.context, "Not MySQL window");
         }
         List<Window> windowList = this.windowList;
         if (windowList == null) {
             this.windowList = windowList = new ArrayList<>();
         } else if (!(windowList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         windowList.add(window);
     }
@@ -561,9 +561,9 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         if (windowList instanceof ArrayList) {
             this.windowList = _CollectionUtils.unmodifiableList(windowList);
         } else if (windowList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         } else if (required) {
-            throw CriteriaContextStack.criteriaError(this.context, _Exceptions::windowListIsEmpty);
+            throw ContextStack.criteriaError(this.context, _Exceptions::windowListIsEmpty);
         } else {
             this.windowList = Collections.emptyList();
         }

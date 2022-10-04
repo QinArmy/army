@@ -84,7 +84,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
         this.partitionList = _CollectionUtils.safeList(clause.partitionList);
 
         if (this.table == null || this.tableAlias == null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
 
     }
@@ -231,7 +231,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
         }
 
         if (this instanceof BatchUpdate && ((BatchUpdate<C, T>) this).paramList == null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
     }
 
@@ -268,7 +268,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
     public final TableMeta<?> table() {
         final TableMeta<?> table = this.table;
         if (table == null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return table;
     }
@@ -287,7 +287,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
     public final List<? extends _IndexHint> indexHintList() {
         final List<MySQLIndexHint> indexHintList = this.indexHintList;
         if (indexHintList == null || indexHintList instanceof ArrayList) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return indexHintList;
     }
@@ -334,7 +334,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
             indexHintList = new ArrayList<>();
             this.indexHintList = indexHintList;
         } else if (!(indexHintList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         indexHintList.add(indexHint);
         return (UT) this;
@@ -342,7 +342,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
 
     private OR orderByEnd(final List<ArmySortItem> itemList) {
         if (this.orderByList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         this.orderByList = itemList;
         return (OR) this;
@@ -385,13 +385,13 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
 
         private SingleUpdateClause(@Nullable C criteria) {
             super(CriteriaContexts.primarySingleDmlContext(criteria));
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            ContextStack.setContextStack(this.criteriaContext);
         }
 
         @Override
         final void doWithCte(boolean recursive, List<_Cte> cteList) {
             if (this.cteList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.recursive = recursive;
             this.cteList = cteList;
@@ -428,10 +428,10 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
         public final AR as(final String alias) {
             final List<String> partitionList = this.partitionList;
             if (partitionList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             if (!_StringUtils.hasText(alias)) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::tableAliasIsEmpty);
+                throw ContextStack.criteriaError(this.context, _Exceptions::tableAliasIsEmpty);
             }
             return this.partitionAsEnd(partitionList, alias);
         }
@@ -439,7 +439,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
         @Override
         final Statement._AsClause<AR> stringConsumerEnd(List<String> stringList) {
             if (this.partitionList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.partitionList = stringList;
             return this;

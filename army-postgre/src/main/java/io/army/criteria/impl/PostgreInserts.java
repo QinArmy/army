@@ -133,9 +133,9 @@ abstract class PostgreInserts extends InsertSupport {
         @Override
         public PostgreInsert._ConflictOpClassSpec<C, T, I, Q> collation(final @Nullable String collationName) {
             if (collationName == null) {
-                throw CriteriaContextStack.nullPointer(this.clause.valuesClause.context);
+                throw ContextStack.nullPointer(this.clause.valuesClause.context);
             } else if (this.collationName != null || this.opclass != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.clause.valuesClause.context);
+                throw ContextStack.castCriteriaApi(this.clause.valuesClause.context);
             }
             this.collationName = collationName;
             return this;
@@ -159,7 +159,7 @@ abstract class PostgreInserts extends InsertSupport {
         @Override
         public PostgreInsert._ConflictTargetCommaSpec<C, T, I, Q> opClass() {
             if (this.opclass != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.clause.valuesClause.context);
+                throw ContextStack.castCriteriaApi(this.clause.valuesClause.context);
             }
             this.opclass = Boolean.TRUE;
             return this;
@@ -168,7 +168,7 @@ abstract class PostgreInserts extends InsertSupport {
         @Override
         public PostgreInsert._ConflictTargetCommaSpec<C, T, I, Q> ifOpClass(BooleanSupplier supplier) {
             if (this.opclass != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.clause.valuesClause.context);
+                throw ContextStack.castCriteriaApi(this.clause.valuesClause.context);
             }
             if (supplier.getAsBoolean()) {
                 this.opclass = Boolean.TRUE;
@@ -287,7 +287,7 @@ abstract class PostgreInserts extends InsertSupport {
                 targetItemList = new ArrayList<>();
                 this.targetItemList = targetItemList;
             } else if (!(targetItemList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.valuesClause.context);
+                throw ContextStack.castCriteriaApi(this.valuesClause.context);
             }
             final ConflictTargetItem<C, T, I, Q> item = new ConflictTargetItem<>(this, indexColumn);
             targetItemList.add(item);
@@ -297,9 +297,9 @@ abstract class PostgreInserts extends InsertSupport {
         @Override
         public PostgreInsert._ConflictActionClause<C, T, I, Q> onConstraint(final @Nullable String constraintName) {
             if (this.constraintName != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.valuesClause.context);
+                throw ContextStack.castCriteriaApi(this.valuesClause.context);
             } else if (constraintName == null) {
-                throw CriteriaContextStack.nullPointer(this.valuesClause.context);
+                throw ContextStack.nullPointer(this.valuesClause.context);
             }
             this.constraintName = constraintName;
             return this;
@@ -323,7 +323,7 @@ abstract class PostgreInserts extends InsertSupport {
             if (targetItemList instanceof ArrayList) {
                 this.targetItemList = Collections.unmodifiableList(targetItemList);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.valuesClause.context);
+                throw ContextStack.castCriteriaApi(this.valuesClause.context);
             }
             return this;
         }
@@ -355,7 +355,7 @@ abstract class PostgreInserts extends InsertSupport {
         private ConflictActionClauseResult(OnConflictClause<?, ?, ?, ?> clause) {
             this.targetItemList = _CollectionUtils.safeList(clause.targetItemList);
             if (this.targetItemList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(clause.valuesClause.context);
+                throw ContextStack.castCriteriaApi(clause.valuesClause.context);
             }
             this.indexPredicateList = clause.predicateList();
             this.constraintName = clause.constraintName;
@@ -369,7 +369,7 @@ abstract class PostgreInserts extends InsertSupport {
                 , List<_Predicate> updatePredicateList) {
             this.targetItemList = _CollectionUtils.safeList(clause.targetItemList);
             if (this.targetItemList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(clause.valuesClause.context);
+                throw ContextStack.castCriteriaApi(clause.valuesClause.context);
             }
             this.indexPredicateList = clause.predicateList();
             this.constraintName = clause.constraintName;
@@ -437,10 +437,10 @@ abstract class PostgreInserts extends InsertSupport {
             final StaticCteComplexCommandClause<C, PostgreInsert._ParentCteComma<C>, PostgreInsert._ParentCteComma<C>> commandClause;
             commandClause = this.commandClause;
             if (name == null) {
-                throw CriteriaContextStack.nullPointer(commandClause.context);
+                throw ContextStack.nullPointer(commandClause.context);
             }
             if (commandClause.name != null) {
-                throw CriteriaContextStack.castCriteriaApi(commandClause.context);
+                throw ContextStack.castCriteriaApi(commandClause.context);
             }
             commandClause.context.onStartCte(name);
             commandClause.name = name;
@@ -477,10 +477,10 @@ abstract class PostgreInserts extends InsertSupport {
             complexClause = this.commandClause;
             if (complexClause.name != null) {
                 //last cte don't end
-                throw CriteriaContextStack.castCriteriaApi(complexClause.context);
+                throw ContextStack.castCriteriaApi(complexClause.context);
             }
             if (name == null) {
-                throw CriteriaContextStack.nullPointer(complexClause.context);
+                throw ContextStack.nullPointer(complexClause.context);
             }
             complexClause.context.onStartCte(name);
             complexClause.name = name;
@@ -555,7 +555,7 @@ abstract class PostgreInserts extends InsertSupport {
         @Override
         PostgreInsert._StaticCteAsClause<C, I, Q> stringConsumerEnd(final List<String> stringList) {
             if (this.columnAliasList != null || stringList.size() == 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.columnAliasList = stringList;
             this.context.onCteColumnAlias(this.name, stringList);
@@ -593,7 +593,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         private PrimaryInsertIntoClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
 
 
@@ -601,7 +601,7 @@ abstract class PostgreInserts extends InsertSupport {
         public PostgreInsert._StaticCteLeftParenSpec<C, PostgreInsert._ParentCteComma<C>, PostgreInsert._ParentCteComma<C>> with(final @Nullable String name) {
             final CriteriaContext context = this.context;
             if (name == null) {
-                throw CriteriaContextStack.nullPointer(context);
+                throw ContextStack.nullPointer(context);
             }
             final boolean recursive = false;
             context.onBeforeWithClause(recursive);
@@ -613,7 +613,7 @@ abstract class PostgreInserts extends InsertSupport {
         public PostgreInsert._StaticCteLeftParenSpec<C, PostgreInsert._ParentCteComma<C>, PostgreInsert._ParentCteComma<C>> withRecursive(final @Nullable String name) {
             final CriteriaContext context = this.context;
             if (name == null) {
-                throw CriteriaContextStack.nullPointer(context);
+                throw ContextStack.nullPointer(context);
             }
             final boolean recursive = true;
             context.onBeforeWithClause(recursive);
@@ -740,14 +740,14 @@ abstract class PostgreInserts extends InsertSupport {
             super(parentOption, CriteriaContexts.primaryInsertContext(criteria));
             this.dmlFunction = dmlFunction;
             this.dqlFunction = dqlFunction;
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
 
         @Override
         public PostgreInsert._StaticCteLeftParenSpec<C, PostgreInsert._ChildCteComma<C, P>, PostgreInsert._ChildCteComma<C, P>> with(final @Nullable String name) {
             final CriteriaContext context = this.context;
             if (name == null) {
-                throw CriteriaContextStack.nullPointer(context);
+                throw ContextStack.nullPointer(context);
             }
             final boolean recursive = false;
             context.onBeforeWithClause(recursive);
@@ -759,7 +759,7 @@ abstract class PostgreInserts extends InsertSupport {
         public PostgreInsert._StaticCteLeftParenSpec<C, PostgreInsert._ChildCteComma<C, P>, PostgreInsert._ChildCteComma<C, P>> withRecursive(final @Nullable String name) {
             final CriteriaContext context = this.context;
             if (name == null) {
-                throw CriteriaContextStack.nullPointer(context);
+                throw ContextStack.nullPointer(context);
             }
             final boolean recursive = true;
             context.onBeforeWithClause(recursive);
@@ -800,7 +800,7 @@ abstract class PostgreInserts extends InsertSupport {
             this.dmlFunction = dmlFunction;
             this.dqlFunction = dqlFunction;
             //just push sub context,here don't need to start cte
-            CriteriaContextStack.push(this.context);
+            ContextStack.push(this.context);
 
         }
 
@@ -859,7 +859,7 @@ abstract class PostgreInserts extends InsertSupport {
             //firstly,onStartCte
             outContext.onStartCte(name);
             //secondly,push context
-            CriteriaContextStack.push(this.context);
+            ContextStack.push(this.context);
             this.endSuppler = endSuppler;
 
         }
@@ -867,7 +867,7 @@ abstract class PostgreInserts extends InsertSupport {
         @Override
         public Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<C, I, I>> leftParen(String string) {
             if (this.columnAliasList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.columnAliasList = Collections.singletonList(string);
             return this;
@@ -929,7 +929,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         private PostgreInsert._DynamicSubOptionSpec<C, I, I> columnAliasClauseEnd(final List<String> aliasList) {
             if (this.columnAliasList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             final CriteriaContext outerContext;
             outerContext = this.context.getOuterContext();
@@ -1042,7 +1042,7 @@ abstract class PostgreInserts extends InsertSupport {
         @Override
         public PostgreInsert._ColumnListSpec<C, T, I, Q> as(final @Nullable String alias) {
             if (alias == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             }
             this.tableAlias = alias;
             return this;
@@ -1107,7 +1107,7 @@ abstract class PostgreInserts extends InsertSupport {
                 selectItemList = new ArrayList<>();
                 this.selectItemList = selectItemList;
             } else if (!(selectItemList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             selectItemList.add(selectItem);
             return this;
@@ -1120,7 +1120,7 @@ abstract class PostgreInserts extends InsertSupport {
                 selectItemList = new ArrayList<>();
                 this.selectItemList = selectItemList;
             } else if (!(selectItemList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             selectItemList.add(selectItem1);
             selectItemList.add(selectItem2);
@@ -1131,7 +1131,7 @@ abstract class PostgreInserts extends InsertSupport {
         public DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<SelectItem>> consumer) {
             consumer.accept(this::comma);
             if (this.selectItemList == null) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::returningListEmpty);
+                throw ContextStack.criteriaError(this.context, _Exceptions::returningListEmpty);
             }
             return this;
         }
@@ -1140,7 +1140,7 @@ abstract class PostgreInserts extends InsertSupport {
         public DqlInsert._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<SelectItem>> consumer) {
             consumer.accept(this.criteria, this::comma);
             if (this.selectItemList == null) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::returningListEmpty);
+                throw ContextStack.criteriaError(this.context, _Exceptions::returningListEmpty);
             }
             return this;
         }
@@ -1148,7 +1148,7 @@ abstract class PostgreInserts extends InsertSupport {
         @Override
         public DqlInsert._DqlInsertSpec<Q> returningAll() {
             if (this.selectItemList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.selectItemList = RETURNING_ALL;
             return this;
@@ -1157,7 +1157,7 @@ abstract class PostgreInserts extends InsertSupport {
         @Override
         public I asInsert() {
             if (this.selectItemList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return this.dmlFunction.apply(this);
         }
@@ -1167,7 +1167,7 @@ abstract class PostgreInserts extends InsertSupport {
             final List<SelectItem> selectItemList = this.selectItemList;
             if (selectItemList != RETURNING_ALL) {
                 if (!(selectItemList instanceof ArrayList && selectItemList.size() > 0)) {
-                    throw CriteriaContextStack.castCriteriaApi(this.context);
+                    throw ContextStack.castCriteriaApi(this.context);
                 }
                 this.selectItemList = _CollectionUtils.unmodifiableList(selectItemList);
             }
@@ -1176,7 +1176,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         private PostgreInsert._ReturningSpec<C, I, Q> conflictClauseEnd(_PostgreInsert._ConflictActionClauseResult result) {
             if (this.conflictAction != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.conflictAction = result;
             return this;
@@ -1188,7 +1188,7 @@ abstract class PostgreInserts extends InsertSupport {
             if (selectItemList == RETURNING_ALL) {
                 effectiveList = this.effectiveFieldList();
             } else if (selectItemList == null || selectItemList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             } else {
                 effectiveList = selectItemList;
             }

@@ -1,24 +1,24 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.ScalarExpression;
-import io.army.criteria.ScalarSubQuery;
 import io.army.criteria.SelectItem;
 import io.army.criteria.Selection;
+import io.army.criteria.SubQuery;
 import io.army.dialect._SqlContext;
 import io.army.meta.TypeMeta;
 
 import java.util.List;
 
-final class ScalarSubQueryExpression extends OperationExpression implements ScalarExpression {
+final class ScalarQueryExpression extends OperationExpression implements ScalarExpression {
 
-    static ScalarSubQueryExpression create(ScalarSubQuery subQuery) {
-        return new ScalarSubQueryExpression(subQuery);
+    static ScalarQueryExpression from(SubQuery subQuery) {
+        return new ScalarQueryExpression(subQuery);
     }
 
 
-    final ScalarSubQuery subQuery;
+    final SubQuery subQuery;
 
-    private ScalarSubQueryExpression(ScalarSubQuery subQuery) {
+    private ScalarQueryExpression(SubQuery subQuery) {
         this.subQuery = subQuery;
     }
 

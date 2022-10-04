@@ -30,7 +30,7 @@ final class DualPredicate extends OperationPredicate {
                         && operator != DualOperator.IN
                         && operator != DualOperator.NOT_IN) {
                     String m = String.format("operator[%s] don't support multi  parameter(literal)", operator);
-                    throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+                    throw ContextStack.criteriaError(ContextStack.peek(), m);
                 }
                 final ArmyExpression rightExp = (ArmyExpression) right;
                 if (rightExp.isNullValue()) {

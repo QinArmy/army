@@ -51,7 +51,7 @@ abstract class CriteriaContexts {
     }
 
     static CriteriaContext subQueryContext(final @Nullable Object criteria) {
-        return new SimpleQueryContext(CriteriaContextStack.peek(), criteria);
+        return new SimpleQueryContext(ContextStack.peek(), criteria);
     }
 
     static CriteriaContext subQueryContextFrom(final Query query) {
@@ -59,7 +59,7 @@ abstract class CriteriaContexts {
         leftContext = (StatementContext) ((CriteriaContextSpec) query).getContext();
 
         final SimpleQueryContext context;
-        context = new SimpleQueryContext(CriteriaContextStack.peek(), ((CriteriaSpec<?>) query).getCriteria());
+        context = new SimpleQueryContext(ContextStack.peek(), ((CriteriaSpec<?>) query).getCriteria());
         ((StatementContext) context).varMap = leftContext.varMap;
         return context;
     }
@@ -70,7 +70,7 @@ abstract class CriteriaContexts {
         leftContext = (StatementContext) ((CriteriaContextSpec) left).getContext();
         final CriteriaContext outerContext;
         if (left instanceof SubStatement) {
-            outerContext = CriteriaContextStack.peek();
+            outerContext = ContextStack.peek();
         } else {
             outerContext = null;
         }
@@ -85,7 +85,7 @@ abstract class CriteriaContexts {
         leftContext = (StatementContext) ((CriteriaContextSpec) rowSet).getContext();
         final CriteriaContext outerContext;
         if (rowSet instanceof SubStatement) {
-            outerContext = CriteriaContextStack.peek();
+            outerContext = ContextStack.peek();
         } else {
             outerContext = null;
         }
@@ -100,7 +100,7 @@ abstract class CriteriaContexts {
         leftContext = (StatementContext) ((CriteriaContextSpec) left).getContext();
         final CriteriaContext outerContext;
         if (left instanceof SubStatement) {
-            outerContext = CriteriaContextStack.peek();
+            outerContext = ContextStack.peek();
         } else {
             outerContext = null;
         }
@@ -117,7 +117,7 @@ abstract class CriteriaContexts {
     }
 
     static CriteriaContext cteInsertContext(CriteriaContext outContext, @Nullable Object criteria) {
-        assert CriteriaContextStack.peek() == outContext;
+        assert ContextStack.peek() == outContext;
         final StatementContext subContext;
         subContext = new SubInsertContext(outContext, criteria);
         subContext.varMap = ((StatementContext) outContext).varMap;
@@ -138,7 +138,7 @@ abstract class CriteriaContexts {
     }
 
     static CriteriaContext subValuesContext(@Nullable Object criteria) {
-        return new ValuesContext(CriteriaContextStack.peek(), criteria);
+        return new ValuesContext(ContextStack.peek(), criteria);
     }
 
     static CriteriaContext otherPrimaryContext(@Nullable Object criteria) {
@@ -175,24 +175,24 @@ abstract class CriteriaContexts {
 
     private static CriteriaException invalidRef(CriteriaContext context, String subQueryAlias, String fieldName) {
         String m = String.format("ref of %s.%s is invalid.", subQueryAlias, fieldName);
-        return CriteriaContextStack.criteriaError(context, m);
+        return ContextStack.criteriaError(context, m);
     }
 
 
     private static CriteriaException currentlyCannotRefSelection(CriteriaContext context, String selectionAlias) {
         String m = String.format("currently,couldn't reference %s[%s],please check your syntax."
                 , Selection.class.getName(), selectionAlias);
-        throw CriteriaContextStack.criteriaError(context, m);
+        throw ContextStack.criteriaError(context, m);
     }
 
     private static CriteriaException notFoundCte(CriteriaContext context, String name) {
         String m = String.format("Not found the %s[%s]", _Cte.class.getName(), name);
-        return CriteriaContextStack.criteriaError(context, m);
+        return ContextStack.criteriaError(context, m);
     }
 
     private static CriteriaException referenceCteSyntaxError(CriteriaContext context, String cteName) {
         String m = String.format("reference cte[%s] syntax error.", cteName);
-        return CriteriaContextStack.criteriaError(context, m);
+        return ContextStack.criteriaError(context, m);
     }
 
     private static CriteriaException notFoundDerivedGroup(CriteriaContext context, List<DerivedGroup> groupList) {
@@ -209,7 +209,7 @@ abstract class CriteriaContexts {
             count++;
         }
         builder.append(']');
-        return CriteriaContextStack.criteriaError(context, builder.toString());
+        return ContextStack.criteriaError(context, builder.toString());
     }
 
 
@@ -233,7 +233,7 @@ abstract class CriteriaContexts {
             }
         }
         builder.append(']');
-        return CriteriaContextStack.criteriaError(context, builder.toString());
+        return ContextStack.criteriaError(context, builder.toString());
     }
 
     private static CriteriaException unknownWindows(CriteriaContext context, Map<String, Boolean> refWindowNameMap) {
@@ -247,7 +247,7 @@ abstract class CriteriaContexts {
             builder.append(windowName);
             index++;
         }
-        return CriteriaContextStack.criteriaError(context, builder.toString());
+        return ContextStack.criteriaError(context, builder.toString());
     }
 
 
@@ -337,7 +337,7 @@ abstract class CriteriaContexts {
         @Override
         public final CteConsumer onBeforeWithClause(final boolean recursive) {
             if (this.withClauseCteMap != null || this.withClauseEnd) {
-                throw CriteriaContextStack.castCriteriaApi(this);
+                throw ContextStack.castCriteriaApi(this);
             }
             this.recursive = recursive;
             this.withClauseCteMap = new HashMap<>();
@@ -350,12 +350,12 @@ abstract class CriteriaContexts {
             assert withContext != null;
             if (withContext.currentName != null) {
                 String m = String.format("Cte[%s] don't end,couldn't start new Cte[%s]", withContext.currentName, name);
-                throw CriteriaContextStack.criteriaError(this, m);
+                throw ContextStack.criteriaError(this, m);
             }
             final List<_Cte> cteList = withContext.cteList;
             if (cteList != null && !(cteList instanceof ArrayList)) {
                 // with clause have ended
-                throw CriteriaContextStack.castCriteriaApi(this);
+                throw ContextStack.castCriteriaApi(this);
             }
             withContext.currentName = name;
         }
@@ -391,12 +391,12 @@ abstract class CriteriaContexts {
                 withContext.cteList = cteList;
             } else if (!(cteList instanceof ArrayList)) {
                 // with clause end
-                throw CriteriaContextStack.castCriteriaApi(this);
+                throw ContextStack.castCriteriaApi(this);
             }
 
             if (cteMap.putIfAbsent(currentName, cteImpl) != null) {
                 String m = String.format("Cte[%s] duplication", currentName);
-                throw CriteriaContextStack.criteriaError(this, m);
+                throw ContextStack.criteriaError(this, m);
             }
             cteList.add(cteImpl);
 
@@ -414,7 +414,7 @@ abstract class CriteriaContexts {
             final String currentName = withContext.currentName;
             if (currentName != null) {
                 String m = String.format("Cte[%s] don't end,couldn't end WITH clause.", currentName);
-                throw CriteriaContextStack.criteriaError(this, m);
+                throw ContextStack.criteriaError(this, m);
             }
 
             final Map<String, SQLs.CteImpl> cteMap = withContext.cteMap;
@@ -422,7 +422,7 @@ abstract class CriteriaContexts {
             if (cteList == null) {
                 assert cteMap == null;
                 if (required) {
-                    throw CriteriaContextStack.criteriaError(this, "You don't add any cte.");
+                    throw ContextStack.criteriaError(this, "You don't add any cte.");
                 }
                 cteList = Collections.emptyList();
                 withContext.cteMap = Collections.emptyMap();
@@ -431,7 +431,7 @@ abstract class CriteriaContexts {
                 cteList = _CollectionUtils.unmodifiableList(cteList);
                 withContext.cteMap = Collections.unmodifiableMap(cteMap);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this);
+                throw ContextStack.castCriteriaApi(this);
             }
             withContext.cteList = cteList;
             return cteList;
@@ -492,7 +492,7 @@ abstract class CriteriaContexts {
             } catch (ClassCastException e) {
                 String m = String.format("Criteria cast failure,please check %s method parameter type."
                         , Function.class.getName());
-                throw CriteriaContextStack.criteriaError(this, m);
+                throw ContextStack.criteriaError(this, m);
             }
         }
 
@@ -514,74 +514,74 @@ abstract class CriteriaContexts {
 
         @Override
         public boolean isExistWindow(String windowName) {
-            throw CriteriaContextStack.criteriaError(this, "current context don't support isExistWindow(windowName)");
+            throw ContextStack.criteriaError(this, "current context don't support isExistWindow(windowName)");
         }
 
         @Override
         public void onAddWindow(String windowName) {
-            throw CriteriaContextStack.criteriaError(this, "current context don't support registerRefWindow(windowName)");
+            throw ContextStack.criteriaError(this, "current context don't support registerRefWindow(windowName)");
         }
 
         @Override
         public void onRefWindow(String windowName) {
-            throw CriteriaContextStack.criteriaError(this, "current context don't support onRefWindow(windowName)");
+            throw ContextStack.criteriaError(this, "current context don't support onRefWindow(windowName)");
         }
 
         @Override
         public TableMeta<?> getTable(String tableAlias) {
             String m = "current context don't support containTableAlias(tableAlias)";
-            throw CriteriaContextStack.criteriaError(this, m);
+            throw ContextStack.criteriaError(this, m);
         }
 
         @Override
         public DerivedField ref(String derivedTable, String derivedFieldName) {
             String m = "current context don't support ref(derivedTable,derivedFieldName)";
-            throw CriteriaContextStack.criteriaError(this, m);
+            throw ContextStack.criteriaError(this, m);
         }
 
         @Override
         public <T> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field) {
             String m = "current context don't support qualifiedField(tableAlias,field)";
-            throw CriteriaContextStack.criteriaError(this, m);
+            throw ContextStack.criteriaError(this, m);
         }
 
         @Override
         public DerivedField outerRef(String derivedTable, String derivedFieldName) {
             String m = "current context don't support lateralRef(derivedTable,derivedFieldName)";
-            throw CriteriaContextStack.criteriaError(this, m);
+            throw ContextStack.criteriaError(this, m);
         }
 
         @Override
         public Expression ref(String selectionAlias) {
             String m = "current context don't support ref(selectionAlias)";
-            throw CriteriaContextStack.criteriaError(this, m);
+            throw ContextStack.criteriaError(this, m);
         }
 
         @Override
         public void onAddBlock(_TableBlock block) {
             String m = "current context don't support onAddBlock(block)";
-            throw CriteriaContextStack.criteriaError(this, m);
+            throw ContextStack.criteriaError(this, m);
         }
 
         @Override
         public _TableBlock lastTableBlockWithoutOnClause() {
             String m = "current context don't support lastTableBlockWithoutOnClause()";
-            throw CriteriaContextStack.criteriaError(this, m);
+            throw ContextStack.criteriaError(this, m);
         }
 
         private void addCte(final _Cte cte) {
             final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
             if (withClauseCteMap == null || this.withClauseEnd) {
-                throw CriteriaContextStack.castCriteriaApi(this);
+                throw ContextStack.castCriteriaApi(this);
             }
             if (!(cte instanceof SQLs.CteImpl)) {
                 String m = String.format("Illegal implementation of %s", _Cte.class.getName());
-                throw CriteriaContextStack.criteriaError(this, m);
+                throw ContextStack.criteriaError(this, m);
             }
             final SQLs.CteImpl cteImpl = (SQLs.CteImpl) cte;
             if (withClauseCteMap.putIfAbsent(cteImpl.name, cteImpl) != null) {
                 String m = String.format("%s %s duplication.", _Cte.class.getName(), cteImpl.name);
-                throw CriteriaContextStack.criteriaError(this, m);
+                throw ContextStack.criteriaError(this, m);
             }
             final Map<String, RefCte> refCteMap = this.refCteMap;
             if (refCteMap == null || refCteMap.size() == 0) {
@@ -669,7 +669,7 @@ abstract class CriteriaContexts {
         public final void onAddBlock(final _TableBlock block) {
             final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
             if (aliasToBlock == null) {
-                throw CriteriaContextStack.castCriteriaApi(this);
+                throw ContextStack.castCriteriaApi(this);
             }
             final List<_TableBlock> tableBlockList = this.tableBlockList;
             final int oldBlockSize = tableBlockList.size();
@@ -681,18 +681,18 @@ abstract class CriteriaContexts {
                 if ("".equals(alias)) {
                     alias = ((CteItem) tableItem).name();//modify alias
                 } else if (!_StringUtils.hasText(alias)) {
-                    throw CriteriaContextStack.criteriaError(this, _Exceptions::tableItemAliasNoText, tableItem);
+                    throw ContextStack.criteriaError(this, _Exceptions::tableItemAliasNoText, tableItem);
                 }
             }
             if (tableItem instanceof NestedItems) {
                 if (_StringUtils.hasText(alias)) {
-                    throw CriteriaContextStack.criteriaError(this, _Exceptions::nestedItemsAliasHasText, alias);
+                    throw ContextStack.criteriaError(this, _Exceptions::nestedItemsAliasHasText, alias);
                 }
                 this.addNestedItems((NestedItems) tableItem);
             } else if (!_StringUtils.hasText(alias)) {
-                throw CriteriaContextStack.criteriaError(this, _Exceptions::tableItemAliasNoText, tableItem);
+                throw ContextStack.criteriaError(this, _Exceptions::tableItemAliasNoText, tableItem);
             } else if (aliasToBlock.putIfAbsent(alias, block) != null) {
-                throw CriteriaContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
+                throw ContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
             } else if (tableItem instanceof DerivedTable) {
                 this.doOnAddDerived((DerivedTable) tableItem, alias);
             }
@@ -742,7 +742,7 @@ abstract class CriteriaContexts {
         @Override
         public final <T> QualifiedField<T> qualifiedField(final String tableAlias, final FieldMeta<T> field) {
             if (!(this.aliasToBlock instanceof HashMap)) {
-                throw CriteriaContextStack.castCriteriaApi(this);
+                throw ContextStack.castCriteriaApi(this);
             }
             Map<String, Map<FieldMeta<?>, QualifiedField<?>>> qualifiedFieldMap = this.qualifiedFieldMap;
             if (qualifiedFieldMap == null) {
@@ -757,7 +757,7 @@ abstract class CriteriaContexts {
         public final DerivedField ref(final String derivedTable, final String fieldName) {
             final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
             if (!(aliasToBlock instanceof HashMap)) {
-                throw CriteriaContextStack.castCriteriaApi(this);
+                throw ContextStack.castCriteriaApi(this);
             }
             final _TableBlock block = aliasToBlock.get(derivedTable);
             final TabularItem tableItem;
@@ -767,7 +767,7 @@ abstract class CriteriaContexts {
                 assert field != null;
             } else if (!((tableItem = block.tableItem()) instanceof DerivedTable)) {
                 String m = String.format("%s isn't alias of %s ", derivedTable, SubQuery.class.getName());
-                throw CriteriaContextStack.criteriaError(this, m);
+                throw ContextStack.criteriaError(this, m);
             } else {
                 final DerivedField temp;
                 temp = getRefField(derivedTable, fieldName, false);
@@ -795,7 +795,7 @@ abstract class CriteriaContexts {
             this.tableBlockList = blockList;//store for recursive checking
             final int blockSize = blockList.size();
             if (blockSize == 0 && !(this instanceof SimpleQueryContext)) {
-                throw CriteriaContextStack.castCriteriaApi(this);
+                throw ContextStack.castCriteriaApi(this);
             }
             if (aliasToBlock.size() < blockSize) {// probably NestedItems
                 //no bug,never here
@@ -843,7 +843,7 @@ abstract class CriteriaContexts {
                 final CriteriaContext context = ((CriteriaContextSpec) derivedTable).getContext();
                 if (((SimpleQueryContext) context).refOuterField) {
                     String m = String.format("SubQuery %s isn't lateral,couldn't reference outer field.", alias);
-                    throw CriteriaContextStack.criteriaError(this, m);
+                    throw ContextStack.criteriaError(this, m);
                 }
             }
             final Map<String, Map<String, RefDerivedField>> aliasToRefSelection = this.aliasToRefDerivedField;
@@ -989,16 +989,16 @@ abstract class CriteriaContexts {
                     if ("".equals(alias)) {
                         alias = ((CteItem) tableItem).name();//modify alias
                     } else if (!_StringUtils.hasText(alias)) {
-                        throw CriteriaContextStack.criteriaError(this, _Exceptions::tableItemAliasNoText, tableItem);
+                        throw ContextStack.criteriaError(this, _Exceptions::tableItemAliasNoText, tableItem);
                     }
                 }
                 if (tableItem instanceof NestedItems) {
                     if (_StringUtils.hasText(alias)) {
-                        throw CriteriaContextStack.criteriaError(this, _Exceptions::nestedItemsAliasHasText, alias);
+                        throw ContextStack.criteriaError(this, _Exceptions::nestedItemsAliasHasText, alias);
                     }
                     this.addNestedItems((NestedItems) tableItem);
                 } else if (aliasToBlock.putIfAbsent(alias, block) != null) {
-                    throw CriteriaContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
+                    throw ContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
                 } else if (tableItem instanceof DerivedTable) {
                     // note ,no tableBlockList.
                     this.doOnAddDerived((DerivedTable) tableItem, alias);
@@ -1092,7 +1092,7 @@ abstract class CriteriaContexts {
         public final DerivedField outerRef(String derivedTable, String derivedFieldName) {
             final CriteriaContext outerContext = this.outerContext;
             if (outerContext == null) {
-                throw CriteriaContextStack.criteriaError(this, "No outer context for current context.");
+                throw ContextStack.criteriaError(this, "No outer context for current context.");
             }
             this.refOuterField = true;
             return outerContext.ref(derivedTable, derivedFieldName);
@@ -1140,7 +1140,7 @@ abstract class CriteriaContexts {
             }
             if (windowNameMap.putIfAbsent(windowName, Boolean.TRUE) != null) {
                 String m = String.format("window[%s] duplication.", windowName);
-                throw CriteriaContextStack.criteriaError(this, m);
+                throw ContextStack.criteriaError(this, m);
             }
             final Map<String, Boolean> refWindowNameMap = this.refWindowNameMap;
             if (refWindowNameMap != null) {

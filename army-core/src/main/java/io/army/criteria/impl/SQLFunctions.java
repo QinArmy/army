@@ -376,7 +376,7 @@ abstract class SQLFunctions {
         private _Window anonymousWindow;
 
         WindowFunc(String name, TypeMeta returnType) {
-            this.context = CriteriaContextStack.peek();
+            this.context = ContextStack.peek();
             this.name = name;
             this.returnType = returnType;
         }
@@ -399,7 +399,7 @@ abstract class SQLFunctions {
         @Override
         public final Expression over(final String windowName) {
             if (this.existingWindowName != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.context.onRefWindow(windowName);
             this.existingWindowName = windowName;
@@ -410,7 +410,7 @@ abstract class SQLFunctions {
         @Override
         public final OR over() {
             if (this.anonymousWindow != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.anonymousWindow = GlobalWindow.INSTANCE;
             return (OR) this;
@@ -449,7 +449,7 @@ abstract class SQLFunctions {
                 sqlBuilder.append(_Constant.SPACE_OVER);
                 anonymousWindow.appendSql(context);
             } else if (!(this instanceof Window._AggregateWindowFunc)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
         }
 
@@ -459,7 +459,7 @@ abstract class SQLFunctions {
             final _Window anonymousWindow = this.anonymousWindow;
 
             if (existingWindowName != null && anonymousWindow != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             //1. function
             final StringBuilder sqlBuilder = new StringBuilder()
@@ -486,7 +486,7 @@ abstract class SQLFunctions {
                 sqlBuilder.append(_Constant.SPACE_OVER)
                         .append(anonymousWindow);
             } else if (!(this instanceof Window._AggregateWindowFunc)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return sqlBuilder.toString();
         }
@@ -497,7 +497,7 @@ abstract class SQLFunctions {
 
         final Expression windowEnd(final _Window anonymousWindow) {
             if (this.anonymousWindow == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.anonymousWindow = anonymousWindow;
             return this;
@@ -998,7 +998,7 @@ abstract class SQLFunctions {
 
         private CaseFunc(@Nullable ArmyExpression caseValue) {
             this.caseValue = caseValue;
-            this.criteriaContext = CriteriaContextStack.peek();
+            this.criteriaContext = ContextStack.peek();
         }
 
         @Override
@@ -1010,7 +1010,7 @@ abstract class SQLFunctions {
         public TypeMeta typeMeta() {
             final TypeMeta returnType = this.returnType;
             if (returnType == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return returnType;
         }
@@ -1025,7 +1025,7 @@ abstract class SQLFunctions {
             final int pairSize;
             final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
             if (expPairList == null || (pairSize = expPairList.size()) == 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
@@ -1093,10 +1093,10 @@ abstract class SQLFunctions {
         @Override
         public Functions._CaseThenClause when(final @Nullable Expression expression) {
             if (this.whenExpression != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             if (expression == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             this.whenExpression = (ArmyExpression) expression;
             return this;
@@ -1184,13 +1184,13 @@ abstract class SQLFunctions {
             if (whenExpression != null) {
                 this.whenExpression = null; //clear for next when clause.
                 if (expression == null) {
-                    throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                    throw ContextStack.nullPointer(this.criteriaContext);
                 }
                 List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
                 if (expPairList == null) {
                     this.expPairList = expPairList = new ArrayList<>();
                 } else if (!(expPairList instanceof ArrayList)) {
-                    throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                    throw ContextStack.castCriteriaApi(this.criteriaContext);
                 }
                 expPairList.add(_Pair.create(whenExpression, (ArmyExpression) expression));
             }
@@ -1243,10 +1243,10 @@ abstract class SQLFunctions {
         @Override
         public Functions._CaseEndClause elseExp(final @Nullable Expression expression) {
             if (this.elseExpression != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             if (expression == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             this.elseExpression = (ArmyExpression) expression;
             return this;
@@ -1333,11 +1333,11 @@ abstract class SQLFunctions {
             final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
             if (expPairList == null || expPairList.size() == 0) {
                 String m = "case function at least one when clause";
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw ContextStack.criteriaError(this.criteriaContext, m);
             } else if (expPairList instanceof ArrayList) {
                 this.expPairList = _CollectionUtils.unmodifiableList(expPairList);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return this;
         }
@@ -1386,14 +1386,14 @@ abstract class SQLFunctions {
         private List<ArmyExpression> argList;
 
         private ConditionFunc(String name, @Nullable TypeMeta returnType) {
-            this.context = CriteriaContextStack.peek();
+            this.context = ContextStack.peek();
             this.name = name;
             this.returnType = returnType;
             this.function = this::inferReturnType;
         }
 
         private ConditionFunc(String name, Function<List<ArmyExpression>, TypeMeta> function) {
-            this.context = CriteriaContextStack.peek();
+            this.context = ContextStack.peek();
             this.name = name;
             this.returnType = null;
             this.function = function;
@@ -1405,7 +1405,7 @@ abstract class SQLFunctions {
             if (returnType == null) {
                 final List<ArmyExpression> argList = this.argList;
                 if (argList == null || argList instanceof ArrayList) {
-                    throw CriteriaContextStack.castCriteriaApi(this.context);
+                    throw ContextStack.castCriteriaApi(this.context);
                 }
                 this.returnType = returnType = this.function.apply(argList);
             }
@@ -1421,7 +1421,7 @@ abstract class SQLFunctions {
         public final void appendSql(final _SqlContext context) {
             final List<ArmyExpression> argList = this.argList;
             if (!(argList instanceof ArrayList) || argList.size() < 2) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
@@ -1438,10 +1438,10 @@ abstract class SQLFunctions {
         @Override
         public final LR leftParen(final @Nullable IPredicate condition) {
             if (condition == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             }
             if (this.argList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             final List<ArmyExpression> argList = new ArrayList<>();
             argList.add((OperationPredicate) condition);
@@ -1480,11 +1480,11 @@ abstract class SQLFunctions {
         @Override
         public final Statement._RightParenClause<Expression> comma(final @Nullable Expression expression) {
             if (expression == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             }
             final List<ArmyExpression> argList = this.argList;
             if (!(argList instanceof ArrayList) || argList.size() == 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             argList.add((ArmyExpression) expression);
             return this;
@@ -1523,7 +1523,7 @@ abstract class SQLFunctions {
         public final Expression rightParen() {
             final List<ArmyExpression> argList = this.argList;
             if (!(argList instanceof ArrayList) || argList.size() < 2) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.argList = Collections.unmodifiableList(argList);
             return this;
@@ -1534,7 +1534,7 @@ abstract class SQLFunctions {
         final Functions._FuncLastArgClause argBeforeLastEnd(final ArmyExpression arg) {
             final List<ArmyExpression> argList = this.argList;
             if (!(argList instanceof ArrayList) || argList.size() == 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             argList.add(arg);
             return this;
@@ -1566,7 +1566,7 @@ abstract class SQLFunctions {
         @Override
         public final CR comma(final @Nullable Expression expression) {
             if (expression == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             }
             return this.function.apply((ArmyExpression) expression);
         }
@@ -1626,7 +1626,7 @@ abstract class SQLFunctions {
         @Override
         TypeMeta inferReturnType(final List<ArmyExpression> argList) {
             if (argList.size() != 3) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return Functions._returnType(argList.get(1), argList.get(2), this.function);
         }

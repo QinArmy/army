@@ -85,18 +85,18 @@ abstract class CriteriaSupports {
             final int firstColumnSize;
             if (columnList == null) {
                 if (rowList != null) {
-                    throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                    throw ContextStack.castCriteriaApi(this.criteriaContext);
                 }
                 firstColumnSize = 0;
             } else if (columnList.size() == 0) {
                 String m = "You don't add any column.";
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw ContextStack.criteriaError(this.criteriaContext, m);
             } else if (rowList == null) {
                 rowList = new ArrayList<>();
                 this.rowList = rowList;
                 firstColumnSize = 0;
             } else if (!(rowList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             } else if (columnList.size() != (firstColumnSize = rowList.get(0).size())) {
                 throw _Exceptions.valuesColumnSizeNotMatch(firstColumnSize, rowList.size(), columnList.size());
             }
@@ -120,12 +120,12 @@ abstract class CriteriaSupports {
             if (columnList == null) {
                 String m = "You don't add any row.";
                 if (rowList == null) {
-                    throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                    throw ContextStack.criteriaError(this.criteriaContext, m);
                 } else {
-                    throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                    throw ContextStack.castCriteriaApi(this.criteriaContext);
                 }
             } else if (!(columnList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
 
             if (rowList == null) {
@@ -136,7 +136,7 @@ abstract class CriteriaSupports {
                 rowList = _CollectionUtils.unmodifiableList(rowList);
                 this.rowList = rowList;
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.columnList = null;
             return rowList;
@@ -146,13 +146,13 @@ abstract class CriteriaSupports {
             final List<_Expression> columnList = this.columnList;
             if (columnList == null) {
                 String m = "Not found any row,please use row() method create new row.";
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw ContextStack.criteriaError(this.criteriaContext, m);
             }
             if (value instanceof ParamExpression) {
-                throw CriteriaContextStack.criteriaError(criteriaContext, _Exceptions::valuesStatementDontSupportParam);
+                throw ContextStack.criteriaError(criteriaContext, _Exceptions::valuesStatementDontSupportParam);
             }
             if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+                throw ContextStack.nonArmyExp(this.criteriaContext);
             }
             columnList.add((ArmyExpression) value);
             return this;
@@ -260,7 +260,7 @@ abstract class CriteriaSupports {
                 stringList = new ArrayList<>();
                 this.stringList = stringList;
             } else if (!(stringList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             stringList.add(string);
             return this;
@@ -297,11 +297,11 @@ abstract class CriteriaSupports {
             if (stringList instanceof ArrayList) {
                 stringList = _CollectionUtils.unmodifiableList(stringList);
             } else if (stringList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             } else if (this.optionalClause) {
                 stringList = Collections.emptyList();
             } else {
-                throw CriteriaContextStack.criteriaError(this.context, "You don't add any string item");
+                throw ContextStack.criteriaError(this.context, "You don't add any string item");
             }
             //clear below for reuse this instance
             this.stringList = null;
@@ -488,13 +488,13 @@ abstract class CriteriaSupports {
 
         private void addOrderByItem(@Nullable SortItem sortItem) {
             if (sortItem == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             List<ArmySortItem> itemList = this.orderByList;
             if (itemList == null) {
                 this.orderByList = itemList = new ArrayList<>();
             } else if (!(itemList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             itemList.add((ArmySortItem) sortItem);
         }
@@ -509,7 +509,7 @@ abstract class CriteriaSupports {
             } else if (itemList instanceof ArrayList) {
                 itemList = _CollectionUtils.unmodifiableList(itemList);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.orderByList = null;
             return this.function.apply(itemList);
@@ -549,7 +549,7 @@ abstract class CriteriaSupports {
             this.paramMeta = paramMeta;
             this.function = function;
             final CriteriaContext criteriaContext;
-            criteriaContext = CriteriaContextStack.peek();
+            criteriaContext = ContextStack.peek();
             this.criteriaContext = criteriaContext;
             criteriaContext.addEndEventListener(this::contextEnd);
         }
@@ -599,7 +599,7 @@ abstract class CriteriaSupports {
             this.function = function;
 
             final CriteriaContext criteriaContext;
-            criteriaContext = CriteriaContextStack.peek();
+            criteriaContext = ContextStack.peek();
             this.criteriaContext = criteriaContext;
             criteriaContext.addEndEventListener(this::contextEnd);
         }

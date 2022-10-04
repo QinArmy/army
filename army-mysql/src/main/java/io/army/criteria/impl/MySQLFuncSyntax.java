@@ -2034,7 +2034,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(expr AS type)</a>
      */
     public static Expression cast(final Expression exp, final MySQLCastType type, final Expression n) {
-        CriteriaContextStack.assertNonNull(exp);
+        ContextStack.assertNonNull(exp);
         final String funcName = "CAST";
         if (!(n instanceof LiteralExpression.SingleLiteral || n instanceof LiteralExpression.NamedSingleLiteral)) {
             throw CriteriaUtils.funcArgError(funcName, n);
@@ -2082,7 +2082,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      */
     public static Expression cast(final Expression exp, final MySQLCastType type, final Expression m
             , final Expression d) {
-        CriteriaContextStack.assertNonNull(exp);
+        ContextStack.assertNonNull(exp);
         final String funcName = "CAST";
 
         if (type != MySQLCastType.DECIMAL) {
@@ -2119,7 +2119,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(timestamp_value AT TIME ZONE timezone_specifier AS DATETIME[(precision)])</a>
      */
     public static Expression cast(final Expression timestampValue, final Expression timezoneSpecifier) {
-        CriteriaContextStack.assertNonNull(timestampValue);
+        ContextStack.assertNonNull(timestampValue);
         final String funcName = "CAST";
 
         if (!(timezoneSpecifier instanceof LiteralExpression.SingleLiteral
@@ -2149,7 +2149,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      */
     public static Expression cast(final Expression timestampValue, final Expression timezoneSpecifier
             , final Expression precision) {
-        CriteriaContextStack.assertNonNull(timestampValue);
+        ContextStack.assertNonNull(timestampValue);
         final String funcName = "CAST";
 
         if (!(timezoneSpecifier instanceof LiteralExpression.SingleLiteral || timezoneSpecifier instanceof LiteralExpression.NamedSingleLiteral)) {
@@ -2208,8 +2208,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_convert">CONVERT(expr USING transcoding_name)</a>
      */
     public static Expression convert(final Expression exp, final MySQLCharset transcodingName) {
-        CriteriaContextStack.assertNonNull(exp);
-        CriteriaContextStack.assertNonNull(transcodingName);
+        ContextStack.assertNonNull(exp);
+        ContextStack.assertNonNull(transcodingName);
 
         final MappingType returnType;
         final List<Object> argList = new ArrayList<>(3);
@@ -2254,8 +2254,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_convert">CONVERT(expr,type)</a>
      */
     public static Expression convert(final Expression exp, final MySQLCastType type) {
-        CriteriaContextStack.assertNonNull(exp);
-        CriteriaContextStack.assertNonNull(type);
+        ContextStack.assertNonNull(exp);
+        ContextStack.assertNonNull(type);
 
         final MappingType returnType;
         final List<Object> argList = new ArrayList<>(3);
@@ -2311,7 +2311,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_convert">CONVERT(expr,type)</a>
      */
     public static Expression convert(final Expression exp, final MySQLCastType type, final Expression n) {
-        CriteriaContextStack.assertNonNull(exp);
+        ContextStack.assertNonNull(exp);
         final String funcName = "CONVERT";
         if (!MySQLUtils.isSingleParamType(type)) {
             throw CriteriaUtils.funcArgError(funcName, type);
@@ -2346,7 +2346,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      */
     public static Expression convert(final Expression exp, final MySQLCastType type, final Expression m
             , final Expression d) {
-        CriteriaContextStack.assertNonNull(exp);
+        ContextStack.assertNonNull(exp);
         final String funcName = "CONVERT";
 
         if (type != MySQLCastType.DECIMAL) {

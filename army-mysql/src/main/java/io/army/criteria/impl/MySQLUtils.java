@@ -21,9 +21,9 @@ abstract class MySQLUtils extends CriteriaUtils {
     static void assertItemWord(CriteriaContext criteriaContext, @Nullable ItemWord itemWord, TabularItem tableItem) {
         if (itemWord == ItemWord.LATERAL && !(tableItem instanceof SubQuery)) {
             String m = "MySQL LATERAL support only %s" + SubQuery.class.getName();
-            throw CriteriaContextStack.criteriaError(criteriaContext, m);
+            throw ContextStack.criteriaError(criteriaContext, m);
         } else if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(criteriaContext);
+            throw ContextStack.castCriteriaApi(criteriaContext);
         }
 
     }
@@ -31,13 +31,13 @@ abstract class MySQLUtils extends CriteriaUtils {
     @Deprecated
     static List<String> asStringList(final @Nullable List<String> partitionList, Supplier<CriteriaException> supplier) {
         if (partitionList == null) {
-            throw CriteriaContextStack.criteriaError(supplier);
+            throw ContextStack.criteriaError(supplier);
         }
         final int size = partitionList.size();
         List<String> list;
         switch (size) {
             case 0:
-                throw CriteriaContextStack.criteriaError(supplier);
+                throw ContextStack.criteriaError(supplier);
             case 1:
                 list = Collections.singletonList(partitionList.get(0));
                 break;

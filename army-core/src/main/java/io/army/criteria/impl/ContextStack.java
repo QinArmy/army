@@ -21,11 +21,11 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-abstract class CriteriaContextStack {
+abstract class ContextStack {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CriteriaContextStack.class);
+    private static final Logger LOG = LoggerFactory.getLogger(io.army.criteria.impl.ContextStack.class);
 
-    private CriteriaContextStack() {
+    private ContextStack() {
         throw new UnsupportedOperationException();
     }
 
@@ -62,6 +62,27 @@ abstract class CriteriaContextStack {
         }
         return stack.peek();
 
+    }
+
+    static CriteriaContext peek(final @Nullable Object criteria) {
+        final Stack stack = HOLDER.get();
+        final CriteriaContext currentContext;
+        if (stack == null) {
+            currentContext = null;
+        } else {
+            currentContext = stack.peek();
+        }
+
+        if (criteria == null) {
+            if (currentContext != null) {
+                HOLDER.remove();
+            }
+            throw new NullPointerException("criteria must be non-null");
+        }
+        if (currentContext == null) {
+            throw noContextStack();
+        }
+        return currentContext;
     }
 
     static void pop(final CriteriaContext subContext) {
@@ -107,7 +128,7 @@ abstract class CriteriaContextStack {
 
     static <C> CriteriaContext getCurrentContext(final @Nullable C criteria) {
         final CriteriaContext currentContext;
-        currentContext = CriteriaContextStack.peek();
+        currentContext = io.army.criteria.impl.ContextStack.peek();
         if (criteria != currentContext.criteria()) {
             throw CriteriaUtils.criteriaNotMatch(currentContext);
         }
@@ -135,7 +156,7 @@ abstract class CriteriaContextStack {
 
     static void assertNonNull(@Nullable Object obj) {
         if (obj == null) {
-            clearStackOnError(CriteriaContextStack.peek());
+            clearStackOnError(io.army.criteria.impl.ContextStack.peek());
             throw new NullPointerException();
         }
     }

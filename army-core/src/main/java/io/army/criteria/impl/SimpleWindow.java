@@ -32,21 +32,21 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     static <C, R> Window._SimpleAsClause<C, R> forStmt(String windowName, CriteriaContext context
             , Function<_Window, R> function) {
         if (!_StringUtils.hasText(windowName)) {
-            throw CriteriaContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
+            throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
         }
         return new StandardSimpleWindow<>(windowName, context, function);
     }
 
     static <C> Window._SimpleAsClause<C, Window> standard(String windowName, CriteriaContext context) {
         if (!_StringUtils.hasText(windowName)) {
-            throw CriteriaContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
+            throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
         }
         return new StandardSimpleWindow<>(windowName, context, SimpleWindow::asWindow);
     }
 
     static Window._SimpleAsClause<Void, Window> standardWithVoid(String windowName, CriteriaContext context) {
         if (!_StringUtils.hasText(windowName)) {
-            throw CriteriaContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
+            throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
         }
         return new StandardSimpleWindow<>(context, windowName, SimpleWindow::asWindow);
     }
@@ -171,11 +171,11 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     @Override
     public final LR leftParen(final String windowName) {
         if (this.refWindowName != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         } else if (this.windowName == null) {//anonymous window
             this.context.onRefWindow(windowName);
         } else if (!this.context.isExistWindow(windowName)) {
-            throw CriteriaContextStack.criteriaError(this.context, _Exceptions::windowNotExists, windowName);
+            throw ContextStack.criteriaError(this.context, _Exceptions::windowNotExists, windowName);
         }
         this.refWindowName = windowName;
         return (LR) this;
@@ -448,7 +448,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     @Override
     public final BR between() {
         if (this.frameUnits != null && this.betweenExtent != Boolean.TRUE) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return (BR) this;
     }
@@ -457,7 +457,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     public final BC between(Object expression) {
         if (this.frameUnits != null) {
             if (this.betweenExtent != Boolean.TRUE) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.frameStartExp = SQLs._nonNullExp(expression);
         }
@@ -482,7 +482,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     @Override
     public final FC and() {
         if (this.frameUnits != null && (this.betweenExtent != Boolean.TRUE || this.frameStartBound == null)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return (FC) this;
     }
@@ -491,7 +491,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     public final NC and(Object expression) {
         if (this.frameUnits != null) {
             if (this.betweenExtent != Boolean.TRUE || this.frameStartBound == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.frameEndExp = SQLs._nonNullExp(expression);
         }
@@ -574,7 +574,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
         if (frameUnits != null) {
             final Boolean betweenExtent = this.betweenExtent;
             if (betweenExtent == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             sqlBuilder.append(frameUnits.keyWords);
             if (betweenExtent) {
@@ -641,16 +641,16 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     private void addPartitionExp(final @Nullable Expression expression) {
         if (expression == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         if (!(expression instanceof ArmyExpression)) {
-            throw CriteriaContextStack.nonArmyExp(this.context);
+            throw ContextStack.nonArmyExp(this.context);
         }
         List<_Expression> partitionByList = this.partitionByList;
         if (partitionByList == null) {
             this.partitionByList = partitionByList = new ArrayList<>();
         } else if (!(partitionByList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         partitionByList.add((ArmyExpression) expression);
     }
@@ -661,9 +661,9 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
         if (partitionByList instanceof ArrayList) {
             this.partitionByList = _CollectionUtils.unmodifiableList(partitionByList);
         } else if (partitionByList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         } else if (required) {
-            throw CriteriaContextStack.criteriaError(this.context, "partition by claus is empty.");
+            throw ContextStack.criteriaError(this.context, "partition by claus is empty.");
         } else {
             this.partitionByList = Collections.emptyList();
         }
@@ -672,7 +672,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     private OR orderByEnd(final List<ArmySortItem> itemList) {
         if (this.orderByList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         this.orderByList = itemList;
         return (OR) this;
@@ -686,14 +686,14 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
             case UNBOUNDED_PRECEDING:
             case UNBOUNDED_FOLLOWING: {
                 if (expression != null) {
-                    throw CriteriaContextStack.castCriteriaApi(this.context);
+                    throw ContextStack.castCriteriaApi(this.context);
                 }
             }
             break;
             case PRECEDING:
             case FOLLOWING: {
                 if (expression == null) {
-                    throw CriteriaContextStack.castCriteriaApi(this.context);
+                    throw ContextStack.castCriteriaApi(this.context);
                 }
                 expression.appendSql(context);
             }

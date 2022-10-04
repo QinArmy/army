@@ -41,7 +41,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
 
     static <C> MySQLNestedItems<C> create(final @Nullable C criteria) {
         final CriteriaContext currentContext;
-        currentContext = CriteriaContextStack.peek();
+        currentContext = ContextStack.peek();
         if (criteria != null && currentContext.criteria() != criteria) {
             throw CriteriaUtils.criteriaNotMatch(currentContext);
         }
@@ -76,7 +76,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     @Override
     public MySQLQuery._NestedPartitionJoinClause<C> createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         return new PartitionJonClause<>(joinType, table, this);
     }
@@ -84,7 +84,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     @Override
     public _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         final MySQLSupports.MySQLNoOnBlock<C, MySQLQuery._NestedUseIndexJoinSpec<C>> noOnBlock;
         noOnBlock = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, this);
@@ -95,7 +95,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     @Override
     public _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         if (!(itemWord == null || (itemWord == ItemWord.LATERAL && tableItem instanceof SubQuery))) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         return new TableBlock.DialectNoOnTableBlock(joinType, itemWord, tableItem, alias);
     }
@@ -108,7 +108,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     @Override
     public MySQLQuery._NestedPartitionOnClause<C> createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         return new PartitionOnAsClause<>(joinType, table, this);
     }
@@ -116,7 +116,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     @Override
     public MySQLQuery._NestedUseIndexOnSpec<C> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         return new TableOnClauseBlock<>(this, joinType, null, table, tableAlias);
     }
@@ -124,7 +124,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     @Override
     public MySQLQuery._NestedOnSpec<C> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         if (!(itemWord == null || (itemWord == ItemWord.LATERAL && tableItem instanceof SubQuery))) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         return new OnClauseBlock<>(this, joinType, itemWord, tableItem, alias);
     }
@@ -133,7 +133,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._NestedUseIndexJoinSpec<C>> getUseIndexClause() {
         final MySQLSupports.MySQLNoOnBlock<C, MySQLQuery._NestedUseIndexJoinSpec<C>> noOnBlock = this.noOnBlock;
         if (this.getFirstBlock() != noOnBlock) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         return noOnBlock.getUseIndexClause();
     }
@@ -251,7 +251,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
                 indexHintList = new ArrayList<>();
                 this.indexHintList = indexHintList;
             } else if (!(indexHintList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             indexHintList.add(indexHint);
             return this;

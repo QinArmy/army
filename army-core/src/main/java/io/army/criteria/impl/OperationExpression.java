@@ -612,7 +612,7 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final Expression asType(final @Nullable TypeMeta paramMeta) {
         if (paramMeta == null) {
-            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+            throw ContextStack.nullPointer(ContextStack.peek());
         }
         final Expression expression;
         if (this instanceof MutableParamMetaSpec) {

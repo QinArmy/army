@@ -1,9 +1,10 @@
 package io.army.criteria.impl;
 
 
+import io.army.criteria.ScalarExpression;
+import io.army.criteria.SubQuery;
 import io.army.criteria.postgre.PostgreInsert;
-
-import java.util.Objects;
+import io.army.criteria.postgre.PostgreQuery;
 
 /**
  * <p>
@@ -30,8 +31,29 @@ public abstract class Postgres extends PostgreFuncSyntax {
      * @param criteria non-null criteria instance,java bean or {@link java.util.Map}.
      */
     public static <C> PostgreInsert._PrimaryOptionSpec<C> singleInsert(C criteria) {
-        Objects.requireNonNull(criteria);
         return PostgreInserts.primaryInsert(criteria);
+    }
+
+    public static PostgreQuery._SubWithCteSpec<Void, SubQuery> subQuery() {
+        return PostgreSimpleQuery.subQuery(null, ContextStack.peek(), Postgres::_thisSubQuery);
+    }
+
+    /**
+     * @param criteria non-null criteria instance,java bean or {@link java.util.Map}.
+     */
+    public static <C> PostgreQuery._SubWithCteSpec<C, SubQuery> subQuery(C criteria) {
+        return PostgreSimpleQuery.subQuery(criteria, ContextStack.peek(criteria), Postgres::_thisSubQuery);
+    }
+
+    public static PostgreQuery._SubWithCteSpec<Void, ScalarExpression> scalarSubQuery() {
+        return PostgreSimpleQuery.subQuery(null, ContextStack.peek(), ScalarQueryExpression::from);
+    }
+
+    /**
+     * @param criteria non-null criteria instance,java bean or {@link java.util.Map}.
+     */
+    public static <C> PostgreQuery._SubWithCteSpec<C, SubQuery> scalarSubQuery(C criteria) {
+        return PostgreSimpleQuery.subQuery(criteria, ContextStack.peek(criteria), ScalarQueryExpression::from);
     }
 
 

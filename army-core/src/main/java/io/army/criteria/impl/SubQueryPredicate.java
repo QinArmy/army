@@ -71,7 +71,7 @@ final class SubQueryPredicate extends OperationPredicate {
                         .append(queryOperator.name());
             }
             builder.append(" only support column sub query.");
-            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), builder.toString());
+            throw ContextStack.criteriaError(ContextStack.peek(), builder.toString());
         }
     }
 

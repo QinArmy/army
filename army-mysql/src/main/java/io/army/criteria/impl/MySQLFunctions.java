@@ -38,7 +38,7 @@ abstract class MySQLFunctions extends SQLFunctions {
     static Expression intervalTimeFunc(String name, @Nullable Object date, @Nullable Object expr
             , @Nullable MySQLUnit unit, TypeMeta returnType) {
         if (unit == null) {
-            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+            throw ContextStack.nullPointer(ContextStack.peek());
         }
         return new IntervalTimeFunc(name, SQLs._funcParam(date), SQLs._funcParam(expr), unit, returnType);
     }
@@ -364,7 +364,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public final MySQLFuncSyntax._OverSpec respectNulls() {
             if (this.nullTreatment != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.nullTreatment = NullTreatment.RESPECT_NULLS;
             return this;
@@ -373,7 +373,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public final MySQLFuncSyntax._OverSpec ignoreNulls() {
             if (this.nullTreatment != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.nullTreatment = NullTreatment.IGNORE_NULLS;
             return this;
@@ -394,7 +394,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public MySQLFuncSyntax._NullTreatmentSpec fromFirst() {
             if (this.fromFirstLast != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.fromFirstLast = FromFirstLast.FROM_LAST;
             return this;
@@ -403,7 +403,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public MySQLFuncSyntax._NullTreatmentSpec fromLast() {
             if (this.fromFirstLast != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.fromFirstLast = FromFirstLast.FROM_LAST;
             return this;
@@ -459,7 +459,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         private String stringValue;
 
         private GroupConcatClause(boolean distinct, List<ArmyExpression> exprList) {
-            this.criteriaContext = CriteriaContextStack.peek();
+            this.criteriaContext = ContextStack.peek();
             this.distinct = distinct;
             this.exprList = exprList;
         }
@@ -521,9 +521,9 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public Clause separator(@Nullable String strVal) {
             if (strVal == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             } else if (this.stringValue != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.stringValue = strVal;
             return this;
@@ -617,7 +617,7 @@ abstract class MySQLFunctions extends SQLFunctions {
 
         private MySQLClause._GroupConcatSeparatorClause orderByEnd(final List<ArmySortItem> itemList) {
             if (this.orderByList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.orderByList = itemList;
             return this;
@@ -792,7 +792,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         private Object operateValue;
 
         private JsonValueFunc(ArmyExpression jsonDoc, ArmyExpression path) {
-            this.context = CriteriaContextStack.peek();
+            this.context = ContextStack.peek();
             this.jsonDoc = jsonDoc;
             this.path = path;
         }
@@ -937,7 +937,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public MySQLClause._JsonValueOptionOnEmptySpec returning(final MySQLCastType type) {
             if (this.returningList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.returningList = Collections.singletonList(type);
             return this;
@@ -946,7 +946,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public MySQLClause._JsonValueOptionOnEmptySpec returning(final MySQLCastType type, Expression n) {
             if (this.returningList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             if (!MySQLUtils.isSingleParamType(type)) {
                 throw typeError(type);
@@ -965,7 +965,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public MySQLClause._JsonValueOptionOnEmptySpec returning(MySQLCastType type, Expression n, MySQLCharset charset) {
             if (this.returningList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             if (type != MySQLCastType.CHAR) {
                 throw typeError(type);
@@ -985,7 +985,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public MySQLClause._JsonValueOptionOnEmptySpec returning(MySQLCastType type, Expression m, Expression d) {
             if (this.returningList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             if (type != MySQLCastType.DECIMAL) {
                 throw typeError(type);
@@ -1006,7 +1006,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public MySQLClause._JsonValueOnEmptySpec nullWord() {
             if (this.operateValue != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.operateValue = JsonValueWord.NULL;
             return this;
@@ -1015,7 +1015,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public MySQLClause._JsonValueOnEmptySpec error() {
             if (this.operateValue != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.operateValue = JsonValueWord.ERROR;
             return this;
@@ -1024,10 +1024,10 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public MySQLClause._JsonValueOnEmptySpec defaultValue(final Expression value) {
             if (this.operateValue != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.context);
+                throw ContextStack.nonArmyExp(this.context);
             }
             this.operateValue = value;
             return this;
@@ -1042,7 +1042,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         public Expression onError() {
             final Object operateValue = this.operateValue;
             if (operateValue == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.operateValue = null;//clear
             final List<_Pair<Object, JsonValueWord>> eventHandlerList = this.eventHandlerList;
@@ -1051,7 +1051,7 @@ abstract class MySQLFunctions extends SQLFunctions {
             } else if (eventHandlerList.size() == 1) {
                 eventHandlerList.add(_Pair.create(operateValue, JsonValueWord.ON_ERROR));
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return this;
         }
@@ -1060,7 +1060,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         public MySQLClause._JsonValueOptionSpec onEmpty() {
             final Object operateValue = this.operateValue;
             if (operateValue == null || this.eventHandlerList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.operateValue = null;//clear
             final List<_Pair<Object, JsonValueWord>> eventHandlerList = new ArrayList<>(2);
@@ -1071,7 +1071,7 @@ abstract class MySQLFunctions extends SQLFunctions {
 
         private CriteriaException typeError(MySQLCastType type) {
             String m = String.format("%s error", type);
-            return CriteriaContextStack.criteriaError(this.context, m);
+            return ContextStack.criteriaError(this.context, m);
         }
 
 
@@ -1177,7 +1177,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public MySQLClause._JsonTableOnEmptyOptionClause<R> path(final @Nullable String stringPath) {
             if (stringPath == null) {
-                throw CriteriaContextStack.nullPointer(this.columnsClause.context);
+                throw ContextStack.nullPointer(this.columnsClause.context);
             }
             this.existsPath = false;
             this.stringPath = stringPath;
@@ -1187,7 +1187,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public final MySQLClause._JsonTableColumnCommaSpec<R> existsPath(final @Nullable String stringPath) {
             if (stringPath == null) {
-                throw CriteriaContextStack.nullPointer(this.columnsClause.context);
+                throw ContextStack.nullPointer(this.columnsClause.context);
             }
             this.existsPath = true;
             this.stringPath = stringPath;
@@ -1198,11 +1198,11 @@ abstract class MySQLFunctions extends SQLFunctions {
         public final MySQLClause._JsonTableColumnCommaSpec<R> onError() {
             final List<Object> eventClauseList = this.eventClauseList;
             if (eventClauseList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.columnsClause.context);
+                throw ContextStack.castCriteriaApi(this.columnsClause.context);
             }
             final int clauseSize = eventClauseList.size();
             if (clauseSize != 1 && clauseSize != 3) {
-                throw CriteriaContextStack.castCriteriaApi(this.columnsClause.context);
+                throw ContextStack.castCriteriaApi(this.columnsClause.context);
             }
             eventClauseList.add(JsonValueWord.ON_ERROR);
             this.eventClauseList = _CollectionUtils.unmodifiableList(eventClauseList);
@@ -1213,11 +1213,11 @@ abstract class MySQLFunctions extends SQLFunctions {
         public final MySQLClause._JsonTableColumnOnErrorOptionClause<R> onEmpty() {
             final List<Object> eventClauseList = this.eventClauseList;
             if (eventClauseList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.columnsClause.context);
+                throw ContextStack.castCriteriaApi(this.columnsClause.context);
             }
             final int clauseSize = eventClauseList.size();
             if (clauseSize != 1) {
-                throw CriteriaContextStack.castCriteriaApi(this.columnsClause.context);
+                throw ContextStack.castCriteriaApi(this.columnsClause.context);
             }
             eventClauseList.add(JsonValueWord.ON_EMPTY);
             return this.columnsClause;
@@ -1586,7 +1586,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         public final MySQLClause._JsonTableColumnPathClause<R> comma(String name, MySQLTypes type, long p, int m) {
             if (p < 1 || m < 0) {
                 String message = String.format("precision[%s] or scale[%s] error.", p, m);
-                throw CriteriaContextStack.criteriaError(this.context, message);
+                throw ContextStack.criteriaError(this.context, message);
             }
             final ColumnWithPath<R> column = new ColumnWithPath<>(name, type, p, m, this);
             this.columnList.add(column);
@@ -1627,7 +1627,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         final void endColumnList() {
             final List<JsonTableColumn> columnList = this.columnList;
             if (!(columnList instanceof ArrayList) || columnList.size() == 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.columnList = Collections.unmodifiableList(columnList);
         }
@@ -1635,7 +1635,7 @@ abstract class MySQLFunctions extends SQLFunctions {
 
         private CriteriaException precisionError(long p) {
             String m = String.format("precision[%s] error", p);
-            return CriteriaContextStack.criteriaError(this.context, m);
+            return ContextStack.criteriaError(this.context, m);
         }
 
 
@@ -1644,12 +1644,12 @@ abstract class MySQLFunctions extends SQLFunctions {
             final List<JsonTableColumn> columnList = this.columnList;
             final int columnSize = columnList.size();
             if (columnSize == 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             final JsonTableColumn column;
             column = columnList.get(columnSize - 1);
             if (!(column instanceof ColumnWithPath)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return (ColumnWithPath<R>) column;
         }
@@ -1666,7 +1666,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         private final ArmyExpression path;
 
         private JsonTable(ArmyExpression expr, ArmyExpression path) {
-            super(CriteriaContextStack.peek());
+            super(ContextStack.peek());
             this.expr = expr;
             this.path = path;
         }

@@ -21,7 +21,7 @@ final class StandardNestedItems<C> extends JoinableClause.LeftParenNestedItem<
 
     static <C> StandardQuery._StandardNestedLeftParenClause<C> create(@Nullable C criteria) {
         final CriteriaContext currentContext;
-        currentContext = CriteriaContextStack.peek();
+        currentContext = ContextStack.peek();
         if (criteria != null && currentContext.criteria() != criteria) {
             throw CriteriaUtils.criteriaNotMatch(currentContext);
         }
@@ -37,7 +37,7 @@ final class StandardNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     @Override
     public _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         return new TableBlock.NoOnTableBlock(joinType, table, alias);
     }
@@ -45,7 +45,7 @@ final class StandardNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     @Override
     public _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         return new TableBlock.NoOnTableBlock(joinType, tableItem, alias);
     }
@@ -58,7 +58,7 @@ final class StandardNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     @Override
     public StandardQuery._NestedOnSpec<C> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         return new OnClauseTableBlock<>(this, joinType, table, tableAlias);
     }
@@ -66,7 +66,7 @@ final class StandardNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     @Override
     public StandardQuery._NestedOnSpec<C> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         return new OnClauseTableBlock<>(this, joinType, tableItem, alias);
     }

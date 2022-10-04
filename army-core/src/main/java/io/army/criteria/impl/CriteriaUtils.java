@@ -27,7 +27,7 @@ abstract class CriteriaUtils {
     static void createAndAddCte(final CriteriaContext context, final @Nullable String name
             , final @Nullable List<String> columnAliasList, final SubStatement subStatement) {
         if (name == null) {
-            throw CriteriaContextStack.castCriteriaApi(context);
+            throw ContextStack.castCriteriaApi(context);
         }
         final SQLs.CteImpl cte;
         if (columnAliasList == null) {
@@ -45,19 +45,19 @@ abstract class CriteriaUtils {
 
     static ArmyExpression constantLiteral(final CriteriaContext criteriaContext, final @Nullable Object value) {
         if (value == null) {
-            throw CriteriaContextStack.nullPointer(criteriaContext);
+            throw ContextStack.nullPointer(criteriaContext);
         }
         if (value instanceof DataField) {
             String m = "constant must be non-field";
-            throw CriteriaContextStack.criteriaError(criteriaContext, m);
+            throw ContextStack.criteriaError(criteriaContext, m);
         }
         final ArmyExpression expression;
         if (value instanceof Expression) {
             if (value instanceof ParamExpression) {
-                throw CriteriaContextStack.criteriaError(criteriaContext, _Exceptions::valuesStatementDontSupportParam);
+                throw ContextStack.criteriaError(criteriaContext, _Exceptions::valuesStatementDontSupportParam);
             }
             if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(criteriaContext);
+                throw ContextStack.nonArmyExp(criteriaContext);
             }
             expression = (ArmyExpression) value;
         } else {
@@ -198,7 +198,7 @@ abstract class CriteriaUtils {
         if (outerContext == null) {
             e = new CriteriaException(message);
         } else {
-            e = CriteriaContextStack.criteriaError(outerContext, message);
+            e = ContextStack.criteriaError(outerContext, message);
         }
         return e;
     }
@@ -272,11 +272,11 @@ abstract class CriteriaUtils {
     }
 
     static CriteriaException criteriaError(final RowSet left, final String m) {
-        return CriteriaContextStack.criteriaError(((CriteriaContextSpec) left).getContext(), m);
+        return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext(), m);
     }
 
     static <T> CriteriaException criteriaError(RowSet left, Function<T, CriteriaException> function, T item) {
-        return CriteriaContextStack.criteriaError(((CriteriaContextSpec) left).getContext(), function, item);
+        return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext(), function, item);
     }
 
     static void limitPair(final CriteriaContext criteriaContext, final @Nullable Object offsetValue
@@ -341,17 +341,17 @@ abstract class CriteriaUtils {
     static CriteriaException limitParamError(CriteriaContext criteriaContext, @Nullable Object value) {
         String m = String.format("limit clause only support [%s,%s,%s,%s] and non-negative,but input %s"
                 , Long.class.getName(), Integer.class.getName(), Short.class.getName(), Byte.class.getName(), value);
-        return CriteriaContextStack.criteriaError(criteriaContext, m);
+        return ContextStack.criteriaError(criteriaContext, m);
     }
 
     static CriteriaException limitBiConsumerError(CriteriaContext criteriaContext) {
         String m = "You must specified limit clause";
-        return CriteriaContextStack.criteriaError(criteriaContext, m);
+        return ContextStack.criteriaError(criteriaContext, m);
     }
 
     static CriteriaException ifLimitBiConsumerError(CriteriaContext criteriaContext) {
         String m = "limit clause must specified non-negative parameters";
-        return CriteriaContextStack.criteriaError(criteriaContext, m);
+        return ContextStack.criteriaError(criteriaContext, m);
     }
 
 
@@ -391,7 +391,7 @@ abstract class CriteriaUtils {
     static <T extends SQLWords> List<T> asModifierList(final CriteriaContext criteriaContext
             , final @Nullable List<T> list, final Function<T, Integer> function) {
         if (list == null) {
-            throw CriteriaContextStack.criteriaError(criteriaContext, "modifier list must non-null");
+            throw ContextStack.criteriaError(criteriaContext, "modifier list must non-null");
         }
         final List<T> modifierList;
         final int size = list.size();
@@ -403,11 +403,11 @@ abstract class CriteriaUtils {
                 final T modifier;
                 modifier = list.get(0);
                 if (modifier == null) {
-                    throw CriteriaContextStack.criteriaError(criteriaContext, "Modifier list element must non-null");
+                    throw ContextStack.criteriaError(criteriaContext, "Modifier list element must non-null");
                 }
                 if (function.apply(modifier) < 0) {
                     String m = String.format("%s syntax error", modifier);
-                    throw CriteriaContextStack.criteriaError(criteriaContext, m);
+                    throw ContextStack.criteriaError(criteriaContext, m);
                 }
                 modifierList = Collections.singletonList(modifier);
             }
@@ -419,12 +419,12 @@ abstract class CriteriaUtils {
                     modifier = list.get(i);
                     if (modifier == null) {
                         String m = "Modifier list element must non-null";
-                        throw CriteriaContextStack.criteriaError(criteriaContext, m);
+                        throw ContextStack.criteriaError(criteriaContext, m);
                     }
                     level = function.apply(modifier);
                     if (level <= preLevel) {
                         String m = String.format("%s syntax error", modifier);
-                        throw CriteriaContextStack.criteriaError(criteriaContext, m);
+                        throw ContextStack.criteriaError(criteriaContext, m);
                     }
                     preLevel = level;
                     if (tempList == null) {
@@ -453,7 +453,7 @@ abstract class CriteriaUtils {
                 final H dialectHint;
                 dialectHint = function.apply(hint);
                 if (dialectHint == null) {
-                    throw CriteriaContextStack.criteriaError(criteriaContext, CriteriaUtils::illegalHint, hint);
+                    throw ContextStack.criteriaError(criteriaContext, CriteriaUtils::illegalHint, hint);
                 }
                 mySqlHintList = Collections.singletonList(dialectHint);
             }
@@ -464,7 +464,7 @@ abstract class CriteriaUtils {
                 for (Hint hint : hintList) {
                     dialectHint = function.apply(hint);
                     if (dialectHint == null) {
-                        throw CriteriaContextStack.criteriaError(criteriaContext, CriteriaUtils::illegalHint, hint);
+                        throw ContextStack.criteriaError(criteriaContext, CriteriaUtils::illegalHint, hint);
                     }
                     tempList.add(dialectHint);
                 }
@@ -479,7 +479,7 @@ abstract class CriteriaUtils {
     static _TableBlock createStandardDynamicBlock(final _JoinType joinType, final DynamicBlock<?> block) {
         if (!(block instanceof DynamicBlock.StandardDynamicBlock)) {
             String m = "not standard dynamic block";
-            throw CriteriaContextStack.criteriaError(block.criteriaContext, m);
+            throw ContextStack.criteriaError(block.criteriaContext, m);
         }
         return new TableBlock.DynamicTableBlock(joinType, block);
     }
@@ -509,60 +509,60 @@ abstract class CriteriaUtils {
 
     static CriteriaException unknownSelection(CriteriaContext context, String selectionAlias) {
         String m = String.format("unknown %s[%s]", Selection.class.getName(), selectionAlias);
-        return CriteriaContextStack.criteriaError(context, m);
+        return ContextStack.criteriaError(context, m);
     }
 
     static CriteriaException criteriaNotMatch(CriteriaContext criteriaContext) {
         String m = "criteria not match.";
-        return CriteriaContextStack.criteriaError(criteriaContext, m);
+        return ContextStack.criteriaError(criteriaContext, m);
     }
 
     static CriteriaException criteriaContextNotMatch(CriteriaContext criteriaContext) {
         String m = "criteria context not match.";
-        return CriteriaContextStack.criteriaError(criteriaContext, m);
+        return ContextStack.criteriaError(criteriaContext, m);
     }
 
     static CriteriaException cteListIsEmpty(CriteriaContext context) {
-        return CriteriaContextStack.criteriaError(context, "WITH clause couldn't be empty.");
+        return ContextStack.criteriaError(context, "WITH clause couldn't be empty.");
     }
 
     static CriteriaException childParentDomainListNotMatch(CriteriaContext context, ChildTableMeta<?> child) {
         String m = String.format("%s insert domain list and parent insert statement domain list not match"
                 , child);
-        return CriteriaContextStack.criteriaError(context, m);
+        return ContextStack.criteriaError(context, m);
     }
 
     static CriteriaException childParentRowNotMatch(_Insert._ValuesInsert child, _Insert._ValuesInsert parent) {
         String m = String.format("%s row number[%s] and parent row number[%s] not match."
                 , child.table(), child.rowPairList().size(), parent.rowPairList().size());
 
-        return CriteriaContextStack.criteriaError(((CriteriaContextSpec) child).getContext(), m);
+        return ContextStack.criteriaError(((CriteriaContextSpec) child).getContext(), m);
     }
 
 
     private static CriteriaException noDefaultMappingType(CriteriaContext criteriaContext, final Object value) {
         String m = String.format("Not found default %s for %s."
                 , MappingType.class.getName(), value.getClass().getName());
-        return CriteriaContextStack.criteriaError(criteriaContext, m);
+        return ContextStack.criteriaError(criteriaContext, m);
     }
 
     static CriteriaException orderByIsEmpty(CriteriaContext criteriaContext) {
-        return CriteriaContextStack.criteriaError(criteriaContext, "you don't add any item");
+        return ContextStack.criteriaError(criteriaContext, "you don't add any item");
     }
 
     static CriteriaException funcArgError(String funcName, @Nullable Object errorArg) {
         String m = String.format("%s don't support %s", funcName, errorArg);
-        throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+        throw ContextStack.criteriaError(ContextStack.peek(), m);
     }
 
     static CriteriaException nonCollectionValue(String keyName) {
         String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());
-        return CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+        return ContextStack.criteriaError(ContextStack.peek(), m);
     }
 
 
     private static CriteriaException unknownSelectItem(final RowSet left, final SelectItem item) {
-        return CriteriaContextStack.criteriaError(((CriteriaContextSpec) left).getContext()
+        return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext()
                 , _Exceptions::unknownSelectItem, item);
     }
 

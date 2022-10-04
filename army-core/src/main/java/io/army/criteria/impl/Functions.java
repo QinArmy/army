@@ -622,7 +622,7 @@ abstract class Functions {
 
     private static CriteriaException customFuncNameError(String name) {
         String m = String.format("custom function name[%s] error.", name);
-        return CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+        return ContextStack.criteriaError(ContextStack.peek(), m);
     }
 
 
@@ -661,7 +661,7 @@ abstract class Functions {
         public static _CaseWhenClause caseFunc(Supplier<? extends Expression> supplier) {
             final Expression caseValue;
             if ((caseValue = supplier.get()) == null) {
-                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+                throw ContextStack.nullPointer(ContextStack.peek());
             }
             return SQLFunctions.caseFunc(caseValue);
         }
@@ -677,11 +677,11 @@ abstract class Functions {
         public static _CaseWhenClause caseFunc(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
             final Object value;
             if ((value = supplier.get()) == null) {
-                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+                throw ContextStack.nullPointer(ContextStack.peek());
             }
             final Expression caseValue;
             if ((caseValue = operator.apply(value)) == null) {
-                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+                throw ContextStack.nullPointer(ContextStack.peek());
             }
             return SQLFunctions.caseFunc(caseValue);
         }
@@ -738,12 +738,12 @@ abstract class Functions {
             final Object value;
             value = function.apply(keyName);
             if (value == null) {
-                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+                throw ContextStack.nullPointer(ContextStack.peek());
             }
             final Expression caseValue;
             caseValue = operator.apply(value);
             if (caseValue == null) {
-                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+                throw ContextStack.nullPointer(ContextStack.peek());
             }
             return SQLFunctions.caseFunc(caseValue);
         }
@@ -817,7 +817,7 @@ abstract class Functions {
             if ((value = supplier.get()) == null) {
                 caseValue = null;
             } else if ((caseValue = operator.apply(value)) == null) {
-                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+                throw ContextStack.nullPointer(ContextStack.peek());
             }
             return SQLFunctions.caseFunc(caseValue);
         }
@@ -880,7 +880,7 @@ abstract class Functions {
             if ((value = function.apply(keyName)) == null) {
                 caseValue = null;
             } else if ((caseValue = operator.apply(value)) == null) {
-                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+                throw ContextStack.nullPointer(ContextStack.peek());
             }
             return SQLFunctions.caseFunc(caseValue);
         }
@@ -936,7 +936,7 @@ abstract class Functions {
             expression = expList.get(i);
             if (expression instanceof SqlValueParam.MultiValue) {
                 String m = "support multi parameter or literal";
-                throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+                throw ContextStack.criteriaError(ContextStack.peek(), m);
             }
             argList.add(expression);
         }
@@ -1062,6 +1062,18 @@ abstract class Functions {
             }
         }
         return SQLFunctions.complexArgFunc(name, argList, returnType);
+    }
+
+
+    /**
+     * <p>
+     * Package method that is used by army developer.
+     * </p>
+     *
+     * @return return argument subQuery
+     */
+    static SubQuery _thisSubQuery(final SubQuery subQuery) {
+        return subQuery;
     }
 
 

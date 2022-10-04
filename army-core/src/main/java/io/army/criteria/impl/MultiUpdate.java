@@ -53,12 +53,12 @@ abstract class MultiUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS, J
 
     @Override
     public FP createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        throw ContextStack.castCriteriaApi(this.criteriaContext);
     }
 
     @Override
     public JP createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        throw ContextStack.castCriteriaApi(this.criteriaContext);
     }
 
 

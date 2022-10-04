@@ -73,7 +73,7 @@ abstract class MySQLLoads {
 
         private LoadDataInfileClause(@Nullable C criteria) {
             this.criteriaContext = CriteriaContexts.otherPrimaryContext(criteria);
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            ContextStack.setContextStack(this.criteriaContext);
         }
 
         @Override
@@ -157,7 +157,7 @@ abstract class MySQLLoads {
         @Override
         public <T> MySQLLoad._PartitionSpec<C, T> intoTable(@Nullable SimpleTableMeta<T> table) {
             if (table == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             if (this.filePath == null) {
                 throw filePathIsNull(this.criteriaContext, table);
@@ -168,7 +168,7 @@ abstract class MySQLLoads {
         @Override
         public <T> MySQLLoad._ParentPartitionSpec<C, T> intoTable(@Nullable ParentTableMeta<T> table) {
             if (table == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             if (this.filePath == null) {
                 throw filePathIsNull(this.criteriaContext, table);
@@ -254,7 +254,7 @@ abstract class MySQLLoads {
         @Override
         public final CR characterSet(@Nullable String charsetName) {
             if (charsetName == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             this.charsetName = charsetName;
             return (CR) this;
@@ -313,7 +313,7 @@ abstract class MySQLLoads {
         public final MySQLLoad._LineAfterIgnoreClause<GR> ignore(final long rowNumber) {
             if (rowNumber < 0L) {
                 String m = String.format("ignore rowNumber[%s] must non-negative.", rowNumber);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw ContextStack.criteriaError(this.criteriaContext, m);
             }
             this.ignoreRows = rowNumber;
             return this;
@@ -324,7 +324,7 @@ abstract class MySQLLoads {
             final Long rowNumber;
             rowNumber = supplier.get();
             if (rowNumber == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             return this.ignore(rowNumber);
         }
@@ -334,7 +334,7 @@ abstract class MySQLLoads {
             final Long rowNumber;
             rowNumber = function.apply(this.criteria);
             if (rowNumber == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             return this.ignore(rowNumber);
         }
@@ -410,7 +410,7 @@ abstract class MySQLLoads {
             } else if (fieldVarList instanceof ArrayList) {
                 this.fieldOrUserVarList = _CollectionUtils.unmodifiableList(fieldVarList);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return (VR) this;
         }
@@ -445,7 +445,7 @@ abstract class MySQLLoads {
             final Character ch;
             ch = supplier.get();
             if (ch == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             this.columnEnclosedBy = ch;
             return (ER) this;
@@ -456,7 +456,7 @@ abstract class MySQLLoads {
             final Character ch;
             ch = function.apply(this.criteria);
             if (ch == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             this.columnEnclosedBy = ch;
             return (ER) this;
@@ -485,7 +485,7 @@ abstract class MySQLLoads {
             final Character ch;
             ch = supplier.get();
             if (ch == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             this.columnEscapedBy = ch;
             return (DR) this;
@@ -496,7 +496,7 @@ abstract class MySQLLoads {
             final Character ch;
             ch = function.apply(this.criteria);
             if (ch == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             this.columnEscapedBy = ch;
             return (DR) this;
@@ -518,7 +518,7 @@ abstract class MySQLLoads {
         @Override
         public final RR startingBy(@Nullable String string) {
             if (string == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             this.lineStartingBy = string;
             return (RR) this;
@@ -573,16 +573,16 @@ abstract class MySQLLoads {
             if (columnOrVar instanceof FieldMeta) {
                 if (((FieldMeta<?>) columnOrVar).tableMeta() != this.insertTable) {
                     String m = String.format("%s isn't belong of %s", columnOrVar, this.insertTable);
-                    throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                    throw ContextStack.criteriaError(this.criteriaContext, m);
                 }
             } else if (!(columnOrVar instanceof VarExpression)) {
                 String m = String.format("support only %s or %s"
                         , FieldMeta.class.getName(), VarExpression.class.getName());
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw ContextStack.criteriaError(this.criteriaContext, m);
             }
 
             if (!(columnOrVar instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+                throw ContextStack.nonArmyExp(this.criteriaContext);
             }
 
             List<_Expression> fieldVarList = this.fieldOrUserVarList;
@@ -590,7 +590,7 @@ abstract class MySQLLoads {
                 fieldVarList = new ArrayList<>();
                 this.fieldOrUserVarList = fieldVarList;
             } else if (!(fieldVarList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             fieldVarList.add((ArmyExpression) columnOrVar);
         }
@@ -644,14 +644,14 @@ abstract class MySQLLoads {
         @Override
         public MySQLLoad._ColumnEnclosedBySpec<C, T> terminatedBy(final @Nullable String string) {
             if (string == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             if (this.linesClause) {
                 this.lineTerminatedBy = string;
             } else if (this.fieldsKeyWord != null) {
                 this.columnTerminatedBy = string;
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return this;
         }
@@ -728,14 +728,14 @@ abstract class MySQLLoads {
         @Override
         public MySQLLoad._ParentColumnEnclosedBySpec<C, P> terminatedBy(final @Nullable String string) {
             if (string == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             if (this.linesClause) {
                 this.lineTerminatedBy = string;
             } else if (this.fieldsKeyWord != null) {
                 this.columnTerminatedBy = string;
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return this;
         }
@@ -882,11 +882,11 @@ abstract class MySQLLoads {
         @Override
         public <T> MySQLLoad._PartitionSpec<C, T> intoTable(@Nullable ComplexTableMeta<P, T> table) {
             if (table == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw ContextStack.nullPointer(this.criteriaContext);
             }
             if (table.parentMeta() != this.parentStatement.table) {
                 String m = String.format("%s isn't child of %s", table, this.parentStatement.table);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw ContextStack.criteriaError(this.criteriaContext, m);
             }
             if (this.filePath == null) {
                 throw filePathIsNull(this.criteriaContext, table);
@@ -1001,7 +1001,7 @@ abstract class MySQLLoads {
         @Override
         public final MySQLLoad asLoadData() {
             _Assert.nonPrepared(this.prepared);
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
+            ContextStack.clearContextStack(this.criteriaContext);
             this.prepared = Boolean.TRUE;
             return this;
         }
@@ -1172,7 +1172,7 @@ abstract class MySQLLoads {
 
     private static CriteriaException filePathIsNull(CriteriaContext criteriaContext, TableMeta<?> table) {
         String m = String.format("file path is null for %s", table);
-        return CriteriaContextStack.criteriaError(criteriaContext, m);
+        return ContextStack.criteriaError(criteriaContext, m);
     }
 
 

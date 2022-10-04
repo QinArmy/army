@@ -39,9 +39,9 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
         super(criteriaContext, JoinableClause.voidClauseCreator());
 
         if (this instanceof SubValues) {
-            CriteriaContextStack.push(this.context);
+            ContextStack.push(this.context);
         } else {
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
 
     }
@@ -137,7 +137,7 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
     @Override
     public final void appendSql(final _SqlContext context) {
         if (!(this instanceof SubValues)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         context.parser().rowSet(this, context);
     }
@@ -152,12 +152,12 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
     @Override
     final V internalAsRowSet(final boolean fromAsQueryMethod) {
         if (!fromAsQueryMethod) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);//VALUES statement don't support
+            throw ContextStack.castCriteriaApi(this.context);//VALUES statement don't support
         }
         if (this instanceof SubValues) {
-            CriteriaContextStack.pop(this.context);
+            ContextStack.pop(this.context);
         } else {
-            CriteriaContextStack.clearContextStack(this.context);
+            ContextStack.clearContextStack(this.context);
         }
         return this.onAsValues();
     }
@@ -175,12 +175,12 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
 
     @Override
     final Void asUnionAndRowSet(UnionType unionType) {
-        throw CriteriaContextStack.castCriteriaApi(this.context);
+        throw ContextStack.castCriteriaApi(this.context);
     }
 
     @Override
     final void crossJoinEvent(boolean success) {
-        throw CriteriaContextStack.castCriteriaApi(this.context);
+        throw ContextStack.castCriteriaApi(this.context);
     }
 
 

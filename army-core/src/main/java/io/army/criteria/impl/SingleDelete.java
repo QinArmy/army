@@ -22,9 +22,9 @@ abstract class SingleDelete<C, WR, WA, D extends DmlStatement.DmlDelete>
     SingleDelete(CriteriaContext criteriaContext) {
         super(criteriaContext, JoinableClause.voidClauseCreator());
         if (this instanceof SubStatement) {
-            CriteriaContextStack.push(this.context);
+            ContextStack.push(this.context);
         } else {
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
     }
 
@@ -44,9 +44,9 @@ abstract class SingleDelete<C, WR, WA, D extends DmlStatement.DmlDelete>
         _Assert.nonPrepared(this.prepared);
         this.context.clear();
         if (this instanceof SubStatement) {
-            CriteriaContextStack.pop(this.context);
+            ContextStack.pop(this.context);
         } else {
-            CriteriaContextStack.clearContextStack(this.context);
+            ContextStack.clearContextStack(this.context);
         }
         super.asDmlStatement();
         this.onAsDelete();

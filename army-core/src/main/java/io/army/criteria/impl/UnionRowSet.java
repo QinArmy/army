@@ -28,9 +28,9 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
         super(criteriaContext, JoinableClause.voidClauseCreator());
         this.left = left;
         if (this instanceof SubStatement) {
-            CriteriaContextStack.push(this.context);
+            ContextStack.push(this.context);
         } else {
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
     }
 
@@ -90,7 +90,7 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
     public final TypeMeta typeMeta() {
         final Q left = this.left;
         if (!(left instanceof ScalarExpression)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return ((ScalarExpression) left).typeMeta();
     }
@@ -100,13 +100,13 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
     @Override
     final Q internalAsRowSet(final boolean fromAsQueryMethod) {
         if (this instanceof SubStatement) {
-            CriteriaContextStack.pop(this.context);
+            ContextStack.pop(this.context);
         } else {
-            CriteriaContextStack.clearContextStack(this.context);
+            ContextStack.clearContextStack(this.context);
         }
         final Q query;
         if (this instanceof ScalarSubQuery) {
-            query = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
+            query = (Q) ScalarQueryExpression.from((ScalarSubQuery) this);
         } else {
             query = (Q) this;
         }

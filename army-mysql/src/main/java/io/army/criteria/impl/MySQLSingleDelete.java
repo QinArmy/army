@@ -313,7 +313,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
      */
     private PR partitionEnd(List<String> partitionList) {
         if (this.partitionList == null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         this.partitionList = partitionList;
         return (PR) this;
@@ -322,7 +322,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
 
     private OR orderByEnd(List<ArmySortItem> itemList) {
         if (this.orderByList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         this.orderByList = itemList;
         return (OR) this;

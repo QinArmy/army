@@ -44,7 +44,7 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA, Del
     @Override
     public final DR deleteFrom(TableMeta<?> table, String tableAlias) {
         if (this.table != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         this.table = table;
         this.tableAlias = tableAlias;

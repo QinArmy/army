@@ -49,9 +49,9 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         this.supportRowLeftItem = this.isSupportRowLeftItem();
 
         if (this instanceof SubStatement) {
-            CriteriaContextStack.push(context);
+            ContextStack.push(context);
         } else {
-            CriteriaContextStack.setContextStack(context);
+            ContextStack.setContextStack(context);
         }
     }
 
@@ -81,7 +81,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
     @Override
     public final SR set(final F field, final @Nullable Expression value) {
         if (value == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.addItemPair(SQLs._itemPair(field, null, value));
     }
@@ -200,7 +200,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
     @Override
     public final SR setList(List<F> fieldList, BiFunction<F, String, Expression> valueOperator) {
         if (fieldList.size() == 0) {
-            throw CriteriaContextStack.criteriaError(this.context, "fieldList is null");
+            throw ContextStack.criteriaError(this.context, "fieldList is null");
         }
         for (F field : fieldList) {
             this.addItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, field.fieldName())));
@@ -211,7 +211,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
     @Override
     public final SR setList(List<F> fieldList, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, String, Expression> valueOperator) {
         if (fieldList.size() == 0) {
-            throw CriteriaContextStack.criteriaError(this.context, "fieldList is null");
+            throw ContextStack.criteriaError(this.context, "fieldList is null");
         }
         for (F field : fieldList) {
             this.addItemPair(fieldOperator.apply(field, valueOperator.apply(field, field.fieldName())));
@@ -249,9 +249,9 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
     public final U asUpdate() {
         _Assert.nonPrepared(this.prepared);
         if (this instanceof SubStatement) {
-            CriteriaContextStack.pop(this.context);
+            ContextStack.pop(this.context);
         } else {
-            CriteriaContextStack.clearContextStack(this.context);
+            ContextStack.clearContextStack(this.context);
         }
         if (this instanceof SingleUpdate) {
             /// only single update clear context.
@@ -328,7 +328,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
                 this.doAddItemPair((SQLs.ArmyItemPair) pair);
             } else if (!(field instanceof FieldMeta)) {
                 String m = "not multi-table update support only %s" + FieldMeta.class.getName();
-                throw CriteriaContextStack.criteriaError(this.context, m);
+                throw ContextStack.criteriaError(this.context, m);
             } else if (this instanceof _DomainUpdate) {
                 if (((TableField) field).tableMeta() instanceof ChildTableMeta) {
                     this.doAddChildItemPair((SQLs.ArmyItemPair) pair);
@@ -340,7 +340,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
                 throw new IllegalStateException("unknown update statement");
             } else if (((TableField) field).tableMeta() instanceof ChildTableMeta) {
                 String m = "single update don't support child field";
-                throw CriteriaContextStack.criteriaError(this.context, m);
+                throw ContextStack.criteriaError(this.context, m);
             } else {
                 this.doAddItemPair((SQLs.ArmyItemPair) pair);
             }
@@ -348,7 +348,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
             //no bug,never here
             throw new IllegalStateException("unknown ItemPair");
         } else if (!this.supportRowLeftItem) {
-            throw CriteriaContextStack.criteriaError(this.context, _Exceptions::dontSupportRowLeftItem
+            throw ContextStack.criteriaError(this.context, _Exceptions::dontSupportRowLeftItem
                     , this.dialect());
         } else if (this instanceof _MultiUpdate || !isChildTable((SQLs.RowItemPair) pair)) {
             this.doAddItemPair((SQLs.ArmyItemPair) pair);
@@ -364,7 +364,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
             childItemPairList = new ArrayList<>();
             this.childItemPairList = childItemPairList;
         } else if (!(childItemPairList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         childItemPairList.add(pair);
     }
@@ -375,14 +375,14 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
             itemPairList = new ArrayList<>();
             this.itemPairList = itemPairList;
         } else if (!(itemPairList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         itemPairList.add(pair);
     }
 
     private CriteriaException illegalItemPair(@Nullable ItemPair itemPair) {
         String m = String.format("%s Illegal %s", _ClassUtils.safeClassName(itemPair), ItemPair.class.getName());
-        throw CriteriaContextStack.criteriaError(this.context, m);
+        throw ContextStack.criteriaError(this.context, m);
     }
 
     private static boolean isChildTable(final SQLs.RowItemPair pair) {

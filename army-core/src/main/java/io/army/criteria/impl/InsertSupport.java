@@ -260,7 +260,7 @@ abstract class InsertSupport {
         @Deprecated
         final void withClauseEnd(final boolean recursive, final List<_Cte> cteList) {
             if (this.cteList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.recursive = recursive;
             this.cteList = cteList;
@@ -268,7 +268,7 @@ abstract class InsertSupport {
 
         final void endStaticWithClause(final boolean recursive) {
             if (this.cteList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(true);
@@ -412,7 +412,7 @@ abstract class InsertSupport {
 
         final void endStaticWithClause(final boolean recursive) {
             if (this.cteList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(true);//static with syntax is required
@@ -425,7 +425,7 @@ abstract class InsertSupport {
         @SuppressWarnings("unchecked")
         private WE endDynamicWithClause(final B builder, final boolean required) {
             if (this.cteList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.recursive = builder.isRecursive();
             this.cteList = this.context.endWithClause(required);
@@ -495,7 +495,7 @@ abstract class InsertSupport {
         ColumnsClause(CriteriaContext context, boolean migration, @Nullable TableMeta<T> table) {
             if (table == null) {
                 //validate for insertInto method
-                throw CriteriaContextStack.nullPointer(context);
+                throw ContextStack.nullPointer(context);
             }
             this.context = context;
             this.criteria = context.criteria();
@@ -538,7 +538,7 @@ abstract class InsertSupport {
             if (!this.migration && _MetaBridge.VISIBLE.equals(field.fieldName())) {
                 String m = String.format("%s is managed by army for column list clause,in non-migration mode."
                         , _MetaBridge.VISIBLE);
-                throw CriteriaContextStack.criteriaError(this.context, m);
+                throw ContextStack.criteriaError(this.context, m);
             }
 
             Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
@@ -554,7 +554,7 @@ abstract class InsertSupport {
 
             if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
                 String m = String.format("%s duplication", field);
-                throw CriteriaContextStack.criteriaError(this.context, m);
+                throw ContextStack.criteriaError(this.context, m);
             }
             fieldList.add(field);
             return this;
@@ -577,7 +577,7 @@ abstract class InsertSupport {
                 this.fieldList = Collections.emptyList();
                 assert fieldMap == null;
             } else if (!(fieldList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             } else {
                 if (this.migration) {
                     validateMigrationColumnList(this.context, this.insertTable, fieldMap);
@@ -595,7 +595,7 @@ abstract class InsertSupport {
             } else if (fieldMap instanceof HashMap) {
                 this.fieldMap = Collections.unmodifiableMap(fieldMap);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return (RR) this;
         }
@@ -612,7 +612,7 @@ abstract class InsertSupport {
             if (fieldList == null) {
                 fieldList = Collections.emptyList();
             } else if (fieldList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return fieldList;
         }
@@ -624,7 +624,7 @@ abstract class InsertSupport {
             if (fieldList == null) {
                 effectiveList = this.insertTable.fieldList();
             } else if (fieldList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             } else {
                 effectiveList = fieldList;
             }
@@ -637,7 +637,7 @@ abstract class InsertSupport {
             if (map == null) {
                 map = Collections.emptyMap();
             } else if (map instanceof HashMap) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return map;
         }
@@ -663,7 +663,7 @@ abstract class InsertSupport {
                 throw notContainField(this.context, field);
             }
             if (value != null && !field.nullable() && value.isNullValue()) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
+                throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
             }
 
         }
@@ -759,11 +759,11 @@ abstract class InsertSupport {
         public final DR defaultValue(final FieldMeta<T> field, final @Nullable Expression value) {
             if (this.migration) {
                 String m = "migration mode not support default value clause";
-                throw CriteriaContextStack.criteriaError(this.context, m);
+                throw ContextStack.criteriaError(this.context, m);
             }
 
             if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.context);
+                throw ContextStack.nonArmyExp(this.context);
             }
             final ArmyExpression valueExp;
             valueExp = (ArmyExpression) value;
@@ -774,11 +774,11 @@ abstract class InsertSupport {
                 commonExpMap = new HashMap<>();
                 this.commonExpMap = commonExpMap;
             } else if (!(commonExpMap instanceof HashMap)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             if (commonExpMap.putIfAbsent(field, valueExp) != null) {
                 String m = String.format("duplication default for %s.", field);
-                throw CriteriaContextStack.criteriaError(this.context, m);
+                throw ContextStack.criteriaError(this.context, m);
             }
             return (DR) this;
         }
@@ -856,7 +856,7 @@ abstract class InsertSupport {
             } else if (map instanceof HashMap) {
                 this.commonExpMap = Collections.unmodifiableMap(map);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
         }
 
@@ -877,7 +877,7 @@ abstract class InsertSupport {
         @Override
         public final <T extends P> VR value(@Nullable T domain) {
             if (domain == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             }
             this.endColumnDefaultClause();
             return this.domainValuesEnd(Collections.singletonList(domain));
@@ -933,7 +933,7 @@ abstract class InsertSupport {
         }
 
         private CriteriaException domainListIsEmpty() {
-            return CriteriaContextStack.criteriaError(this.context, "domainList must non-empty");
+            return ContextStack.criteriaError(this.context, "domainList must non-empty");
         }
 
 
@@ -972,9 +972,9 @@ abstract class InsertSupport {
         @Override
         public final <TS extends T> VR value(@Nullable TS domain) {
             if (domain == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             } else if (this.insertMode != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.endColumnDefaultClause();
             this.domainList = Collections.singletonList(domain);
@@ -1000,9 +1000,9 @@ abstract class InsertSupport {
         @Override
         public final <TS extends T> VR values(final @Nullable List<TS> domainList) {
             if (domainList == null || domainList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(this.context, "domainList must non-empty");
+                throw ContextStack.criteriaError(this.context, "domainList must non-empty");
             } else if (this.insertMode != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.endColumnDefaultClause();
             this.domainList = domainList;//just store
@@ -1024,7 +1024,7 @@ abstract class InsertSupport {
         @Override
         public final VR values(final Consumer<PairsConstructor<T>> consumer) {
             if (this.insertMode != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.endColumnDefaultClause();
 
@@ -1039,7 +1039,7 @@ abstract class InsertSupport {
         @Override
         public final VR values(final BiConsumer<C, PairsConstructor<T>> consumer) {
             if (this.insertMode != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.endColumnDefaultClause();
 
@@ -1054,14 +1054,14 @@ abstract class InsertSupport {
         @Override
         public final VR space(Supplier<? extends SubQuery> supplier) {
             if (this.insertMode != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.endColumnDefaultClause();
 
             final SubQuery subQuery;
             subQuery = supplier.get();
             if (subQuery == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             }
             this.subQuery = subQuery;
             this.insertMode = InsertMode.QUERY;
@@ -1071,14 +1071,14 @@ abstract class InsertSupport {
         @Override
         public final VR space(Function<C, ? extends SubQuery> function) {
             if (this.insertMode != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.endColumnDefaultClause();
 
             final SubQuery subQuery;
             subQuery = function.apply(this.criteria);
             if (subQuery == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             }
             this.subQuery = subQuery;
             this.insertMode = InsertMode.QUERY;
@@ -1091,7 +1091,7 @@ abstract class InsertSupport {
          */
         final void staticValuesClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowPairList) {
             if (this.insertMode != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.endColumnDefaultClause();
 
@@ -1101,7 +1101,7 @@ abstract class InsertSupport {
 
         final void staticSpaceSubQueryClauseEnd(final SubQuery subQuery) {
             if (this.insertMode != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.endColumnDefaultClause();
 
@@ -1113,7 +1113,7 @@ abstract class InsertSupport {
         final InsertMode getInsertMode() {
             final InsertMode mode = this.insertMode;
             if (mode == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return mode;
         }
@@ -1123,7 +1123,7 @@ abstract class InsertSupport {
             assert mode != null;
             if (parent != null && mode == parent.insertMode) {
                 String m = String.format("%s and %s insert syntax not match", this.insertTable, parent.insertTable);
-                throw CriteriaContextStack.criteriaError(this.context, m);
+                throw ContextStack.criteriaError(this.context, m);
             }
             return mode;
         }
@@ -1135,7 +1135,7 @@ abstract class InsertSupport {
             assert !(this.insertTable instanceof ParentTableMeta);
             final List<?> domainList = this.domainList;
             if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return _CollectionUtils.asUnmodifiableList(domainList);
         }
@@ -1147,7 +1147,7 @@ abstract class InsertSupport {
             assert !(this.insertTable instanceof SimpleTableMeta);
             final List<?> domainList = this.domainList;
             if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return domainList;
         }
@@ -1161,12 +1161,12 @@ abstract class InsertSupport {
 
             final List<?> domainList = this.domainList, parentDomainList = parent.domainList;
             if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             if (domainList != parentDomainList
                     && domainList.get(0) != parentDomainList.get(0)) {
                 String m = String.format("%s and %s domain list not match.", this.insertTable, parent.insertTable);
-                throw CriteriaContextStack.criteriaError(this.context, m);
+                throw ContextStack.criteriaError(this.context, m);
             }
             return _CollectionUtils.asUnmodifiableList(domainList);
         }
@@ -1175,7 +1175,7 @@ abstract class InsertSupport {
         public final List<Map<FieldMeta<?>, _Expression>> rowPairList() {
             final List<Map<FieldMeta<?>, _Expression>> list = this.rowPairList;
             if (this.insertMode != InsertMode.VALUES || list == null || list instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return list;
         }
@@ -1184,7 +1184,7 @@ abstract class InsertSupport {
         public final SubQuery subQuery() {
             final SubQuery query = this.subQuery;
             if (this.insertMode != InsertMode.QUERY || query == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return query;
         }
@@ -1258,9 +1258,9 @@ abstract class InsertSupport {
         @Override
         public final Insert._StaticColumnValueClause<C, T, RR> comma(final FieldMeta<T> field, final @Nullable Expression value) {
             if (value instanceof DataField) {
-                throw CriteriaContextStack.criteriaError(this.context, "column value must be non-field.");
+                throw ContextStack.criteriaError(this.context, "column value must be non-field.");
             } else if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.context);
+                throw ContextStack.nonArmyExp(this.context);
             }
             this.validator.accept(field, (ArmyExpression) value);
             Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
@@ -1312,7 +1312,7 @@ abstract class InsertSupport {
                 rowValueList = new ArrayList<>();
                 this.rowList = rowValueList;
             } else if (!(rowValueList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             final Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
             if (currentRow == null) {
@@ -1328,11 +1328,11 @@ abstract class InsertSupport {
 
         final List<Map<FieldMeta<?>, _Expression>> endValuesClause() {
             if (this.rowValuesMap != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowList;
             if (!(rowValueList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             rowValueList = _CollectionUtils.unmodifiableList(rowValueList);
             this.rowList = rowValueList;
@@ -1437,11 +1437,11 @@ abstract class InsertSupport {
                     valuePairList = new ArrayList<>();
                     this.rowPairList = valuePairList;
                 } else if (!(valuePairList instanceof ArrayList)) {
-                    throw CriteriaContextStack.castCriteriaApi(this.context);
+                    throw ContextStack.castCriteriaApi(this.context);
                 }
                 valuePairList.add(Collections.unmodifiableMap(currentPairMap));
             } else if (currentPairMap != null || this.rowPairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.rowMap = new HashMap<>();
             return this;
@@ -1453,12 +1453,12 @@ abstract class InsertSupport {
             if (currentRowMap == null) {
                 String m = String.format("Not found any row,please use %s.row() method create row."
                         , PairsConstructor.class.getName());
-                throw CriteriaContextStack.criteriaError(this.context, m);
+                throw ContextStack.criteriaError(this.context, m);
             } else if (!(currentRowMap instanceof HashMap)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.context);
+                throw ContextStack.nonArmyExp(this.context);
             }
             this.validator.accept(field, (ArmyExpression) value);
 
@@ -1498,7 +1498,7 @@ abstract class InsertSupport {
             Map<FieldMeta<?>, _Expression> valuePairMap = this.rowMap;
             if (valuePairMap == null) {
                 String m = "Values insert must have one row at least";
-                throw CriteriaContextStack.criteriaError(this.context, m);
+                throw ContextStack.criteriaError(this.context, m);
             }
             if (valuePairMap.size() == 0) {
                 valuePairMap = Collections.emptyMap();
@@ -1512,7 +1512,7 @@ abstract class InsertSupport {
                 valuePairList.add(valuePairMap);
                 valuePairList = Collections.unmodifiableList(valuePairList);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.rowMap = null;
             this.rowPairList = null;
@@ -1678,7 +1678,7 @@ abstract class InsertSupport {
         public final List<_Pair<FieldMeta<?>, _Expression>> pairList() {
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.itemPairList;
             if (pairList == null || pairList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return pairList;
         }
@@ -1687,7 +1687,7 @@ abstract class InsertSupport {
         public final Map<FieldMeta<?>, _Expression> pairMap() {
             final Map<FieldMeta<?>, _Expression> fieldMap = this.fieldPairMap;
             if (fieldMap == null || fieldMap instanceof HashMap) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return fieldMap;
         }
@@ -1701,7 +1701,7 @@ abstract class InsertSupport {
                 itemPairList = Collections.emptyList();
 
             } else if (!(itemPairList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             } else {
                 if (this instanceof AssignmentInsertClause && ((AssignmentInsertClause<C, T, SR>) this).migration) {
                     validateMigrationColumnList(this.criteriaContext, this.insertTable, fieldMap);
@@ -1729,9 +1729,9 @@ abstract class InsertSupport {
         private SR addFieldPair(final FieldMeta<?> field, final @Nullable Expression value) {
             if (value instanceof DataField && this instanceof AssignmentInsertClause) {
                 String m = "assignment insert value must be non-field.";
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw ContextStack.criteriaError(this.criteriaContext, m);
             } else if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+                throw ContextStack.nonArmyExp(this.criteriaContext);
             }
             this.validateField(field, (ArmyExpression) value);
 
@@ -1820,7 +1820,7 @@ abstract class InsertSupport {
         public final SubQuery subQuery() {
             final SubQuery query = this.subQuery;
             if (query == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return query;
         }
@@ -1829,10 +1829,10 @@ abstract class InsertSupport {
 
         private SR innerSpace(final @Nullable SubQuery query) {
             if (query == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             }
             if (this.subQuery != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.subQuery = query;
             return this.spaceEnd();
@@ -2000,7 +2000,7 @@ abstract class InsertSupport {
         public final List<ItemPair> updateSetClauseList() {
             final List<ItemPair> itemPairList = this.itemPairList;
             if (itemPairList == null || itemPairList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return itemPairList;
         }
@@ -2017,7 +2017,7 @@ abstract class InsertSupport {
                 itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
                 this.itemPairList = itemPairList;
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return itemPairList;
         }
@@ -2032,18 +2032,18 @@ abstract class InsertSupport {
                 itemPairList = new ArrayList<>();
                 this.itemPairList = itemPairList;
             } else if (!(itemPairList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             itemPairList.add(pair);
         }
 
         private SR addFieldValuePair(final FieldMeta<T> field, final @Nullable Expression value) {
             if (field.updateMode() == UpdateMode.IMMUTABLE) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
+                throw ContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
             } else if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.context);
+                throw ContextStack.nonArmyExp(this.context);
             } else if (!field.nullable() && ((ArmyExpression) value).isNullValue()) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
+                throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
             }
             List<ItemPair> itemPairList = this.itemPairList;
             if (itemPairList == null) {
@@ -2059,19 +2059,19 @@ abstract class InsertSupport {
             final FieldMeta<?> field;
             if (pair instanceof SQLs.RowItemPair) {
                 if (!this.supportRow) {
-                    throw CriteriaContextStack.criteriaError(this.context, _Exceptions::dontSupportRowLeftItem
+                    throw ContextStack.criteriaError(this.context, _Exceptions::dontSupportRowLeftItem
                             , this.syntaxDialect());
                 }
                 this.validateRowPair((SQLs.RowItemPair) pair);
             } else if (!(pair instanceof SQLs.FieldItemPair)) {
-                throw CriteriaContextStack.criteriaError(this.context, "Illegal ItemPair");
+                throw ContextStack.criteriaError(this.context, "Illegal ItemPair");
             } else if (!((fieldPair = (SQLs.FieldItemPair) pair).field instanceof FieldMeta)) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::unsupportedFieldType
+                throw ContextStack.criteriaError(this.context, _Exceptions::unsupportedFieldType
                         , fieldPair.field);
             } else if ((field = (FieldMeta<?>) fieldPair.field).updateMode() == UpdateMode.IMMUTABLE) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
+                throw ContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
             } else if (!field.nullable() && ((ArmyExpression) fieldPair.right).isNullValue()) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
+                throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
             }
             List<ItemPair> itemPairList = this.itemPairList;
             if (itemPairList == null) {
@@ -2088,20 +2088,20 @@ abstract class InsertSupport {
                 final Supplier<CriteriaException> supplier;
                 supplier = () -> _Exceptions.rowSetSelectionAndFieldSizeNotMatch(((_Query) query).selectionSize()
                         , fieldList.size(), this.insertTable);
-                throw CriteriaContextStack.criteriaError(this.context, supplier);
+                throw ContextStack.criteriaError(this.context, supplier);
             }
             FieldMeta<?> field;
             final TableMeta<?> insertTable = this.insertTable;
             for (DataField dataField : fieldList) {
                 if (!(dataField instanceof FieldMeta)) {
-                    throw CriteriaContextStack.criteriaError(this.context, _Exceptions::unsupportedFieldType
+                    throw ContextStack.criteriaError(this.context, _Exceptions::unsupportedFieldType
                             , dataField);
                 }
                 field = (FieldMeta<?>) dataField;
                 if (field.tableMeta() != insertTable) {
-                    throw CriteriaContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
+                    throw ContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
                 } else if (field.updateMode() == UpdateMode.IMMUTABLE) {
-                    throw CriteriaContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
+                    throw ContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
                 }
             }
 
@@ -2125,7 +2125,7 @@ abstract class InsertSupport {
         public final WR where(Consumer<Consumer<IPredicate>> consumer) {
             consumer.accept(this::and);
             if (this.predicateList == null) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
+                throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
             }
             return (WR) this;
         }
@@ -2134,7 +2134,7 @@ abstract class InsertSupport {
         public final WR where(BiConsumer<C, Consumer<IPredicate>> consumer) {
             consumer.accept(this.criteria, this::and);
             if (this.predicateList == null) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
+                throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
             }
             return (WR) this;
         }
@@ -2179,14 +2179,14 @@ abstract class InsertSupport {
         @Override
         public final WA and(final @Nullable IPredicate predicate) {
             if (predicate == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             }
             List<_Predicate> predicateList = this.predicateList;
             if (predicateList == null) {
                 predicateList = new ArrayList<>();
                 this.predicateList = predicateList;
             } else if (!(predicateList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             predicateList.add((OperationPredicate) predicate);
             return (WA) this;
@@ -2226,7 +2226,7 @@ abstract class InsertSupport {
         public final List<_Predicate> updateSetPredicateList() {
             final List<_Predicate> predicateList = this.predicateList;
             if (predicateList == null || predicateList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return predicateList;
         }
@@ -2239,7 +2239,7 @@ abstract class InsertSupport {
             } else if (predicateList instanceof ArrayList) {
                 this.predicateList = predicateList = _CollectionUtils.unmodifiableList(predicateList);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return predicateList;
         }
@@ -2273,7 +2273,7 @@ abstract class InsertSupport {
         public final WR where(Consumer<Consumer<IPredicate>> consumer) {
             consumer.accept(this::and);
             if (this.predicateList == null) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
+                throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
             }
             return (WR) this;
         }
@@ -2282,7 +2282,7 @@ abstract class InsertSupport {
         public final WR where(BiConsumer<C, Consumer<IPredicate>> consumer) {
             consumer.accept(this.criteria, this::and);
             if (this.predicateList == null) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
+                throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
             }
             return (WR) this;
         }
@@ -2328,13 +2328,13 @@ abstract class InsertSupport {
         @Override
         public final WA and(final @Nullable IPredicate predicate) {
             if (predicate == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             }
             List<_Predicate> predicateList = this.predicateList;
             if (predicateList == null) {
                 this.predicateList = predicateList = new ArrayList<>();
             } else if (!(predicateList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             predicateList.add((OperationPredicate) predicate);
             return (WA) this;
@@ -2377,7 +2377,7 @@ abstract class InsertSupport {
             } else if (predicateList instanceof ArrayList) {
                 this.predicateList = predicateList = _CollectionUtils.unmodifiableList(predicateList);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return predicateList;
         }
@@ -2385,7 +2385,7 @@ abstract class InsertSupport {
         final List<_Predicate> predicateList() {
             final List<_Predicate> predicateList = this.predicateList;
             if (predicateList == null || predicateList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return predicateList;
         }
@@ -2457,7 +2457,7 @@ abstract class InsertSupport {
         @Override
         public final I asInsert() {
             if (!(this instanceof DmlInsert)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.asInsertStatement();
             return (I) this;
@@ -2467,7 +2467,7 @@ abstract class InsertSupport {
         @Override
         public final Q asReturningInsert() {
             if (!(this instanceof DqlInsert)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.asInsertStatement();
             return (Q) this;
@@ -2484,9 +2484,9 @@ abstract class InsertSupport {
 
             //finally clear context
             if (this instanceof SubStatement) {
-                CriteriaContextStack.pop(this.context);
+                ContextStack.pop(this.context);
             } else {
-                CriteriaContextStack.clearContextStack(this.context);
+                ContextStack.clearContextStack(this.context);
             }
             this.prepared = Boolean.TRUE;
         }
@@ -2501,7 +2501,7 @@ abstract class InsertSupport {
                 stmt = parser.dialectStmt((DialectStatement) this, visible);
             } else {
                 //non-primary insert
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return stmt;
         }
@@ -2728,15 +2728,15 @@ abstract class InsertSupport {
 
         if (field.tableMeta() != table) {
             //don't contain parent field
-            throw CriteriaContextStack.criteriaError(context, _Exceptions::unknownColumn, field);
+            throw ContextStack.criteriaError(context, _Exceptions::unknownColumn, field);
         } else if (migration) {
             if (field instanceof PrimaryFieldMeta && field.tableMeta() instanceof ChildTableMeta) {
                 throw childIdIsManaged(context, (ChildTableMeta<?>) field.tableMeta());
             }
         } else if (!field.insertable()) {
-            throw CriteriaContextStack.criteriaError(context, _Exceptions::nonInsertableField, field);
+            throw ContextStack.criteriaError(context, _Exceptions::nonInsertableField, field);
         } else if (isArmyManageField(table, field)) {
-            throw CriteriaContextStack.criteriaError(context, _Exceptions::armyManageField, field);
+            throw ContextStack.criteriaError(context, _Exceptions::armyManageField, field);
         } else if (field instanceof PrimaryFieldMeta && field.tableMeta() instanceof ChildTableMeta) {
             throw childIdIsManaged(context, (ChildTableMeta<?>) field.tableMeta());
         }
@@ -2746,12 +2746,12 @@ abstract class InsertSupport {
 
     static CriteriaException notContainField(CriteriaContext criteriaContext, FieldMeta<?> field) {
         String m = String.format("insert field list don't contain %s", field);
-        return CriteriaContextStack.criteriaError(criteriaContext, m);
+        return ContextStack.criteriaError(criteriaContext, m);
     }
 
     static CriteriaException duplicationValuePair(CriteriaContext criteriaContext, FieldMeta<?> field) {
         String m = String.format("duplication value of %s at same row.", field);
-        return CriteriaContextStack.criteriaError(criteriaContext, m);
+        return ContextStack.criteriaError(criteriaContext, m);
     }
 
 
@@ -2759,18 +2759,18 @@ abstract class InsertSupport {
             , TableMeta<?> table) {
         String m;
         m = String.format("%s isn't %s instance.", _ClassUtils.safeClassName(domain), table.javaType().getName());
-        return CriteriaContextStack.criteriaError(criteriaContext, m);
+        return ContextStack.criteriaError(criteriaContext, m);
     }
 
     private static CriteriaException childIdIsManaged(CriteriaContext criteriaContext, ChildTableMeta<?> table) {
-        return CriteriaContextStack.criteriaError(criteriaContext, _Exceptions::childIdIsManagedByArmy, table);
+        return ContextStack.criteriaError(criteriaContext, _Exceptions::childIdIsManagedByArmy, table);
     }
 
     static CriteriaException childAndParentRowsNotMatch(CriteriaContext criteriaContext
             , ChildTableMeta<?> table, int parent, int child) {
         Supplier<CriteriaException> supplier;
         supplier = () -> _Exceptions.childAndParentRowsNotMatch(table, parent, child);
-        return CriteriaContextStack.criteriaError(criteriaContext, supplier);
+        return ContextStack.criteriaError(criteriaContext, supplier);
     }
 
 
@@ -2797,18 +2797,18 @@ abstract class InsertSupport {
             for (String fieldName : _MetaBridge.RESERVED_FIELDS) {
                 field = insertTable.tryGetField(fieldName);
                 if (field != null && fieldMap.get(field) == null) {
-                    throw CriteriaContextStack.criteriaError(context, _Exceptions::migrationManageGeneratorField, field);
+                    throw ContextStack.criteriaError(context, _Exceptions::migrationManageGeneratorField, field);
                 }
             }
             field = insertTable.discriminator();
             if (field != null && fieldMap.get(field) == null) {
-                throw CriteriaContextStack.criteriaError(context, _Exceptions::migrationManageGeneratorField, field);
+                throw ContextStack.criteriaError(context, _Exceptions::migrationManageGeneratorField, field);
             }
         }
 
         for (FieldMeta<?> field : insertTable.fieldChain()) {
             if (!field.nullable() && fieldMap.get(field) == null) {
-                throw CriteriaContextStack.criteriaError(context, _Exceptions::migrationModeGeneratorField, field);
+                throw ContextStack.criteriaError(context, _Exceptions::migrationModeGeneratorField, field);
             }
         }
 
@@ -2835,7 +2835,7 @@ abstract class InsertSupport {
             String m = String.format("%s id %s is %s ,so you couldn't use duplicate key clause(on conflict)"
                     , parentTable, GeneratorType.class.getName()
                     , parentTable.id().generatorType());
-            throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
         } else if (statement instanceof _Insert._QueryInsert) {
             validateQueryInsert((_Insert._QueryInsert) statement);
         } else if (statement instanceof _Insert._ChildDomainInsert) {
@@ -2906,12 +2906,12 @@ abstract class InsertSupport {
             selectionSize = ((_Query) query).selectionSize();
             columnSize = currentStatement.fieldList().size();
             if (columnSize == 0) {
-                throw CriteriaContextStack.castCriteriaApi(((CriteriaContextSpec) statement).getContext());
+                throw ContextStack.castCriteriaApi(((CriteriaContextSpec) statement).getContext());
             }
             if (selectionSize != columnSize) {
                 String m = String.format("%s insert statement selection size[%s] and column size[%s] not match"
                         , currentStatement.table(), selectionSize, columnSize);
-                throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+                throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
             }
             if (!(currentStatement instanceof _Insert._ChildQueryInsert)) {
                 break;
@@ -2975,7 +2975,7 @@ abstract class InsertSupport {
 
         if (discriminatorSelection == null) {
             //army syntax api forbid this
-            throw CriteriaContextStack.castCriteriaApi(((CriteriaContextSpec) statement).getContext());
+            throw ContextStack.castCriteriaApi(((CriteriaContextSpec) statement).getContext());
         }
 
         //2.2 validate discriminatorExp
@@ -2986,7 +2986,7 @@ abstract class InsertSupport {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be literal."
                     , Selection.class.getSimpleName(), discriminatorSelection.alias()
                     , discriminatorField);
-            throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
         }
 
         final Object value;
@@ -2998,7 +2998,7 @@ abstract class InsertSupport {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be instance of %s."
                     , Selection.class.getSimpleName(), discriminatorSelection.alias()
                     , discriminatorField, discriminatorJavaType.getName());
-            throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
         }
 
         final CodeEnum discriminatorEnum;
@@ -3009,7 +3009,7 @@ abstract class InsertSupport {
                     , Selection.class.getSimpleName(), discriminatorSelection.alias()
                     , discriminatorField, discriminatorJavaType.getName()
                     , discriminatorEnum.name());
-            throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
         }
 
     }
@@ -3039,7 +3039,7 @@ abstract class InsertSupport {
             String m = String.format("%s insert row number[%s] and parent insert row number[%s] not match"
                     , childStmt.table(), childPairList.size()
                     , parentPairList.size());
-            throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) childStmt).getContext(), m);
+            throw ContextStack.criteriaError(((CriteriaContextSpec) childStmt).getContext(), m);
         }
     }
 

@@ -102,7 +102,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private DomainReplaceOptionClause(@Nullable C criteria) {
             super(criteria);
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
 
         @Override
@@ -401,7 +401,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private ValueReplaceOptionClause(@Nullable C criteria) {
             super(criteria);
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
 
         @Override
@@ -586,7 +586,7 @@ abstract class MySQLReplaces extends InsertSupport {
         @Override
         MySQLReplace._ValueChildSpec<C, P> valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowValuesList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.rowValuesList = rowList;
             return this;
@@ -600,7 +600,7 @@ abstract class MySQLReplaces extends InsertSupport {
         private ValuesReplaceStatement createParentStmt() {
             final List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowValuesList;
             if (rowValuesList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return new ValuesReplaceStatement(this, rowValuesList);
         }
@@ -747,7 +747,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private AssignmentReplaceOptionClause(@Nullable C criteria) {
             super(criteria);
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
 
         @Override
@@ -1006,7 +1006,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private QueryReplaceIntoClause(@Nullable C criteria) {
             this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            ContextStack.setContextStack(this.criteriaContext);
         }
 
         @Override

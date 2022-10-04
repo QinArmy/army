@@ -89,7 +89,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     public final <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
             , BiFunction<Expression, T, Expression> valueOperator, @Nullable T operand) {
         if (operand == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(valueOperator, operand));
     }
@@ -100,7 +100,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         final T operand;
         operand = supplier.get();
         if (operand == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(valueOperator, operand));
     }
@@ -111,7 +111,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         final Object operand;
         operand = function.apply(keyName);
         if (operand == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(valueOperator, operand));
     }
@@ -121,7 +121,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
             , BiFunction<Expression, T, Expression> operator, @Nullable T first
             , @Nullable T second) {
         if (first == null || second == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, first, second));
     }
@@ -131,7 +131,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
             , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
         final T first, second;
         if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, first, second));
     }
@@ -142,7 +142,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
             , String secondKey) {
         final Object first, second;
         if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, first, second));
     }
@@ -151,7 +151,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     public final WA where(TePredicate<TeExpression<Expression, String, Integer>, String, Integer> expOperator
             , TeExpression<Expression, String, Integer> namedOperator, @Nullable String paramName, int size) {
         if (paramName == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(namedOperator, paramName, size));
     }
@@ -237,7 +237,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     @Override
     public final WA and(@Nullable IPredicate predicate) {
         if (predicate == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         this.predicateList.add((OperationPredicate) predicate);
         return (WA) this;
@@ -280,7 +280,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
             , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
         if (operand == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, operand));
     }
@@ -291,7 +291,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         final T operand;
         operand = supplier.get();
         if (operand == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, operand));
     }
@@ -302,7 +302,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         final Object operand;
         operand = function.apply(keyName);
         if (operand == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, operand));
     }
@@ -311,7 +311,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     public final <T> WA and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
             , BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
         if (first == null || second == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, first, second));
     }
@@ -321,7 +321,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
             , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
         final T first, second;
         if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, first, second));
     }
@@ -332,7 +332,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
             , String firstKey, String secondKey) {
         final Object first, second;
         if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, first, second));
     }
@@ -341,7 +341,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     public final WA and(TePredicate<TeExpression<Expression, String, Integer>, String, Integer> expOperator
             , TeExpression<Expression, String, Integer> namedOperator, @Nullable String paramName, int size) {
         if (paramName == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(namedOperator, paramName, size));
     }
@@ -357,12 +357,12 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
             , BiFunction<Expression, T, Expression> operator, @Nullable T operand1
             , BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number numberOperand) {
         if (operand1 == null || numberOperand == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         final Expression expression;
         expression = expOperator1.apply(operator, operand1);
         if (expression == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator2.apply(expression, SQLs.literal(numberOperand)));
     }
@@ -496,7 +496,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
             final Expression expression;
             expression = expOperator1.apply(operator, operand1);
             if (expression == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             }
             this.and(expOperator2.apply(expression, SQLs.literal(numberOperand)));
         }
@@ -507,7 +507,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     public final List<_Predicate> predicateList() {
         final List<_Predicate> predicateList = this.predicateList;
         if (predicateList == null || predicateList instanceof ArrayList) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return predicateList;
     }
@@ -515,9 +515,9 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     final void asDmlStatement() {
         final List<_Predicate> predicates = this.predicateList;
         if (predicates == null || predicates.size() == 0) {
-            throw CriteriaContextStack.criteriaError(this.context, _Exceptions::dmlNoWhereClause);
+            throw ContextStack.criteriaError(this.context, _Exceptions::dmlNoWhereClause);
         } else if (!(predicates instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         this.predicateList = _CollectionUtils.unmodifiableList(predicates);
     }

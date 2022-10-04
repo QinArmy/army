@@ -56,9 +56,9 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
             final UnionAndRowSet unionAndRowSet = (UnionAndRowSet) this;
 
             spec = createUnionRowSet(unionAndRowSet.leftRowSet(), unionAndRowSet.unionType(), simpleBracket(thisQuery));
-        } else if (!(thisQuery instanceof ScalarSubQueryExpression)) {
+        } else if (!(thisQuery instanceof ScalarQueryExpression)) {
             throw asQueryMethodError();
-        } else if (((ScalarSubQueryExpression) thisQuery).subQuery != this) {
+        } else if (((ScalarQueryExpression) thisQuery).subQuery != this) {
             throw asQueryMethodError();
         } else {
             final UnionAndRowSet unionAndRowSet = (UnionAndRowSet) this;
@@ -410,7 +410,7 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
         } else if (right.isPrepared()) {
             u = this.createUnionRowSet(this.asQuery(), unionType, right);
         } else {
-            throw CriteriaContextStack.criteriaError(this.context, "Right RowSet non-prepared.");
+            throw ContextStack.criteriaError(this.context, "Right RowSet non-prepared.");
         }
         return u;
     }

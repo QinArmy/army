@@ -31,14 +31,14 @@ abstract class MySQLSupports extends CriteriaSupports {
     }
 
     static <C> MySQLQuery._IfPartitionAsClause<C> block(@Nullable C criteria, TableMeta<?> table) {
-        return new IfPartitionAsClause<>(CriteriaContextStack.getCurrentContext(criteria), table);
+        return new IfPartitionAsClause<>(ContextStack.getCurrentContext(criteria), table);
     }
 
     static <C> MySQLQuery._IfUseIndexOnSpec<C> block(@Nullable C criteria, @Nullable ItemWord itemWord
             , TabularItem tableItem, String alias) {
         if (!(tableItem instanceof TableMeta || tableItem instanceof SubQuery || tableItem instanceof CteItem)) {
             String m = "currently,MySQL support TableMeta or SubQuery or CteItem";
-            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+            throw ContextStack.criteriaError(ContextStack.peek(), m);
         }
         return new MySQLDynamicBlock<>(criteria, itemWord, tableItem, alias);
     }
@@ -50,7 +50,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         } else if (block instanceof MySQLSupports.MySQLDynamicBlock) {
             tableBlock = new MySQLDynamicTableBlock(joinType, (MySQLSupports.MySQLDynamicBlock<?>) block);
         } else {
-            throw CriteriaContextStack.castCriteriaApi(block.criteriaContext);
+            throw ContextStack.castCriteriaApi(block.criteriaContext);
         }
         return tableBlock;
     }
@@ -127,7 +127,7 @@ abstract class MySQLSupports extends CriteriaSupports {
                 indexHintList = new ArrayList<>();
                 this.indexHintList = indexHintList;
             } else if (!(indexHintList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(CriteriaUtils.getCriteriaContext(this.stmt));
+                throw ContextStack.castCriteriaApi(CriteriaUtils.getCriteriaContext(this.stmt));
             }
             indexHintList.add(indexHint);
             return this.stmt;
@@ -215,7 +215,7 @@ abstract class MySQLSupports extends CriteriaSupports {
             if (indexHintList == null) {
                 indexHintList = new ArrayList<>();
             } else if (!(indexHintList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.getCriteriaContext());
+                throw ContextStack.castCriteriaApi(this.getCriteriaContext());
             }
             indexHintList.add(indexHint);
             return (RR) this;
@@ -253,10 +253,10 @@ abstract class MySQLSupports extends CriteriaSupports {
         @Override
         public final AR as(final String alias) {
             if (!_StringUtils.hasText(alias)) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, "table alias must be non-empty.");
+                throw ContextStack.criteriaError(this.criteriaContext, "table alias must be non-empty.");
             }
             if (this.tableAlias != null || this.partitionList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.tableAlias = alias;
             return this.asEnd(this);
@@ -283,7 +283,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         public final String alias() {
             final String tableAlias = this.tableAlias;
             if (tableAlias == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return tableAlias;
         }
@@ -292,7 +292,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         public final List<String> partitionList() {
             final List<String> partitionList = this.partitionList;
             if (partitionList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return partitionList;
         }
@@ -302,7 +302,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         private Statement._AsClause<AR> partitionEnd(List<String> partitionList) {
             if (this.partitionList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.partitionList = partitionList;
             return this;
@@ -365,7 +365,7 @@ abstract class MySQLSupports extends CriteriaSupports {
                 indexHintList = new ArrayList<>();
                 this.indexHintList = indexHintList;
             } else if (!(indexHintList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             indexHintList.add(indexHint);
             return this;
@@ -465,7 +465,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         RR stringConsumerEnd(final List<String> stringList) {
             final MySQLIndexHint.Command command = this.command;
             if (command == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             final MySQLIndexHint.Purpose purpose = this.purpose;
             //clear below for reuse this instance
@@ -496,10 +496,10 @@ abstract class MySQLSupports extends CriteriaSupports {
         public MySQLQuery._IfUseIndexOnSpec<C> as(final String alias) {
             final List<String> partitionList = this.partitionList;
             if (partitionList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             if (!_StringUtils.hasText(alias)) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::tableItemAliasNoText
+                throw ContextStack.criteriaError(this.criteriaContext, _Exceptions::tableItemAliasNoText
                         , this.table);
             }
             return new MySQLDynamicBlock<>(this.table, alias, partitionList, this.criteriaContext);
@@ -512,7 +512,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         private Statement._AsClause<MySQLQuery._IfUseIndexOnSpec<C>> partitionEnd(List<String> partitionList) {
             if (this.partitionList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.partitionList = partitionList;
             return this;
@@ -546,10 +546,10 @@ abstract class MySQLSupports extends CriteriaSupports {
         public AR as(final String alias) {
             final List<String> partitionList = this.partitionList;
             if (partitionList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             if (!_StringUtils.hasText(alias)) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, "alias no text");
+                throw ContextStack.criteriaError(this.criteriaContext, "alias no text");
             }
             return this.function.apply(partitionList, alias);
         }

@@ -43,7 +43,7 @@ abstract class StandardInserts extends InsertSupport {
 
         private PrimaryInsertIntoClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
 
         @Override
@@ -114,7 +114,7 @@ abstract class StandardInserts extends InsertSupport {
         private ChildInsertIntoClause(@Nullable C criteria, ValueSyntaxOptions options, Function<StandardComplexValuesClause<?, ?, ?>, Insert> dmlFunction) {
             super(options, CriteriaContexts.primaryInsertContext(criteria));
             this.dmlFunction = dmlFunction;
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
 
 

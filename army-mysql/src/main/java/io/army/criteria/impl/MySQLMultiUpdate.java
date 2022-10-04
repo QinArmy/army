@@ -258,7 +258,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     @Override
     public final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         final MySQLSupports.MySQLNoOnBlock<C, UT> block;
         block = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, (UT) this);
@@ -290,14 +290,14 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     private MySQLQuery._IndexHintForJoinClause<C, UT> getIndexHintClause() {
         final MySQLSupports.MySQLNoOnBlock<C, UT> noOnBlock = this.noOnBlock;
         if (noOnBlock == null || this.criteriaContext.lastTableBlockWithoutOnClause() != noOnBlock) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         return noOnBlock.getUseIndexClause();
     }
 
     final void updateNoOnBlock(final MySQLSupports.MySQLNoOnBlock<C, UT> block) {
         if (this.noOnBlock != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         this.noOnBlock = block;
     }
@@ -335,7 +335,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
         @Override
         public _MultiPartitionJoinClause<C> createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
             if (itemWord != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return new SimplePartitionJoinClause<>(joinType, table, this);
         }
@@ -343,7 +343,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
         @Override
         public _MultiPartitionOnClause<C> createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
             if (itemWord != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return new SimplePartitionOnClause<>(joinType, table, this);
         }
@@ -351,7 +351,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
         @Override
         public _MultiIndexHintOnSpec<C> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
             if (itemWord != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return new SimpleOnTableBlock<>(joinType, table, tableAlias, this);
         }
@@ -429,7 +429,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
         @Override
         public _BatchMultiPartitionJoinClause<C> createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
             if (itemWord != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return new BatchPartitionJoinClause<>(joinType, table, this);
         }
@@ -437,7 +437,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
         @Override
         public _BatchMultiPartitionOnClause<C> createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
             if (itemWord != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             return new BatchPartitionOnClause<>(joinType, table, this);
         }

@@ -25,7 +25,7 @@ import java.util.function.*;
  *
  * @since 1.0
  */
-public interface Statement {
+public interface Statement extends Item {
 
     /**
      * assert statement prepared

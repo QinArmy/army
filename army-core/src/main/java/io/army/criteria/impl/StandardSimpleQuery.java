@@ -101,7 +101,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     @Override
     public final _UnionSpec<C, Q> lock(@Nullable LockMode lockMode) {
         if (lockMode == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         this.lockMode = lockMode;
         return this;
@@ -112,7 +112,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         final LockMode lockMode;
         lockMode = function.apply(this.criteria);
         if (lockMode == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         this.lockMode = lockMode;
         return this;
@@ -151,7 +151,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     @Override
     public final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return new TableBlock.NoOnTableBlock(joinType, table, alias);
     }
@@ -159,7 +159,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     @Override
     public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return new TableBlock.NoOnTableBlock(joinType, tableItem, alias);
     }
@@ -172,7 +172,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     @Override
     public final _OnClause<C, _JoinSpec<C, Q>> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return new OnClauseTableBlock<>(joinType, table, tableAlias, this);
     }
@@ -180,7 +180,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     @Override
     public final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
     }
@@ -227,7 +227,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     @Override
     final List<Hint> asHintList(@Nullable List<Hint> hints) {
         //standard statement don't hints
-        throw CriteriaContextStack.castCriteriaApi(this.context);
+        throw ContextStack.castCriteriaApi(this.context);
     }
 
     @Override

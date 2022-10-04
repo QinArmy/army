@@ -247,13 +247,13 @@ abstract class MySQLInserts extends InsertSupport {
             if (pairList == null) {
                 if (!this.optionalOnDuplicateKey) {
                     String m = "You don't add any field and value pair";
-                    throw CriteriaContextStack.criteriaError(this.context, m);
+                    throw ContextStack.criteriaError(this.context, m);
                 }
                 pairList = Collections.emptyList();
             } else if (pairList instanceof ArrayList) {
                 pairList = Collections.unmodifiableList(pairList);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.duplicatePairList = pairList;
             return pairList;
@@ -262,20 +262,20 @@ abstract class MySQLInserts extends InsertSupport {
         private void addValuePair(final FieldMeta<T> field, final @Nullable Expression value) {
 
             if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.context);
+                throw ContextStack.nonArmyExp(this.context);
             }
 
             if (field.tableMeta() != this.table) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
+                throw ContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
             }
             if (field.updateMode() != UpdateMode.UPDATABLE) {
-                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::nonUpdatableField, field);
+                throw ContextStack.criteriaError(this.context, _Exceptions::nonUpdatableField, field);
             }
 
             switch (field.fieldName()) {
                 case _MetaBridge.UPDATE_TIME:
                 case _MetaBridge.VERSION:
-                    throw CriteriaContextStack.criteriaError(this.context, _Exceptions::armyManageField, field);
+                    throw ContextStack.criteriaError(this.context, _Exceptions::armyManageField, field);
             }
 
             Map<FieldMeta<?>, Boolean> filedMap = this.fieldMap;
@@ -364,7 +364,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private DomainInsertOptionClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
 
         @Override
@@ -550,7 +550,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public Insert endInsert(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
             if (this.duplicatePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.duplicatePairList = pairList;
             return this.createParentStmt(this::domainList)
@@ -559,7 +559,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         public MySQLInsert._DomainChildInsertIntoSpec<C, P> parentStmtEnd(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
             if (this.duplicatePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.endColumnDefaultClause();
             this.duplicatePairList = pairList;
@@ -576,7 +576,7 @@ abstract class MySQLInserts extends InsertSupport {
         private DomainInsertStatement createParentStmt(Supplier<List<?>> supplier) {
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.duplicatePairList;
             if (pairList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             final DomainInsertStatement statement;
             if (pairList.size() == 0) {
@@ -749,7 +749,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private ValueInsertOptionClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
 
         @Override
@@ -922,7 +922,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public MySQLInsert._ValueStaticValuesLeftParenClause<C, T> values() {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return new StaticValuesLeftParenClause<>(this);
         }
@@ -937,7 +937,7 @@ abstract class MySQLInserts extends InsertSupport {
         public Insert endInsert(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
             final List<Map<FieldMeta<?>, _Expression>> rowList = this.rowList;
             if (rowList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             final Insert._InsertSpec spec;
             if (pairList.size() == 0) {
@@ -964,7 +964,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, T> valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.rowList = rowList;
             return new NonParentDuplicateKeyUpdateSpec<>(this);
@@ -972,7 +972,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         Insert valueClauseEndBeforeAs(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.rowList = rowList;
             return this.endInsert(Collections.emptyList());
@@ -1027,7 +1027,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public MySQLInsert._ValueParentStaticValueLeftParenClause<C, P> values() {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return new ParentStaticValuesLeftParenClause<>(this);
         }
@@ -1067,7 +1067,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public MySQLInsert._ValueChildInsertIntoSpec<C, P> parentStmtEnd(final List<_Pair<FieldMeta<?>, _Expression>> rowList) {
             if (this.duplicatePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.duplicatePairList = rowList;
             return this;
@@ -1076,7 +1076,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public Insert endInsert(final List<_Pair<FieldMeta<?>, _Expression>> rowList) {
             if (this.duplicatePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.duplicatePairList = rowList;
             return this.createParentStmt().asInsert();
@@ -1085,7 +1085,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         MySQLInsert._ParentOnDuplicateKeyUpdateFieldSpec<C, P, MySQLInsert._ValueChildInsertIntoSpec<C, P>> valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.rowList = rowList;
             return new ParentDuplicateKeyUpdateSpec<>(this);
@@ -1093,7 +1093,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private Insert valueClauseEndBeforeAs(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.rowList = rowList;
             return this.endInsert(Collections.emptyList());
@@ -1101,7 +1101,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private MySQLInsert._ValueChildInsertIntoSpec<C, P> childBeforeAs(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.rowList = rowList;
             return this;
@@ -1121,11 +1121,11 @@ abstract class MySQLInserts extends InsertSupport {
 
         private ValuesInsertStatement createParentStmt() {
             if (this.rowList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.duplicatePairList;
             if (pairList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             final ValuesInsertStatement statement;
             if (pairList.size() == 0) {
@@ -1277,7 +1277,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private AssignmentInsertOptionClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
 
         @Override
@@ -1505,7 +1505,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public MySQLInsert._AssignmentChildInsertIntoSpec<C, P> parentStmtEnd(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
             if (this.duplicatePairList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.endAssignmentSetClause();
             this.duplicatePairList = pairList;
@@ -1515,7 +1515,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public Insert endInsert(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
             if (this.duplicatePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.endAssignmentSetClause();
             this.duplicatePairList = pairList;
@@ -1530,7 +1530,7 @@ abstract class MySQLInserts extends InsertSupport {
         private AssignmentsInsertStatement createParentStmt() {
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.duplicatePairList;
             if (pairList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
             final AssignmentsInsertStatement statement;
             if (pairList.size() == 0) {
@@ -1677,7 +1677,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private QueryInsertIntoClause(@Nullable C criteria) {
             this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            ContextStack.setContextStack(this.criteriaContext);
         }
 
         @Override
@@ -1879,7 +1879,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public MySQLInsert._QueryChildInsertIntoSpec<C, P> parentStmtEnd(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
             if (this.duplicatePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.duplicatePairList = pairList;
             return this;
@@ -1888,7 +1888,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public Insert endInsert(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
             if (this.duplicatePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.duplicatePairList = pairList;
             return this.createParentStmt().asInsert();
@@ -1913,7 +1913,7 @@ abstract class MySQLInserts extends InsertSupport {
         private MySQLQueryInsertStatement createParentStmt() {
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.duplicatePairList;
             if (pairList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             final MySQLQueryInsertStatement statement;
             if (pairList.size() == 0) {

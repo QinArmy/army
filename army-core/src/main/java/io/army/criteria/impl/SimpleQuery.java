@@ -61,9 +61,9 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     SimpleQuery(CriteriaContext context) {
         super(context);
         if (this instanceof SubStatement) {
-            CriteriaContextStack.push(this.context);
+            ContextStack.push(this.context);
         } else {
-            CriteriaContextStack.setContextStack(this.context);
+            ContextStack.setContextStack(this.context);
         }
     }
 
@@ -224,7 +224,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final WR where(Consumer<Consumer<IPredicate>> consumer) {
         consumer.accept(this::and);
         if (this.predicateList == null) {
-            throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
+            throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
         }
         return (WR) this;
     }
@@ -233,7 +233,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final WR where(BiConsumer<C, Consumer<IPredicate>> consumer) {
         consumer.accept(this.criteria, this::and);
         if (this.predicateList == null) {
-            throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
+            throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
         }
         return (WR) this;
     }
@@ -278,7 +278,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
             , BiFunction<Expression, T, Expression> valueOperator, @Nullable T operand) {
         if (operand == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(valueOperator, operand));
     }
@@ -289,7 +289,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         final T operand;
         operand = supplier.get();
         if (operand == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(valueOperator, operand));
     }
@@ -300,7 +300,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         final Object operand;
         operand = function.apply(keyName);
         if (operand == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(valueOperator, operand));
     }
@@ -309,7 +309,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final <T> WA where(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
             , BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
         if (first == null || second == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, first, second));
     }
@@ -319,7 +319,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
             , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
         final T first, second;
         if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, first, second));
     }
@@ -330,7 +330,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
             , String secondKey) {
         final Object first, second;
         if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, first, second));
     }
@@ -411,14 +411,14 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     @Override
     public final WA and(final @Nullable IPredicate predicate) {
         if (predicate == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         List<_Predicate> predicateList = this.predicateList;
         if (predicateList == null) {
             predicateList = new ArrayList<>();
             this.predicateList = predicateList;
         } else if (!(predicateList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
         return (WA) this;
@@ -460,7 +460,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
             , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
         if (operand == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, operand));
     }
@@ -471,7 +471,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         final T operand;
         operand = supplier.get();
         if (operand == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, operand));
     }
@@ -483,7 +483,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         final Object operand;
         operand = function.apply(keyName);
         if (operand == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, operand));
     }
@@ -492,7 +492,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final <T> WA and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
             , BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
         if (first == null || second == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, first, second));
     }
@@ -502,7 +502,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
             , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
         final T first, second;
         if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, first, second));
     }
@@ -513,7 +513,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
             , String secondKey) {
         final Object first, second;
         if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(operator, first, second));
     }
@@ -676,7 +676,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final HR having(final @Nullable IPredicate predicate) {
         if (this.groupByList != null) {
             if (predicate == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             }
             this.havingList = Collections.singletonList((OperationPredicate) predicate);
         }
@@ -687,7 +687,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final HR having(final @Nullable IPredicate predicate1, final @Nullable IPredicate predicate2) {
         if (this.groupByList != null) {
             if (predicate1 == null || predicate2 == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.context);
             }
             this.havingList = ArrayUtils.asUnmodifiableList(
                     (OperationPredicate) predicate1
@@ -815,7 +815,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final List<_Predicate> predicateList() {
         final List<_Predicate> predicateList = this.predicateList;
         if (predicateList == null || predicateList instanceof ArrayList) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return predicateList;
     }
@@ -832,7 +832,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     public final Selection selection() {
         if (!(this instanceof ScalarSubQuery)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return (Selection) this.selectItemList().get(0);
     }
@@ -845,7 +845,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     @Override
     public final void appendSql(final _SqlContext context) {
         if (!(this instanceof SubQuery)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         context.parser().rowSet(this, context);
     }
@@ -854,9 +854,9 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     @Override
     protected final Q internalAsRowSet(final boolean fromAsQueryMethod) {
         if (this instanceof SubStatement) {
-            CriteriaContextStack.pop(this.context);
+            ContextStack.pop(this.context);
         } else {
-            CriteriaContextStack.clearContextStack(this.context);
+            ContextStack.clearContextStack(this.context);
         }
         this.tableBlockList = this.context.clear();
 
@@ -896,7 +896,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     final Q finallyAsQuery(final boolean fromAsQueryMethod) {
         final Q thisQuery, resultQuery;
         if (this instanceof ScalarSubQuery) {
-            thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
+            thisQuery = (Q) ScalarQueryExpression.from((ScalarSubQuery) this);
         } else {
             thisQuery = (Q) this;
         }
@@ -927,19 +927,19 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     @Override
     public FP createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-        throw CriteriaContextStack.castCriteriaApi(this.context);
+        throw ContextStack.castCriteriaApi(this.context);
     }
 
     @Override
     public JP createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-        throw CriteriaContextStack.castCriteriaApi(this.context);
+        throw ContextStack.castCriteriaApi(this.context);
     }
 
 
     @Override
     public final Selection selection(final String derivedFieldName) {
         if (!(this instanceof SubQuery)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         Map<String, Selection> selectionMap = this.subQuerySelectionMap;
         if (selectionMap == null) {
@@ -1010,14 +1010,14 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     private void addGroupByItem(final @Nullable SortItem sortItem) {
         if (sortItem == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         List<ArmySortItem> itemList = this.groupByList;
         if (itemList == null) {
             itemList = new ArrayList<>();
             this.groupByList = itemList;
         } else if (!(itemList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         itemList.add((ArmySortItem) sortItem);
     }
@@ -1026,27 +1026,27 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         final List<ArmySortItem> itemList = this.groupByList;
         if (itemList == null) {
             if (required) {
-                throw CriteriaContextStack.criteriaError(this.context, "group by clause is empty");
+                throw ContextStack.criteriaError(this.context, "group by clause is empty");
             }
             //null,no-op
         } else if (itemList instanceof ArrayList) {
             this.groupByList = _CollectionUtils.unmodifiableList(itemList);
         } else {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return (GR) this;
     }
 
     private void addHavingPredicate(final @Nullable IPredicate predicate) {
         if (predicate == null) {
-            throw CriteriaContextStack.nullPointer(this.context);
+            throw ContextStack.nullPointer(this.context);
         }
         List<_Predicate> predicateList = this.havingList;
         if (predicateList == null) {
             predicateList = new ArrayList<>();
             this.havingList = predicateList;
         } else if (!(predicateList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
 
         predicateList.add((OperationPredicate) predicate);
@@ -1058,13 +1058,13 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
             this.havingList = Collections.emptyList();
         } else if (predicateList == null) {
             if (!optional) {
-                throw CriteriaContextStack.criteriaError(this.context, "having clause is empty");
+                throw ContextStack.criteriaError(this.context, "having clause is empty");
             }
             this.havingList = Collections.emptyList();
         } else if (predicateList instanceof ArrayList) {
             this.havingList = _CollectionUtils.unmodifiableList(predicateList);
         } else {
-            throw CriteriaContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(this.context);
         }
 
     }
