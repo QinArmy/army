@@ -4,6 +4,13 @@ import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.SimpleTableMeta;
 
+/**
+ * <p>
+ * This interface representing standard insert statement.
+ * </p>
+ *
+ * @since 1.0
+ */
 public interface StandardInsert extends StandardStatement {
 
 

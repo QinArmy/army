@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 
 public interface DialectStatement extends Statement {
 
-    interface _StaticReturningCommaUnaryClause<Q extends DqlInsert>
+    interface _StaticReturningCommaUnaryClause<Q extends Item>
             extends DqlInsert._DqlInsertSpec<Q> {
 
         _StaticReturningCommaUnaryClause<Q> comma(SelectItem selectItem);
@@ -20,7 +20,7 @@ public interface DialectStatement extends Statement {
     }
 
 
-    interface _StaticReturningCommaDualClause<Q extends DqlInsert>
+    interface _StaticReturningCommaDualClause<Q extends Item>
             extends DqlInsert._DqlInsertSpec<Q> {
 
         DqlInsert._DqlInsertSpec<Q> comma(SelectItem selectItem);
@@ -30,7 +30,7 @@ public interface DialectStatement extends Statement {
     }
 
 
-    interface _StaticReturningClause<I extends DmlInsert, Q extends DqlInsert> extends _DmlInsertSpec<I> {
+    interface _StaticReturningClause<I extends Item, Q extends Item> extends _DmlInsertSpec<I> {
 
         _StaticReturningCommaUnaryClause<Q> returning(SelectItem selectItem);
 
@@ -38,7 +38,7 @@ public interface DialectStatement extends Statement {
     }
 
 
-    interface _DynamicReturningClause<C, I extends DmlInsert, Q extends DqlInsert> extends _DmlInsertSpec<I> {
+    interface _DynamicReturningClause<C, I extends Item, Q extends Item> extends _DmlInsertSpec<I> {
 
         DqlInsert._DqlInsertSpec<Q> returningAll();
 

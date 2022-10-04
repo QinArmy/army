@@ -4,6 +4,7 @@ import io.army.criteria.postgre.PostgreCteBuilder;
 import io.army.criteria.postgre.PostgreInsert;
 import io.army.lang.Nullable;
 
+
 abstract class PostgreSupports extends CriteriaSupports {
 
 
@@ -28,26 +29,28 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public PostgreInsert._DynamicSubInsert<Void> cteInsert(final @Nullable String name) {
+        public PostgreInsert._DynamicSubInsert<Void, PostgreCteBuilder> cteInsert(final @Nullable String name) {
             if (name == null) {
                 throw CriteriaContextStack.nullPointer(this.context);
             }
-            return PostgreInserts.dynamicSubInsert(name, this.context, null);
+            return PostgreInserts.dynamicSubInsert(name, this.context, null, this::THIS);
         }
 
         @Override
-        public <C> PostgreInsert._DynamicSubInsert<C> cteInsert(final @Nullable C criteria, final @Nullable String name) {
-            if (criteria == null) {
-                throw CriteriaContextStack.nullPointer(this.context);
-            } else if (name == null) {
+        public <C> PostgreInsert._DynamicSubInsert<C, PostgreCteBuilder> cteInsert(final @Nullable C criteria, final @Nullable String name) {
+            if (criteria == null || name == null) {
                 throw CriteriaContextStack.nullPointer(this.context);
             }
-            return PostgreInserts.dynamicSubInsert(name, this.context, criteria);
+            return PostgreInserts.dynamicSubInsert(name, this.context, criteria, this::THIS);
         }
 
         @Override
         public boolean isRecursive() {
             return this.recursive;
+        }
+
+        private PostgreCteBuilder THIS() {
+            return this;
         }
 
 
