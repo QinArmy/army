@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.Expression;
-import io.army.criteria.SQLWords;
-import io.army.criteria.Select;
-import io.army.criteria.SubQuery;
+import io.army.criteria.*;
 import io.army.criteria.postgre.PostgreInsert;
 import io.army.criteria.postgre.PostgreQuery;
 import io.army.dialect._Constant;
@@ -26,6 +23,10 @@ public abstract class Postgres extends PostgreFuncSyntax {
      * private constructor
      */
     private Postgres() {
+    }
+
+    public interface SelectModifier extends Query.SelectModifier {
+
     }
 
     public static final class Modifier implements SQLWords {

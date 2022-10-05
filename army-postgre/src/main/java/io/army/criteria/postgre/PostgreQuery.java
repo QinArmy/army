@@ -23,17 +23,39 @@ public interface PostgreQuery extends Query, DialectStatement {
     }
 
 
-    interface _SelectCommaSpec<C, Q extends Item> {
+    interface _WhereSpec<C, Q extends Item> {
 
     }
 
 
-    interface _SelectSpec<C, Q extends Item> extends _SelectClause<C, Postgres.Modifier, _SelectCommaSpec<C, Q>> {
+    interface _PostgreOnClause<C, Q extends Item> extends _OnClause<C, _JoinSpec<C, Q>> {
+
+    }
+
+    interface _JoinSpec<C, Q extends Item> {
+
+    }
+
+
+    interface _PostgreFromClause<C, FS> extends _FromClause<C, FS, FS>
+            , _FromCteClause<FS> {
+
+    }
+
+
+    interface _FromSpec<C, Q extends Item> extends {
+
+    }
+
+
+    interface _PostgreSelectClause<C, Q extends Item> extends _SelectClause<_FromSpec<C, Q>>
+            , _DynamicModifierSelectClause<C, Postgres.SelectModifier, _FromSpec<C, Q>> {
+
 
     }
 
     interface _CteComma<C, Q extends Item> extends _StaticWithCommaClause<_StaticCteLeftParenSpec<C, _CteComma<C, Q>>>
-            , DialectStatement._StaticSpaceClause<_SelectSpec<C, Q>>, Item {
+            , DialectStatement._StaticSpaceClause<_PostgreSelectClause<C, Q>>, Item {
 
     }
 
@@ -45,7 +67,7 @@ public interface PostgreQuery extends Query, DialectStatement {
      *
      * @since 1.0
      */
-    interface _StaticCteComplexCommandSpec<C, Q extends Item> extends _SelectSpec<C, Q> {
+    interface _StaticCteComplexCommandSpec<C, Q extends Item> extends _PostgreSelectClause<C, Q> {
 
     }
 
@@ -68,9 +90,9 @@ public interface PostgreQuery extends Query, DialectStatement {
      *
      * @since 1.0
      */
-    interface _WithCteSpec<C, Q extends Item> extends _PostgreDynamicWithClause<C, _SelectSpec<C, Q>>
+    interface _WithCteSpec<C, Q extends Item> extends _PostgreDynamicWithClause<C, _PostgreSelectClause<C, Q>>
             , DialectStatement._StaticWithCteClause<_StaticCteLeftParenSpec<C, _CteComma<C, Q>>>
-            , _SelectSpec<C, Q> {
+            , _PostgreSelectClause<C, Q> {
 
     }
 
@@ -82,8 +104,8 @@ public interface PostgreQuery extends Query, DialectStatement {
      *
      * @since 1.0
      */
-    interface _SubWithCteSpec<C, Q extends Item> extends _PostgreDynamicWithClause<C, _SelectSpec<C, Q>>
-            , _SelectSpec<C, Q> {
+    interface _SubWithCteSpec<C, Q extends Item> extends _PostgreDynamicWithClause<C, _PostgreSelectClause<C, Q>>
+            , _PostgreSelectClause<C, Q> {
 
     }
 

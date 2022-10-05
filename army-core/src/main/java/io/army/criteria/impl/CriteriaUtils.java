@@ -334,7 +334,7 @@ abstract class CriteriaUtils {
         return rowCount;
     }
 
-    static int standardModifier(final SQLs.Modifier distinct) {
+    static int standardModifier(final SQLs.StandardModifier distinct) {
         return (distinct == SQLs.DISTINCT || distinct == SQLs.ALL) ? 1 : -1;
     }
 

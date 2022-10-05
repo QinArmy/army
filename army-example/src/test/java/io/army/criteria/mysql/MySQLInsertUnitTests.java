@@ -85,11 +85,12 @@ public class MySQLInsertUnitTests {
 
         final List<Person> personList;
         personList = this.createPsersonList();
-
+        final List<MySQLModifier> modifierList;
+        modifierList = Collections.singletonList(MySQLModifier.HIGH_PRIORITY);
         final Insert stmt;
         stmt = MySQLs.domainInsert()
                 .literalMode(LiteralMode.PREFERENCE)
-                .insert(hintSupplier, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
+                .insert(hintSupplier, modifierList)
                 .into(User_.T)
                 .partition()
                 .leftParen("p1")

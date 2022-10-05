@@ -1527,8 +1527,8 @@ public abstract class _AbstractDialectParser implements ArmyParser {
                 break;
             case 1: {
                 final SQLWords modifier = modifierList.get(0);
-                if (!(modifier instanceof SQLs.Modifier)) {
-                    String m = String.format("Standard query api support only %s", SQLs.Modifier.class.getName());
+                if (!(modifier instanceof SQLs.StandardModifier)) {
+                    String m = String.format("Standard query api support only %s", SQLs.StandardModifier.class.getName());
                     throw new CriteriaException(m);
                 }
                 builder.append(_Constant.SPACE)
@@ -1536,7 +1536,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
             }
             break;
             default:
-                String m = String.format("Standard query api support only %s", SQLs.Modifier.class.getName());
+                String m = String.format("Standard query api support only %s", SQLs.StandardModifier.class.getName());
                 throw new CriteriaException(m);
         }
 

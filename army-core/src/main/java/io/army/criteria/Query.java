@@ -1,8 +1,10 @@
 package io.army.criteria;
 
 
-import io.army.lang.Nullable;
+import io.army.criteria.impl.SQLs;
+import io.army.meta.TableMeta;
 
+import java.util.List;
 import java.util.function.*;
 
 /**
@@ -22,16 +24,127 @@ import java.util.function.*;
  */
 public interface Query extends RowSet {
 
+    /**
+     * @see SQLs#ALL
+     * @see SQLs#DISTINCT
+     */
+    interface SelectModifier {
 
-    interface _QuerySpec<Q extends Query> extends _RowSetSpec<Q> {
+    }
 
+    /**
+     * @see SQLs#ALL
+     * @see SQLs#DISTINCT
+     */
+    interface UnionModifier {
+
+    }
+
+    interface SelectStar {
+
+    }
+
+    interface TabularModifier {
+
+    }
+
+
+
+    /*-------------------below clause interfaces -------------------*/
+
+
+    interface _QuerySpec<Q extends Item> extends _RowSetSpec<Q> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing FROM clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  criteria object java type.
+     * @param <FT> next clause java type
+     * @param <FS> next clause java type
+     * @since 1.0
+     */
+    interface _FromClause<C, FT, FS> {
+
+        FT from(TableMeta<?> table, String tableAlias);
+
+        <T extends TabularItem> FS from(Supplier<T> supplier, String alias);
+
+        <T extends TabularItem> FS from(Function<C, T> function, String alias);
+
+    }
+
+    /**
+     * <p>
+     * This interface representing dialect FROM clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <FS> same with the FS of {@link Query._FromClause}
+     * @see Query._FromClause
+     * @since 1.0
+     */
+    interface _FromCteClause<FS> {
+
+        FS from(String cteName);
+
+        FS from(String cteName, String alias);
+
+    }
+
+    interface _FromModifierClause<C, FM extends TabularModifier, FT, FS> extends _FromClause<C, FT, FS> {
+
+        FT from(FM modifier, TableMeta<?> table, String tableAlias);
+
+        <T extends TabularItem> FS from(FM modifier, Supplier<T> supplier, String alias);
+
+        <T extends TabularItem> FS from(FM modifier, Function<C, T> function, String alias);
+    }
+
+
+    interface _FromLeftParenClause<FL> {
+
+        FL fromLeftParen();
+
+    }
+
+    /**
+     * <p>
+     * This interface representing dialect FROM clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <FP> next clause java type
+     * @see _FromClause
+     * @since 1.0
+     */
+    interface _DialectFromClause<FP> {
+
+        FP from(TableMeta<?> table);
     }
 
 
     /*################################## blow select clause  interfaces ##################################*/
 
 
-    interface _SelectClause<C, W extends SQLWords, SR> {
+    interface _SelectClause<SR> {
 
         SR select(SelectItem selectItem);
 
@@ -39,17 +152,40 @@ public interface Query extends RowSet {
 
         SR select(SelectItem selectItem1, SelectItem selectItem2, SelectItem selectItem3);
 
+
+    }
+
+
+    interface _DynamicSelectClause<C, SR> {
+
+        SR select(SelectStar star);
+
         SR select(Consumer<Consumer<SelectItem>> consumer);
 
         SR select(BiConsumer<C, Consumer<SelectItem>> consumer);
 
-        SR select(@Nullable W modifier, SelectItem selectItem);
 
-        SR select(@Nullable W modifier, SelectItem selectItem1, SelectItem selectItem2);
+    }
 
-        SR select(@Nullable W modifier, Consumer<Consumer<SelectItem>> consumer);
+    interface _DynamicModifierSelectClause<C, W extends SelectModifier, SR> extends _DynamicSelectClause<C, SR> {
 
-        SR select(@Nullable W modifier, BiConsumer<C, Consumer<SelectItem>> consumer);
+        SR select(W modifier, SelectStar star);
+
+        SR select(W modifier, Consumer<Consumer<SelectItem>> consumer);
+
+        SR select(W modifier, BiConsumer<C, Consumer<SelectItem>> consumer);
+    }
+
+    interface _DynamicHintModifierSelectClause<C, W extends SelectModifier, SR>
+            extends _DynamicModifierSelectClause<C, W, SR> {
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, SelectStar star);
+
+        SR select(List<W> modifiers, SelectStar star);
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Consumer<SelectItem>> consumer);
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, BiConsumer<C, Consumer<SelectItem>> consumer);
 
     }
 
@@ -106,32 +242,24 @@ public interface Query extends RowSet {
     }
 
 
+
     interface _UnionClause<C, UR> extends _BracketClause<UR> {
 
-        UR union(Function<C, ? extends RowSet> function);
+        <S extends RowSet> UR union(Function<C, S> function);
 
-        UR union(Supplier<? extends RowSet> supplier);
+        <S extends RowSet> UR union(Supplier<S> supplier);
 
-        UR ifUnion(Function<C, ? extends RowSet> function);
+        <S extends RowSet> UR union(UnionModifier modifier, Function<C, S> function);
 
-        UR ifUnion(Supplier<? extends RowSet> supplier);
+        <S extends RowSet> UR union(UnionModifier modifier, Supplier<S> supplier);
 
-        UR unionAll(Function<C, ? extends RowSet> function);
+        <S extends RowSet> UR ifUnion(Function<C, S> function);
 
-        UR unionAll(Supplier<? extends RowSet> supplier);
+        <S extends RowSet> UR ifUnion(Supplier<S> supplier);
 
-        UR ifUnionAll(Function<C, ? extends RowSet> function);
+        <S extends RowSet> UR ifUnion(UnionModifier modifier, Function<C, S> function);
 
-        UR ifUnionAll(Supplier<? extends RowSet> supplier);
-
-        UR unionDistinct(Function<C, ? extends RowSet> function);
-
-        UR unionDistinct(Supplier<? extends RowSet> supplier);
-
-        UR ifUnionDistinct(Function<C, ? extends RowSet> function);
-
-        UR ifUnionDistinct(Supplier<? extends RowSet> supplier);
-
+        <S extends RowSet> UR ifUnion(UnionModifier modifier, Supplier<S> supplier);
     }
 
 
@@ -139,9 +267,7 @@ public interface Query extends RowSet {
 
         SP union();
 
-        SP unionAll();
-
-        SP unionDistinct();
+        SP union(UnionModifier modifier);
     }
 
     interface _LimitClause<C, LR> extends Statement._RowCountLimitClause<C, LR> {

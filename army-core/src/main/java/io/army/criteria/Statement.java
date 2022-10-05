@@ -116,31 +116,6 @@ public interface Statement extends Item {
     }
 
 
-    /**
-     * <p>
-     * This interface representing FROM clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C>  criteria object java type.
-     * @param <FT> next clause java type
-     * @param <FS> next clause java type
-     * @since 1.0
-     */
-    interface _FromClause<C, FT, FS> {
-
-        FT from(TableMeta<?> table, String tableAlias);
-
-        <T extends TabularItem> FS from(Supplier<T> supplier, String alias);
-
-        <T extends TabularItem> FS from(Function<C, T> function, String alias);
-
-    }
-
 
     /**
      * <p>

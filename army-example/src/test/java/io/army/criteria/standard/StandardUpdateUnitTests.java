@@ -102,11 +102,11 @@ public class StandardUpdateUnitTests {
         final Update stmt;
         stmt = SQLs.domainUpdate()
                 .update(User_.T, "u")
-                .set(User_.identityType, IdentityType.PERSON)
-                .set(User_.identityId, 888)
-                .set(User_.nickName, "令狐冲")
+                .set(User_.identityType, SQLs::literal, IdentityType.PERSON)
+                .set(User_.identityId, SQLs::literal, 888)
+                .set(User_.nickName, SQLs::param, "令狐冲")
                 .where(User_.id::equal, SQLs::literal, 1)
-                .and(User_.nickName::equal, SQLs::literal, "zoro")
+                .and(User_.nickName::equal, SQLs::param, "zoro")
                 .asUpdate();
 
         printStmt(stmt);

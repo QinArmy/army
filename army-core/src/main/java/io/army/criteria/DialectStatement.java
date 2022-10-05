@@ -4,7 +4,6 @@ import io.army.criteria.impl.inner._Cte;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -15,7 +14,7 @@ public interface DialectStatement extends Statement {
     interface _StaticReturningCommaUnaryClause<Q extends Item>
             extends DqlInsert._DqlInsertSpec<Q> {
 
-        _StaticReturningCommaUnaryClause<Q> comma(SelectItem selectItem);
+        _StaticReturningCommaUnaryClause<Q> comma(Selection selection);
 
     }
 
@@ -23,18 +22,18 @@ public interface DialectStatement extends Statement {
     interface _StaticReturningCommaDualClause<Q extends Item>
             extends DqlInsert._DqlInsertSpec<Q> {
 
-        DqlInsert._DqlInsertSpec<Q> comma(SelectItem selectItem);
+        DqlInsert._DqlInsertSpec<Q> comma(Selection selectItem);
 
-        _StaticReturningCommaDualClause<Q> comma(SelectItem selectItem1, SelectItem selectItem2);
+        _StaticReturningCommaDualClause<Q> comma(Selection selectItem1, Selection selectItem2);
 
     }
 
 
     interface _StaticReturningClause<I extends Item, Q extends Item> extends _DmlInsertSpec<I> {
 
-        _StaticReturningCommaUnaryClause<Q> returning(SelectItem selectItem);
+        _StaticReturningCommaUnaryClause<Q> returning(Selection selectItem);
 
-        _StaticReturningCommaDualClause<Q> returning(SelectItem selectItem1, SelectItem selectItem2);
+        _StaticReturningCommaDualClause<Q> returning(Selection selectItem1, Selection selectItem2);
     }
 
 
@@ -42,9 +41,9 @@ public interface DialectStatement extends Statement {
 
         DqlInsert._DqlInsertSpec<Q> returningAll();
 
-        DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<SelectItem>> consumer);
+        DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<Selection>> consumer);
 
-        DqlInsert._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<SelectItem>> consumer);
+        DqlInsert._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<Selection>> consumer);
 
     }
 
@@ -131,58 +130,7 @@ public interface DialectStatement extends Statement {
     }
 
 
-    interface _DialectSelectClause<C, W extends SQLWords, SR> extends Query._SelectClause<C, W, SR> {
 
-        SR select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Consumer<SelectItem>> consumer);
-
-        SR select(Supplier<List<Hint>> hints, List<W> modifiers, BiConsumer<C, Consumer<SelectItem>> consumer);
-
-        SR select(List<W> modifiers, Consumer<Consumer<SelectItem>> consumer);
-
-        SR select(List<W> modifiers, BiConsumer<C, Consumer<SelectItem>> consumer);
-
-    }
-
-    /**
-     * <p>
-     * This interface representing dialect FROM clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <FP> next clause java type
-     * @see _FromClause
-     * @since 1.0
-     */
-    interface _DialectFromClause<FP> {
-
-        FP from(TableMeta<?> table);
-    }
-
-    /**
-     * <p>
-     * This interface representing dialect FROM clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <FS> same with the FS of {@link _FromClause}
-     * @see _FromClause
-     * @since 1.0
-     */
-    interface _FromCteClause<FS> {
-
-        FS from(String cteName);
-
-        FS from(String cteName, String alias);
-
-    }
 
     interface _FromLateralClause<C, FS> {
 

@@ -330,7 +330,7 @@ public interface StandardQuery extends Query {
      * @since 1.0
      */
     interface _SelectSpec<C, Q extends Item>
-            extends _SelectClause<C, SQLs.Modifier, _StandardFromSpec<C, Q>> {
+            extends _SelectClause<C, SQLs.StandardModifier, _StandardFromSpec<C, Q>> {
 
     }
 

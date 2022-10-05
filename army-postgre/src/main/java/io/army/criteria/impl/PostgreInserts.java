@@ -217,13 +217,13 @@ abstract class PostgreInserts extends InsertSupport {
 
 
         @Override
-        public DialectStatement._StaticReturningCommaUnaryClause<Q> returning(SelectItem selectItem) {
+        public DialectStatement._StaticReturningCommaUnaryClause<Q> returning(Selection selectItem) {
             return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
                     .returning(selectItem);
         }
 
         @Override
-        public DialectStatement._StaticReturningCommaDualClause<Q> returning(SelectItem selectItem1, SelectItem selectItem2) {
+        public DialectStatement._StaticReturningCommaDualClause<Q> returning(Selection selectItem1, Selection selectItem2) {
             return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
                     .returning(selectItem1, selectItem2);
         }
@@ -235,13 +235,13 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<SelectItem>> consumer) {
+        public DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<Selection>> consumer) {
             return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
                     .returning(consumer);
         }
 
         @Override
-        public DqlInsert._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<SelectItem>> consumer) {
+        public DqlInsert._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<Selection>> consumer) {
             return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
                     .returning(consumer);
         }
@@ -1091,17 +1091,17 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public DialectStatement._StaticReturningCommaUnaryClause<Q> returning(SelectItem selectItem) {
+        public DialectStatement._StaticReturningCommaUnaryClause<Q> returning(Selection selectItem) {
             return this.comma(selectItem);
         }
 
         @Override
-        public DialectStatement._StaticReturningCommaDualClause<Q> returning(SelectItem selectItem1, SelectItem selectItem2) {
+        public DialectStatement._StaticReturningCommaDualClause<Q> returning(Selection selectItem1, Selection selectItem2) {
             return this.comma(selectItem1, selectItem2);
         }
 
         @Override
-        public DialectStatement._StaticReturningCommaUnaryClause<Q> comma(final SelectItem selectItem) {
+        public DialectStatement._StaticReturningCommaUnaryClause<Q> comma(final Selection selectItem) {
             List<SelectItem> selectItemList = this.selectItemList;
             if (selectItemList == null) {
                 selectItemList = new ArrayList<>();
@@ -1114,7 +1114,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public DialectStatement._StaticReturningCommaDualClause<Q> comma(final SelectItem selectItem1, final SelectItem selectItem2) {
+        public DialectStatement._StaticReturningCommaDualClause<Q> comma(final Selection selectItem1, final Selection selectItem2) {
             List<SelectItem> selectItemList = this.selectItemList;
             if (selectItemList == null) {
                 selectItemList = new ArrayList<>();
@@ -1128,7 +1128,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<SelectItem>> consumer) {
+        public DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<Selection>> consumer) {
             consumer.accept(this::comma);
             if (this.selectItemList == null) {
                 throw ContextStack.criteriaError(this.context, _Exceptions::returningListEmpty);
@@ -1137,7 +1137,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public DqlInsert._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<SelectItem>> consumer) {
+        public DqlInsert._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<Selection>> consumer) {
             consumer.accept(this.criteria, this::comma);
             if (this.selectItemList == null) {
                 throw ContextStack.criteriaError(this.context, _Exceptions::returningListEmpty);
@@ -1226,25 +1226,25 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._StaticReturningCommaUnaryClause<Q> returning(SelectItem selectItem) {
+        public PostgreInsert._StaticReturningCommaUnaryClause<Q> returning(Selection selectItem) {
             this.clause.staticValuesClauseEnd(this.endValuesClause());
             return this.clause.returning(selectItem);
         }
 
         @Override
-        public PostgreInsert._StaticReturningCommaDualClause<Q> returning(SelectItem selectItem1, SelectItem selectItem2) {
+        public PostgreInsert._StaticReturningCommaDualClause<Q> returning(Selection selectItem1, Selection selectItem2) {
             this.clause.staticValuesClauseEnd(this.endValuesClause());
             return this.clause.returning(selectItem1, selectItem2);
         }
 
         @Override
-        public DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<SelectItem>> consumer) {
+        public DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<Selection>> consumer) {
             this.clause.staticValuesClauseEnd(this.endValuesClause());
             return this.clause.returning(consumer);
         }
 
         @Override
-        public DqlInsert._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<SelectItem>> consumer) {
+        public DqlInsert._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<Selection>> consumer) {
             this.clause.staticValuesClauseEnd(this.endValuesClause());
             return this.clause.returning(consumer);
         }

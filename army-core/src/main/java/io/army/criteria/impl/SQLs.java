@@ -38,38 +38,54 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    public static final class Modifier implements SQLWords {
+    public interface StandardModifier extends Query.UnionModifier, Query.SelectModifier {
 
-        private final String words;
+    }
 
-        /**
-         * private constructor
-         */
-        private Modifier(String words) {
-            this.words = words;
+    public interface StandardAs {
+
+    }
+
+
+    private enum StandardAsWord implements StandardAs {
+
+        AS
+    }
+
+    public static final StandardAs AS = StandardAsWord.AS;
+
+
+    private enum StandardModifierWord implements SQLWords, StandardModifier {
+
+        ALL(" ALL"),
+        DISTINCT(" DISTINCT");
+
+        private final String spaceWord;
+
+        StandardModifierWord(String spaceWord) {
+            this.spaceWord = spaceWord;
         }
 
         @Override
-        public String render() {
-            return this.words;
+        public final String render() {
+            return this.spaceWord;
         }
 
         @Override
-        public String toString() {
+        public final String toString() {
             return _StringUtils.builder()
                     .append(SQLs.class.getSimpleName())
                     .append(_Constant.POINT)
-                    .append(SQLs.Modifier.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.words)
+                    .append(this.name())
                     .toString();
         }
 
-    }//Modifier
 
-    public static final Modifier ALL = new Modifier("ALL");
+    }//StandardAll
 
-    public static final Modifier DISTINCT = new Modifier("DISTINCT");
+    public static final StandardModifier ALL = StandardModifierWord.ALL;
+
+    public static final StandardModifier DISTINCT = StandardModifierWord.DISTINCT;
 
 
     public static StandardInsert._PrimaryOptionSpec<Void> singleInsert() {
@@ -504,8 +520,6 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-
-
     /**
      * <p>
      * Create named non-null parameter expression for batch update(delete) and values insert.
@@ -808,7 +822,6 @@ public abstract class SQLs extends StandardSyntax {
         }
         return result;
     }
-
 
 
     /**
@@ -1307,6 +1320,29 @@ public abstract class SQLs extends StandardSyntax {
      */
     static SubQuery _thisSubQuery(final SubQuery subQuery) {
         return subQuery;
+    }
+
+
+    /**
+     * <p>
+     * Package method that is used by army developer.
+     * </p>
+     *
+     * @return return the argument select
+     */
+    static Select _thisSelect(final Select select) {
+        return select;
+    }
+
+    /**
+     * <p>
+     * Package method that is used by army developer.
+     * </p>
+     *
+     * @return return the argument selection
+     */
+    static Selection _thisSelection(final Selection selection) {
+        return selection;
     }
 
 
