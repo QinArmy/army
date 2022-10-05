@@ -42,7 +42,7 @@ abstract class SingleDelete<C, WR, WA, D extends DmlStatement.DmlDelete>
     @Override
     public final D asDelete() {
         _Assert.nonPrepared(this.prepared);
-        this.context.clear();
+        this.context.endContext();
         if (this instanceof SubStatement) {
             ContextStack.pop(this.context);
         } else {

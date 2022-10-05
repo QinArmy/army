@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.Query;
 import io.army.criteria.SQLWords;
 
 /**
@@ -9,7 +10,7 @@ import io.army.criteria.SQLWords;
  *
  * @since 1.0
  */
-enum ItemWord implements SQLWords {
+enum ItemWord implements SQLWords, Query.TabularModifier {
 
     LATERAL(" LATERAL"),
     ONLY(" ONLY");

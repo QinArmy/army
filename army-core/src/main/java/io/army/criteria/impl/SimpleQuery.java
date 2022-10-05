@@ -3,15 +3,13 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Query;
+import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect._SqlContext;
-import io.army.function.TePredicate;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.meta.TypeMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
-import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,21 +26,21 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, FP, FJ, JT, JS, JP, WR, WA, GR, HR, OR, LR, UR, SP>
-        extends PartRowSet<C, Q, FT, FS, FP, FJ, JT, JS, JP, UR, OR, LR, SP>
-        implements Statement._QueryWhereClause<C, WR, WA>, Statement._WhereAndClause<C, WA>, Query._GroupClause<C, GR>
-        , Query._HavingClause<C, HR>, _Query, Statement._FromClause<C, FT, FS>, DialectStatement._DialectFromClause<FP>
-        , DialectStatement._DialectSelectClause<C, W, SR>, DialectStatement._FromCteClause<FS>, Query._QuerySpec<Q>
-        , JoinableClause.ClauseCreator<FP, JT, JS, JP>
-        , TabularItem.DerivedTableSpec {
+abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, SP>
+        extends JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
+        implements Query._DynamicHintModifierSelectClause<C, W, SR>
+        , Query._FromModifierClause<C, FT, FS>, Query._FromModifierCteClause<FC>
+        , Query._GroupClause<C, GR>, Query._HavingClause<C, HR>
+        , Query._QuerySpec<Q>, TabularItem.DerivedTableSpec
+        , Query._QueryUnionClause<SP>, Query._QueryIntersectClause<SP>
+        , Query._QueryExceptClause<SP>, Query._QueryMinusClause<SP>
+        , _Query, _SelfDescribed {
 
     private List<Hint> hintList;
 
-    private List<? extends SQLWords> modifierList;
+    private List<? extends Query.SelectModifier> modifierList;
 
     private List<SelectItem> selectItemList;
-
-    private int selectionSize;
 
     private List<_TableBlock> tableBlockList;
 
@@ -67,558 +65,120 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         }
     }
 
+
     @Override
     public final SR select(SelectItem selectItem) {
-        return this.singleSelectItem(selectItem);
+        this.context.onAddSelectItem(selectItem);
+        return (SR) this;
     }
 
     @Override
     public final SR select(SelectItem selectItem1, SelectItem selectItem2) {
-        this.selectItemList = new ArrayList<>(2);
-        this.addSelectItem(selectItem1);
-        this.addSelectItem(selectItem2);
-        return this.addSelectItemEnd();
+        this.context.onAddSelectItem(selectItem1)
+                .onAddSelectItem(selectItem2);
+        return (SR) this;
     }
 
     @Override
     public final SR select(SelectItem selectItem1, SelectItem selectItem2, SelectItem selectItem3) {
-        this.selectItemList = new ArrayList<>(3);
-        this.addSelectItem(selectItem1);
-        this.addSelectItem(selectItem2);
-        this.addSelectItem(selectItem3);
-        return this.addSelectItemEnd();
+        this.context.onAddSelectItem(selectItem1)
+                .onAddSelectItem(selectItem2)
+                .onAddSelectItem(selectItem3);
+        return (SR) this;
     }
 
     @Override
     public final SR select(Consumer<Consumer<SelectItem>> consumer) {
-        consumer.accept(this::addSelectItem);
-        return this.addSelectItemEnd();
+        consumer.accept(this.context::onAddSelectItem);
+        return (SR) this;
     }
 
     @Override
     public final SR select(BiConsumer<C, Consumer<SelectItem>> consumer) {
-        consumer.accept(this.criteria, this::addSelectItem);
-        return this.addSelectItemEnd();
+        consumer.accept(this.criteria, this.context::onAddSelectItem);
+        return (SR) this;
     }
 
     @Override
-    public final SR select(@Nullable W modifier, SelectItem selectItem) {
-        if (modifier != null) {
-            this.modifierList = Collections.singletonList(modifier);
-        }
-        return this.singleSelectItem(selectItem);
+    public final SR select(W modifier, Consumer<Consumer<SelectItem>> consumer) {
+        this.modifierList = this.asModifierList(Collections.singletonList(modifier));
+        consumer.accept(this.context::onAddSelectItem);
+        return (SR) this;
     }
 
     @Override
-    public final SR select(@Nullable W modifier, SelectItem selectItem1, SelectItem selectItem2) {
-        if (modifier != null) {
-            this.modifierList = Collections.singletonList(modifier);
-        }
-        this.selectItemList = new ArrayList<>(2);
-        this.addSelectItem(selectItem1);
-        this.addSelectItem(selectItem2);
-        return this.addSelectItemEnd();
-    }
-
-    @Override
-    public final SR select(@Nullable W modifier, Consumer<Consumer<SelectItem>> consumer) {
-        if (modifier != null) {
-            this.modifierList = Collections.singletonList(modifier);
-        }
-        consumer.accept(this::addSelectItem);
-        return this.addSelectItemEnd();
-    }
-
-    @Override
-    public final SR select(@Nullable W modifier, BiConsumer<C, Consumer<SelectItem>> consumer) {
-        if (modifier != null) {
-            this.modifierList = Collections.singletonList(modifier);
-        }
-        consumer.accept(this.criteria, this::addSelectItem);
-        return this.addSelectItemEnd();
+    public final SR select(W modifier, BiConsumer<C, Consumer<SelectItem>> consumer) {
+        this.modifierList = this.asModifierList(Collections.singletonList(modifier));
+        consumer.accept(this.criteria, this.context::onAddSelectItem);
+        return (SR) this;
     }
 
     @Override
     public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Consumer<SelectItem>> consumer) {
-        final List<Hint> hintList;
-        hintList = hints.get();
-        if (hintList != null) {
-            this.hintList = this.asHintList(hintList);
-        }
+        this.hintList = this.asHintList(hints.get());
         this.modifierList = this.asModifierList(modifiers);
-        consumer.accept(this::addSelectItem);
-        return this.addSelectItemEnd();
+        consumer.accept(this.context::onAddSelectItem);
+        return (SR) this;
     }
 
     @Override
     public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, BiConsumer<C, Consumer<SelectItem>> consumer) {
-        final List<Hint> hintList;
-        hintList = hints.get();
-        if (hintList != null) {
-            this.hintList = this.asHintList(hintList);
-        }
+        this.hintList = this.asHintList(hints.get());
         this.modifierList = this.asModifierList(modifiers);
-        consumer.accept(this.criteria, this::addSelectItem);
-        return this.addSelectItemEnd();
-    }
-
-    @Override
-    public final SR select(List<W> modifiers, Consumer<Consumer<SelectItem>> consumer) {
-        this.modifierList = this.asModifierList(modifiers);
-        consumer.accept(this::addSelectItem);
-        return this.addSelectItemEnd();
-    }
-
-    @Override
-    public final SR select(List<W> modifiers, BiConsumer<C, Consumer<SelectItem>> consumer) {
-        this.modifierList = this.asModifierList(modifiers);
-        consumer.accept(this.criteria, this::addSelectItem);
-        return this.addSelectItemEnd();
+        consumer.accept(this.criteria, this.context::onAddSelectItem);
+        return (SR) this;
     }
 
     /*################################## blow FromSpec method ##################################*/
-    @Override
-    public final FP from(TableMeta<?> table) {
-        return this.createNoOnTableClause(_JoinType.NONE, null, table);
-    }
 
     @Override
     public final FT from(TableMeta<?> table, String tableAlias) {
-        this.context.onAddBlock(this.createNoOnTableBlock(_JoinType.NONE, null, table, tableAlias));
-        return (FT) this;
-    }
-
-    @Override
-    public final FS from(String cteName) {
-        final _TableBlock block;
-        block = this.createNoOnItemBlock(_JoinType.NONE, null, this.context.refCte(cteName), "");
-        this.context.onAddBlock(block);
-        return (FS) this;
-    }
-
-    @Override
-    public final FS from(String cteName, String alias) {
-        final _TableBlock block;
-        block = this.createNoOnItemBlock(_JoinType.NONE, null, this.context.refCte(cteName), alias);
-        this.context.onAddBlock(block);
-        return (FS) this;
+        return this.onAddNoOnTableItem(_JoinType.NONE, null, table, tableAlias);
     }
 
     @Override
     public final <T extends TabularItem> FS from(Supplier<T> supplier, String alias) {
-        this.context.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, supplier.get(), alias));
-        return (FS) this;
+        return this.onAddNoOnQueryItem(_JoinType.NONE, null, supplier.get(), alias);
     }
-
 
     @Override
     public final <T extends TabularItem> FS from(Function<C, T> function, String alias) {
-        final _TableBlock block;
-        block = this.createNoOnItemBlock(_JoinType.NONE, null, function.apply(this.criteria), alias);
-        this.context.onAddBlock(block);
-        return (FS) this;
-    }
-
-
-    @Override
-    public final WR where(Consumer<Consumer<IPredicate>> consumer) {
-        consumer.accept(this::and);
-        if (this.predicateList == null) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
-        }
-        return (WR) this;
+        return this.onAddNoOnQueryItem(_JoinType.NONE, null, function.apply(this.criteria), alias);
     }
 
     @Override
-    public final WR where(BiConsumer<C, Consumer<IPredicate>> consumer) {
-        consumer.accept(this.criteria, this::and);
-        if (this.predicateList == null) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
-        }
-        return (WR) this;
+    public final FT from(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias) {
+        return this.onAddNoOnTableItem(_JoinType.NONE, modifier, table, tableAlias);
     }
 
     @Override
-    public final WA where(IPredicate predicate) {
-        return this.and(predicate);
+    public final <T extends TabularItem> FS from(Query.TabularModifier modifier, Supplier<T> supplier, String alias) {
+        return this.onAddNoOnQueryItem(_JoinType.NONE, modifier, supplier.get(), alias);
     }
 
     @Override
-    public final WA where(Supplier<IPredicate> supplier) {
-        return this.and(supplier.get());
+    public final <T extends TabularItem> FS from(Query.TabularModifier modifier, Function<C, T> function, String alias) {
+        return this.onAddNoOnQueryItem(_JoinType.NONE, modifier, function.apply(this.criteria), alias);
     }
 
     @Override
-    public final WA where(Function<C, IPredicate> function) {
-        return this.and(function.apply(this.criteria));
+    public final FC from(String cteName) {
+        return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, "");
     }
 
     @Override
-    public final WA where(Function<Expression, IPredicate> expOperator, Expression operand) {
-        return this.and(expOperator.apply(operand));
+    public final FC from(String cteName, String alias) {
+        return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, alias);
     }
 
     @Override
-    public final <E> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
-        return this.and(expOperator.apply(supplier.get()));
+    public final FC from(Query.TabularModifier modifier, String cteName) {
+        return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, "");
     }
 
     @Override
-    public final <E> WA where(Function<E, IPredicate> expOperator, Function<C, E> function) {
-        return this.and(expOperator.apply(function.apply(this.criteria)));
-    }
-
-    @Override
-    public final WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator
-            , BiFunction<DataField, String, Expression> namedOperator) {
-        return this.and(fieldOperator.apply(namedOperator));
-    }
-
-    @Override
-    public final <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
-            , BiFunction<Expression, T, Expression> valueOperator, @Nullable T operand) {
-        if (operand == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(valueOperator, operand));
-    }
-
-    @Override
-    public final <T> WA where(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
-            , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> supplier) {
-        final T operand;
-        operand = supplier.get();
-        if (operand == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(valueOperator, operand));
-    }
-
-    @Override
-    public final WA where(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator
-            , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
-        final Object operand;
-        operand = function.apply(keyName);
-        if (operand == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(valueOperator, operand));
-    }
-
-    @Override
-    public final <T> WA where(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
-            , BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
-        if (first == null || second == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(operator, first, second));
-    }
-
-    @Override
-    public final <T> WA where(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
-        final T first, second;
-        if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(operator, first, second));
-    }
-
-    @Override
-    public final WA where(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
-            , String secondKey) {
-        final Object first, second;
-        if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(operator, first, second));
-    }
-
-    @Override
-    public final WA whereIf(Supplier<IPredicate> supplier) {
-        return this.ifAnd(supplier);
-    }
-
-    @Override
-    public final WA whereIf(Function<C, IPredicate> function) {
-        return this.ifAnd(function);
-    }
-
-
-    @Override
-    public final <E> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
-        return this.ifAnd(expOperator, supplier);
-    }
-
-    @Override
-    public final <E> WA whereIf(Function<E, IPredicate> expOperator, Function<C, E> function) {
-        return this.ifAnd(expOperator, function);
-    }
-
-    @Override
-    public final <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
-            , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
-        return this.ifAnd(expOperator, operator, operand);
-    }
-
-    @Override
-    public final <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return this.ifAnd(expOperator, operator, supplier);
-    }
-
-    @Override
-    public final WA whereIf(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-            , String keyName) {
-        return this.ifAnd(expOperator, operator, function, keyName);
-    }
-
-    @Override
-    public final <T> WA whereIf(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
-            , BiFunction<Expression, T, Expression> operator, @Nullable T first
-            , @Nullable T second) {
-        return this.ifAnd(expOperator, operator, first, second);
-    }
-
-    @Override
-    public final <T> WA whereIf(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier
-            , Supplier<T> secondSupplier) {
-        return this.ifAnd(expOperator, operator, firstSupplier, secondSupplier);
-    }
-
-    @Override
-    public final WA whereIf(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
-            , String secondKey) {
-        return this.ifAnd(expOperator, operator, function, firstKey, secondKey);
-    }
-
-    @Override
-    public final WR ifWhere(Consumer<Consumer<IPredicate>> consumer) {
-        consumer.accept(this::and);
-        return (WR) this;
-    }
-
-    @Override
-    public final WR ifWhere(BiConsumer<C, Consumer<IPredicate>> consumer) {
-        consumer.accept(this.criteria, this::and);
-        return (WR) this;
-    }
-
-    @Override
-    public final WA and(final @Nullable IPredicate predicate) {
-        if (predicate == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        List<_Predicate> predicateList = this.predicateList;
-        if (predicateList == null) {
-            predicateList = new ArrayList<>();
-            this.predicateList = predicateList;
-        } else if (!(predicateList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
-        return (WA) this;
-    }
-
-    @Override
-    public final WA and(Supplier<IPredicate> supplier) {
-        return this.and(supplier.get());
-    }
-
-    @Override
-    public final WA and(Function<C, IPredicate> function) {
-        return this.and(function.apply(this.criteria));
-    }
-
-    @Override
-    public final WA and(Function<Expression, IPredicate> expOperator, Expression operand) {
-        return this.and(expOperator.apply(operand));
-    }
-
-
-    @Override
-    public final <E> WA and(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
-        return this.and(expOperator.apply(supplier.get()));
-    }
-
-    @Override
-    public final <E> WA and(Function<E, IPredicate> expOperator, Function<C, E> function) {
-        return this.and(expOperator.apply(function.apply(this.criteria)));
-    }
-
-    @Override
-    public final WA and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator
-            , BiFunction<DataField, String, Expression> namedOperator) {
-        return this.and(fieldOperator.apply(namedOperator));
-    }
-
-    @Override
-    public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
-            , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
-        if (operand == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(operator, operand));
-    }
-
-    @Override
-    public final <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        final T operand;
-        operand = supplier.get();
-        if (operand == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(operator, operand));
-    }
-
-    @Override
-    public final WA and(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-            , String keyName) {
-        final Object operand;
-        operand = function.apply(keyName);
-        if (operand == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(operator, operand));
-    }
-
-    @Override
-    public final <T> WA and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
-            , BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
-        if (first == null || second == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(operator, first, second));
-    }
-
-    @Override
-    public final <T> WA and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
-        final T first, second;
-        if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(operator, first, second));
-    }
-
-    @Override
-    public final WA and(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
-            , String secondKey) {
-        final Object first, second;
-        if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(operator, first, second));
-    }
-
-
-    @Override
-    public final WA ifAnd(Supplier<IPredicate> supplier) {
-        final IPredicate predicate;
-        predicate = supplier.get();
-        if (predicate != null) {
-            this.and(predicate);
-        }
-        return (WA) this;
-    }
-
-    @Override
-    public final WA ifAnd(Function<C, IPredicate> function) {
-        final IPredicate predicate;
-        predicate = function.apply(this.criteria);
-        if (predicate != null) {
-            this.and(predicate);
-        }
-        return (WA) this;
-    }
-
-    @Override
-    public final <E> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
-        final E expression;
-        expression = supplier.get();
-        if (expression != null) {
-            this.and(expOperator.apply(expression));
-        }
-        return (WA) this;
-    }
-
-    @Override
-    public final <E> WA ifAnd(Function<E, IPredicate> expOperator, Function<C, E> function) {
-        final E expression;
-        expression = function.apply(this.criteria);
-        if (expression != null) {
-            this.and(expOperator.apply(expression));
-        }
-        return (WA) this;
-    }
-
-
-    @Override
-    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
-            , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
-        if (operand != null) {
-            this.and(expOperator.apply(operator, operand));
-        }
-        return (WA) this;
-    }
-
-    @Override
-    public final <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        final T operand;
-        operand = supplier.get();
-        if (operand != null) {
-            this.and(expOperator.apply(operator, operand));
-        }
-        return (WA) this;
-    }
-
-    @Override
-    public final WA ifAnd(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        final Object operand;
-        operand = function.apply(keyName);
-        if (operand != null) {
-            this.and(expOperator.apply(operator, operand));
-        }
-        return (WA) this;
-    }
-
-    @Override
-    public final <T> WA ifAnd(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
-            , BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
-        if (first != null && second != null) {
-            this.and(expOperator.apply(operator, first, second));
-        }
-        return (WA) this;
-    }
-
-    @Override
-    public final <T> WA ifAnd(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
-        final T first, second;
-        if ((first = firstSupplier.get()) != null && (second = secondSupplier.get()) != null) {
-            this.and(expOperator.apply(operator, first, second));
-        }
-        return (WA) this;
-    }
-
-    @Override
-    public final WA ifAnd(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
-            , String secondKey) {
-        final Object first, second;
-        if ((first = function.apply(firstKey)) != null && (second = function.apply(secondKey)) != null) {
-            this.and(expOperator.apply(operator, first, second));
-        }
-        return (WA) this;
+    public final FC from(Query.TabularModifier modifier, String cteName, String alias) {
+        return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, alias);
     }
 
     @Override
@@ -781,64 +341,123 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         return (HR) this;
     }
 
+    @Override
+    public final SP union() {
+        final UnionType unionType;
+        unionType = UnionType.from(this.context, UnionType.UNION, null);
+        return this.createQueryUnion(this.asQuery(), unionType);
+    }
+
+    @Override
+    public final SP union(Query.UnionModifier modifier) {
+        final UnionType unionType;
+        unionType = UnionType.from(this.context, UnionType.UNION, modifier);
+        return this.createQueryUnion(this.asQuery(), unionType);
+    }
+
+    @Override
+    public final SP intersect() {
+        final UnionType unionType;
+        unionType = UnionType.from(this.context, UnionType.INTERSECT, null);
+        return this.createQueryUnion(this.asQuery(), unionType);
+    }
+
+    @Override
+    public SP intersect(Query.UnionModifier modifier) {
+        final UnionType unionType;
+        unionType = UnionType.from(this.context, UnionType.INTERSECT, modifier);
+        return this.createQueryUnion(this.asQuery(), unionType);
+    }
+
+    @Override
+    public final SP except() {
+        final UnionType unionType;
+        unionType = UnionType.from(this.context, UnionType.EXCEPT, null);
+        return this.createQueryUnion(this.asQuery(), unionType);
+    }
+
+    @Override
+    public final SP except(Query.UnionModifier modifier) {
+        final UnionType unionType;
+        unionType = UnionType.from(this.context, UnionType.EXCEPT, modifier);
+        return this.createQueryUnion(this.asQuery(), unionType);
+    }
+
+    @Override
+    public final SP minus() {
+        final UnionType unionType;
+        unionType = UnionType.from(this.context, UnionType.MINUS, null);
+        return this.createQueryUnion(this.asQuery(), unionType);
+    }
+
+    @Override
+    public final SP minus(Query.UnionModifier modifier) {
+        final UnionType unionType;
+        unionType = UnionType.from(this.context, UnionType.MINUS, modifier);
+        return this.createQueryUnion(this.asQuery(), unionType);
+    }
+
     /*################################## blow _Query method ##################################*/
 
     @Override
     public final List<Hint> hintList() {
-        return this.hintList;
+        final List<Hint> list = this.hintList;
+        if (list == null || list instanceof ArrayList) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return list;
     }
 
     @Override
     public final List<? extends SQLWords> modifierList() {
-        return this.modifierList;
+        final List<? extends SQLWords> list = this.modifierList;
+        if (list == null || list instanceof ArrayList) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return list;
     }
 
 
     @Override
     public final int selectionSize() {
-        return this.selectionSize;
+        return this.context.selectionSize();
     }
 
     @Override
     public final List<? extends SelectItem> selectItemList() {
-        final List<? extends SelectItem> selectItemList = this.selectItemList;
-        assert selectItemList != null;
-        return selectItemList;
+        final List<? extends SelectItem> list = this.selectItemList;
+        if (list == null || list instanceof ArrayList) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return list;
     }
 
     @Override
     public final List<_TableBlock> tableBlockList() {
-        return this.tableBlockList;
-    }
-
-    @Override
-    public final List<_Predicate> predicateList() {
-        final List<_Predicate> predicateList = this.predicateList;
-        if (predicateList == null || predicateList instanceof ArrayList) {
+        final List<_TableBlock> list = this.tableBlockList;
+        if (list == null || list instanceof ArrayList) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return predicateList;
+        return list;
     }
+
 
     @Override
     public final List<? extends SortItem> groupByList() {
-        return this.groupByList;
+        final List<? extends SortItem> list = this.groupByList;
+        if (list == null || list instanceof ArrayList) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return list;
     }
 
     @Override
     public final List<_Predicate> havingList() {
-        return this.havingList;
-    }
-
-    public final Selection selection() {
-        if (!(this instanceof ScalarSubQuery)) {
+        final List<_Predicate> list = this.havingList;
+        if (list == null || list instanceof ArrayList) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (Selection) this.selectItemList().get(0);
-    }
-
-    public final TypeMeta typeMeta() {
-        return this.selection().typeMeta();
+        return list;
     }
 
 
@@ -852,13 +471,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
 
     @Override
-    protected final Q internalAsRowSet(final boolean fromAsQueryMethod) {
-        if (this instanceof SubStatement) {
-            ContextStack.pop(this.context);
-        } else {
-            ContextStack.clearContextStack(this.context);
-        }
-        this.tableBlockList = this.context.clear();
+    public final Q asQuery() {
 
         // hint list
         if (this.hintList == null) {
@@ -868,19 +481,12 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         if (this.modifierList == null) {
             this.modifierList = Collections.emptyList();
         }
-        // selection list
-        final List<? extends SelectItem> selectPartList = this.selectItemList;
-        if (selectPartList == null || selectPartList.size() == 0) {
-            throw _Exceptions.selectListIsEmpty();
-        }
-        if (this instanceof ScalarSubQuery
-                && (selectPartList.size() != 1 || !(selectPartList.get(0) instanceof Selection))) {
-            throw _Exceptions.ScalarSubQuerySelectionError();
-        }
 
-        if (this.predicateList == null) {
-            this.predicateList = Collections.emptyList();
-        }
+        final CriteriaContext context = this.context;
+        // selection list
+        this.selectItemList = context.endSelectClause();
+
+        this.endWhereClause();
 
         // group by and having
         if (this.groupByList == null) {
@@ -889,31 +495,18 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         } else if (this.havingList == null) {
             this.havingList = Collections.emptyList();
         }
-        return this.onAsQuery(fromAsQueryMethod);
-    }
-
-    @SuppressWarnings("unchecked")
-    final Q finallyAsQuery(final boolean fromAsQueryMethod) {
-        final Q thisQuery, resultQuery;
-        if (this instanceof ScalarSubQuery) {
-            thisQuery = (Q) ScalarExpression.from((ScalarSubQuery) this);
+        this.tableBlockList = this.context.endContext();
+        if (this instanceof SubStatement) {
+            ContextStack.pop(this.context);
         } else {
-            thisQuery = (Q) this;
+            ContextStack.clearContextStack(this.context);
         }
-        if (fromAsQueryMethod && this instanceof UnionAndRowSet) {
-            final UnionAndRowSet union = (UnionAndRowSet) this;
-            final Query._QuerySpec<Q> spec;
-            spec = (Query._QuerySpec<Q>) createUnionRowSet(union.leftRowSet(), union.unionType(), thisQuery);
-            resultQuery = spec.asQuery();
-        } else {
-            resultQuery = thisQuery;
-        }
-        return resultQuery;
+        return this.onAsQuery();
     }
 
 
     @Override
-    final void internalClear() {
+    public final void clear() {
         this.hintList = null;
         this.modifierList = null;
         this.selectItemList = null;
@@ -923,16 +516,6 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         this.groupByList = null;
         this.havingList = null;
         this.onClear();
-    }
-
-    @Override
-    public FP createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-        throw ContextStack.castCriteriaApi(this.context);
-    }
-
-    @Override
-    public JP createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-        throw ContextStack.castCriteriaApi(this.context);
     }
 
 
@@ -955,7 +538,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
 
-    abstract Q onAsQuery(boolean fromAsQueryMethod);
+    abstract Q onAsQuery();
 
     abstract void onClear();
 
@@ -963,49 +546,6 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     abstract List<Hint> asHintList(@Nullable List<Hint> hints);
 
-
-    private void addSelectItem(final SelectItem selectItem) {
-        if (selectItem instanceof DerivedGroup) {
-            this.context.onAddDerivedGroup((DerivedGroup) selectItem);
-        }
-        List<SelectItem> selectItemList = this.selectItemList;
-        if (selectItemList == null) {
-            selectItemList = new ArrayList<>();
-            this.selectItemList = selectItemList;
-            this.selectionSize = 0;
-        }
-        selectItemList.add(selectItem);
-        if (selectItem instanceof Selection) {
-            this.selectionSize++;
-        } else if (selectItem instanceof SelectionGroup) {
-            this.selectionSize += ((SelectionGroup) selectItem).selectionList().size();
-        } else {
-            throw _Exceptions.unknownSelectItem(selectItem);
-        }
-    }
-
-    private SR singleSelectItem(final SelectItem selectItem) {
-        if (selectItem instanceof DerivedGroup) {
-            this.context.onAddDerivedGroup((DerivedGroup) selectItem);
-        }
-        final List<SelectItem> selectItemList;
-        selectItemList = Collections.singletonList(selectItem);
-        this.selectItemList = selectItemList;
-        this.context.selectList(selectItemList);
-        this.selectionSize = 1;
-        return (SR) this;
-    }
-
-    private SR addSelectItemEnd() {
-        List<SelectItem> selectItemList = this.selectItemList;
-        if (selectItemList == null) {
-            throw _Exceptions.selectListIsEmpty();
-        }
-        selectItemList = _CollectionUtils.unmodifiableList(selectItemList);
-        this.selectItemList = selectItemList;
-        this.context.selectList(selectItemList);
-        return (SR) this;
-    }
 
 
     private void addGroupByItem(final @Nullable SortItem sortItem) {
@@ -1068,6 +608,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         }
 
     }
+
+    abstract SP createQueryUnion(Q left, UnionType unionType);
 
 
 }

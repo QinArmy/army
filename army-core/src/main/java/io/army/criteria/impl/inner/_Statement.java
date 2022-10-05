@@ -8,6 +8,11 @@ public interface _Statement {
 
     void clear();
 
+    interface _PredicateListSpec {
+
+        List<_Predicate> predicateList();
+    }
+
     interface _ReturningListSpec {
 
         List<? extends SelectItem> returningList();

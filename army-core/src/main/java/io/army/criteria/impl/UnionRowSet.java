@@ -52,7 +52,7 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
 
             context.sqlBuilder()
                     .append(_Constant.SPACE)
-                    .append(((RowSetWithUnion) this).unionType().keyWords);
+                    .append(((RowSetWithUnion) this).unionType().spaceWords);
 
             dialect.rowSet(((RowSetWithUnion) this).rightRowSet(), context);
         } else if (!(this instanceof NoActionRowSet)) {

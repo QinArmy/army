@@ -30,6 +30,12 @@ interface CriteriaContext {
 
     CteItem refCte(String cteName);
 
+    CriteriaContext onAddSelectItem(SelectItem selectItem);
+
+    List<SelectItem> endSelectClause();
+
+    int selectionSize();
+
     void contextEnd();
 
     void addEndEventListener(Runnable listener);
@@ -75,7 +81,7 @@ interface CriteriaContext {
     @Nullable
     <C> C criteria();
 
-    List<_TableBlock> clear();
+    List<_TableBlock> endContext();
 
 
     interface CteConsumer {

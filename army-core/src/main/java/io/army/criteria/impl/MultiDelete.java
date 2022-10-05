@@ -50,7 +50,7 @@ abstract class MultiDelete<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA, D extends DmlS
         } else {
             ContextStack.clearContextStack(this.context);
         }
-        this.tableBlockList = this.context.clear();
+        this.tableBlockList = this.context.endContext();
         this.asDmlStatement();
         this.onAsDelete();
         this.prepared = Boolean.TRUE;

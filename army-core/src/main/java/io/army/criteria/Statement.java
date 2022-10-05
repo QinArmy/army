@@ -193,6 +193,34 @@ public interface Statement extends Item {
 
     }
 
+    interface _JoinModifierClause<C, JT, JS> extends _JoinClause<C, JT, JS> {
+
+        JT leftJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
+
+        <T extends TabularItem> JS leftJoin(Query.TabularModifier modifier, Function<C, T> function, String alias);
+
+        <T extends TabularItem> JS leftJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
+
+        JT join(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
+
+        <T extends TabularItem> JS join(Query.TabularModifier modifier, Function<C, T> function, String alias);
+
+        <T extends TabularItem> JS join(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
+
+        JT rightJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
+
+        <T extends TabularItem> JS rightJoin(Query.TabularModifier modifier, Function<C, T> function, String alias);
+
+        <T extends TabularItem> JS rightJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
+
+        JT fullJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
+
+        <T extends TabularItem> JS fullJoin(Query.TabularModifier modifier, Function<C, T> function, String alias);
+
+        <T extends TabularItem> JS fullJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
+
+    }
+
 
     /**
      * <p>
@@ -216,6 +244,16 @@ public interface Statement extends Item {
         <T extends TabularItem> FS crossJoin(Function<C, T> function, String alias);
 
         <T extends TabularItem> FS crossJoin(Supplier<T> supplier, String alias);
+
+    }
+
+    interface _CrossJoinModifierClause<C, FT, FS> extends _CrossJoinClause<C, FT, FS> {
+
+        FT crossJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
+
+        <T extends TabularItem> FS crossJoin(Query.TabularModifier modifier, Function<C, T> function, String alias);
+
+        <T extends TabularItem> FS crossJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
 
     }
 

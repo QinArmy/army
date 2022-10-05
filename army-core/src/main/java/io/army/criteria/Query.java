@@ -28,7 +28,7 @@ public interface Query extends RowSet {
      * @see SQLs#ALL
      * @see SQLs#DISTINCT
      */
-    interface SelectModifier {
+    interface SelectModifier extends SQLWords {
 
     }
 
@@ -83,6 +83,16 @@ public interface Query extends RowSet {
 
     }
 
+    interface _FromModifierClause<C, FT, FS> extends _FromClause<C, FT, FS> {
+
+        FT from(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
+
+        <T extends TabularItem> FS from(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
+
+        <T extends TabularItem> FS from(Query.TabularModifier modifier, Function<C, T> function, String alias);
+    }
+
+
     /**
      * <p>
      * This interface representing dialect FROM clause.
@@ -93,33 +103,25 @@ public interface Query extends RowSet {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <FS> same with the FS of {@link Query._FromClause}
+     * @param <FC> same with the FS of {@link Query._FromClause}
      * @see Query._FromClause
      * @since 1.0
      */
-    interface _FromCteClause<FS> {
+    interface _FromCteClause<FC> {
 
-        FS from(String cteName);
+        FC from(String cteName);
 
-        FS from(String cteName, String alias);
-
-    }
-
-    interface _FromModifierClause<C, FM extends TabularModifier, FT, FS> extends _FromClause<C, FT, FS> {
-
-        FT from(FM modifier, TableMeta<?> table, String tableAlias);
-
-        <T extends TabularItem> FS from(FM modifier, Supplier<T> supplier, String alias);
-
-        <T extends TabularItem> FS from(FM modifier, Function<C, T> function, String alias);
-    }
-
-
-    interface _FromLeftParenClause<FL> {
-
-        FL fromLeftParen();
+        FC from(String cteName, String alias);
 
     }
+
+    interface _FromModifierCteClause<FC> extends _FromCteClause<FC> {
+
+        FC from(Query.TabularModifier modifier, String cteName);
+
+        FC from(Query.TabularModifier modifier, String cteName, String alias);
+    }
+
 
     /**
      * <p>
@@ -156,9 +158,7 @@ public interface Query extends RowSet {
     }
 
 
-    interface _DynamicSelectClause<C, SR> {
-
-        SR select(SelectStar star);
+    interface _DynamicSelectClause<C, SR> extends _SelectClause<SR> {
 
         SR select(Consumer<Consumer<SelectItem>> consumer);
 
@@ -169,8 +169,6 @@ public interface Query extends RowSet {
 
     interface _DynamicModifierSelectClause<C, W extends SelectModifier, SR> extends _DynamicSelectClause<C, SR> {
 
-        SR select(W modifier, SelectStar star);
-
         SR select(W modifier, Consumer<Consumer<SelectItem>> consumer);
 
         SR select(W modifier, BiConsumer<C, Consumer<SelectItem>> consumer);
@@ -178,10 +176,6 @@ public interface Query extends RowSet {
 
     interface _DynamicHintModifierSelectClause<C, W extends SelectModifier, SR>
             extends _DynamicModifierSelectClause<C, W, SR> {
-
-        SR select(Supplier<List<Hint>> hints, List<W> modifiers, SelectStar star);
-
-        SR select(List<W> modifiers, SelectStar star);
 
         SR select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Consumer<SelectItem>> consumer);
 
@@ -242,33 +236,37 @@ public interface Query extends RowSet {
     }
 
 
-
-    interface _UnionClause<C, UR> extends _BracketClause<UR> {
-
-        <S extends RowSet> UR union(Function<C, S> function);
-
-        <S extends RowSet> UR union(Supplier<S> supplier);
-
-        <S extends RowSet> UR union(UnionModifier modifier, Function<C, S> function);
-
-        <S extends RowSet> UR union(UnionModifier modifier, Supplier<S> supplier);
-
-        <S extends RowSet> UR ifUnion(Function<C, S> function);
-
-        <S extends RowSet> UR ifUnion(Supplier<S> supplier);
-
-        <S extends RowSet> UR ifUnion(UnionModifier modifier, Function<C, S> function);
-
-        <S extends RowSet> UR ifUnion(UnionModifier modifier, Supplier<S> supplier);
-    }
-
-
-    interface _QueryUnionClause<C, UR, SP> extends _UnionClause<C, UR> {
+    interface _QueryUnionClause<SP> {
 
         SP union();
 
         SP union(UnionModifier modifier);
     }
+
+
+    interface _QueryIntersectClause<SP> {
+
+        SP intersect();
+
+        SP intersect(UnionModifier modifier);
+    }
+
+
+    interface _QueryExceptClause<SP> {
+
+        SP except();
+
+        SP except(UnionModifier modifier);
+    }
+
+
+    interface _QueryMinusClause<SP> {
+
+        SP minus();
+
+        SP minus(UnionModifier modifier);
+    }
+
 
     interface _LimitClause<C, LR> extends Statement._RowCountLimitClause<C, LR> {
 

@@ -38,7 +38,7 @@ abstract class MultiUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS, J
 
     @Override
     final void onAsUpdate() {
-        this.tableBlockList = this.criteriaContext.clear();
+        this.tableBlockList = this.criteriaContext.endContext();
         this.doOnAsUpdate();
     }
 

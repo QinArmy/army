@@ -167,45 +167,19 @@ public interface DialectStatement extends Statement {
 
     }
 
+    interface _StraightJoinModifierClause<C, JT, JS> extends _StraightJoinClause<C, JT, JS> {
 
-    interface _JoinLateralClause<C, JS> {
+        JT straightJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
 
-        <T extends TabularItem> JS leftJoinLateral(Supplier<T> supplier, String alias);
+        <T extends TabularItem> JS straightJoin(Query.TabularModifier modifier, Function<C, T> function, String alias);
 
-        <T extends TabularItem> JS leftJoinLateral(Function<C, T> function, String alias);
-
-        <T extends TabularItem> JS joinLateral(Supplier<T> supplier, String alias);
-
-        <T extends TabularItem> JS joinLateral(Function<C, T> function, String alias);
-
-        <T extends TabularItem> JS rightJoinLateral(Supplier<T> supplier, String alias);
-
-        <T extends TabularItem> JS rightJoinLateral(Function<C, T> function, String alias);
-
-        <T extends TabularItem> JS fullJoinLateral(Supplier<T> supplier, String alias);
-
-        <T extends TabularItem> JS fullJoinLateral(Function<C, T> function, String alias);
+        <T extends TabularItem> JS straightJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
 
 
     }
 
-    interface _CrossJoinLateralClause<C, FS> {
-
-        <T extends TabularItem> FS crossJoinLateral(Supplier<T> supplier, String alias);
-
-        <T extends TabularItem> FS crossJoinLateral(Function<C, T> function, String alias);
-
-    }
 
 
-    interface _StraightJoinLateralClause<C, JS> {
-
-        <T extends TabularItem> JS straightJoinLateral(Supplier<T> supplier, String alias);
-
-        <T extends TabularItem> JS straightJoinLateral(Function<C, T> function, String alias);
-
-
-    }
 
 
     /**
@@ -293,34 +267,62 @@ public interface DialectStatement extends Statement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <JS> same with the JS of {@link _JoinClause}
+     * @param <JC> same with the JS of {@link _JoinClause}
      * @since 1.0
      */
-    interface _JoinCteClause<JS> {
+    interface _JoinCteClause<JC> {
 
-        JS leftJoin(String cteName);
+        JC leftJoin(String cteName);
 
-        JS leftJoin(String cteName, String alias);
+        JC leftJoin(String cteName, String alias);
 
-        JS join(String cteName);
+        JC join(String cteName);
 
-        JS join(String cteName, String alias);
+        JC join(String cteName, String alias);
 
-        JS rightJoin(String cteName);
+        JC rightJoin(String cteName);
 
-        JS rightJoin(String cteName, String alias);
+        JC rightJoin(String cteName, String alias);
 
-        JS fullJoin(String cteName);
+        JC fullJoin(String cteName);
 
-        JS fullJoin(String cteName, String alias);
+        JC fullJoin(String cteName, String alias);
 
     }
 
-    interface _CrossJoinCteClause<FS> {
+    interface _JoinModifierCteClause<JC> extends _JoinCteClause<JC> {
 
-        FS crossJoin(String cteName);
+        JC leftJoin(Query.TabularModifier modifier, String cteName);
 
-        FS crossJoin(String cteName, String alias);
+        JC leftJoin(Query.TabularModifier modifier, String cteName, String alias);
+
+        JC join(Query.TabularModifier modifier, String cteName);
+
+        JC join(Query.TabularModifier modifier, String cteName, String alias);
+
+        JC rightJoin(Query.TabularModifier modifier, String cteName);
+
+        JC rightJoin(Query.TabularModifier modifier, String cteName, String alias);
+
+        JC fullJoin(Query.TabularModifier modifier, String cteName);
+
+        JC fullJoin(Query.TabularModifier modifier, String cteName, String alias);
+
+    }
+
+    interface _CrossJoinCteClause<FC> {
+
+        FC crossJoin(String cteName);
+
+        FC crossJoin(String cteName, String alias);
+
+    }
+
+    interface _CrossJoinModifierCteClause<FC> extends _CrossJoinCteClause<FC> {
+
+        FC crossJoin(Query.TabularModifier modifier, String cteName);
+
+        FC crossJoin(Query.TabularModifier modifier, String cteName, String alias);
 
     }
 
@@ -343,6 +345,14 @@ public interface DialectStatement extends Statement {
         JS straightJoin(String cteName);
 
         JS straightJoin(String cteName, String alias);
+
+    }
+
+    interface _StraightJoinModifierCteClause<JS> extends _StraightJoinCteClause<JS> {
+
+        JS straightJoin(Query.TabularModifier modifier, String cteName);
+
+        JS straightJoin(Query.TabularModifier modifier, String cteName, String alias);
 
     }
 
@@ -385,13 +395,6 @@ public interface DialectStatement extends Statement {
         LS leftParen(String cteName, String alias);
     }
 
-    interface _LeftParenLateralClause<C, LS> {
-
-        <T extends TabularItem> LS leftParenLateral(Supplier<T> supplier, String alias);
-
-        <T extends TabularItem> LS leftParenLateral(Function<C, T> function, String alias);
-
-    }
 
     /**
      * <p>

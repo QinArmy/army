@@ -255,7 +255,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         }
         if (this instanceof SingleUpdate) {
             /// only single update clear context.
-            this.context.clear();
+            this.context.endContext();
         }
         super.asDmlStatement();
 

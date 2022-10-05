@@ -497,7 +497,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public List<_TableBlock> clear() {
+        public List<_TableBlock> endContext() {
             final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
             if (withClauseCteMap != null) {
                 withClauseCteMap.clear();
@@ -511,6 +511,20 @@ abstract class CriteriaContexts {
             return Collections.emptyList();
         }
 
+        @Override
+        public CriteriaContext onAddSelectItem(SelectItem selectItem) {
+            throw ContextStack.criteriaError(this, "current context don't support onAddSelectItem(selectItem)");
+        }
+
+        @Override
+        public List<SelectItem> endSelectClause() {
+            throw ContextStack.criteriaError(this, "current context don't support endSelectClause()");
+        }
+
+        @Override
+        public int selectionSize() {
+            throw ContextStack.criteriaError(this, "current context don't support selectionSize()");
+        }
 
         @Override
         public boolean isExistWindow(String windowName) {
@@ -782,14 +796,14 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final List<_TableBlock> clear() {
+        public final List<_TableBlock> endContext() {
             final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
             if (!(aliasToBlock instanceof HashMap)) {
                 //no bug,never here
                 throw new IllegalStateException("duplication clear");
             }
             //1. clear super
-            super.clear();
+            super.endContext();
             //2. validate aliasToBlock
             final List<_TableBlock> blockList = _CollectionUtils.unmodifiableList(this.tableBlockList);
             this.tableBlockList = blockList;//store for recursive checking
@@ -1255,8 +1269,8 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public List<_TableBlock> clear() {
-            super.clear();
+        public List<_TableBlock> endContext() {
+            super.endContext();
             return Collections.emptyList();
         }
 
