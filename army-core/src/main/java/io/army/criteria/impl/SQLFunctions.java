@@ -1241,7 +1241,7 @@ abstract class SQLFunctions {
         }
 
         @Override
-        public Functions._CaseEndClause elseExp(final @Nullable Expression expression) {
+        public Functions._CaseEndClause Else(final @Nullable Expression expression) {
             if (this.elseExpression != null) {
                 throw ContextStack.castCriteriaApi(this.criteriaContext);
             }
@@ -1253,38 +1253,38 @@ abstract class SQLFunctions {
         }
 
         @Override
-        public Functions._CaseEndClause elseExp(Supplier<? extends Expression> supplier) {
-            return this.elseExp(supplier.get());
+        public Functions._CaseEndClause Else(Supplier<? extends Expression> supplier) {
+            return this.Else(supplier.get());
         }
 
         @Override
-        public Functions._CaseEndClause elseExp(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
-            return this.elseExp(operator.apply(supplier.get()));
+        public Functions._CaseEndClause Else(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
+            return this.Else(operator.apply(supplier.get()));
         }
 
         @Override
-        public Functions._CaseEndClause elseExp(Function<Object, ? extends Expression> operator
+        public Functions._CaseEndClause Else(Function<Object, ? extends Expression> operator
                 , Function<String, ?> function, String keyName) {
-            return this.elseExp(operator.apply(function.apply(keyName)));
+            return this.Else(operator.apply(function.apply(keyName)));
         }
 
         @Override
-        public Functions._CaseEndClause elseExp(BiFunction<Object, Object, ? extends Expression> operator
+        public Functions._CaseEndClause Else(BiFunction<Object, Object, ? extends Expression> operator
                 , Supplier<?> firstOperand, Supplier<?> secondOperand) {
-            return this.elseExp(operator.apply(firstOperand.get(), secondOperand.get()));
+            return this.Else(operator.apply(firstOperand.get(), secondOperand.get()));
         }
 
         @Override
-        public Functions._CaseEndClause elseExp(BiFunction<Object, Object, ? extends Expression> operator
+        public Functions._CaseEndClause Else(BiFunction<Object, Object, ? extends Expression> operator
                 , Function<String, ?> function, String firstKey, String secondKey) {
-            return this.elseExp(operator.apply(function.apply(firstKey), function.apply(secondKey)));
+            return this.Else(operator.apply(function.apply(firstKey), function.apply(secondKey)));
         }
 
         @Override
         public Functions._CaseEndClause ifElse(Supplier<? extends Expression> supplier) {
             final Expression expression;
             if ((expression = supplier.get()) != null) {
-                this.elseExp(expression);
+                this.Else(expression);
             }
             return this;
         }
@@ -1293,7 +1293,7 @@ abstract class SQLFunctions {
         public Functions._CaseEndClause ifElse(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
             final Object value;
             if ((value = supplier.get()) != null) {
-                this.elseExp(operator.apply(value));
+                this.Else(operator.apply(value));
             }
             return this;
         }
@@ -1303,7 +1303,7 @@ abstract class SQLFunctions {
                 , Function<String, ?> function, String keyName) {
             final Object value;
             if ((value = function.apply(keyName)) != null) {
-                this.elseExp(operator.apply(value));
+                this.Else(operator.apply(value));
             }
             return this;
         }
@@ -1313,7 +1313,7 @@ abstract class SQLFunctions {
                 , Supplier<?> firstOperand, Supplier<?> secondOperand) {
             final Object firstValue, secondValue;
             if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperand.get()) != null) {
-                this.elseExp(operator.apply(firstValue, secondValue));
+                this.Else(operator.apply(firstValue, secondValue));
             }
             return this;
         }
@@ -1323,7 +1323,7 @@ abstract class SQLFunctions {
                 , Function<String, ?> function, String firstKey, String secondKey) {
             final Object firstValue, secondValue;
             if ((firstValue = function.apply(firstKey)) != null && (secondValue = function.apply(secondKey)) != null) {
-                this.elseExp(operator.apply(firstValue, secondValue));
+                this.Else(operator.apply(firstValue, secondValue));
             }
             return this;
         }

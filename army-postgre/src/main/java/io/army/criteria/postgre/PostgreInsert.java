@@ -200,7 +200,7 @@ public interface PostgreInsert extends DialectStatement {
 
     interface _ChildCteComma<C, P>
             extends _StaticWithCommaClause<_StaticCteLeftParenSpec<C, _ChildCteComma<C, P>, _ChildCteComma<C, P>>>
-            , DialectStatement._StaticSpaceClause<_ChildInsertIntoClause<C, P>>
+            , Query._StaticSpaceClause<_ChildInsertIntoClause<C, P>>
             , Item {
 
     }
@@ -244,7 +244,7 @@ public interface PostgreInsert extends DialectStatement {
 
     interface _ParentCteComma<C>
             extends _StaticWithCommaClause<_StaticCteLeftParenSpec<C, _ParentCteComma<C>, _ParentCteComma<C>>>
-            , DialectStatement._StaticSpaceClause<_PrimaryInsertIntoClause<C>>, Item {
+            , Query._StaticSpaceClause<_PrimaryInsertIntoClause<C>>, Item {
 
     }
 

@@ -230,17 +230,15 @@ public interface Query extends RowSet {
 
     }
 
-    interface _BracketClause<UR> {
-
-        UR bracket();
-    }
 
 
     interface _QueryUnionClause<SP> {
 
         SP union();
 
-        SP union(UnionModifier modifier);
+        SP unionAll();
+
+        SP unionDistinct();
     }
 
 
@@ -248,7 +246,9 @@ public interface Query extends RowSet {
 
         SP intersect();
 
-        SP intersect(UnionModifier modifier);
+        SP intersectAll();
+
+        SP intersectDistinct();
     }
 
 
@@ -256,7 +256,9 @@ public interface Query extends RowSet {
 
         SP except();
 
-        SP except(UnionModifier modifier);
+        SP exceptAll();
+
+        SP exceptDistinct();
     }
 
 
@@ -264,7 +266,9 @@ public interface Query extends RowSet {
 
         SP minus();
 
-        SP minus(UnionModifier modifier);
+        SP minusAll();
+
+        SP minusDistinct();
     }
 
 
@@ -281,6 +285,17 @@ public interface Query extends RowSet {
 
         LR ifLimit(Function<String, ?> function, String offsetKey, String rowCountKey);
 
+    }
+
+
+    interface _StaticSpaceClause<SR> {
+
+        SR space();
+    }
+
+    interface _LeftParenClause<LR> {
+
+        LR leftParen();
     }
 
 

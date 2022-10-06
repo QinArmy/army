@@ -81,11 +81,6 @@ public interface DialectStatement extends Statement {
         CR comma(String name);
     }
 
-    interface _StaticSpaceClause<SR> {
-
-        SR space();
-    }
-
 
     /**
      * <p>

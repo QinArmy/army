@@ -8,6 +8,7 @@ import io.army.dialect._Constant;
 import io.army.util._StringUtils;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -80,7 +81,7 @@ public abstract class Postgres extends PostgreFuncSyntax {
 
 
     public static PostgreQuery._WithCteSpec<Void, Select> query() {
-        return PostgreQueries.primaryQuery(null);
+        return PostgreQueries.primaryQuery(null, Function.identity());
     }
 
     /**
@@ -88,18 +89,18 @@ public abstract class Postgres extends PostgreFuncSyntax {
      */
     public static <C> PostgreQuery._WithCteSpec<C, Select> query(C criteria) {
         Objects.requireNonNull(criteria);
-        return PostgreQueries.primaryQuery(criteria);
+        return PostgreQueries.primaryQuery(criteria, SQLs::_identity);
     }
 
     public static PostgreQuery._SubWithCteSpec<Void, SubQuery> subQuery() {
-        return PostgreQueries.subQuery(null, ContextStack.peek(), SQLs::_thisSubQuery);
+        return PostgreQueries.subQuery(null, ContextStack.peek(), SQLs::_identity);
     }
 
     /**
      * @param criteria non-null criteria instance,java bean or {@link java.util.Map}.
      */
     public static <C> PostgreQuery._SubWithCteSpec<C, SubQuery> subQuery(C criteria) {
-        return PostgreQueries.subQuery(criteria, ContextStack.peek(criteria), SQLs::_thisSubQuery);
+        return PostgreQueries.subQuery(criteria, ContextStack.peek(criteria), SQLs::_identity);
     }
 
     public static PostgreQuery._SubWithCteSpec<Void, Expression> scalarSubQuery() {

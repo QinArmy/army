@@ -6,7 +6,6 @@ import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util._Exceptions;
 
 import java.util.List;
 import java.util.function.Function;
@@ -36,37 +35,31 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQuery<
         StandardQuery._HavingSpec<C, Q>, // GR
         StandardQuery._OrderBySpec<C, Q>, // HR
         StandardQuery._LimitSpec<C, Q>, // OR
-        StandardQuery._SelectSpec<C, Q>> // SP
+        StandardQuery._UnionSpaceClause<C, Q>> // SP
 
         implements StandardQuery, StandardQuery._SelectSpec<C, Q>, StandardQuery._FromSpec<C, Q>
         , StandardQuery._JoinSpec<C, Q>, StandardQuery._WhereAndSpec<C, Q>, StandardQuery._HavingSpec<C, Q>
         , _StandardQuery {
 
 
-    static <C> _SelectSpec<C, Select> primaryQuery(@Nullable C criteria) {
-        return new SimpleSelect<>(CriteriaContexts.primaryQueryContext(criteria));
+    static <C, Q extends Item> SimpleSelect<C, Q> primaryQuery(@Nullable C criteria, Function<Select, Q> function) {
+        return new SimpleSelect<>(criteria, function);
+    }
+
+    static <C, Q extends Item> StandardQuery._ParenQueryClause<C, Q> parenPrimaryQuery(@Nullable C criteria
+            , Function<Select, Q> function) {
+        throw new UnsupportedOperationException();
     }
 
 
-    static <C, Q extends Item> _SelectSpec<C, Q> subQuery(@Nullable C criteria, CriteriaContext outerContext
+    static <C, Q extends Item> SimpleSubQuery<C, Q> subQuery(@Nullable C criteria, CriteriaContext outerContext
             , Function<SubQuery, Q> function) {
         return new SimpleSubQuery<>(CriteriaContexts.subQueryContext(criteria, outerContext), function);
     }
 
-    @SuppressWarnings("unchecked")
-    static <C, Q extends Query> _SelectSpec<C, Q> unionAndQuery(Q query, UnionType unionType) {
-        final _SelectSpec<C, ?> spec;
-        final CriteriaContext criteriaContext;
-        if (query instanceof Select) {
-            criteriaContext = CriteriaContexts.primaryQueryContextFrom(query);
-            spec = new UnionAndSelect<>((Select) query, unionType, criteriaContext);
-        } else if (query instanceof SubQuery) {
-            criteriaContext = CriteriaContexts.subQueryContextFrom(query);
-            spec = new UnionAndSubQuery<>((SubQuery) query, unionType, criteriaContext);
-        } else {
-            throw _Exceptions.unknownRowSetType(query);
-        }
-        return (_SelectSpec<C, Q>) spec;
+    static <C, Q extends Item> StandardQuery._ParenQueryClause<C, Q> parenSubQuery(@Nullable C criteria
+            , CriteriaContext outerContext, Function<SubQuery, Q> function) {
+        throw new UnsupportedOperationException();
     }
 
 
@@ -269,58 +262,31 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQuery<
     /*################################## blow private inter class method ##################################*/
 
 
-    private static class SimpleSelect<C> extends StandardQueries<C, Select>
+    static class SimpleSelect<C, Q extends Item> extends StandardQueries<C, Q>
             implements Select {
 
-        private SimpleSelect(CriteriaContext context) {
-            super(context);
+        private final Function<Select, Q> function;
+
+        private SimpleSelect(@Nullable C criteria, Function<Select, Q> function) {
+            super(CriteriaContexts.primaryQueryContext(criteria));
+            this.function = function;
         }
 
         @Override
-        final Select onAsQuery() {
-            return this;
+        Q onAsQuery() {
+            return this.function.apply(this);
         }
 
-
         @Override
-        final _SelectSpec<C, Select> createQueryUnion(UnionType unionType) {
-            return new UnionAndSelect<>(this, unionType, CriteriaContexts.primaryQueryContext(this.criteria));
+        _UnionSpaceClause<C, Q> createQueryUnion(UnionType unionType) {
+            return null;
         }
 
 
     }//SimpleSelect
 
-    private static final class UnionAndSelect<C> extends StandardQueries<C, Select>
-            implements Select {
 
-        private final Select left;
-
-        private final UnionType unionType;
-
-        private UnionAndSelect(Select left, UnionType unionType, CriteriaContext context) {
-            super(context);
-            this.left = left;
-            this.unionType = unionType;
-        }
-
-        @Override
-        Select onAsQuery() {
-            return StandardUnionQueries.unionQuery(this.left, this.unionType, this)
-                    .asQuery();
-        }
-
-        @Override
-        _SelectSpec<C, Select> createQueryUnion(final UnionType unionType) {
-            final Select unionLeft;
-            unionLeft = StandardUnionQueries.unionQuery(this.left, this.unionType, this)
-                    .asQuery();
-            return new UnionAndSelect<>(unionLeft, unionType, CriteriaContexts.primaryQueryContext(this.criteria));
-        }
-
-    }//UnionAndSelect
-
-
-    private static class SimpleSubQuery<C, Q extends Item> extends StandardQueries<C, Q>
+    static class SimpleSubQuery<C, Q extends Item> extends StandardQueries<C, Q>
             implements SubQuery {
 
         private final Function<SubQuery, Q> function;
@@ -336,12 +302,77 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQuery<
         }
 
         @Override
-        _SelectSpec<C, Q> createQueryUnion(UnionType unionType) {
+        _UnionSpaceClause<C, Q> createQueryUnion(UnionType unionType) {
             return null;
         }
 
 
     } // SimpleSubQuery
+
+
+    private static final class UnionSelectSpaceClause<C, Q extends Item>
+            implements StandardQuery._UnionSpaceClause<C, Q> {
+
+
+        @Override
+        public _UnionSpaceClause<C, _RightParenClause<_UnionOrderBySpec<C, Q>>> leftParen() {
+            return null;
+        }
+
+        @Override
+        public _SelectSpec<C, Q> space() {
+            return null;
+        }
+
+
+    }//UnionSelectSpaceClause
+
+
+    private static final class UnionSubQuerySpaceClause<C, Q extends Item>
+            extends SelectClauseDispatcher<C, SQLs.SelectModifier, StandardQuery._FromSpec<C, Q>>
+            implements StandardQuery._UnionSpaceClause<C, Q> {
+
+        private final SubQuery left;
+
+        private final UnionType unionType;
+
+        private final Function<SubQuery, Q> function;
+
+        private UnionSubQuerySpaceClause(SubQuery left, UnionType unionType, Function<SubQuery, Q> function) {
+            this.left = left;
+            this.unionType = unionType;
+            this.function = function;
+        }
+
+        @Override
+        public _UnionSpaceClause<C, _RightParenClause<_UnionOrderBySpec<C, Q>>> leftParen() {
+            return null;
+        }
+
+
+        @Override
+        _DynamicHintModifierSelectClause<C, SQLs.SelectModifier, _FromSpec<C, Q>> createSelectClause() {
+            final CriteriaContext queryContext, outerContext;
+            queryContext = ((CriteriaContextSpec) this.left).getContext();
+            outerContext = queryContext.getOuterContext();
+            return new SimpleSubQuery<>(queryContext, this.function);
+        }
+
+        public _SelectSpec<C, Q> space() {
+            final CriteriaContext queryContext, outerContext;
+            queryContext = ((CriteriaContextSpec) this.left).getContext();
+            outerContext = queryContext.getOuterContext();
+            assert outerContext != null;
+            return StandardQueries.subQuery(queryContext.criteria(), outerContext, this::union);
+        }
+
+        private Q union(final SubQuery right) {
+            return StandardUnionQueries.unionSubQuery(this.left, this.unionType, right, this.function)
+                    .asQuery();
+        }
+
+
+    }//UnionSubQuerySpaceClause
 
 
 }

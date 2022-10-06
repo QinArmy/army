@@ -4,6 +4,8 @@ import io.army.criteria.*;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.util._Exceptions;
 
+import java.util.function.Function;
+
 /**
  * @see StandardQueries
  */
@@ -42,7 +44,7 @@ abstract class StandardUnionQueries<C, Q extends Query> extends UnionRowSet<
     }
 
 
-    static <C, Q extends Query> _UnionOrderBySpec<C, Q> unionQuery(final Q left, final UnionType unionType, final RowSet right) {
+    static <C, Q extends Item> _UnionOrderBySpec<C, Q> unionSubQuery(final SubQuery left, final UnionType unionType, final SubQuery right, Function<SubQuery, Q> function) {
         switch (unionType) {
             case UNION:
             case UNION_ALL:

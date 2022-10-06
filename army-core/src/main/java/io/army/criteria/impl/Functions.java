@@ -70,17 +70,17 @@ abstract class Functions {
     }
 
     public interface _CaseElseClause extends _CaseEndClause {
-        _CaseEndClause elseExp(Expression expression);
+        _CaseEndClause Else(Expression expression);
 
-        _CaseEndClause elseExp(Supplier<? extends Expression> supplier);
+        _CaseEndClause Else(Supplier<? extends Expression> supplier);
 
-        _CaseEndClause elseExp(Function<Object, ? extends Expression> operator, Supplier<?> supplier);
+        _CaseEndClause Else(Function<Object, ? extends Expression> operator, Supplier<?> supplier);
 
-        _CaseEndClause elseExp(Function<Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+        _CaseEndClause Else(Function<Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
-        _CaseEndClause elseExp(BiFunction<Object, Object, ? extends Expression> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+        _CaseEndClause Else(BiFunction<Object, Object, ? extends Expression> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
 
-        _CaseEndClause elseExp(BiFunction<Object, Object, ? extends Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+        _CaseEndClause Else(BiFunction<Object, Object, ? extends Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
 
         _CaseEndClause ifElse(Supplier<? extends Expression> supplier);
 

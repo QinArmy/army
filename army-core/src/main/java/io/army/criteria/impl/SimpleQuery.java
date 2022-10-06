@@ -55,10 +55,10 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
 
     SimpleQuery(CriteriaContext context) {
         super(context);
-        if (this instanceof SubStatement) {
-            ContextStack.push(this.context);
-        } else {
+        if (context.getOuterContext() == null) {
             ContextStack.setContextStack(this.context);
+        } else {
+            ContextStack.push(this.context);
         }
     }
 
@@ -352,66 +352,64 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
 
     @Override
     public final SP union() {
-        final UnionType unionType;
-        unionType = UnionType.from(this.context, UnionType.UNION, null);
-        this.endQueryStatement();
-        return this.createQueryUnion(unionType);
+        return this.createQueryUnion(UnionType.UNION);
     }
 
     @Override
-    public final SP union(Query.UnionModifier modifier) {
-        final UnionType unionType;
-        unionType = UnionType.from(this.context, UnionType.UNION, modifier);
-        this.endQueryStatement();
-        return this.createQueryUnion(unionType);
+    public final SP unionAll() {
+        return this.createQueryUnion(UnionType.UNION_ALL);
+    }
+
+    @Override
+    public final SP unionDistinct() {
+        return this.createQueryUnion(UnionType.UNION_DISTINCT);
     }
 
     @Override
     public final SP intersect() {
-        final UnionType unionType;
-        unionType = UnionType.from(this.context, UnionType.INTERSECT, null);
-        this.endQueryStatement();
-        return this.createQueryUnion(unionType);
+        return this.createQueryUnion(UnionType.INTERSECT);
+    }
+
+
+    @Override
+    public final SP intersectAll() {
+        return this.createQueryUnion(UnionType.INTERSECT_ALL);
     }
 
     @Override
-    public SP intersect(Query.UnionModifier modifier) {
-        final UnionType unionType;
-        unionType = UnionType.from(this.context, UnionType.INTERSECT, modifier);
-        this.endQueryStatement();
-        return this.createQueryUnion(unionType);
+    public final SP intersectDistinct() {
+        return this.createQueryUnion(UnionType.INTERSECT_DISTINCT);
     }
 
     @Override
     public final SP except() {
-        final UnionType unionType;
-        unionType = UnionType.from(this.context, UnionType.EXCEPT, null);
-        this.endQueryStatement();
-        return this.createQueryUnion(unionType);
+        return this.createQueryUnion(UnionType.EXCEPT);
+    }
+
+
+    @Override
+    public final SP exceptAll() {
+        return this.createQueryUnion(UnionType.EXCEPT_ALL);
     }
 
     @Override
-    public final SP except(Query.UnionModifier modifier) {
-        final UnionType unionType;
-        unionType = UnionType.from(this.context, UnionType.EXCEPT, modifier);
-        this.endQueryStatement();
-        return this.createQueryUnion(unionType);
+    public final SP exceptDistinct() {
+        return this.createQueryUnion(UnionType.EXCEPT_DISTINCT);
     }
 
     @Override
     public final SP minus() {
-        final UnionType unionType;
-        unionType = UnionType.from(this.context, UnionType.MINUS, null);
-        this.endQueryStatement();
-        return this.createQueryUnion(unionType);
+        return this.createQueryUnion(UnionType.MINUS);
     }
 
     @Override
-    public final SP minus(Query.UnionModifier modifier) {
-        final UnionType unionType;
-        unionType = UnionType.from(this.context, UnionType.MINUS, modifier);
-        this.endQueryStatement();
-        return this.createQueryUnion(unionType);
+    public final SP minusAll() {
+        return this.createQueryUnion(UnionType.MINUS_ALL);
+    }
+
+    @Override
+    public final SP minusDistinct() {
+        return this.createQueryUnion(UnionType.MINUS_DISTINCT);
     }
 
     /*################################## blow _Query method ##################################*/
@@ -537,7 +535,7 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
     abstract List<Hint> asHintList(@Nullable List<Hint> hints);
 
 
-    private Query endQueryStatement() {
+    private void endQueryStatement() {
         _Assert.nonPrepared(this.prepared);
         // hint list
         if (this.hintList == null) {
@@ -567,13 +565,13 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
         this.onEndQuery();
 
         this.tableBlockList = context.endContext();
-        if (this instanceof SubStatement) {
-            ContextStack.pop(context);
-        } else {
+        if (context.getOuterContext() == null) {
             ContextStack.clearContextStack(context);
+        } else {
+            ContextStack.pop(context);
         }
         this.prepared = Boolean.TRUE;
-        return this;
+
     }
 
     private void addGroupByItem(final @Nullable SortItem sortItem) {
@@ -638,6 +636,69 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
     }
 
     abstract SP createQueryUnion(UnionType unionType);
+
+
+    static abstract class SelectClauseDispatcher<C, W extends Query.SelectModifier, SR>
+            implements Query._DynamicHintModifierSelectClause<C, W, SR> {
+
+        @Override
+        public final SR select(SelectItem selectItem) {
+            return this.createSelectClause()
+                    .select(selectItem);
+        }
+
+        @Override
+        public final SR select(SelectItem selectItem1, SelectItem selectItem2) {
+            return this.createSelectClause()
+                    .select(selectItem1, selectItem2);
+        }
+
+        @Override
+        public final SR select(SelectItem selectItem1, SelectItem selectItem2, SelectItem selectItem3) {
+            return this.createSelectClause()
+                    .select(selectItem1, selectItem2, selectItem3);
+        }
+
+        @Override
+        public final SR select(Consumer<Consumer<SelectItem>> consumer) {
+            return this.createSelectClause()
+                    .select(consumer);
+        }
+
+        @Override
+        public final SR select(BiConsumer<C, Consumer<SelectItem>> consumer) {
+            return this.createSelectClause()
+                    .select(consumer);
+        }
+
+        @Override
+        public final SR select(W modifier, Consumer<Consumer<SelectItem>> consumer) {
+            return this.createSelectClause()
+                    .select(modifier, consumer);
+        }
+
+        @Override
+        public final SR select(W modifier, BiConsumer<C, Consumer<SelectItem>> consumer) {
+            return this.createSelectClause()
+                    .select(modifier, consumer);
+        }
+
+        @Override
+        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Consumer<SelectItem>> consumer) {
+            return this.createSelectClause()
+                    .select(hints, modifiers, consumer);
+        }
+
+        @Override
+        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, BiConsumer<C, Consumer<SelectItem>> consumer) {
+            return this.createSelectClause()
+                    .select(hints, modifiers, consumer);
+        }
+
+        abstract Query._DynamicHintModifierSelectClause<C, W, SR> createSelectClause();
+
+
+    }//SelectClauseDispatcher
 
 
 }

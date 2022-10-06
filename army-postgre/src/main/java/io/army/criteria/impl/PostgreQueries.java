@@ -11,7 +11,8 @@ import java.util.function.Function;
 abstract class PostgreQueries {
 
 
-    static <C> PostgreQuery._WithCteSpec<C, Select> primaryQuery(@Nullable C criteria) {
+    static <C, Q extends Item> PostgreQuery._WithCteSpec<C, Q> primaryQuery(@Nullable C criteria
+            , Function<Select, Q> function) {
         throw new UnsupportedOperationException();
     }
 

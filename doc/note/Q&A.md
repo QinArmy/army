@@ -106,7 +106,12 @@
 22. 为什么设计 io.army.criteria.Item ？
     * 它代表 army 内部可能通过 sql 语法 api 隧道传递的任何东西
     * 有了这样的设计 army 可以支持静态的复杂子句,这样的方式使得 army 写出的代码深度浅,更简洁、更可读、更自由.
+
+23. 为什么要舍弃 静态 cte 的space 子句和 union 之后的 space 子句(它们可能组合优于继承)?
+    * 因为静态 cte 的复合命令必须重复实现 query 的 select 子句和 with 子句,既如此,不如舍弃 cte 的space 子句和 union 之后的 space 子句
+    * 舍弃之后,语法上更 SQL style
     
+
 
 
 

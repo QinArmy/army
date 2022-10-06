@@ -12,6 +12,16 @@ import java.util.function.Supplier;
 public interface StandardQuery extends Query {
 
 
+    interface _UnionSpaceClause<C, Q extends Item> extends _SelectSpec<C, Q>
+            , _LeftParenClause<_UnionSpaceClause<C, Statement._RightParenClause<_UnionOrderBySpec<C, Q>>>> {
+
+    }
+
+    interface _ParenQueryClause<C, Q extends Item> extends _LeftParenClause<_UnionSpaceClause<C, Q>> {
+
+    }
+
+
     /**
      * <p>
      * This interface representing the composite of below:
@@ -78,7 +88,7 @@ public interface StandardQuery extends Query {
      * @since 1.0
      */
     interface _UnionSpec<C, Q extends Item> extends _QuerySpec<Q>
-            , _QueryUnionClause<_SelectSpec<C, Q>> {
+            , _QueryUnionClause<_UnionSpaceClause<C, Q>> {
 
     }
 
@@ -321,7 +331,8 @@ public interface StandardQuery extends Query {
      * @since 1.0
      */
     interface _SelectSpec<C, Q extends Item>
-            extends _DynamicModifierSelectClause<C, SQLs.SelectModifier, _FromSpec<C, Q>> {
+            extends _DynamicModifierSelectClause<C, SQLs.SelectModifier, _FromSpec<C, Q>>
+            , Item {
 
     }
 

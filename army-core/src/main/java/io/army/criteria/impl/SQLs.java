@@ -20,6 +20,7 @@ import io.army.util._StringUtils;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -231,21 +232,39 @@ public abstract class SQLs extends StandardSyntax {
     }
 
     public static StandardQuery._SelectSpec<Void, Select> query() {
-        return StandardQueries.primaryQuery(null);
+        return StandardQueries.primaryQuery(null, SQLs::_identity);
     }
 
 
     public static <C> StandardQuery._SelectSpec<C, Select> query(C criteria) {
         Objects.requireNonNull(criteria);
-        return StandardQueries.primaryQuery(criteria);
+        return StandardQueries.primaryQuery(criteria, SQLs::_identity);
+    }
+
+    public static StandardQuery._ParenQueryClause<Void, Select> parenQuery() {
+        return StandardQueries.parenPrimaryQuery(null, SQLs::_identity);
+    }
+
+    public static <C> StandardQuery._ParenQueryClause<C, Select> parenQuery(C criteria) {
+        Objects.requireNonNull(criteria);
+        return StandardQueries.parenPrimaryQuery(criteria, SQLs::_identity);
     }
 
     public static StandardQuery._SelectSpec<Void, SubQuery> subQuery() {
-        return StandardQueries.subQuery(null, ContextStack.peek(), SQLs::_thisSubQuery);
+        return StandardQueries.subQuery(null, ContextStack.peek(), SQLs::_identity);
     }
 
+
     public static <C> StandardQuery._SelectSpec<C, SubQuery> subQuery(C criteria) {
-        return StandardQueries.subQuery(criteria, ContextStack.peek(criteria), SQLs::_thisSubQuery);
+        return StandardQueries.subQuery(criteria, ContextStack.peek(criteria), SQLs::_identity);
+    }
+
+    public static StandardQuery._ParenQueryClause<Void, SubQuery> parenSubQuery() {
+        return StandardQueries.parenSubQuery(null, ContextStack.peek(), SQLs::_identity);
+    }
+
+    public static <C> StandardQuery._ParenQueryClause<C, SubQuery> parenSubQuery(C criteria) {
+        return StandardQueries.parenSubQuery(criteria, ContextStack.peek(criteria), SQLs::_identity);
     }
 
 
@@ -1310,35 +1329,13 @@ public abstract class SQLs extends StandardSyntax {
     /**
      * <p>
      * Package method that is used by army developer.
+     * This method is similar to {@link Function#identity()}, except that use method reference.
      * </p>
      *
-     * @return return the argument subQuery
+     * @see Function#identity()
      */
-    static SubQuery _thisSubQuery(final SubQuery subQuery) {
-        return subQuery;
-    }
-
-
-    /**
-     * <p>
-     * Package method that is used by army developer.
-     * </p>
-     *
-     * @return return the argument select
-     */
-    static Select _thisSelect(final Select select) {
-        return select;
-    }
-
-    /**
-     * <p>
-     * Package method that is used by army developer.
-     * </p>
-     *
-     * @return return the argument selection
-     */
-    static Selection _thisSelection(final Selection selection) {
-        return selection;
+    static <T extends Item> T _identity(T t) {
+        return t;
     }
 
 

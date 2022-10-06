@@ -32,7 +32,7 @@ public class StandardQueryUnitTests {
                 .select(SQLs.group(User_.T, "u"))
                 .from(User_.T, "u")
                 .groupBy(User_.userType)
-                .having(User_.userType.equal(UserType.PERSON))// group by is empty ,so having clause no action
+                .having(User_.userType.equal(SQLs::literal, UserType.PERSON))// group by is empty ,so having clause no action
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
                 .lock(LockMode.READ)
@@ -49,11 +49,11 @@ public class StandardQueryUnitTests {
                 .select(SQLs.childGroup(Person_.T, "p", "u"))
                 .from(Person_.T, "p")
                 .join(User_.T, "u").on(Person_.id.equal(User_.id))
-                .where(Person_.id.equal("1"))
-                .and(User_.nickName.equal("脉兽秀秀"))
+                .where(Person_.id::equal, SQLs::literal, "1")
+                .and(User_.nickName::equal, SQLs::param, "脉兽秀秀")
                 //.and(User_.visible.equal(false))
                 .groupBy(Person_.birthday)
-                .having(User_.userType.equal(UserType.PERSON))
+                .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
                 .orderBy(Person_.id.desc())
                 .limit(0, 10)
                 .lock(LockMode.WRITE)
@@ -78,7 +78,8 @@ public class StandardQueryUnitTests {
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
 
-                .union(SQLs.ALL)
+                .unionAll()
+                .space()
 
                 .select(User_.id)
                 .from(User_.T, "p")
@@ -90,7 +91,8 @@ public class StandardQueryUnitTests {
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
 
-                .union(SQLs.ALL)
+                .unionAll()
+                .space()
 
                 .select(User_.id)
                 .from(User_.T, "p")
@@ -101,6 +103,7 @@ public class StandardQueryUnitTests {
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
+
 
                 .asQuery();
 
@@ -113,13 +116,13 @@ public class StandardQueryUnitTests {
         stmt = SQLs.query()
                 .select(User_.nickName)
                 .from(User_.T, "u")
-                .where(User_.nickName.equal("蛮吉"))
-                .and(SQLs.exists(() -> SQLs.subQuery()
+                .where(User_.nickName.equal(SQLs::param, "蛮吉"))
+                .and(SQLs::exists, () -> SQLs.subQuery()
                         .select(ChinaProvince_.id)
                         .from(ChinaProvince_.T, "p")
                         .join(ChinaRegion_.T, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
                         .where(ChinaProvince_.governor.equal(User_.nickName))
-                        .asQuery())
+                        .asQuery()
                 )
                 .asQuery();
 
@@ -136,7 +139,7 @@ public class StandardQueryUnitTests {
         stmt = SQLs.query(criteria)
                 .select(SQLs.ref("us", "one"), SQLs.derivedGroup("us"))
                 .from(this::userInfo, "us")
-                .where(SQLs.ref("us", "one").equalLiteral(1))
+                .where(SQLs.ref("us", "one")::equal, SQLs::param, 1)
                 .asQuery();
 
         printStmt(stmt);
@@ -145,23 +148,37 @@ public class StandardQueryUnitTests {
     @Test
     public void singleTableSubQueryInsert() {
         final Insert stmt;
-        stmt = SQLs.rowSetInsert()
+        stmt = SQLs.singleInsert()
                 .insertInto(ChinaRegion_.T)
                 .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
                 .comma(ChinaRegion_.updateTime, ChinaRegion_.regionType)
                 .comma(ChinaRegion_.regionGdp)
                 .rightParen()
                 // below sub query is test case,not real.
-                .space(() -> SQLs.subQuery()
-                        .select(consumer -> {
-                            consumer.accept(ChinaRegion_.id);
-                            consumer.accept(ChinaRegion_.createTime);
-                            consumer.accept(ChinaRegion_.updateTime);
-                            consumer.accept(SQLs.literal(RegionType.CITY).as(ChinaRegion_.REGION_TYPE));
-                            consumer.accept(ChinaRegion_.regionGdp);
-                        })
-                        .from(ChinaRegion_.T, "r")
-                        .asQuery())
+                .space()
+                .select(consumer -> {
+                    consumer.accept(ChinaRegion_.id);
+                    consumer.accept(ChinaRegion_.createTime);
+                    consumer.accept(ChinaRegion_.updateTime);
+                    consumer.accept(SQLs.literal(RegionType.CITY).as(ChinaRegion_.REGION_TYPE));
+                    consumer.accept(ChinaRegion_.regionGdp);
+                })
+                .from(ChinaRegion_.T, "r")
+                .asQuery()
+                .asInsert()
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .leftParen(ChinaProvince_.id, ChinaProvince_.governor)
+                .rightParen()
+                .space()
+                .select(consumer -> {
+                    consumer.accept(ChinaProvince_.id);
+                    consumer.accept(ChinaProvince_.governor);
+                })
+                .from(ChinaProvince_.T, "c")
+                .asQuery()
                 .asInsert();
 
         printStmt(stmt);
@@ -170,7 +187,7 @@ public class StandardQueryUnitTests {
     @Test
     public void childTableSubQueryInsert() {
         final Insert stmt;
-        stmt = SQLs.rowSetInsert()
+        stmt = SQLs.singleInsert()
                 .insertInto(ChinaRegion_.T)
 
                 .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
@@ -178,28 +195,30 @@ public class StandardQueryUnitTests {
                 .comma(ChinaRegion_.regionGdp)
                 .rightParen()
                 // below sub query is test case,not real.
-                .space(() -> SQLs.subQuery()
-                        .select(consumer -> {
-                            consumer.accept(ChinaRegion_.id);
-                            consumer.accept(ChinaRegion_.createTime);
-                            consumer.accept(ChinaRegion_.updateTime);
-                            consumer.accept(SQLs.literal(RegionType.CITY).as(ChinaRegion_.REGION_TYPE));
-                            consumer.accept(ChinaRegion_.regionGdp);
-                        })
-                        .from(ChinaRegion_.T, "r")
-                        .asQuery())
+                .space()
+                .select(consumer -> {
+                    consumer.accept(ChinaRegion_.id);
+                    consumer.accept(ChinaRegion_.createTime);
+                    consumer.accept(ChinaRegion_.updateTime);
+                    consumer.accept(SQLs.literal(RegionType.CITY).as(ChinaRegion_.REGION_TYPE));
+                    consumer.accept(ChinaRegion_.regionGdp);
+                })
+                .from(ChinaRegion_.T, "r")
+                .asQuery()
+                .asInsert()
                 .child()
+
                 .insertInto(ChinaCity_.T)
                 .leftParen(ChinaCity_.id, ChinaCity_.mayorName)
                 .rightParen()
                 // below sub query is test case,not real.
-                .space(() -> SQLs.subQuery()
-                        .select(consumer -> {
-                            consumer.accept(ChinaCity_.id);
-                            consumer.accept(ChinaCity_.mayorName);
-                        })
-                        .from(ChinaCity_.T, "r")
-                        .asQuery())
+                .space()
+                .select(consumer -> {
+                    consumer.accept(ChinaCity_.id);
+                    consumer.accept(ChinaCity_.mayorName);
+                })
+                .from(ChinaCity_.T, "r")
+                .asQuery()
                 .asInsert();
 
         printStmt(stmt);
@@ -213,8 +232,7 @@ public class StandardQueryUnitTests {
         return SQLs.subQuery()
                 .select(SQLs.literal(1).as("one"), SQLs.group(User_.T, "u"))
                 .from(User_.T, "u")
-                .where(User_.createTime.lessEqualLiteral(LocalDateTime.now()))
-                //.limit((Long)criteria.get("offset"),(Long)criteria.get("rowCount")) //this style is ugly.
+                .where(User_.createTime::equal, SQLs::literal, LocalDateTime.now())
                 .limit(criteria::get, "offset", "rowCount")
                 .asQuery();
     }

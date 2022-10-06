@@ -55,7 +55,7 @@ public interface PostgreQuery extends Query, DialectStatement {
     }
 
     interface _CteComma<C, Q extends Item> extends _StaticWithCommaClause<_StaticCteLeftParenSpec<C, _CteComma<C, Q>>>
-            , DialectStatement._StaticSpaceClause<_PostgreSelectClause<C, Q>>, Item {
+            , _StaticSpaceClause<_PostgreSelectClause<C, Q>>, Item {
 
     }
 
