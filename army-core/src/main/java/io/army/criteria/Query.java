@@ -276,18 +276,10 @@ public interface Query extends RowSet {
 
         LR limit(Function<String, ?> function, String offsetKey, String rowCountKey);
 
-        LR limit(Consumer<BiConsumer<Long, Long>> consumer);
-
-        LR limit(BiConsumer<C, BiConsumer<Long, Long>> consumer);
 
         LR ifLimit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier);
 
         LR ifLimit(Function<String, ?> function, String offsetKey, String rowCountKey);
-
-        LR ifLimit(Consumer<BiConsumer<Long, Long>> consumer);
-
-        LR ifLimit(BiConsumer<C, BiConsumer<Long, Long>> consumer);
-
 
     }
 

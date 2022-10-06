@@ -9,12 +9,12 @@ import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
+import io.army.util._Assert;
 import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.*;
 
 
@@ -30,11 +30,12 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
         extends JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
         implements Query._DynamicHintModifierSelectClause<C, W, SR>
         , Query._FromModifierClause<C, FT, FS>, Query._FromModifierCteClause<FC>
-        , Query._GroupClause<C, GR>, Query._HavingClause<C, HR>
-        , Query._QuerySpec<Q>, TabularItem.DerivedTableSpec
-        , Query._QueryUnionClause<SP>, Query._QueryIntersectClause<SP>
-        , Query._QueryExceptClause<SP>, Query._QueryMinusClause<SP>
-        , _Query, _SelfDescribed {
+        , Statement._QueryWhereClause<C, WR, WA>, Query._GroupClause<C, GR>
+        , Query._HavingClause<C, HR>, Query._QuerySpec<Q>
+        , TabularItem.DerivedTableSpec, Query._QueryUnionClause<SP>
+        , Query._QueryIntersectClause<SP>, Query._QueryExceptClause<SP>
+        , Query._QueryMinusClause<SP>, Query
+        , Statement, _Query, _SelfDescribed {
 
     private List<Hint> hintList;
 
@@ -44,16 +45,12 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
 
     private List<_TableBlock> tableBlockList;
 
-    private List<_Predicate> predicateList;
 
     private List<ArmySortItem> groupByList;
 
     private List<_Predicate> havingList;
 
-    /**
-     * @see #selection(String)
-     */
-    private Map<String, Selection> subQuerySelectionMap;
+    private Boolean prepared;
 
 
     SimpleQuery(CriteriaContext context) {
@@ -179,6 +176,18 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
     @Override
     public final FC from(Query.TabularModifier modifier, String cteName, String alias) {
         return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, alias);
+    }
+
+    @Override
+    public final WR ifWhere(Consumer<Consumer<IPredicate>> consumer) {
+        consumer.accept(this::and);
+        return (WR) this;
+    }
+
+    @Override
+    public final WR ifWhere(BiConsumer<C, Consumer<IPredicate>> consumer) {
+        consumer.accept(this.criteria, this::and);
+        return (WR) this;
     }
 
     @Override
@@ -345,56 +354,64 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
     public final SP union() {
         final UnionType unionType;
         unionType = UnionType.from(this.context, UnionType.UNION, null);
-        return this.createQueryUnion(this.asQuery(), unionType);
+        this.endQueryStatement();
+        return this.createQueryUnion(unionType);
     }
 
     @Override
     public final SP union(Query.UnionModifier modifier) {
         final UnionType unionType;
         unionType = UnionType.from(this.context, UnionType.UNION, modifier);
-        return this.createQueryUnion(this.asQuery(), unionType);
+        this.endQueryStatement();
+        return this.createQueryUnion(unionType);
     }
 
     @Override
     public final SP intersect() {
         final UnionType unionType;
         unionType = UnionType.from(this.context, UnionType.INTERSECT, null);
-        return this.createQueryUnion(this.asQuery(), unionType);
+        this.endQueryStatement();
+        return this.createQueryUnion(unionType);
     }
 
     @Override
     public SP intersect(Query.UnionModifier modifier) {
         final UnionType unionType;
         unionType = UnionType.from(this.context, UnionType.INTERSECT, modifier);
-        return this.createQueryUnion(this.asQuery(), unionType);
+        this.endQueryStatement();
+        return this.createQueryUnion(unionType);
     }
 
     @Override
     public final SP except() {
         final UnionType unionType;
         unionType = UnionType.from(this.context, UnionType.EXCEPT, null);
-        return this.createQueryUnion(this.asQuery(), unionType);
+        this.endQueryStatement();
+        return this.createQueryUnion(unionType);
     }
 
     @Override
     public final SP except(Query.UnionModifier modifier) {
         final UnionType unionType;
         unionType = UnionType.from(this.context, UnionType.EXCEPT, modifier);
-        return this.createQueryUnion(this.asQuery(), unionType);
+        this.endQueryStatement();
+        return this.createQueryUnion(unionType);
     }
 
     @Override
     public final SP minus() {
         final UnionType unionType;
         unionType = UnionType.from(this.context, UnionType.MINUS, null);
-        return this.createQueryUnion(this.asQuery(), unionType);
+        this.endQueryStatement();
+        return this.createQueryUnion(unionType);
     }
 
     @Override
     public final SP minus(Query.UnionModifier modifier) {
         final UnionType unionType;
         unionType = UnionType.from(this.context, UnionType.MINUS, modifier);
-        return this.createQueryUnion(this.asQuery(), unionType);
+        this.endQueryStatement();
+        return this.createQueryUnion(unionType);
     }
 
     /*################################## blow _Query method ##################################*/
@@ -469,10 +486,59 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
         context.parser().rowSet(this, context);
     }
 
+    @Override
+    public final void prepared() {
+        _Assert.prepared(this.prepared);
+    }
+
+    @Override
+    public final boolean isPrepared() {
+        final Boolean prepared = this.prepared;
+        return prepared != null && prepared;
+    }
 
     @Override
     public final Q asQuery() {
+        this.endQueryStatement();
+        return this.onAsQuery();
+    }
 
+
+    @Override
+    public final void clear() {
+        this.hintList = null;
+        this.modifierList = null;
+        this.selectItemList = null;
+        this.tableBlockList = null;
+
+        this.groupByList = null;
+        this.havingList = null;
+        this.onClear();
+    }
+
+
+    @Override
+    public final Selection selection(final String derivedAlias) {
+        if (!(this instanceof SubQuery)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return this.context.selection(derivedAlias);
+    }
+
+
+    abstract void onEndQuery();
+
+    abstract Q onAsQuery();
+
+    abstract void onClear();
+
+    abstract List<W> asModifierList(@Nullable List<W> modifiers);
+
+    abstract List<Hint> asHintList(@Nullable List<Hint> hints);
+
+
+    private Query endQueryStatement() {
+        _Assert.nonPrepared(this.prepared);
         // hint list
         if (this.hintList == null) {
             this.hintList = Collections.emptyList();
@@ -495,58 +561,20 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
         } else if (this.havingList == null) {
             this.havingList = Collections.emptyList();
         }
-        this.tableBlockList = this.context.endContext();
+
+        this.endOrderByClause();
+
+        this.onEndQuery();
+
+        this.tableBlockList = context.endContext();
         if (this instanceof SubStatement) {
-            ContextStack.pop(this.context);
+            ContextStack.pop(context);
         } else {
-            ContextStack.clearContextStack(this.context);
+            ContextStack.clearContextStack(context);
         }
-        return this.onAsQuery();
+        this.prepared = Boolean.TRUE;
+        return this;
     }
-
-
-    @Override
-    public final void clear() {
-        this.hintList = null;
-        this.modifierList = null;
-        this.selectItemList = null;
-        this.tableBlockList = null;
-
-        this.predicateList = null;
-        this.groupByList = null;
-        this.havingList = null;
-        this.onClear();
-    }
-
-
-    @Override
-    public final Selection selection(final String derivedFieldName) {
-        if (!(this instanceof SubQuery)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        Map<String, Selection> selectionMap = this.subQuerySelectionMap;
-        if (selectionMap == null) {
-            selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
-            this.subQuerySelectionMap = selectionMap;
-        }
-        return selectionMap.get(derivedFieldName);
-    }
-
-    final boolean hasGroupBy() {
-        final List<ArmySortItem> groupByList = this.groupByList;
-        return groupByList != null && groupByList.size() > 0;
-    }
-
-
-    abstract Q onAsQuery();
-
-    abstract void onClear();
-
-    abstract List<W> asModifierList(@Nullable List<W> modifiers);
-
-    abstract List<Hint> asHintList(@Nullable List<Hint> hints);
-
-
 
     private void addGroupByItem(final @Nullable SortItem sortItem) {
         if (sortItem == null) {
@@ -609,7 +637,7 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
 
     }
 
-    abstract SP createQueryUnion(Q left, UnionType unionType);
+    abstract SP createQueryUnion(UnionType unionType);
 
 
 }

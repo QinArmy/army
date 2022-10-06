@@ -179,7 +179,7 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         public StandardQuery._SelectSpec<C, Statement._DmlInsertSpec<I>> space() {
-            return StandardSimpleQuery.customSubQuery(this.criteria, this.context, this::staticInsertQueryEnd);
+            return StandardQueries.subQuery(this.criteria, this.context, this::staticInsertQueryEnd);
         }
 
         @Override

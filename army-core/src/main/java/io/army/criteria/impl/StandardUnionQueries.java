@@ -5,10 +5,10 @@ import io.army.dialect.mysql.MySQLDialect;
 import io.army.util._Exceptions;
 
 /**
- * @see StandardSimpleQuery
+ * @see StandardQueries
  */
 @SuppressWarnings("unchecked")
-abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
+abstract class StandardUnionQueries<C, Q extends Query> extends UnionRowSet<
         C,
         Q,
         StandardQuery._UnionOrderBySpec<C, Q>, //UR
@@ -114,7 +114,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
     }
 
 
-    private StandardUnionQuery(Q left, CriteriaContext context) {
+    private StandardUnionQueries(Q left, CriteriaContext context) {
         super(left, context);
 
     }
@@ -149,11 +149,11 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
 
     @Override
     final _SelectSpec<C, Q> asUnionAndRowSet(UnionType unionType) {
-        return StandardSimpleQuery.unionAndQuery(this.asQuery(), unionType);
+        return StandardQueries.unionAndQuery(this.asQuery(), unionType);
     }
 
 
-    private static final class BracketSelect<C> extends StandardUnionQuery<C, Select>
+    private static final class BracketSelect<C> extends StandardUnionQueries<C, Select>
             implements Select, BracketRowSet {
 
         private BracketSelect(Select query, CriteriaContext criteriaContext) {
@@ -162,7 +162,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
 
     }//BracketSelect
 
-    private static class BracketSubQuery<C, Q extends SubQuery> extends StandardUnionQuery<C, Q>
+    private static class BracketSubQuery<C, Q extends SubQuery> extends StandardUnionQueries<C, Q>
             implements SubQuery, BracketRowSet {
 
         private BracketSubQuery(Q query, CriteriaContext criteriaContext) {
@@ -172,8 +172,8 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
     }
 
     private static final class ParentInsertBracketSubQuery<C, CT>
-            extends StandardUnionQuery<C, StandardInsert._ParentInsertQuery<CT>>
-            implements SubQuery, BracketRowSet, StandardSimpleQuery.ParentInsertSubQuerySpec<CT>
+            extends StandardUnionQueries<C, StandardInsert._ParentInsertQuery<CT>>
+            implements SubQuery, BracketRowSet, StandardQueries.ParentInsertSubQuerySpec<CT>
             , StandardInsert._ParentInsertQuery<CT> {
 
         private ParentInsertBracketSubQuery(StandardInsert._ParentInsertQuery<CT> left, CriteriaContext context) {
@@ -183,7 +183,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         @Override
         public Insert asInsert() {
             this.prepared();
-            return ((StandardSimpleQuery.ParentInsertSubQuerySpec<CT>) this.left)
+            return ((StandardQueries.ParentInsertSubQuerySpec<CT>) this.left)
                     .fromLeft(this)
                     .asInsert();
         }
@@ -191,24 +191,24 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         @Override
         public CT child() {
             this.prepared();
-            return ((StandardSimpleQuery.ParentInsertSubQuerySpec<CT>) this.left)
+            return ((StandardQueries.ParentInsertSubQuerySpec<CT>) this.left)
                     .fromLeft(this)
                     .child();
         }
 
         @Override
         public StandardInsert._ChildPartSpec<CT> fromLeft(final SubQuery query) {
-            return ((StandardSimpleQuery.ParentInsertSubQuerySpec<CT>) this.left)
+            return ((StandardQueries.ParentInsertSubQuerySpec<CT>) this.left)
                     .fromLeft(query);
         }
 
 
     }//ParentInsertBracketSubQuery
 
-    private static final class InsertBracketSubQuery<C> extends StandardUnionQuery<C, StandardInsert._InsertQuery>
+    private static final class InsertBracketSubQuery<C> extends StandardUnionQueries<C, StandardInsert._InsertQuery>
             implements SubQuery, BracketRowSet
             , StandardInsert._InsertQuery
-            , StandardSimpleQuery.InsertSubQuerySpec {
+            , StandardQueries.InsertSubQuerySpec {
 
         private InsertBracketSubQuery(StandardInsert._InsertQuery left, CriteriaContext context) {
             super(left, context);
@@ -217,14 +217,14 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         @Override
         public Insert asInsert() {
             this.prepared();
-            return ((StandardSimpleQuery.InsertSubQuerySpec) this.left)
+            return ((StandardQueries.InsertSubQuerySpec) this.left)
                     .fromLeft(this)
                     .asInsert();
         }
 
         @Override
         public Insert._InsertSpec fromLeft(final SubQuery query) {
-            return ((StandardSimpleQuery.InsertSubQuerySpec) this.left)
+            return ((StandardQueries.InsertSubQuerySpec) this.left)
                     .fromLeft(query);
         }
 
@@ -241,7 +241,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
 
     }//BracketScalarSubQuery
 
-    private static final class NoActionSelect<C> extends StandardUnionQuery<C, Select>
+    private static final class NoActionSelect<C> extends StandardUnionQueries<C, Select>
             implements Select, NoActionRowSet {
 
         private NoActionSelect(Select left, CriteriaContext criteriaContext) {
@@ -250,7 +250,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
 
     }//NoActionSelect
 
-    private static class NoActionSubQuery<C, Q extends SubQuery> extends StandardUnionQuery<C, Q>
+    private static class NoActionSubQuery<C, Q extends SubQuery> extends StandardUnionQueries<C, Q>
             implements SubQuery, NoActionRowSet {
 
         private NoActionSubQuery(Q left, CriteriaContext criteriaContext) {
@@ -260,9 +260,9 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
     }//NoActionSubQuery
 
     private static final class ParentInsertNoActionSubQuery<C, CT>
-            extends StandardUnionQuery<C, StandardInsert._ParentInsertQuery<CT>>
+            extends StandardUnionQueries<C, StandardInsert._ParentInsertQuery<CT>>
             implements SubQuery, NoActionRowSet
-            , StandardSimpleQuery.ParentInsertSubQuerySpec<CT>
+            , StandardQueries.ParentInsertSubQuerySpec<CT>
             , StandardInsert._ParentInsertQuery<CT> {
 
         private ParentInsertNoActionSubQuery(StandardInsert._ParentInsertQuery<CT> left, CriteriaContext context) {
@@ -271,31 +271,31 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
 
         @Override
         public Insert asInsert() {
-            return ((StandardSimpleQuery.ParentInsertSubQuerySpec<CT>) this.left)
+            return ((StandardQueries.ParentInsertSubQuerySpec<CT>) this.left)
                     .fromLeft(this)
                     .asInsert();
         }
 
         @Override
         public CT child() {
-            return ((StandardSimpleQuery.ParentInsertSubQuerySpec<CT>) this.left)
+            return ((StandardQueries.ParentInsertSubQuerySpec<CT>) this.left)
                     .fromLeft(this)
                     .child();
         }
 
         @Override
         public StandardInsert._ChildPartSpec<CT> fromLeft(SubQuery query) {
-            return ((StandardSimpleQuery.ParentInsertSubQuerySpec<CT>) this.left)
+            return ((StandardQueries.ParentInsertSubQuerySpec<CT>) this.left)
                     .fromLeft(query);
         }
 
 
     }//ParentInsertNoActionSubQuery
 
-    private static final class InsertNoActionSubQuery<C> extends StandardUnionQuery<C, StandardInsert._InsertQuery>
+    private static final class InsertNoActionSubQuery<C> extends StandardUnionQueries<C, StandardInsert._InsertQuery>
             implements SubQuery, NoActionRowSet
             , StandardInsert._InsertQuery
-            , StandardSimpleQuery.InsertSubQuerySpec {
+            , StandardQueries.InsertSubQuerySpec {
 
         private InsertNoActionSubQuery(StandardInsert._InsertQuery left, CriteriaContext context) {
             super(left, context);
@@ -304,14 +304,14 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         @Override
         public Insert asInsert() {
             this.prepared();
-            return ((StandardSimpleQuery.InsertSubQuerySpec) this.left)
+            return ((StandardQueries.InsertSubQuerySpec) this.left)
                     .fromLeft(this)
                     .asInsert();
         }
 
         @Override
         public Insert._InsertSpec fromLeft(final SubQuery query) {
-            return ((StandardSimpleQuery.InsertSubQuerySpec) this.left)
+            return ((StandardQueries.InsertSubQuerySpec) this.left)
                     .fromLeft(query);
         }
 
@@ -337,7 +337,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
      *     </ul>
      * </p>
      */
-    private static abstract class UnionQuery<C, Q extends Query> extends StandardUnionQuery<C, Q>
+    private static abstract class UnionQuery<C, Q extends Query> extends StandardUnionQueries<C, Q>
             implements RowSetWithUnion {
 
         final UnionType unionType;
@@ -384,7 +384,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
 
     private static final class ParentInsertUnionSubQuery<C, CT> extends UnionQuery<C, StandardInsert._ParentInsertQuery<CT>>
             implements SubQuery, StandardInsert._ParentInsertQuery<CT>
-            , StandardSimpleQuery.ParentInsertSubQuerySpec<CT> {
+            , StandardQueries.ParentInsertSubQuerySpec<CT> {
 
         private ParentInsertUnionSubQuery(StandardInsert._ParentInsertQuery<CT> left, UnionType unionType, SubQuery right, CriteriaContext context) {
             super(left, unionType, right, context);
@@ -393,7 +393,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         @Override
         public Insert asInsert() {
             this.prepared();
-            return ((StandardSimpleQuery.ParentInsertSubQuerySpec<CT>) this.left)
+            return ((StandardQueries.ParentInsertSubQuerySpec<CT>) this.left)
                     .fromLeft(this)
                     .asInsert();
         }
@@ -401,14 +401,14 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         @Override
         public CT child() {
             this.prepared();
-            return ((StandardSimpleQuery.ParentInsertSubQuerySpec<CT>) this.left)
+            return ((StandardQueries.ParentInsertSubQuerySpec<CT>) this.left)
                     .fromLeft(this)
                     .child();
         }
 
         @Override
         public StandardInsert._ChildPartSpec<CT> fromLeft(final SubQuery query) {
-            return ((StandardSimpleQuery.ParentInsertSubQuerySpec<CT>) this.left)
+            return ((StandardQueries.ParentInsertSubQuerySpec<CT>) this.left)
                     .fromLeft(query);
         }
 
@@ -416,7 +416,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
 
 
     private static final class InsertUnionSubQuery<C> extends UnionQuery<C, StandardInsert._InsertQuery>
-            implements SubQuery, StandardInsert._InsertQuery, StandardSimpleQuery.InsertSubQuerySpec {
+            implements SubQuery, StandardInsert._InsertQuery, StandardQueries.InsertSubQuerySpec {
 
         private InsertUnionSubQuery(StandardInsert._InsertQuery left, UnionType unionType, SubQuery right, CriteriaContext context) {
             super(left, unionType, right, context);
@@ -425,13 +425,13 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         @Override
         public Insert asInsert() {
             this.prepared();
-            return ((StandardSimpleQuery.InsertSubQuerySpec) this.left).fromLeft(this)
+            return ((StandardQueries.InsertSubQuerySpec) this.left).fromLeft(this)
                     .asInsert();
         }
 
         @Override
         public Insert._InsertSpec fromLeft(final SubQuery query) {
-            return ((StandardSimpleQuery.InsertSubQuerySpec) this.left).fromLeft(query);
+            return ((StandardQueries.InsertSubQuerySpec) this.left).fromLeft(query);
         }
 
 

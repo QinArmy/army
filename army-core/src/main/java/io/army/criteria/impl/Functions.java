@@ -33,6 +33,13 @@ abstract class Functions {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @see SQLs#DISTINCT
+     */
+    public interface FuncDistinct {
+
+    }
+
 
     interface _NullTreatmentClause<NR> {
 

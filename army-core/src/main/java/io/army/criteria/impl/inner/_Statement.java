@@ -1,6 +1,7 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.SelectItem;
+import io.army.criteria.SortItem;
 
 import java.util.List;
 
@@ -11,6 +12,11 @@ public interface _Statement {
     interface _PredicateListSpec {
 
         List<_Predicate> predicateList();
+    }
+
+    interface _OrderByListSpec {
+
+        List<? extends SortItem> orderByList();
     }
 
     interface _ReturningListSpec {

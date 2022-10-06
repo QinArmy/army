@@ -279,11 +279,11 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext(), function, item);
     }
 
-    static void limitPair(final CriteriaContext criteriaContext, final @Nullable Object offsetValue
+    static void limitPair(final CriteriaContext context, final @Nullable Object offsetValue
             , final @Nullable Object rowCountValue, final BiConsumer<Long, Long> consumer) {
         final long offset, rowCount;
-        offset = asLimitParam(criteriaContext, offsetValue);
-        rowCount = asLimitParam(criteriaContext, rowCountValue);
+        offset = asLimitParam(context, offsetValue);
+        rowCount = asLimitParam(context, rowCountValue);
         consumer.accept(offset, rowCount);
     }
 
@@ -334,7 +334,7 @@ abstract class CriteriaUtils {
         return rowCount;
     }
 
-    static int standardModifier(final SQLs.StandardModifier distinct) {
+    static int standardModifier(final SQLs.SelectModifier distinct) {
         return (distinct == SQLs.DISTINCT || distinct == SQLs.ALL) ? 1 : -1;
     }
 
@@ -388,10 +388,10 @@ abstract class CriteriaUtils {
     }
 
 
-    static <T extends SQLWords> List<T> asModifierList(final CriteriaContext criteriaContext
+    static <T extends Query.SelectModifier> List<T> asModifierList(final CriteriaContext context
             , final @Nullable List<T> list, final Function<T, Integer> function) {
         if (list == null) {
-            throw ContextStack.criteriaError(criteriaContext, "modifier list must non-null");
+            throw ContextStack.criteriaError(context, "modifier list must non-null");
         }
         final List<T> modifierList;
         final int size = list.size();
@@ -403,11 +403,11 @@ abstract class CriteriaUtils {
                 final T modifier;
                 modifier = list.get(0);
                 if (modifier == null) {
-                    throw ContextStack.criteriaError(criteriaContext, "Modifier list element must non-null");
+                    throw ContextStack.criteriaError(context, "Modifier list element must non-null");
                 }
                 if (function.apply(modifier) < 0) {
                     String m = String.format("%s syntax error", modifier);
-                    throw ContextStack.criteriaError(criteriaContext, m);
+                    throw ContextStack.criteriaError(context, m);
                 }
                 modifierList = Collections.singletonList(modifier);
             }
@@ -419,12 +419,12 @@ abstract class CriteriaUtils {
                     modifier = list.get(i);
                     if (modifier == null) {
                         String m = "Modifier list element must non-null";
-                        throw ContextStack.criteriaError(criteriaContext, m);
+                        throw ContextStack.criteriaError(context, m);
                     }
                     level = function.apply(modifier);
                     if (level <= preLevel) {
                         String m = String.format("%s syntax error", modifier);
-                        throw ContextStack.criteriaError(criteriaContext, m);
+                        throw ContextStack.criteriaError(context, m);
                     }
                     preLevel = level;
                     if (tempList == null) {

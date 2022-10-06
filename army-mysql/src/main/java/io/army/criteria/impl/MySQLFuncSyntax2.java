@@ -33,7 +33,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static Expression avg(final @Nullable SQLs.StandardModifier distinct, final Expression exp) {
+    public static Expression avg(final @Nullable SQLs.AllWord distinct, final Expression exp) {
         final String funcName = "AVG";
         final Expression func;
         if (distinct == null) {
@@ -93,7 +93,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec count(final SQLs.StandardModifier distinct, final Expression expr) {
+    public static _AggregateOverSpec count(final SQLs.AllWord distinct, final Expression expr) {
         final String name = "COUNT";
         if (distinct != SQLs.DISTINCT) {
             throw CriteriaUtils.funcArgError(name, distinct);
@@ -107,7 +107,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec count(final SQLs.StandardModifier distinct, final List<Expression> exprList) {
+    public static _AggregateOverSpec count(final SQLs.AllWord distinct, final List<Expression> exprList) {
         final String name = "COUNT";
         if (distinct != SQLs.DISTINCT) {
             throw CriteriaUtils.funcArgError(name, distinct);
@@ -134,7 +134,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @param exprOrExprList parameter or {@link Expression} or List(element:null or parameter or {@link Expression})
-     * @see #groupConcat(SQLs.StandardModifier, Object)
+     * @see #groupConcat(SQLs.AllWord, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT(expr)</a>
      */
     public static MySQLClause._GroupConcatOrderBySpec groupConcat(Object exprOrExprList) {
@@ -146,12 +146,12 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param distinct       null or {@link  SQLs.StandardModifier#DISTINCT}
+     * @param distinct       null or {@link  SQLs.AllWord#DISTINCT}
      * @param exprOrExprList {@link Expression} or List or {@link Expression}
      * @see #groupConcat(Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT(expr)</a>
      */
-    public static MySQLClause._GroupConcatOrderBySpec groupConcat(@Nullable SQLs.StandardModifier distinct, Object exprOrExprList) {
+    public static MySQLClause._GroupConcatOrderBySpec groupConcat(@Nullable SQLs.AllWord distinct, Object exprOrExprList) {
         if (distinct != null && distinct != SQLs.DISTINCT) {
             throw CriteriaUtils.funcArgError("GROUP_CONCAT", distinct);
         }
@@ -195,7 +195,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @param expr non-null parameter or {@link Expression},but couldn't be {@link SQLs#nullWord()}.
-     * @see #max(SQLs.StandardModifier, Expression)
+     * @see #max(SQLs.AllWord, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
      */
     public static _AggregateOverSpec max(final Expression expr) {
@@ -207,12 +207,12 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type: the {@link  MappingType} of expr.
      * </p>
      *
-     * @param distinct null or {@link  SQLs.StandardModifier#DISTINCT}
+     * @param distinct null or {@link  SQLs.AllWord#DISTINCT}
      * @param expr     non-null parameter or {@link Expression},but couldn't be {@link SQLs#nullWord()}.
      * @see #max(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec max(final @Nullable SQLs.StandardModifier distinct, final Expression expr) {
+    public static _AggregateOverSpec max(final @Nullable SQLs.AllWord distinct, final Expression expr) {
         return _distinctOneAggregateWindow("MAX", distinct, expr, expr.typeMeta());
     }
 
@@ -222,7 +222,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @param expr non-null parameter or {@link Expression},but couldn't be {@link SQLs#nullWord()}.
-     * @see #min(SQLs.StandardModifier, Expression)
+     * @see #min(SQLs.AllWord, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
      */
     public static _AggregateOverSpec min(final Expression expr) {
@@ -234,12 +234,12 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type: the {@link  MappingType} of expr.
      * </p>
      *
-     * @param distinct null or {@link  SQLs.StandardModifier#DISTINCT}
+     * @param distinct null or {@link  SQLs.AllWord#DISTINCT}
      * @param expr     non-null parameter or {@link Expression},but couldn't be {@link SQLs#nullWord()}.
      * @see #min(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec min(final @Nullable SQLs.StandardModifier distinct, final Expression expr) {
+    public static _AggregateOverSpec min(final @Nullable SQLs.AllWord distinct, final Expression expr) {
         return _distinctOneAggregateWindow("MIN", distinct, expr, expr.typeMeta());
     }
 
@@ -297,7 +297,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @param expr non-null parameter or {@link Expression},but couldn't be {@link SQLs#nullWord()}.
-     * @see #sum(SQLs.StandardModifier, Expression)
+     * @see #sum(SQLs.AllWord, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">SUM([DISTINCT] expr) [over_clause]</a>
      */
     public static _AggregateOverSpec sum(Expression expr) {
@@ -309,12 +309,12 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      * </p>
      *
-     * @param distinct null or {@link  SQLs.StandardModifier#DISTINCT}
+     * @param distinct null or {@link  SQLs.AllWord#DISTINCT}
      * @param expr     non-null parameter or {@link Expression},but couldn't be {@link SQLs#nullWord()}.
      * @see #sum(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">SUM([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec sum(@Nullable SQLs.StandardModifier distinct, Expression expr) {
+    public static _AggregateOverSpec sum(@Nullable SQLs.AllWord distinct, Expression expr) {
         return _distinctOneAggregateWindow("SUM", distinct, expr, expr.typeMeta());
     }
 
@@ -2896,16 +2896,16 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @param name     MIN or MAX
-     * @param distinct null or {@link  SQLs.StandardModifier#DISTINCT}
+     * @param distinct null or {@link  SQLs.AllWord#DISTINCT}
      * @param expr     non-null parameter or {@link Expression},but couldn't be {@link SQLs#nullWord()}.
      * @see #min(Expression)
-     * @see #min(SQLs.StandardModifier, Expression)
+     * @see #min(SQLs.AllWord, Expression)
      * @see #max(Expression)
-     * @see #max(SQLs.StandardModifier, Expression)
+     * @see #max(SQLs.AllWord, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
      */
-    private static _AggregateOverSpec _distinctOneAggregateWindow(final String name, final @Nullable SQLs.StandardModifier distinct
+    private static _AggregateOverSpec _distinctOneAggregateWindow(final String name, final @Nullable SQLs.AllWord distinct
             , final Expression expr, final TypeMeta returnType) {
         final _AggregateOverSpec func;
         if (distinct == null) {
@@ -3011,9 +3011,9 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
 
     /**
      * @see #groupConcat(Object)
-     * @see #groupConcat(SQLs.StandardModifier, Object)
+     * @see #groupConcat(SQLs.AllWord, Object)
      */
-    private static Expression _groupConcat(@Nullable SQLs.StandardModifier distinct, @Nullable Object expressions
+    private static Expression _groupConcat(@Nullable SQLs.AllWord distinct, @Nullable Object expressions
             , @Nullable Clause clause) {
 
         final String funcName = "GROUP_CONCAT";

@@ -79,11 +79,11 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
     }
 
     @Nullable
-    public final Selection selection(String derivedFieldName) {
+    public final Selection selection(String derivedAlias) {
         if (!(this instanceof DerivedTable)) {
-            throw CriteriaUtils.unknownSelection(this.context, derivedFieldName);
+            throw CriteriaUtils.unknownSelection(this.context, derivedAlias);
         }
-        return ((DerivedTable) this.left).selection(derivedFieldName);
+        return ((DerivedTable) this.left).selection(derivedAlias);
     }
 
     @Override

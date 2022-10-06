@@ -1,9 +1,7 @@
 package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
-import io.army.lang.Nullable;
 
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -80,7 +78,7 @@ public interface StandardQuery extends Query {
      * @since 1.0
      */
     interface _UnionSpec<C, Q extends Item> extends _QuerySpec<Q>
-            , _QueryUnionClause<C, _UnionOrderBySpec<C, Q>, _SelectSpec<C, Q>> {
+            , _QueryUnionClause<_SelectSpec<C, Q>> {
 
     }
 
@@ -107,13 +105,7 @@ public interface StandardQuery extends Query {
 
         _UnionSpec<C, Q> lock(LockMode lockMode);
 
-        _UnionSpec<C, Q> lock(Function<C, LockMode> function);
-
-        _UnionSpec<C, Q> ifLock(@Nullable LockMode lockMode);
-
         _UnionSpec<C, Q> ifLock(Supplier<LockMode> supplier);
-
-        _UnionSpec<C, Q> ifLock(Function<C, LockMode> function);
 
     }
 
@@ -262,8 +254,7 @@ public interface StandardQuery extends Query {
 
 
     interface _StandardJoinClause<C, FS, JS>
-            extends Statement._JoinClause<C, JS, JS>, Statement._CrossJoinClause<C, FS, FS>
-            , Statement._IfJoinClause<C, FS> {
+            extends Statement._JoinClause<C, JS, JS>, Statement._CrossJoinClause<C, FS, FS> {
 
     }
 
@@ -309,7 +300,7 @@ public interface StandardQuery extends Query {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _StandardFromSpec<C, Q extends Item> extends Statement._FromClause<C, _JoinSpec<C, Q>, _JoinSpec<C, Q>>
+    interface _FromSpec<C, Q extends Item> extends Query._FromClause<C, _JoinSpec<C, Q>, _JoinSpec<C, Q>>
             , _UnionSpec<C, Q> {
 
     }
@@ -330,33 +321,7 @@ public interface StandardQuery extends Query {
      * @since 1.0
      */
     interface _SelectSpec<C, Q extends Item>
-            extends _SelectClause<C, SQLs.StandardModifier, _StandardFromSpec<C, Q>> {
-
-    }
-
-
-    /*-------------------below nested join interface -------------------*/
-
-    interface _NestedOnSpec<C> extends Statement._OnClause<C, _NestedJoinSpec<C>>, _NestedJoinSpec<C> {
-
-    }
-
-    interface _NestedJoinSpec<C> extends Statement._JoinClause<C, _NestedOnSpec<C>, _NestedOnSpec<C>>
-            , Statement._CrossJoinClause<C, _NestedJoinSpec<C>, _NestedJoinSpec<C>>
-            , Statement._IfJoinClause<C, _NestedJoinSpec<C>>
-            , Statement._RightParenClause<NestedItems> {
-
-    }
-
-    interface _StandardNestedLeftParenClause<C>
-            extends Statement._LeftParenClause<C, _NestedJoinSpec<C>, _NestedJoinSpec<C>> {
-
-    }
-
-
-    /*-------------------below if join clause interface -------------------*/
-
-    interface _IfOnClause<C> extends Statement._OnClause<C, JoinItemBlock<C>>, ItemBlock<C> {
+            extends _DynamicModifierSelectClause<C, SQLs.SelectModifier, _FromSpec<C, Q>> {
 
     }
 

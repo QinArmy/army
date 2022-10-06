@@ -36,6 +36,8 @@ interface CriteriaContext {
 
     int selectionSize();
 
+    Selection selection(String alias);
+
     void contextEnd();
 
     void addEndEventListener(Runnable listener);

@@ -70,44 +70,37 @@ public class StandardQueryUnitTests {
         stmt = SQLs.query()
                 .select(User_.id)
                 .from(User_.T, "p")
-                .where(User_.id.equal("1"))
-                .and(User_.nickName.equal("脉兽秀秀"))
+                .where(User_.id::equal, SQLs::literal, 1)
+                .and(User_.nickName::equal, SQLs::param, "脉兽秀秀")
                 //.and(User_.visible.equal(false))
                 .groupBy(User_.userType)
-                .having(User_.userType.equal(UserType.PERSON))
+                .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
-                .bracket()// bracket this simple query
 
-                .union()
+                .union(SQLs.ALL)
 
                 .select(User_.id)
                 .from(User_.T, "p")
-                .where(User_.id.equal("2"))
-                .and(User_.nickName.equal("远浪舰长"))
+                .where(User_.id::equal, SQLs::literal, 2)
+                .and(User_.nickName::equal, SQLs::param, "远浪舰长")
                 //.and(User_.visible.equal(false))
                 .groupBy(User_.userType)
-                .having(User_.userType.equal(UserType.PERSON))
+                .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
-                .bracket() // bracket this simple query
 
-                .unionAll()
+                .union(SQLs.ALL)
 
                 .select(User_.id)
                 .from(User_.T, "p")
-                .where(User_.id.equal("3"))
-                .and(User_.nickName.equal("蛮大人"))
+                .where(User_.id::equal, SQLs::literal, 2)
+                .and(User_.nickName::equal, SQLs::param, "蛮大人")
                 //.and(User_.visible.equal(false))
                 .groupBy(User_.userType)
-                .having(User_.userType.equal(UserType.PERSON))
+                .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
-                .bracket()// bracket this simple query
-
-                .bracket() // bracket whole union query
-                .orderBy(SQLs.ref(User_.ID)) // order by whole union query
-                .limit(0, 5)// limit whole union query
 
                 .asQuery();
 

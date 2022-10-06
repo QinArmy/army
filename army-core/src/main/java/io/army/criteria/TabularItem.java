@@ -21,7 +21,7 @@ public interface TabularItem {
     interface DerivedTableSpec {
 
         @Nullable
-        Selection selection(String derivedFieldName);
+        Selection selection(String derivedAlias);
 
     }
 

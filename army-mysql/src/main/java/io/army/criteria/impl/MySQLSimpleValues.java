@@ -214,14 +214,14 @@ abstract class MySQLSimpleValues<C, V extends RowSet.DqlValues>
         }
 
         @Override
-        public Selection selection(final String derivedFieldName) {
+        public Selection selection(final String derivedAlias) {
             prepared();
             Map<String, Selection> selectionMap = this.selectionMap;
             if (selectionMap == null) {
                 selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
                 this.selectionMap = selectionMap;
             }
-            return selectionMap.get(derivedFieldName);
+            return selectionMap.get(derivedAlias);
         }
 
     }//SimpleSubValues

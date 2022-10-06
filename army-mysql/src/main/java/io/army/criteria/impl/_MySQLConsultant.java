@@ -132,10 +132,10 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
         final SubStatement subStatement;
         subStatement = cte.subStatement();
         if (subStatement instanceof _UnionRowSet) {
-            if (!(subStatement instanceof MySQL80UnionQuery || subStatement instanceof StandardUnionQuery)) {
+            if (!(subStatement instanceof MySQL80UnionQuery || subStatement instanceof StandardUnionQueries)) {
                 throw new CriteriaException("Illegal sub query");
             }
-        } else if (!(subStatement instanceof MySQL80SimpleQuery || subStatement instanceof StandardSimpleQuery)) {
+        } else if (!(subStatement instanceof MySQL80SimpleQuery || subStatement instanceof StandardQueries)) {
             throw new CriteriaException("Illegal sub query");
         }
     }

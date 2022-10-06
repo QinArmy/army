@@ -38,31 +38,30 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    public interface StandardModifier extends Query.UnionModifier, Query.SelectModifier {
+    public interface SelectModifier extends Query.SelectModifier {
 
     }
 
-    public interface StandardAs {
+    public interface UnionModifier extends Query.UnionModifier {
+
+    }
+
+    public interface AllWord extends UnionModifier, SelectModifier {
+
+    }
+
+    public interface DistinctWord extends UnionModifier, SelectModifier, FuncDistinct {
 
     }
 
 
-    private enum StandardAsWord implements StandardAs {
+    private enum AllModifier implements SQLWords, AllWord {
 
-        AS
-    }
-
-    public static final StandardAs AS = StandardAsWord.AS;
-
-
-    private enum StandardModifierWord implements SQLWords, StandardModifier {
-
-        ALL(" ALL"),
-        DISTINCT(" DISTINCT");
+        ALL(" ALL");
 
         private final String spaceWord;
 
-        StandardModifierWord(String spaceWord) {
+        AllModifier(String spaceWord) {
             this.spaceWord = spaceWord;
         }
 
@@ -81,11 +80,38 @@ public abstract class SQLs extends StandardSyntax {
         }
 
 
-    }//StandardAll
+    }//AllModifier
 
-    public static final StandardModifier ALL = StandardModifierWord.ALL;
+    private enum DistinctModifier implements SQLWords, DistinctWord {
 
-    public static final StandardModifier DISTINCT = StandardModifierWord.DISTINCT;
+        DISTINCT(" DISTINCT");
+
+        private final String spaceWord;
+
+        DistinctModifier(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(SQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+
+    }//DistinctModifier
+
+    public static final AllWord ALL = AllModifier.ALL;
+
+    public static final DistinctWord DISTINCT = DistinctModifier.DISTINCT;
 
 
     public static StandardInsert._PrimaryOptionSpec<Void> singleInsert() {
@@ -205,33 +231,31 @@ public abstract class SQLs extends StandardSyntax {
     }
 
     public static StandardQuery._SelectSpec<Void, Select> query() {
-        return StandardSimpleQuery.query(null);
+        return StandardQueries.primaryQuery(null);
     }
 
 
     public static <C> StandardQuery._SelectSpec<C, Select> query(C criteria) {
         Objects.requireNonNull(criteria);
-        return StandardSimpleQuery.query(criteria);
+        return StandardQueries.primaryQuery(criteria);
     }
 
     public static StandardQuery._SelectSpec<Void, SubQuery> subQuery() {
-        return StandardSimpleQuery.subQuery(null);
+        return StandardQueries.subQuery(null, ContextStack.peek(), SQLs::_thisSubQuery);
     }
 
     public static <C> StandardQuery._SelectSpec<C, SubQuery> subQuery(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardSimpleQuery.subQuery(criteria);
+        return StandardQueries.subQuery(criteria, ContextStack.peek(criteria), SQLs::_thisSubQuery);
     }
 
 
-    public static StandardQuery._SelectSpec<Void, ScalarExpression> scalarSubQuery() {
-        return StandardSimpleQuery.scalarSubQuery(null);
+    public static StandardQuery._SelectSpec<Void, Expression> scalarSubQuery() {
+        return StandardQueries.subQuery(null, ContextStack.peek(), ScalarExpression::from);
     }
 
 
-    public static <C> StandardQuery._SelectSpec<C, ScalarExpression> scalarSubQuery(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardSimpleQuery.scalarSubQuery(criteria);
+    public static <C> StandardQuery._SelectSpec<C, Expression> scalarSubQuery(C criteria) {
+        return StandardQueries.subQuery(criteria, ContextStack.peek(criteria), ScalarExpression::from);
     }
 
 
@@ -1191,36 +1215,8 @@ public abstract class SQLs extends StandardSyntax {
         return ContextStack.root().createVar(varName, paramMeta);
     }
 
-    public static CteItem refCte(String cteName) {
+    static CteItem refCte(String cteName) {
         return ContextStack.peek().refCte(cteName);
-    }
-
-    public static StandardQuery._StandardNestedLeftParenClause<Void> nestedItems() {
-        return StandardNestedItems.create(null);
-    }
-
-    public static <C> StandardQuery._StandardNestedLeftParenClause<C> nestedItems(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardNestedItems.create(criteria);
-    }
-
-    public static StandardQuery._IfOnClause<Void> block(TableMeta<?> table, String tableAlias) {
-        return DynamicBlock.standard(null, table, tableAlias);
-    }
-
-    public static <C> StandardQuery._IfOnClause<C> block(C criteria, TableMeta<?> table, String tableAlias) {
-        Objects.requireNonNull(criteria);
-        return DynamicBlock.standard(criteria, table, tableAlias);
-    }
-
-
-    public static StandardQuery._IfOnClause<Void> block(SubQuery subQuery, String tableAlias) {
-        return DynamicBlock.standard(null, subQuery, tableAlias);
-    }
-
-    public static <C> StandardQuery._IfOnClause<C> block(C criteria, SubQuery subQuery, String tableAlias) {
-        Objects.requireNonNull(criteria);
-        return DynamicBlock.standard(null, subQuery, tableAlias);
     }
 
     public static <T> SelectionGroup group(TableMeta<T> table, String alias) {
@@ -1740,11 +1736,11 @@ public abstract class SQLs extends StandardSyntax {
         }
 
         @Override
-        public Selection selection(final String derivedFieldName) {
+        public Selection selection(final String derivedAlias) {
             final SubStatement subStatement = this.subStatement;
             final Selection selection;
             if (subStatement instanceof DerivedTable) {
-                selection = ((DerivedTable) subStatement).selection(derivedFieldName);
+                selection = ((DerivedTable) subStatement).selection(derivedAlias);
             } else {
                 selection = null;
             }

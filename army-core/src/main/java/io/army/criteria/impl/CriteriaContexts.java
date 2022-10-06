@@ -50,8 +50,12 @@ abstract class CriteriaContexts {
         return context;
     }
 
-    static CriteriaContext subQueryContext(final @Nullable Object criteria) {
-        return new SimpleQueryContext(ContextStack.peek(), criteria);
+    static CriteriaContext subQueryContext(final @Nullable Object criteria, final CriteriaContext outerContext) {
+        assert outerContext == ContextStack.peek();
+        final StatementContext context;
+        context = new SimpleQueryContext(outerContext, criteria);
+        context.varMap = ((StatementContext) outerContext).varMap;
+        return context;
     }
 
     static CriteriaContext subQueryContextFrom(final Query query) {
@@ -524,6 +528,11 @@ abstract class CriteriaContexts {
         @Override
         public int selectionSize() {
             throw ContextStack.criteriaError(this, "current context don't support selectionSize()");
+        }
+
+        @Override
+        public Selection selection(String alias) {
+            throw ContextStack.criteriaError(this, "current context don't support selection(alias)");
         }
 
         @Override
@@ -1699,12 +1708,12 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public Selection selection(String derivedFieldName) {
+        public Selection selection(String derivedAlias) {
             final _Cte actualCte = this.actualCte;
             if (actualCte == null) {
                 throw new IllegalStateException("No actual cte");
             }
-            return actualCte.selection(derivedFieldName);
+            return actualCte.selection(derivedAlias);
         }
 
         @Override
