@@ -37,7 +37,7 @@ public class MySQLFunctionUnitTests {
      */
     private void simpleCaseFunc(Consumer<SelectItem> consumer) {
         Selection selection;
-        selection = MySQLs.caseFunc(User_.userType)
+        selection = MySQLs.Case(User_.userType)
                 .when(SQLs.literal(UserType.NONE))
                 .then(SQLs.literal(1))
 

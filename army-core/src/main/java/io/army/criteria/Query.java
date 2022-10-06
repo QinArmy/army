@@ -58,6 +58,39 @@ public interface Query extends RowSet {
     }
 
 
+    interface _DynamicWithCteClause<C, B extends CteBuilderSpec, WE> {
+        WE with(Consumer<B> consumer);
+
+        WE with(BiConsumer<C, B> consumer);
+
+        WE withRecursive(Consumer<B> consumer);
+
+        WE withRecursive(BiConsumer<C, B> consumer);
+
+        WE ifWith(Consumer<B> consumer);
+
+        WE ifWith(BiConsumer<C, B> consumer);
+
+        WE ifWithRecursive(Consumer<B> consumer);
+
+        WE ifWithRecursive(BiConsumer<C, B> consumer);
+
+    }
+
+    interface _StaticWithCteClause<WS> {
+
+        WS with(String name);
+
+        WS withRecursive(String name);
+
+    }
+
+    interface _StaticWithCommaClause<CR> {
+
+        CR comma(String name);
+    }
+
+
     /**
      * <p>
      * This interface representing FROM clause.

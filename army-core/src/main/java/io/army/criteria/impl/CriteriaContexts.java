@@ -58,6 +58,11 @@ abstract class CriteriaContexts {
         return context;
     }
 
+
+    static CriteriaContext unionSubQueryContext(final CriteriaContext leftContext) {
+        return null;
+    }
+
     static CriteriaContext subQueryContextFrom(final Query query) {
         final StatementContext leftContext;
         leftContext = (StatementContext) ((CriteriaContextSpec) query).getContext();

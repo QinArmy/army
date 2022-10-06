@@ -79,7 +79,6 @@ public class StandardQueryUnitTests {
                 .limit(0, 10)
 
                 .unionAll()
-                .space()
 
                 .select(User_.id)
                 .from(User_.T, "p")
@@ -92,7 +91,6 @@ public class StandardQueryUnitTests {
                 .limit(0, 10)
 
                 .unionAll()
-                .space()
 
                 .select(User_.id)
                 .from(User_.T, "p")

@@ -10,12 +10,13 @@ import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.mapping.*;
+import io.army.mapping.MappingType;
+import io.army.mapping._MappingFactory;
+import io.army.mapping._NullType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.SingleParam;
 import io.army.util._Exceptions;
-import io.army.util._StringUtils;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -39,80 +40,6 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    public interface SelectModifier extends Query.SelectModifier {
-
-    }
-
-    public interface UnionModifier extends Query.UnionModifier {
-
-    }
-
-    public interface AllWord extends UnionModifier, SelectModifier {
-
-    }
-
-    public interface DistinctWord extends UnionModifier, SelectModifier, FuncDistinct {
-
-    }
-
-
-    private enum AllModifier implements SQLWords, AllWord {
-
-        ALL(" ALL");
-
-        private final String spaceWord;
-
-        AllModifier(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String render() {
-            return this.spaceWord;
-        }
-
-        @Override
-        public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
-        }
-
-
-    }//AllModifier
-
-    private enum DistinctModifier implements SQLWords, DistinctWord {
-
-        DISTINCT(" DISTINCT");
-
-        private final String spaceWord;
-
-        DistinctModifier(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String render() {
-            return this.spaceWord;
-        }
-
-        @Override
-        public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
-        }
-
-
-    }//DistinctModifier
-
-    public static final AllWord ALL = AllModifier.ALL;
-
-    public static final DistinctWord DISTINCT = DistinctModifier.DISTINCT;
 
 
     public static StandardInsert._PrimaryOptionSpec<Void> singleInsert() {
@@ -422,7 +349,7 @@ public abstract class SQLs extends StandardSyntax {
     static ArmyExpression _nullableLiteral(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
         if (value == null) {
-            resultExpression = SQLs.nullWord();
+            resultExpression = SQLs.NULL;
         } else if (value instanceof Expression) {
             //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
             resultExpression = (Expression) value;
@@ -1067,9 +994,6 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    static Expression star() {
-        return StarLiteral.INSTANCE;
-    }
 
 
     public static ItemPair itemPair(final DataField field, final @Nullable Object value) {
@@ -1154,31 +1078,19 @@ public abstract class SQLs extends StandardSyntax {
     /**
      * @return DEFAULT expression that output key word {@code DEFAULT}.
      */
+    @Deprecated
     public static Expression defaultWord() {
-        return SQLs.DefaultWord.INSTANCE;
+        throw new UnsupportedOperationException();
     }
 
 
     /**
      * @return NULL expression that output key word {@code NULL}.
      */
+    @Deprecated
     public static Expression nullWord() {
-        return NullWord.INSTANCE;
+        throw new UnsupportedOperationException();
     }
-
-    public static Expression trueWord() {
-        return BooleanWord.TRUE;
-    }
-
-    public static Expression falseWord() {
-        return BooleanWord.FALSE;
-    }
-
-
-
-
-
-
 
 
     /*################################## blow sql reference method ##################################*/
@@ -1298,30 +1210,7 @@ public abstract class SQLs extends StandardSyntax {
 
 
 
-    /*-------------------below Aggregate Function-------------------*/
 
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  LongType}
-     * </p>
-     *
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
-     */
-    public static Expression count() {
-        return SQLFunctions.oneArgFunc("COUNT", SQLs.star(), LongType.INSTANCE);
-    }
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  LongType}
-     * </p>
-     *
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
-     */
-    public static Expression count(Expression expr) {
-        return SQLFunctions.oneArgFunc("COUNT", expr, LongType.INSTANCE);
-    }
 
 
     /*-------------------below package method-------------------*/
@@ -1339,138 +1228,6 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    /**
-     * <p>
-     * This class representing sql {@code DEFAULT} key word.
-     * </p>
-     *
-     * @param <E> The java type The expression thant reference kwy word {@code DEFAULT}
-     */
-    static final class DefaultWord<E> extends NonOperationExpression {
-
-        private static final DefaultWord<?> INSTANCE = new DefaultWord<>();
-
-        private DefaultWord() {
-        }
-
-
-        @Override
-        public TypeMeta typeMeta() {
-            throw unsupportedOperation();
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(_Constant.SPACE_DEFAULT);
-        }
-
-        @Override
-        public String toString() {
-            return _Constant.SPACE_DEFAULT;
-        }
-
-    }// DefaultWord
-
-
-    /**
-     * <p>
-     * This class representing sql {@code NULL} key word.
-     * </p>
-     */
-    static final class NullWord extends NonOperationExpression implements SqlValueParam.SingleNonNamedValue {
-
-        private static final NullWord INSTANCE = new NullWord();
-
-
-        private NullWord() {
-        }
-
-        @Override
-        public void appendSql(_SqlContext context) {
-            context.sqlBuilder().append(_Constant.SPACE_NULL);
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return _NullType.INSTANCE;
-        }
-
-        @Override
-        public Object value() {
-            //always null
-            return null;
-        }
-
-        @Override
-        public String toString() {
-            return _Constant.SPACE_NULL;
-        }
-
-
-    }// NullWord
-
-
-    private static final class StarLiteral extends NonOperationExpression {
-
-        private static final StarLiteral INSTANCE = new StarLiteral();
-
-        private StarLiteral() {
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            throw unsupportedOperation();
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(" *");
-        }
-
-
-    }//StarLiteral
-
-    static final class BooleanWord extends OperationExpression {
-
-        private static final BooleanWord TRUE = new BooleanWord(true);
-
-        private static final BooleanWord FALSE = new BooleanWord(false);
-
-        private final boolean value;
-
-        private BooleanWord(boolean value) {
-            this.value = value;
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return BooleanType.INSTANCE;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
-            if (this.value) {
-                sqlBuilder.append(BooleanType.TRUE);
-            } else {
-                sqlBuilder.append(BooleanType.FALSE);
-            }
-        }
-
-        @Override
-        public String toString() {
-            final String s;
-            if (this.value) {
-                s = _Constant.SPACE + BooleanType.TRUE;
-            } else {
-                s = _Constant.SPACE + BooleanType.FALSE;
-            }
-            return s;
-        }
-
-
-    }//BooleanWord
 
 
     static abstract class ArmyItemPair implements _ItemPair {

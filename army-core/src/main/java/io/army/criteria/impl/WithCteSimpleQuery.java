@@ -22,7 +22,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class WithCteSimpleQuery<C, Q extends Query, SS extends SubStatement, WE, W extends SQLWords, SR, FT, FS, FP, FJ, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
-        extends SimpleQuery<C, Q, W, SR, FT, FS, FP, FJ, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
+        extends SimpleQueries<C, Q, W, SR, FT, FS, FP, FJ, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
         implements DialectStatement._WithCteClause2<C, SS, WE> {
 
 

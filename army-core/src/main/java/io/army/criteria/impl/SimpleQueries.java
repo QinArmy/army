@@ -26,7 +26,7 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, SP>
+abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, SP>
         extends JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
         implements Query._DynamicHintModifierSelectClause<C, W, SR>
         , Query._FromModifierClause<C, FT, FS>, Query._FromModifierCteClause<FC>
@@ -53,7 +53,7 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
     private Boolean prepared;
 
 
-    SimpleQuery(CriteriaContext context) {
+    SimpleQueries(CriteriaContext context) {
         super(context);
         if (context.getOuterContext() == null) {
             ContextStack.setContextStack(this.context);
@@ -699,6 +699,79 @@ abstract class SimpleQuery<C, Q extends Item, W extends Query.SelectModifier, SR
 
 
     }//SelectClauseDispatcher
+
+    static abstract class WithSelectClauseDispatcher<C, B extends CteBuilderSpec, WE, WS, W extends Query.SelectModifier, SR>
+            extends SelectClauseDispatcher<C, W, SR>
+            implements _DynamicWithCteClause<C, B, WE>
+            , Query._StaticWithCteClause<WS> {
+
+        @Override
+        public final WE with(Consumer<B> consumer) {
+            return this.createDynamicWithClause()
+                    .with(consumer);
+        }
+
+        @Override
+        public final WE with(BiConsumer<C, B> consumer) {
+            return this.createDynamicWithClause()
+                    .with(consumer);
+        }
+
+        @Override
+        public final WE withRecursive(Consumer<B> consumer) {
+            return this.createDynamicWithClause()
+                    .withRecursive(consumer);
+        }
+
+        @Override
+        public final WE withRecursive(BiConsumer<C, B> consumer) {
+            return this.createDynamicWithClause()
+                    .withRecursive(consumer);
+        }
+
+        @Override
+        public final WE ifWith(Consumer<B> consumer) {
+            return this.createDynamicWithClause()
+                    .ifWith(consumer);
+        }
+
+        @Override
+        public final WE ifWith(BiConsumer<C, B> consumer) {
+            return this.createDynamicWithClause()
+                    .ifWith(consumer);
+        }
+
+        @Override
+        public final WE ifWithRecursive(Consumer<B> consumer) {
+            return this.createDynamicWithClause()
+                    .ifWithRecursive(consumer);
+        }
+
+        @Override
+        public final WE ifWithRecursive(BiConsumer<C, B> consumer) {
+            return this.createDynamicWithClause()
+                    .ifWithRecursive(consumer);
+        }
+
+        @Override
+        public final WS with(String name) {
+            return this.createStaticWithClause()
+                    .with(name);
+        }
+
+        @Override
+        public final WS withRecursive(String name) {
+            return this.createStaticWithClause()
+                    .withRecursive(name);
+        }
+
+
+        abstract _DynamicWithCteClause<C, B, WE> createDynamicWithClause();
+
+        abstract Query._StaticWithCteClause<WS> createStaticWithClause();
+
+
+    }//WithSelectClauseDispatcher
 
 
 }

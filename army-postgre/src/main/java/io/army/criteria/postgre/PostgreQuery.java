@@ -18,7 +18,7 @@ import io.army.criteria.impl.Postgres;
 public interface PostgreQuery extends Query, DialectStatement {
 
     interface _PostgreDynamicWithClause<C, SR>
-            extends DialectStatement._DynamicWithCteClause<C, PostgreCteBuilder, SR> {
+            extends _DynamicWithCteClause<C, PostgreCteBuilder, SR> {
 
     }
 
@@ -91,7 +91,7 @@ public interface PostgreQuery extends Query, DialectStatement {
      * @since 1.0
      */
     interface _WithCteSpec<C, Q extends Item> extends _PostgreDynamicWithClause<C, _PostgreSelectClause<C, Q>>
-            , DialectStatement._StaticWithCteClause<_StaticCteLeftParenSpec<C, _CteComma<C, Q>>>
+            , _StaticWithCteClause<_StaticCteLeftParenSpec<C, _CteComma<C, Q>>>
             , _PostgreSelectClause<C, Q> {
 
     }

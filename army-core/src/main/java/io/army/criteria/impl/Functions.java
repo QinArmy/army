@@ -652,7 +652,7 @@ abstract class Functions {
          * @see #caseFunc(Function, Function, String)
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#operator_case">case function</a>
          */
-        public static _CaseWhenClause caseFunc(final Expression expression) {
+        public static _CaseWhenClause Case(final Expression expression) {
             Objects.requireNonNull(expression);
             return SQLFunctions.caseFunc(expression);
         }
@@ -660,7 +660,7 @@ abstract class Functions {
         /**
          * @param supplier supplier of nullable {@link Expression},if null then use CASE WHEN condition THEN result syntax
          *                 ,else use CASE value WHEN compare_value THEN result syntax.
-         * @see #caseFunc(Expression)
+         * @see #Case(Expression)
          * @see #caseFunc(Function, Supplier)
          * @see #caseFunc(Function, Function, String)
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#operator_case">case function</a>
@@ -676,7 +676,7 @@ abstract class Functions {
         /**
          * @param supplier supplier of non-null parameter,if null then use CASE WHEN condition THEN result syntax
          *                 ,else use CASE value WHEN compare_value THEN result syntax.
-         * @see #caseFunc(Expression)
+         * @see #Case(Expression)
          * @see #caseFunc(Supplier)
          * @see #caseFunc(Function, Function, String)
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#operator_case">case function</a>
@@ -735,7 +735,7 @@ abstract class Functions {
          *                 ,use CASE value WHEN compare_value THEN result syntax.
          * @param keyName  pass to {@link Function#apply(Object)} of function
          * @throws NullPointerException throw when function return null or operator return null.
-         * @see #caseFunc(Expression)
+         * @see #Case(Expression)
          * @see #caseFunc(Supplier)
          * @see #caseFunc(Function, Supplier)
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#operator_case">case function</a>
@@ -758,7 +758,7 @@ abstract class Functions {
         /**
          * @param supplier supplier of nullable {@link Expression},if null then use CASE WHEN condition THEN result syntax
          *                 ,else use CASE value WHEN compare_value THEN result syntax.
-         * @see #caseFunc(Expression)
+         * @see #Case(Expression)
          * @see #caseFunc(Function, Supplier)
          * @see #caseFunc(Function, Function, String)
          * @see #caseIf(Function, Supplier)
@@ -811,7 +811,7 @@ abstract class Functions {
          *                 ,else use CASE value WHEN compare_value THEN result syntax.
          * @throws NullPointerException throw when operator return null.
          * @throws CriteriaException    throw when invoking this method in non-statement context.
-         * @see #caseFunc(Expression)
+         * @see #Case(Expression)
          * @see #caseFunc(Supplier)
          * @see #caseFunc(Function, Function, String)
          * @see #caseIf(Supplier)
@@ -872,7 +872,7 @@ abstract class Functions {
          * @param keyName  pass to {@link Function#apply(Object)} of function
          * @throws NullPointerException throw when operator return null.
          * @throws CriteriaException    throw when invoking this method in non-statement context.
-         * @see #caseFunc(Expression)
+         * @see #Case(Expression)
          * @see #caseFunc(Supplier)
          * @see #caseFunc(Function, Supplier)
          * @see #caseFunc(Function, Function, String)

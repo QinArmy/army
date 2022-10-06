@@ -165,7 +165,7 @@ abstract class InsertSupport {
     @SuppressWarnings("unchecked")
     static abstract class NonQueryWithCteOption<C, MR, NR, PR, B extends CteBuilderSpec, WE>
             extends NonQueryInsertOptionsImpl<MR, NR, PR>
-            implements DialectStatement._DynamicWithCteClause<C, B, WE>
+            implements Query._DynamicWithCteClause<C, B, WE>
             , WithValueSyntaxOptions {
 
         private boolean recursive;
@@ -288,7 +288,7 @@ abstract class InsertSupport {
     }//NonQueryWithCteOption
 
     static abstract class ChildDynamicWithClause<C, B extends CteBuilderSpec, WE>
-            implements DialectStatement._DynamicWithCteClause<C, B, WE>
+            implements Query._DynamicWithCteClause<C, B, WE>
             , WithValueSyntaxOptions {
 
         final CriteriaContext context;

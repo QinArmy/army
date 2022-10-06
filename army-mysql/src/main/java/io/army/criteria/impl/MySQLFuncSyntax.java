@@ -472,7 +472,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(type);
         argList.add(SQLFunctions.FuncWord.COMMA);
         if (format == null) {
-            argList.add(SQLs.nullWord());
+            argList.add(SQLs.NULL);
         } else {
             argList.add(format);
         }

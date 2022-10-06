@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  * @see StandardUnionQueries
  * @since 1.0
  */
-abstract class StandardQueries<C, Q extends Item> extends SimpleQuery<
+abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
         C,
         Q,
         SQLs.SelectModifier,
@@ -35,7 +35,7 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQuery<
         StandardQuery._HavingSpec<C, Q>, // GR
         StandardQuery._OrderBySpec<C, Q>, // HR
         StandardQuery._LimitSpec<C, Q>, // OR
-        StandardQuery._UnionSpaceClause<C, Q>> // SP
+        StandardQuery._UnionAndQuerySpec<C, Q>> // SP
 
         implements StandardQuery, StandardQuery._SelectSpec<C, Q>, StandardQuery._FromSpec<C, Q>
         , StandardQuery._JoinSpec<C, Q>, StandardQuery._WhereAndSpec<C, Q>, StandardQuery._HavingSpec<C, Q>
@@ -267,6 +267,11 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQuery<
 
         private final Function<Select, Q> function;
 
+        /**
+         * <p>
+         * Primary constructor
+         * </p>
+         */
         private SimpleSelect(@Nullable C criteria, Function<Select, Q> function) {
             super(CriteriaContexts.primaryQueryContext(criteria));
             this.function = function;
@@ -278,7 +283,7 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQuery<
         }
 
         @Override
-        _UnionSpaceClause<C, Q> createQueryUnion(UnionType unionType) {
+        _UnionAndQuerySpec<C, Q> createQueryUnion(UnionType unionType) {
             return null;
         }
 
@@ -302,35 +307,36 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQuery<
         }
 
         @Override
-        _UnionSpaceClause<C, Q> createQueryUnion(UnionType unionType) {
-            return null;
+        _UnionAndQuerySpec<C, Q> createQueryUnion(UnionType unionType) {
+            return new UnionSubQueryClause<>(this, unionType, this.function);
         }
 
 
     } // SimpleSubQuery
 
 
-    private static final class UnionSelectSpaceClause<C, Q extends Item>
-            implements StandardQuery._UnionSpaceClause<C, Q> {
-
-
-        @Override
-        public _UnionSpaceClause<C, _RightParenClause<_UnionOrderBySpec<C, Q>>> leftParen() {
-            return null;
-        }
-
-        @Override
-        public _SelectSpec<C, Q> space() {
-            return null;
-        }
-
-
-    }//UnionSelectSpaceClause
-
-
-    private static final class UnionSubQuerySpaceClause<C, Q extends Item>
+    private static final class UnionSelectClause<C, Q extends Item>
             extends SelectClauseDispatcher<C, SQLs.SelectModifier, StandardQuery._FromSpec<C, Q>>
-            implements StandardQuery._UnionSpaceClause<C, Q> {
+            implements _UnionAndQuerySpec<C, Q> {
+
+
+        @Override
+        public _UnionAndQuerySpec<C, _RightParenClause<_UnionOrderBySpec<C, Q>>> leftParen() {
+            return null;
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<C, SQLs.SelectModifier, _FromSpec<C, Q>> createSelectClause() {
+            return null;
+        }
+
+
+    }//UnionSelectClause
+
+
+    private static final class UnionSubQueryClause<C, Q extends Item>
+            extends SelectClauseDispatcher<C, SQLs.SelectModifier, StandardQuery._FromSpec<C, Q>>
+            implements _UnionAndQuerySpec<C, Q> {
 
         private final SubQuery left;
 
@@ -338,33 +344,27 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQuery<
 
         private final Function<SubQuery, Q> function;
 
-        private UnionSubQuerySpaceClause(SubQuery left, UnionType unionType, Function<SubQuery, Q> function) {
+        private UnionSubQueryClause(SubQuery left, UnionType unionType, Function<SubQuery, Q> function) {
             this.left = left;
             this.unionType = unionType;
             this.function = function;
         }
 
         @Override
-        public _UnionSpaceClause<C, _RightParenClause<_UnionOrderBySpec<C, Q>>> leftParen() {
+        public _UnionAndQuerySpec<C, _RightParenClause<_UnionOrderBySpec<C, Q>>> leftParen() {
             return null;
         }
 
 
         @Override
         _DynamicHintModifierSelectClause<C, SQLs.SelectModifier, _FromSpec<C, Q>> createSelectClause() {
-            final CriteriaContext queryContext, outerContext;
-            queryContext = ((CriteriaContextSpec) this.left).getContext();
-            outerContext = queryContext.getOuterContext();
-            return new SimpleSubQuery<>(queryContext, this.function);
+            final CriteriaContext leftContext, newContext;
+            leftContext = ((CriteriaContextSpec) this.left).getContext();
+
+            newContext = CriteriaContexts.unionSubQueryContext(leftContext);
+            return new SimpleSubQuery<>(newContext, this::union);
         }
 
-        public _SelectSpec<C, Q> space() {
-            final CriteriaContext queryContext, outerContext;
-            queryContext = ((CriteriaContextSpec) this.left).getContext();
-            outerContext = queryContext.getOuterContext();
-            assert outerContext != null;
-            return StandardQueries.subQuery(queryContext.criteria(), outerContext, this::union);
-        }
 
         private Q union(final SubQuery right) {
             return StandardUnionQueries.unionSubQuery(this.left, this.unionType, right, this.function)
@@ -372,7 +372,7 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQuery<
         }
 
 
-    }//UnionSubQuerySpaceClause
+    }//UnionSubQueryClause
 
 
 }

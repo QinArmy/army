@@ -568,7 +568,7 @@ abstract class WhereClause<C, WR, WA, OR> extends OrderByClause<C, OR>
             this.predicateList = list;
         } else if (list != null) {
             throw ContextStack.castCriteriaApi(this.context);
-        } else if (this instanceof SimpleQuery) {
+        } else if (this instanceof SimpleQueries) {
             list = Collections.emptyList();
             this.predicateList = list;
         } else {
