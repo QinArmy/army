@@ -60,7 +60,7 @@ abstract class CriteriaContexts {
 
 
     static CriteriaContext unionSubQueryContext(final CriteriaContext leftContext) {
-        return null;
+         throw new UnsupportedOperationException();
     }
 
     static CriteriaContext subQueryContextFrom(final Query query) {

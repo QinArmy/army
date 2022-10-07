@@ -32,13 +32,11 @@ import java.util.function.Supplier;
 @SuppressWarnings({"unused"})
 public abstract class SQLs extends StandardSyntax {
 
-
     /**
      * private constructor
      */
     private SQLs() {
     }
-
 
 
 

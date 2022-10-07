@@ -334,9 +334,31 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
     }//UnionSelectClause
 
 
+    private static final class UnionLeftParenSubQueryClause<C, Q extends Item>
+            extends SelectClauseDispatcher<C, SQLs.SelectModifier, StandardQuery._FromSpec<C, Q>>
+            implements _UnionAndQuerySpec<C, Q>, _RightParenClause<_UnionOrderBySpec<C, Q>> {
+
+        @Override
+        public _UnionAndQuerySpec<C, _RightParenClause<_UnionOrderBySpec<C, Q>>> leftParen() {
+            return null;
+        }
+
+        @Override
+        public _UnionOrderBySpec<C, Q> rightParen() {
+            return null;
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<C, SQLs.SelectModifier, _FromSpec<C, Q>> createSelectClause() {
+            return null;
+        }
+
+    }//UnionLeftParenSubQueryClause
+
+
     private static final class UnionSubQueryClause<C, Q extends Item>
             extends SelectClauseDispatcher<C, SQLs.SelectModifier, StandardQuery._FromSpec<C, Q>>
-            implements _UnionAndQuerySpec<C, Q> {
+            implements _UnionAndQuerySpec<C, Q>, _RightParenClause<_UnionOrderBySpec<C, Q>> {
 
         private final SubQuery left;
 
@@ -355,6 +377,10 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
             return null;
         }
 
+        @Override
+        public _UnionOrderBySpec<C, Q> rightParen() {
+            return null;
+        }
 
         @Override
         _DynamicHintModifierSelectClause<C, SQLs.SelectModifier, _FromSpec<C, Q>> createSelectClause() {

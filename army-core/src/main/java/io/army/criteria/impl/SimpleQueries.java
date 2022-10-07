@@ -641,6 +641,9 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
     static abstract class SelectClauseDispatcher<C, W extends Query.SelectModifier, SR>
             implements Query._DynamicHintModifierSelectClause<C, W, SR> {
 
+        SelectClauseDispatcher() {
+        }
+
         @Override
         public final SR select(SelectItem selectItem) {
             return this.createSelectClause()
@@ -704,6 +707,9 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
             extends SelectClauseDispatcher<C, W, SR>
             implements _DynamicWithCteClause<C, B, WE>
             , Query._StaticWithCteClause<WS> {
+
+        WithSelectClauseDispatcher() {
+        }
 
         @Override
         public final WE with(Consumer<B> consumer) {

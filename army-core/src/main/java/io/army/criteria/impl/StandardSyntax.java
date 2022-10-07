@@ -81,7 +81,7 @@ abstract class StandardSyntax extends Functions {
         }
 
 
-    }//AllModifier
+    }//KeyWordAll
 
     private enum KeyWordDistinct implements SQLWords, WordDistinct {
 
@@ -108,7 +108,7 @@ abstract class StandardSyntax extends Functions {
         }
 
 
-    }//DistinctModifier
+    }//KeyWordDistinct
 
 
     private enum KeyWordAs implements WordAs {
@@ -124,7 +124,7 @@ abstract class StandardSyntax extends Functions {
                     .toString();
         }
 
-    }//AsKeyWord
+    }//KeyWordAs
 
     private enum KeyWordAnd implements WordAnd {
 
@@ -139,7 +139,7 @@ abstract class StandardSyntax extends Functions {
                     .toString();
         }
 
-    }//AndKeyWord
+    }//KeyWordAnd
 
     private enum SQLSymbolPoint implements SymbolPoint {
 
@@ -154,7 +154,22 @@ abstract class StandardSyntax extends Functions {
                     .toString();
         }
 
-    }//PointIdentifierWord
+    }//SQLSymbolPoint
+
+    private enum SQLSymbolStar implements SymbolStar {
+
+        STAR;
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(SQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+    }//SQLSymbolStar
 
 
     /**
@@ -223,9 +238,11 @@ abstract class StandardSyntax extends Functions {
     }// NullWord
 
 
-    private static final class StarLiteral extends NonOperationExpression implements SymbolStar {
+    private static final class LiteralSymbolStar extends NonOperationExpression {
 
-        private StarLiteral() {
+        private static final LiteralSymbolStar STAR = new LiteralSymbolStar();
+
+        private LiteralSymbolStar() {
         }
 
         @Override
@@ -283,7 +300,7 @@ abstract class StandardSyntax extends Functions {
 
     public static final SymbolPoint POINT = SQLSymbolPoint.POINT;
 
-    public static final SymbolStar START = new StarLiteral();
+    public static final SymbolStar START = SQLSymbolStar.STAR;
 
     public static final IPredicate TRUE = new BooleanWord(true);
 
@@ -306,7 +323,7 @@ abstract class StandardSyntax extends Functions {
      */
     public static Expression count(final SymbolStar star) {
         assert star == SQLs.START;
-        return SQLFunctions.oneArgFunc("COUNT", star, LongType.INSTANCE);
+        return SQLFunctions.oneArgFunc("COUNT", LiteralSymbolStar.STAR, LongType.INSTANCE);
     }
 
     /**
