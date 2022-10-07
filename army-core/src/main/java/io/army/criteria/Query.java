@@ -5,7 +5,10 @@ import io.army.criteria.impl.SQLs;
 import io.army.meta.TableMeta;
 
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -58,22 +61,15 @@ public interface Query extends RowSet {
     }
 
 
-    interface _DynamicWithCteClause<C, B extends CteBuilderSpec, WE> {
+    interface _DynamicWithCteClause<B extends CteBuilderSpec, WE> {
         WE with(Consumer<B> consumer);
 
-        WE with(BiConsumer<C, B> consumer);
 
         WE withRecursive(Consumer<B> consumer);
 
-        WE withRecursive(BiConsumer<C, B> consumer);
-
         WE ifWith(Consumer<B> consumer);
 
-        WE ifWith(BiConsumer<C, B> consumer);
-
         WE ifWithRecursive(Consumer<B> consumer);
-
-        WE ifWithRecursive(BiConsumer<C, B> consumer);
 
     }
 
@@ -101,28 +97,23 @@ public interface Query extends RowSet {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C>  criteria object java type.
      * @param <FT> next clause java type
      * @param <FS> next clause java type
      * @since 1.0
      */
-    interface _FromClause<C, FT, FS> {
+    interface _FromClause<FT, FS> {
 
         FT from(TableMeta<?> table, String tableAlias);
 
         <T extends TabularItem> FS from(Supplier<T> supplier, String alias);
 
-        <T extends TabularItem> FS from(Function<C, T> function, String alias);
-
     }
 
-    interface _FromModifierClause<C, FT, FS> extends _FromClause<C, FT, FS> {
+    interface _FromModifierClause<FT, FS> extends _FromClause<FT, FS> {
 
         FT from(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
 
         <T extends TabularItem> FS from(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
-
-        <T extends TabularItem> FS from(Query.TabularModifier modifier, Function<C, T> function, String alias);
     }
 
 
@@ -191,33 +182,28 @@ public interface Query extends RowSet {
     }
 
 
-    interface _DynamicSelectClause<C, SR> extends _SelectClause<SR> {
+    interface _DynamicSelectClause<SR> extends _SelectClause<SR> {
 
         SR select(Consumer<Consumer<SelectItem>> consumer);
 
-        SR select(BiConsumer<C, Consumer<SelectItem>> consumer);
-
 
     }
 
-    interface _DynamicModifierSelectClause<C, W extends SelectModifier, SR> extends _DynamicSelectClause<C, SR> {
+    interface _DynamicModifierSelectClause<W extends SelectModifier, SR> extends _DynamicSelectClause<SR> {
 
         SR select(W modifier, Consumer<Consumer<SelectItem>> consumer);
 
-        SR select(W modifier, BiConsumer<C, Consumer<SelectItem>> consumer);
     }
 
-    interface _DynamicHintModifierSelectClause<C, W extends SelectModifier, SR>
-            extends _DynamicModifierSelectClause<C, W, SR> {
+    interface _DynamicHintModifierSelectClause<W extends SelectModifier, SR>
+            extends _DynamicModifierSelectClause<W, SR> {
 
         SR select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Consumer<SelectItem>> consumer);
 
-        SR select(Supplier<List<Hint>> hints, List<W> modifiers, BiConsumer<C, Consumer<SelectItem>> consumer);
-
     }
 
 
-    interface _GroupClause<C, GR> {
+    interface _GroupClause<GR> {
 
         GR groupBy(SortItem sortItem);
 
@@ -227,23 +213,18 @@ public interface Query extends RowSet {
 
         GR groupBy(Consumer<Consumer<SortItem>> consumer);
 
-        GR groupBy(BiConsumer<C, Consumer<SortItem>> consumer);
         GR ifGroupBy(Consumer<Consumer<SortItem>> consumer);
-
-        GR ifGroupBy(BiConsumer<C, Consumer<SortItem>> consumer);
 
     }
 
 
-    interface _HavingClause<C, HR> {
+    interface _HavingClause<HR> {
 
         HR having(IPredicate predicate);
 
         HR having(IPredicate predicate1, IPredicate predicate2);
 
         HR having(Supplier<IPredicate> supplier);
-
-        HR having(Function<C, IPredicate> function);
 
         HR having(Function<Object, IPredicate> operator, Supplier<?> operand);
 
@@ -255,11 +236,7 @@ public interface Query extends RowSet {
 
         HR having(Consumer<Consumer<IPredicate>> consumer);
 
-        HR having(BiConsumer<C, Consumer<IPredicate>> consumer);
-
         HR ifHaving(Consumer<Consumer<IPredicate>> consumer);
-
-        HR ifHaving(BiConsumer<C, Consumer<IPredicate>> consumer);
 
     }
 
@@ -305,7 +282,7 @@ public interface Query extends RowSet {
     }
 
 
-    interface _LimitClause<C, LR> extends Statement._RowCountLimitClause<C, LR> {
+    interface _LimitClause<LR> extends Statement._RowCountLimitClause<LR> {
 
         LR limit(long offset, long rowCount);
 

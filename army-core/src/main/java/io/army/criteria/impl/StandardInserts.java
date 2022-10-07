@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -28,37 +27,37 @@ abstract class StandardInserts extends InsertSupport {
     }
 
 
-    static <C> StandardInsert._PrimaryOptionSpec<C> primaryInsert(@Nullable C criteria) {
-        return new PrimaryInsertIntoClause<>(criteria);
+    static <C> StandardInsert._PrimaryOptionSpec primaryInsert() {
+        return new PrimaryInsertIntoClause();
     }
 
 
     /*-------------------below standard domain insert syntax class-------------------*/
-    private static final class PrimaryInsertIntoClause<C>
+    private static final class PrimaryInsertIntoClause
             extends NonQueryInsertOptionsImpl<
-            StandardInsert._PrimaryNullOptionSpec<C>,
-            StandardInsert._PrimaryPreferLiteralSpec<C>,
-            StandardInsert._PrimaryInsertIntoClause<C>>
-            implements StandardInsert._PrimaryOptionSpec<C> {
+            StandardInsert._PrimaryNullOptionSpec,
+            StandardInsert._PrimaryPreferLiteralSpec,
+            StandardInsert._PrimaryInsertIntoClause>
+            implements StandardInsert._PrimaryOptionSpec {
 
-        private PrimaryInsertIntoClause(@Nullable C criteria) {
-            super(CriteriaContexts.primaryInsertContext(criteria));
+        private PrimaryInsertIntoClause() {
+            super(CriteriaContexts.primaryInsertContext());
             ContextStack.setContextStack(this.context);
         }
 
         @Override
-        public <T> StandardInsert._ColumnListSpec<C, T, Insert> insertInto(SimpleTableMeta<T> table) {
+        public <T> StandardInsert._ColumnListSpec<T, Insert> insertInto(SimpleTableMeta<T> table) {
             return new StandardComplexValuesClause<>(this, table, this::simpleInsertEnd);
         }
 
 
         @Override
-        public <P> StandardInsert._ColumnListSpec<C, P, Insert._ParentInsert<StandardInsert._ChildInsertIntoClause<C, P>>> insertInto(ParentTableMeta<P> table) {
+        public <P> StandardInsert._ColumnListSpec<P, Insert._ParentInsert<StandardInsert._ChildInsertIntoClause<P>>> insertInto(ParentTableMeta<P> table) {
             return new StandardComplexValuesClause<>(this, table, this::parentInsertEnd);
         }
 
-        private <P> Insert._ParentInsert<StandardInsert._ChildInsertIntoClause<C, P>> parentInsertEnd(final StandardComplexValuesClause<?, ?, ?> clause) {
-            final Statement._DmlInsertSpec<Insert._ParentInsert<StandardInsert._ChildInsertIntoClause<C, P>>> spec;
+        private <P> Insert._ParentInsert<StandardInsert._ChildInsertIntoClause<P>> parentInsertEnd(final StandardComplexValuesClause<?, ?> clause) {
+            final Statement._DmlInsertSpec<Insert._ParentInsert<StandardInsert._ChildInsertIntoClause<P>>> spec;
 
             final InsertMode mode;
             mode = clause.getInsertMode();
@@ -79,7 +78,7 @@ abstract class StandardInserts extends InsertSupport {
             return spec.asInsert();
         }
 
-        private Insert simpleInsertEnd(final StandardComplexValuesClause<?, ?, ?> clause) {
+        private Insert simpleInsertEnd(final StandardComplexValuesClause<?, ?> clause) {
             final Statement._DmlInsertSpec<Insert> spec;
             final InsertMode mode;
             mode = clause.getInsertMode();
@@ -104,22 +103,22 @@ abstract class StandardInserts extends InsertSupport {
     }//PrimaryInsertIntoClause
 
 
-    private static final class ChildInsertIntoClause<C, P>
+    private static final class ChildInsertIntoClause<P>
             extends SimpleValuesSyntaxOptions
-            implements StandardInsert._ChildInsertIntoClause<C, P>
+            implements StandardInsert._ChildInsertIntoClause<P>
             , ValueSyntaxOptions {
 
-        private final Function<StandardComplexValuesClause<?, ?, ?>, Insert> dmlFunction;
+        private final Function<StandardComplexValuesClause<?, ?>, Insert> dmlFunction;
 
-        private ChildInsertIntoClause(@Nullable C criteria, ValueSyntaxOptions options, Function<StandardComplexValuesClause<?, ?, ?>, Insert> dmlFunction) {
-            super(options, CriteriaContexts.primaryInsertContext(criteria));
+        private ChildInsertIntoClause(ValueSyntaxOptions options, Function<StandardComplexValuesClause<?, ?>, Insert> dmlFunction) {
+            super(options, CriteriaContexts.primaryInsertContext());
             this.dmlFunction = dmlFunction;
             ContextStack.setContextStack(this.context);
         }
 
 
         @Override
-        public <T> StandardInsert._ColumnListSpec<C, T, Insert> insertInto(ComplexTableMeta<P, T> table) {
+        public <T> StandardInsert._ColumnListSpec<T, Insert> insertInto(ComplexTableMeta<P, T> table) {
             return new StandardComplexValuesClause<>(this, table, this.dmlFunction);
         }
 
@@ -127,16 +126,16 @@ abstract class StandardInserts extends InsertSupport {
     }//ChildInsertIntoClause
 
 
-    private static final class StandardStaticValuesClause<C, T, I extends DmlInsert>
+    private static final class StandardStaticValuesClause<T, I extends DmlInsert>
             extends InsertSupport.StaticColumnValuePairClause<
             C,
             T,
-            StandardInsert._ValueStaticLeftParenSpec<C, T, I>>
-            implements StandardInsert._ValueStaticLeftParenSpec<C, T, I> {
+            StandardInsert._ValueStaticLeftParenSpec<T, I>>
+            implements StandardInsert._ValueStaticLeftParenSpec<T, I> {
 
-        private final StandardComplexValuesClause<C, T, I> claus;
+        private final StandardComplexValuesClause<T, I> claus;
 
-        private StandardStaticValuesClause(StandardComplexValuesClause<C, T, I> clause) {
+        private StandardStaticValuesClause(StandardComplexValuesClause<T, I> clause) {
             super(clause.context, clause::validateField);
             this.claus = clause;
         }
@@ -151,35 +150,34 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardStaticValuesClause
 
 
-    private static final class StandardComplexValuesClause<C, T, I extends DmlInsert>
+    private static final class StandardComplexValuesClause<T, I extends DmlInsert>
             extends InsertSupport.ComplexInsertValuesClause<
-            C,
             T,
-            StandardInsert._ComplexColumnDefaultSpec<C, T, I>,
-            StandardInsert._ValuesColumnDefaultSpec<C, T, I>,
+            StandardInsert._ComplexColumnDefaultSpec<T, I>,
+            StandardInsert._ValuesColumnDefaultSpec<T, I>,
             Statement._DmlInsertSpec<I>>
-            implements StandardInsert._ColumnListSpec<C, T, I>
-            , StandardInsert._ComplexColumnDefaultSpec<C, T, I>
+            implements StandardInsert._ColumnListSpec<T, I>
+            , StandardInsert._ComplexColumnDefaultSpec<T, I>
             , Statement._DmlInsertSpec<I> {
 
-        private final Function<StandardComplexValuesClause<?, ?, ?>, I> dmlFunction;
+        private final Function<StandardComplexValuesClause<?, ?>, I> dmlFunction;
 
         private StandardComplexValuesClause(ValueSyntaxOptions options, TableMeta<T> table
-                , Function<StandardComplexValuesClause<?, ?, ?>, I> dmlFunction) {
+                , Function<StandardComplexValuesClause<?, ?>, I> dmlFunction) {
             super(options, table);
             this.dmlFunction = dmlFunction;
         }
 
 
         @Override
-        public StandardInsert._StandardValueStaticLeftParenClause<C, T, I> values() {
+        public StandardInsert._StandardValueStaticLeftParenClause<T, I> values() {
             return new StandardStaticValuesClause<>(this);
         }
 
 
         @Override
-        public StandardQuery._SelectSpec<C, Statement._DmlInsertSpec<I>> space() {
-            return StandardQueries.subQuery(this.criteria, this.context, this::staticInsertQueryEnd);
+        public StandardQuery._SelectSpec<Statement._DmlInsertSpec<I>> space() {
+            return StandardQueries.subQuery(this.context, this::staticInsertQueryEnd);
         }
 
         @Override

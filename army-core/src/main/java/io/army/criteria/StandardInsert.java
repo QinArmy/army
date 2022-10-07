@@ -14,62 +14,62 @@ import io.army.meta.SimpleTableMeta;
 public interface StandardInsert extends StandardStatement {
 
 
-    interface _StandardValueStaticLeftParenClause<C, T, I extends Item>
-            extends Insert._StaticValueLeftParenClause<C, T, _ValueStaticLeftParenSpec<C, T, I>> {
+    interface _StandardValueStaticLeftParenClause<T, I extends Item>
+            extends Insert._StaticValueLeftParenClause<T, _ValueStaticLeftParenSpec<T, I>> {
 
     }
 
-    interface _ValueStaticLeftParenSpec<C, T, I extends Item>
-            extends _StandardValueStaticLeftParenClause<C, T, I>, _DmlInsertSpec<I> {
+    interface _ValueStaticLeftParenSpec<T, I extends Item>
+            extends _StandardValueStaticLeftParenClause<T, I>, _DmlInsertSpec<I> {
 
     }
 
-    interface _ValuesColumnDefaultSpec<C, T, I extends Item>
-            extends Insert._ColumnDefaultClause<C, T, _ValuesColumnDefaultSpec<C, T, I>>
-            , Insert._DomainValueClause<C, T, _DmlInsertSpec<I>>
-            , Insert._DynamicValuesClause<C, T, _DmlInsertSpec<I>>
-            , Insert._StaticValuesClause<_StandardValueStaticLeftParenClause<C, T, I>> {
-
-    }
-
-
-    interface _ComplexColumnDefaultSpec<C, T, I extends Item> extends _ValuesColumnDefaultSpec<C, T, I> {
-
-        StandardQuery._SelectSpec<C, _DmlInsertSpec<I>> space();
-    }
-
-    interface _ColumnListSpec<C, T, I extends Item>
-            extends Insert._ColumnListClause<C, T, _ComplexColumnDefaultSpec<C, T, I>>
-            , _ValuesColumnDefaultSpec<C, T, I> {
-
-    }
-
-    interface _ChildInsertIntoClause<C, P> {
-
-        <T> _ColumnListSpec<C, T, Insert> insertInto(ComplexTableMeta<P, T> table);
+    interface _ValuesColumnDefaultSpec<T, I extends Item>
+            extends Insert._ColumnDefaultClause<T, _ValuesColumnDefaultSpec<T, I>>
+            , Insert._DomainValueClause<T, _DmlInsertSpec<I>>
+            , Insert._DynamicValuesClause<T, _DmlInsertSpec<I>>
+            , Insert._StaticValuesClause<_StandardValueStaticLeftParenClause<T, I>> {
 
     }
 
 
-    interface _PrimaryInsertIntoClause<C> {
+    interface _ComplexColumnDefaultSpec<T, I extends Item> extends _ValuesColumnDefaultSpec<T, I> {
 
-        <T> _ColumnListSpec<C, T, Insert> insertInto(SimpleTableMeta<T> table);
-
-        <P> _ColumnListSpec<C, P, Insert._ParentInsert<_ChildInsertIntoClause<C, P>>> insertInto(ParentTableMeta<P> table);
+        StandardQuery._SelectSpec<_DmlInsertSpec<I>> space();
     }
 
-    interface _PrimaryPreferLiteralSpec<C> extends Insert._PreferLiteralClause<_PrimaryInsertIntoClause<C>>
-            , _PrimaryInsertIntoClause<C> {
-
-    }
-
-    interface _PrimaryNullOptionSpec<C> extends Insert._NullOptionClause<_PrimaryPreferLiteralSpec<C>>
-            , _PrimaryPreferLiteralSpec<C> {
+    interface _ColumnListSpec<T, I extends Item>
+            extends Insert._ColumnListClause<T, _ComplexColumnDefaultSpec<T, I>>
+            , _ValuesColumnDefaultSpec<T, I> {
 
     }
 
-    interface _PrimaryOptionSpec<C> extends Insert._MigrationOptionClause<_PrimaryNullOptionSpec<C>>
-            , _PrimaryNullOptionSpec<C> {
+    interface _ChildInsertIntoClause<P> {
+
+        <T> _ColumnListSpec<T, Insert> insertInto(ComplexTableMeta<P, T> table);
+
+    }
+
+
+    interface _PrimaryInsertIntoClause {
+
+        <T> _ColumnListSpec<T, Insert> insertInto(SimpleTableMeta<T> table);
+
+        <P> _ColumnListSpec<P, Insert._ParentInsert<_ChildInsertIntoClause<P>>> insertInto(ParentTableMeta<P> table);
+    }
+
+    interface _PrimaryPreferLiteralSpec extends Insert._PreferLiteralClause<_PrimaryInsertIntoClause>
+            , _PrimaryInsertIntoClause {
+
+    }
+
+    interface _PrimaryNullOptionSpec extends Insert._NullOptionClause<_PrimaryPreferLiteralSpec>
+            , _PrimaryPreferLiteralSpec {
+
+    }
+
+    interface _PrimaryOptionSpec extends Insert._MigrationOptionClause<_PrimaryNullOptionSpec>
+            , _PrimaryNullOptionSpec {
 
     }
 

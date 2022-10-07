@@ -111,28 +111,23 @@ public interface DialectStatement extends Statement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C>  criteria object java type
      * @param <JT> same with JT with the JT of {@link _JoinClause}
      * @param <JS> same with JT with the JS of {@link _JoinClause}
      * @see _CrossJoinClause
      * @since 1.0
      */
-    interface _StraightJoinClause<C, JT, JS> {
+    interface _StraightJoinClause<JT, JS> {
 
         JT straightJoin(TableMeta<?> table, String tableAlias);
-
-        <T extends TabularItem> JS straightJoin(Function<C, T> function, String alias);
 
         <T extends TabularItem> JS straightJoin(Supplier<T> supplier, String alias);
 
 
     }
 
-    interface _StraightJoinModifierClause<C, JT, JS> extends _StraightJoinClause<C, JT, JS> {
+    interface _StraightJoinModifierClause<JT, JS> extends _StraightJoinClause<JT, JS> {
 
         JT straightJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
-
-        <T extends TabularItem> JS straightJoin(Query.TabularModifier modifier, Function<C, T> function, String alias);
 
         <T extends TabularItem> JS straightJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
 
@@ -207,8 +202,6 @@ public interface DialectStatement extends Statement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <FP> same with the FP of {@link _DialectFromClause}
-     * @see _DialectFromClause
      * @since 1.0
      */
     interface _DialectCrossJoinClause<FP> {

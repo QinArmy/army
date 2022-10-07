@@ -8,7 +8,10 @@ import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -127,11 +130,10 @@ public interface Statement extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C>  criteria object java type.
      * @param <OR> next clause java type
      * @since 1.0
      */
-    interface _OnClause<C, OR> {
+    interface _OnClause<OR> {
 
         OR on(IPredicate predicate);
 
@@ -144,7 +146,6 @@ public interface Statement extends Item {
 
         OR on(Consumer<Consumer<IPredicate>> consumer);
 
-        OR on(BiConsumer<C, Consumer<IPredicate>> consumer);
 
     }
 
@@ -165,57 +166,43 @@ public interface Statement extends Item {
      * @see _CrossJoinClause
      * @since 1.0
      */
-    interface _JoinClause<C, JT, JS> {
+    interface _JoinClause<JT, JS> {
 
         JT leftJoin(TableMeta<?> table, String tableAlias);
-
-        <T extends TabularItem> JS leftJoin(Function<C, T> function, String alias);
 
         <T extends TabularItem> JS leftJoin(Supplier<T> supplier, String alias);
 
         JT join(TableMeta<?> table, String tableAlias);
 
-        <T extends TabularItem> JS join(Function<C, T> function, String alias);
-
         <T extends TabularItem> JS join(Supplier<T> supplier, String alias);
 
         JT rightJoin(TableMeta<?> table, String tableAlias);
 
-        <T extends TabularItem> JS rightJoin(Function<C, T> function, String alias);
 
         <T extends TabularItem> JS rightJoin(Supplier<T> supplier, String alias);
 
         JT fullJoin(TableMeta<?> table, String tableAlias);
 
-        <T extends TabularItem> JS fullJoin(Function<C, T> function, String alias);
-
         <T extends TabularItem> JS fullJoin(Supplier<T> supplier, String alias);
 
     }
 
-    interface _JoinModifierClause<C, JT, JS> extends _JoinClause<C, JT, JS> {
+    interface _JoinModifierClause<JT, JS> extends _JoinClause<JT, JS> {
 
         JT leftJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
-
-        <T extends TabularItem> JS leftJoin(Query.TabularModifier modifier, Function<C, T> function, String alias);
 
         <T extends TabularItem> JS leftJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
 
         JT join(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
 
-        <T extends TabularItem> JS join(Query.TabularModifier modifier, Function<C, T> function, String alias);
-
         <T extends TabularItem> JS join(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
 
         JT rightJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
-
-        <T extends TabularItem> JS rightJoin(Query.TabularModifier modifier, Function<C, T> function, String alias);
 
         <T extends TabularItem> JS rightJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
 
         JT fullJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
 
-        <T extends TabularItem> JS fullJoin(Query.TabularModifier modifier, Function<C, T> function, String alias);
 
         <T extends TabularItem> JS fullJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
 
@@ -233,54 +220,25 @@ public interface Statement extends Item {
      * </p>
      *
      * @param <C>  criteria object java type
-     * @param <FT> same with the FT of {@link _FromClause}
-     * @param <FS> same with the FS of {@link _FromClause}
      * @since 1.0
      */
-    interface _CrossJoinClause<C, FT, FS> {
+    interface _CrossJoinClause<FT, FS> {
 
         FT crossJoin(TableMeta<?> table, String tableAlias);
-
-        <T extends TabularItem> FS crossJoin(Function<C, T> function, String alias);
 
         <T extends TabularItem> FS crossJoin(Supplier<T> supplier, String alias);
 
     }
 
-    interface _CrossJoinModifierClause<C, FT, FS> extends _CrossJoinClause<C, FT, FS> {
+    interface _CrossJoinModifierClause<FT, FS> extends _CrossJoinClause<FT, FS> {
 
         FT crossJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
-
-        <T extends TabularItem> FS crossJoin(Query.TabularModifier modifier, Function<C, T> function, String alias);
 
         <T extends TabularItem> FS crossJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
 
     }
 
 
-    interface _IfJoinClause<C, FJ> {
-
-        <B extends JoinItemBlock<C>> FJ ifLeftJoin(Supplier<B> supplier);
-
-        <B extends JoinItemBlock<C>> FJ ifLeftJoin(Function<C, B> function);
-
-        <B extends JoinItemBlock<C>> FJ ifJoin(Supplier<B> supplier);
-
-        <B extends JoinItemBlock<C>> FJ ifJoin(Function<C, B> function);
-
-        <B extends JoinItemBlock<C>> FJ ifRightJoin(Supplier<B> supplier);
-
-        <B extends JoinItemBlock<C>> FJ ifRightJoin(Function<C, B> function);
-
-        <B extends JoinItemBlock<C>> FJ ifFullJoin(Supplier<B> supplier);
-
-        <B extends JoinItemBlock<C>> FJ ifFullJoin(Function<C, B> function);
-
-        <B extends ItemBlock<C>> FJ ifCrossJoin(Supplier<B> supplier);
-
-        <B extends ItemBlock<C>> FJ ifCrossJoin(Function<C, B> function);
-
-    }
 
 
     /**
@@ -298,38 +256,30 @@ public interface Statement extends Item {
      * @param <LS> next clause java type
      * @since 1.0
      */
-    interface _LeftParenClause<C, LT, LS> {
+    interface _LeftParenClause<LT, LS> {
 
         LT leftParen(TableMeta<?> table, String tableAlias);
 
         <T extends TabularItem> LS leftParen(Supplier<T> supplier, String alias);
 
-        <T extends TabularItem> LS leftParen(Function<C, T> function, String alias);
 
     }
 
-    interface _MinWhereClause<C, WR, WA> {
+    interface _MinWhereClause<WR, WA> {
 
         WR where(Consumer<Consumer<IPredicate>> consumer);
-
-        WR where(BiConsumer<C, Consumer<IPredicate>> consumer);
 
         WA where(IPredicate predicate);
 
         WA where(Supplier<IPredicate> supplier);
 
-        WA where(Function<C, IPredicate> function);
-
         WA whereIf(Supplier<IPredicate> supplier);
 
-        WA whereIf(Function<C, IPredicate> function);
     }
 
-    interface _MinQueryWhereClause<C, WR, WA> extends _MinWhereClause<C, WR, WA> {
+    interface _MinQueryWhereClause<WR, WA> extends _MinWhereClause<WR, WA> {
 
         WR ifWhere(Consumer<Consumer<IPredicate>> consumer);
-
-        WR ifWhere(BiConsumer<C, Consumer<IPredicate>> consumer);
     }
 
     /**
@@ -346,13 +296,11 @@ public interface Statement extends Item {
      * @param <WA> next clause java type
      * @since 1.0
      */
-    interface _WhereClause<C, WR, WA> extends _MinWhereClause<C, WR, WA> {
+    interface _WhereClause<WR, WA> extends _MinWhereClause<WR, WA> {
 
         WA where(Function<Expression, IPredicate> expOperator, Expression operand);
 
         <E> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier);
-
-        <E> WA where(Function<E, IPredicate> expOperator, Function<C, E> function);
 
         WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator, BiFunction<DataField, String, Expression> namedOperator);
 
@@ -374,8 +322,6 @@ public interface Statement extends Item {
 
 
         <E> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier);
-
-        <E> WA whereIf(Function<E, IPredicate> expOperator, Function<C, E> function);
 
         <T> WA whereIf(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
 
@@ -410,22 +356,19 @@ public interface Statement extends Item {
      * @param <WA> next clause java type
      * @since 1.0
      */
-    interface _QueryWhereClause<C, WR, WA> extends _WhereClause<C, WR, WA>, _MinQueryWhereClause<C, WR, WA> {
+    interface _QueryWhereClause<WR, WA> extends _WhereClause<WR, WA>, _MinQueryWhereClause<WR, WA> {
 
     }
 
 
-    interface _MinWhereAndClause<C, WA> {
+    interface _MinWhereAndClause<WA> {
 
         WA and(IPredicate predicate);
 
         WA and(Supplier<IPredicate> supplier);
 
-        WA and(Function<C, IPredicate> function);
-
         WA ifAnd(Supplier<IPredicate> supplier);
 
-        WA ifAnd(Function<C, IPredicate> function);
     }
 
 
@@ -442,13 +385,11 @@ public interface Statement extends Item {
      * @param <WA> next clause java type
      * @since 1.0
      */
-    interface _WhereAndClause<C, WA> extends _MinWhereAndClause<C, WA> {
+    interface _WhereAndClause<WA> extends _MinWhereAndClause<WA> {
 
         WA and(Function<Expression, IPredicate> expOperator, Expression operand);
 
         <E> WA and(Function<E, IPredicate> expOperator, Supplier<E> supplier);
-
-        <E> WA and(Function<E, IPredicate> expOperator, Function<C, E> function);
 
         WA and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator, BiFunction<DataField, String, Expression> namedOperator);
 
@@ -470,8 +411,6 @@ public interface Statement extends Item {
 
 
         <E> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier);
-
-        <E> WA ifAnd(Function<E, IPredicate> expOperator, Function<C, E> function);
 
         <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
 
@@ -505,7 +444,7 @@ public interface Statement extends Item {
      *
      * @since 1.0
      */
-    interface _OrderByClause<C, OR> {
+    interface _OrderByClause<OR> {
 
         OR orderBy(SortItem sortItem);
 
@@ -515,11 +454,7 @@ public interface Statement extends Item {
 
         OR orderBy(Consumer<Consumer<SortItem>> consumer);
 
-        OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer);
-
         OR ifOrderBy(Consumer<Consumer<SortItem>> consumer);
-
-        OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer);
 
     }
 
@@ -536,19 +471,15 @@ public interface Statement extends Item {
      *
      * @since 1.0
      */
-    interface _RowCountLimitClause<C, LR> {
+    interface _RowCountLimitClause<LR> {
 
         LR limit(long rowCount);
 
         LR limit(Supplier<? extends Number> supplier);
 
-        LR limit(Function<C, ? extends Number> function);
-
         LR limit(Function<String, ?> function, String keyName);
 
         LR ifLimit(Supplier<? extends Number> supplier);
-
-        LR ifLimit(Function<C, ? extends Number> function);
 
         LR ifLimit(Function<String, ?> function, String keyName);
 
@@ -583,39 +514,36 @@ public interface Statement extends Item {
 
     }
 
-    interface _LeftParenStringDynamicClause<C, RR> {
+    interface _LeftParenStringDynamicClause<RR> {
 
         Statement._RightParenClause<RR> leftParen(Consumer<Consumer<String>> consumer);
-
-        Statement._RightParenClause<RR> leftParen(BiConsumer<C, Consumer<String>> consumer);
     }
 
-    interface _LeftParenStringDynamicOptionalClause<C, RR> {
+    interface _LeftParenStringDynamicOptionalClause<RR> {
 
         Statement._RightParenClause<RR> leftParenIf(Consumer<Consumer<String>> consumer);
 
-        Statement._RightParenClause<RR> leftParenIf(BiConsumer<C, Consumer<String>> consumer);
     }
 
 
-    interface _LeftParenStringDualSpec<C, RR> extends _LeftParenStringDualClause<RR>, _LeftParenStringDynamicClause<C, RR> {
+    interface _LeftParenStringDualSpec<RR> extends _LeftParenStringDualClause<RR>, _LeftParenStringDynamicClause<RR> {
 
     }
 
-    interface _LeftParenStringDualOptionalSpec<C, RR> extends _LeftParenStringDualSpec<C, RR>
-            , _LeftParenStringDynamicOptionalClause<C, RR> {
+    interface _LeftParenStringDualOptionalSpec<RR> extends _LeftParenStringDualSpec<RR>
+            , _LeftParenStringDynamicOptionalClause<RR> {
 
     }
 
 
-    interface _LeftParenStringQuadraSpec<C, RR> extends _LeftParenStringDualSpec<C, RR> {
+    interface _LeftParenStringQuadraSpec<RR> extends _LeftParenStringDualSpec<RR> {
 
         _CommaStringQuadraSpec<RR> leftParen(String string1, String string2, String string3, String string4);
 
     }
 
-    interface _LeftParenStringQuadraOptionalSpec<C, RR> extends _LeftParenStringQuadraSpec<C, RR>
-            , _LeftParenStringDynamicOptionalClause<C, RR> {
+    interface _LeftParenStringQuadraOptionalSpec<RR> extends _LeftParenStringQuadraSpec<RR>
+            , _LeftParenStringDynamicOptionalClause<RR> {
 
 
     }

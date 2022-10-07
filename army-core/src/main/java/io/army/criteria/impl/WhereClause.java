@@ -16,7 +16,10 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -26,23 +29,21 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class WhereClause<C, WR, WA, OR> extends OrderByClause<C, OR>
-        implements Statement._WhereClause<C, WR, WA>
-        , Statement._WhereAndClause<C, WA>
-        , Update._UpdateWhereAndClause<C, WA>
+abstract class WhereClause<WR, WA, OR> extends OrderByClause<OR>
+        implements Statement._WhereClause<WR, WA>
+        , Statement._WhereAndClause<WA>
+        , Update._UpdateWhereAndClause<WA>
         , _Statement._PredicateListSpec
         , Statement.StatementMockSpec {
 
     final CriteriaContext context;
 
-    final C criteria;
 
     private List<_Predicate> predicateList;
 
     WhereClause(CriteriaContext context) {
         super(context);
         this.context = context;
-        this.criteria = context.criteria();
     }
 
 
@@ -52,11 +53,6 @@ abstract class WhereClause<C, WR, WA, OR> extends OrderByClause<C, OR>
         return (WR) this;
     }
 
-    @Override
-    public final WR where(BiConsumer<C, Consumer<IPredicate>> consumer) {
-        consumer.accept(this.criteria, this::and);
-        return (WR) this;
-    }
 
     @Override
     public final WA where(IPredicate predicate) {
@@ -67,13 +63,6 @@ abstract class WhereClause<C, WR, WA, OR> extends OrderByClause<C, OR>
     public final WA where(Supplier<IPredicate> supplier) {
         return this.and(supplier.get());
     }
-
-    @Override
-    public final WA where(Function<C, IPredicate> function) {
-        return this.and(function.apply(this.criteria));
-    }
-
-
     @Override
     public final WA where(Function<Expression, IPredicate> expOperator, Expression operand) {
         return this.and(expOperator.apply(operand));
@@ -82,11 +71,6 @@ abstract class WhereClause<C, WR, WA, OR> extends OrderByClause<C, OR>
     @Override
     public final <E> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.and(expOperator.apply(supplier.get()));
-    }
-
-    @Override
-    public final <E> WA where(Function<E, IPredicate> expOperator, Function<C, E> function) {
-        return this.and(expOperator.apply(function.apply(this.criteria)));
     }
 
     @Override
@@ -178,20 +162,10 @@ abstract class WhereClause<C, WR, WA, OR> extends OrderByClause<C, OR>
         return this.ifAnd(supplier);
     }
 
-    @Override
-    public final WA whereIf(Function<C, IPredicate> function) {
-        return this.ifAnd(function);
-    }
-
 
     @Override
     public final <E> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.ifAnd(expOperator, supplier);
-    }
-
-    @Override
-    public final <E> WA whereIf(Function<E, IPredicate> expOperator, Function<C, E> function) {
-        return this.ifAnd(expOperator, function);
     }
 
     @Override
@@ -260,11 +234,6 @@ abstract class WhereClause<C, WR, WA, OR> extends OrderByClause<C, OR>
         return this.and(supplier.get());
     }
 
-    @Override
-    public final WA and(Function<C, IPredicate> function) {
-        return this.and(function.apply(this.criteria));
-    }
-
 
     @Override
     public final WA and(Function<Expression, IPredicate> expOperator, Expression operand) {
@@ -277,10 +246,6 @@ abstract class WhereClause<C, WR, WA, OR> extends OrderByClause<C, OR>
         return this.and(expOperator.apply(supplier.get()));
     }
 
-    @Override
-    public final <E> WA and(Function<E, IPredicate> expOperator, Function<C, E> function) {
-        return this.and(expOperator.apply(function.apply(this.criteria)));
-    }
 
     @Override
     public final WA and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator
@@ -389,31 +354,12 @@ abstract class WhereClause<C, WR, WA, OR> extends OrderByClause<C, OR>
         return (WA) this;
     }
 
-    @Override
-    public final WA ifAnd(Function<C, IPredicate> function) {
-        final IPredicate predicate;
-        predicate = function.apply(this.criteria);
-        if (predicate != null) {
-            this.predicateList.add((OperationPredicate) predicate);
-        }
-        return (WA) this;
-    }
 
 
     @Override
     public final <E> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         final E expression;
         expression = supplier.get();
-        if (expression != null) {
-            this.and(expOperator.apply(expression));
-        }
-        return (WA) this;
-    }
-
-    @Override
-    public final <E> WA ifAnd(Function<E, IPredicate> expOperator, Function<C, E> function) {
-        final E expression;
-        expression = function.apply(this.criteria);
         if (expression != null) {
             this.and(expOperator.apply(expression));
         }

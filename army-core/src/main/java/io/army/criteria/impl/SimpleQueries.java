@@ -15,7 +15,10 @@ import io.army.util._CollectionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 
 /**
@@ -26,16 +29,17 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, SP>
-        extends JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
-        implements Query._DynamicHintModifierSelectClause<C, W, SR>
-        , Query._FromModifierClause<C, FT, FS>, Query._FromModifierCteClause<FC>
-        , Statement._QueryWhereClause<C, WR, WA>, Query._GroupClause<C, GR>
-        , Query._HavingClause<C, HR>, Query._QuerySpec<Q>
+abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, SP>
+        extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR>
+        implements Query._DynamicHintModifierSelectClause<W, SR>
+        , Query._FromModifierClause<FT, FS>, Query._FromModifierCteClause<FC>
+        , Statement._QueryWhereClause<WR, WA>, Query._GroupClause<GR>
+        , Query._HavingClause<HR>, Query._QuerySpec<Q>
         , TabularItem.DerivedTableSpec, Query._QueryUnionClause<SP>
         , Query._QueryIntersectClause<SP>, Query._QueryExceptClause<SP>
         , Query._QueryMinusClause<SP>, Query
         , Statement, _Query, _SelfDescribed {
+
 
     private List<Hint> hintList;
 
@@ -91,24 +95,12 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
     }
 
     @Override
-    public final SR select(BiConsumer<C, Consumer<SelectItem>> consumer) {
-        consumer.accept(this.criteria, this.context::onAddSelectItem);
-        return (SR) this;
-    }
-
-    @Override
     public final SR select(W modifier, Consumer<Consumer<SelectItem>> consumer) {
         this.modifierList = this.asModifierList(Collections.singletonList(modifier));
         consumer.accept(this.context::onAddSelectItem);
         return (SR) this;
     }
 
-    @Override
-    public final SR select(W modifier, BiConsumer<C, Consumer<SelectItem>> consumer) {
-        this.modifierList = this.asModifierList(Collections.singletonList(modifier));
-        consumer.accept(this.criteria, this.context::onAddSelectItem);
-        return (SR) this;
-    }
 
     @Override
     public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Consumer<SelectItem>> consumer) {
@@ -118,13 +110,6 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
         return (SR) this;
     }
 
-    @Override
-    public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, BiConsumer<C, Consumer<SelectItem>> consumer) {
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        consumer.accept(this.criteria, this.context::onAddSelectItem);
-        return (SR) this;
-    }
 
     /*################################## blow FromSpec method ##################################*/
 
@@ -139,11 +124,6 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
     }
 
     @Override
-    public final <T extends TabularItem> FS from(Function<C, T> function, String alias) {
-        return this.onAddNoOnQueryItem(_JoinType.NONE, null, function.apply(this.criteria), alias);
-    }
-
-    @Override
     public final FT from(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias) {
         return this.onAddNoOnTableItem(_JoinType.NONE, modifier, table, tableAlias);
     }
@@ -151,11 +131,6 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
     @Override
     public final <T extends TabularItem> FS from(Query.TabularModifier modifier, Supplier<T> supplier, String alias) {
         return this.onAddNoOnQueryItem(_JoinType.NONE, modifier, supplier.get(), alias);
-    }
-
-    @Override
-    public final <T extends TabularItem> FS from(Query.TabularModifier modifier, Function<C, T> function, String alias) {
-        return this.onAddNoOnQueryItem(_JoinType.NONE, modifier, function.apply(this.criteria), alias);
     }
 
     @Override
@@ -184,11 +159,6 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
         return (WR) this;
     }
 
-    @Override
-    public final WR ifWhere(BiConsumer<C, Consumer<IPredicate>> consumer) {
-        consumer.accept(this.criteria, this::and);
-        return (WR) this;
-    }
 
     @Override
     public final GR groupBy(SortItem sortItem) {
@@ -222,22 +192,11 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
         return this.endGroupBy(true);
     }
 
-    @Override
-    public final GR groupBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        consumer.accept(this.criteria, this::addGroupByItem);
-        return this.endGroupBy(true);
-    }
 
 
     @Override
     public final GR ifGroupBy(Consumer<Consumer<SortItem>> consumer) {
         consumer.accept(this::addGroupByItem);
-        return this.endGroupBy(false);
-    }
-
-    @Override
-    public final GR ifGroupBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        consumer.accept(this.criteria, this::addGroupByItem);
         return this.endGroupBy(false);
     }
 
@@ -274,13 +233,6 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
         return (HR) this;
     }
 
-    @Override
-    public final HR having(Function<C, IPredicate> function) {
-        if (this.groupByList != null) {
-            this.having(function.apply(this.criteria));
-        }
-        return (HR) this;
-    }
 
     @Override
     public final HR having(Function<Object, IPredicate> operator, Supplier<?> operand) {
@@ -323,28 +275,11 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
         return (HR) this;
     }
 
-    @Override
-    public final HR having(BiConsumer<C, Consumer<IPredicate>> consumer) {
-        if (this.groupByList != null) {
-            consumer.accept(this.criteria, this::addHavingPredicate);
-            this.endHaving(false);
-        }
-        return (HR) this;
-    }
 
     @Override
     public final HR ifHaving(Consumer<Consumer<IPredicate>> consumer) {
         if (this.groupByList != null) {
             consumer.accept(this::addHavingPredicate);
-            this.endHaving(true);
-        }
-        return (HR) this;
-    }
-
-    @Override
-    public final HR ifHaving(BiConsumer<C, Consumer<IPredicate>> consumer) {
-        if (this.groupByList != null) {
-            consumer.accept(this.criteria, this::addHavingPredicate);
             this.endHaving(true);
         }
         return (HR) this;
@@ -638,8 +573,8 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
     abstract SP createQueryUnion(UnionType unionType);
 
 
-    static abstract class SelectClauseDispatcher<C, W extends Query.SelectModifier, SR>
-            implements Query._DynamicHintModifierSelectClause<C, W, SR> {
+    static abstract class SelectClauseDispatcher<W extends Query.SelectModifier, SR>
+            implements Query._DynamicHintModifierSelectClause<W, SR> {
 
         SelectClauseDispatcher() {
         }
@@ -668,20 +603,9 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
                     .select(consumer);
         }
 
-        @Override
-        public final SR select(BiConsumer<C, Consumer<SelectItem>> consumer) {
-            return this.createSelectClause()
-                    .select(consumer);
-        }
 
         @Override
         public final SR select(W modifier, Consumer<Consumer<SelectItem>> consumer) {
-            return this.createSelectClause()
-                    .select(modifier, consumer);
-        }
-
-        @Override
-        public final SR select(W modifier, BiConsumer<C, Consumer<SelectItem>> consumer) {
             return this.createSelectClause()
                     .select(modifier, consumer);
         }
@@ -692,20 +616,15 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
                     .select(hints, modifiers, consumer);
         }
 
-        @Override
-        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, BiConsumer<C, Consumer<SelectItem>> consumer) {
-            return this.createSelectClause()
-                    .select(hints, modifiers, consumer);
-        }
 
-        abstract Query._DynamicHintModifierSelectClause<C, W, SR> createSelectClause();
+        abstract Query._DynamicHintModifierSelectClause<W, SR> createSelectClause();
 
 
     }//SelectClauseDispatcher
 
-    static abstract class WithSelectClauseDispatcher<C, B extends CteBuilderSpec, WE, WS, W extends Query.SelectModifier, SR>
-            extends SelectClauseDispatcher<C, W, SR>
-            implements _DynamicWithCteClause<C, B, WE>
+    static abstract class WithSelectClauseDispatcher<B extends CteBuilderSpec, WE, WS, W extends Query.SelectModifier, SR>
+            extends SelectClauseDispatcher<W, SR>
+            implements _DynamicWithCteClause<B, WE>
             , Query._StaticWithCteClause<WS> {
 
         WithSelectClauseDispatcher() {
@@ -717,11 +636,6 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
                     .with(consumer);
         }
 
-        @Override
-        public final WE with(BiConsumer<C, B> consumer) {
-            return this.createDynamicWithClause()
-                    .with(consumer);
-        }
 
         @Override
         public final WE withRecursive(Consumer<B> consumer) {
@@ -729,11 +643,6 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
                     .withRecursive(consumer);
         }
 
-        @Override
-        public final WE withRecursive(BiConsumer<C, B> consumer) {
-            return this.createDynamicWithClause()
-                    .withRecursive(consumer);
-        }
 
         @Override
         public final WE ifWith(Consumer<B> consumer) {
@@ -741,11 +650,6 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
                     .ifWith(consumer);
         }
 
-        @Override
-        public final WE ifWith(BiConsumer<C, B> consumer) {
-            return this.createDynamicWithClause()
-                    .ifWith(consumer);
-        }
 
         @Override
         public final WE ifWithRecursive(Consumer<B> consumer) {
@@ -753,11 +657,6 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
                     .ifWithRecursive(consumer);
         }
 
-        @Override
-        public final WE ifWithRecursive(BiConsumer<C, B> consumer) {
-            return this.createDynamicWithClause()
-                    .ifWithRecursive(consumer);
-        }
 
         @Override
         public final WS with(String name) {
@@ -772,7 +671,7 @@ abstract class SimpleQueries<C, Q extends Item, W extends Query.SelectModifier, 
         }
 
 
-        abstract _DynamicWithCteClause<C, B, WE> createDynamicWithClause();
+        abstract _DynamicWithCteClause<B, WE> createDynamicWithClause();
 
         abstract Query._StaticWithCteClause<WS> createStaticWithClause();
 

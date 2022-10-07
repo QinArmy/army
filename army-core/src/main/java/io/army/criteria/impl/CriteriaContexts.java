@@ -36,8 +36,8 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
-    static CriteriaContext primaryQueryContext(final @Nullable Object criteria) {
-        return new SimpleQueryContext(null, criteria);
+    static CriteriaContext primaryQueryContext() {
+        return new SimpleQueryContext(null);
     }
 
     static CriteriaContext primaryQueryContextFrom(final Query query) {
@@ -45,15 +45,15 @@ abstract class CriteriaContexts {
         leftContext = (StatementContext) ((CriteriaContextSpec) query).getContext();
 
         final SimpleQueryContext context;
-        context = new SimpleQueryContext(null, ((CriteriaSpec<?>) query).getCriteria());
+        context = new SimpleQueryContext(null);
         ((StatementContext) context).varMap = leftContext.varMap;
         return context;
     }
 
-    static CriteriaContext subQueryContext(final @Nullable Object criteria, final CriteriaContext outerContext) {
+    static CriteriaContext subQueryContext(final CriteriaContext outerContext) {
         assert outerContext == ContextStack.peek();
         final StatementContext context;
-        context = new SimpleQueryContext(outerContext, criteria);
+        context = new SimpleQueryContext(outerContext);
         context.varMap = ((StatementContext) outerContext).varMap;
         return context;
     }
@@ -68,7 +68,7 @@ abstract class CriteriaContexts {
         leftContext = (StatementContext) ((CriteriaContextSpec) query).getContext();
 
         final SimpleQueryContext context;
-        context = new SimpleQueryContext(ContextStack.peek(), ((CriteriaSpec<?>) query).getCriteria());
+        context = new SimpleQueryContext(ContextStack.peek());
         ((StatementContext) context).varMap = leftContext.varMap;
         return context;
     }
@@ -121,37 +121,37 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext primaryInsertContext(@Nullable Object criteria) {
-        return new InsertContext(criteria);
+    static CriteriaContext primaryInsertContext() {
+        return new InsertContext();
     }
 
-    static CriteriaContext cteInsertContext(CriteriaContext outContext, @Nullable Object criteria) {
+    static CriteriaContext cteInsertContext(CriteriaContext outContext) {
         assert ContextStack.peek() == outContext;
         final StatementContext subContext;
-        subContext = new SubInsertContext(outContext, criteria);
+        subContext = new SubInsertContext(outContext);
         subContext.varMap = ((StatementContext) outContext).varMap;
         return subContext;
     }
 
 
-    static CriteriaContext primaryMultiDmlContext(@Nullable Object criteria) {
-        return new MultiDmlContext(null, criteria);
+    static CriteriaContext primaryMultiDmlContext() {
+        return new MultiDmlContext(null);
     }
 
-    static CriteriaContext primarySingleDmlContext(@Nullable Object criteria) {
-        return new SingleDmlContext(null, criteria);
+    static CriteriaContext primarySingleDmlContext() {
+        return new SingleDmlContext(null);
     }
 
-    static CriteriaContext primaryValuesContext(@Nullable Object criteria) {
-        return new ValuesContext(null, criteria);
+    static CriteriaContext primaryValuesContext() {
+        return new ValuesContext(null);
     }
 
-    static CriteriaContext subValuesContext(@Nullable Object criteria) {
-        return new ValuesContext(ContextStack.peek(), criteria);
+    static CriteriaContext subValuesContext() {
+        return new ValuesContext(ContextStack.peek());
     }
 
-    static CriteriaContext otherPrimaryContext(@Nullable Object criteria) {
-        return new OtherPrimaryContext(criteria);
+    static CriteriaContext otherPrimaryContext() {
+        return new OtherPrimaryContext();
     }
 
 
@@ -280,7 +280,7 @@ abstract class CriteriaContexts {
 
     private static abstract class StatementContext implements CriteriaContext, CriteriaContext.OuterContextSpec {
 
-        final Object criteria;
+        Object criteria;
 
 
         private Map<String, VarExpression> varMap;
@@ -300,9 +300,8 @@ abstract class CriteriaContexts {
         private WithClauseContext withClauseContext;
 
 
-        private StatementContext(@Nullable CriteriaContext outerContext, @Nullable Object criteria) {
+        private StatementContext(@Nullable CriteriaContext outerContext) {
             this.outerContext = outerContext;
-            this.criteria = criteria;
         }
 
         @Override
@@ -688,8 +687,8 @@ abstract class CriteriaContexts {
 
         private Map<String, Map<FieldMeta<?>, QualifiedField<?>>> qualifiedFieldMap;
 
-        private JoinableContext(@Nullable CriteriaContext outerContext, @Nullable Object criteria) {
-            super(outerContext, criteria);
+        private JoinableContext(@Nullable CriteriaContext outerContext) {
+            super(outerContext);
         }
 
 
@@ -1042,36 +1041,36 @@ abstract class CriteriaContexts {
 
 
     /**
-     * @see #primaryInsertContext(Object)
+     * @see #primaryInsertContext()
      */
     private static final class InsertContext extends StatementContext {
 
-        private InsertContext(@Nullable Object criteria) {
-            super(null, criteria);
+        private InsertContext() {
+            super(null);
         }
 
     }// InsertContext
 
 
     /**
-     * @see #cteInsertContext(CriteriaContext, Object)
+     * @see #cteInsertContext(CriteriaContext)
      */
     private static final class SubInsertContext extends StatementContext {
 
-        private SubInsertContext(CriteriaContext outerContext, @Nullable Object criteria) {
-            super(outerContext, criteria);
+        private SubInsertContext(CriteriaContext outerContext) {
+            super(outerContext);
         }
 
     }//SubInsertContext
 
 
     /**
-     * @see #primarySingleDmlContext(Object)
+     * @see #primarySingleDmlContext()
      */
     private static final class SingleDmlContext extends StatementContext {
 
-        private SingleDmlContext(@Nullable CriteriaContext outerContext, @Nullable Object criteria) {
-            super(outerContext, criteria);
+        private SingleDmlContext(@Nullable CriteriaContext outerContext) {
+            super(outerContext);
         }
 
 
@@ -1079,8 +1078,8 @@ abstract class CriteriaContexts {
 
     private static final class MultiDmlContext extends JoinableContext {
 
-        private MultiDmlContext(@Nullable CriteriaContext outerContext, @Nullable Object criteria) {
-            super(outerContext, criteria);
+        private MultiDmlContext(@Nullable CriteriaContext outerContext) {
+            super(outerContext);
         }
 
 
@@ -1112,8 +1111,8 @@ abstract class CriteriaContexts {
 
         private boolean refOuterField;
 
-        private SimpleQueryContext(@Nullable CriteriaContext outerContext, @Nullable Object criteria) {
-            super(outerContext, criteria);
+        private SimpleQueryContext(@Nullable CriteriaContext outerContext) {
+            super(outerContext);
         }
 
         @Override
@@ -1221,7 +1220,7 @@ abstract class CriteriaContexts {
         private final CriteriaContext leftContext;
 
         private UnionOperationContext(@Nullable CriteriaContext outerContext, CriteriaContext leftContext) {
-            super(outerContext, leftContext.criteria());
+            super(outerContext);
             this.leftContext = leftContext;
         }
 
@@ -1308,8 +1307,8 @@ abstract class CriteriaContexts {
          */
         private Map<String, RefSelection> refSelectionMap;
 
-        private ValuesContext(@Nullable CriteriaContext outerContext, @Nullable Object criteria) {
-            super(outerContext, criteria);
+        private ValuesContext(@Nullable CriteriaContext outerContext) {
+            super(outerContext);
         }
 
         @Override
@@ -1354,8 +1353,8 @@ abstract class CriteriaContexts {
 
     private static final class OtherPrimaryContext extends StatementContext {
 
-        private OtherPrimaryContext(@Nullable Object criteria) {
-            super(null, criteria);
+        private OtherPrimaryContext() {
+            super(null);
         }
 
 

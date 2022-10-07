@@ -79,6 +79,7 @@ interface CriteriaContext {
     @Nullable
     TableMeta<?> getTable(String tableAlias);
 
+    @Deprecated
 
     @Nullable
     <C> C criteria();
@@ -86,6 +87,7 @@ interface CriteriaContext {
     List<_TableBlock> endContext();
 
 
+    @Deprecated
     interface CteConsumer {
 
         void addCte(_Cte cte);
@@ -97,6 +99,7 @@ interface CriteriaContext {
 
     }
 
+    @Deprecated
     interface OuterContextSpec {
 
         @Nullable

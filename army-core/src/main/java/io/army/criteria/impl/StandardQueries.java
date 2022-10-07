@@ -19,46 +19,44 @@ import java.util.function.Supplier;
  * @see StandardUnionQueries
  * @since 1.0
  */
-abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
-        C,
+abstract class StandardQueries<Q extends Item> extends SimpleQueries<
         Q,
         SQLs.SelectModifier,
-        StandardQuery._FromSpec<C, Q>, // SR
-        StandardQuery._JoinSpec<C, Q>,// FT
-        StandardQuery._JoinSpec<C, Q>,// FS
+        StandardQuery._FromSpec<Q>, // SR
+        StandardQuery._JoinSpec<Q>,// FT
+        StandardQuery._JoinSpec<Q>,// FS
         Void,                          //FC
-        Statement._OnClause<C, StandardQuery._JoinSpec<C, Q>>, // JT
-        Statement._OnClause<C, StandardQuery._JoinSpec<C, Q>>, // JS
+        Statement._OnClause<StandardQuery._JoinSpec<Q>>, // JT
+        Statement._OnClause<StandardQuery._JoinSpec<Q>>, // JS
         Void,                               // JC
-        StandardQuery._GroupBySpec<C, Q>, // WR
-        StandardQuery._WhereAndSpec<C, Q>, // AR
-        StandardQuery._HavingSpec<C, Q>, // GR
-        StandardQuery._OrderBySpec<C, Q>, // HR
-        StandardQuery._LimitSpec<C, Q>, // OR
-        StandardQuery._UnionAndQuerySpec<C, Q>> // SP
+        StandardQuery._GroupBySpec<Q>, // WR
+        StandardQuery._WhereAndSpec<Q>, // AR
+        StandardQuery._HavingSpec<Q>, // GR
+        StandardQuery._OrderBySpec<Q>, // HR
+        StandardQuery._LimitSpec<Q>, // OR
+        StandardQuery._UnionAndQuerySpec<Q>> // SP
 
-        implements StandardQuery, StandardQuery._SelectSpec<C, Q>, StandardQuery._FromSpec<C, Q>
-        , StandardQuery._JoinSpec<C, Q>, StandardQuery._WhereAndSpec<C, Q>, StandardQuery._HavingSpec<C, Q>
+        implements StandardQuery, StandardQuery._SelectSpec<Q>, StandardQuery._FromSpec<Q>
+        , StandardQuery._JoinSpec<Q>, StandardQuery._WhereAndSpec<Q>, StandardQuery._HavingSpec<Q>
         , _StandardQuery {
 
 
-    static <C, Q extends Item> SimpleSelect<C, Q> primaryQuery(@Nullable C criteria, Function<Select, Q> function) {
-        return new SimpleSelect<>(criteria, function);
+    static <C, Q extends Item> SimpleSelect<Q> primaryQuery(Function<Select, Q> function) {
+        return new SimpleSelect<>(function);
     }
 
-    static <C, Q extends Item> StandardQuery._ParenQueryClause<C, Q> parenPrimaryQuery(@Nullable C criteria
-            , Function<Select, Q> function) {
+    static <C, Q extends Item> StandardQuery._ParenQueryClause<Q> parenPrimaryQuery(Function<Select, Q> function) {
         throw new UnsupportedOperationException();
     }
 
 
-    static <C, Q extends Item> SimpleSubQuery<C, Q> subQuery(@Nullable C criteria, CriteriaContext outerContext
+    static <C, Q extends Item> SimpleSubQuery<Q> subQuery(CriteriaContext outerContext
             , Function<SubQuery, Q> function) {
-        return new SimpleSubQuery<>(CriteriaContexts.subQueryContext(criteria, outerContext), function);
+        return new SimpleSubQuery<>(CriteriaContexts.subQueryContext(outerContext), function);
     }
 
-    static <C, Q extends Item> StandardQuery._ParenQueryClause<C, Q> parenSubQuery(@Nullable C criteria
-            , CriteriaContext outerContext, Function<SubQuery, Q> function) {
+    static <C, Q extends Item> StandardQuery._ParenQueryClause<Q> parenSubQuery(CriteriaContext outerContext
+            , Function<SubQuery, Q> function) {
         throw new UnsupportedOperationException();
     }
 
@@ -76,81 +74,70 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
 
 
     @Override
-    public final _LockSpec<C, Q> limit(long rowCount) {
+    public final _LockSpec<Q> limit(long rowCount) {
         this.rowCount = rowCount;
         return this;
     }
 
     @Override
-    public final _LockSpec<C, Q> limit(Supplier<? extends Number> supplier) {
+    public final _LockSpec<Q> limit(Supplier<? extends Number> supplier) {
         this.rowCount = CriteriaUtils.asLimitParam(this.context, supplier.get());
         return this;
     }
 
     @Override
-    public final _LockSpec<C, Q> limit(Function<C, ? extends Number> function) {
-        this.rowCount = CriteriaUtils.asLimitParam(this.context, function.apply(this.criteria));
-        return this;
-    }
-
-    @Override
-    public final _LockSpec<C, Q> limit(Function<String, ?> function, String keyName) {
+    public final _LockSpec<Q> limit(Function<String, ?> function, String keyName) {
         this.rowCount = CriteriaUtils.asLimitParam(this.context, function.apply(keyName));
         return this;
     }
 
     @Override
-    public final _LockSpec<C, Q> ifLimit(Supplier<? extends Number> supplier) {
+    public final _LockSpec<Q> ifLimit(Supplier<? extends Number> supplier) {
         this.rowCount = CriteriaUtils.asIfLimitParam(this.context, supplier.get());
         return this;
     }
 
-    @Override
-    public final _LockSpec<C, Q> ifLimit(Function<C, ? extends Number> function) {
-        this.rowCount = CriteriaUtils.asIfLimitParam(this.context, function.apply(this.criteria));
-        return this;
-    }
 
     @Override
-    public final _LockSpec<C, Q> ifLimit(Function<String, ?> function, String keyName) {
+    public final _LockSpec<Q> ifLimit(Function<String, ?> function, String keyName) {
         this.rowCount = CriteriaUtils.asIfLimitParam(this.context, function.apply(keyName));
         return this;
     }
 
 
     @Override
-    public final _LockSpec<C, Q> limit(long offset, long rowCount) {
+    public final _LockSpec<Q> limit(long offset, long rowCount) {
         this.offset = offset;
         this.rowCount = rowCount;
         return this;
     }
 
     @Override
-    public final _LockSpec<C, Q> limit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier) {
+    public final _LockSpec<Q> limit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier) {
         CriteriaUtils.limitPair(this.context, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
         return this;
     }
 
     @Override
-    public final _LockSpec<C, Q> limit(Function<String, ?> function, String offsetKey, String rowCountKey) {
+    public final _LockSpec<Q> limit(Function<String, ?> function, String offsetKey, String rowCountKey) {
         CriteriaUtils.limitPair(this.context, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
         return this;
     }
 
     @Override
-    public final _LockSpec<C, Q> ifLimit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier) {
+    public final _LockSpec<Q> ifLimit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier) {
         CriteriaUtils.ifLimitPair(this.context, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
         return this;
     }
 
     @Override
-    public final _LockSpec<C, Q> ifLimit(Function<String, ?> function, String offsetKey, String rowCountKey) {
+    public final _LockSpec<Q> ifLimit(Function<String, ?> function, String offsetKey, String rowCountKey) {
         CriteriaUtils.ifLimitPair(this.context, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
         return this;
     }
 
     @Override
-    public final _UnionSpec<C, Q> lock(@Nullable LockMode lockMode) {
+    public final _UnionSpec<Q> lock(@Nullable LockMode lockMode) {
         if (lockMode == null) {
             throw ContextStack.nullPointer(this.context);
         }
@@ -159,7 +146,7 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
     }
 
     @Override
-    public final _UnionSpec<C, Q> ifLock(Supplier<LockMode> supplier) {
+    public final _UnionSpec<Q> ifLock(Supplier<LockMode> supplier) {
         this.lockMode = supplier.get();
         return this;
     }
@@ -213,7 +200,7 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _OnClause<C, _JoinSpec<C, Q>> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
+    final _OnClause<_JoinSpec<Q>> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
         if (itemWord != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -221,7 +208,7 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
+    final _OnClause<_JoinSpec<Q>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         if (itemWord != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -262,7 +249,7 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
     /*################################## blow private inter class method ##################################*/
 
 
-    static class SimpleSelect<C, Q extends Item> extends StandardQueries<C, Q>
+    static class SimpleSelect<Q extends Item> extends StandardQueries<Q>
             implements Select {
 
         private final Function<Select, Q> function;
@@ -272,8 +259,8 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
          * Primary constructor
          * </p>
          */
-        private SimpleSelect(@Nullable C criteria, Function<Select, Q> function) {
-            super(CriteriaContexts.primaryQueryContext(criteria));
+        private SimpleSelect(Function<Select, Q> function) {
+            super(CriteriaContexts.primaryQueryContext());
             this.function = function;
         }
 
@@ -283,7 +270,7 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
         }
 
         @Override
-        _UnionAndQuerySpec<C, Q> createQueryUnion(UnionType unionType) {
+        _UnionAndQuerySpec<Q> createQueryUnion(UnionType unionType) {
             return null;
         }
 
@@ -291,7 +278,7 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
     }//SimpleSelect
 
 
-    static class SimpleSubQuery<C, Q extends Item> extends StandardQueries<C, Q>
+    static class SimpleSubQuery<Q extends Item> extends StandardQueries<Q>
             implements SubQuery {
 
         private final Function<SubQuery, Q> function;
@@ -307,7 +294,7 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
         }
 
         @Override
-        _UnionAndQuerySpec<C, Q> createQueryUnion(UnionType unionType) {
+        _UnionAndQuerySpec<Q> createQueryUnion(UnionType unionType) {
             return new UnionSubQueryClause<>(this, unionType, this.function);
         }
 
@@ -315,18 +302,18 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
     } // SimpleSubQuery
 
 
-    private static final class UnionSelectClause<C, Q extends Item>
-            extends SelectClauseDispatcher<C, SQLs.SelectModifier, StandardQuery._FromSpec<C, Q>>
-            implements _UnionAndQuerySpec<C, Q> {
+    private static final class UnionSelectClause<Q extends Item>
+            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<Q>>
+            implements _UnionAndQuerySpec<Q> {
 
 
         @Override
-        public _UnionAndQuerySpec<C, _RightParenClause<_UnionOrderBySpec<C, Q>>> leftParen() {
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<Q>>> leftParen() {
             return null;
         }
 
         @Override
-        _DynamicHintModifierSelectClause<C, SQLs.SelectModifier, _FromSpec<C, Q>> createSelectClause() {
+        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<Q>> createSelectClause() {
             return null;
         }
 
@@ -334,31 +321,31 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
     }//UnionSelectClause
 
 
-    private static final class UnionLeftParenSubQueryClause<C, Q extends Item>
-            extends SelectClauseDispatcher<C, SQLs.SelectModifier, StandardQuery._FromSpec<C, Q>>
-            implements _UnionAndQuerySpec<C, Q>, _RightParenClause<_UnionOrderBySpec<C, Q>> {
+    private static final class UnionLeftParenSubQueryClause<Q extends Item>
+            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<Q>>
+            implements _UnionAndQuerySpec<Q>, _RightParenClause<_UnionOrderBySpec<Q>> {
 
         @Override
-        public _UnionAndQuerySpec<C, _RightParenClause<_UnionOrderBySpec<C, Q>>> leftParen() {
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<Q>>> leftParen() {
             return null;
         }
 
         @Override
-        public _UnionOrderBySpec<C, Q> rightParen() {
+        public _UnionOrderBySpec<Q> rightParen() {
             return null;
         }
 
         @Override
-        _DynamicHintModifierSelectClause<C, SQLs.SelectModifier, _FromSpec<C, Q>> createSelectClause() {
+        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<Q>> createSelectClause() {
             return null;
         }
 
     }//UnionLeftParenSubQueryClause
 
 
-    private static final class UnionSubQueryClause<C, Q extends Item>
-            extends SelectClauseDispatcher<C, SQLs.SelectModifier, StandardQuery._FromSpec<C, Q>>
-            implements _UnionAndQuerySpec<C, Q>, _RightParenClause<_UnionOrderBySpec<C, Q>> {
+    private static final class UnionSubQueryClause<Q extends Item>
+            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<Q>>
+            implements _UnionAndQuerySpec<Q>, _RightParenClause<_UnionOrderBySpec<Q>> {
 
         private final SubQuery left;
 
@@ -373,17 +360,17 @@ abstract class StandardQueries<C, Q extends Item> extends SimpleQueries<
         }
 
         @Override
-        public _UnionAndQuerySpec<C, _RightParenClause<_UnionOrderBySpec<C, Q>>> leftParen() {
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<Q>>> leftParen() {
             return null;
         }
 
         @Override
-        public _UnionOrderBySpec<C, Q> rightParen() {
+        public _UnionOrderBySpec<Q> rightParen() {
             return null;
         }
 
         @Override
-        _DynamicHintModifierSelectClause<C, SQLs.SelectModifier, _FromSpec<C, Q>> createSelectClause() {
+        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<Q>> createSelectClause() {
             final CriteriaContext leftContext, newContext;
             leftContext = ((CriteriaContextSpec) this.left).getContext();
 

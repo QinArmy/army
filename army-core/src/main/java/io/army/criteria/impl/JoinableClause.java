@@ -6,7 +6,6 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -22,11 +21,11 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
-        extends WhereClause<C, WR, WA, OR>
-        implements Statement._JoinModifierClause<C, JT, JS>, Statement._CrossJoinModifierClause<C, FT, FS>
+abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR>
+        extends WhereClause<WR, WA, OR>
+        implements Statement._JoinModifierClause<JT, JS>, Statement._CrossJoinModifierClause<FT, FS>
         , DialectStatement._JoinModifierCteClause<JC>, DialectStatement._CrossJoinModifierCteClause<FC>
-        , DialectStatement._StraightJoinModifierClause<C, JT, JS>, DialectStatement._StraightJoinModifierCteClause<JC> {
+        , DialectStatement._StraightJoinModifierClause<JT, JS>, DialectStatement._StraightJoinModifierCteClause<JC> {
 
 
     final Consumer<_TableBlock> blockConsumer;
@@ -65,10 +64,6 @@ abstract class JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
         return this.onAddQueryItem(_JoinType.LEFT_JOIN, null, supplier.get(), alias);
     }
 
-    @Override
-    public final <T extends TabularItem> JS leftJoin(Function<C, T> function, String alias) {
-        return this.onAddQueryItem(_JoinType.LEFT_JOIN, null, function.apply(this.criteria), alias);
-    }
 
     @Override
     public final JC leftJoin(String cteName) {
@@ -85,11 +80,6 @@ abstract class JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
         return this.onAddTableItem(_JoinType.LEFT_JOIN, modifier, table, tableAlias);
     }
 
-
-    @Override
-    public final <T extends TabularItem> JS leftJoin(Query.TabularModifier modifier, Function<C, T> function, String alias) {
-        return this.onAddQueryItem(_JoinType.LEFT_JOIN, modifier, function.apply(this.criteria), alias);
-    }
 
     @Override
     public final <T extends TabularItem> JS leftJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias) {
@@ -117,11 +107,6 @@ abstract class JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
     }
 
     @Override
-    public final <T extends TabularItem> JS join(Function<C, T> function, String alias) {
-        return this.onAddQueryItem(_JoinType.JOIN, null, function.apply(this.criteria), alias);
-    }
-
-    @Override
     public final JC join(String cteName) {
         return this.onAddCteItem(_JoinType.JOIN, null, cteName, "");
     }
@@ -134,11 +119,6 @@ abstract class JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
     @Override
     public final JT join(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias) {
         return this.onAddTableItem(_JoinType.JOIN, modifier, table, tableAlias);
-    }
-
-    @Override
-    public final <T extends TabularItem> JS join(Query.TabularModifier modifier, Function<C, T> function, String alias) {
-        return this.onAddQueryItem(_JoinType.JOIN, modifier, function.apply(this.criteria), alias);
     }
 
     @Override
@@ -167,11 +147,6 @@ abstract class JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
     }
 
     @Override
-    public final <T extends TabularItem> JS rightJoin(Function<C, T> function, String alias) {
-        return this.onAddQueryItem(_JoinType.RIGHT_JOIN, null, function.apply(this.criteria), alias);
-    }
-
-    @Override
     public final JC rightJoin(String cteName) {
         return this.onAddCteItem(_JoinType.RIGHT_JOIN, null, cteName, "");
     }
@@ -184,11 +159,6 @@ abstract class JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
     @Override
     public final JT rightJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias) {
         return this.onAddTableItem(_JoinType.RIGHT_JOIN, modifier, table, tableAlias);
-    }
-
-    @Override
-    public final <T extends TabularItem> JS rightJoin(Query.TabularModifier modifier, Function<C, T> function, String alias) {
-        return this.onAddQueryItem(_JoinType.RIGHT_JOIN, modifier, function.apply(this.criteria), alias);
     }
 
     @Override
@@ -215,12 +185,6 @@ abstract class JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
     public final <T extends TabularItem> JS fullJoin(Supplier<T> supplier, String alias) {
         return this.onAddQueryItem(_JoinType.FULL_JOIN, null, supplier.get(), alias);
     }
-
-    @Override
-    public final <T extends TabularItem> JS fullJoin(Function<C, T> function, String alias) {
-        return this.onAddQueryItem(_JoinType.FULL_JOIN, null, function.apply(this.criteria), alias);
-    }
-
     @Override
     public final JC fullJoin(String cteName) {
         return this.onAddCteItem(_JoinType.FULL_JOIN, null, cteName, "");
@@ -234,11 +198,6 @@ abstract class JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
     @Override
     public final JT fullJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias) {
         return this.onAddTableItem(_JoinType.FULL_JOIN, modifier, table, tableAlias);
-    }
-
-    @Override
-    public final <T extends TabularItem> JS fullJoin(Query.TabularModifier modifier, Function<C, T> function, String alias) {
-        return this.onAddQueryItem(_JoinType.FULL_JOIN, modifier, function.apply(this.criteria), alias);
     }
 
     @Override
@@ -267,11 +226,6 @@ abstract class JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
     }
 
     @Override
-    public final <T extends TabularItem> JS straightJoin(Function<C, T> function, String alias) {
-        return this.onAddQueryItem(_JoinType.STRAIGHT_JOIN, null, function.apply(this.criteria), alias);
-    }
-
-    @Override
     public final JC straightJoin(String cteName) {
         return this.onAddCteItem(_JoinType.STRAIGHT_JOIN, null, cteName, "");
     }
@@ -297,10 +251,6 @@ abstract class JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
         return this.onAddTableItem(_JoinType.STRAIGHT_JOIN, modifier, table, tableAlias);
     }
 
-    @Override
-    public final <T extends TabularItem> JS straightJoin(Query.TabularModifier modifier, Function<C, T> function, String alias) {
-        return this.onAddQueryItem(_JoinType.STRAIGHT_JOIN, modifier, function.apply(this.criteria), alias);
-    }
 
     @Override
     public final <T extends TabularItem> JS straightJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias) {
@@ -317,10 +267,6 @@ abstract class JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
         return this.onAddNoOnQueryItem(_JoinType.CROSS_JOIN, null, supplier.get(), alias);
     }
 
-    @Override
-    public final <T extends TabularItem> FS crossJoin(Function<C, T> function, String alias) {
-        return this.onAddNoOnQueryItem(_JoinType.CROSS_JOIN, null, function.apply(this.criteria), alias);
-    }
 
     @Override
     public final FC crossJoin(String cteName) {
@@ -337,10 +283,6 @@ abstract class JoinableClause<C, FT, FS, FC, JT, JS, JC, WR, WA, OR>
         return this.onAddNoOnTableItem(_JoinType.CROSS_JOIN, modifier, table, tableAlias);
     }
 
-    @Override
-    public final <T extends TabularItem> FS crossJoin(Query.TabularModifier modifier, Function<C, T> function, String alias) {
-        return this.onAddNoOnQueryItem(_JoinType.CROSS_JOIN, modifier, function.apply(this.criteria), alias);
-    }
 
     @Override
     public final <T extends TabularItem> FS crossJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias) {

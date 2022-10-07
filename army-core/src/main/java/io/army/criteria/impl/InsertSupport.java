@@ -37,7 +37,7 @@ abstract class InsertSupport {
         throw new UnsupportedOperationException();
     }
 
-    static void assertDomainList(List<?> parentOriginalDomainList, ComplexInsertValuesClause<?, ?, ?, ?, ?> childClause) {
+    static void assertDomainList(List<?> parentOriginalDomainList, ComplexInsertValuesClause<?, ?, ?, ?> childClause) {
         final List<?> childOriginalList;
         childOriginalList = childClause.originalDomainList();
         if (childOriginalList != parentOriginalDomainList
@@ -163,9 +163,9 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class NonQueryWithCteOption<C, MR, NR, PR, B extends CteBuilderSpec, WE>
+    static abstract class NonQueryWithCteOption<MR, NR, PR, B extends CteBuilderSpec, WE>
             extends NonQueryInsertOptionsImpl<MR, NR, PR>
-            implements Query._DynamicWithCteClause<C, B, WE>
+            implements Query._DynamicWithCteClause<B, WE>
             , WithValueSyntaxOptions {
 
         private boolean recursive;
@@ -184,13 +184,6 @@ abstract class InsertSupport {
             return this.endWithClause(builder, true);
         }
 
-        @Override
-        public final WE with(BiConsumer<C, B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(this.context.criteria(), builder);
-            return this.endWithClause(builder, true);
-        }
 
         @Override
         public final WE withRecursive(Consumer<B> consumer) {
@@ -200,13 +193,6 @@ abstract class InsertSupport {
             return this.endWithClause(builder, true);
         }
 
-        @Override
-        public final WE withRecursive(BiConsumer<C, B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(this.context.criteria(), builder);
-            return this.endWithClause(builder, true);
-        }
 
         @Override
         public final WE ifWith(Consumer<B> consumer) {
@@ -216,27 +202,12 @@ abstract class InsertSupport {
             return this.endWithClause(builder, false);
         }
 
-        @Override
-        public final WE ifWith(BiConsumer<C, B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(this.context.criteria(), builder);
-            return this.endWithClause(builder, false);
-        }
 
         @Override
         public final WE ifWithRecursive(Consumer<B> consumer) {
             final B builder;
             builder = this.createCteBuilder(true);
             consumer.accept(builder);
-            return this.endWithClause(builder, false);
-        }
-
-        @Override
-        public final WE ifWithRecursive(BiConsumer<C, B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(this.context.criteria(), builder);
             return this.endWithClause(builder, false);
         }
 
@@ -288,7 +259,7 @@ abstract class InsertSupport {
     }//NonQueryWithCteOption
 
     static abstract class ChildDynamicWithClause<C, B extends CteBuilderSpec, WE>
-            implements Query._DynamicWithCteClause<C, B, WE>
+            implements Query._DynamicWithCteClause<B, WE>
             , WithValueSyntaxOptions {
 
         final CriteriaContext context;
@@ -318,13 +289,6 @@ abstract class InsertSupport {
             return this.endDynamicWithClause(builder, true);
         }
 
-        @Override
-        public final WE with(BiConsumer<C, B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(this.context.criteria(), builder);
-            return this.endDynamicWithClause(builder, true);
-        }
 
         @Override
         public final WE withRecursive(Consumer<B> consumer) {
@@ -334,13 +298,6 @@ abstract class InsertSupport {
             return this.endDynamicWithClause(builder, true);
         }
 
-        @Override
-        public final WE withRecursive(BiConsumer<C, B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(this.context.criteria(), builder);
-            return this.endDynamicWithClause(builder, true);
-        }
 
         @Override
         public final WE ifWith(Consumer<B> consumer) {
@@ -350,13 +307,6 @@ abstract class InsertSupport {
             return this.endDynamicWithClause(builder, false);
         }
 
-        @Override
-        public final WE ifWith(BiConsumer<C, B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(this.context.criteria(), builder);
-            return this.endDynamicWithClause(builder, false);
-        }
 
         @Override
         public final WE ifWithRecursive(Consumer<B> consumer) {
@@ -366,13 +316,6 @@ abstract class InsertSupport {
             return this.endDynamicWithClause(builder, false);
         }
 
-        @Override
-        public final WE ifWithRecursive(BiConsumer<C, B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(this.context.criteria(), builder);
-            return this.endDynamicWithClause(builder, false);
-        }
 
         @Override
         public final CriteriaContext getContext() {
@@ -476,13 +419,11 @@ abstract class InsertSupport {
     }//SimpleValuesSyntaxOptions
 
 
-    static abstract class ColumnsClause<C, T, RR>
-            implements Insert._ColumnListClause<C, T, RR>, Insert._StaticColumnDualClause<T, RR>
+    static abstract class ColumnsClause<T, RR>
+            implements Insert._ColumnListClause<T, RR>, Insert._StaticColumnDualClause<T, RR>
             , _Insert._ColumnListInsert, ColumnListClause {
 
         final CriteriaContext context;
-
-        final C criteria;
 
         final boolean migration;
 
@@ -498,7 +439,6 @@ abstract class InsertSupport {
                 throw ContextStack.nullPointer(context);
             }
             this.context = context;
-            this.criteria = context.criteria();
             this.migration = migration;
             this.insertTable = table;
         }
@@ -511,12 +451,6 @@ abstract class InsertSupport {
         @Override
         public final Statement._RightParenClause<RR> leftParen(Consumer<Consumer<FieldMeta<T>>> consumer) {
             consumer.accept(this::comma);
-            return this;
-        }
-
-        @Override
-        public final Statement._RightParenClause<RR> leftParen(BiConsumer<C, Consumer<FieldMeta<T>>> consumer) {
-            consumer.accept(this.criteria, this::comma);
             return this;
         }
 
@@ -735,8 +669,8 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class ColumnDefaultClause<C, T, LR, DR> extends ColumnsClause<C, T, LR>
-            implements Insert._ColumnDefaultClause<C, T, DR>, _Insert._ValuesSyntaxInsert {
+    static abstract class ColumnDefaultClause<T, LR, DR> extends ColumnsClause<T, LR>
+            implements Insert._ColumnDefaultClause<T, DR>, _Insert._ValuesSyntaxInsert {
 
 
         final LiteralMode literalMode;
@@ -792,12 +726,6 @@ abstract class InsertSupport {
         public final DR defaultValue(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
             return this.defaultValue(field, function.apply(field));
         }
-
-        @Override
-        public final DR defaultValue(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator) {
-            return this.defaultValue(field, operator.apply(this.criteria, field));
-        }
-
         @Override
         public final <E> DR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value) {
             return this.defaultValue(field, operator.apply(field, value));
@@ -865,8 +793,8 @@ abstract class InsertSupport {
 
 
     @Deprecated
-    static abstract class DomainValueClause<C, P, CR, DR, VR>
-            extends ColumnDefaultClause<C, P, CR, DR> implements Insert._DomainValueClause<C, P, VR>
+    static abstract class DomainValueClause<P, CR, DR, VR>
+            extends ColumnDefaultClause<P, CR, DR> implements Insert._DomainValueClause<P, VR>
             , _Insert._DomainInsert {
 
 
@@ -884,11 +812,6 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final <T extends P> VR value(Function<C, T> function) {
-            return this.value(function.apply(this.context.criteria()));
-        }
-
-        @Override
         public final <T extends P> VR value(Supplier<T> supplier) {
             return this.value(supplier.get());
         }
@@ -901,11 +824,6 @@ abstract class InsertSupport {
             }
             this.endColumnDefaultClause();
             return this.domainValuesEnd(domainList);
-        }
-
-        @Override
-        public final <T extends P> VR values(Function<C, List<T>> function) {
-            return this.values(function.apply(this.context.criteria()));
         }
 
         @Override
@@ -939,7 +857,7 @@ abstract class InsertSupport {
 
     }//DomainValueClause
 
-    static abstract class DomainValueShortClause<C, P, DR, VR> extends DomainValueClause<C, P, DR, DR, VR> {
+    static abstract class DomainValueShortClause<C, P, DR, VR> extends DomainValueClause<P, DR, DR, VR> {
 
         DomainValueShortClause(InsertOptions options, TableMeta<P> table) {
             super(options, table);
@@ -949,10 +867,9 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class ComplexInsertValuesClause<C, T, CR, DR, VR> extends ColumnDefaultClause<C, T, CR, DR>
-            implements Insert._DomainValueClause<C, T, VR>
-            , Insert._DynamicValuesClause<C, T, VR>
-            , Insert._SpaceSubQueryClause<C, VR>
+    static abstract class ComplexInsertValuesClause<T, CR, DR, VR> extends ColumnDefaultClause<T, CR, DR>
+            implements Insert._DomainValueClause<T, VR>
+            , Insert._DynamicValuesClause<T, VR>
             , _Insert._ValuesInsert
             , _Insert._QueryInsert {
 
@@ -983,11 +900,6 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final <TS extends T> VR value(Function<C, TS> function) {
-            return this.value(function.apply(this.context.criteria()));
-        }
-
-        @Override
         public final <TS extends T> VR value(Supplier<TS> supplier) {
             return this.value(supplier.get());
         }
@@ -1011,11 +923,6 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final <TS extends T> VR values(Function<C, List<TS>> function) {
-            return this.values(function.apply(this.context.criteria()));
-        }
-
-        @Override
         public final <TS extends T> VR values(Supplier<List<TS>> supplier) {
             return this.values(supplier.get());
         }
@@ -1033,55 +940,6 @@ abstract class InsertSupport {
             consumer.accept(constructor);
             this.rowPairList = constructor.endPairConsumer();
             this.insertMode = InsertMode.VALUES;
-            return (VR) this;
-        }
-
-        @Override
-        public final VR values(final BiConsumer<C, PairsConstructor<T>> consumer) {
-            if (this.insertMode != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.endColumnDefaultClause();
-
-            final DynamicPairsConstructor<T> constructor;
-            constructor = new DynamicPairsConstructor<>(this.context, this::validateField);
-            consumer.accept(this.criteria, constructor);
-            this.rowPairList = constructor.endPairConsumer();
-            this.insertMode = InsertMode.VALUES;
-            return (VR) this;
-        }
-
-        @Override
-        public final VR space(Supplier<? extends SubQuery> supplier) {
-            if (this.insertMode != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.endColumnDefaultClause();
-
-            final SubQuery subQuery;
-            subQuery = supplier.get();
-            if (subQuery == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            this.subQuery = subQuery;
-            this.insertMode = InsertMode.QUERY;
-            return (VR) this;
-        }
-
-        @Override
-        public final VR space(Function<C, ? extends SubQuery> function) {
-            if (this.insertMode != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.endColumnDefaultClause();
-
-            final SubQuery subQuery;
-            subQuery = function.apply(this.criteria);
-            if (subQuery == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            this.subQuery = subQuery;
-            this.insertMode = InsertMode.QUERY;
             return (VR) this;
         }
 
@@ -1118,7 +976,7 @@ abstract class InsertSupport {
             return mode;
         }
 
-        final InsertMode assertInsertMode(final @Nullable ComplexInsertValuesClause<?, ?, ?, ?, ?> parent) {
+        final InsertMode assertInsertMode(final @Nullable ComplexInsertValuesClause<?, ?, ?, ?> parent) {
             final InsertMode mode = this.insertMode;
             assert mode != null;
             if (parent != null && mode == parent.insertMode) {
@@ -1155,7 +1013,7 @@ abstract class InsertSupport {
         /**
          * @return a unmodified list,new instance each time.
          */
-        final List<?> domainListForChild(final ComplexInsertValuesClause<?, ?, ?, ?, ?> parent) {
+        final List<?> domainListForChild(final ComplexInsertValuesClause<?, ?, ?, ?> parent) {
             assert this.insertTable instanceof ChildTableMeta;
             assert parent.insertTable instanceof ParentTableMeta;
 
@@ -1193,13 +1051,12 @@ abstract class InsertSupport {
     }//ComplexInsertValuesClause
 
 
-    static abstract class StaticColumnValuePairClause<C, T, RR>
-            implements Insert._StaticValueLeftParenClause<C, T, RR>, Insert._StaticColumnValueClause<C, T, RR>
+    static abstract class StaticColumnValuePairClause<T, RR>
+            implements Insert._StaticValueLeftParenClause<T, RR>, Insert._StaticColumnValueClause<T, RR>
             , CriteriaContextSpec {
 
         final CriteriaContext context;
 
-        final C criteria;
 
         final BiConsumer<FieldMeta<?>, ArmyExpression> validator;
 
@@ -1210,7 +1067,6 @@ abstract class InsertSupport {
         StaticColumnValuePairClause(CriteriaContext criteriaContext
                 , BiConsumer<FieldMeta<?>, ArmyExpression> validator) {
             this.context = criteriaContext;
-            this.criteria = criteriaContext.criteria();
             this.validator = validator;
         }
 
@@ -1221,42 +1077,37 @@ abstract class InsertSupport {
 
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Expression value) {
+        public final Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Expression value) {
             return this.comma(field, value);
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+        public final Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
             return this.comma(field, supplier.get());
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
+        public final Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
             return this.comma(field, function.apply(field));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator) {
-            return this.comma(field, operator.apply(this.criteria, field));
-        }
-
-        @Override
-        public final <E> Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value) {
+        public final <E> Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value) {
             return this.comma(field, operator.apply(field, value));
         }
 
         @Override
-        public final <E> Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
+        public final <E> Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
             return this.comma(field, operator.apply(field, supplier.get()));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+        public final Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
             return this.comma(field, operator.apply(field, function.apply(keyName)));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> comma(final FieldMeta<T> field, final @Nullable Expression value) {
+        public final Insert._StaticColumnValueClause<T, RR> comma(final FieldMeta<T> field, final @Nullable Expression value) {
             if (value instanceof DataField) {
                 throw ContextStack.criteriaError(this.context, "column value must be non-field.");
             } else if (!(value instanceof ArmyExpression)) {
@@ -1275,32 +1126,27 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+        public final Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
             return this.comma(field, supplier.get());
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
+        public final Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
             return this.comma(field, function.apply(field));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator) {
-            return this.comma(field, operator.apply(this.criteria, field));
-        }
-
-        @Override
-        public final <E> Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value) {
+        public final <E> Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value) {
             return this.comma(field, operator.apply(field, value));
         }
 
         @Override
-        public final <E> Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
+        public final <E> Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
             return this.comma(field, operator.apply(field, supplier.get()));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+        public final Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
             return this.comma(field, operator.apply(field, function.apply(keyName)));
         }
 
@@ -1355,9 +1201,9 @@ abstract class InsertSupport {
     }//StaticValueColumnClause
 
     @Deprecated
-    static abstract class DynamicValueInsertValueClauseShort<C, T, RR, VR>
-            extends ColumnDefaultClause<C, T, RR, RR>
-            implements Insert._DynamicValuesClause<C, T, VR>
+    static abstract class DynamicValueInsertValueClauseShort<T, RR, VR>
+            extends ColumnDefaultClause<T, RR, RR>
+            implements Insert._DynamicValuesClause<T, VR>
             , PairsConstructor<T>, ValueSyntaxOptions {
 
         public DynamicValueInsertValueClauseShort(ValueSyntaxOptions options, TableMeta<T> table) {
@@ -1366,11 +1212,6 @@ abstract class InsertSupport {
 
         @Override
         public VR values(Consumer<PairsConstructor<T>> consumer) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public VR values(BiConsumer<C, PairsConstructor<T>> consumer) {
             throw new UnsupportedOperationException();
         }
 
@@ -1523,11 +1364,10 @@ abstract class InsertSupport {
     }//DynamicPairsConstructor
 
     @SuppressWarnings("unchecked")
-    static abstract class AssignmentSetClause<C, T, SR>
-            implements Insert._AssignmentSetClause<C, T, SR>, ColumnListClause, _Insert._AssignmentStatementSpec
+    static abstract class AssignmentSetClause<T, SR>
+            implements Insert._AssignmentSetClause<T, SR>, ColumnListClause, _Insert._AssignmentStatementSpec
             , PairConsumer<T> {
         final CriteriaContext criteriaContext;
-        final C criteria;
 
         final TableMeta<T> insertTable;
 
@@ -1536,7 +1376,6 @@ abstract class InsertSupport {
 
         AssignmentSetClause(CriteriaContext criteriaContext, TableMeta<T> insertTable) {
             this.criteriaContext = criteriaContext;
-            this.criteria = criteriaContext.criteria();
             this.insertTable = insertTable;
         }
 
@@ -1544,12 +1383,6 @@ abstract class InsertSupport {
         @Override
         public final SR setPair(Consumer<PairConsumer<T>> consumer) {
             consumer.accept(this);
-            return (SR) this;
-        }
-
-        @Override
-        public final SR setPair(BiConsumer<C, PairConsumer<T>> consumer) {
-            consumer.accept(this.criteria, this);
             return (SR) this;
         }
 
@@ -1568,25 +1401,11 @@ abstract class InsertSupport {
             return this.addFieldPair(field, supplier.get());
         }
 
-        @Override
-        public final SR setExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
-            return this.addFieldPair(field, function.apply(this.criteria));
-        }
 
         @Override
         public final SR ifSet(FieldMeta<T> field, Supplier<?> supplier) {
             final Object value;
             value = supplier.get();
-            if (value != null) {
-                this.addFieldPair(field, SQLs._nullableParam(field, value));
-            }
-            return (SR) this;
-        }
-
-        @Override
-        public final SR ifSet(FieldMeta<T> field, Function<C, ?> function) {
-            final Object value;
-            value = function.apply(this.criteria);
             if (value != null) {
                 this.addFieldPair(field, SQLs._nullableParam(field, value));
             }
@@ -1613,15 +1432,6 @@ abstract class InsertSupport {
             return (SR) this;
         }
 
-        @Override
-        public final SR ifSetLiteral(FieldMeta<T> field, Function<C, ?> function) {
-            final Object value;
-            value = function.apply(this.criteria);
-            if (value != null) {
-                this.addFieldPair(field, SQLs._nullableLiteral(field, value));
-            }
-            return (SR) this;
-        }
 
         @Override
         public final SR ifSetLiteral(FieldMeta<T> field, Function<String, ?> function, String keyName) {
@@ -1703,7 +1513,7 @@ abstract class InsertSupport {
             } else if (!(itemPairList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.criteriaContext);
             } else {
-                if (this instanceof AssignmentInsertClause && ((AssignmentInsertClause<C, T, SR>) this).migration) {
+                if (this instanceof AssignmentInsertClause && ((AssignmentInsertClause<T, SR>) this).migration) {
                     validateMigrationColumnList(this.criteriaContext, this.insertTable, fieldMap);
                 }
                 if (itemPairList.size() == 1) {
@@ -1756,9 +1566,9 @@ abstract class InsertSupport {
     }//AssignmentSetClause
 
 
-    static abstract class AssignmentInsertClause<C, T, SR>
-            extends AssignmentSetClause<C, T, SR>
-            implements Insert._AssignmentSetClause<C, T, SR>, _Insert._AssignmentInsert {
+    static abstract class AssignmentInsertClause<T, SR>
+            extends AssignmentSetClause<T, SR>
+            implements Insert._AssignmentSetClause<T, SR>, _Insert._AssignmentInsert {
 
         final boolean migration;
 
@@ -1797,8 +1607,9 @@ abstract class InsertSupport {
     }//AssignmentInsertClause
 
 
-    static abstract class QueryInsertSpaceClause<C, T, RR, SR> extends ColumnsClause<C, T, RR>
-            implements Insert._SpaceSubQueryClause<C, SR>, _Insert._QueryInsert {
+    @Deprecated
+    static abstract class QueryInsertSpaceClause<T, RR, SR> extends ColumnsClause<T, RR>
+            implements _Insert._QueryInsert {
 
         private SubQuery subQuery;
 
@@ -1806,15 +1617,6 @@ abstract class InsertSupport {
             super(criteriaContext, true, table);
         }
 
-        @Override
-        public final SR space(Supplier<? extends SubQuery> supplier) {
-            return this.innerSpace(supplier.get());
-        }
-
-        @Override
-        public final SR space(Function<C, ? extends SubQuery> function) {
-            return this.innerSpace(function.apply(this.criteria));
-        }
 
         @Override
         public final SubQuery subQuery() {

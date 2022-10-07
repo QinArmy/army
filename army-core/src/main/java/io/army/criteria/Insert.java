@@ -4,7 +4,10 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -34,13 +37,11 @@ public interface Insert extends DmlStatement, DmlInsert {
     }
 
 
-    interface _ConflictUpdateCommaItemClause<C, T, UR> {
+    interface _ConflictUpdateCommaItemClause<T, UR> {
 
         UR comma(FieldMeta<T> field, Expression value);
 
         UR comma(FieldMeta<T> field, Supplier<Expression> supplier);
-
-        UR comma(FieldMeta<T> field, Function<C, Expression> function);
 
         <E> UR comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value);
 
@@ -87,11 +88,9 @@ public interface Insert extends DmlStatement, DmlInsert {
     }
 
 
-    interface _ColumnListClause<C, T, RR> {
+    interface _ColumnListClause<T, RR> {
 
         Statement._RightParenClause<RR> leftParen(Consumer<Consumer<FieldMeta<T>>> consumer);
-
-        Statement._RightParenClause<RR> leftParen(BiConsumer<C, Consumer<FieldMeta<T>>> consumer);
 
         Statement._RightParenClause<RR> leftParen(FieldMeta<T> field);
 
@@ -112,15 +111,13 @@ public interface Insert extends DmlStatement, DmlInsert {
     /**
      * @since 1.0
      */
-    interface _ColumnDefaultClause<C, T, CR> {
+    interface _ColumnDefaultClause<T, CR> {
 
         CR defaultValue(FieldMeta<T> field, Expression value);
 
         CR defaultValue(FieldMeta<T> field, Supplier<? extends Expression> supplier);
 
         CR defaultValue(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function);
-
-        CR defaultValue(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator);
 
         <E> CR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value);
 
@@ -134,17 +131,13 @@ public interface Insert extends DmlStatement, DmlInsert {
     /**
      * @since 1.0
      */
-    interface _DomainValueClause<C, T, VR> {
+    interface _DomainValueClause<T, VR> {
 
         <TS extends T> VR value(TS domain);
-
-        <TS extends T> VR value(Function<C, TS> function);
 
         <TS extends T> VR value(Supplier<TS> supplier);
 
         <TS extends T> VR values(List<TS> domainList);
-
-        <TS extends T> VR values(Function<C, List<TS>> function);
 
         <TS extends T> VR values(Supplier<List<TS>> supplier);
 
@@ -157,11 +150,10 @@ public interface Insert extends DmlStatement, DmlInsert {
 
     }
 
-    interface _DynamicValuesClause<C, T, VR> {
+    interface _DynamicValuesClause<T, VR> {
 
         VR values(Consumer<PairsConstructor<T>> consumer);
 
-        VR values(BiConsumer<C, PairsConstructor<T>> consumer);
     }
 
 
@@ -176,40 +168,36 @@ public interface Insert extends DmlStatement, DmlInsert {
     }
 
 
-    interface _StaticValueLeftParenClause<C, T, RR> {
+    interface _StaticValueLeftParenClause<T, RR> {
 
-        _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Expression value);
+        _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Expression value);
 
-        _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Supplier<? extends Expression> supplier);
+        _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Supplier<? extends Expression> supplier);
 
-        _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function);
+        _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function);
 
-        _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator);
+        <E> _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value);
 
-        <E> _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value);
+        <E> _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier);
 
-        <E> _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier);
-
-        _StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+        _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
 
     }
 
-    interface _StaticColumnValueClause<C, T, RR> extends Statement._RightParenClause<RR> {
+    interface _StaticColumnValueClause<T, RR> extends Statement._RightParenClause<RR> {
 
-        _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Expression value);
+        _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Expression value);
 
-        _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Supplier<? extends Expression> supplier);
+        _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Supplier<? extends Expression> supplier);
 
-        _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function);
+        _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function);
 
-        _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<C, ? super FieldMeta<T>, ? extends Expression> operator);
+        <E> _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value);
 
-        <E> _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value);
+        <E> _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier);
 
-        <E> _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier);
-
-        _StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+        _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
     }
 
@@ -223,11 +211,9 @@ public interface Insert extends DmlStatement, DmlInsert {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      */
-    interface _AssignmentSetClause<C, T, SR> {
+    interface _AssignmentSetClause<T, SR> {
 
         SR setPair(Consumer<PairConsumer<T>> consumer);
-
-        SR setPair(BiConsumer<C, PairConsumer<T>> consumer);
 
         SR set(FieldMeta<T> field, @Nullable Object value);
 
@@ -235,17 +221,11 @@ public interface Insert extends DmlStatement, DmlInsert {
 
         SR setExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
 
-        SR setExp(FieldMeta<T> field, Function<C, ? extends Expression> function);
-
         SR ifSet(FieldMeta<T> field, Supplier<?> supplier);
-
-        SR ifSet(FieldMeta<T> field, Function<C, ?> function);
 
         SR ifSet(FieldMeta<T> field, Function<String, ?> function, String keyName);
 
         SR ifSetLiteral(FieldMeta<T> field, Supplier<?> supplier);
-
-        SR ifSetLiteral(FieldMeta<T> field, Function<C, ?> function);
 
         SR ifSetLiteral(FieldMeta<T> field, Function<String, ?> function, String keyName);
 
@@ -253,7 +233,7 @@ public interface Insert extends DmlStatement, DmlInsert {
     }
 
 
-    interface _CommaFieldValuePairClause<C, T, SR> {
+    interface _CommaFieldValuePairClause<T, SR> {
 
         SR comma(FieldMeta<T> field, @Nullable Object value);
 
@@ -261,17 +241,10 @@ public interface Insert extends DmlStatement, DmlInsert {
 
         SR commaExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
 
-        SR commaExp(FieldMeta<T> field, Function<C, ? extends Expression> function);
 
     }
 
 
-    interface _SpaceSubQueryClause<C, SR> {
-
-        SR space(Supplier<? extends SubQuery> supplier);
-
-        SR space(Function<C, ? extends SubQuery> function);
-    }
 
 
 }

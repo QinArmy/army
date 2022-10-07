@@ -10,33 +10,24 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unchecked")
-abstract class OrderByClause<C, OR> implements CriteriaContextSpec, CriteriaSpec<C>
-        , Statement._OrderByClause<C, OR>
+abstract class OrderByClause<OR> implements CriteriaContextSpec
+        , Statement._OrderByClause<OR>
         , _Statement._OrderByListSpec {
 
     final CriteriaContext context;
-
-    final C criteria;
 
     private List<ArmySortItem> orderByList;
 
     OrderByClause(CriteriaContext context) {
         this.context = context;
-        this.criteria = context.criteria();
     }
 
     @Override
     public final CriteriaContext getContext() {
         return this.context;
-    }
-
-    @Override
-    public final C getCriteria() {
-        return this.criteria;
     }
 
     @Override
@@ -73,27 +64,12 @@ abstract class OrderByClause<C, OR> implements CriteriaContextSpec, CriteriaSpec
         return (OR) this;
     }
 
-    @Override
-    public final OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        consumer.accept(this.criteria, this::onAddOrderBy);
-        if (this.orderByList == null) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
-        }
-        return (OR) this;
-    }
 
     @Override
     public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
         consumer.accept(this::onAddOrderBy);
         return (OR) this;
     }
-
-    @Override
-    public final OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        consumer.accept(this.criteria, this::onAddOrderBy);
-        return (OR) this;
-    }
-
 
     @Override
     public final List<? extends SortItem> orderByList() {

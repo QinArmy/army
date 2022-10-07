@@ -44,36 +44,15 @@ public abstract class SQLs extends StandardSyntax {
         return StandardInserts.primaryInsert(null);
     }
 
-    public static <C> StandardInsert._PrimaryOptionSpec<C> singleInsert(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardInserts.primaryInsert(criteria);
-    }
-
     public static Update._StandardDomainUpdateClause<Void> domainUpdate() {
         return StandardUpdate.simpleDomain(null);
     }
 
-    /**
-     * @param criteria a object instance, map or bean
-     * @param <C>      criteria java type used to create dynamic update and sub query
-     */
-    public static <C> Update._StandardDomainUpdateClause<C> domainUpdate(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardUpdate.simpleDomain(criteria);
-    }
 
     public static Update._StandardSingleUpdateClause<Void> singleUpdate() {
         return StandardUpdate.simpleSingle(null);
     }
 
-    /**
-     * @param criteria a object instance, map or bean
-     * @param <C>      criteria java type used to create dynamic update and sub query
-     */
-    public static <C> Update._StandardSingleUpdateClause<C> singleUpdate(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardUpdate.simpleSingle(criteria);
-    }
 
 
     /**
@@ -87,18 +66,6 @@ public abstract class SQLs extends StandardSyntax {
         return StandardUpdate.batchDomain(null);
     }
 
-    /**
-     * <p>
-     * Batch domain update
-     * </p>
-     *
-     * @param criteria a criteria object , map or bean
-     * @param <C>      criteria java type used to create dynamic batch update and sub query
-     */
-    public static <C> Update._StandardBatchDomainUpdateClause<C> batchDomainUpdate(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardUpdate.batchDomain(criteria);
-    }
 
     /**
      * <p>
@@ -111,27 +78,9 @@ public abstract class SQLs extends StandardSyntax {
         return StandardUpdate.batchSingle(null);
     }
 
-    /**
-     * <p>
-     * Batch domain update
-     * </p>
-     *
-     * @param criteria a criteria object , map or bean
-     * @param <C>      criteria java type used to create dynamic batch update and sub query
-     * @see #namedMultiParams(DataField, int)
-     */
-    public static <C> Update._StandardBatchSingleUpdateClause<C> batchSingleUpdate(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardUpdate.batchSingle(criteria);
-    }
 
     public static Delete.StandardDeleteSpec<Void> domainDelete() {
         return StandardDelete.simple(null);
-    }
-
-    public static <C> Delete.StandardDeleteSpec<C> domainDelete(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardDelete.simple(criteria);
     }
 
     /**
@@ -143,63 +92,27 @@ public abstract class SQLs extends StandardSyntax {
         return StandardDelete.batch(null);
     }
 
-    /**
-     * <p>
-     * Batch domain delete
-     * </p>
-     *
-     * @param criteria a criteria object , map or bean
-     * @param <C>      criteria java type used to create dynamic batch update and sub query
-     */
-    public static <C> Delete.StandardBatchDeleteSpec<C> batchDomainDelete(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardDelete.batch(criteria);
-    }
 
     public static StandardQuery._SelectSpec<Void, Select> query() {
         return StandardQueries.primaryQuery(null, SQLs::_identity);
-    }
-
-
-    public static <C> StandardQuery._SelectSpec<C, Select> query(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardQueries.primaryQuery(criteria, SQLs::_identity);
     }
 
     public static StandardQuery._ParenQueryClause<Void, Select> parenQuery() {
         return StandardQueries.parenPrimaryQuery(null, SQLs::_identity);
     }
 
-    public static <C> StandardQuery._ParenQueryClause<C, Select> parenQuery(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardQueries.parenPrimaryQuery(criteria, SQLs::_identity);
-    }
 
     public static StandardQuery._SelectSpec<Void, SubQuery> subQuery() {
         return StandardQueries.subQuery(null, ContextStack.peek(), SQLs::_identity);
-    }
-
-
-    public static <C> StandardQuery._SelectSpec<C, SubQuery> subQuery(C criteria) {
-        return StandardQueries.subQuery(criteria, ContextStack.peek(criteria), SQLs::_identity);
     }
 
     public static StandardQuery._ParenQueryClause<Void, SubQuery> parenSubQuery() {
         return StandardQueries.parenSubQuery(null, ContextStack.peek(), SQLs::_identity);
     }
 
-    public static <C> StandardQuery._ParenQueryClause<C, SubQuery> parenSubQuery(C criteria) {
-        return StandardQueries.parenSubQuery(criteria, ContextStack.peek(criteria), SQLs::_identity);
-    }
-
 
     public static StandardQuery._SelectSpec<Void, Expression> scalarSubQuery() {
         return StandardQueries.subQuery(null, ContextStack.peek(), ScalarExpression::from);
-    }
-
-
-    public static <C> StandardQuery._SelectSpec<C, Expression> scalarSubQuery(C criteria) {
-        return StandardQueries.subQuery(criteria, ContextStack.peek(criteria), ScalarExpression::from);
     }
 
 

@@ -44,7 +44,7 @@ abstract class StandardUnionQueries<C, Q extends Query> extends UnionRowSet<
     }
 
 
-    static <C, Q extends Item> _UnionOrderBySpec<C, Q> unionSubQuery(final SubQuery left, final UnionType unionType, final SubQuery right, Function<SubQuery, Q> function) {
+    static <Q extends Item> _UnionOrderBySpec<Q> unionSubQuery(final SubQuery left, final UnionType unionType, final SubQuery right, Function<SubQuery, Q> function) {
         switch (unionType) {
             case UNION:
             case UNION_ALL:
