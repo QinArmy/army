@@ -5,10 +5,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.meta.TableMeta;
 
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
@@ -281,6 +278,42 @@ public interface Query extends RowSet {
         SP minusDistinct();
     }
 
+    interface _RowSetUnionClause<S extends RowSet, UR> {
+
+        UR union(Supplier<S> supplier);
+
+        UR unionAll(Supplier<S> supplier);
+
+        UR unionDistinct(Supplier<S> supplier);
+    }
+
+    interface _RowSetIntersectClause<S extends RowSet, UR> {
+
+        UR intersect(Supplier<S> supplier);
+
+        UR intersectAll(Supplier<S> supplier);
+
+        UR intersectDistinct(Supplier<S> supplier);
+    }
+
+    interface _RowSetExceptClause<S extends RowSet, UR> {
+
+        UR except(Supplier<S> supplier);
+
+        UR exceptAll(Supplier<S> supplier);
+
+        UR exceptDistinct(Supplier<S> supplier);
+    }
+
+    interface _RowSetMinusClause<S extends RowSet, UR> {
+
+        UR minus(Supplier<S> supplier);
+
+        UR minusAll(Supplier<S> supplier);
+
+        UR minusDistinct(Supplier<S> supplier);
+    }
+
 
     interface _LimitClause<LR> extends Statement._RowCountLimitClause<LR> {
 
@@ -290,10 +323,15 @@ public interface Query extends RowSet {
 
         LR limit(Function<String, ?> function, String offsetKey, String rowCountKey);
 
+        LR limit(Consumer<BiConsumer<Long, Long>> consumer);
+
 
         LR ifLimit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier);
 
         LR ifLimit(Function<String, ?> function, String offsetKey, String rowCountKey);
+
+
+        LR ifLimit(Consumer<BiConsumer<Long, Long>> consumer);
 
     }
 

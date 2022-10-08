@@ -12,37 +12,15 @@ import java.util.function.Supplier;
 public interface StandardQuery extends Query {
 
 
-    interface _UnionAndQuerySpec<Q extends Item> extends _SelectSpec<Q>
-            , _LeftParenClause<_UnionAndQuerySpec<Statement._RightParenClause<_UnionOrderBySpec<Q>>>> {
+    interface _UnionAndQuerySpec<I extends Item> extends _SelectSpec<I>
+            , _LeftParenClause<_UnionAndQuerySpec<Statement._RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 
-    interface _ParenQueryClause<Q extends Item> extends _LeftParenClause<_UnionAndQuerySpec<Q>> {
+    interface _ParenQueryClause<I extends Item> extends _LeftParenClause<_UnionAndQuerySpec<I>> {
 
     }
 
-
-    /**
-     * <p>
-     * This interface representing the composite of below:
-     *     <ul>
-     *          <li>ORDER BY clause for standard syntax</li>
-     *          <li>the composite {@link _UnionLimitSpec}</li>
-     *     </ul>
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface _UnionOrderBySpec<Q extends Item> extends Statement._OrderByClause<_UnionLimitSpec<Q>>
-            , _UnionLimitSpec<Q> {
-
-    }
 
     /**
      * <p>
@@ -58,12 +36,36 @@ public interface StandardQuery extends Query {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _UnionLimitSpec<Q extends Item>
-            extends _LimitClause<_UnionSpec<Q>>, _UnionSpec<Q> {
+    interface _UnionLimitSpec<I extends Item> extends _LimitClause<_QuerySpec<I>>, _QuerySpec<I> {
+
+    }
+
+    interface _UnionLimitQuerySpec<I extends Item> extends _UnionLimitSpec<I>, _UnionSpec<I> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>ORDER BY clause for standard syntax</li>
+     *          <li>the composite {@link _UnionLimitSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
+     */
+    interface _UnionOrderBySpec<I extends Item> extends Statement._OrderByClause<_UnionLimitSpec<I>>
+            , _UnionLimitQuerySpec<I> {
 
     }
 
@@ -82,11 +84,11 @@ public interface StandardQuery extends Query {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _UnionSpec<Q extends Item> extends _QuerySpec<Q>
-            , _QueryUnionClause<_UnionAndQuerySpec<Q>> {
+    interface _UnionSpec<I extends Item> extends _QuerySpec<I>
+            , _QueryUnionClause<_UnionAndQuerySpec<I>> {
 
     }
 
@@ -105,14 +107,14 @@ public interface StandardQuery extends Query {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _LockSpec<Q extends Item> extends _UnionSpec<Q> {
+    interface _LockSpec<I extends Item> extends _QuerySpec<I> {
 
-        _UnionSpec<Q> lock(LockMode lockMode);
+        _QuerySpec<I> lock(LockMode lockMode);
 
-        _UnionSpec<Q> ifLock(Supplier<LockMode> supplier);
+        _QuerySpec<I> ifLock(Supplier<LockMode> supplier);
 
     }
 
@@ -131,10 +133,10 @@ public interface StandardQuery extends Query {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _LimitSpec<Q extends Item> extends _LockSpec<Q>, _LimitClause<_LockSpec<Q>> {
+    interface _LimitSpec<I extends Item> extends _LockSpec<I>, _LimitClause<_LockSpec<I>> {
 
     }
 
@@ -153,11 +155,11 @@ public interface StandardQuery extends Query {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _OrderBySpec<Q extends Item> extends _LimitSpec<Q>
-            , Statement._OrderByClause<_LimitSpec<Q>> {
+    interface _OrderBySpec<I extends Item> extends _LimitSpec<I>
+            , Statement._OrderByClause<_LimitSpec<I>> {
 
     }
 
@@ -175,11 +177,11 @@ public interface StandardQuery extends Query {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _HavingSpec<Q extends Item> extends _HavingClause<_OrderBySpec<Q>>
-            , _OrderBySpec<Q> {
+    interface _HavingSpec<I extends Item> extends _HavingClause<_OrderBySpec<I>>
+            , _OrderBySpec<I>, _UnionSpec<I> {
 
     }
 
@@ -198,12 +200,11 @@ public interface StandardQuery extends Query {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _GroupBySpec<Q extends Item> extends _GroupClause<_HavingSpec<Q>>
-            , _OrderBySpec<Q> {
+    interface _GroupBySpec<I extends Item> extends _GroupClause<_HavingSpec<I>>
+            , _OrderBySpec<I> {
 
     }
 
@@ -222,11 +223,11 @@ public interface StandardQuery extends Query {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _WhereAndSpec<Q extends Item>
-            extends Statement._WhereAndClause<_WhereAndSpec<Q>>, _GroupBySpec<Q> {
+    interface _WhereAndSpec<I extends Item>
+            extends Statement._WhereAndClause<_WhereAndSpec<I>>, _GroupBySpec<I> {
 
 
     }
@@ -246,11 +247,11 @@ public interface StandardQuery extends Query {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _WhereSpec<Q extends Item>
-            extends Statement._QueryWhereClause<_GroupBySpec<Q>, _WhereAndSpec<Q>>, _GroupBySpec<Q> {
+    interface _WhereSpec<I extends Item>
+            extends Statement._QueryWhereClause<_GroupBySpec<I>, _WhereAndSpec<I>>, _GroupBySpec<I> {
 
     }
 
@@ -274,11 +275,11 @@ public interface StandardQuery extends Query {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _JoinSpec<Q extends Item>
-            extends _StandardJoinClause<_JoinSpec<Q>, Statement._OnClause<_JoinSpec<Q>>>, _WhereSpec<Q> {
+    interface _JoinSpec<I extends Item>
+            extends _StandardJoinClause<_JoinSpec<I>, Statement._OnClause<_JoinSpec<I>>>, _WhereSpec<I> {
 
     }
 
@@ -297,11 +298,11 @@ public interface StandardQuery extends Query {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _FromSpec<Q extends Item> extends Query._FromClause<_JoinSpec<Q>, _JoinSpec<Q>>
-            , _UnionSpec<Q> {
+    interface _FromSpec<I extends Item> extends Query._FromClause<_JoinSpec<I>, _JoinSpec<I>>
+            , _UnionSpec<I> {
 
     }
 
@@ -316,11 +317,11 @@ public interface StandardQuery extends Query {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _SelectSpec<Q extends Item>
-            extends _DynamicModifierSelectClause<SQLs.SelectModifier, _FromSpec<Q>>
+    interface _SelectSpec<I extends Item>
+            extends _DynamicModifierSelectClause<SQLs.SelectModifier, _FromSpec<I>>
             , Item {
 
     }

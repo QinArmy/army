@@ -19,7 +19,7 @@ import java.util.List;
  * @since 1.0
  */
 abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
-        extends PartRowSet<C, Q, Void, Void, Void, Void, Void, Void, Void, UR, OR, LR, SP>
+        extends ParenthesizedRowSet<C, Q, Void, Void, Void, Void, Void, Void, Void, UR, OR, LR, SP>
         implements _UnionRowSet, TypeInfer {
 
     final Q left;

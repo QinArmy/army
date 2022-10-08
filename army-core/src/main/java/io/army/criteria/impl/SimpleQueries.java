@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._Query;
-import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -191,7 +188,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         consumer.accept(this::addGroupByItem);
         return this.endGroupBy(true);
     }
-
 
 
     @Override
@@ -677,6 +673,72 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
 
     }//WithSelectClauseDispatcher
+
+
+    private static abstract class UnionQuery implements _UnionQuery, Statement, CriteriaContextSpec {
+
+        final RowSet left;
+
+        private final UnionType unionType;
+
+        private final RowSet right;
+
+        UnionQuery(RowSet left, UnionType unionType, RowSet right) {
+            this.left = left;
+            this.unionType = unionType;
+            this.right = right;
+        }
+
+        @Override
+        public final CriteriaContext getContext() {
+            return ((CriteriaContextSpec) this.left).getContext();
+        }
+
+        @Override
+        public final RowSet leftRowSet() {
+            return this.left;
+        }
+
+        @Override
+        public final SQLWords unionType() {
+            return this.unionType;
+        }
+
+        @Override
+        public final RowSet rightRowSet() {
+            return this.right;
+        }
+
+        @Override
+        public final void prepared() {
+            //no-op
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            return true;
+        }
+
+    }//UnionQuery
+
+    static final class UnionSubQuery extends UnionQuery implements SubQuery {
+
+        UnionSubQuery(SubQuery left, UnionType unionType, RowSet right) {
+            super(left, unionType, right);
+        }
+
+        @Override
+        public List<? extends SelectItem> selectItemList() {
+            return ((_PartRowSet) this.left).selectItemList();
+        }
+
+
+        @Override
+        public Selection selection(String derivedAlias) {
+            return ((SubQuery) this.left).selection(derivedAlias);
+        }
+
+    }//UnionSubQuery
 
 
 }

@@ -1,8 +1,11 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SortItem;
-import io.army.criteria.Statement;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Statement;
+import io.army.dialect.Dialect;
+import io.army.dialect.DialectParser;
+import io.army.dialect._MockDialects;
+import io.army.stmt.Stmt;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -15,7 +18,8 @@ import java.util.function.Consumer;
 @SuppressWarnings("unchecked")
 abstract class OrderByClause<OR> implements CriteriaContextSpec
         , Statement._OrderByClause<OR>
-        , _Statement._OrderByListSpec {
+        , _Statement._OrderByListSpec
+        , Statement.StatementMockSpec {
 
     final CriteriaContext context;
 
@@ -72,6 +76,40 @@ abstract class OrderByClause<OR> implements CriteriaContextSpec
     }
 
     @Override
+    public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
+        final DialectParser parser;
+        parser = _MockDialects.from(dialect);
+        final Stmt stmt;
+        stmt = this.parseStatement(parser, visible);
+        return parser.printStmt(stmt, none);
+    }
+
+    @Override
+    public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
+        return this.parseStatement(_MockDialects.from(dialect), visible);
+    }
+
+
+    private Stmt parseStatement(final DialectParser parser, final Visible visible) {
+        if (!(this instanceof PrimaryStatement)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        final Stmt stmt;
+        if (this instanceof Select) {
+            stmt = parser.select((Select) this, visible);
+        } else if (this instanceof Update) {
+            stmt = parser.update((Update) this, visible);
+        } else if (this instanceof Delete) {
+            stmt = parser.delete((Delete) this, visible);
+        } else if (this instanceof DialectStatement) {
+            stmt = parser.dialectStmt((DialectStatement) this, visible);
+        } else {
+            throw new IllegalStateException("unknown statement");
+        }
+        return stmt;
+    }
+
+    @Override
     public final List<? extends SortItem> orderByList() {
         final List<ArmySortItem> orderByList = this.orderByList;
         if (orderByList == null || orderByList instanceof ArrayList) {
@@ -89,6 +127,10 @@ abstract class OrderByClause<OR> implements CriteriaContextSpec
         } else {
             throw ContextStack.castCriteriaApi(this.context);
         }
+    }
+
+    final void clearOrderByList() {
+        this.orderByList = null;
     }
 
 

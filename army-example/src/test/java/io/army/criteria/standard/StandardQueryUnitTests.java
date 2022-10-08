@@ -80,6 +80,8 @@ public class StandardQueryUnitTests {
 
                 .unionAll()
 
+                .leftParen()
+
                 .select(User_.id)
                 .from(User_.T, "p")
                 .where(User_.id::equal, SQLs::literal, 2)
@@ -89,6 +91,11 @@ public class StandardQueryUnitTests {
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
+                .asQuery()
+
+                .rightParen()
+
+                .orderBy(SQLs.ref(User_.ID))
 
                 .unionAll()
 
