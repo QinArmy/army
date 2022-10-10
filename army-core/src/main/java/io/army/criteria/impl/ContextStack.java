@@ -32,6 +32,7 @@ abstract class ContextStack {
     private static final ThreadLocal<Stack> HOLDER = new ThreadLocal<>();
 
 
+    @Deprecated
     static void setContextStack(CriteriaContext rootContext) {
         HOLDER.set(new ContextStack(rootContext));
         if (LOG.isTraceEnabled()) {
@@ -40,6 +41,7 @@ abstract class ContextStack {
         }
     }
 
+    @Deprecated
     static void clearContextStack(final CriteriaContext rootContext) {
         final Stack stack = HOLDER.get();
         if (stack == null) {
@@ -64,26 +66,6 @@ abstract class ContextStack {
 
     }
 
-    static CriteriaContext peek(final @Nullable Object criteria) {
-        final Stack stack = HOLDER.get();
-        final CriteriaContext currentContext;
-        if (stack == null) {
-            currentContext = null;
-        } else {
-            currentContext = stack.peek();
-        }
-
-        if (criteria == null) {
-            if (currentContext != null) {
-                HOLDER.remove();
-            }
-            throw new NullPointerException("criteria must be non-null");
-        }
-        if (currentContext == null) {
-            throw noContextStack();
-        }
-        return currentContext;
-    }
 
     static void pop(final CriteriaContext subContext) {
         final Stack stack = HOLDER.get();
@@ -98,15 +80,31 @@ abstract class ContextStack {
 
     }
 
-    static void push(final CriteriaContext subContext) {
-        final Stack stack = HOLDER.get();
-        if (stack == null) {
-            throw noContextStack();
+    static void push(final CriteriaContext context) {
+        final CriteriaContext outerContext;
+        outerContext = context.getOuterContext();
+
+        final Stack stack;
+        if (outerContext == null) {
+            //reset
+            HOLDER.set(new ContextStack(context));
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("reset stack for primary context {},hash:{}", context.getClass().getName()
+                        , System.identityHashCode(context));
+            }
+        } else if ((stack = HOLDER.get()) == null) {
+            //no bug,never here
+            throw new IllegalArgumentException("exists outer context,but no stack.");
+        } else if (outerContext == stack.peek()) {
+            stack.push(context);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("push {},hash:{}", context.getClass().getName(), System.identityHashCode(context));
+            }
+        } else {
+            //no bug,never here
+            throw new IllegalArgumentException("outer context not match,reject push");
         }
-        stack.push(subContext);
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("push {},hash:{}", subContext.getClass().getName(), System.identityHashCode(subContext));
-        }
+
     }
 
     static CriteriaContext root() {
@@ -230,6 +228,9 @@ abstract class ContextStack {
 
         void push(CriteriaContext subContext);
 
+
+        boolean isEmpty();
+
         CriteriaContext peek();
 
         CriteriaContext rootContext();
@@ -270,6 +271,11 @@ abstract class ContextStack {
                 throw new IllegalStateException("stack error");
             }
             list.addLast(subContext);
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return this.list.size() == 0;
         }
 
         @Override

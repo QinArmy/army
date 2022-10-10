@@ -94,11 +94,11 @@ public abstract class SQLs extends StandardSyntax {
 
 
     public static StandardQuery._SelectSpec<Select> query() {
-        return StandardQueries.primaryQuery(SQLs::_identity);
+        return StandardQueries.primaryQuery();
     }
 
     public static StandardQuery._ParenQueryClause<Select> parenQuery() {
-        return StandardQueries.parenPrimaryQuery(SQLs::_identity);
+        return StandardQueries.parenPrimaryQuery();
     }
 
 
@@ -106,13 +106,17 @@ public abstract class SQLs extends StandardSyntax {
         return StandardQueries.subQuery(ContextStack.peek(), SQLs::_identity);
     }
 
-    public static StandardQuery._ParenQueryClause<SubQuery> parenSubQuery() {
+    public static StandardQuery._ParenQuerySpec<SubQuery> parenSubQuery() {
         return StandardQueries.parenSubQuery(ContextStack.peek(), SQLs::_identity);
     }
 
 
     public static StandardQuery._SelectSpec<Expression> scalarSubQuery() {
         return StandardQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
+    }
+
+    public static StandardQuery._ParenQuerySpec<Expression> parenScalarSubQuery() {
+        return StandardQueries.parenSubQuery(ContextStack.peek(), ScalarExpression::from);
     }
 
 

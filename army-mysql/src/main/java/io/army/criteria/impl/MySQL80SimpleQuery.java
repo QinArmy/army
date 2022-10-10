@@ -57,11 +57,11 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         , MySQL80Query._JoinSpec<C, Q>, MySQL80Query._WhereAndSpec<C, Q>, MySQL80Query._HavingSpec<C, Q>
         , MySQL80Query._GroupByWithRollupSpec<C, Q>, MySQL80Query._OrderByWithRollupSpec<C, Q>
         , MySQL80Query._LockOfSpec<C, Q>, MySQL80Query._LockLockOptionSpec<C, Q>
-        , MySQL80Query, ParenthesizedRowSet.OrderByEventListener {
+        , MySQL80Query, BracketRowSet.OrderByEventListener {
 
 
     static <C> _WithSpec<C, Select> simpleSelect(@Nullable C criteria) {
-        return new SimpleSelect<>(CriteriaContexts.primaryQueryContext(criteria));
+        return new SimpleSelect<>(CriteriaContexts.queryContext(criteria));
     }
 
     static <C> _WithSpec<C, SubQuery> subQuery(final @Nullable C criteria) {

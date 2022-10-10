@@ -36,8 +36,12 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
-    static CriteriaContext primaryQueryContext() {
-        return new SimpleQueryContext(null);
+    static CriteriaContext queryContext(@Nullable CriteriaContext outerContext) {
+        return new SimpleQueryContext(outerContext);
+    }
+
+    static CriteriaContext unionSelectContext(final CriteriaContext leftContext) {
+        throw new UnsupportedOperationException();
     }
 
     static CriteriaContext primaryQueryContextFrom(final Query query) {
@@ -50,6 +54,9 @@ abstract class CriteriaContexts {
         return context;
     }
 
+    /**
+     * @see #unionSubQueryContext(CriteriaContext)
+     */
     static CriteriaContext subQueryContext(final CriteriaContext outerContext) {
         assert outerContext == ContextStack.peek();
         final StatementContext context;
@@ -58,9 +65,19 @@ abstract class CriteriaContexts {
         return context;
     }
 
-
+    /**
+     * @see #subQueryContext(CriteriaContext)
+     */
     static CriteriaContext unionSubQueryContext(final CriteriaContext leftContext) {
-         throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
+    }
+
+    static CriteriaContext unionBracketContext(final CriteriaContext leftContext) {
+        throw new UnsupportedOperationException();
+    }
+
+    static CriteriaContext bracketContext(@Nullable final CriteriaContext outerContext) {
+        throw new UnsupportedOperationException();
     }
 
     static CriteriaContext subQueryContextFrom(final Query query) {
@@ -73,21 +90,6 @@ abstract class CriteriaContexts {
         return context;
     }
 
-
-    static CriteriaContext bracketContext(final RowSet left) {
-        final StatementContext leftContext;
-        leftContext = (StatementContext) ((CriteriaContextSpec) left).getContext();
-        final CriteriaContext outerContext;
-        if (left instanceof SubStatement) {
-            outerContext = ContextStack.peek();
-        } else {
-            outerContext = null;
-        }
-        final BracketQueryContext context;
-        context = new BracketQueryContext(outerContext, leftContext);
-        ((StatementContext) context).varMap = leftContext.varMap;
-        return context;
-    }
 
     static CriteriaContext noActionContext(final RowSet rowSet) {
         final StatementContext leftContext;

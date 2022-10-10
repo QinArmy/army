@@ -2,9 +2,13 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
+import io.army.dialect.Dialect;
+import io.army.dialect.DialectParser;
+import io.army.dialect._MockDialects;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.stmt.Stmt;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
@@ -56,11 +60,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     SimpleQueries(CriteriaContext context) {
         super(context);
-        if (context.getOuterContext() == null) {
-            ContextStack.setContextStack(this.context);
-        } else {
-            ContextStack.push(this.context);
-        }
+        ContextStack.push(this.context);
     }
 
 
@@ -496,11 +496,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         this.onEndQuery();
 
         this.tableBlockList = context.endContext();
-        if (context.getOuterContext() == null) {
-            ContextStack.clearContextStack(context);
-        } else {
-            ContextStack.pop(context);
-        }
+        ContextStack.pop(context);
         this.prepared = Boolean.TRUE;
 
     }
@@ -739,6 +735,37 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         }
 
     }//UnionSubQuery
+
+    static final class UnionSelect extends UnionQuery implements Select {
+
+        private final Dialect dialect;
+
+        UnionSelect(Dialect dialect, RowSet left, UnionType unionType, RowSet right) {
+            super(left, unionType, right);
+            this.dialect = dialect;
+        }
+
+        @Override
+        public String mockAsString(Dialect dialect, Visible visible, boolean none) {
+            final DialectParser parser;
+            parser = _MockDialects.from(dialect);
+            final Stmt stmt;
+            stmt = parser.select(this, visible);
+            return parser.printStmt(stmt, none);
+        }
+
+        @Override
+        public Stmt mockAsStmt(Dialect dialect, Visible visible) {
+            return _MockDialects.from(dialect).select(this, visible);
+        }
+
+        @Override
+        public String toString() {
+            return this.mockAsString(this.dialect, Visible.ONLY_VISIBLE, true);
+        }
+
+
+    }//UnionSelect
 
 
 }

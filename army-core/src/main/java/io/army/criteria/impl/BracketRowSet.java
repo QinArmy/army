@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class ParenthesizedRowSet<I extends Item, Q extends RowSet, RR, OR, SP, S extends RowSet, UR>
+abstract class BracketRowSet<I extends Item, Q extends RowSet, RR, OR, SP, S extends RowSet, UR>
         extends OrderByClause<OR> implements _PartRowSet
         , Query._QueryUnionClause<SP>
         , Query._QueryIntersectClause<SP>
@@ -22,20 +22,18 @@ abstract class ParenthesizedRowSet<I extends Item, Q extends RowSet, RR, OR, SP,
         , Query._RowSetIntersectClause<S, UR>
         , Query._RowSetExceptClause<S, UR>
         , Query._RowSetMinusClause<S, UR>
+        , TabularItem.DerivedTableSpec
         , Query._QuerySpec<I>, Statement._RightParenClause<RR>
         , Statement, _SelfDescribed {
 
 
     private RowSet rowSet;
 
-    private long offset;
-
-    private long rowCount;
-
     private Boolean prepared;
 
-    ParenthesizedRowSet(CriteriaContext context) {
+    BracketRowSet(CriteriaContext context) {
         super(context);
+        ContextStack.push(this.context);
     }
 
 
@@ -190,14 +188,14 @@ abstract class ParenthesizedRowSet<I extends Item, Q extends RowSet, RR, OR, SP,
     }
 
     @Override
-    public final long offset() {
-        return this.offset;
+    public final Selection selection(final String derivedAlias) {
+        final RowSet rowSet = this.rowSet;
+        if (!(rowSet instanceof DerivedTable)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return ((DerivedTable) rowSet).selection(derivedAlias);
     }
 
-    @Override
-    public final long rowCount() {
-        return this.rowCount;
-    }
 
 
     @Override
@@ -242,14 +240,7 @@ abstract class ParenthesizedRowSet<I extends Item, Q extends RowSet, RR, OR, SP,
         return this;
     }
 
-    final void updateLimitClause(final long offset, final long rowCount) {
-        this.offset = offset;
-        this.rowCount = rowCount;
-    }
 
-    final void updateLimitCount(final long rowCount) {
-        this.rowCount = rowCount;
-    }
 
     void onEndQuery() {
         //no-op
@@ -286,6 +277,7 @@ abstract class ParenthesizedRowSet<I extends Item, Q extends RowSet, RR, OR, SP,
         }
         this.endOrderByClause();
         this.onEndQuery();
+        ContextStack.pop(this.context);
         this.prepared = Boolean.TRUE;
     }
 

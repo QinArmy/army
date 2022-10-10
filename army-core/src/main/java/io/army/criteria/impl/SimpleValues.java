@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> extends ParenthesizedRowSet<
+abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> extends BracketRowSet<
         C,
         V,
         Void,

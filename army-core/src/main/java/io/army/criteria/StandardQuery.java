@@ -17,7 +17,12 @@ public interface StandardQuery extends Query {
 
     }
 
-    interface _ParenQueryClause<I extends Item> extends _LeftParenClause<_UnionAndQuerySpec<I>> {
+    interface _ParenQueryClause<I extends Item>
+            extends _LeftParenClause<_UnionAndQuerySpec<Statement._RightParenClause<_UnionOrderBySpec<I>>>> {
+
+    }
+
+    interface _ParenQuerySpec<I extends Item> extends _ParenQueryClause<I>, _SelectSpec<I> {
 
     }
 

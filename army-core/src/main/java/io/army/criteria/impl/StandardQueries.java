@@ -43,23 +43,36 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         , _StandardQuery {
 
 
-    static <Q extends Item> SimpleSelect<Q> primaryQuery(Function<Select, Q> function) {
-        return new SimpleSelect<>(function);
+    static SimpleSelect<Select> primaryQuery() {
+        // primary no outer context
+        return new SimpleSelect<>(CriteriaContexts.queryContext(null), SQLs::_identity);
     }
 
-    static <Q extends Item> StandardQuery._ParenQueryClause<Q> parenPrimaryQuery(Function<Select, Q> function) {
-        throw new UnsupportedOperationException();
+    static StandardQuery._ParenQueryClause<Select> parenPrimaryQuery() {
+        return new ParenSelect();
     }
 
 
-    static <C, Q extends Item> SimpleSubQuery<Q> subQuery(CriteriaContext outerContext
+    static <Q extends Item> SimpleSubQuery<Q> subQuery(CriteriaContext outerContext
             , Function<SubQuery, Q> function) {
         return new SimpleSubQuery<>(CriteriaContexts.subQueryContext(outerContext), function);
     }
 
-    static <C, Q extends Item> StandardQuery._ParenQueryClause<Q> parenSubQuery(CriteriaContext outerContext
-            , Function<SubQuery, Q> function) {
-        throw new UnsupportedOperationException();
+    static <I extends Item> StandardQuery._ParenQuerySpec<I> parenSubQuery(CriteriaContext outerContext
+            , Function<SubQuery, I> function) {
+        return new ParenSubQuery<>(outerContext, function);
+    }
+
+
+    private static void assertUnionType(final CriteriaContext context, final UnionType unionType) {
+        switch (unionType) {
+            case UNION:
+            case UNION_ALL:
+            case UNION_DISTINCT:
+                break;
+            default:
+                throw ContextStack.castCriteriaApi(context);
+        }
     }
 
 
@@ -170,17 +183,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         return this;
     }
 
-    @Override
-    public final String toString() {
-        final String s;
-        if (this instanceof Select && this.isPrepared()) {
-            s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
-        } else {
-            s = super.toString();
-        }
-        return s;
-    }
-
 
     @Override
     public final LockMode lockMode() {
@@ -278,10 +280,23 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
          * Primary constructor
          * </p>
          */
-        private SimpleSelect(Function<Select, Q> function) {
-            super(CriteriaContexts.primaryQueryContext());
+        private SimpleSelect(CriteriaContext context, Function<Select, Q> function) {
+            super(context);
             this.function = function;
         }
+
+
+        @Override
+        public String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
+
 
         @Override
         Q onAsQuery() {
@@ -289,8 +304,9 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _UnionAndQuerySpec<Q> createQueryUnion(UnionType unionType) {
-            return null;
+        _UnionAndQuerySpec<Q> createQueryUnion(final UnionType unionType) {
+            StandardQueries.assertUnionType(this.context, unionType);
+            return new UnionAndSelectClause<>(this, unionType, this.function);
         }
 
 
@@ -313,69 +329,31 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _UnionAndQuerySpec<Q> createQueryUnion(UnionType unionType) {
-            return new UnionSubQueryClause<>(this, unionType, this.function);
+        _UnionAndQuerySpec<Q> createQueryUnion(final UnionType unionType) {
+            StandardQueries.assertUnionType(this.context, unionType);
+            return new UnionAndSubQueryClause<>(this, unionType, this.function);
         }
 
 
     } // SimpleSubQuery
 
 
-    private static final class UnionSelectClause<Q extends Item>
-            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<Q>>
-            implements _UnionAndQuerySpec<Q> {
-
-
-        @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<Q>>> leftParen() {
-            return null;
-        }
-
-        @Override
-        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<Q>> createSelectClause() {
-            return null;
-        }
-
-
-    }//UnionSelectClause
-
-
-    private static final class UnionLeftParenSubQueryClause<I extends Item, U extends Item>
-            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<U>>
-            implements _UnionAndQuerySpec<U> {
-        private final Function<SubQuery, I> function;
-
-        private UnionLeftParenSubQueryClause(Function<SubQuery, I> function) {
-            this.function = function;
-        }
-
-        @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<U>>> leftParen() {
-            return new UnionLeftParenSubQueryClause<>(this.function);
-        }
-
-        @Override
-        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<U>> createSelectClause() {
-            return null;
-        }
-
-
-    }//UnionLeftParenSubQueryClause
-
-
-    private static abstract class StandardParenthesizedQueries<I extends Item, Q extends Query>
-            extends ParenthesizedRowSet<
+    private static abstract class StandardBracketQueries<I extends Item, Q extends Query>
+            extends BracketRowSet<
             I,
             Q,
-            StandardQuery._UnionOrderBySpec<I>,
-            StandardQuery._UnionLimitSpec<I>,
-            StandardQuery._UnionAndQuerySpec<I>,
+            _UnionOrderBySpec<I>,
+            _UnionLimitSpec<I>,
+            _UnionAndQuerySpec<I>,
             RowSet,
             Void> implements StandardQuery._UnionOrderBySpec<I>
             , Statement._RightParenClause<_UnionOrderBySpec<I>> {
 
+        private long offset;
 
-        private StandardParenthesizedQueries(CriteriaContext context) {
+        private long rowCount;
+
+        private StandardBracketQueries(CriteriaContext context) {
             super(context);
         }
 
@@ -384,31 +362,31 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             if (rowCount < 0) {
                 throw CriteriaUtils.limitParamError(this.context, rowCount);
             }
-            this.updateLimitCount(rowCount);
+            this.rowCount = rowCount;
             return this;
         }
 
         @Override
         public final _QuerySpec<I> limit(Supplier<? extends Number> supplier) {
-            this.updateLimitCount(CriteriaUtils.asLimitParam(this.context, supplier.get()));
+            this.rowCount = CriteriaUtils.asLimitParam(this.context, supplier.get());
             return this;
         }
 
         @Override
         public final _QuerySpec<I> limit(Function<String, ?> function, String keyName) {
-            this.updateLimitCount(CriteriaUtils.asLimitParam(this.context, function.apply(keyName)));
+            this.rowCount = CriteriaUtils.asLimitParam(this.context, function.apply(keyName));
             return this;
         }
 
         @Override
         public final _QuerySpec<I> ifLimit(Supplier<? extends Number> supplier) {
-            this.updateLimitCount(CriteriaUtils.asIfLimitParam(this.context, supplier.get()));
+            this.rowCount = CriteriaUtils.asIfLimitParam(this.context, supplier.get());
             return this;
         }
 
         @Override
         public final _QuerySpec<I> ifLimit(Function<String, ?> function, String keyName) {
-            this.updateLimitCount(CriteriaUtils.asIfLimitParam(this.context, function.apply(keyName)));
+            this.rowCount = CriteriaUtils.asIfLimitParam(this.context, function.apply(keyName));
             return this;
         }
 
@@ -419,7 +397,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             } else if (rowCount < 0) {
                 throw CriteriaUtils.limitParamError(this.context, rowCount);
             }
-            this.updateLimitClause(offset, rowCount);
+            this.offset = offset;
+            this.rowCount = rowCount;
             return this;
         }
 
@@ -436,8 +415,13 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        public _QuerySpec<I> limit(Consumer<BiConsumer<Long, Long>> consumer) {
+        public final _QuerySpec<I> limit(Consumer<BiConsumer<Long, Long>> consumer) {
             consumer.accept(this::limit);
+            if (this.rowCount < 0) {
+                throw CriteriaUtils.limitParamError(this.context, this.rowCount);
+            } else if (this.offset < 0) {
+                throw CriteriaUtils.limitParamError(this.context, this.offset);
+            }
             return this;
         }
 
@@ -467,61 +451,278 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             throw ContextStack.castCriteriaApi(this.context);
         }
 
+        @Override
+        public final long offset() {
+            return this.offset;
+        }
+
+        @Override
+        public final long rowCount() {
+            return this.rowCount;
+        }
+
 
     }//StandardParenthesizedQueries
 
-    private static final class StandardParenthesizedSubQuery<I extends Item>
-            extends StandardParenthesizedQueries<I, SubQuery>
-            implements SubQuery {
 
-        private final Function<SubQuery, I> function;
+    private static final class StandardBracketSelect<I extends Item>
+            extends StandardBracketQueries<I, Select>
+            implements Select {
 
-        private StandardParenthesizedSubQuery(CriteriaContext context, Function<SubQuery, I> function) {
+        private final Function<Select, I> function;
+
+        private StandardBracketSelect(CriteriaContext context, Function<Select, I> function) {
             super(context);
             this.function = function;
         }
 
+        @Override
+        I onAsQuery() {
+            return this.function.apply(this);
+        }
 
-    }//StandardParenthesizedSubQuery
+        @Override
+        _UnionAndQuerySpec<I> createQueryUnion(final UnionType unionType) {
+            StandardQueries.assertUnionType(this.context, unionType);
+            return new UnionAndSelectClause<>(this, unionType, this.function);
+        }
+
+        @Override
+        public String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
 
 
-    private static final class UnionSubQueryClause<Q extends Item>
-            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<Q>>
-            implements _UnionAndQuerySpec<Q> {
+    }//StandardBracketSelect
 
-        private final SubQuery left;
+    private static final class StandardBracketSubQuery<I extends Item>
+            extends StandardBracketQueries<I, SubQuery>
+            implements SubQuery {
+
+        private final Function<SubQuery, I> function;
+
+        private StandardBracketSubQuery(CriteriaContext context, Function<SubQuery, I> function) {
+            super(context);
+            this.function = function;
+        }
+
+        @Override
+        I onAsQuery() {
+            return this.function.apply(this);
+        }
+
+        @Override
+        _UnionAndQuerySpec<I> createQueryUnion(final UnionType unionType) {
+            StandardQueries.assertUnionType(this.context, unionType);
+            return new UnionAndSubQueryClause<>(this, unionType, this.function);
+        }
+
+
+    }//StandardBracketSubQuery
+
+
+    /**
+     * @see #parenPrimaryQuery()
+     */
+    private static final class ParenSelect implements StandardQuery._ParenQueryClause<Select> {
+
+        private ParenSelect() {
+        }
+
+        @Override
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<Select>>> leftParen() {
+            final StandardBracketSelect<Select> bracket;
+            bracket = new StandardBracketSelect<>(CriteriaContexts.bracketContext(null), SQLs::_identity);
+            return new UnionLeftParenSelectClause<>(bracket);
+        }
+
+    }//ParenSelect
+
+    /**
+     * @see #parenSubQuery(CriteriaContext, Function)
+     */
+    private static final class ParenSubQuery<I extends Item>
+            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<I>>
+            implements StandardQuery._ParenQuerySpec<I> {
+
+        private final CriteriaContext outerContext;
+
+        private final Function<SubQuery, I> function;
+
+
+        private ParenSubQuery(CriteriaContext outerContext, Function<SubQuery, I> function) {
+            this.outerContext = outerContext;
+            this.function = function;
+        }
+
+        @Override
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final StandardBracketSubQuery<I> bracket;
+            bracket = new StandardBracketSubQuery<>(CriteriaContexts.bracketContext(this.outerContext), this.function);
+            return new UnionLeftParenSubQueryClause<>(bracket);
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<I>> createSelectClause() {
+            return new SimpleSubQuery<>(CriteriaContexts.subQueryContext(this.outerContext), this.function);
+        }
+
+
+    }//ParenSubQuery
+
+    private static final class UnionLeftParenSelectClause<I extends Item>
+            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>>
+            implements _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> {
+
+        private final StandardBracketSelect<I> bracket;
+
+        private UnionLeftParenSelectClause(StandardBracketSelect<I> bracket) {
+            this.bracket = bracket;
+        }
+
+        @Override
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<_RightParenClause<_UnionOrderBySpec<I>>>>> leftParen() {
+            final CriteriaContext context;
+            context = CriteriaContexts.bracketContext(this.bracket.context);
+
+            final StandardBracketSelect<_RightParenClause<_UnionOrderBySpec<I>>> newBracket;
+            newBracket = new StandardBracketSelect<>(context, this.bracket::parenRowSetEnd);
+            return new UnionLeftParenSelectClause<>(newBracket);
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>> createSelectClause() {
+            final CriteriaContext context;
+            context = CriteriaContexts.queryContext(this.bracket.context);
+            return new SimpleSelect<>(context, this.bracket::parenRowSetEnd);
+        }
+
+
+    }//UnionLeftParenSelectClause
+
+    private static final class UnionAndSelectClause<I extends Item>
+            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<I>>
+            implements _UnionAndQuerySpec<I> {
+
+        private final Select left;
 
         private final UnionType unionType;
 
-        private final Function<SubQuery, Q> function;
+        private final Function<Select, I> function;
 
-        private UnionSubQueryClause(SubQuery left, UnionType unionType, Function<SubQuery, Q> function) {
+        private UnionAndSelectClause(Select left, UnionType unionType, Function<Select, I> function) {
             this.left = left;
             this.unionType = unionType;
             this.function = function;
         }
 
         @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<Q>>> leftParen() {
-            return new UnionLeftParenSubQueryClause<>(this::union);
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final CriteriaContext leftContext, context;
+            leftContext = ((CriteriaContextSpec) this.left).getContext();
+            context = CriteriaContexts.unionBracketContext(leftContext);
+
+            final StandardBracketSelect<I> select;
+            select = new StandardBracketSelect<>(context, this::unionRight);
+            return new UnionLeftParenSelectClause<>(select);
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<I>> createSelectClause() {
+            final CriteriaContext leftContext, context;
+            leftContext = ((CriteriaContextSpec) this.left).getContext();
+
+            context = CriteriaContexts.unionSelectContext(leftContext);
+            return new SimpleSelect<>(context, this::unionRight);
+        }
+
+        private I unionRight(final Select right) {
+            return this.function.apply(new UnionSelect(MySQLDialect.MySQL57, this.left, this.unionType, right));
+        }
+
+
+    }//UnionSelectClause
+
+
+    private static final class UnionLeftParenSubQueryClause<I extends Item>
+            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>>
+            implements _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> {
+        private final StandardBracketSubQuery<I> outerBracket;
+
+        private UnionLeftParenSubQueryClause(StandardBracketSubQuery<I> outerBracket) {
+            this.outerBracket = outerBracket;
+        }
+
+        @Override
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<_RightParenClause<_UnionOrderBySpec<I>>>>> leftParen() {
+            final CriteriaContext context;
+            context = CriteriaContexts.bracketContext(this.outerBracket.context);
+
+            final StandardBracketSubQuery<_RightParenClause<_UnionOrderBySpec<I>>> subQuery;
+            subQuery = new StandardBracketSubQuery<>(context, this.outerBracket::parenRowSetEnd);
+            return new UnionLeftParenSubQueryClause<>(subQuery);
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>> createSelectClause() {
+            final CriteriaContext context;
+            context = CriteriaContexts.subQueryContext(this.outerBracket.context);
+            return new SimpleSubQuery<>(context, this.outerBracket::parenRowSetEnd);
+        }
+
+
+    }//UnionLeftParenSubQueryClause
+
+
+    private static final class UnionAndSubQueryClause<I extends Item>
+            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<I>>
+            implements _UnionAndQuerySpec<I> {
+
+        private final SubQuery left;
+
+        private final UnionType unionType;
+
+        private final Function<SubQuery, I> function;
+
+        private UnionAndSubQueryClause(SubQuery left, UnionType unionType, Function<SubQuery, I> function) {
+            this.left = left;
+            this.unionType = unionType;
+            this.function = function;
+        }
+
+        @Override
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final CriteriaContext leftContext, context;
+            leftContext = ((CriteriaContextSpec) this.left).getContext();
+            context = CriteriaContexts.unionBracketContext(leftContext);
+
+            final StandardBracketSubQuery<I> subQuery;
+            subQuery = new StandardBracketSubQuery<>(context, this::unionRight);
+            return new UnionLeftParenSubQueryClause<>(subQuery);
         }
 
 
         @Override
-        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<Q>> createSelectClause() {
-            final CriteriaContext leftContext, newContext;
+        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<I>> createSelectClause() {
+            final CriteriaContext leftContext, context;
             leftContext = ((CriteriaContextSpec) this.left).getContext();
 
-            newContext = CriteriaContexts.unionSubQueryContext(leftContext);
-            return StandardQueries.subQuery(newContext, this::union);
+            context = CriteriaContexts.unionSubQueryContext(leftContext);
+            return new SimpleSubQuery<>(context, this::unionRight);
         }
 
-        private Q union(final SubQuery right) {
+        private I unionRight(final SubQuery right) {
             return this.function.apply(new UnionSubQuery(this.left, this.unionType, right));
         }
 
 
-    }//UnionSubQueryClause
+    }//UnionAndSubQueryClause
 
 
 }
