@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class WhereClause<WR, WA, OR> extends OrderByClause<OR>
+abstract class WhereClause<WR, WA, OR, LR> extends LimitRowOrderByClause<OR, LR>
         implements Statement._WhereClause<WR, WA>
         , Statement._WhereAndClause<WA>
         , Update._UpdateWhereAndClause<WA>

@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class BracketRowSet<I extends Item, Q extends RowSet, RR, OR, SP, S extends RowSet, UR>
-        extends OrderByClause<OR> implements _PartRowSet
+abstract class BracketRowSet<I extends Item, Q extends RowSet, RR, OR, LR, SP, S extends RowSet, UR>
+        extends LimitRowOrderByClause<OR, LR> implements _PartRowSet
         , Query._QueryUnionClause<SP>
         , Query._QueryIntersectClause<SP>
         , Query._QueryExceptClause<SP>

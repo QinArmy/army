@@ -21,8 +21,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR>
-        extends WhereClause<WR, WA, OR>
+abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
+        extends WhereClause<WR, WA, OR, LR>
         implements Statement._JoinModifierClause<JT, JS>, Statement._CrossJoinModifierClause<FT, FS>
         , DialectStatement._JoinModifierCteClause<JC>, DialectStatement._CrossJoinModifierCteClause<FC>
         , DialectStatement._StraightJoinModifierClause<JT, JS>, DialectStatement._StraightJoinModifierCteClause<JC> {

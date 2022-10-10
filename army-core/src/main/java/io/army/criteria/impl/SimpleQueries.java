@@ -30,8 +30,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, SP>
-        extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR>
+abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, SP>
+        extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
         implements Query._DynamicHintModifierSelectClause<W, SR>
         , Query._FromModifierClause<FT, FS>, Query._FromModifierCteClause<FC>
         , Statement._QueryWhereClause<WR, WA>, Query._GroupClause<GR>

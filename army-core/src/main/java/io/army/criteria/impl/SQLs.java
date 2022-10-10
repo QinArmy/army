@@ -39,9 +39,8 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-
-    public static StandardInsert._PrimaryOptionSpec<Void> singleInsert() {
-        return StandardInserts.primaryInsert(null);
+    public static StandardInsert._PrimaryOptionSpec singleInsert() {
+        return StandardInserts.primaryInsert();
     }
 
     public static Update._StandardDomainUpdateClause<Void> domainUpdate() {
@@ -106,7 +105,7 @@ public abstract class SQLs extends StandardSyntax {
         return StandardQueries.subQuery(ContextStack.peek(), SQLs::_identity);
     }
 
-    public static StandardQuery._ParenQuerySpec<SubQuery> parenSubQuery() {
+    public static StandardQuery._ParenQueryClause<SubQuery> parenSubQuery() {
         return StandardQueries.parenSubQuery(ContextStack.peek(), SQLs::_identity);
     }
 
@@ -115,7 +114,7 @@ public abstract class SQLs extends StandardSyntax {
         return StandardQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
     }
 
-    public static StandardQuery._ParenQuerySpec<Expression> parenScalarSubQuery() {
+    public static StandardQuery._ParenQueryClause<Expression> parenScalarSubQuery() {
         return StandardQueries.parenSubQuery(ContextStack.peek(), ScalarExpression::from);
     }
 

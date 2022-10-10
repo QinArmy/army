@@ -61,7 +61,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     static <C> _WithSpec<C, Select> simpleSelect(@Nullable C criteria) {
-        return new SimpleSelect<>(CriteriaContexts.queryContext(criteria));
+        return new SimpleSelect<>(CriteriaContexts.selectContext(criteria));
     }
 
     static <C> _WithSpec<C, SubQuery> subQuery(final @Nullable C criteria) {

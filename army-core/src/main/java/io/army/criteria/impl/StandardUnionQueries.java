@@ -9,6 +9,7 @@ import java.util.function.Function;
 /**
  * @see StandardQueries
  */
+@Deprecated
 @SuppressWarnings("unchecked")
 abstract class StandardUnionQueries<C, Q extends Query> extends UnionRowSet<
         C,

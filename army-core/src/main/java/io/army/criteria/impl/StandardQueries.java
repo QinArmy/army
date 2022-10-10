@@ -1,24 +1,22 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._StandardQuery;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
  * This class is a implementation of {@link StandardQuery}.
  * </p>
  *
- * @see StandardUnionQueries
  * @since 1.0
  */
 abstract class StandardQueries<I extends Item> extends SimpleQueries<
@@ -36,6 +34,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._HavingSpec<I>, // GR
         StandardQuery._OrderBySpec<I>, // HR
         StandardQuery._LimitSpec<I>, // OR
+        StandardQuery._LockSpec<I>, // LR
         StandardQuery._UnionAndQuerySpec<I>> // SP
 
         implements StandardQuery, StandardQuery._SelectSpec<I>, StandardQuery._FromSpec<I>
@@ -45,7 +44,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
     static SimpleSelect<Select> primaryQuery() {
         // primary no outer context
-        return new SimpleSelect<>(CriteriaContexts.queryContext(null), SQLs::_identity);
+        return new SimpleSelect<>(CriteriaContexts.selectContext(null), SQLs::_identity);
     }
 
     static StandardQuery._ParenQueryClause<Select> parenPrimaryQuery() {
@@ -78,92 +77,71 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
     private LockMode lockMode;
 
-    private long offset;
+    private ArmyExpression offset;
 
-    private long rowCount;
 
     private StandardQueries(CriteriaContext context) {
         super(context);
 
     }
 
-
     @Override
-    public final _LockSpec<I> limit(long rowCount) {
-        this.rowCount = rowCount;
+    public final _LockSpec<I> limit(final Expression offset, final Expression rowCount) {
+        if (!(offset instanceof ArmyExpression)) {
+            throw ContextStack.nonArmyExp(this.context);
+        } else if (rowCount instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.dontSupportMultiParam(this.context);
+        }
+        this.offset = (ArmyExpression) offset;
+        this.limit(rowCount);
         return this;
     }
 
     @Override
-    public final _LockSpec<I> limit(Supplier<? extends Number> supplier) {
-        this.rowCount = CriteriaUtils.asLimitParam(this.context, supplier.get());
+    public final _LockSpec<I> limit(BiFunction<MappingType, Number, Expression> operator, long offset, long rowCount) {
+        CriteriaUtils.limitPair(this.context, operator, offset, rowCount, this::limit);
         return this;
     }
 
     @Override
-    public final _LockSpec<I> limit(Function<String, ?> function, String keyName) {
-        this.rowCount = CriteriaUtils.asLimitParam(this.context, function.apply(keyName));
+    public final <N extends Number> _LockSpec<I> limit(BiFunction<MappingType, Number, Expression> operator
+            , Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier) {
+        CriteriaUtils.limitPair(this.context, operator, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
         return this;
     }
 
     @Override
-    public final _LockSpec<I> ifLimit(Supplier<? extends Number> supplier) {
-        this.rowCount = CriteriaUtils.asIfLimitParam(this.context, supplier.get());
-        return this;
-    }
-
-
-    @Override
-    public final _LockSpec<I> ifLimit(Function<String, ?> function, String keyName) {
-        this.rowCount = CriteriaUtils.asIfLimitParam(this.context, function.apply(keyName));
-        return this;
-    }
-
-
-    @Override
-    public final _LockSpec<I> limit(long offset, long rowCount) {
-        this.offset = offset;
-        this.rowCount = rowCount;
+    public final _LockSpec<I> limit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
+            , String offsetKey, String rowCountKey) {
+        CriteriaUtils.limitPair(this.context, operator, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
         return this;
     }
 
     @Override
-    public final _LockSpec<I> limit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier) {
-        CriteriaUtils.limitPair(this.context, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
-        return this;
-    }
-
-    @Override
-    public final _LockSpec<I> limit(Function<String, ?> function, String offsetKey, String rowCountKey) {
-        CriteriaUtils.limitPair(this.context, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
-        return this;
-    }
-
-    @Override
-    public final _LockSpec<I> limit(Consumer<BiConsumer<Long, Long>> consumer) {
+    public final _LockSpec<I> limit(Consumer<BiConsumer<Expression, Expression>> consumer) {
         consumer.accept(this::limit);
-        if (this.offset < 0) {
-            throw CriteriaUtils.limitParamError(this.context, this.offset);
-        } else if (this.rowCount < 0) {
-            throw CriteriaUtils.limitParamError(this.context, this.rowCount);
+        if (this.offset == null || this.rowCount() == null) {
+            throw CriteriaUtils.nonOptionalClause(this.context, "limit");
         }
         return this;
     }
 
     @Override
-    public final _LockSpec<I> ifLimit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier) {
-        CriteriaUtils.ifLimitPair(this.context, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
+    public final <N extends Number> _LockSpec<I> ifLimit(BiFunction<MappingType, Number, Expression> operator
+            , Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier) {
+        CriteriaUtils.ifLimitPair(operator, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
         return this;
     }
 
     @Override
-    public final _LockSpec<I> ifLimit(Function<String, ?> function, String offsetKey, String rowCountKey) {
-        CriteriaUtils.ifLimitPair(this.context, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
+    public final _LockSpec<I> ifLimit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
+            , String offsetKey, String rowCountKey) {
+        CriteriaUtils.ifLimitPair(operator, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
         return this;
     }
 
     @Override
-    public _LockSpec<I> ifLimit(Consumer<BiConsumer<Long, Long>> consumer) {
+    public final _LockSpec<I> ifLimit(Consumer<BiConsumer<Expression, Expression>> consumer) {
         consumer.accept(this::limit);
         return this;
     }
@@ -250,13 +228,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     @Override
-    public final long offset() {
+    public final _Expression offset() {
         return this.offset;
-    }
-
-    @Override
-    public final long rowCount() {
-        return this.rowCount;
     }
 
     @Override
@@ -344,102 +317,76 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             Q,
             _UnionOrderBySpec<I>,
             _UnionLimitSpec<I>,
+            _QuerySpec<I>,
             _UnionAndQuerySpec<I>,
             RowSet,
             Void> implements StandardQuery._UnionOrderBySpec<I>
             , Statement._RightParenClause<_UnionOrderBySpec<I>> {
 
-        private long offset;
-
-        private long rowCount;
+        private ArmyExpression offset;
 
         private StandardBracketQueries(CriteriaContext context) {
             super(context);
         }
 
+
         @Override
-        public final _QuerySpec<I> limit(long rowCount) {
-            if (rowCount < 0) {
-                throw CriteriaUtils.limitParamError(this.context, rowCount);
+        public final _QuerySpec<I> limit(final Expression offset, final Expression rowCount) {
+            if (rowCount instanceof SqlValueParam.MultiValue) {
+                throw CriteriaUtils.dontSupportMultiParam(this.context);
+            } else if (!(offset instanceof ArmyExpression)) {
+                throw ContextStack.nonArmyExp(this.context);
             }
-            this.rowCount = rowCount;
+            this.offset = (ArmyExpression) offset;
+            this.limit(rowCount);
             return this;
         }
 
         @Override
-        public final _QuerySpec<I> limit(Supplier<? extends Number> supplier) {
-            this.rowCount = CriteriaUtils.asLimitParam(this.context, supplier.get());
+        public final _QuerySpec<I> limit(BiFunction<MappingType, Number, Expression> operator, long offset, long rowCount) {
+            CriteriaUtils.limitPair(this.context, operator, offset, rowCount, this::limit);
             return this;
         }
 
         @Override
-        public final _QuerySpec<I> limit(Function<String, ?> function, String keyName) {
-            this.rowCount = CriteriaUtils.asLimitParam(this.context, function.apply(keyName));
+        public final <N extends Number> _QuerySpec<I> limit(BiFunction<MappingType, Number, Expression> operator
+                , Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier) {
+            CriteriaUtils.limitPair(this.context, operator, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
             return this;
         }
 
         @Override
-        public final _QuerySpec<I> ifLimit(Supplier<? extends Number> supplier) {
-            this.rowCount = CriteriaUtils.asIfLimitParam(this.context, supplier.get());
+        public final _QuerySpec<I> limit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
+                , String offsetKey, String rowCountKey) {
+            CriteriaUtils.limitPair(this.context, operator, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
             return this;
         }
 
         @Override
-        public final _QuerySpec<I> ifLimit(Function<String, ?> function, String keyName) {
-            this.rowCount = CriteriaUtils.asIfLimitParam(this.context, function.apply(keyName));
-            return this;
-        }
-
-        @Override
-        public final _QuerySpec<I> limit(final long offset, final long rowCount) {
-            if (offset < 0) {
-                throw CriteriaUtils.limitParamError(this.context, offset);
-            } else if (rowCount < 0) {
-                throw CriteriaUtils.limitParamError(this.context, rowCount);
-            }
-            this.offset = offset;
-            this.rowCount = rowCount;
-            return this;
-        }
-
-        @Override
-        public final _QuerySpec<I> limit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier) {
-            CriteriaUtils.limitPair(this.context, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
-            return this;
-        }
-
-        @Override
-        public final _QuerySpec<I> limit(Function<String, ?> function, String offsetKey, String rowCountKey) {
-            CriteriaUtils.limitPair(this.context, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
-            return this;
-        }
-
-        @Override
-        public final _QuerySpec<I> limit(Consumer<BiConsumer<Long, Long>> consumer) {
+        public final _QuerySpec<I> limit(Consumer<BiConsumer<Expression, Expression>> consumer) {
             consumer.accept(this::limit);
-            if (this.rowCount < 0) {
-                throw CriteriaUtils.limitParamError(this.context, this.rowCount);
-            } else if (this.offset < 0) {
-                throw CriteriaUtils.limitParamError(this.context, this.offset);
+            if (this.offset == null || this.rowCount() == null) {
+                throw CriteriaUtils.nonOptionalClause(this.context, "limit");
             }
             return this;
         }
 
         @Override
-        public final _QuerySpec<I> ifLimit(Supplier<? extends Number> offsetSupplier
-                , Supplier<? extends Number> rowCountSupplier) {
-            CriteriaUtils.ifLimitPair(this.context, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
+        public final <N extends Number> _QuerySpec<I> ifLimit(BiFunction<MappingType, Number, Expression> operator
+                , Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier) {
+            CriteriaUtils.ifLimitPair(operator, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
             return this;
         }
 
         @Override
-        public final _QuerySpec<I> ifLimit(Function<String, ?> function, String offsetKey, String rowCountKey) {
-            CriteriaUtils.ifLimitPair(this.context, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
+        public final _QuerySpec<I> ifLimit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
+                , String offsetKey, String rowCountKey) {
+            CriteriaUtils.ifLimitPair(operator, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
             return this;
         }
 
         @Override
-        public final _QuerySpec<I> ifLimit(Consumer<BiConsumer<Long, Long>> consumer) {
+        public final _QuerySpec<I> ifLimit(Consumer<BiConsumer<Expression, Expression>> consumer) {
             consumer.accept(this::limit);
             return this;
         }
@@ -452,17 +399,12 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        public final long offset() {
+        public final _Expression offset() {
             return this.offset;
         }
 
-        @Override
-        public final long rowCount() {
-            return this.rowCount;
-        }
 
-
-    }//StandardParenthesizedQueries
+    }//StandardBracketQueries
 
 
     private static final class StandardBracketSelect<I extends Item>
@@ -501,13 +443,13 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
     }//StandardBracketSelect
 
-    private static final class StandardBracketSubQuery<I extends Item>
+    private static final class BracketSubQuery<I extends Item>
             extends StandardBracketQueries<I, SubQuery>
             implements SubQuery {
 
         private final Function<SubQuery, I> function;
 
-        private StandardBracketSubQuery(CriteriaContext context, Function<SubQuery, I> function) {
+        private BracketSubQuery(CriteriaContext context, Function<SubQuery, I> function) {
             super(context);
             this.function = function;
         }
@@ -563,8 +505,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         @Override
         public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final StandardBracketSubQuery<I> bracket;
-            bracket = new StandardBracketSubQuery<>(CriteriaContexts.bracketContext(this.outerContext), this.function);
+            final BracketSubQuery<I> bracket;
+            bracket = new BracketSubQuery<>(CriteriaContexts.bracketContext(this.outerContext), this.function);
             return new UnionLeftParenSubQueryClause<>(bracket);
         }
 
@@ -599,7 +541,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         @Override
         _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>> createSelectClause() {
             final CriteriaContext context;
-            context = CriteriaContexts.queryContext(this.bracket.context);
+            context = CriteriaContexts.selectContext(this.bracket.context);
             return new SimpleSelect<>(context, this.bracket::parenRowSetEnd);
         }
 
@@ -653,9 +595,9 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     private static final class UnionLeftParenSubQueryClause<I extends Item>
             extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>>
             implements _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> {
-        private final StandardBracketSubQuery<I> outerBracket;
+        private final BracketSubQuery<I> outerBracket;
 
-        private UnionLeftParenSubQueryClause(StandardBracketSubQuery<I> outerBracket) {
+        private UnionLeftParenSubQueryClause(BracketSubQuery<I> outerBracket) {
             this.outerBracket = outerBracket;
         }
 
@@ -664,8 +606,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             final CriteriaContext context;
             context = CriteriaContexts.bracketContext(this.outerBracket.context);
 
-            final StandardBracketSubQuery<_RightParenClause<_UnionOrderBySpec<I>>> subQuery;
-            subQuery = new StandardBracketSubQuery<>(context, this.outerBracket::parenRowSetEnd);
+            final BracketSubQuery<_RightParenClause<_UnionOrderBySpec<I>>> subQuery;
+            subQuery = new BracketSubQuery<>(context, this.outerBracket::parenRowSetEnd);
             return new UnionLeftParenSubQueryClause<>(subQuery);
         }
 
@@ -680,6 +622,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }//UnionLeftParenSubQueryClause
 
 
+    /**
+     * @see SimpleSubQuery#createQueryUnion(UnionType)
+     * @see BracketSubQuery#createQueryUnion(UnionType)
+     */
     private static final class UnionAndSubQueryClause<I extends Item>
             extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<I>>
             implements _UnionAndQuerySpec<I> {
@@ -702,8 +648,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             leftContext = ((CriteriaContextSpec) this.left).getContext();
             context = CriteriaContexts.unionBracketContext(leftContext);
 
-            final StandardBracketSubQuery<I> subQuery;
-            subQuery = new StandardBracketSubQuery<>(context, this::unionRight);
+            final BracketSubQuery<I> subQuery;
+            subQuery = new BracketSubQuery<>(context, this::unionRight);
             return new UnionLeftParenSubQueryClause<>(subQuery);
         }
 

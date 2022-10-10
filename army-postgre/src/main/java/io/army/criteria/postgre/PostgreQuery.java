@@ -6,6 +6,8 @@ import io.army.criteria.Query;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.Postgres;
 
+import java.util.function.BooleanSupplier;
+
 
 /**
  * <p>
@@ -17,45 +19,95 @@ import io.army.criteria.impl.Postgres;
  */
 public interface PostgreQuery extends Query, DialectStatement {
 
-    interface _PostgreDynamicWithClause<C, SR>
-            extends _DynamicWithCteClause<C, PostgreCteBuilder, SR> {
+    interface _PostgreDynamicWithClause<SR>
+            extends _DynamicWithCteClause<PostgreCteBuilder, SR> {
 
     }
 
 
-    interface _WhereSpec<C, Q extends Item> {
+    interface _LockSpec<I extends Item> {
+
+    }
+
+    interface _OffsetSpec<I extends Item> {
+
+    }
+
+    interface _LimitSpec<I extends Item> extends _RowCountLimitClause<_OffsetSpec<I>> {
+
+        _OffsetSpec<I> limitAll();
+
+        _OffsetSpec<I> ifLimitAll(BooleanSupplier supplier);
 
     }
 
 
-    interface _PostgreOnClause<C, Q extends Item> extends _OnClause<C, _JoinSpec<C, Q>> {
-
-    }
-
-    interface _JoinSpec<C, Q extends Item> {
+    interface _OrderBySpec<I extends Item> extends _OrderByClause<_LimitSpec<I>>, _LimitSpec<I> {
 
     }
 
 
-    interface _PostgreFromClause<C, FS> extends _FromClause<C, FS, FS>
-            , _FromCteClause<FS> {
+    interface _HavingSpec<I extends Item> extends _HavingClause<_OrderBySpec<I>>, _OrderBySpec<I> {
 
     }
 
 
-    interface _FromSpec<C, Q extends Item> extends {
+    interface _GroupBySpec<I extends Item> extends _GroupClause<_HavingSpec<I>>
+            , _OrderBySpec<I> {
 
     }
 
 
-    interface _PostgreSelectClause<C, Q extends Item> extends _SelectClause<_FromSpec<C, Q>>
-            , _DynamicModifierSelectClause<C, Postgres.SelectModifier, _FromSpec<C, Q>> {
+    interface _WhereSpec<I extends Item> {
+
+    }
+
+
+    interface _TableSampleOnSpec<I extends Item> {
+
+    }
+
+    interface _TabularOnColumnAlias<I extends Item> {
+
+    }
+
+    interface _TableSampleJoinSpec<I extends Item> {
+
+    }
+
+    interface _TabularJoinColumnAlias<I extends Item> {
+
+    }
+
+
+    interface _JoinSpec<I extends Item> extends _JoinModifierClause<_TableSampleOnSpec<I>, _TabularOnColumnAlias<I>>
+            , _CrossJoinModifierClause<_TableSampleJoinSpec<I>, _TabularJoinColumnAlias<I>>
+            , _JoinCteClause<_TabularOnColumnAlias<I>>, _CrossJoinCteClause<_TabularJoinColumnAlias<I>>
+            , _WhereSpec<I> {
+
+    }
+
+
+    interface _PostgreFromClause<FT, FS> extends _FromModifierClause<FT, FS>
+            , _FromModifierCteClause<FS> {
+
+    }
+
+
+    interface _FromSpec<I extends Item> extends _PostgreFromClause<_TableSampleJoinSpec<I>, _TabularJoinColumnAlias<I>> {
+
+        //TODO function Tabular item
+    }
+
+
+    interface _PostgreSelectClause<I extends Item> extends _SelectClause<_FromSpec<I>>
+            , _DynamicModifierSelectClause<Postgres.SelectModifier, _FromSpec<I>> {
 
 
     }
 
-    interface _CteComma<C, Q extends Item> extends _StaticWithCommaClause<_StaticCteLeftParenSpec<C, _CteComma<C, Q>>>
-            , _StaticSpaceClause<_PostgreSelectClause<C, Q>>, Item {
+    interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_CteComma<I>>>
+            , _PostgreSelectClause<I> {
 
     }
 
@@ -67,18 +119,18 @@ public interface PostgreQuery extends Query, DialectStatement {
      *
      * @since 1.0
      */
-    interface _StaticCteComplexCommandSpec<C, Q extends Item> extends _PostgreSelectClause<C, Q> {
+    interface _StaticCteComplexCommandSpec<I extends Item> extends _PostgreSelectClause<I> {
 
     }
 
-    interface _StaticCteAsClause<C, Q extends Item>
-            extends Statement._StaticAsClaus<_StaticCteComplexCommandSpec<C, Q>> {
+    interface _StaticCteAsClause<I extends Item>
+            extends Statement._StaticAsClaus<_StaticCteComplexCommandSpec<I>> {
 
     }
 
-    interface _StaticCteLeftParenSpec<C, Q extends Item>
-            extends Statement._LeftParenStringQuadraSpec<C, _StaticCteAsClause<C, Q>>
-            , _StaticCteAsClause<C, Q> {
+    interface _StaticCteLeftParenSpec<I extends Item>
+            extends Statement._LeftParenStringQuadraSpec<_StaticCteAsClause<I>>
+            , _StaticCteAsClause<I> {
 
     }
 
@@ -90,9 +142,9 @@ public interface PostgreQuery extends Query, DialectStatement {
      *
      * @since 1.0
      */
-    interface _WithCteSpec<C, Q extends Item> extends _PostgreDynamicWithClause<C, _PostgreSelectClause<C, Q>>
-            , _StaticWithCteClause<_StaticCteLeftParenSpec<C, _CteComma<C, Q>>>
-            , _PostgreSelectClause<C, Q> {
+    interface _WithCteSpec<I extends Item> extends _PostgreDynamicWithClause<_PostgreSelectClause<I>>
+            , _StaticWithCteClause<_StaticCteLeftParenSpec<_CteComma<I>>>
+            , _PostgreSelectClause<I> {
 
     }
 
@@ -104,8 +156,8 @@ public interface PostgreQuery extends Query, DialectStatement {
      *
      * @since 1.0
      */
-    interface _SubWithCteSpec<C, Q extends Item> extends _PostgreDynamicWithClause<C, _PostgreSelectClause<C, Q>>
-            , _PostgreSelectClause<C, Q> {
+    interface _SubWithCteSpec<I extends Item> extends _PostgreDynamicWithClause<_PostgreSelectClause<I>>
+            , _PostgreSelectClause<I> {
 
     }
 

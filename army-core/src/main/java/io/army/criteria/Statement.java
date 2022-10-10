@@ -4,6 +4,7 @@ import io.army.dialect.Dialect;
 import io.army.function.TeExpression;
 import io.army.function.TePredicate;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 
@@ -473,16 +474,27 @@ public interface Statement extends Item {
      */
     interface _RowCountLimitClause<LR> {
 
-        LR limit(long rowCount);
+        LR limit(Expression rowCount);
 
-        LR limit(Supplier<? extends Number> supplier);
+        LR limit(BiFunction<MappingType, Number, Expression> operator, long rowCount);
 
-        LR limit(Function<String, ?> function, String keyName);
+        <N extends Number> LR limit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier);
 
-        LR ifLimit(Supplier<? extends Number> supplier);
+        LR limit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function, String keyName);
 
-        LR ifLimit(Function<String, ?> function, String keyName);
+        <N extends Number> LR ifLimit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier);
 
+        LR ifLimit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function, String keyName);
+
+        LR ifLimit(Supplier<Expression> supplier);
+
+    }
+
+    interface _DmlRowCountLimitClause<LR> extends _RowCountLimitClause<LR> {
+
+        LR limit(BiFunction<MappingType, String, Expression> operator, String paramName);
+
+        LR ifLimit(BiFunction<MappingType, String, Expression> operator, @Nullable String paramName);
     }
 
 

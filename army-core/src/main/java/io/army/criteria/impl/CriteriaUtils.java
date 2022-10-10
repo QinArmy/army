@@ -6,6 +6,7 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
+import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ChildTableMeta;
@@ -14,6 +15,7 @@ import io.army.util._Exceptions;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -279,22 +281,70 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext(), function, item);
     }
 
-    static void limitPair(final CriteriaContext context, final @Nullable Object offsetValue
-            , final @Nullable Object rowCountValue, final BiConsumer<Long, Long> consumer) {
+
+    static void limitPair(final CriteriaContext context, final BiFunction<MappingType, Number, Expression> operator
+            , final @Nullable Object offsetValue, final @Nullable Object rowCountValue
+            , final BiConsumer<Expression, Expression> consumer) {
+
         final long offset, rowCount;
-        offset = asLimitParam(context, offsetValue);
-        rowCount = asLimitParam(context, rowCountValue);
-        consumer.accept(offset, rowCount);
+        if (offsetValue instanceof Long) {
+            offset = (Long) offsetValue;
+        } else if (offsetValue instanceof Integer
+                || offsetValue instanceof Short
+                || offsetValue instanceof Byte) {
+            offset = ((Number) offsetValue).longValue();
+        } else {
+            throw limitParamError(context, offsetValue);
+        }
+
+        if (rowCountValue instanceof Long) {
+            rowCount = (Long) rowCountValue;
+        } else if (rowCountValue instanceof Integer
+                || rowCountValue instanceof Short
+                || rowCountValue instanceof Byte) {
+            rowCount = ((Number) rowCountValue).longValue();
+        } else {
+            throw limitParamError(context, rowCountValue);
+        }
+
+        if (offset < 0) {
+            throw limitParamError(context, offsetValue);
+        } else if (rowCount < 0) {
+            throw limitParamError(context, rowCountValue);
+        }
+
+        consumer.accept(operator.apply(LongType.INSTANCE, offset), operator.apply(LongType.INSTANCE, rowCount));
     }
 
-    static void ifLimitPair(final CriteriaContext criteriaContext, final @Nullable Object offsetValue
-            , final @Nullable Object rowCountValue, final BiConsumer<Long, Long> consumer) {
+    static void ifLimitPair(final BiFunction<MappingType, Number, Expression> operator
+            , final @Nullable Object offsetValue, final @Nullable Object rowCountValue
+            , final BiConsumer<Expression, Expression> consumer) {
+
         final long offset, rowCount;
-        offset = asIfLimitParam(criteriaContext, offsetValue);
-        rowCount = asIfLimitParam(criteriaContext, rowCountValue);
-        if (offset >= 0L && rowCount >= 0L) {
-            consumer.accept(offset, rowCount);
+        if (offsetValue instanceof Long) {
+            offset = (Long) offsetValue;
+        } else if (offsetValue instanceof Integer
+                || offsetValue instanceof Short
+                || offsetValue instanceof Byte) {
+            offset = ((Number) offsetValue).longValue();
+        } else {
+            offset = -1L;
         }
+
+        if (rowCountValue instanceof Long) {
+            rowCount = (Long) rowCountValue;
+        } else if (rowCountValue instanceof Integer
+                || rowCountValue instanceof Short
+                || rowCountValue instanceof Byte) {
+            rowCount = ((Number) rowCountValue).longValue();
+        } else {
+            rowCount = -1L;
+        }
+
+        if (offset >= 0 && rowCount >= 0) {
+            consumer.accept(operator.apply(LongType.INSTANCE, offset), operator.apply(LongType.INSTANCE, rowCount));
+        }
+
     }
 
 
@@ -344,6 +394,11 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(criteriaContext, m);
     }
 
+    static CriteriaException nonOptionalClause(CriteriaContext context, String clause) {
+        String m = String.format("%s clause isn't optional.", clause);
+        return ContextStack.criteriaError(context, m);
+    }
+
     static CriteriaException limitBiConsumerError(CriteriaContext criteriaContext) {
         String m = "You must specified limit clause";
         return ContextStack.criteriaError(criteriaContext, m);
@@ -352,6 +407,10 @@ abstract class CriteriaUtils {
     static CriteriaException ifLimitBiConsumerError(CriteriaContext criteriaContext) {
         String m = "limit clause must specified non-negative parameters";
         return ContextStack.criteriaError(criteriaContext, m);
+    }
+
+    static CriteriaException dontSupportMultiParam(CriteriaContext context) {
+        return ContextStack.criteriaError(context, "don't support multi-parameter(literal)");
     }
 
 

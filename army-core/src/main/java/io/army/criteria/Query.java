@@ -2,6 +2,7 @@ package io.army.criteria;
 
 
 import io.army.criteria.impl.SQLs;
+import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -78,7 +79,7 @@ public interface Query extends RowSet {
 
     }
 
-    interface _StaticWithCommaClause<CR> {
+    interface _StaticWithCommaClause<CR> extends Item {
 
         CR comma(String name);
     }
@@ -238,7 +239,6 @@ public interface Query extends RowSet {
     }
 
 
-
     interface _QueryUnionClause<SP> {
 
         SP union();
@@ -317,21 +317,22 @@ public interface Query extends RowSet {
 
     interface _LimitClause<LR> extends Statement._RowCountLimitClause<LR> {
 
-        LR limit(long offset, long rowCount);
+        LR limit(Expression offset, Expression rowCount);
 
-        LR limit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier);
+        LR limit(BiFunction<MappingType, Number, Expression> operator, long offset, long rowCount);
 
-        LR limit(Function<String, ?> function, String offsetKey, String rowCountKey);
+        <N extends Number> LR limit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier);
 
-        LR limit(Consumer<BiConsumer<Long, Long>> consumer);
+        LR limit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function, String offsetKey, String rowCountKey);
 
-
-        LR ifLimit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier);
-
-        LR ifLimit(Function<String, ?> function, String offsetKey, String rowCountKey);
+        LR limit(Consumer<BiConsumer<Expression, Expression>> consumer);
 
 
-        LR ifLimit(Consumer<BiConsumer<Long, Long>> consumer);
+        <N extends Number> LR ifLimit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier);
+
+        LR ifLimit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function, String offsetKey, String rowCountKey);
+
+        LR ifLimit(Consumer<BiConsumer<Expression, Expression>> consumer);
 
     }
 

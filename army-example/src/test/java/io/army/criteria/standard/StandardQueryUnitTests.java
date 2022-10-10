@@ -34,7 +34,7 @@ public class StandardQueryUnitTests {
                 .groupBy(User_.userType)
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))// group by is empty ,so having clause no action
                 .orderBy(User_.id.desc())
-                .limit(0, 10)
+                .limit(SQLs::literal, 0, 10)
                 .lock(LockMode.READ)
                 .asQuery();
 
@@ -55,7 +55,7 @@ public class StandardQueryUnitTests {
                 .groupBy(Person_.birthday)
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
                 .orderBy(Person_.id.desc())
-                .limit(0, 10)
+                .limit(SQLs::literal, 0, 10)
                 .lock(LockMode.WRITE)
                 .asQuery();
 
@@ -67,7 +67,8 @@ public class StandardQueryUnitTests {
     public void unionSelect() {
         final Select stmt;
 
-        stmt = SQLs.query()
+        stmt = SQLs.parenQuery()
+                .leftParen()
                 .select(User_.id)
                 .from(User_.T, "p")
                 .where(User_.id::equal, SQLs::literal, 1)
@@ -76,7 +77,10 @@ public class StandardQueryUnitTests {
                 .groupBy(User_.userType)
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
                 .orderBy(User_.id.desc())
-                .limit(0, 10)
+                .limit(SQLs::literal, 0, 10)
+                .asQuery()
+
+                .rightParen()
 
                 .unionAll()
 
@@ -90,12 +94,10 @@ public class StandardQueryUnitTests {
                 .groupBy(User_.userType)
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
                 .orderBy(User_.id.desc())
-                .limit(0, 10)
+                .limit(SQLs::literal, 0, 10)
                 .asQuery()
 
                 .rightParen()
-
-                .orderBy(SQLs.ref(User_.ID))
 
                 .unionAll()
 
@@ -107,7 +109,7 @@ public class StandardQueryUnitTests {
                 .groupBy(User_.userType)
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
                 .orderBy(User_.id.desc())
-                .limit(0, 10)
+                .limit(SQLs::literal, 0, 10)
 
 
                 .asQuery();
@@ -141,9 +143,14 @@ public class StandardQueryUnitTests {
         criteria.put("rowCount", 100L);
 
         final Select stmt;
-        stmt = SQLs.query(criteria)
+        stmt = SQLs.query()
                 .select(SQLs.ref("us", "one"), SQLs.derivedGroup("us"))
-                .from(this::userInfo, "us")
+                .from(() -> SQLs.subQuery()
+                        .select(SQLs.literal(1).as("one"), SQLs.group(User_.T, "u"))
+                        .from(User_.T, "u")
+                        .where(User_.createTime::equal, SQLs::literal, LocalDateTime.now())
+                        .limit(SQLs::literal, criteria::get, "offset", "rowCount")
+                        .asQuery(), "us")
                 .where(SQLs.ref("us", "one")::equal, SQLs::param, 1)
                 .asQuery();
 
@@ -227,19 +234,6 @@ public class StandardQueryUnitTests {
                 .asInsert();
 
         printStmt(stmt);
-    }
-
-
-    /**
-     * @see #simpleSubQuerySelectItem()
-     */
-    private SubQuery userInfo(final Map<String, Object> criteria) {
-        return SQLs.subQuery()
-                .select(SQLs.literal(1).as("one"), SQLs.group(User_.T, "u"))
-                .from(User_.T, "u")
-                .where(User_.createTime::equal, SQLs::literal, LocalDateTime.now())
-                .limit(criteria::get, "offset", "rowCount")
-                .asQuery();
     }
 
 
