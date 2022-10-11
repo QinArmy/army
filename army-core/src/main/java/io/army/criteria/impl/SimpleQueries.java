@@ -111,23 +111,25 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     /*################################## blow FromSpec method ##################################*/
 
     @Override
-    public final FT from(TableMeta<?> table, String tableAlias) {
+    public final FT from(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+        assert wordAs == SQLs.AS;
         return this.onAddNoOnTableItem(_JoinType.NONE, null, table, tableAlias);
     }
 
     @Override
-    public final <T extends TabularItem> FS from(Supplier<T> supplier, String alias) {
-        return this.onAddNoOnQueryItem(_JoinType.NONE, null, supplier.get(), alias);
+    public final <T extends TabularItem> _AsClause<FS> from(Supplier<T> supplier) {
+        return this.onAddNoOnQueryItem(_JoinType.NONE, null, supplier.get());
     }
 
     @Override
-    public final FT from(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias) {
+    public final FT from(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+        assert wordAs == SQLs.AS;
         return this.onAddNoOnTableItem(_JoinType.NONE, modifier, table, tableAlias);
     }
 
     @Override
-    public final <T extends TabularItem> FS from(Query.TabularModifier modifier, Supplier<T> supplier, String alias) {
-        return this.onAddNoOnQueryItem(_JoinType.NONE, modifier, supplier.get(), alias);
+    public final <T extends TabularItem> _AsClause<FS> from(Query.TabularModifier modifier, Supplier<T> supplier) {
+        return this.onAddNoOnQueryItem(_JoinType.NONE, modifier, supplier.get());
     }
 
     @Override
@@ -136,7 +138,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     }
 
     @Override
-    public final FC from(String cteName, String alias) {
+    public final FC from(String cteName, SQLs.WordAs wordAs, String alias) {
+        assert wordAs == SQLs.AS;
         return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, alias);
     }
 
@@ -146,7 +149,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     }
 
     @Override
-    public final FC from(Query.TabularModifier modifier, String cteName, String alias) {
+    public final FC from(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias) {
+        assert wordAs == SQLs.AS;
         return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, alias);
     }
 

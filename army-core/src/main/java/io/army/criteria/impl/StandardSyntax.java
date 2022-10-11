@@ -51,6 +51,30 @@ abstract class StandardSyntax extends Functions {
 
     }
 
+    public interface WordOnly extends Query.TableModifier, Query.FetchOnlyWithTies {
+
+    }
+
+    public interface WordFirst extends Query.FetchFirstNext {
+
+    }
+
+    public interface WordNext extends Query.FetchFirstNext {
+
+    }
+
+    public interface WordRow extends Query.FetchRow {
+
+    }
+
+    public interface WordRows extends Query.FetchRow {
+
+    }
+
+    public interface WordsWithTies extends Query.FetchOnlyWithTies {
+
+    }
+
     public interface SymbolPoint {
 
     }
@@ -140,6 +164,163 @@ abstract class StandardSyntax extends Functions {
         }
 
     }//KeyWordAnd
+
+    private enum KeyWordFirst implements WordFirst, SQLWords {
+
+        FIRST(" FIRST");
+
+        private final String spaceWord;
+
+        KeyWordFirst(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(SQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+    }//KeyWordFirst
+
+    private enum KeyWordNext implements WordNext, SQLWords {
+
+        NEXT(" NEXT");
+
+        private final String spaceWord;
+
+        KeyWordNext(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(SQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+    }//KeyWordNext
+
+    private enum KeyWordRow implements WordRow, SQLWords {
+
+        ROW(" ROW");
+
+        private final String spaceWord;
+
+        KeyWordRow(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(SQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+    }//KeyWordRow
+
+    private enum KeyWordRows implements WordRows, SQLWords {
+
+        ROWS(" ROWS");
+
+        private final String spaceWord;
+
+        KeyWordRows(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(SQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+    }//KeyWordRows
+
+    private enum KeyWordWithTies implements WordsWithTies, SQLWords {
+
+        WITH_TIES(" WITH TIES");
+
+        private final String spaceWords;
+
+        KeyWordWithTies(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(SQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+    }//KeyWordNext
+
+    private enum KeyWordOny implements WordOnly, SQLWords {
+
+        ONLY(" ONLY");
+
+        private final String spaceWord;
+
+        KeyWordOny(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(SQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+    }//KeyWordOny
+
 
     private enum SQLSymbolPoint implements SymbolPoint {
 
@@ -298,7 +479,19 @@ abstract class StandardSyntax extends Functions {
 
     public static final WordAnd AND = KeyWordAnd.AND;
 
+    public static final WordFirst FIRST = KeyWordFirst.FIRST;
+
+    public static final WordNext NEXT = KeyWordNext.NEXT;
+
     public static final SymbolPoint POINT = SQLSymbolPoint.POINT;
+
+    public static final WordOnly ONLY = KeyWordOny.ONLY;
+
+    public static final WordRow ROW = KeyWordRow.ROW;
+
+    public static final WordRows ROWS = KeyWordRows.ROWS;
+
+    public static final WordsWithTies WITH_TIES = KeyWordWithTies.WITH_TIES;
 
     public static final SymbolStar START = SQLSymbolStar.STAR;
 

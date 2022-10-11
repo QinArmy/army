@@ -45,7 +45,31 @@ public interface Query extends RowSet {
 
     }
 
+    interface TableModifier {
+
+    }
+
     interface TabularModifier {
+
+    }
+
+    interface FetchFirstNext {
+
+    }
+
+    interface FetchRow {
+
+    }
+
+    interface FetchOnly {
+
+    }
+
+    interface FetchWithTies {
+
+    }
+
+    interface FetchOnlyWithTies extends FetchOnly, FetchWithTies {
 
     }
 
@@ -101,17 +125,17 @@ public interface Query extends RowSet {
      */
     interface _FromClause<FT, FS> {
 
-        FT from(TableMeta<?> table, String tableAlias);
+        FT from(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> FS from(Supplier<T> supplier, String alias);
+        <T extends TabularItem> Statement._AsClause<FS> from(Supplier<T> supplier);
 
     }
 
     interface _FromModifierClause<FT, FS> extends _FromClause<FT, FS> {
 
-        FT from(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
+        FT from(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> FS from(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
+        <T extends TabularItem> Statement._AsClause<FS> from(Query.TabularModifier modifier, Supplier<T> supplier);
     }
 
 
@@ -133,7 +157,7 @@ public interface Query extends RowSet {
 
         FC from(String cteName);
 
-        FC from(String cteName, String alias);
+        FC from(String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 
@@ -141,7 +165,7 @@ public interface Query extends RowSet {
 
         FC from(Query.TabularModifier modifier, String cteName);
 
-        FC from(Query.TabularModifier modifier, String cteName, String alias);
+        FC from(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
     }
 
 
@@ -235,6 +259,46 @@ public interface Query extends RowSet {
         HR having(Consumer<Consumer<IPredicate>> consumer);
 
         HR ifHaving(Consumer<Consumer<IPredicate>> consumer);
+
+    }
+
+    interface _LockOfTableClause<OR> {
+
+        OR of(TableMeta<?> table);
+
+        OR of(TableMeta<?> table1, TableMeta<?> table2);
+
+        OR of(TableMeta<?> table1, TableMeta<?> table2, TableMeta<?> table3);
+
+        OR of(Consumer<Consumer<TableMeta<?>>> consumer);
+
+        OR ifOf(Consumer<Consumer<TableMeta<?>>> consumer);
+
+    }
+
+
+    interface _MinLockWaitOptionClause<WR> {
+
+        WR noWait();
+
+        WR skipLocked();
+
+        WR ifNoWait(BooleanSupplier supplier);
+
+        WR ifSkipLocked(BooleanSupplier supplier);
+
+    }
+
+
+    interface _MinLockOptionClause<LR> {
+
+        LR forUpdate();
+
+        LR forShare();
+
+        LR ifForUpdate(BooleanSupplier supplier);
+
+        LR ifForShare(BooleanSupplier supplier);
 
     }
 

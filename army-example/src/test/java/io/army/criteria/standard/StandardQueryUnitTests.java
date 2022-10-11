@@ -30,7 +30,7 @@ public class StandardQueryUnitTests {
 
         stmt = SQLs.query()
                 .select(SQLs.group(User_.T, "u"))
-                .from(User_.T, "u")
+                .from(User_.T, SQLs.AS, "u")
                 .groupBy(User_.userType)
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))// group by is empty ,so having clause no action
                 .orderBy(User_.id.desc())
@@ -47,8 +47,8 @@ public class StandardQueryUnitTests {
 
         stmt = SQLs.query()
                 .select(SQLs.childGroup(Person_.T, "p", "u"))
-                .from(Person_.T, "p")
-                .join(User_.T, "u").on(Person_.id.equal(User_.id))
+                .from(Person_.T, SQLs.AS, "p")
+                .join(User_.T, SQLs.AS, "u").on(Person_.id.equal(User_.id))
                 .where(Person_.id::equal, SQLs::literal, "1")
                 .and(User_.nickName::equal, SQLs::param, "脉兽秀秀")
                 //.and(User_.visible.equal(false))
@@ -70,7 +70,7 @@ public class StandardQueryUnitTests {
         stmt = SQLs.parenQuery()
                 .leftParen()
                 .select(User_.id)
-                .from(User_.T, "p")
+                .from(User_.T, SQLs.AS, "p")
                 .where(User_.id::equal, SQLs::literal, 1)
                 .and(User_.nickName::equal, SQLs::param, "脉兽秀秀")
                 //.and(User_.visible.equal(false))
@@ -87,7 +87,7 @@ public class StandardQueryUnitTests {
                 .leftParen()
 
                 .select(User_.id)
-                .from(User_.T, "p")
+                .from(User_.T, SQLs.AS, "p")
                 .where(User_.id::equal, SQLs::literal, 2)
                 .and(User_.nickName::equal, SQLs::param, "远浪舰长")
                 //.and(User_.visible.equal(false))
@@ -102,7 +102,7 @@ public class StandardQueryUnitTests {
                 .unionAll()
 
                 .select(User_.id)
-                .from(User_.T, "p")
+                .from(User_.T, SQLs.AS, "p")
                 .where(User_.id::equal, SQLs::literal, 2)
                 .and(User_.nickName::equal, SQLs::param, "蛮大人")
                 //.and(User_.visible.equal(false))
@@ -122,12 +122,12 @@ public class StandardQueryUnitTests {
         final Select stmt;
         stmt = SQLs.query()
                 .select(User_.nickName)
-                .from(User_.T, "u")
+                .from(User_.T, SQLs.AS, "u")
                 .where(User_.nickName.equal(SQLs::param, "蛮吉"))
                 .and(SQLs::exists, () -> SQLs.subQuery()
                         .select(ChinaProvince_.id)
-                        .from(ChinaProvince_.T, "p")
-                        .join(ChinaRegion_.T, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
+                        .from(ChinaProvince_.T, SQLs.AS, "p")
+                        .join(ChinaRegion_.T, SQLs.AS, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
                         .where(ChinaProvince_.governor.equal(User_.nickName))
                         .asQuery()
                 )
@@ -147,10 +147,11 @@ public class StandardQueryUnitTests {
                 .select(SQLs.ref("us", "one"), SQLs.derivedGroup("us"))
                 .from(() -> SQLs.subQuery()
                         .select(SQLs.literal(1).as("one"), SQLs.group(User_.T, "u"))
-                        .from(User_.T, "u")
+                        .from(User_.T, SQLs.AS, "u")
                         .where(User_.createTime::equal, SQLs::literal, LocalDateTime.now())
                         .limit(SQLs::literal, criteria::get, "offset", "rowCount")
-                        .asQuery(), "us")
+                        .asQuery())
+                .as("us")
                 .where(SQLs.ref("us", "one")::equal, SQLs::param, 1)
                 .asQuery();
 
@@ -175,7 +176,7 @@ public class StandardQueryUnitTests {
                     consumer.accept(SQLs.literal(RegionType.CITY).as(ChinaRegion_.REGION_TYPE));
                     consumer.accept(ChinaRegion_.regionGdp);
                 })
-                .from(ChinaRegion_.T, "r")
+                .from(ChinaRegion_.T, SQLs.AS, "r")
                 .asQuery()
                 .asInsert()
 
@@ -189,7 +190,7 @@ public class StandardQueryUnitTests {
                     consumer.accept(ChinaProvince_.id);
                     consumer.accept(ChinaProvince_.governor);
                 })
-                .from(ChinaProvince_.T, "c")
+                .from(ChinaProvince_.T, SQLs.AS, "c")
                 .asQuery()
                 .asInsert();
 
@@ -215,7 +216,7 @@ public class StandardQueryUnitTests {
                     consumer.accept(SQLs.literal(RegionType.CITY).as(ChinaRegion_.REGION_TYPE));
                     consumer.accept(ChinaRegion_.regionGdp);
                 })
-                .from(ChinaRegion_.T, "r")
+                .from(ChinaRegion_.T, SQLs.AS, "r")
                 .asQuery()
                 .asInsert()
                 .child()
@@ -229,7 +230,7 @@ public class StandardQueryUnitTests {
                     consumer.accept(ChinaCity_.id);
                     consumer.accept(ChinaCity_.mayorName);
                 })
-                .from(ChinaCity_.T, "r")
+                .from(ChinaCity_.T, SQLs.AS, "r")
                 .asQuery()
                 .asInsert();
 

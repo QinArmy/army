@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Cte;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
@@ -118,18 +119,18 @@ public interface DialectStatement extends Statement {
      */
     interface _StraightJoinClause<JT, JS> {
 
-        JT straightJoin(TableMeta<?> table, String tableAlias);
+        JT straightJoin(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> JS straightJoin(Supplier<T> supplier, String alias);
+        <T extends TabularItem> _AsClause<JS> straightJoin(Supplier<T> supplier);
 
 
     }
 
     interface _StraightJoinModifierClause<JT, JS> extends _StraightJoinClause<JT, JS> {
 
-        JT straightJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
+        JT straightJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> JS straightJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
+        <T extends TabularItem> _AsClause<JS> straightJoin(Query.TabularModifier modifier, Supplier<T> supplier);
 
 
     }
@@ -228,19 +229,19 @@ public interface DialectStatement extends Statement {
 
         JC leftJoin(String cteName);
 
-        JC leftJoin(String cteName, String alias);
+        JC leftJoin(String cteName, SQLs.WordAs wordAs, String alias);
 
         JC join(String cteName);
 
-        JC join(String cteName, String alias);
+        JC join(String cteName, SQLs.WordAs wordAs, String alias);
 
         JC rightJoin(String cteName);
 
-        JC rightJoin(String cteName, String alias);
+        JC rightJoin(String cteName, SQLs.WordAs wordAs, String alias);
 
         JC fullJoin(String cteName);
 
-        JC fullJoin(String cteName, String alias);
+        JC fullJoin(String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 
@@ -248,19 +249,19 @@ public interface DialectStatement extends Statement {
 
         JC leftJoin(Query.TabularModifier modifier, String cteName);
 
-        JC leftJoin(Query.TabularModifier modifier, String cteName, String alias);
+        JC leftJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
         JC join(Query.TabularModifier modifier, String cteName);
 
-        JC join(Query.TabularModifier modifier, String cteName, String alias);
+        JC join(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
         JC rightJoin(Query.TabularModifier modifier, String cteName);
 
-        JC rightJoin(Query.TabularModifier modifier, String cteName, String alias);
+        JC rightJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
         JC fullJoin(Query.TabularModifier modifier, String cteName);
 
-        JC fullJoin(Query.TabularModifier modifier, String cteName, String alias);
+        JC fullJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 
@@ -268,7 +269,7 @@ public interface DialectStatement extends Statement {
 
         FC crossJoin(String cteName);
 
-        FC crossJoin(String cteName, String alias);
+        FC crossJoin(String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 
@@ -276,7 +277,7 @@ public interface DialectStatement extends Statement {
 
         FC crossJoin(Query.TabularModifier modifier, String cteName);
 
-        FC crossJoin(Query.TabularModifier modifier, String cteName, String alias);
+        FC crossJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 
@@ -298,7 +299,7 @@ public interface DialectStatement extends Statement {
 
         JS straightJoin(String cteName);
 
-        JS straightJoin(String cteName, String alias);
+        JS straightJoin(String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 
@@ -306,7 +307,7 @@ public interface DialectStatement extends Statement {
 
         JS straightJoin(Query.TabularModifier modifier, String cteName);
 
-        JS straightJoin(Query.TabularModifier modifier, String cteName, String alias);
+        JS straightJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 
@@ -350,24 +351,7 @@ public interface DialectStatement extends Statement {
     }
 
 
-    /**
-     * <p>
-     * This interface representing dialect union clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C>  criteria object java type
-     * @param <UR> next clause java type
-     * @param <SP> next clause java type
-     * @since 1.0
-     */
-    interface _DialectUnionClause<C, UR, SP> extends Query._QueryUnionClause<C, UR, SP> {
 
-    }
 
 
     /**

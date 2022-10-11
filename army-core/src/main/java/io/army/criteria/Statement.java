@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
 import io.army.function.TeExpression;
 import io.army.function.TePredicate;
@@ -161,7 +162,6 @@ public interface Statement extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C>  criteria object java type
      * @param <JT> next clause java type,it's sub interface of {@link _OnClause}
      * @param <JS> next clause java type,it's sub interface of {@link _OnClause}
      * @see _CrossJoinClause
@@ -169,43 +169,43 @@ public interface Statement extends Item {
      */
     interface _JoinClause<JT, JS> {
 
-        JT leftJoin(TableMeta<?> table, String tableAlias);
+        JT leftJoin(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> JS leftJoin(Supplier<T> supplier, String alias);
+        <T extends TabularItem> _AsClause<JS> leftJoin(Supplier<T> supplier);
 
-        JT join(TableMeta<?> table, String tableAlias);
+        JT join(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> JS join(Supplier<T> supplier, String alias);
+        <T extends TabularItem> _AsClause<JS> join(Supplier<T> supplier);
 
-        JT rightJoin(TableMeta<?> table, String tableAlias);
+        JT rightJoin(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
 
-        <T extends TabularItem> JS rightJoin(Supplier<T> supplier, String alias);
+        <T extends TabularItem> _AsClause<JS> rightJoin(Supplier<T> supplier);
 
-        JT fullJoin(TableMeta<?> table, String tableAlias);
+        JT fullJoin(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> JS fullJoin(Supplier<T> supplier, String alias);
+        <T extends TabularItem> _AsClause<JS> fullJoin(Supplier<T> supplier);
 
     }
 
     interface _JoinModifierClause<JT, JS> extends _JoinClause<JT, JS> {
 
-        JT leftJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
+        JT leftJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> JS leftJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
+        <T extends TabularItem> _AsClause<JS> leftJoin(Query.TabularModifier modifier, Supplier<T> supplier);
 
-        JT join(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
+        JT join(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> JS join(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
+        <T extends TabularItem> _AsClause<JS> join(Query.TabularModifier modifier, Supplier<T> supplier);
 
-        JT rightJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
+        JT rightJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> JS rightJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
+        <T extends TabularItem> _AsClause<JS> rightJoin(Query.TabularModifier modifier, Supplier<T> supplier);
 
-        JT fullJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
+        JT fullJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
 
-        <T extends TabularItem> JS fullJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
+        <T extends TabularItem> _AsClause<JS> fullJoin(Query.TabularModifier modifier, Supplier<T> supplier);
 
     }
 
@@ -219,23 +219,21 @@ public interface Statement extends Item {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
-     *
-     * @param <C>  criteria object java type
      * @since 1.0
      */
     interface _CrossJoinClause<FT, FS> {
 
-        FT crossJoin(TableMeta<?> table, String tableAlias);
+        FT crossJoin(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> FS crossJoin(Supplier<T> supplier, String alias);
+        <T extends TabularItem> _AsClause<FS> crossJoin(Supplier<T> supplier);
 
     }
 
     interface _CrossJoinModifierClause<FT, FS> extends _CrossJoinClause<FT, FS> {
 
-        FT crossJoin(Query.TabularModifier modifier, TableMeta<?> table, String tableAlias);
+        FT crossJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> FS crossJoin(Query.TabularModifier modifier, Supplier<T> supplier, String alias);
+        <T extends TabularItem> _AsClause<FS> crossJoin(Query.TabularModifier modifier, Supplier<T> supplier);
 
     }
 
@@ -252,7 +250,6 @@ public interface Statement extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C>  criteria object java type
      * @param <LT> next clause java type
      * @param <LS> next clause java type
      * @since 1.0
