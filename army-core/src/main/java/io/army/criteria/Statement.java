@@ -51,6 +51,11 @@ public interface Statement extends Item {
 
     }
 
+    interface _CteSpec<I extends Item> extends Item {
+
+        I asCte();
+    }
+
 
     /**
      * <p>

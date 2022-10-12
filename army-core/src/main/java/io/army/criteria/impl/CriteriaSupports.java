@@ -24,15 +24,9 @@ abstract class CriteriaSupports {
     }
 
 
-    @Deprecated
-    static <C, RR> Statement._LeftParenStringQuadraOptionalSpec<C, RR> stringQuadra(CriteriaContext context
+    static <RR> Statement._LeftParenStringQuadraOptionalSpec<RR> stringQuadra(CriteriaContext context
             , Function<List<String>, RR> function) {
-        return new ParenStringConsumerClause<>(context, context.criteria(), function);
-    }
-
-    static <C, RR> Statement._LeftParenStringQuadraOptionalSpec<C, RR> stringQuadra(CriteriaContext context
-            , @Nullable C criteria, Function<List<String>, RR> function) {
-        return new ParenStringConsumerClause<>(context, criteria, function);
+        return new ParenStringConsumerClause<>(context, function);
     }
 
     static <C, OR> Statement._OrderByClause<C, OR> orderByClause(CriteriaContext criteriaContext
@@ -161,15 +155,13 @@ abstract class CriteriaSupports {
     }//RowConstructorImpl
 
 
-    static class ParenStringConsumerClause<C, RR>
-            implements Statement._LeftParenStringQuadraOptionalSpec<C, RR>
-            , Statement._LeftParenStringDualOptionalSpec<C, RR>
+    static class ParenStringConsumerClause<RR>
+            implements Statement._LeftParenStringQuadraOptionalSpec<RR>
+            , Statement._LeftParenStringDualOptionalSpec<RR>
             , Statement._CommaStringDualSpec<RR>
             , Statement._CommaStringQuadraSpec<RR> {
 
         final CriteriaContext context;
-
-        final C criteria;
 
         private final Function<List<String>, RR> function;
 
@@ -183,9 +175,8 @@ abstract class CriteriaSupports {
          * private constructor for {@link  #stringQuadra(CriteriaContext, Function)}
          * </p>
          */
-        private ParenStringConsumerClause(CriteriaContext context, @Nullable C criteria, Function<List<String>, RR> function) {
+        private ParenStringConsumerClause(CriteriaContext context, Function<List<String>, RR> function) {
             this.context = context;
-            this.criteria = criteria;
             this.function = function;
         }
 
@@ -197,7 +188,6 @@ abstract class CriteriaSupports {
         ParenStringConsumerClause(CriteriaContext context) {
             assert this.getClass() != ParenStringConsumerClause.class;
             this.context = context;
-            this.criteria = context.criteria();
             this.function = this::stringConsumerEnd;
         }
 
@@ -233,25 +223,12 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public final Statement._RightParenClause<RR> leftParen(BiConsumer<C, Consumer<String>> consumer) {
-            this.optionalClause = false;
-            consumer.accept(this.context.criteria(), this::comma);
-            return this;
-        }
-
-        @Override
         public final Statement._RightParenClause<RR> leftParenIf(Consumer<Consumer<String>> consumer) {
             this.optionalClause = true;
             consumer.accept(this::comma);
             return this;
         }
 
-        @Override
-        public final Statement._RightParenClause<RR> leftParenIf(BiConsumer<C, Consumer<String>> consumer) {
-            this.optionalClause = true;
-            consumer.accept(this.context.criteria(), this::comma);
-            return this;
-        }
 
         @Override
         public final Statement._RightParenClause<RR> comma(String string) {

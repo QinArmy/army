@@ -258,7 +258,7 @@ abstract class InsertSupport {
 
     }//NonQueryWithCteOption
 
-    static abstract class ChildDynamicWithClause<C, B extends CteBuilderSpec, WE>
+    static abstract class ChildDynamicWithClause<B extends CteBuilderSpec, WE>
             implements Query._DynamicWithCteClause<B, WE>
             , WithValueSyntaxOptions {
 
@@ -1644,13 +1644,11 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class ConflictUpdateSetClause<C, T, SR> implements Update._SetClause<C, FieldMeta<T>, SR>
+    static abstract class ConflictUpdateSetClause<T, SR> implements Update._SetClause<FieldMeta<T>, SR>
             , CriteriaContextSpec
             , _Insert._ConflictActionClauseSpec {
 
         final CriteriaContext context;
-
-        final C criteria;
 
         final TableMeta<T> insertTable;
 
@@ -1661,7 +1659,6 @@ abstract class InsertSupport {
 
         ConflictUpdateSetClause(CriteriaContext context, TableMeta<T> insertTable, boolean supportRow) {
             this.context = context;
-            this.criteria = context.criteria();
             this.insertTable = insertTable;
             this.supportRow = supportRow;
         }
@@ -1677,11 +1674,6 @@ abstract class InsertSupport {
             return (SR) this;
         }
 
-        @Override
-        public final SR setPairs(BiConsumer<C, Consumer<ItemPair>> consumer) {
-            consumer.accept(this.criteria, this::addItemPair);
-            return (SR) this;
-        }
 
 
         @Override
@@ -1692,11 +1684,6 @@ abstract class InsertSupport {
         @Override
         public final SR set(FieldMeta<T> field, Supplier<Expression> supplier) {
             return this.addFieldValuePair(field, supplier.get());
-        }
-
-        @Override
-        public final SR set(FieldMeta<T> field, Function<C, Expression> function) {
-            return this.addFieldValuePair(field, function.apply(this.criteria));
         }
 
         @Override
@@ -1912,9 +1899,9 @@ abstract class InsertSupport {
     }//ConflictUpdateSetClause
 
     @SuppressWarnings("unchecked")
-    static abstract class ConflictUpdateWhereClause<C, T, SR, WR, WA> extends ConflictUpdateSetClause<C, T, SR>
-            implements Statement._MinQueryWhereClause<C, WR, WA>
-            , Statement._MinWhereAndClause<C, WA>
+    static abstract class ConflictUpdateWhereClause<T, SR, WR, WA> extends ConflictUpdateSetClause<T, SR>
+            implements Statement._MinQueryWhereClause<WR, WA>
+            , Statement._MinWhereAndClause<WA>
             , _Insert._ConflictActionPredicateClauseSpec {
 
         private List<_Predicate> predicateList;
@@ -1932,14 +1919,6 @@ abstract class InsertSupport {
             return (WR) this;
         }
 
-        @Override
-        public final WR where(BiConsumer<C, Consumer<IPredicate>> consumer) {
-            consumer.accept(this.criteria, this::and);
-            if (this.predicateList == null) {
-                throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
-            }
-            return (WR) this;
-        }
 
         @Override
         public final WA where(IPredicate predicate) {
@@ -1952,18 +1931,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final WA where(Function<C, IPredicate> function) {
-            return this.and(function.apply(this.criteria));
-        }
-
-        @Override
         public final WA whereIf(Supplier<IPredicate> supplier) {
             return this.ifAnd(supplier);
-        }
-
-        @Override
-        public final WA whereIf(Function<C, IPredicate> function) {
-            return this.ifAnd(function);
         }
 
         @Override
@@ -1972,11 +1941,6 @@ abstract class InsertSupport {
             return (WR) this;
         }
 
-        @Override
-        public final WR ifWhere(BiConsumer<C, Consumer<IPredicate>> consumer) {
-            consumer.accept(this.criteria, this::and);
-            return (WR) this;
-        }
 
         @Override
         public final WA and(final @Nullable IPredicate predicate) {
@@ -2000,24 +1964,9 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final WA and(Function<C, IPredicate> function) {
-            return this.and(function.apply(this.criteria));
-        }
-
-        @Override
         public final WA ifAnd(Supplier<IPredicate> supplier) {
             final IPredicate predicate;
             predicate = supplier.get();
-            if (predicate != null) {
-                this.and(predicate);
-            }
-            return (WA) this;
-        }
-
-        @Override
-        public final WA ifAnd(Function<C, IPredicate> function) {
-            final IPredicate predicate;
-            predicate = function.apply(this.criteria);
             if (predicate != null) {
                 this.and(predicate);
             }
@@ -2051,19 +2000,16 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    static class MinWhereClause<C, WR, WA> implements Statement._MinQueryWhereClause<C, WR, WA>
-            , Statement._MinWhereAndClause<C, WA>
+    static class MinWhereClause<WR, WA> implements Statement._MinQueryWhereClause<WR, WA>
+            , Statement._MinWhereAndClause<WA>
             , CriteriaContextSpec {
 
         final CriteriaContext context;
-
-        final C criteria;
 
         private List<_Predicate> predicateList;
 
         MinWhereClause(CriteriaContext context) {
             this.context = context;
-            this.criteria = context.criteria();
         }
 
         @Override
@@ -2074,15 +2020,6 @@ abstract class InsertSupport {
         @Override
         public final WR where(Consumer<Consumer<IPredicate>> consumer) {
             consumer.accept(this::and);
-            if (this.predicateList == null) {
-                throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
-            }
-            return (WR) this;
-        }
-
-        @Override
-        public final WR where(BiConsumer<C, Consumer<IPredicate>> consumer) {
-            consumer.accept(this.criteria, this::and);
             if (this.predicateList == null) {
                 throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
             }
@@ -2104,27 +2041,9 @@ abstract class InsertSupport {
             consumer.accept(this::and);
             return (WR) this;
         }
-
-        @Override
-        public final WR ifWhere(BiConsumer<C, Consumer<IPredicate>> consumer) {
-            consumer.accept(this.criteria, this::and);
-            return (WR) this;
-        }
-
-
-        @Override
-        public final WA where(Function<C, IPredicate> function) {
-            return this.and(function.apply(this.criteria));
-        }
-
         @Override
         public final WA whereIf(Supplier<IPredicate> supplier) {
             return this.ifAnd(supplier);
-        }
-
-        @Override
-        public final WA whereIf(Function<C, IPredicate> function) {
-            return this.ifAnd(function);
         }
 
         @Override
@@ -2148,24 +2067,9 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final WA and(Function<C, IPredicate> function) {
-            return this.and(function.apply(this.criteria));
-        }
-
-        @Override
         public final WA ifAnd(Supplier<IPredicate> supplier) {
             final IPredicate predicate;
             predicate = supplier.get();
-            if (predicate != null) {
-                this.and(predicate);
-            }
-            return (WA) this;
-        }
-
-        @Override
-        public final WA ifAnd(Function<C, IPredicate> function) {
-            final IPredicate predicate;
-            predicate = function.apply(this.criteria);
             if (predicate != null) {
                 this.and(predicate);
             }

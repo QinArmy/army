@@ -9,7 +9,10 @@ import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @since 1.0
@@ -22,26 +25,18 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
     }
 
     /**
-     * @param <C>  java type of criteria object
      * @param <SR> java type of next clause.
      */
-    interface _SetClause<C, F extends DataField, SR> {
+    interface _SetClause<F extends DataField, SR> {
 
         /**
          * @see SQLs#itemPair(DataField, Object)
          */
         SR setPairs(Consumer<Consumer<ItemPair>> consumer);
 
-        /**
-         * @see SQLs#itemPair(DataField, Object)
-         */
-        SR setPairs(BiConsumer<C, Consumer<ItemPair>> consumer);
-
         SR set(F field, Expression value);
 
         SR set(F field, Supplier<Expression> supplier);
-
-        SR set(F field, Function<C, Expression> function);
 
         <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, @Nullable E value);
 
@@ -71,19 +66,17 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
 
     /**
-     * @param <C>  java type of criteria object
      * @param <SR> java type of next clause.
      */
-    interface _SimpleSetClause<C, F extends DataField, SR> extends _SetClause<C, F, SR> {
+    interface _SimpleSetClause<F extends DataField, SR> extends _SetClause<F, SR> {
 
     }
 
 
     /**
-     * @param <C>  java type of criteria object
      * @param <SR> java type of next clause.
      */
-    interface _BatchSetClause<C, F extends DataField, SR> extends _SetClause<C, F, SR> {
+    interface _BatchSetClause<F extends DataField, SR> extends _SetClause<F, SR> {
 
         /**
          * @see #set(DataField, BiFunction, Object)

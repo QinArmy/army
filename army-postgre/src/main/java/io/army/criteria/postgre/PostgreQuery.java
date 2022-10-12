@@ -482,7 +482,8 @@ public interface PostgreQuery extends Query, DialectStatement {
      *
      * @since 1.0
      */
-    interface _StaticCteComplexCommandSpec<I extends Item> extends _PostgreSelectClause<I> {
+    interface _StaticCteComplexCommandSpec<I extends Item> extends _PostgreSelectClause<_CteSpec<I>>
+            , PostgreInsert._SubInsertIntoClause<_CteSpec<I>, _CteSpec<I>> {
 
     }
 

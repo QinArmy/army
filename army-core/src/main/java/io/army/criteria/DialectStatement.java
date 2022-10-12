@@ -38,13 +38,12 @@ public interface DialectStatement extends Statement {
     }
 
 
-    interface _DynamicReturningClause<C, I extends Item, Q extends Item> extends _DmlInsertSpec<I> {
+    interface _DynamicReturningClause<I extends Item, Q extends Item> extends _DmlInsertSpec<I> {
 
         DqlInsert._DqlInsertSpec<Q> returningAll();
 
         DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<Selection>> consumer);
 
-        DqlInsert._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<Selection>> consumer);
 
     }
 
