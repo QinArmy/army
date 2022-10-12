@@ -91,17 +91,14 @@ public interface Statement extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C>  criteria object java type
      * @param <BR> next clause java type
      * @since 1.0
      */
-    interface _BatchParamClause<C, BR> {
+    interface _BatchParamClause<BR> {
 
         <P> BR paramList(List<P> paramList);
 
         <P> BR paramList(Supplier<List<P>> supplier);
-
-        <P> BR paramList(Function<C, List<P>> function);
 
         BR paramList(Function<String, ?> function, String keyName);
     }

@@ -49,7 +49,7 @@ public interface DmlStatement extends PrimaryStatement {
     }
 
 
-    interface _DmlDeleteSpec<D extends DmlDelete> {
+    interface _DmlDeleteSpec<D extends Item> {
 
         D asDelete();
     }

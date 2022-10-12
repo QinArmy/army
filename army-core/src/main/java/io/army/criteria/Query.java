@@ -14,13 +14,11 @@ import java.util.function.*;
  *     <ul>
  *         <li>{@link Select}</li>
  *         <li>{@link SubQuery}</li>
- *         <li>{@link ScalarSubQuery}</li>
  *     </ul>
  * </p>
  *
  * @see Select
  * @see SubQuery
- * @see ScalarSubQuery
  * @since 1.0
  */
 public interface Query extends RowSet {

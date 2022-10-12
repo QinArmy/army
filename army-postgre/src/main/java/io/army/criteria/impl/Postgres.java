@@ -7,9 +7,6 @@ import io.army.criteria.postgre.PostgreQuery;
 import io.army.dialect._Constant;
 import io.army.util._StringUtils;
 
-import java.util.Objects;
-import java.util.function.Function;
-
 /**
  * <p>
  * This class is Postgre SQL syntax utils.
@@ -68,50 +65,22 @@ public abstract class Postgres extends PostgreFuncSyntax {
     public static final Modifier ONLY = new Modifier(" ONLY");
 
 
-    public static PostgreInsert._PrimaryOptionSpec<Void> singleInsert() {
-        return PostgreInserts.primaryInsert(null);
+    public static PostgreInsert._PrimaryOptionSpec singleInsert() {
+        return PostgreInserts.primaryInsert();
     }
 
-    /**
-     * @param criteria non-null criteria instance,java bean or {@link java.util.Map}.
-     */
-    public static <C> PostgreInsert._PrimaryOptionSpec<C> singleInsert(C criteria) {
-        return PostgreInserts.primaryInsert(criteria);
+    public static PostgreQuery._WithCteSpec<Select> query() {
+        return PostgreQueries.primaryQuery();
     }
 
 
-    public static PostgreQuery._WithCteSpec<Void, Select> query() {
-        return PostgreQueries.primaryQuery(null, Function.identity());
+    public static PostgreQuery._SubWithCteSpec<SubQuery> subQuery() {
+        return PostgreQueries.subQuery(ContextStack.peek(), SQLs::_identity);
     }
 
-    /**
-     * @param criteria non-null criteria instance,java bean or {@link java.util.Map}.
-     */
-    public static <C> PostgreQuery._WithCteSpec<C, Select> query(C criteria) {
-        Objects.requireNonNull(criteria);
-        return PostgreQueries.primaryQuery(criteria, SQLs::_identity);
-    }
 
-    public static PostgreQuery._SubWithCteSpec<Void, SubQuery> subQuery() {
-        return PostgreQueries.subQuery(null, ContextStack.peek(), SQLs::_identity);
-    }
-
-    /**
-     * @param criteria non-null criteria instance,java bean or {@link java.util.Map}.
-     */
-    public static <C> PostgreQuery._SubWithCteSpec<C, SubQuery> subQuery(C criteria) {
-        return PostgreQueries.subQuery(criteria, ContextStack.peek(criteria), SQLs::_identity);
-    }
-
-    public static PostgreQuery._SubWithCteSpec<Void, Expression> scalarSubQuery() {
-        return PostgreQueries.subQuery(null, ContextStack.peek(), ScalarExpression::from);
-    }
-
-    /**
-     * @param criteria non-null criteria instance,java bean or {@link java.util.Map}.
-     */
-    public static <C> PostgreQuery._SubWithCteSpec<C, Expression> scalarSubQuery(C criteria) {
-        return PostgreQueries.subQuery(criteria, ContextStack.peek(criteria), ScalarExpression::from);
+    public static PostgreQuery._SubWithCteSpec<Expression> scalarSubQuery() {
+        return PostgreQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
     }
 
 

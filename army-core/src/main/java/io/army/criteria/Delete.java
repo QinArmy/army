@@ -1,11 +1,11 @@
 package io.army.criteria;
 
 import io.army.meta.SingleTableMeta;
-import io.army.meta.TableMeta;
 
 public interface Delete extends NarrowDmlStatement, DmlStatement.DmlDelete {
 
 
+    @Deprecated
     interface _DeleteSpec extends DmlStatement._DmlDeleteSpec<Delete> {
 
     }
@@ -16,45 +16,9 @@ public interface Delete extends NarrowDmlStatement, DmlStatement.DmlDelete {
     }
 
 
-    interface StandardDeleteClause<DR> {
-
-        DR deleteFrom(TableMeta<?> table, String tableAlias);
-    }
-
-
-    interface StandardDeleteSpec<C> extends Delete.StandardDeleteClause<Delete.StandardWhereSpec<C>> {
-
-    }
-
-
-    interface StandardWhereSpec<C> extends _WhereClause<C, _DeleteSpec, StandardWhereAndSpec<C>> {
-
-    }
-
-    interface StandardWhereAndSpec<C> extends _WhereAndClause<C, StandardWhereAndSpec<C>>
-            , _DeleteSpec {
-
-    }
-
-
 
 
     /*################################## blow batch delete ##################################*/
-
-    interface StandardBatchDeleteSpec<C> extends Delete.StandardDeleteClause<Delete.StandardBatchWhereSpec<C>> {
-
-    }
-
-
-    interface StandardBatchWhereSpec<C>
-            extends _WhereClause<C, _BatchParamClause<C, _DeleteSpec>, StandardBatchWhereAndSpec<C>> {
-
-    }
-
-    interface StandardBatchWhereAndSpec<C> extends _WhereAndClause<C, StandardBatchWhereAndSpec<C>>
-            , _BatchParamClause<C, _DeleteSpec> {
-
-    }
 
 
 }

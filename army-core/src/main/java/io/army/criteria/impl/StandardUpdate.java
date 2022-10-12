@@ -29,19 +29,19 @@ import java.util.function.Supplier;
 abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends SingleUpdate<C, F, SR, WR, WA, Update>
         implements Update._UpdateSpec, StandardStatement, Update {
 
-    static <C> _StandardSingleUpdateClause<C> simpleSingle(@Nullable C criteria) {
+    static <C> io.army.criteria.StandardUpdate._StandardSingleUpdateClause<C> simpleSingle(@Nullable C criteria) {
         return new SimpleUpdateClause<>(criteria);
     }
 
-    static <C> _StandardBatchSingleUpdateClause<C> batchSingle(@Nullable C criteria) {
+    static <C> io.army.criteria.StandardUpdate._StandardBatchSingleUpdateClause<C> batchSingle(@Nullable C criteria) {
         return new BatchUpdateClause<>(criteria);
     }
 
-    static <C> _StandardDomainUpdateClause<C> simpleDomain(@Nullable C criteria) {
+    static <C> io.army.criteria.StandardUpdate._StandardDomainUpdateClause<C> simpleDomain(@Nullable C criteria) {
         return new SimpleDomainUpdateClause<>(criteria);
     }
 
-    static <C> _StandardBatchDomainUpdateClause<C> batchDomain(@Nullable C criteria) {
+    static <C> io.army.criteria.StandardUpdate._StandardBatchDomainUpdateClause<C> batchDomain(@Nullable C criteria) {
         return new BatchDomainUpdateClause<>(criteria);
     }
 
@@ -121,10 +121,10 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
     private static class SimpleUpdate<C, F extends TableField> extends StandardUpdate<
             C,
             F,
-            _StandardWhereSpec<C, F>,
+            io.army.criteria.StandardUpdate._StandardWhereSpec<C, F>,
             _UpdateSpec,
-            _StandardWhereAndSpec<C>>
-            implements _StandardWhereAndSpec<C>, _StandardWhereSpec<C, F> {
+            io.army.criteria.StandardUpdate._StandardWhereAndSpec<C>>
+            implements io.army.criteria.StandardUpdate._StandardWhereAndSpec<C>, io.army.criteria.StandardUpdate._StandardWhereSpec<C, F> {
 
         private SimpleUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
             super(criteria, table, tableAlias);
@@ -155,10 +155,10 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
     private static class BatchUpdate<C, F extends TableField> extends StandardUpdate<
             C,
             F,
-            _StandardBatchWhereSpec<C, F>,
+            io.army.criteria.StandardUpdate._StandardBatchWhereSpec<C, F>,
             _BatchParamClause<C, _UpdateSpec>,
-            _StandardBatchWhereAndSpec<C>>
-            implements _StandardBatchWhereSpec<C, F>, _StandardBatchWhereAndSpec<C>
+            io.army.criteria.StandardUpdate._StandardBatchWhereAndSpec<C>>
+            implements io.army.criteria.StandardUpdate._StandardBatchWhereSpec<C, F>, io.army.criteria.StandardUpdate._StandardBatchWhereAndSpec<C>
             , _BatchParamClause<C, _UpdateSpec>, _BatchDml {
 
         private List<?> paramList;
@@ -210,7 +210,7 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
     }//BatchDomainUpdate
 
 
-    private static final class SimpleUpdateClause<C> implements _StandardSingleUpdateClause<C> {
+    private static final class SimpleUpdateClause<C> implements io.army.criteria.StandardUpdate._StandardSingleUpdateClause<C> {
 
         private final C criteria;
 
@@ -219,18 +219,18 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
         }
 
         @Override
-        public <T> _StandardSetClause<C, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias) {
+        public <T> io.army.criteria.StandardUpdate._StandardSetClause<C, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias) {
             return new SimpleUpdate<>(this.criteria, table, tableAlias);
         }
 
         @Override
-        public <P> _StandardSetClause<C, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias) {
+        public <P> io.army.criteria.StandardUpdate._StandardSetClause<C, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias) {
             return new SimpleUpdate<>(this.criteria, table, tableAlias);
         }
 
     }//SimpleUpdateClause
 
-    private static final class SimpleDomainUpdateClause<C> implements Update._StandardDomainUpdateClause<C> {
+    private static final class SimpleDomainUpdateClause<C> implements io.army.criteria.StandardUpdate._StandardDomainUpdateClause<C> {
 
         private final C criteria;
 
@@ -240,7 +240,7 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
 
 
         @Override
-        public <T> _StandardSetClause<C, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias) {
+        public <T> io.army.criteria.StandardUpdate._StandardSetClause<C, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias) {
             return new SimpleDomainUpdate<>(this.criteria, table, tableAlias);
         }
 
@@ -248,7 +248,7 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
     }//SimpleDomainUpdateClause
 
 
-    private static final class BatchUpdateClause<C> implements _StandardBatchSingleUpdateClause<C> {
+    private static final class BatchUpdateClause<C> implements io.army.criteria.StandardUpdate._StandardBatchSingleUpdateClause<C> {
 
         private final C criteria;
 
@@ -257,19 +257,19 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
         }
 
         @Override
-        public <T> _StandardBatchSetClause<C, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias) {
+        public <T> io.army.criteria.StandardUpdate._StandardBatchSetClause<C, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias) {
             return new BatchUpdate<>(this.criteria, table, tableAlias);
         }
 
         @Override
-        public <P> _StandardBatchSetClause<C, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias) {
+        public <P> io.army.criteria.StandardUpdate._StandardBatchSetClause<C, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias) {
             return new BatchUpdate<>(this.criteria, table, tableAlias);
         }
 
     }//BatchUpdateClause
 
 
-    private static final class BatchDomainUpdateClause<C> implements Update._StandardBatchDomainUpdateClause<C> {
+    private static final class BatchDomainUpdateClause<C> implements io.army.criteria.StandardUpdate._StandardBatchDomainUpdateClause<C> {
 
         private final C criteria;
 
@@ -279,7 +279,7 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
 
 
         @Override
-        public <T> _StandardBatchSetClause<C, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias) {
+        public <T> io.army.criteria.StandardUpdate._StandardBatchSetClause<C, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias) {
             return new BatchDomainUpdate<>(this.criteria, table, tableAlias);
         }
 

@@ -1,23 +1,20 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Item;
-import io.army.criteria.Select;
 import io.army.criteria.SubQuery;
 import io.army.criteria.postgre.PostgreQuery;
-import io.army.lang.Nullable;
 
 import java.util.function.Function;
 
 abstract class PostgreQueries {
 
 
-    static <C, Q extends Item> PostgreQuery._WithCteSpec<C, Q> primaryQuery(@Nullable C criteria
-            , Function<Select, Q> function) {
+    static <Q extends Item> PostgreQuery._WithCteSpec<Q> primaryQuery() {
         throw new UnsupportedOperationException();
     }
 
-    static <C, Q extends Item> PostgreQuery._SubWithCteSpec<C, Q> subQuery(@Nullable C criteria
-            , CriteriaContext outerContext, Function<SubQuery, Q> function) {
+    static <Q extends Item> PostgreQuery._SubWithCteSpec<Q> subQuery(CriteriaContext outerContext
+            , Function<SubQuery, Q> function) {
         return null;
     }
 

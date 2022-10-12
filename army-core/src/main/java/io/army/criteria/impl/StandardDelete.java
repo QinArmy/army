@@ -23,13 +23,13 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA, Delete>
-        implements Delete.StandardDeleteClause<DR>, StandardStatement, Delete, Delete._DeleteSpec {
+        implements io.army.criteria.StandardDelete.StandardDeleteFromClause<DR>, StandardStatement, Delete, Delete._DeleteSpec {
 
-    static <C> StandardDeleteSpec<C> simple(@Nullable C criteria) {
+    static <C> io.army.criteria.StandardDelete.StandardDeleteSpec<C> simple(@Nullable C criteria) {
         return new SimpleDelete<>(criteria);
     }
 
-    static <C> StandardBatchDeleteSpec<C> batch(@Nullable C criteria) {
+    static <C> io.army.criteria.StandardDelete.StandardBatchDeleteSpec<C> batch(@Nullable C criteria) {
         return new BatchDelete<>(criteria);
     }
 
@@ -96,11 +96,11 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA, Del
 
     private static final class SimpleDelete<C> extends StandardDelete<
             C,
-            Delete.StandardWhereSpec<C>,
+            io.army.criteria.StandardDelete.StandardWhereSpec<C>,
             _DeleteSpec,
-            Delete.StandardWhereAndSpec<C>>
-            implements Delete.StandardWhereSpec<C>, Delete.StandardWhereAndSpec<C>
-            , Delete.StandardDeleteSpec<C> {
+            io.army.criteria.StandardDelete.StandardWhereAndSpec<C>>
+            implements io.army.criteria.StandardDelete.StandardWhereSpec<C>, io.army.criteria.StandardDelete.StandardWhereAndSpec<C>
+            , io.army.criteria.StandardDelete.StandardDeleteSpec<C> {
 
         private SimpleDelete(@Nullable C criteria) {
             super(criteria);
@@ -111,11 +111,11 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA, Del
 
     private static final class BatchDelete<C> extends StandardDelete<
             C,
-            Delete.StandardBatchWhereSpec<C>,
+            io.army.criteria.StandardDelete.StandardBatchWhereSpec<C>,
             _BatchParamClause<C, _DeleteSpec>,
-            Delete.StandardBatchWhereAndSpec<C>>
-            implements Delete.StandardBatchWhereAndSpec<C>, Delete.StandardBatchWhereSpec<C>
-            , _BatchParamClause<C, _DeleteSpec>, Delete.StandardBatchDeleteSpec<C>, _BatchDml {
+            io.army.criteria.StandardDelete.StandardBatchWhereAndSpec<C>>
+            implements io.army.criteria.StandardDelete.StandardBatchWhereAndSpec<C>, io.army.criteria.StandardDelete.StandardBatchWhereSpec<C>
+            , _BatchParamClause<C, _DeleteSpec>, io.army.criteria.StandardDelete.StandardBatchDeleteSpec<C>, _BatchDml {
 
         private List<?> paramList;
 
