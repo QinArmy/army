@@ -304,7 +304,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type.
      * @since 1.0
      */
-    interface _BatchSingleSetClause<C, T> extends _BatchSetClause<C, FieldMeta<T>, _BatchSingleWhereSpec<C, T>> {
+    interface _BatchSingleSetClause<C, T> extends _StaticBatchSetClause<C, FieldMeta<T>, _BatchSingleWhereSpec<C, T>> {
 
     }
 
@@ -720,7 +720,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _BatchMultiSetClause<C> extends _BatchSetClause<C, TableField, _BatchMultiWhereSpec<C>> {
+    interface _BatchMultiSetClause<C> extends _StaticBatchSetClause<C, TableField, _BatchMultiWhereSpec<C>> {
 
     }
 

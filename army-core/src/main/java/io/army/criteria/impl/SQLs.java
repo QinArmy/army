@@ -44,12 +44,12 @@ public abstract class SQLs extends StandardSyntax {
     }
 
     public static io.army.criteria.StandardUpdate._StandardDomainUpdateClause<Void> domainUpdate() {
-        return StandardUpdate.simpleDomain(null);
+        return StandardUpdates.simpleDomain(null);
     }
 
 
     public static io.army.criteria.StandardUpdate._StandardSingleUpdateClause<Void> singleUpdate() {
-        return StandardUpdate.simpleSingle(null);
+        return StandardUpdates.simpleSingle(null);
     }
 
 
@@ -61,7 +61,7 @@ public abstract class SQLs extends StandardSyntax {
      * @see #namedMultiParams(DataField, int)
      */
     public static io.army.criteria.StandardUpdate._StandardBatchDomainUpdateClause<Void> batchDomainUpdate() {
-        return StandardUpdate.batchDomain(null);
+        return StandardUpdates.batchDomain(null);
     }
 
 
@@ -73,7 +73,7 @@ public abstract class SQLs extends StandardSyntax {
      * @see #namedMultiParams(DataField, int)
      */
     public static io.army.criteria.StandardUpdate._StandardBatchSingleUpdateClause<Void> batchSingleUpdate() {
-        return StandardUpdate.batchSingle(null);
+        return StandardUpdates.batchSingle(null);
     }
 
 
@@ -920,8 +920,8 @@ public abstract class SQLs extends StandardSyntax {
      * </p>
      *
      * @param value {@link Expression} or parameter.
-     * @see Update._SetClause#setPairs(BiConsumer)
-     * @see Update._SetClause#setPairs(Consumer)
+     * @see Update._StaticSetClause#setPairs(BiConsumer)
+     * @see Update._StaticSetClause#setPairs(Consumer)
      */
     static ArmyItemPair _itemPair(final DataField field, final @Nullable AssignOperator operator
             , final @Nullable Object value) {

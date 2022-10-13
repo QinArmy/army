@@ -585,4 +585,20 @@ public interface Statement extends Item {
     }
 
 
+    interface _DmlUpdateSpec<I extends Item> {
+
+        I asUpdate();
+    }
+
+    interface _DqlUpdateSpec<I extends Item> {
+
+        I asReturningUpdate();
+    }
+
+    interface _DmlDeleteSpec<D extends Item> {
+
+        D asDelete();
+    }
+
+
 }

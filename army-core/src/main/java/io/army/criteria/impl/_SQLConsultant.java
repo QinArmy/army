@@ -25,8 +25,8 @@ public abstract class _SQLConsultant {
 
 
     public static void assertStandardUpdate(Update update) {
-        if (!(update instanceof StandardUpdate)) {
-            throw instanceNotMatch(update, StandardUpdate.class);
+        if (!(update instanceof StandardUpdates)) {
+            throw instanceNotMatch(update, StandardUpdates.class);
         }
 
     }

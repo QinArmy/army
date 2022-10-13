@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.StandardStatement;
-import io.army.criteria.TableField;
-import io.army.criteria.Update;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.dialect.mysql.MySQLDialect;
@@ -22,27 +19,37 @@ import java.util.function.Supplier;
  * This class representing standard single domain update statement.
  * </p>
  *
- * @param <C> criteria object java type
  * @since 1.0
  */
 
-abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends SingleUpdate<C, F, SR, WR, WA, Update>
-        implements Update._UpdateSpec, StandardStatement, Update {
+abstract class StandardUpdates<I extends Item, Q extends Item, F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA, OR, LR>
+        extends SingleUpdate<
+        I,
+        Q,
+        F,
+        PS,
+        SR,
+        SD,
+        WR,
+        WA,
+        OR,
+        LR>
+        implements StandardUpdate {
 
-    static <C> io.army.criteria.StandardUpdate._StandardSingleUpdateClause<C> simpleSingle(@Nullable C criteria) {
-        return new SimpleUpdateClause<>(criteria);
+    static _StandardSingleUpdateClause simpleSingle() {
+        return new SimpleUpdateClause<>();
     }
 
-    static <C> io.army.criteria.StandardUpdate._StandardBatchSingleUpdateClause<C> batchSingle(@Nullable C criteria) {
-        return new BatchUpdateClause<>(criteria);
+    static _StandardBatchSingleUpdateClause batchSingle() {
+        return new BatchUpdateClause<>();
     }
 
-    static <C> io.army.criteria.StandardUpdate._StandardDomainUpdateClause<C> simpleDomain(@Nullable C criteria) {
-        return new SimpleDomainUpdateClause<>(criteria);
+    static _StandardDomainUpdateClause simpleDomain() {
+        return new SimpleDomainUpdateClause<>();
     }
 
-    static <C> io.army.criteria.StandardUpdate._StandardBatchDomainUpdateClause<C> batchDomain(@Nullable C criteria) {
-        return new BatchDomainUpdateClause<>(criteria);
+    static _StandardBatchDomainUpdateClause batchDomain() {
+        return new BatchDomainUpdateClause<>();
     }
 
     private final TableMeta<?> table;
@@ -50,12 +57,12 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
     private final String tableAlias;
 
 
-    private StandardUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
-        super(CriteriaContexts.primarySingleDmlContext(criteria));
+    private StandardUpdates(TableMeta<?> table, String tableAlias) {
+        super(CriteriaContexts.primarySingleDmlContext());
         this.table = table;
         this.tableAlias = tableAlias;
 
-        ContextStack.setContextStack(this.context);
+        ContextStack.push(this.context);
     }
 
     @Override
@@ -118,12 +125,12 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
      * @param <C> criteria object java type
      * @since 1.0
      */
-    private static class SimpleUpdate<C, F extends TableField> extends StandardUpdate<
+    private static class SimpleUpdate<C, F extends TableField> extends StandardUpdates<
             C,
             F,
-            io.army.criteria.StandardUpdate._StandardWhereSpec<C, F>,
+            _StandardWhereSpec<C, F>,
             _UpdateSpec,
-            io.army.criteria.StandardUpdate._StandardWhereAndSpec<C>>
+            _StandardWhereAndSpec<C>>
             implements io.army.criteria.StandardUpdate._StandardWhereAndSpec<C>, io.army.criteria.StandardUpdate._StandardWhereSpec<C, F> {
 
         private SimpleUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
@@ -152,12 +159,12 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
      * @param <C> criteria object java type
      * @since 1.0
      */
-    private static class BatchUpdate<C, F extends TableField> extends StandardUpdate<
+    private static class BatchUpdate<C, F extends TableField> extends StandardUpdates<
             C,
             F,
-            io.army.criteria.StandardUpdate._StandardBatchWhereSpec<C, F>,
+            _StandardBatchWhereSpec<C, F>,
             _BatchParamClause<C, _UpdateSpec>,
-            io.army.criteria.StandardUpdate._StandardBatchWhereAndSpec<C>>
+            _StandardBatchWhereAndSpec<C>>
             implements io.army.criteria.StandardUpdate._StandardBatchWhereSpec<C, F>, io.army.criteria.StandardUpdate._StandardBatchWhereAndSpec<C>
             , _BatchParamClause<C, _UpdateSpec>, _BatchDml {
 

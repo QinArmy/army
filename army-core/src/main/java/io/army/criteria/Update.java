@@ -4,7 +4,6 @@ package io.army.criteria;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -15,20 +14,28 @@ import java.util.function.Supplier;
  */
 public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
-
+    @Deprecated
     interface _UpdateSpec extends DmlStatement._DmlUpdateSpec<Update> {
+
+    }
+
+    interface _ItemPairBuilder {
+
+    }
+
+    interface _DynamicSetClause<F extends DataField, B extends _ItemPairBuilder, SR> {
+
+        /**
+         * @see SQLs#itemPair(DataField, Object)
+         */
+        SR setPairs(Consumer<B> consumer);
 
     }
 
     /**
      * @param <SR> java type of next clause.
      */
-    interface _SetClause<F extends DataField, SR> {
-
-        /**
-         * @see SQLs#itemPair(DataField, Object)
-         */
-        SR setPairs(Consumer<Consumer<ItemPair>> consumer);
+    interface _StaticSetClause<F extends DataField, SR> {
 
         SR set(F field, Expression value);
 
@@ -64,7 +71,8 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
     /**
      * @param <SR> java type of next clause.
      */
-    interface _SimpleSetClause<F extends DataField, SR> extends _SetClause<F, SR> {
+    @Deprecated
+    interface _SimpleSetClause<F extends DataField, SR> extends _StaticSetClause<F, SR> {
 
     }
 
@@ -72,7 +80,7 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
     /**
      * @param <SR> java type of next clause.
      */
-    interface _BatchSetClause<F extends DataField, SR> extends _SetClause<F, SR> {
+    interface _StaticBatchSetClause<F extends DataField, SR> extends _StaticSetClause<F, SR> {
 
         /**
          * @see #set(DataField, BiFunction, Object)
@@ -81,13 +89,18 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
         SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, String, Expression> valueOperator);
 
-        SR setList(List<F> fieldList, BiFunction<F, String, Expression> valueOperator);
+    }
 
-        SR setList(List<F> fieldList, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, String, Expression> valueOperator);
 
-        SR ifSetList(List<F> fieldList, BiFunction<F, String, Expression> valueOperator);
+    interface _RowSetClause<F extends DataField, SR> {
 
-        SR ifSetList(List<F> fieldList, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, String, Expression> valueOperator);
+        SR set(F field1, F field2, Supplier<SubQuery> supplier);
+
+        SR set(F field1, F field2, F field3, Supplier<SubQuery> supplier);
+
+        SR set(F field1, F field2, F field3, F field4, Supplier<SubQuery> supplier);
+
+        SR set(Consumer<Consumer<F>> consumer, Supplier<SubQuery> supplier);
 
     }
 

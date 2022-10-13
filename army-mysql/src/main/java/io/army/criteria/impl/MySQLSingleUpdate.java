@@ -35,7 +35,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
-        extends SingleUpdate<C, FieldMeta<T>, SR, WR, WA, Update>
+        extends SingleUpdate0<C, FieldMeta<T>, SR, WR, WA, Update>
         implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
         , _MySQLSingleUpdate, MySQLQuery._IndexHintForOrderByClause<C, UT>
         , _MySQLWithClause, MySQLUpdate, Update._UpdateSpec {

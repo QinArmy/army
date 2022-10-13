@@ -38,7 +38,7 @@ public interface PostgreInsert extends DialectStatement {
 
 
     interface _DoUpdateSetClause<T, I extends Item, Q extends Item>
-            extends Update._SetClause<FieldMeta<T>, _DoUpdateWhereSpec<T, I, Q>> {
+            extends Update._StaticSetClause<FieldMeta<T>, _DoUpdateWhereSpec<T, I, Q>> {
 
 
     }

@@ -1644,7 +1644,7 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class ConflictUpdateSetClause<T, SR> implements Update._SetClause<FieldMeta<T>, SR>
+    static abstract class ConflictUpdateSetClause<T, SR> implements Update._StaticSetClause<FieldMeta<T>, SR>
             , CriteriaContextSpec
             , _Insert._ConflictActionClauseSpec {
 

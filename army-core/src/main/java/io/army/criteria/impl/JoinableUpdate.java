@@ -21,7 +21,7 @@ import java.util.function.*;
  * <p>
  * This class is base class of below:
  *     <ul>
- *         <li>{@link SingleUpdate}</li>
+ *         <li>{@link SingleUpdate0}</li>
  *         <li>{@link MultiUpdate}</li>
  *     </ul>
  * </p>
@@ -30,7 +30,7 @@ import java.util.function.*;
 abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS, JP, WR, WA, U extends DmlStatement.DmlUpdate>
         extends DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         implements DmlStatement.DmlUpdate, DmlStatement._DmlUpdateSpec<U>
-        , Update._SimpleSetClause<C, F, SR>, Update._BatchSetClause<C, F, SR>
+        , Update._SimpleSetClause<C, F, SR>, Update._StaticBatchSetClause<C, F, SR>
         , _Update {
 
 
@@ -57,7 +57,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
 
     JoinableUpdate(CriteriaContext context, ClauseCreator<FP, JT, JS, JP> clauseCreator) {
         super(context, clauseCreator);
-        assert this instanceof SingleUpdate;
+        assert this instanceof SingleUpdate0;
 
         this.supportRowLeftItem = this.isSupportRowLeftItem();
         //single update no CriteriaContextStack operation
@@ -253,7 +253,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         } else {
             ContextStack.clearContextStack(this.context);
         }
-        if (this instanceof SingleUpdate) {
+        if (this instanceof SingleUpdate0) {
             /// only single update clear context.
             this.context.endContext();
         }
