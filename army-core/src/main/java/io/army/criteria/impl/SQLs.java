@@ -43,25 +43,13 @@ public abstract class SQLs extends StandardSyntax {
         return StandardInserts.primaryInsert();
     }
 
-    public static io.army.criteria.StandardUpdate._StandardDomainUpdateClause<Void> domainUpdate() {
-        return StandardUpdates.simpleDomain(null);
+    public static StandardUpdate._DomainUpdateClause domainUpdate() {
+        return StandardUpdates.simpleDomain();
     }
 
 
-    public static io.army.criteria.StandardUpdate._StandardSingleUpdateClause<Void> singleUpdate() {
-        return StandardUpdates.simpleSingle(null);
-    }
-
-
-    /**
-     * <p>
-     * Batch domain update
-     * </p>
-     *
-     * @see #namedMultiParams(DataField, int)
-     */
-    public static io.army.criteria.StandardUpdate._StandardBatchDomainUpdateClause<Void> batchDomainUpdate() {
-        return StandardUpdates.batchDomain(null);
+    public static StandardUpdate._SingleUpdateClause singleUpdate() {
+        return StandardUpdates.simpleSingle();
     }
 
 
@@ -72,12 +60,24 @@ public abstract class SQLs extends StandardSyntax {
      *
      * @see #namedMultiParams(DataField, int)
      */
-    public static io.army.criteria.StandardUpdate._StandardBatchSingleUpdateClause<Void> batchSingleUpdate() {
-        return StandardUpdates.batchSingle(null);
+    public static StandardUpdate._BatchDomainUpdateClause batchDomainUpdate() {
+        return StandardUpdates.batchDomain();
     }
 
 
-    public static io.army.criteria.StandardDelete.StandardDeleteSpec<Void> domainDelete() {
+    /**
+     * <p>
+     * Batch domain update
+     * </p>
+     *
+     * @see #namedMultiParams(DataField, int)
+     */
+    public static StandardUpdate._BatchSingleUpdateClause batchSingleUpdate() {
+        return StandardUpdates.batchSingle();
+    }
+
+
+    public static io.army.criteria.StandardDelete.StandardDeleteSpec domainDelete() {
         return StandardDelete.simple(null);
     }
 

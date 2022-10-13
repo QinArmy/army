@@ -1,10 +1,11 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.criteria.impl.inner._ItemPair;
+import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._Update;
 import io.army.lang.Nullable;
+import io.army.meta.TableMeta;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,27 +18,26 @@ import java.util.function.Supplier;
 
 
 @SuppressWarnings("unchecked")
-abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField, PS extends ItemPairs<F>, SR, SD, WR, WA, OR, LR>
+abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA, OR, LR>
         extends WhereClause<WR, WA, OR, LR>
-        implements Update._StaticBatchSetClause<F, SR>
+        implements Statement
+        , Update._StaticBatchSetClause<F, SR>
         , Update._DynamicSetClause<F, PS, SD>
         , Update._RowSetClause<F, SR>
         , Statement._DmlUpdateSpec<I>
         , Statement._DqlUpdateSpec<Q>
-        , _Update {
+        , _Update, _SingleUpdate {
 
-    private final Consumer<_ItemPair._FieldItemPair> childPairConsumer;
 
-    SingleUpdate(CriteriaContext context) {
+    private final TableMeta<?> updateTable;
+
+    private final String tableAlias;
+
+
+    SingleUpdate(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
         super(context);
-        assert !(this instanceof _DomainUpdate);
-        this.childPairConsumer = null;
-    }
-
-    private SingleUpdate(CriteriaContext context, Consumer<_ItemPair._FieldItemPair> childPairConsumer) {
-        super(context);
-        assert this instanceof _DomainUpdate;
-        this.childPairConsumer = childPairConsumer;
+        this.updateTable = updateTable;
+        this.tableAlias = tableAlias;
     }
 
 
@@ -191,6 +191,17 @@ abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField
     }
 
     @Override
+    public final void prepared() {
+
+    }
+
+    @Override
+    public final boolean isPrepared() {
+        return false;
+    }
+
+
+    @Override
     public final I asUpdate() {
         this.endUpdateStatement();
         return this.onAsUpdate();
@@ -208,6 +219,16 @@ abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField
     }
 
     @Override
+    public final String tableAlias() {
+        return this.tableAlias;
+    }
+
+    @Override
+    public final TableMeta<?> table() {
+        return this.updateTable;
+    }
+
+    @Override
     public final List<_ItemPair> itemPairList() {
         return null;
     }
@@ -222,9 +243,15 @@ abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField
         //no-op
     }
 
+    void onAddChildItem(SQLs.FieldItemPair pair) {
+        throw new UnsupportedOperationException();
+    }
+
     abstract I onAsUpdate();
 
-    abstract Q onAsReturningUpdate();
+    Q onAsReturningUpdate() {
+        throw ContextStack.castCriteriaApi(this.context);
+    }
 
     abstract PS createItemPairBuilder(Consumer<ItemPair> consumer);
 
@@ -234,11 +261,32 @@ abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField
         return (SR) this;
     }
 
+
     private void endUpdateStatement() {
         this.endOrderByClause();
         this.endWhereClause();
         ContextStack.pop(this.context);
     }
+
+
+    static abstract class DomainUpdate<I extends Item, Q extends Item, F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA, OR, LR>
+            extends SingleUpdate<I, Q, F, PS, SR, SD, WR, WA, OR, LR> {
+
+        private List<_ItemPair._FieldItemPair> childPairList;
+
+
+        DomainUpdate(CriteriaContext context) {
+            super(context);
+        }
+
+
+        @Override
+        final void onAddChildItem(final SQLs.FieldItemPair pair) {
+
+        }
+
+
+    }//DomainUpdate
 
 
 }

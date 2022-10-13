@@ -4,13 +4,14 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -22,48 +23,32 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 
-abstract class StandardUpdates<I extends Item, Q extends Item, F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA, OR, LR>
-        extends SingleUpdate<
-        I,
-        Q,
-        F,
-        PS,
-        SR,
-        SD,
-        WR,
-        WA,
-        OR,
-        LR>
-        implements StandardUpdate {
+abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA>
+        extends SingleUpdate<Update, Item, F, PS, SR, SD, WR, WA, Object, Object>
+        implements StandardUpdate, Update {
 
-    static _StandardSingleUpdateClause simpleSingle() {
-        return new SimpleUpdateClause<>();
+    static _SingleUpdateClause simpleSingle() {
+        return new SimpleSingleUpdateClause();
     }
 
-    static _StandardBatchSingleUpdateClause batchSingle() {
-        return new BatchUpdateClause<>();
+    static _DomainUpdateClause simpleDomain() {
+        return new SimpleDomainUpdateClause();
     }
 
-    static _StandardDomainUpdateClause simpleDomain() {
-        return new SimpleDomainUpdateClause<>();
+
+    static _BatchSingleUpdateClause batchSingle() {
+        return new BatchSingleUpdateClause();
     }
 
-    static _StandardBatchDomainUpdateClause batchDomain() {
-        return new BatchDomainUpdateClause<>();
+    static _BatchDomainUpdateClause batchDomain() {
+        return new BatchDomainUpdateClause();
     }
 
-    private final TableMeta<?> table;
 
-    private final String tableAlias;
-
-
-    private StandardUpdates(TableMeta<?> table, String tableAlias) {
-        super(CriteriaContexts.primarySingleDmlContext());
-        this.table = table;
-        this.tableAlias = tableAlias;
-
-        ContextStack.push(this.context);
+    private StandardUpdates(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
+        super(context, updateTable, tableAlias);
     }
+
 
     @Override
     public final String toString() {
@@ -77,74 +62,58 @@ abstract class StandardUpdates<I extends Item, Q extends Item, F extends TableFi
     }
 
     @Override
-    final void onAsUpdate() {
-        if (this.table == null || this.tableAlias == null) {
+    final Update onAsUpdate() {
+        if (this instanceof StandardUpdates.BatchSingleUpdate
+                && ((BatchSingleUpdate<F>) this).paramList == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        if (this instanceof BatchUpdate && ((BatchUpdate<C, F>) this).paramList == null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
+        return this;
     }
+
 
     @Override
     final void onClear() {
-        if (this instanceof BatchUpdate) {
-            ((BatchUpdate<C, F>) this).paramList = null;
+        if (this instanceof StandardUpdates.BatchSingleUpdate) {
+            ((BatchSingleUpdate<F>) this).paramList = null;
         }
 
     }
 
 
-    @Override
-    final boolean isSupportRowLeftItem() {
-        // false ,standard don't support row left item
-        return false;
-    }
-    @Override
-    final MySQLDialect dialect() {
-        // no dialect
-        return null;
-    }
-
-    @Override
-    public final TableMeta<?> table() {
-        return this.table;
-    }
-
-    @Override
-    public final String tableAlias() {
-        return this.tableAlias;
-    }
-
-
-    /**
-     * <p>
-     * This class is standard update implementation.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    private static class SimpleUpdate<C, F extends TableField> extends StandardUpdates<
-            C,
+    private static class SimpleSingleUpdate<F extends TableField> extends StandardUpdates<
             F,
-            _StandardWhereSpec<C, F>,
-            _UpdateSpec,
-            _StandardWhereAndSpec<C>>
-            implements io.army.criteria.StandardUpdate._StandardWhereAndSpec<C>, io.army.criteria.StandardUpdate._StandardWhereSpec<C, F> {
+            ItemPairs<F>,
+            _WhereSpec<Update, F>,
+            _StandardWhereClause<Update>,
+            _DmlUpdateSpec<Update>,
+            _WhereAndSpec<Update>>
+            implements _WhereSpec<Update, F>, _WhereAndSpec<Update> {
 
-        private SimpleUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
-            super(criteria, table, tableAlias);
+        private SimpleSingleUpdate(CriteriaContext context, TableMeta<?> table, String tableAlias) {
+            super(context, table, tableAlias);
         }
 
 
-    }//SimpleUpdate
+        @Override
+        final ItemPairs<F> createItemPairBuilder(Consumer<ItemPair> consumer) {
+            return null;
+        }
 
-    private static class SimpleDomainUpdate<C, T> extends SimpleUpdate<C, FieldMeta<? super T>>
+
+    }//StandardSingleUpdate
+
+
+    private static final class SimpleDomainUpdate<F extends TableField> extends SimpleSingleUpdate<F>
             implements _DomainUpdate {
 
-        private SimpleDomainUpdate(@Nullable C criteria, TableMeta<T> table, String tableAlias) {
-            super(criteria, table, tableAlias);
+        private SimpleDomainUpdate(CriteriaContext context, TableMeta<?> table, String tableAlias) {
+            super(context, table, tableAlias);
+        }
+
+
+        @Override
+        void onAddChildItem(final SQLs.FieldItemPair pair) {
+            super.onAddChildItem(pair);
         }
 
 
@@ -156,140 +125,150 @@ abstract class StandardUpdates<I extends Item, Q extends Item, F extends TableFi
      * This class is standard batch update implementation.
      * </p>
      *
-     * @param <C> criteria object java type
      * @since 1.0
      */
-    private static class BatchUpdate<C, F extends TableField> extends StandardUpdates<
-            C,
+    private static class BatchSingleUpdate<F extends TableField> extends StandardUpdates<
             F,
-            _StandardBatchWhereSpec<C, F>,
-            _BatchParamClause<C, _UpdateSpec>,
-            _StandardBatchWhereAndSpec<C>>
-            implements io.army.criteria.StandardUpdate._StandardBatchWhereSpec<C, F>, io.army.criteria.StandardUpdate._StandardBatchWhereAndSpec<C>
-            , _BatchParamClause<C, _UpdateSpec>, _BatchDml {
+            BatchItemPairs<F>,
+            _BatchWhereSpec<Update, F>,
+            _BatchWhereClause<Update>,
+            _BatchParamClause<_DmlUpdateSpec<Update>>,
+            _BatchWhereAndSpec<Update>>
+            implements _BatchWhereSpec<Update, F>, _BatchWhereAndSpec<Update>, _BatchDml {
 
         private List<?> paramList;
 
-        private BatchUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
-            super(criteria, table, tableAlias);
+        private BatchSingleUpdate(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
+            super(context, updateTable, tableAlias);
         }
 
         @Override
-        public final <P> _UpdateSpec paramList(List<P> paramList) {
-            this.paramList = CriteriaUtils.paramList(paramList);
+        public final <P> _DmlUpdateSpec<Update> paramList(List<P> paramList) {
+            this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
         }
 
         @Override
-        public final <P> _UpdateSpec paramList(Supplier<List<P>> supplier) {
-            this.paramList = CriteriaUtils.paramList(supplier.get());
+        public final <P> _DmlUpdateSpec<Update> paramList(Supplier<List<P>> supplier) {
+            return this.paramList(supplier.get());
+        }
+
+        @Override
+        public final _DmlUpdateSpec<Update> paramList(Function<String, ?> function, String keyName) {
+            this.paramList = CriteriaUtils.paramList(this.context, (List<?>) function.apply(keyName));
             return this;
         }
 
         @Override
-        public final <P> _UpdateSpec paramList(Function<C, List<P>> function) {
-            this.paramList = CriteriaUtils.paramList(function.apply(this.criteria));
-            return this;
-        }
-
-        @Override
-        public final _UpdateSpec paramList(Function<String, ?> function, String keyName) {
-            this.paramList = CriteriaUtils.paramList((List<?>) function.apply(keyName));
-            return this;
+        final BatchItemPairs<F> createItemPairBuilder(Consumer<ItemPair> consumer) {
+            return null;
         }
 
         @Override
         public final List<?> paramList() {
-            return this.paramList;
+            final List<?> list = this.paramList;
+            if (list == null || list instanceof ArrayList) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return list;
         }
 
 
     }//BatchUpdate
 
 
-    private static final class BatchDomainUpdate<C, T> extends BatchUpdate<C, FieldMeta<? super T>>
+    private static final class BatchDomainUpdate<F extends TableField> extends BatchSingleUpdate<F>
             implements _DomainUpdate {
 
-        private BatchDomainUpdate(@Nullable C criteria, TableMeta<T> table, String tableAlias) {
-            super(criteria, table, tableAlias);
+        private BatchDomainUpdate(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
+            super(context, updateTable, tableAlias);
         }
+
+        @Override
+        void onAddChildItem(final SQLs.FieldItemPair pair) {
+            super.onAddChildItem(pair);
+        }
+
 
     }//BatchDomainUpdate
 
 
-    private static final class SimpleUpdateClause<C> implements io.army.criteria.StandardUpdate._StandardSingleUpdateClause<C> {
+    private static final class SimpleSingleUpdateClause implements _SingleUpdateClause {
 
-        private final C criteria;
 
-        private SimpleUpdateClause(@Nullable C criteria) {
-            this.criteria = criteria;
+        private final CriteriaContext context;
+
+        private SimpleSingleUpdateClause() {
+            this.context = CriteriaContexts.primarySingleDmlContext();
+            ContextStack.push(this.context);
         }
 
         @Override
-        public <T> io.army.criteria.StandardUpdate._StandardSetClause<C, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias) {
-            return new SimpleUpdate<>(this.criteria, table, tableAlias);
+        public <T> _StandardSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias) {
+            return new SimpleSingleUpdate<>(this.context, table, tableAlias);
         }
 
         @Override
-        public <P> io.army.criteria.StandardUpdate._StandardSetClause<C, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias) {
-            return new SimpleUpdate<>(this.criteria, table, tableAlias);
-        }
-
-    }//SimpleUpdateClause
-
-    private static final class SimpleDomainUpdateClause<C> implements io.army.criteria.StandardUpdate._StandardDomainUpdateClause<C> {
-
-        private final C criteria;
-
-        private SimpleDomainUpdateClause(@Nullable C criteria) {
-            this.criteria = criteria;
+        public <P> _StandardSetClause<Update, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias) {
+            return new SimpleSingleUpdate<>(this.context, table, tableAlias);
         }
 
 
-        @Override
-        public <T> io.army.criteria.StandardUpdate._StandardSetClause<C, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias) {
-            return new SimpleDomainUpdate<>(this.criteria, table, tableAlias);
-        }
+    }//SimpleSingleUpdateClause
 
+    private static final class SimpleDomainUpdateClause implements _DomainUpdateClause {
 
-    }//SimpleDomainUpdateClause
+        private final CriteriaContext context;
 
-
-    private static final class BatchUpdateClause<C> implements io.army.criteria.StandardUpdate._StandardBatchSingleUpdateClause<C> {
-
-        private final C criteria;
-
-        private BatchUpdateClause(@Nullable C criteria) {
-            this.criteria = criteria;
+        private SimpleDomainUpdateClause() {
+            this.context = CriteriaContexts.primarySingleDmlContext();
+            ContextStack.push(this.context);
         }
 
         @Override
-        public <T> io.army.criteria.StandardUpdate._StandardBatchSetClause<C, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias) {
-            return new BatchUpdate<>(this.criteria, table, tableAlias);
+        public <T> _StandardSetClause<Update, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias) {
+            return new SimpleDomainUpdate<>(this.context, table, tableAlias);
+        }
+
+    }// SimpleDomainUpdateClause
+
+
+    private static final class BatchSingleUpdateClause implements _BatchSingleUpdateClause {
+
+        private final CriteriaContext context;
+
+        private BatchSingleUpdateClause() {
+            this.context = CriteriaContexts.primarySingleDmlContext();
+            ContextStack.push(this.context);
         }
 
         @Override
-        public <P> io.army.criteria.StandardUpdate._StandardBatchSetClause<C, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias) {
-            return new BatchUpdate<>(this.criteria, table, tableAlias);
+        public <T> _BatchSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias) {
+            return new BatchSingleUpdate<>(this.context, table, tableAlias);
         }
-
-    }//BatchUpdateClause
-
-
-    private static final class BatchDomainUpdateClause<C> implements io.army.criteria.StandardUpdate._StandardBatchDomainUpdateClause<C> {
-
-        private final C criteria;
-
-        private BatchDomainUpdateClause(@Nullable C criteria) {
-            this.criteria = criteria;
-        }
-
 
         @Override
-        public <T> io.army.criteria.StandardUpdate._StandardBatchSetClause<C, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias) {
-            return new BatchDomainUpdate<>(this.criteria, table, tableAlias);
+        public <P> _BatchSetClause<Update, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias) {
+            return new BatchSingleUpdate<>(this.context, table, tableAlias);
         }
 
+
+    }//BatchSingleUpdateClause
+
+
+    private static final class BatchDomainUpdateClause implements _BatchDomainUpdateClause {
+
+        private final CriteriaContext context;
+
+        private BatchDomainUpdateClause() {
+            this.context = CriteriaContexts.primarySingleDmlContext();
+            ContextStack.push(this.context);
+        }
+
+        @Override
+        public <T> _BatchSetClause<Update, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias) {
+            return new BatchDomainUpdate<>(this.context, table, tableAlias);
+        }
 
     }//BatchDomainUpdateClause
 

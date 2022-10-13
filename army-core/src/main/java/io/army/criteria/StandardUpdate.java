@@ -8,29 +8,29 @@ import io.army.meta.TableMeta;
 public interface StandardUpdate extends StandardStatement {
 
 
-    interface _StandardWhereAndSpec<I extends Item> extends Update._UpdateWhereAndClause<_StandardWhereAndSpec<I>>
+    interface _WhereAndSpec<I extends Item> extends Update._UpdateWhereAndClause<_WhereAndSpec<I>>
             , _DmlUpdateSpec<I> {
 
     }
 
 
-    interface _StandardWhereClause<I extends Item> extends _WhereClause<_DmlUpdateSpec<I>, _StandardWhereAndSpec<I>> {
+    interface _StandardWhereClause<I extends Item> extends _WhereClause<_DmlUpdateSpec<I>, _WhereAndSpec<I>> {
 
     }
 
-    interface _StandardWhereSpec<I extends Item, F extends TableField> extends _StandardSetClause<I, F>
+    interface _WhereSpec<I extends Item, F extends TableField> extends _StandardSetClause<I, F>
             , _StandardWhereClause<I> {
 
 
     }
 
     interface _StandardSetClause<I extends Item, F extends TableField>
-            extends Update._StaticSetClause<F, _StandardWhereSpec<I, F>>
+            extends Update._StaticSetClause<F, _WhereSpec<I, F>>
             , Update._DynamicSetClause<F, ItemPairs<F>, _StandardWhereClause<I>> {
 
     }
 
-    interface _StandardSingleUpdateClause {
+    interface _SingleUpdateClause {
 
         <T> _StandardSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias);
 
@@ -38,46 +38,46 @@ public interface StandardUpdate extends StandardStatement {
 
     }
 
-    interface _StandardDomainUpdateClause {
+    interface _DomainUpdateClause {
 
         <T> _StandardSetClause<Update, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias);
 
     }
 
-    interface _StandardBatchWhereAndSpec<I extends Item>
-            extends Update._UpdateWhereAndClause<_StandardBatchWhereAndSpec<I>>
+    interface _BatchWhereAndSpec<I extends Item>
+            extends Update._UpdateWhereAndClause<_BatchWhereAndSpec<I>>
             , _BatchParamClause<_DmlUpdateSpec<I>> {
 
     }
 
-    interface _StandardBatchWhereClause<I extends Item>
-            extends _WhereClause<_BatchParamClause<_DmlUpdateSpec<I>>, _StandardBatchWhereAndSpec<I>> {
+    interface _BatchWhereClause<I extends Item>
+            extends _WhereClause<_BatchParamClause<_DmlUpdateSpec<I>>, _BatchWhereAndSpec<I>> {
 
     }
 
-    interface _StandardBatchWhereSpec<I extends Item, F extends TableField> extends _StandardBatchSetClause<I, F>
-            , _StandardBatchWhereClause<I> {
+    interface _BatchWhereSpec<I extends Item, F extends TableField> extends _BatchSetClause<I, F>
+            , _BatchWhereClause<I> {
 
     }
 
-    interface _StandardBatchSetClause<I extends Item, F extends TableField>
-            extends Update._StaticBatchSetClause<F, _StandardBatchWhereSpec<I, F>>
-            , Update._DynamicSetClause<F, BatchItemPairs<F>, _StandardBatchWhereClause<I>> {
+    interface _BatchSetClause<I extends Item, F extends TableField>
+            extends Update._StaticBatchSetClause<F, _BatchWhereSpec<I, F>>
+            , Update._DynamicSetClause<F, BatchItemPairs<F>, _BatchWhereClause<I>> {
 
 
     }
 
-    interface _StandardBatchSingleUpdateClause {
+    interface _BatchSingleUpdateClause {
 
-        <T> _StandardBatchSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias);
+        <T> _BatchSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias);
 
-        <P> _StandardBatchSetClause<Update, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias);
+        <P> _BatchSetClause<Update, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias);
 
     }
 
-    interface _StandardBatchDomainUpdateClause {
+    interface _BatchDomainUpdateClause {
 
-        <T> _StandardBatchSetClause<Update, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias);
+        <T> _BatchSetClause<Update, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias);
 
     }
 

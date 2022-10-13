@@ -414,11 +414,7 @@ abstract class CriteriaUtils {
     }
 
 
-    /**
-     * @deprecated 加上 context
-     */
-    @Deprecated
-    static List<Object> paramList(final @Nullable List<?> paramList) {
+    static List<Object> paramList(final CriteriaContext context, final @Nullable List<?> paramList) {
         final int size;
         if (paramList == null || (size = paramList.size()) == 0) {
             throw new CriteriaException("Batch dml parameter list must not empty.");
@@ -432,14 +428,14 @@ abstract class CriteriaUtils {
         final List<Object> wrapperList = new ArrayList<>(size);
         for (Object param : paramList) {
             if (param == null) {
-                throw new NullPointerException("Batch parameter must non-null.");
+                throw ContextStack.nullPointer(context);
             }
             if (isMap) {
                 if (!(param instanceof Map)) {
-                    throw new CriteriaException("Batch parameter must be same java type.");
+                    throw ContextStack.criteriaError(context, "Batch parameter must be same java type.");
                 }
             } else if (!paramJavaType.isInstance(param)) {
-                throw new CriteriaException("Batch parameter must be same java type.");
+                throw ContextStack.criteriaError(context, "Batch parameter must be same java type.");
             }
             wrapperList.add(param);
         }
