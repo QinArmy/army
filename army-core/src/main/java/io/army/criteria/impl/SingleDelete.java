@@ -1,73 +1,33 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.DmlStatement;
-import io.army.criteria.SubStatement;
 import io.army.criteria.impl.inner._SingleDelete;
-import io.army.util._Assert;
+import io.army.meta.TableMeta;
 
-/**
- * <p>
- * This class is base class of all single table delete statement.
- * </p>
- *
- * @since 1.0
- */
-abstract class SingleDelete<C, WR, WA, D extends DmlStatement.DmlDelete>
-        extends DmlWhereClause<C, Void, Void, Void, Void, Void, Void, Void, WR, WA>
-        implements DmlStatement._DmlDeleteSpec<D>, _SingleDelete, DmlStatement.DmlDelete {
+abstract class SingleDelete<WR, WA, OR, LR> extends WhereClause<WR, WA, OR, LR>
+        implements _SingleDelete {
 
+    private TableMeta<?> deleteTable;
 
-    private Boolean prepared;
+    private String tableAlias;
 
-    SingleDelete(CriteriaContext criteriaContext) {
-        super(criteriaContext, JoinableClause.voidClauseCreator());
-        if (this instanceof SubStatement) {
-            ContextStack.push(this.context);
-        } else {
-            ContextStack.setContextStack(this.context);
-        }
+    SingleDelete(CriteriaContext context, TableMeta<?> deleteTable, String tableAlias) {
+        super(context);
+        this.deleteTable = deleteTable;
+        this.tableAlias = tableAlias;
     }
 
     @Override
-    public final void prepared() {
-        _Assert.prepared(this.prepared);
+    public final String tableAlias() {
+        return null;
     }
 
     @Override
-    public final boolean isPrepared() {
-        return this.prepared;
+    public final TableMeta<?> table() {
+        return null;
     }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public final D asDelete() {
-        _Assert.nonPrepared(this.prepared);
-        this.context.endContext();
-        if (this instanceof SubStatement) {
-            ContextStack.pop(this.context);
-        } else {
-            ContextStack.clearContextStack(this.context);
-        }
-        super.asDmlStatement();
-        this.onAsDelete();
-        this.prepared = Boolean.TRUE;
-        return (D) this;
-    }
-
 
     @Override
     public final void clear() {
-        _Assert.prepared(this.prepared);
-        this.prepared = Boolean.FALSE;
-        super.clearWherePredicate();
-        this.onClear();
-    }
-
-    void onAsDelete() {
-
-    }
-
-    void onClear() {
 
     }
 

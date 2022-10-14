@@ -907,9 +907,8 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-
-
-    public static ItemPair itemPair(final DataField field, final @Nullable Object value) {
+    @Deprecated
+    static ItemPair itemPair(final DataField field, final @Nullable Object value) {
         return SQLs._itemPair(field, null, value);
     }
 
@@ -970,7 +969,7 @@ public abstract class SQLs extends StandardSyntax {
         return SQLs._itemPair(field, null, value);
     }
 
-    public static ItemPair itemPair(List<? extends DataField> fieldList, SubQuery subQuery) {
+    static ItemPair _itemPair(List<? extends DataField> fieldList, SubQuery subQuery) {
         return new RowItemPair(fieldList, subQuery);
     }
 

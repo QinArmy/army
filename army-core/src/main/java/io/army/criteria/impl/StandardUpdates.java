@@ -3,13 +3,16 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._DomainUpdate;
+import io.army.criteria.impl.inner._ItemPair;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
+import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -17,7 +20,7 @@ import java.util.function.Supplier;
 
 /**
  * <p>
- * This class representing standard single domain update statement.
+ * This class hold the implementations of standard update statement.
  * </p>
  *
  * @since 1.0
@@ -49,7 +52,6 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
         super(context, updateTable, tableAlias);
     }
 
-
     @Override
     public final String toString() {
         final String s;
@@ -63,7 +65,21 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
 
     @Override
     final Update onAsUpdate() {
-        if (this instanceof StandardUpdates.BatchSingleUpdate
+        if (this instanceof SimpleDomainUpdate) {
+            final List<_ItemPair> childItemList = ((SimpleDomainUpdate<F>) this).childItemPairList;
+            if (childItemList == null) {
+                ((SimpleDomainUpdate<F>) this).childItemPairList = Collections.emptyList();
+            } else {
+                ((SimpleDomainUpdate<F>) this).childItemPairList = _CollectionUtils.unmodifiableList(childItemList);
+            }
+        } else if (this instanceof BatchDomainUpdate) {
+            final List<_ItemPair> childItemList = ((BatchDomainUpdate<F>) this).childItemPairList;
+            if (childItemList == null) {
+                ((BatchDomainUpdate<F>) this).childItemPairList = Collections.emptyList();
+            } else {
+                ((BatchDomainUpdate<F>) this).childItemPairList = _CollectionUtils.unmodifiableList(childItemList);
+            }
+        } else if (this instanceof StandardUpdates.BatchSingleUpdate
                 && ((BatchSingleUpdate<F>) this).paramList == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -73,10 +89,13 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
 
     @Override
     final void onClear() {
-        if (this instanceof StandardUpdates.BatchSingleUpdate) {
+        if (this instanceof SimpleDomainUpdate) {
+            ((SimpleDomainUpdate<F>) this).childItemPairList = null;
+        } else if (this instanceof BatchDomainUpdate) {
+            ((BatchDomainUpdate<F>) this).childItemPairList = null;
+        } else if (this instanceof BatchSingleUpdate) {
             ((BatchSingleUpdate<F>) this).paramList = null;
         }
-
     }
 
 
@@ -96,7 +115,7 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
 
         @Override
         final ItemPairs<F> createItemPairBuilder(Consumer<ItemPair> consumer) {
-            return null;
+            return CriteriaSupports.itemPairs(consumer);
         }
 
 
@@ -106,6 +125,8 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
     private static final class SimpleDomainUpdate<F extends TableField> extends SimpleSingleUpdate<F>
             implements _DomainUpdate {
 
+        private List<_ItemPair> childItemPairList;
+
         private SimpleDomainUpdate(CriteriaContext context, TableMeta<?> table, String tableAlias) {
             super(context, table, tableAlias);
         }
@@ -113,7 +134,23 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
 
         @Override
         void onAddChildItem(final SQLs.FieldItemPair pair) {
-            super.onAddChildItem(pair);
+            List<_ItemPair> childItemPairList = this.childItemPairList;
+            if (childItemPairList == null) {
+                childItemPairList = new ArrayList<>();
+                this.childItemPairList = childItemPairList;
+            } else if (!(childItemPairList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            childItemPairList.add(pair);
+        }
+
+        @Override
+        public List<_ItemPair> childItemPairList() {
+            final List<_ItemPair> childItemPairList = this.childItemPairList;
+            if (childItemPairList == null || childItemPairList instanceof ArrayList) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return childItemPairList;
         }
 
 
@@ -161,7 +198,7 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
 
         @Override
         final BatchItemPairs<F> createItemPairBuilder(Consumer<ItemPair> consumer) {
-            return null;
+            return CriteriaSupports.batchItemPairs(consumer);
         }
 
         @Override
@@ -180,13 +217,31 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
     private static final class BatchDomainUpdate<F extends TableField> extends BatchSingleUpdate<F>
             implements _DomainUpdate {
 
+        private List<_ItemPair> childItemPairList;
+
         private BatchDomainUpdate(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
             super(context, updateTable, tableAlias);
         }
 
         @Override
         void onAddChildItem(final SQLs.FieldItemPair pair) {
-            super.onAddChildItem(pair);
+            List<_ItemPair> childItemPairList = this.childItemPairList;
+            if (childItemPairList == null) {
+                childItemPairList = new ArrayList<>();
+                this.childItemPairList = childItemPairList;
+            } else if (!(childItemPairList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            childItemPairList.add(pair);
+        }
+
+        @Override
+        public List<_ItemPair> childItemPairList() {
+            final List<_ItemPair> childItemPairList = this.childItemPairList;
+            if (childItemPairList == null || childItemPairList instanceof ArrayList) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return childItemPairList;
         }
 
 

@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 abstract class WithCteSingleDelete<C, SS extends SubStatement, WE, WR, WA, D extends DmlStatement.DmlDelete>
-        extends SingleDelete<C, WR, WA, D>
+        extends SingleDelete0<C, WR, WA, D>
         implements DialectStatement._WithCteClause2<C, SS, WE> {
 
     WithCteSingleDelete(CriteriaContext criteriaContext) {

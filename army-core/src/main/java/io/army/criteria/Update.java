@@ -19,6 +19,7 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
     }
 
+
     interface _ItemPairBuilder {
 
     }
@@ -92,7 +93,7 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
     }
 
 
-    interface _RowSetClause<F extends DataField, SR> {
+    interface _StaticRowSetClause<F extends DataField, SR> extends _StaticSetClause<F, SR> {
 
         SR set(F field1, F field2, Supplier<SubQuery> supplier);
 

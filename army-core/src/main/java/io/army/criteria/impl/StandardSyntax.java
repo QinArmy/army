@@ -75,7 +75,7 @@ abstract class StandardSyntax extends Functions {
 
     }
 
-    public interface SymbolPoint {
+    public interface SymbolPeriod {
 
     }
 
@@ -322,9 +322,9 @@ abstract class StandardSyntax extends Functions {
     }//KeyWordOny
 
 
-    private enum SQLSymbolPoint implements SymbolPoint {
+    private enum SQLSymbolPeriod implements SymbolPeriod {
 
-        POINT;
+        PERIOD;
 
         @Override
         public final String toString() {
@@ -483,7 +483,7 @@ abstract class StandardSyntax extends Functions {
 
     public static final WordNext NEXT = KeyWordNext.NEXT;
 
-    public static final SymbolPoint POINT = SQLSymbolPoint.POINT;
+    public static final SymbolPeriod PERIOD = SQLSymbolPeriod.PERIOD;
 
     public static final WordOnly ONLY = KeyWordOny.ONLY;
 

@@ -22,7 +22,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA, Delete>
+abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete0<C, WR, WA, Delete>
         implements io.army.criteria.StandardDelete.StandardDeleteFromClause<DR>, StandardStatement, Delete, Delete._DeleteSpec {
 
     static <C> io.army.criteria.StandardDelete.StandardDeleteSpec<C> simple(@Nullable C criteria) {

@@ -1,8 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
-import io.army.criteria.RowConstructor;
-import io.army.criteria.Statement;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -11,6 +9,7 @@ import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -51,6 +50,22 @@ abstract class CriteriaSupports {
 
     static TypeMeta delayParamMeta(Supplier<MappingType> supplier) {
         return new SimpleDelayParamMeta(supplier);
+    }
+
+    static <F extends DataField> ItemPairs<F> itemPairs(Consumer<ItemPair> consumer) {
+        return new ItemPairsImpl<>(consumer);
+    }
+
+    static <F extends DataField> BatchItemPairs<F> batchItemPairs(Consumer<ItemPair> consumer) {
+        return new BatchItemPairsImpl<>(consumer);
+    }
+
+    static <F extends DataField> RowPairs<F> rowPairs(Consumer<ItemPair> consumer) {
+        return new RowItemPairsImpl<>(consumer);
+    }
+
+    static <F extends DataField> BatchRowPairs<F> batchRowPairs(Consumer<ItemPair> consumer) {
+        return new BatchRowItemPairsImpl<>(consumer);
     }
 
 
@@ -416,10 +431,220 @@ abstract class CriteriaSupports {
     }//BiDelayParamMetaWrapper
 
 
+    @Deprecated
     interface CteBuilderSpec {
 
         void endWithClause(boolean required);
     }
+
+    @SuppressWarnings("unchecked")
+    private static abstract class UpdateSetClause<F extends DataField, SR>
+            implements Update._StaticBatchSetClause<F, SR>
+            , Update._StaticRowSetClause<F, SR> {
+
+        private final Consumer<ItemPair> consumer;
+
+        private UpdateSetClause(Consumer<ItemPair> consumer) {
+            this.consumer = consumer;
+        }
+
+        @Override
+        public final SR set(F field, Expression value) {
+            this.consumer.accept(SQLs._itemPair(field, null, value));
+            return (SR) this;
+        }
+
+        @Override
+        public final SR set(F field, Supplier<Expression> supplier) {
+            this.consumer.accept(SQLs._itemPair(field, null, supplier.get()));
+            return (SR) this;
+        }
+
+        @Override
+        public final <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
+            this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+            return (SR) this;
+        }
+
+        @Override
+        public final <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
+            this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, supplier.get())));
+            return (SR) this;
+        }
+
+        @Override
+        public final SR set(F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function
+                , String keyName) {
+            this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, function.apply(keyName))));
+            return (SR) this;
+        }
+
+        @Override
+        public final <E> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
+                , BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
+            this.consumer.accept(fieldOperator.apply(field, valueOperator.apply(field, value)));
+            return (SR) this;
+        }
+
+        @Override
+        public final <E> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
+                , BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
+            this.consumer.accept(fieldOperator.apply(field, valueOperator.apply(field, supplier.get())));
+            return (SR) this;
+        }
+
+        @Override
+        public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
+                , BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            this.consumer.accept(fieldOperator.apply(field, valueOperator.apply(field, function.apply(keyName))));
+            return (SR) this;
+        }
+
+        @Override
+        public final <E> SR ifSet(F field, BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
+            if (value != null) {
+                this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final <E> SR ifSet(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
+            final E value;
+            value = supplier.get();
+            if (value != null) {
+                this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final SR ifSet(F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function
+                , String keyName) {
+            final Object value;
+            value = function.apply(keyName);
+            if (value != null) {
+                this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final <E> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator
+                , BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
+            if (value != null) {
+                this.consumer.accept(fieldOperator.apply(field, valueOperator.apply(field, value)));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final <E> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator
+                , BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
+            final E value;
+            value = supplier.get();
+            if (value != null) {
+                this.consumer.accept(fieldOperator.apply(field, valueOperator.apply(field, value)));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator
+                , BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            final Object value;
+            value = function.apply(keyName);
+            if (value != null) {
+                this.consumer.accept(fieldOperator.apply(field, valueOperator.apply(field, value)));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final SR set(F field, BiFunction<F, String, Expression> valueOperator) {
+            this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, field.fieldName())));
+            return (SR) this;
+        }
+
+        @Override
+        public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
+                , BiFunction<F, String, Expression> valueOperator) {
+            this.consumer.accept(fieldOperator.apply(field, valueOperator.apply(field, field.fieldName())));
+            return (SR) this;
+        }
+
+        @Override
+        public final SR set(F field1, F field2, Supplier<SubQuery> supplier) {
+            final List<F> fieldList;
+            fieldList = Arrays.asList(field1, field2);
+            this.consumer.accept(SQLs._itemPair(fieldList, supplier.get()));
+            return (SR) this;
+        }
+
+        @Override
+        public final SR set(F field1, F field2, F field3, Supplier<SubQuery> supplier) {
+            final List<F> fieldList;
+            fieldList = Arrays.asList(field1, field2, field3);
+            this.consumer.accept(SQLs._itemPair(fieldList, supplier.get()));
+            return (SR) this;
+        }
+
+        @Override
+        public final SR set(F field1, F field2, F field3, F field4, Supplier<SubQuery> supplier) {
+            final List<F> fieldList;
+            fieldList = Arrays.asList(field1, field2, field3, field4);
+            this.consumer.accept(SQLs._itemPair(fieldList, supplier.get()));
+            return (SR) this;
+        }
+
+        @Override
+        public final SR set(Consumer<Consumer<F>> consumer, Supplier<SubQuery> supplier) {
+            final List<F> fieldList = new ArrayList<>();
+            consumer.accept(fieldList::add);
+            this.consumer.accept(SQLs._itemPair(fieldList, supplier.get()));
+            return (SR) this;
+        }
+
+
+    }//UpdateSetClause
+
+    private static final class ItemPairsImpl<F extends DataField> extends UpdateSetClause<F, ItemPairs<F>>
+            implements ItemPairs<F> {
+
+        private ItemPairsImpl(Consumer<ItemPair> consumer) {
+            super(consumer);
+        }
+
+
+    }//ItemPairsImpl
+
+    private static final class BatchItemPairsImpl<F extends DataField> extends UpdateSetClause<F, BatchItemPairs<F>>
+            implements BatchItemPairs<F> {
+
+        private BatchItemPairsImpl(Consumer<ItemPair> consumer) {
+            super(consumer);
+        }
+
+
+    }//BatchItemPairsImpl
+
+    private static final class RowItemPairsImpl<F extends DataField> extends UpdateSetClause<F, RowPairs<F>>
+            implements RowPairs<F> {
+
+        private RowItemPairsImpl(Consumer<ItemPair> consumer) {
+            super(consumer);
+        }
+
+    } //RowItemPairsImpl
+
+    private static final class BatchRowItemPairsImpl<F extends DataField> extends UpdateSetClause<F, BatchRowPairs<F>>
+            implements BatchRowPairs<F> {
+
+        private BatchRowItemPairsImpl(Consumer<ItemPair> consumer) {
+            super(consumer);
+        }
+
+    } //RowItemPairsImpl
 
 
 }

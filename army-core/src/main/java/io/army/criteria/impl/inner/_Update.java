@@ -10,10 +10,6 @@ public interface _Update extends _Statement {
      */
     List<_ItemPair> itemPairList();
 
-    /**
-     * @return a unmodifiable list,probably empty
-     */
-    List<_ItemPair> childItemPairList();
 
     List<_Predicate> predicateList();
 
