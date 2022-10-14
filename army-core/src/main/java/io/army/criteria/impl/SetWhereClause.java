@@ -1,7 +1,16 @@
 package io.army.criteria.impl;
 
+import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._DomainUpdate;
+import io.army.criteria.impl.inner._ItemPair;
+import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
+import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,10 +26,17 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
         extends WhereClause<WR, WA, OR, LR>
         implements Update._StaticBatchSetClause<F, SR>
         , Update._DynamicSetClause<F, PS, SD>
-        , Update._StaticRowSetClause<F, SR> {
+        , Update._StaticRowSetClause<F, SR>
+        , _Statement._ItemPairList
+        , _Statement._TableMetaSpec {
 
-    SetWhereClause(CriteriaContext context) {
+    private List<_ItemPair> itemPairList = new ArrayList<>();
+
+    final TableMeta<?> updateTable;
+
+    SetWhereClause(CriteriaContext context, TableMeta<?> updateTable) {
         super(context);
+        this.updateTable = updateTable;
     }
 
 
@@ -174,13 +190,74 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
     }
 
 
+    @Override
+    public final TableMeta<?> table() {
+        return this.updateTable;
+    }
+
+    @Override
+    public final List<_ItemPair> itemPairList() {
+        final List<_ItemPair> itemPairList = this.itemPairList;
+        if (itemPairList == null || itemPairList instanceof ArrayList) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return itemPairList;
+    }
+
     abstract PS createItemPairBuilder(Consumer<ItemPair> consumer);
+
+    void onAddChildItemPair(SQLs.ArmyItemPair pair) {
+        throw new UnsupportedOperationException();
+    }
+
+    final void endUpdateSetClause() {
+        final List<_ItemPair> itemPairList = this.itemPairList;
+        if (itemPairList == null || itemPairList.size() == 0) {
+            throw ContextStack.criteriaError(this.context, _Exceptions::setClauseNotExists);
+        } else if (itemPairList instanceof ArrayList) {
+            this.itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
+        } else {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+    }
 
 
     private SR onAddItemPair(final ItemPair pair) {
+        final List<_ItemPair> itemPairList = this.itemPairList;
+        if (!(itemPairList instanceof ArrayList)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
 
+        final SQLs.FieldItemPair fieldPair;
+        final FieldMeta<?> field;
+        if (pair instanceof SQLs.RowItemPair) {
+            assert !(this instanceof _DomainUpdate);
+            itemPairList.add((SQLs.RowItemPair) pair);
+        } else if (!(pair instanceof SQLs.FieldItemPair)) {
+            throw new CriteriaException(String.format("unknown %s", ItemPair.class.getName()));
+        } else if (!((fieldPair = (SQLs.FieldItemPair) pair).field instanceof FieldMeta)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        } else if ((field = (FieldMeta<?>) fieldPair.field).updateMode() == UpdateMode.IMMUTABLE) {
+            throw ContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
+        } else if (!field.nullable() && ((ArmyExpression) fieldPair.right).isNullValue()) {
+            throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
+        } else if (!(this instanceof _DomainUpdate)) {
+            itemPairList.add(fieldPair);
+        } else if (field.tableMeta() != this.updateTable) {
+            throw ContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
+        } else if (this.updateTable instanceof ChildTableMeta) {
+            this.onAddChildItemPair(fieldPair);
+        } else {
+            itemPairList.add(fieldPair);
+        }
         return (SR) this;
     }
+
+
+
+
+
 
 
 }

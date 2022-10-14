@@ -9,6 +9,7 @@ import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.pill.domain.User_;
 import io.army.example.pill.struct.IdentityType;
+import io.army.meta.TableMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -31,9 +32,11 @@ public class StandardUpdateUnitTests {
         map.put("firstId", (byte) 1);
         map.put("secondId", "3");
 
+        TableMeta<?> table = ChinaRegion_.T;
+
         final Update stmt;
-        stmt = SQLs.singleUpdate()
-                .update(ChinaRegion_.T, "c")
+        stmt = SQLs.domainUpdate()
+                .update(table, "c")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
                 .set(ChinaRegion_.regionGdp, SQLs::param, addGdp)
                 .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", "secondId")

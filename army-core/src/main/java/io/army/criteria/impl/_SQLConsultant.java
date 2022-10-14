@@ -32,8 +32,8 @@ public abstract class _SQLConsultant {
     }
 
     public static void assertStandardDelete(Delete delete) {
-        if (!(delete instanceof StandardDelete)) {
-            throw instanceNotMatch(delete, StandardDelete.class);
+        if (!(delete instanceof StandardDeletes)) {
+            throw instanceNotMatch(delete, StandardDeletes.class);
         }
     }
 

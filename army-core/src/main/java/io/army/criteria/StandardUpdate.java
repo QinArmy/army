@@ -36,11 +36,12 @@ public interface StandardUpdate extends StandardStatement {
 
         <P> _StandardSetClause<Update, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias);
 
+
     }
 
     interface _DomainUpdateClause {
 
-        <T> _StandardSetClause<Update, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias);
+        _StandardSetClause<Update, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
 
     }
 

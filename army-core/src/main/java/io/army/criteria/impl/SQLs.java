@@ -77,8 +77,8 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    public static io.army.criteria.StandardDelete.StandardDeleteSpec domainDelete() {
-        return StandardDelete.simple(null);
+    public static StandardDelete._DeleteSpec<Delete> singleDelete() {
+        return StandardDeletes.singleDelete();
     }
 
     /**
@@ -86,8 +86,8 @@ public abstract class SQLs extends StandardSyntax {
      * Batch domain delete
      * </p>
      */
-    public static io.army.criteria.StandardDelete.StandardBatchDeleteSpec<Void> batchDomainDelete() {
-        return StandardDelete.batch(null);
+    public static StandardDelete._BatchDeleteSpec<Delete> batchSingleDelete() {
+        return StandardDeletes.batchSingleDelete();
     }
 
 

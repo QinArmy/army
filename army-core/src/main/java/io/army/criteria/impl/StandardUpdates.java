@@ -281,7 +281,7 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
         }
 
         @Override
-        public <T> _StandardSetClause<Update, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias) {
+        public _StandardSetClause<Update, FieldMeta<?>> update(TableMeta<?> table, String tableAlias) {
             return new SimpleDomainUpdate<>(this.context, table, tableAlias);
         }
 

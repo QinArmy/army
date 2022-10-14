@@ -595,9 +595,14 @@ public interface Statement extends Item {
         I asReturningUpdate();
     }
 
-    interface _DmlDeleteSpec<D extends Item> {
+    interface _DmlDeleteSpec<I extends Item> {
 
-        D asDelete();
+        I asDelete();
+    }
+
+    interface _DqlReturningDeleteSpec<Q extends Item> {
+
+        Q asReturningDelete();
     }
 
 

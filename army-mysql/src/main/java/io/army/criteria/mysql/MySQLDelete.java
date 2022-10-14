@@ -30,7 +30,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * @param <DT> next clause java type
      * @since 1.0
      */
-    interface _MySQLSingleDeleteClause<C, DT> extends Delete._SingleDeleteClause<DT> {
+    interface _MySQLSingleDeleteClause<C, DT> extends _DeleteSimpleClause<DT> {
 
         _SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers);
 

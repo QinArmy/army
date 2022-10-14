@@ -1,6 +1,8 @@
 package io.army.criteria;
 
-import io.army.meta.SingleTableMeta;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.ParentTableMeta;
+import io.army.meta.SimpleTableMeta;
 
 public interface Delete extends NarrowDmlStatement, DmlStatement.DmlDelete {
 
@@ -10,9 +12,22 @@ public interface Delete extends NarrowDmlStatement, DmlStatement.DmlDelete {
 
     }
 
-    interface _SingleDeleteClause<DT> {
+    interface _DeleteSimpleClause<DT> {
 
-        DT deleteFrom(SingleTableMeta<?> table, String alias);
+        DT deleteFrom(SimpleTableMeta<?> table, String alias);
+
+    }
+
+    interface _DeleteParentClause<DT> {
+
+        DT deleteFrom(ParentTableMeta<?> table, String alias);
+
+    }
+
+    interface _DeleteChildClause<DT> {
+
+        DT deleteFrom(ChildTableMeta<?> table, String alias);
+
     }
 
 

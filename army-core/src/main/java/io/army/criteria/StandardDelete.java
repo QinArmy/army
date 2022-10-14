@@ -4,38 +4,37 @@ import io.army.meta.TableMeta;
 
 public interface StandardDelete extends StandardStatement {
 
-    interface StandardDeleteFromClause<DR> {
+    interface _DeleteFromClause<DR> {
 
         DR deleteFrom(TableMeta<?> table, String tableAlias);
 
     }
 
-
-    interface StandardDeleteSpec<I extends Item> extends StandardDeleteFromClause<StandardWhereSpec<I>> {
-
-    }
-
-    interface StandardWhereSpec<I extends Item>
-            extends _WhereClause<DmlStatement._DmlDeleteSpec<I>, StandardWhereAndSpec<I>> {
+    interface _DeleteSpec<I extends Item> extends _DeleteFromClause<_WhereSpec<I>> {
 
     }
 
-    interface StandardWhereAndSpec<I extends Item> extends _WhereAndClause<StandardWhereAndSpec<I>>
-            , DmlStatement._DmlDeleteSpec<I> {
+    interface _WhereSpec<I extends Item>
+            extends _WhereClause<_DmlDeleteSpec<I>, _WhereAndSpec<I>> {
 
     }
 
-    interface StandardBatchDeleteSpec<I extends Item> extends StandardDeleteFromClause<StandardBatchWhereSpec<I>> {
+    interface _WhereAndSpec<I extends Item> extends _WhereAndClause<_WhereAndSpec<I>>
+            , _DmlDeleteSpec<I> {
 
     }
 
-    interface StandardBatchWhereSpec<I extends Item>
-            extends _WhereClause<_BatchParamClause<DmlStatement._DmlDeleteSpec<I>>, StandardBatchWhereAndSpec<I>> {
+    interface _BatchDeleteSpec<I extends Item> extends _DeleteFromClause<_BatchWhereSpec<I>> {
 
     }
 
-    interface StandardBatchWhereAndSpec<I extends Item> extends _WhereAndClause<StandardBatchWhereAndSpec<I>>
-            , _BatchParamClause<DmlStatement._DmlDeleteSpec<I>> {
+    interface _BatchWhereSpec<I extends Item>
+            extends _WhereClause<_BatchParamClause<_DmlDeleteSpec<I>>, _BatchWhereAndSpec<I>> {
+
+    }
+
+    interface _BatchWhereAndSpec<I extends Item> extends _WhereAndClause<_BatchWhereAndSpec<I>>
+            , _BatchParamClause<_DmlDeleteSpec<I>> {
 
     }
 

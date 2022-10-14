@@ -1,11 +1,8 @@
 package io.army.criteria.impl.inner;
 
-import io.army.meta.TableMeta;
-
-public interface _SingleDml extends _Dml {
+public interface _SingleDml extends _Dml, _Statement._TableMetaSpec {
 
     String tableAlias();
 
-    TableMeta<?> table();
 
 }
