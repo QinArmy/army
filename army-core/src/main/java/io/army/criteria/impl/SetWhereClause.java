@@ -41,7 +41,7 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
 
 
     @Override
-    public final SD setPairs(Consumer<PS> consumer) {
+    public final SD set(Consumer<PS> consumer) {
         consumer.accept(this.createItemPairBuilder(this::onAddItemPair));
         return (SD) this;
     }

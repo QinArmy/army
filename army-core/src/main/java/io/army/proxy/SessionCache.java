@@ -3,7 +3,7 @@ package io.army.proxy;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.IPredicate;
-import io.army.criteria.ItemPair;
+import io.army.criteria.ItemPairs;
 import io.army.criteria.Update;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 final class SessionCache implements _SessionCache {
 
@@ -179,46 +179,45 @@ final class SessionCache implements _SessionCache {
         if (id == null || !id.equals(w.id)) {
             throw _Exceptions.immutableField(table.id());
         }
-        final ParentTableMeta<?> parent;
-        if (table instanceof ChildTableMeta) {
-            parent = ((ChildTableMeta<?>) table).parentMeta();
-        } else {
-            parent = null;
-        }
-        final FieldMeta<?> versionField;
-        versionField = table.version();
-        final Number versionValue;
-        final Function<Object, IPredicate> versionOperator;
-        if (versionField == null) {
-            versionValue = null;
-            versionOperator = null;
-        } else if ((versionValue = (Number) accessor.get(domain, _MetaBridge.VERSION)) == null) {
-            throw _Exceptions.nonNullField(versionField);
-        } else {
-            versionOperator = versionField::equal;
-        }
 
-        final Consumer<Consumer<ItemPair>> pairConsumer = consumer -> {
+        final Consumer<ItemPairs<FieldMeta<?>>> pairConsumer = itemPairs -> {
             FieldMeta<?> field;
             for (String fieldName : changedFieldMap.keySet()) {
-                if (table.containField(fieldName)) {
-                    field = table.getField(fieldName);
-                } else if (parent == null || !parent.containField(fieldName)) {
+                field = table.tryGetComplexFiled(fieldName);
+                if (field == null) {
                     String m = String.format("Unknown field[%s] for %s", fieldName, table);
                     throw new IllegalStateException(m);
-                } else {
-                    field = parent.getField(fieldName);
                 }
-                consumer.accept(SQLs.itemPair(field, accessor.get(domain, fieldName)));
+                itemPairs.set(field, SQLs::param, accessor.get(domain, fieldName));
             }
+        };
+
+        final Number versionValue;
+        final FieldMeta<?> versionField;
+        versionField = table.version();
+        if (versionField == null) {
+            versionValue = null;
+        } else if ((versionValue = (Number) accessor.get(domain, _MetaBridge.VERSION)) == null) {
+            throw _Exceptions.nonNullField(versionField);
+        }
+
+        final Supplier<IPredicate> versionPredicate;
+        versionPredicate = () -> {
+            final IPredicate predicate;
+            if (versionField == null) {
+                predicate = null;
+            } else {
+                predicate = versionField.equal(SQLs::param, versionValue);
+            }
+            return predicate;
         };
 
         final Update stmt;
         stmt = SQLs.domainUpdate()
                 .update(table, "t")
-                .setPairs(pairConsumer)
-                .where(table.id().equal(id))
-                .ifNonNullAnd(versionOperator, versionValue)
+                .set(pairConsumer)
+                .where(table.id().equal(SQLs::param, id))
+                .ifAnd(versionPredicate)
                 .asUpdate();
         return new CacheBlock(w, versionValue, stmt);
     }

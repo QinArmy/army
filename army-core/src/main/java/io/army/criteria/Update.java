@@ -29,7 +29,7 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
         /**
          * @see SQLs#itemPair(DataField, Object)
          */
-        SR setPairs(Consumer<B> consumer);
+        SR set(Consumer<B> consumer);
 
     }
 
