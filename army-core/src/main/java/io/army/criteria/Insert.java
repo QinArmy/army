@@ -163,7 +163,7 @@ public interface Insert extends DmlStatement, DmlInsert {
 
     }
 
-    interface _ParentInsert<CT> extends Insert, _ChildPartClause<CT> {
+    interface _ParentInsert<CT extends Item> extends Insert, _ChildPartClause<CT> {
 
     }
 
@@ -211,25 +211,37 @@ public interface Insert extends DmlStatement, DmlInsert {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      */
-    interface _AssignmentSetClause<T, SR> {
+    interface _StaticAssignmentSetClause<T, SR> {
 
-        SR setPair(Consumer<PairConsumer<T>> consumer);
+        SR set(FieldMeta<T> field, Expression value);
 
-        SR set(FieldMeta<T> field, @Nullable Object value);
+        SR set(FieldMeta<T> field, Supplier<Expression> supplier);
 
-        SR setLiteral(FieldMeta<T> field, @Nullable Object value);
+        SR set(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-        SR setExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
+        <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value);
 
-        SR ifSet(FieldMeta<T> field, Supplier<?> supplier);
+        <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
 
-        SR ifSet(FieldMeta<T> field, Function<String, ?> function, String keyName);
-
-        SR ifSetLiteral(FieldMeta<T> field, Supplier<?> supplier);
-
-        SR ifSetLiteral(FieldMeta<T> field, Function<String, ?> function, String keyName);
+        SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
 
+        SR ifSet(FieldMeta<T> field, Supplier<Expression> supplier);
+
+        SR ifSet(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+
+        <E> SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value);
+
+        <E> SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
+
+        SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+    }
+
+
+    interface _DynamicAssignmentSetClause<T, SD> {
+
+        SD set(Consumer<Assignments<T>> consumer);
     }
 
 
@@ -243,8 +255,6 @@ public interface Insert extends DmlStatement, DmlInsert {
 
 
     }
-
-
 
 
 }

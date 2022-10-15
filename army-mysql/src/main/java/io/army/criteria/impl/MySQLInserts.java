@@ -38,7 +38,7 @@ abstract class MySQLInserts extends InsertSupport {
     }
 
 
-    static <C> MySQLInsert._DomainOptionSpec<C> domainInsert(@Nullable C criteria) {
+    static <C> MySQLInsert._OptionSpec<C> domainInsert(@Nullable C criteria) {
         return new DomainInsertOptionClause<>(criteria);
     }
 
@@ -355,11 +355,11 @@ abstract class MySQLInserts extends InsertSupport {
     private static final class DomainInsertOptionClause<C>
             extends MySQLInsertClause<
             C,
-            MySQLInsert._DomainNullOptionSpec<C>,
-            MySQLInsert._DomainPreferLiteralSpec<C>,
+            MySQLInsert._NullOptionSpec<C>,
+            MySQLInsert._PreferLiteralSpec<C>,
             MySQLInsert._DomainInsertIntoSpec<C>,
             MySQLInsert._DomainIntoClause<C>>
-            implements MySQLInsert._DomainOptionSpec<C>, MySQLInsert._DomainIntoClause<C> {
+            implements MySQLInsert._OptionSpec<C>, MySQLInsert._DomainIntoClause<C> {
 
 
         private DomainInsertOptionClause(@Nullable C criteria) {

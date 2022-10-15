@@ -227,7 +227,7 @@ public interface MySQLReplace extends ReplaceInsert, DmlInsert {
     /*-------------------below assignment replace syntax api interfaces -------------------*/
 
     interface _AssignmentReplaceSetClause<C, T>
-            extends Insert._AssignmentSetClause<C, T, _AssignmentReplaceSetSpec<C, T>> {
+            extends Insert._StaticAssignmentSetClause<C, T, _AssignmentReplaceSetSpec<C, T>> {
 
     }
 
@@ -257,7 +257,7 @@ public interface MySQLReplace extends ReplaceInsert, DmlInsert {
 
 
     interface _AssignmentParentReplaceSetClause<C, P>
-            extends Insert._AssignmentSetClause<C, P, _AssignmentParentReplaceSetSpec<C, P>> {
+            extends Insert._StaticAssignmentSetClause<C, P, _AssignmentParentReplaceSetSpec<C, P>> {
 
     }
 

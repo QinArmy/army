@@ -19,14 +19,14 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
      */
-    public static MySQLInsert._DomainOptionSpec<Void> domainInsert() {
+    public static MySQLInsert._OptionSpec<Void> domainInsert() {
         return MySQLInserts.domainInsert(null);
     }
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
      */
-    public static <C> MySQLInsert._DomainOptionSpec<C> domainInsert(C criteria) {
+    public static <C> MySQLInsert._OptionSpec<C> domainInsert(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLInserts.domainInsert(criteria);
     }

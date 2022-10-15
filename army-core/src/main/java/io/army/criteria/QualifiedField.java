@@ -1,8 +1,6 @@
 package io.army.criteria;
 
 
-import io.army.meta.TableMeta;
-
 /**
  * <p>
  * This interface representing qualified field , output format: tableAlias.column .
@@ -11,10 +9,8 @@ import io.army.meta.TableMeta;
  *
  * @param <T> java type domain.
  */
-public interface QualifiedField<T> extends TableField {
+public interface QualifiedField<T> extends TypeTableField<T> {
 
-    @Override
-    TableMeta<T> tableMeta();
 
     String tableAlias();
 

@@ -461,6 +461,12 @@ abstract class CriteriaSupports {
         }
 
         @Override
+        public final SR set(F field, Function<F, Expression> function) {
+            this.consumer.accept(SQLs._itemPair(field, null, function.apply(field)));
+            return (SR) this;
+        }
+
+        @Override
         public final <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
             this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
             return (SR) this;
@@ -497,6 +503,26 @@ abstract class CriteriaSupports {
         public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
                 , BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
             this.consumer.accept(fieldOperator.apply(field, valueOperator.apply(field, function.apply(keyName))));
+            return (SR) this;
+        }
+
+        @Override
+        public final SR ifSet(F field, Supplier<Expression> supplier) {
+            final Expression expression;
+            expression = supplier.get();
+            if (expression != null) {
+                this.consumer.accept(SQLs._itemPair(field, null, expression));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final SR ifSet(F field, Function<F, Expression> function) {
+            final Expression expression;
+            expression = function.apply(field);
+            if (expression != null) {
+                this.consumer.accept(SQLs._itemPair(field, null, expression));
+            }
             return (SR) this;
         }
 

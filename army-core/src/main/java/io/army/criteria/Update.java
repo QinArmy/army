@@ -42,6 +42,8 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
         SR set(F field, Supplier<Expression> supplier);
 
+        SR set(F field, Function<F, Expression> function);
+
         <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, @Nullable E value);
 
         <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier);
@@ -53,6 +55,10 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
         <E> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier);
 
         SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        SR ifSet(F field, Supplier<Expression> supplier);
+
+        SR ifSet(F field, Function<F, Expression> function);
 
         <E> SR ifSet(F field, BiFunction<F, E, Expression> valueOperator, @Nullable E value);
 

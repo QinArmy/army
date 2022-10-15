@@ -44,7 +44,7 @@ public interface StandardInsert extends StandardStatement {
 
     }
 
-    interface _ChildInsertIntoClause<P> {
+    interface _ChildInsertIntoClause<P> extends Item {
 
         <T> _ColumnListSpec<T, Insert> insertInto(ComplexTableMeta<P, T> table);
 

@@ -1,6 +1,7 @@
 package io.army.criteria.mysql;
 
 
+import io.army.criteria.Item;
 import io.army.criteria.Query;
 import io.army.criteria.SubQuery;
 import io.army.criteria.Window;
@@ -67,7 +68,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _Select80Clause<C, Q extends Query> extends _MySQLSelectClause<C, _FromSpec<C, Q>> {
+    interface _Select80Clause<Q extends Item> extends _MySQLSelectClause<C, _FromSpec<C, Q>> {
 
     }
 

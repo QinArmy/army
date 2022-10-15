@@ -106,9 +106,9 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
-    interface _PartitionClause<C, PR> {
+    interface _PartitionClause<PR> {
 
-        _LeftParenStringQuadraOptionalSpec<C, PR> partition();
+        _LeftParenStringQuadraOptionalSpec<PR> partition();
 
     }
 

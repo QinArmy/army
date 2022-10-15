@@ -1,15 +1,14 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.SQLs;
-import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.SimpleTableMeta;
 
 import java.util.List;
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">INSERT Statement</a>
@@ -17,445 +16,167 @@ import java.util.function.*;
 public interface MySQLInsert extends DialectStatement {
 
 
-    interface _InsertClause<C, IR> {
+    interface _InsertClause<IR> {
 
         IR insert(Supplier<List<Hint>> supplier, List<MySQLModifier> modifiers);
 
-        IR insert(Function<C, List<Hint>> function, List<MySQLModifier> modifiers);
+    }
+
+
+    interface _StaticOnDuplicateKeySetClause<I extends Item, F extends TableField>
+            extends Update._StaticSetClause<F, _StaticOnDuplicateKeySetSpec<I, F>> {
 
     }
 
-    interface _ConflictUpdatePairClause<C, UR> {
-        /**
-         * @see SQLs#itemPair(DataField, Object)
-         */
-        UR update(Consumer<Consumer<ItemPair>> consumer);
-
-        /**
-         * @see SQLs#itemPair(DataField, Object)
-         */
-        UR update(BiConsumer<C, Consumer<ItemPair>> consumer);
-
-        /**
-         * @see SQLs#itemPair(DataField, Object)
-         */
-        UR ifUpdate(Consumer<Consumer<ItemPair>> consumer);
-
-        /**
-         * @see SQLs#itemPair(DataField, Object)
-         */
-        UR ifUpdate(BiConsumer<C, Consumer<ItemPair>> consumer);
+    interface _StaticOnDuplicateKeySetSpec<I extends Item, F extends TableField>
+            extends _StaticOnDuplicateKeySetClause<I, F>
+            , _DmlInsertSpec<I> {
 
     }
 
 
-    interface _ConflictUpdateItemClause<C, T, UR> {
+    interface _OnDuplicateKeyUpdateSpec<I extends Item, F extends TableField> extends _DmlInsertSpec<I> {
 
-        UR update(FieldMeta<T> field, Expression value);
+        _StaticOnDuplicateKeySetClause<I, F> onDuplicateKey();
 
-        UR update(FieldMeta<T> field, Supplier<Expression> supplier);
+        _DmlInsertSpec<I> onDuplicateKey(Consumer<ItemPairs<F>> consumer);
 
-        UR update(FieldMeta<T> field, Function<C, Expression> function);
-
-        <E> UR update(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value);
-
-        <E> UR update(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
-
-        UR update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        <E> UR update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value);
-
-        <E> UR update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
-
-        UR update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator, BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        _DmlInsertSpec<I> ifOnDuplicateKey(Consumer<ItemPairs<F>> consumer);
     }
 
 
-    interface _StaticOnDuplicateKeyFieldClause<C, T, KR> {
+    interface _OnAsRowAliasSpec<I extends Item, T> extends _OnDuplicateKeyUpdateSpec<I, FieldMeta<T>> {
 
-        _StaticOnDuplicateKeyFieldUpdateClause<C, T, KR> onDuplicateKey();
-
-    }
-
-
-    interface _DynamicOnDuplicateKeyUpdateClause<C, CC extends PairConsumer<?>, UR> {
-
-        UR onDuplicateKeyUpdate(Consumer<CC> consumer);
-
-        UR onDuplicateKeyUpdate(BiConsumer<C, CC> consumer);
-
-        UR ifOnDuplicateKeyUpdate(Consumer<CC> consumer);
-
-        UR ifOnDuplicateKeyUpdate(BiConsumer<C, CC> consumer);
+        _OnDuplicateKeyUpdateSpec<I, TypeTableField<T>> as(String rowAlias);
 
     }
-
-
-    interface _StaticAssignmentCommaFieldSpec<C, T>
-            extends Insert._CommaFieldValuePairClause<C, T, _StaticAssignmentCommaFieldSpec<C, T>>
-            , Insert._InsertSpec {
-
-    }
-
-    interface _OnDuplicateKeyUpdateFieldSpec<C, T>
-            extends _StaticOnDuplicateKeyFieldClause<C, T, _StaticAssignmentCommaFieldSpec<C, T>>
-            , _DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<T>, Insert._InsertSpec>
-            , Insert._InsertSpec {
-
-    }
-
-
-    interface _MySQLChildSpec<CT> extends Insert._ChildPartClause<CT>, Insert._InsertSpec {
-
-    }
-
-    interface _ParentStaticAssignmentCommaFieldSpec<C, T, CT>
-            extends Insert._CommaFieldValuePairClause<C, T, _ParentStaticAssignmentCommaFieldSpec<C, T, CT>>
-            , _MySQLChildSpec<CT> {
-
-    }
-
-    interface _ParentOnDuplicateKeyUpdateFieldSpec<C, T, CT>
-            extends _StaticOnDuplicateKeyFieldClause<C, T, _ParentStaticAssignmentCommaFieldSpec<C, T, CT>>
-            , _DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<T>, _MySQLChildSpec<CT>>
-            , _MySQLChildSpec<CT> {
-
-    }
-
-
 
 
 
     /*-------------------below domain insert syntax interfaces  -------------------*/
 
-    interface _DomainValuesSpec<C, T>
-            extends _DomainValueClause<C, T, _OnDuplicateKeyUpdateFieldSpec<C, T>> {
+    interface _MySQLStaticValuesLeftParenClause<I extends Item, T>
+            extends Insert._StaticValueLeftParenClause<T, _StaticValuesLeftParenSpec<I, T>> {
 
     }
 
-    interface _DomainDefaultSpec<C, T>
-            extends _ColumnDefaultClause<C, T, _DomainDefaultSpec<C, T>>, _DomainValuesSpec<C, T> {
+    interface _StaticValuesLeftParenSpec<I extends Item, T> extends _MySQLStaticValuesLeftParenClause<I, T>
+            , _OnAsRowAliasSpec<I, T> {
 
     }
 
-    interface _DomainColumnListSpec<C, T>
-            extends Insert._ColumnListClause<C, T, _DomainDefaultSpec<C, T>>, _DomainDefaultSpec<C, T> {
+    interface _ValuesColumnDefaultSpec<I extends Item, T>
+            extends Insert._ColumnDefaultClause<T, _ValuesColumnDefaultSpec<I, T>>
+            , Insert._DomainValueClause<T, _OnAsRowAliasSpec<I, T>>
+            , Insert._StaticValuesClause<_MySQLStaticValuesLeftParenClause<I, T>>
+            , Insert._DynamicValuesClause<T, _OnAsRowAliasSpec<I, T>> {
 
     }
 
-    interface _DomainPartitionSpec<C, T>
-            extends MySQLQuery._PartitionClause<C, _DomainColumnListSpec<C, T>>
-            , _DomainColumnListSpec<C, T> {
+    interface _ComplexColumnDefaultSpec<I extends Item, T> extends _ValuesColumnDefaultSpec<I, T> {
+
 
     }
 
-    interface _DomainChildIntoClause<C, P> {
-
-        <T> _DomainPartitionSpec<C, T> into(ComplexTableMeta<P, T> table);
-    }
-
-    interface _DomainChildInsertIntoSpec<C, P> extends _InsertClause<C, _DomainChildIntoClause<C, P>> {
-
-        <T> _DomainPartitionSpec<C, T> insertInto(ComplexTableMeta<P, T> table);
+    interface _MySQLStaticAssignmentClause<I extends Item, T>
+            extends Insert._StaticAssignmentSetClause<T, _StaticAssignmentSpec<I, T>> {
 
     }
 
-
-    interface _DomainParentColumnDefaultSpec<C, P>
-            extends Insert._ColumnDefaultClause<C, P, _DomainParentColumnDefaultSpec<C, P>>
-            , _DomainValueClause<C, P, _ParentOnDuplicateKeyUpdateFieldSpec<C, P, _DomainChildInsertIntoSpec<C, P>>> {
+    interface _StaticAssignmentSpec<I extends Item, T> extends _MySQLStaticAssignmentClause<I, T>
+            , _OnAsRowAliasSpec<I, T> {
 
     }
 
-
-    interface _DomainParentColumnsSpec<C, P>
-            extends Insert._ColumnListClause<C, P, _DomainParentColumnDefaultSpec<C, P>>
-            , _DomainParentColumnDefaultSpec<C, P> {
-
-    }
-
-    interface _DomainParentPartitionSpec<C, P>
-            extends MySQLQuery._PartitionClause<C, _DomainParentColumnsSpec<C, P>>, _DomainParentColumnsSpec<C, P> {
+    interface _ColumnListSpec<I extends Item, T> extends Insert._ColumnListClause<T, _ComplexColumnDefaultSpec<I, T>>
+            , _ValuesColumnDefaultSpec<I, T>
+            , _StaticAssignmentSpec<I, T>
+            , Insert._DynamicAssignmentSetClause<T, _OnAsRowAliasSpec<I, T>> {
 
     }
 
-
-    interface _DomainIntoClause<C> {
-
-        <T> _DomainPartitionSpec<C, T> into(SimpleTableMeta<T> table);
-
-        <T> _DomainParentPartitionSpec<C, T> into(ParentTableMeta<T> table);
+    interface _PartitionSpec<I extends Item, T> extends MySQLQuery._PartitionClause<_ColumnListSpec<I, T>>
+            , _ColumnListSpec<I, T> {
 
     }
 
-
-    interface _DomainInsertIntoSpec<C> extends _InsertClause<C, _DomainIntoClause<C>> {
-
-        <T> _DomainPartitionSpec<C, T> insertInto(SimpleTableMeta<T> table);
-
-        <T> _DomainParentPartitionSpec<C, T> insertInto(ParentTableMeta<T> table);
+    interface _StaticCteAsClause<I extends Item> extends Statement._AsClause<MySQL80Query._Select80Clause<I>> {
 
     }
 
-    interface _DomainPreferLiteralSpec<C>
-            extends Insert._PreferLiteralClause<_DomainInsertIntoSpec<C>>, _DomainInsertIntoSpec<C> {
+    interface _StaticCteLeftParenSpec<I extends Item>
+            extends Statement._LeftParenStringQuadraOptionalSpec<_StaticCteAsClause<I>>
+            , _StaticCteAsClause<I> {
 
     }
 
-    interface _DomainNullOptionSpec<C> extends Insert._NullOptionClause<_DomainPreferLiteralSpec<C>>
-            , _DomainPreferLiteralSpec<C> {
+    interface _ChildIntoClause<P> {
+
+        <T> _PartitionSpec<Insert, T> into(ComplexTableMeta<P, T> table);
 
     }
 
-    interface _DomainOptionSpec<C> extends Insert._MigrationOptionClause<_DomainNullOptionSpec<C>>
-            , _DomainNullOptionSpec<C> {
+    interface _ChildInsertIntoSpec<P> extends _InsertClause<_ChildIntoClause<P>> {
 
+        <T> _PartitionSpec<Insert, T> insertInto(ComplexTableMeta<P, T> table);
     }
 
-    /*-------------------below value insert syntax interfaces-------------------*/
 
-    interface _ValueStaticValuesLeftParenClause<C, T>
-            extends Insert._StaticValueLeftParenClause<C, T, _ValueStaticValuesLeftParenSpec<C, T>> {
-
-    }
-
-    interface _ValueStaticValuesLeftParenSpec<C, T> extends _ValueStaticValuesLeftParenClause<C, T>
-            , _OnDuplicateKeyUpdateFieldSpec<C, T> {
-
-    }
-
-    interface _ValueDefaultSpec<C, T>
-            extends Insert._ColumnDefaultClause<C, T, _ValueDefaultSpec<C, T>>
-            , Insert._StaticValuesClause<_ValueStaticValuesLeftParenClause<C, T>>
-            , Insert._DynamicValuesClause<C, T, _OnDuplicateKeyUpdateFieldSpec<C, T>> {
-
-    }
-
-    interface _ValueColumnListSpec<C, T>
-            extends Insert._ColumnListClause<C, T, _ValueDefaultSpec<C, T>>, _ValueDefaultSpec<C, T> {
+    interface _ChildCteComma<P> extends Query._StaticWithCommaClause<_StaticCteLeftParenSpec<_ChildCteComma<P>>>
+            , _ChildInsertIntoSpec<P> {
 
     }
 
 
-    interface _ValuePartitionSpec<C, T>
-            extends MySQLQuery._PartitionClause<C, _ValueColumnListSpec<C, T>>, _ValueColumnListSpec<C, T> {
+    interface _ChildWithCteSpec<P> extends Query._DynamicWithCteClause<MySQLCteBuilder, _ChildInsertIntoSpec<P>>
+            , Query._StaticWithCteClause<_StaticCteLeftParenSpec<_ChildCteComma<P>>>
+            , _ChildInsertIntoSpec<P> {
 
     }
 
-    interface _ValueChildIntoClause<C, P> {
+    interface _PrimaryIntoClause {
 
-        <T> _ValuePartitionSpec<C, T> into(ComplexTableMeta<P, T> table);
-    }
-
-    interface _ValueChildInsertIntoSpec<C, P> extends _InsertClause<C, _ValueChildIntoClause<C, P>> {
-
-        <T> _ValuePartitionSpec<C, T> insertInto(ComplexTableMeta<P, T> table);
-
-    }
+        <T> _PartitionSpec<Insert, T> into(SimpleTableMeta<T> table);
 
 
-    interface _ValueParentStaticValueLeftParenClause<C, P>
-            extends Insert._StaticValueLeftParenClause<C, P, _ValueParentStaticValueLeftParenSpec<C, P>> {
-
-    }
-
-    interface _ValueParentStaticValueLeftParenSpec<C, P>
-            extends _ValueParentStaticValueLeftParenClause<C, P>
-            , _ParentOnDuplicateKeyUpdateFieldSpec<C, P, _ValueChildInsertIntoSpec<C, P>> {
+        <P> _PartitionSpec<Insert._ParentInsert<_ChildWithCteSpec<P>>, P> into(ParentTableMeta<P> table);
 
     }
 
 
-    interface _ValueParentDefaultSpec<C, P>
-            extends _ColumnDefaultClause<C, P, _ValueParentDefaultSpec<C, P>>
-            , Insert._StaticValuesClause<_ValueParentStaticValueLeftParenClause<C, P>>
-            , Insert._DynamicValuesClause<C, P, _ParentOnDuplicateKeyUpdateFieldSpec<C, P, _ValueChildInsertIntoSpec<C, P>>> {
+    interface _PrimaryInsertIntoSpec extends _InsertClause<_PrimaryIntoClause>, Item {
+
+        <T> _PartitionSpec<Insert, T> insertInto(SimpleTableMeta<T> table);
+
+
+        <P> _PartitionSpec<Insert._ParentInsert<_ChildWithCteSpec<P>>, P> insertInto(ParentTableMeta<P> table);
 
     }
 
-    interface _ValueParentColumnsSpec<C, P>
-            extends Insert._ColumnListClause<C, P, _ValueParentDefaultSpec<C, P>>
-            , _ValueParentDefaultSpec<C, P> {
-
-    }
-
-    interface _ValueParentPartitionSpec<C, P>
-            extends MySQLQuery._PartitionClause<C, _ValueParentColumnsSpec<C, P>>, _ValueParentColumnsSpec<C, P> {
+    interface _PrimaryCteComma extends Query._StaticWithCommaClause<_StaticCteLeftParenSpec<_PrimaryCteComma>>
+            , _PrimaryInsertIntoSpec {
 
     }
 
 
-    interface _ValueIntoClause<C> {
-
-        <T> _ValuePartitionSpec<C, T> into(SimpleTableMeta<T> table);
-
-        <T> _ValueParentPartitionSpec<C, T> into(ParentTableMeta<T> table);
-    }
-
-    interface _ValueInsertIntoSpec<C> extends _InsertClause<C, _ValueIntoClause<C>> {
-
-        <T> _ValuePartitionSpec<C, T> insertInto(SimpleTableMeta<T> table);
-
-        <T> _ValueParentPartitionSpec<C, T> insertInto(ParentTableMeta<T> table);
-
-    }
-
-    interface _ValuePreferLiteralSpec<C> extends Insert._PreferLiteralClause<_ValueInsertIntoSpec<C>>
-            , _ValueInsertIntoSpec<C> {
-
-    }
-
-    interface _ValueNullOptionSpec<C> extends Insert._NullOptionClause<_ValuePreferLiteralSpec<C>>
-            , _ValuePreferLiteralSpec<C> {
-
-    }
-
-    interface _ValueOptionSpec<C> extends Insert._MigrationOptionClause<_ValueNullOptionSpec<C>>
-            , _ValueNullOptionSpec<C> {
+    interface _PrimaryWithCteSpec extends Query._DynamicWithCteClause<MySQLCteBuilder, _PrimaryInsertIntoSpec>
+            , Query._StaticWithCteClause<_StaticCteLeftParenSpec<_PrimaryCteComma>>
+            , _PrimaryInsertIntoSpec {
 
     }
 
 
-    /*-------------------below assignment insert syntax interfaces-------------------*/
-
-
-    interface _MySQLAssignmentSetClause<C, T>
-            extends Insert._AssignmentSetClause<C, T, _MySQLAssignmentSetSpec<C, T>> {
-    }
-
-    interface _MySQLAssignmentSetSpec<C, T> extends _MySQLAssignmentSetClause<C, T>
-            , _OnDuplicateKeyUpdateFieldSpec<C, T> {
+    interface _PrimaryPreferLiteralSpec extends Insert._PreferLiteralClause<_PrimaryWithCteSpec>, _PrimaryWithCteSpec {
 
     }
 
-    interface _AssignmentPartitionSpec<C, T>
-            extends MySQLQuery._PartitionClause<C, _MySQLAssignmentSetClause<C, T>>, _MySQLAssignmentSetClause<C, T> {
+    interface _PrimaryNullOptionSpec extends Insert._NullOptionClause<_PrimaryPreferLiteralSpec>
+            , _PrimaryPreferLiteralSpec {
 
     }
 
-    interface _AssignmentChildIntoClause<C, P> {
-
-        <T> _AssignmentPartitionSpec<C, T> into(ComplexTableMeta<P, T> table);
-
-    }
-
-    interface _AssignmentChildInsertIntoSpec<C, P>
-            extends _InsertClause<C, _AssignmentChildIntoClause<C, P>> {
-
-        <T> _AssignmentPartitionSpec<C, T> insertInto(ComplexTableMeta<P, T> table);
-
-    }
-
-
-    interface _AssignmentParentSetClause<C, P>
-            extends Insert._AssignmentSetClause<C, P, _AssignmentParentSetSpec<C, P>> {
-
-    }
-
-    interface _AssignmentParentSetSpec<C, P> extends _AssignmentParentSetClause<C, P>
-            , _ParentOnDuplicateKeyUpdateFieldSpec<C, P, _AssignmentChildInsertIntoSpec<C, P>> {
-
-    }
-
-
-    interface _AssignmentParentPartitionSpec<C, P>
-            extends MySQLQuery._PartitionClause<C, _AssignmentParentSetClause<C, P>>, _AssignmentParentSetClause<C, P> {
-
-    }
-
-    interface _AssignmentIntoClause<C> {
-
-        <T> _AssignmentPartitionSpec<C, T> into(SimpleTableMeta<T> table);
-
-        <T> _AssignmentParentPartitionSpec<C, T> into(ParentTableMeta<T> table);
-
-    }
-
-    interface _AssignmentInsertIntoSpec<C> extends _InsertClause<C, _AssignmentIntoClause<C>> {
-
-        <T> _AssignmentPartitionSpec<C, T> insertInto(SimpleTableMeta<T> table);
-
-        <T> _AssignmentParentPartitionSpec<C, T> insertInto(ParentTableMeta<T> table);
-
-    }
-
-
-    interface _AssignmentPreferLiteralSpec<C> extends Insert._PreferLiteralClause<_AssignmentInsertIntoSpec<C>>
-            , _AssignmentInsertIntoSpec<C> {
-
-    }
-
-    interface _AssignmentNullOptionSpec<C> extends Insert._NullOptionClause<_AssignmentPreferLiteralSpec<C>>
-            , _AssignmentPreferLiteralSpec<C> {
-
-    }
-
-    interface _AssignmentOptionSpec<C> extends Insert._MigrationOptionClause<_AssignmentNullOptionSpec<C>>
-            , _AssignmentNullOptionSpec<C> {
-
-    }
-
-    /*-------------------below query insert syntax interfaces-------------------*/
-
-
-    interface _QuerySpaceSubQueryClause<C, T>
-            extends Insert._SpaceSubQueryClause<C, _OnDuplicateKeyUpdateFieldSpec<C, T>> {
-
-    }
-
-
-    interface _QueryColumnListClause<C, T>
-            extends Insert._ColumnListClause<C, T, _QuerySpaceSubQueryClause<C, T>> {
-
-    }
-
-    interface _QueryPartitionSpec<C, T>
-            extends MySQLQuery._PartitionClause<C, _QueryColumnListClause<C, T>>, _QueryColumnListClause<C, T> {
-
-    }
-
-
-    interface _QueryChildIntoClause<C, P> {
-
-        <T> _QueryPartitionSpec<C, T> into(ComplexTableMeta<P, T> table);
-    }
-
-    interface _QueryChildInsertIntoSpec<C, P> extends _InsertClause<C, _QueryChildIntoClause<C, P>> {
-
-        <T> _QueryPartitionSpec<C, T> insertInto(ComplexTableMeta<P, T> table);
-    }
-
-
-    interface _QueryParentQueryClause<C, P>
-            extends Insert._SpaceSubQueryClause<C, _ParentOnDuplicateKeyUpdateFieldSpec<C, P, _QueryChildInsertIntoSpec<C, P>>> {
-
-    }
-
-    interface _QueryParentColumnListClause<C, P>
-            extends Insert._ColumnListClause<C, P, _QueryParentQueryClause<C, P>> {
-
-    }
-
-    interface _QueryParentPartitionSpec<C, P>
-            extends MySQLQuery._PartitionClause<C, _QueryParentColumnListClause<C, P>>
-            , _QueryParentColumnListClause<C, P> {
-
-    }
-
-
-    interface _QueryIntoClause<C> {
-
-        <T> _QueryPartitionSpec<C, T> into(SimpleTableMeta<T> table);
-
-        <T> _QueryParentPartitionSpec<C, T> into(ParentTableMeta<T> table);
-
-    }
-
-    interface _QueryInsertIntoSpec<C> extends _InsertClause<C, _QueryIntoClause<C>> {
-
-        <T> _QueryPartitionSpec<C, T> insertInto(SimpleTableMeta<T> table);
-
-        <T> _QueryParentPartitionSpec<C, T> insertInto(ParentTableMeta<T> table);
+    interface _PrimaryOptionSpec extends Insert._MigrationOptionClause<_PrimaryNullOptionSpec>
+            , _PrimaryNullOptionSpec {
 
     }
 

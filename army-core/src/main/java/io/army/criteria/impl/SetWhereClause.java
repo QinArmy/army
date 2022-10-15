@@ -57,6 +57,11 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
     }
 
     @Override
+    public final SR set(F field, Function<F, Expression> function) {
+        return this.onAddItemPair(SQLs._itemPair(field, null, function.apply(field)));
+    }
+
+    @Override
     public final <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
         return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
     }
@@ -88,6 +93,27 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
     public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
             , BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
         return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, function.apply(keyName))));
+    }
+
+
+    @Override
+    public final SR ifSet(F field, Supplier<Expression> supplier) {
+        final Expression expression;
+        expression = supplier.get();
+        if (expression != null) {
+            this.onAddItemPair(SQLs._itemPair(field, null, expression));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSet(F field, Function<F, Expression> function) {
+        final Expression expression;
+        expression = function.apply(field);
+        if (expression != null) {
+            this.onAddItemPair(SQLs._itemPair(field, null, expression));
+        }
+        return (SR) this;
     }
 
     @Override

@@ -1365,7 +1365,7 @@ abstract class InsertSupport {
 
     @SuppressWarnings("unchecked")
     static abstract class AssignmentSetClause<T, SR>
-            implements Insert._AssignmentSetClause<T, SR>, ColumnListClause, _Insert._AssignmentStatementSpec
+            implements Insert._StaticAssignmentSetClause<T, SR>, ColumnListClause, _Insert._AssignmentStatementSpec
             , PairConsumer<T> {
         final CriteriaContext criteriaContext;
 
@@ -1568,7 +1568,7 @@ abstract class InsertSupport {
 
     static abstract class AssignmentInsertClause<T, SR>
             extends AssignmentSetClause<T, SR>
-            implements Insert._AssignmentSetClause<T, SR>, _Insert._AssignmentInsert {
+            implements Insert._StaticAssignmentSetClause<T, SR>, _Insert._AssignmentInsert {
 
         final boolean migration;
 
