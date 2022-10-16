@@ -683,6 +683,71 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     }//SelectClauseDispatcher
 
+
+    static abstract class ComplexSelectCommand<W extends Query.SelectModifier, SR, RR>
+            extends SelectClauseDispatcher<W, SR>
+            implements Statement._LeftParenStringQuadraOptionalSpec<RR>
+            , _RightParenClause<RR> {
+
+        final CriteriaContext context;
+
+        private Statement._LeftParenStringQuadraOptionalSpec<RR> quadraClause;
+
+        ComplexSelectCommand(CriteriaContext context) {
+            this.context = context;
+        }
+
+        @Override
+        public final RR rightParen() {
+            return (RR) this;
+        }
+
+        @Override
+        public final _RightParenClause<RR> leftParen(String string) {
+            this.columnAliasClauseEnd(Collections.singletonList(string));
+            return this;
+        }
+
+        @Override
+        public final _CommaStringDualSpec<RR> leftParen(String string1, String string2) {
+            return this.stringQuadraClause()
+                    .leftParen(string1, string2);
+        }
+
+        @Override
+        public final _CommaStringQuadraSpec<RR> leftParen(String string1, String string2, String string3, String string4) {
+            return this.stringQuadraClause()
+                    .leftParen(string1, string2, string3, string4);
+        }
+
+        @Override
+        public final _RightParenClause<RR> leftParen(Consumer<Consumer<String>> consumer) {
+            return this.stringQuadraClause()
+                    .leftParen(consumer);
+        }
+
+        @Override
+        public final _RightParenClause<RR> leftParenIf(Consumer<Consumer<String>> consumer) {
+            return this.stringQuadraClause()
+                    .leftParenIf(consumer);
+        }
+
+
+        abstract RR columnAliasClauseEnd(List<String> list);
+
+
+        private Statement._LeftParenStringQuadraOptionalSpec<RR> stringQuadraClause() {
+            Statement._LeftParenStringQuadraOptionalSpec<RR> clause = this.quadraClause;
+            if (clause == null) {
+                clause = CriteriaSupports.stringQuadra(this.context, this::columnAliasClauseEnd);
+                this.quadraClause = clause;
+            }
+            return clause;
+        }
+
+    }//ComplexSelectCommand
+
+
     static abstract class WithSelectClauseDispatcher<B extends CteBuilderSpec, WE, WS, W extends Query.SelectModifier, SR>
             extends SelectClauseDispatcher<W, SR>
             implements _DynamicWithCteClause<B, WE>

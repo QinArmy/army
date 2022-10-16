@@ -56,6 +56,17 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         , MySQLQuery._LockOfTableSpec<I> {
 
 
+    static <I extends Item> MySQLQuery._WithCteSpec<I> subQuery(CriteriaContext outerContext
+            , Function<SubQuery, I> function) {
+        throw new UnsupportedOperationException();
+    }
+
+    static <I extends Item> MySQLStaticComplexCommandSpec<I> staticComplexCommand(CriteriaContext outerContext
+            , String cteName, I cteComma) {
+        return new StaticComplexCommand<>(outerContext, cteName, cteComma);
+    }
+
+
     private List<String> intoVarList;
 
     MySQLQueries(CriteriaContext criteriaContext) {
@@ -65,13 +76,14 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final _StaticCteLeftParenSpec<_CteComma<I>> with(String name) {
-        return null;
+        return this.createComplexCommand(false, name);
     }
 
     @Override
     public final _StaticCteLeftParenSpec<_CteComma<I>> withRecursive(String name) {
-        return null;
+        return this.createComplexCommand(true, name);
     }
+
 
     @Override
     public final _PartitionJoinSpec<I> from(TableMeta<?> table) {
@@ -326,8 +338,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     @Override
-    _MySQLSelectClause<I> createQueryUnion(UnionType unionType) {
-        return this;
+    _UnionAndQuerySpec<I> createQueryUnion(UnionType unionType) {
+        return null;
     }
 
     @Override
@@ -363,6 +375,24 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
 
     /*################################## blow private method ##################################*/
+
+    /**
+     * @see #with(String)
+     * @see #withRecursive(String)
+     */
+    private _StaticCteLeftParenSpec<_CteComma<I>> createComplexCommand(final boolean recursive
+            , final @Nullable String name) {
+        if (name == null) {
+            throw ContextStack.nullPointer(this.context);
+        }
+        final CriteriaContext context = this.context;
+        context.onBeforeWithClause(recursive);
+        context.onStartCte(name);
+
+        final MySQLCteComma<I> comma;
+        comma = new MySQLCteComma<>(this, recursive, name);
+        return comma.complexCommand;
+    }
 
 
     enum MySQLLockMode implements SQLWords {
@@ -412,6 +442,117 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
     }//MySQLLockOption
+
+
+    interface MySQLStaticComplexCommandSpec<I extends Item>
+            extends MySQLQuery._MySQLSelectClause<MySQLQuery._CteSpec<I>> {
+
+        void nextCte(String cteName);
+
+    }
+
+    private static final class MySQLCteComma<I extends Item>
+            extends SimpleQueries.SelectClauseDispatcher<MySQLSyntax.Modifier, MySQLQuery._FromSpec<I>>
+            implements MySQLQuery._CteComma<I> {
+
+        private final boolean recursive;
+        private final MySQLQueries<I> statement;
+
+        private final StaticComplexCommand<_CteComma<I>> complexCommand;
+
+        private MySQLCteComma(MySQLQueries<I> statement, boolean recursive, String cteName) {
+            this.statement = statement;
+            this.recursive = recursive;
+            this.complexCommand = new StaticComplexCommand<>(statement.context, cteName, this);
+        }
+
+        @Override
+        public _StaticCteLeftParenSpec<_CteComma<I>> comma(final @Nullable String name) {
+            final StaticComplexCommand<_CteComma<I>> complexCommand = this.complexCommand;
+            if (name == null) {
+                throw ContextStack.nullPointer(complexCommand.context);
+            } else if (complexCommand.cteName != null) {
+                throw ContextStack.castCriteriaApi(this.statement.context);
+            }
+            complexCommand.context.onStartCte(name);
+            complexCommand.cteName = name;
+            return complexCommand;
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<MySQLSyntax.Modifier, _FromSpec<I>> createSelectClause() {
+            final MySQLQueries<I> statement = this.statement;
+            statement.endStaticWithClause(this.recursive);
+            return statement;
+        }
+
+
+    }//MySQLCteComma
+
+
+    private static final class StaticComplexCommand<I extends Item>
+            extends SimpleQueries.ComplexSelectCommand<
+            MySQLs.Modifier,
+            MySQLQuery._FromSpec<MySQLQuery._CteSpec<I>>,
+            _StaticCteAsClause<I>>
+            implements MySQLStaticComplexCommandSpec<I>
+            , MySQLQuery._StaticCteLeftParenSpec<I>
+            , _RightParenClause<_StaticCteAsClause<I>>
+            , MySQLQuery._CteSpec<I> {
+
+        private final I cteComma;
+
+        private String cteName;
+
+        private List<String> columnAliasList;
+
+        private StaticComplexCommand(CriteriaContext context, String cteName, I cteComma) {
+            super(context);
+            this.cteName = cteName;
+            this.cteComma = cteComma;
+        }
+
+        @Override
+        public _MySQLSelectClause<_CteSpec<I>> as() {
+            if (this.cteName == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return this;
+        }
+
+        @Override
+        public void nextCte(String cteName) {
+            if (this.cteName != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.cteName = cteName;
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<_CteSpec<I>>> createSelectClause() {
+            return MySQLQueries.subQuery(this.context, this::queryEnd);
+        }
+
+        _StaticCteAsClause<I> columnAliasClauseEnd(final List<String> list) {
+            this.columnAliasList = list;
+            this.context.onCteColumnAlias(this.cteName, list);
+            return this;
+        }
+
+        private _CteSpec<I> queryEnd(final SubQuery query) {
+            CriteriaUtils.createAndAddCte(this.context, this.cteName, this.columnAliasList, query);
+            this.cteName = null;
+            this.columnAliasList = null;
+            return this;
+        }
+
+        @Override
+        public I asCte() {
+            return this.cteComma;
+        }
+
+
+    }//StaticComplexCommand
 
 
 }
