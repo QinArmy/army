@@ -196,6 +196,8 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         IO into(Consumer<Consumer<String>> consumer);
 
+        IO ifInto(Consumer<Consumer<String>> consumer);
+
     }
 
 
@@ -243,7 +245,7 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         _IntoOptionSpec<I> lockInShareMode();
 
-        _IntoOptionSpec<I> ifLockInShareMode(BooleanSupplier supplier);
+        _IntoOptionSpec<I> ifLockInShareMode(BooleanSupplier predicate);
 
     }
 
@@ -269,18 +271,16 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
-    interface _WindowCommaSpec<I extends Item> extends _OrderBySpec<I> {
-
-        Window._SimpleAsClause<_WindowCommaSpec<I>> comma(String windowName);
+    interface _WindowCommaSpec<I extends Item> extends _OrderBySpec<I>
+            , Window._StaticWindowCommaClause<Window._SimpleAsClause<_WindowCommaSpec<I>>> {
 
     }
 
 
-    interface _WindowSpec<I extends Item> extends _OrderBySpec<I> {
+    interface _WindowSpec<I extends Item> extends _OrderBySpec<I>
+            , Window._DynamicWindowClause<MySQLWindowBuilder, _OrderBySpec<I>>
+            , Window._StaticWindowClause<Window._SimpleAsClause<_WindowCommaSpec<I>>> {
 
-        _OrderBySpec<I> window(Consumer<MySQLWindowBuilder> consumer);
-
-        Window._SimpleAsClause<_WindowCommaSpec<I>> window(String windowName);
 
     }
 
@@ -387,6 +387,10 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     interface _DynamicCteWithSpec extends _MySQLDynamicWithCteClause<_MySQLSelectClause<_CteSpec<MySQLCteBuilder>>>
             , _MySQLSelectClause<_CteSpec<MySQLCteBuilder>> {
+
+    }
+
+    interface _DynamicCteAsClause extends _StaticAsClaus<> {
 
     }
 

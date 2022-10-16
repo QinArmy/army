@@ -205,6 +205,9 @@ abstract class CriteriaUtils {
         return e;
     }
 
+    static CriteriaException ofTableListIsEmpty(CriteriaContext context) {
+        return ContextStack.criteriaError(context, "of table list must non-empty.");
+    }
 
     /**
      * invoke after {@code asSelect()}

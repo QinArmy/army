@@ -5,6 +5,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
+import io.army.criteria.mysql.MySQLCteBuilder;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -59,6 +60,31 @@ abstract class MySQLSupports extends CriteriaSupports {
             , BiFunction<List<String>, String, AR> function) {
         return new SinglePartitionClause<>(criteriaContext, function);
     }
+
+
+    private static final class MySQLCteBuilderImpl implements MySQLCteBuilder {
+
+        private final boolean recursive;
+
+        private final CriteriaContext context;
+
+        private MySQLCteBuilderImpl(boolean recursive, CriteriaContext context) {
+            this.recursive = recursive;
+            this.context = context;
+            context.onBeforeWithClause(recursive);
+        }
+
+        @Override
+        public boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public MySQLQuery._DynamicCteWithSpec query(final @Nullable String cteName) {
+            return null;
+        }
+
+    }//MySQLCteBuilderImpl
 
 
     interface MySQLBlockParams extends TableBlock.DialectBlockParams {

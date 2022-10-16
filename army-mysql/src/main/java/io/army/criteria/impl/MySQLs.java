@@ -261,7 +261,7 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
                     , SQLs.class.getName(), "window(C criteria,String windowName) method.");
             throw new CriteriaException(m);
         }
-        return SimpleWindow.standard(windowName, criteriaContext);
+        return WindowClause.standard(windowName, criteriaContext);
     }
 
     /**
@@ -278,7 +278,7 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
         if (criteria != context.criteria()) {
             throw CriteriaUtils.criteriaNotMatch(context);
         }
-        return SimpleWindow.standard(windowName, context);
+        return WindowClause.standard(windowName, context);
     }
 
     public static MySQLQuery._MySQLNestedLeftParenClause<Void> nestedItems() {

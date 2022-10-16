@@ -106,7 +106,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLQueries<
 
     private List<String> ofTableList;
 
-    private MySQLLockOption lockOption;
+    private MySQLLockWaitOption lockOption;
 
     private MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock;
 
@@ -159,7 +159,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLQueries<
             throw ContextStack.criteriaError(this.context, _Exceptions::namedWindowNoText);
         }
         final Window._SimpleAsClause<C, _WindowCommaSpec<C, Q>> window;
-        window = SimpleWindow.forStmt(windowName, this.context, this::windowEnd);
+        window = WindowClause.forStmt(windowName, this.context, this::windowEnd);
         return window;
     }
 
@@ -314,18 +314,18 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLQueries<
 
     @Override
     public final _UnionSpec<C, Q> nowait() {
-        return this.lockOption(MySQLLockOption.NOWAIT);
+        return this.lockOption(MySQLLockWaitOption.NOWAIT);
     }
 
     @Override
     public final _UnionSpec<C, Q> skipLocked() {
-        return this.lockOption(MySQLLockOption.SKIP_LOCKED);
+        return this.lockOption(MySQLLockWaitOption.SKIP_LOCKED);
     }
 
     @Override
     public final _UnionSpec<C, Q> ifNowait(Predicate<C> predicate) {
         if (this.lockMode != null && predicate.test(this.criteria)) {
-            this.lockOption(MySQLLockOption.NOWAIT);
+            this.lockOption(MySQLLockWaitOption.NOWAIT);
         }
         return this;
     }
@@ -333,7 +333,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLQueries<
     @Override
     public final _UnionSpec<C, Q> ifSkipLocked(Predicate<C> predicate) {
         if (this.lockMode != null && predicate.test(this.criteria)) {
-            this.lockOption(MySQLLockOption.SKIP_LOCKED);
+            this.lockOption(MySQLLockWaitOption.SKIP_LOCKED);
         }
         return this;
     }
@@ -544,7 +544,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLQueries<
         if (window == null) {
             throw ContextStack.nullPointer(this.context);
         }
-        if (SimpleWindow.isIllegalWindow(window, this.context)) {
+        if (WindowClause.isIllegalWindow(window, this.context)) {
             throw ContextStack.criteriaError(this.context, "Not MySQL window");
         }
         List<Window> windowList = this.windowList;
@@ -609,7 +609,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLQueries<
     }
 
 
-    private _UnionSpec<C, Q> lockOption(MySQLLockOption lockOption) {
+    private _UnionSpec<C, Q> lockOption(MySQLLockWaitOption lockOption) {
         final MySQLLockMode lock = this.lockMode;
         if (lock == null) {
             return this;

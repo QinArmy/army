@@ -33,6 +33,13 @@ public interface _Statement {
 
     }
 
+    interface _LimitClauseSpec extends _RowCountSpec {
+
+        @Nullable
+        _Expression offset();
+
+    }
+
     interface _ItemPairList {
 
         /**

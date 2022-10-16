@@ -188,6 +188,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+
     public static CriteriaException insertExpDontSupportField(FieldMeta<?> field) {
         String m = String.format("%s isn't supported by insert statement common expression.", field);
         return new CriteriaException(m);

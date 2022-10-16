@@ -2,16 +2,14 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.Dialect;
-import io.army.dialect.DialectParser;
-import io.army.dialect._MockDialects;
-import io.army.dialect._SqlContext;
+import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
+import io.army.util._StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -632,6 +630,34 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         }
 
     }//WithCteSimpleQueries
+
+
+    enum LockWaitOption implements SQLWords {
+
+        NOWAIT(" NOWAIT"),
+        SKIP_LOCKED(" SKIP LOCKED");
+
+        private final String spaceWords;
+
+        LockWaitOption(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(LockWaitOption.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+    }//LockWaitOption
 
 
     static abstract class SelectClauseDispatcher<W extends Query.SelectModifier, SR>

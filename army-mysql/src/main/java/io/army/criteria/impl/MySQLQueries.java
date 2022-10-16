@@ -1,19 +1,26 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.MySQLCteBuilder;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLWindowBuilder;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
+import io.army.util.ArrayUtils;
+import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 
 /**
@@ -50,8 +57,10 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         , MySQLQuery._WithCteSpec<I>
         , MySQLQuery._FromSpec<I>
         , MySQLQuery._IndexHintJoinSpec<I>
+        , MySQLQuery._WhereAndSpec<I>
         , MySQLQuery._GroupByWithRollupSpec<I>
         , MySQLQuery._HavingSpec<I>
+        , MySQLQuery._WindowCommaSpec<I>
         , MySQLQuery._OrderByWithRollupSpec<I>
         , MySQLQuery._LockOfTableSpec<I>
         , OrderByClause.OrderByEventListener {
@@ -74,7 +83,15 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      */
     private Boolean groupByWithRollup;
 
+    private List<_Window> windowList;
+
     private boolean orderByWithRollup;
+
+    private MySQLLockMode lockMode;
+
+    private List<TableMeta<?>> ofTableList;
+
+    private LockWaitOption lockWaitOption;
 
     private List<String> intoVarList;
 
@@ -188,165 +205,220 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
     }
 
+
     @Override
     public final _OrderBySpec<I> window(Consumer<MySQLWindowBuilder> consumer) {
+        consumer.accept(new MySQLWindowBuilderImpl(this));
+        if (this.windowList == null) {
+            throw ContextStack.criteriaError(this.context, _Exceptions::windowListIsEmpty);
+        }
+        return this;
+    }
+
+    @Override
+    public final _OrderBySpec<I> ifWindow(Consumer<MySQLWindowBuilder> consumer) {
+        consumer.accept(new MySQLWindowBuilderImpl(this));
         return this;
     }
 
     @Override
     public final Window._SimpleAsClause<_WindowCommaSpec<I>> window(String windowName) {
-        return null;
+        if (!_StringUtils.hasText(windowName)) {
+            throw ContextStack.criteriaError(this.context, _Exceptions::namedWindowNoText);
+        }
+        return WindowClause.namedWindow(windowName, this.context, this::onAddWindow);
     }
 
     @Override
-    public final _LockOptionSpec<I> limit(Expression offset, Expression rowCount) {
-        return this;
-    }
-
-    @Override
-    public final _LockOptionSpec<I> limit(BiFunction<MappingType, Number, Expression> operator, long offset, long rowCount) {
-        return this;
-    }
-
-    @Override
-    public final <N extends Number> _LockOptionSpec<I> limit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier) {
-        return this;
-    }
-
-    @Override
-    public final _LockOptionSpec<I> limit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function, String offsetKey, String rowCountKey) {
-        return this;
-    }
-
-    @Override
-    public final _LockOptionSpec<I> limit(Consumer<BiConsumer<Expression, Expression>> consumer) {
-        return this;
-    }
-
-    @Override
-    public final <N extends Number> _LockOptionSpec<I> ifLimit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier) {
-        return this;
-    }
-
-    @Override
-    public final _LockOptionSpec<I> ifLimit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function, String offsetKey, String rowCountKey) {
-        return this;
-    }
-
-    @Override
-    public final _LockOptionSpec<I> ifLimit(Consumer<BiConsumer<Expression, Expression>> consumer) {
-        return this;
+    public final Window._SimpleAsClause<_WindowCommaSpec<I>> comma(final String windowName) {
+        if (!_StringUtils.hasText(windowName)) {
+            throw ContextStack.criteriaError(this.context, _Exceptions::namedWindowNoText);
+        }
+        return WindowClause.namedWindow(windowName, this.context, this::onAddWindow);
     }
 
     @Override
     public final _LockOfTableSpec<I> forUpdate() {
+        this.lockMode = MySQLLockMode.FOR_UPDATE;
         return this;
     }
 
     @Override
     public final _LockOfTableSpec<I> forShare() {
+        this.lockMode = MySQLLockMode.FOR_SHARE;
         return this;
     }
 
     @Override
-    public final _LockOfTableSpec<I> ifForUpdate(BooleanSupplier supplier) {
+    public final _LockOfTableSpec<I> ifForUpdate(BooleanSupplier predicate) {
+        if (supplier.getAsBoolean()) {
+            this.lockMode = MySQLLockMode.FOR_UPDATE;
+        } else {
+            this.lockMode = null;
+        }
         return this;
     }
 
     @Override
-    public final _LockOfTableSpec<I> ifForShare(BooleanSupplier supplier) {
+    public final _LockOfTableSpec<I> ifForShare(BooleanSupplier predicate) {
+        if (supplier.getAsBoolean()) {
+            this.lockMode = MySQLLockMode.FOR_SHARE;
+        } else {
+            this.lockMode = null;
+        }
         return this;
     }
 
     @Override
     public final _IntoOptionSpec<I> lockInShareMode() {
+        this.lockMode = MySQLLockMode.LOCK_IN_SHARE_MODE;
         return this;
     }
 
     @Override
-    public final _IntoOptionSpec<I> ifLockInShareMode(BooleanSupplier supplier) {
+    public final _IntoOptionSpec<I> ifLockInShareMode(BooleanSupplier predicate) {
+        if (predicate.getAsBoolean()) {
+            this.lockMode = MySQLLockMode.LOCK_IN_SHARE_MODE;
+        } else {
+            this.lockMode = null;
+        }
         return this;
     }
 
     @Override
     public final _LockWaitOptionSpec<I> of(TableMeta<?> table) {
+        if (this.lockMode != null) {
+            this.ofTableList = Collections.singletonList(table);
+        }
         return this;
     }
 
     @Override
     public final _LockWaitOptionSpec<I> of(TableMeta<?> table1, TableMeta<?> table2) {
+        if (this.lockMode != null) {
+            this.ofTableList = ArrayUtils.asUnmodifiableList(table1, table2);
+        }
         return this;
     }
 
     @Override
     public final _LockWaitOptionSpec<I> of(TableMeta<?> table1, TableMeta<?> table2, TableMeta<?> table3) {
+        if (this.lockMode != null) {
+            this.ofTableList = ArrayUtils.asUnmodifiableList(table1, table2, table3);
+        }
         return this;
     }
 
     @Override
     public final _LockWaitOptionSpec<I> of(Consumer<Consumer<TableMeta<?>>> consumer) {
+        if (this.lockMode != null) {
+            final List<TableMeta<?>> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() == 0) {
+                throw CriteriaUtils.ofTableListIsEmpty(this.context);
+            }
+            this.ofTableList = _CollectionUtils.unmodifiableList(list);
+        }
         return this;
     }
 
     @Override
     public final _LockWaitOptionSpec<I> ifOf(Consumer<Consumer<TableMeta<?>>> consumer) {
+        if (this.lockMode != null) {
+            final List<TableMeta<?>> list = new ArrayList<>();
+            consumer.accept(list::add);
+            this.ofTableList = _CollectionUtils.unmodifiableList(list);
+        }
         return this;
     }
 
     @Override
     public final _IntoOptionSpec<I> noWait() {
+        if (this.lockMode != null) {
+            this.lockWaitOption = LockWaitOption.NOWAIT;
+        }
         return this;
     }
 
     @Override
     public final _IntoOptionSpec<I> skipLocked() {
+        if (this.lockMode != null) {
+            this.lockWaitOption = LockWaitOption.SKIP_LOCKED;
+        }
         return this;
     }
 
     @Override
-    public final _IntoOptionSpec<I> ifNoWait(BooleanSupplier supplier) {
+    public final _IntoOptionSpec<I> ifNoWait(BooleanSupplier predicate) {
+        if (this.lockMode != null) {
+            if (predicate.getAsBoolean()) {
+                this.lockWaitOption = LockWaitOption.NOWAIT;
+            } else {
+                this.lockWaitOption = null;
+            }
+        }
         return this;
     }
 
     @Override
-    public final _IntoOptionSpec<I> ifSkipLocked(BooleanSupplier supplier) {
+    public final _IntoOptionSpec<I> ifSkipLocked(BooleanSupplier predicate) {
+        if (this.lockMode != null) {
+            if (predicate.getAsBoolean()) {
+                this.lockWaitOption = LockWaitOption.SKIP_LOCKED;
+            } else {
+                this.lockWaitOption = null;
+            }
+        }
         return this;
     }
 
     @Override
     public final _QuerySpec<I> into(String varName) {
+        this.intoVarList = Collections.singletonList(varName);
         return this;
     }
 
     @Override
     public final _QuerySpec<I> into(String varName1, String varName2) {
+        this.intoVarList = ArrayUtils.asUnmodifiableList(varName1, varName2);
         return this;
     }
 
     @Override
     public final _QuerySpec<I> into(String varName1, String varName2, String varName3) {
+        this.intoVarList = ArrayUtils.asUnmodifiableList(varName1, varName2, varName3);
         return this;
     }
 
     @Override
     public final _QuerySpec<I> into(String varName1, String varName2, String varName3, String varName4) {
+        this.intoVarList = ArrayUtils.asUnmodifiableList(varName1, varName2, varName3, varName4);
         return this;
     }
 
     @Override
     public final _QuerySpec<I> into(List<String> varNameList) {
+        this.intoVarList = _CollectionUtils.asUnmodifiableList(varNameList);
         return this;
     }
 
     @Override
     public final _QuerySpec<I> into(Consumer<Consumer<String>> consumer) {
+        final List<String> list = new ArrayList<>();
+        consumer.accept(list::add);
+        if (list.size() == 0) {
+            throw ContextStack.criteriaError(this.context, "no into clause.");
+        }
+        this.intoVarList = _CollectionUtils.unmodifiableList(list);
         return this;
     }
 
-
     @Override
-    public final _Expression offset() {
-        return null;
+    public final _QuerySpec<I> ifInto(Consumer<Consumer<String>> consumer) {
+        final List<String> list = new ArrayList<>();
+        consumer.accept(list::add);
+        this.intoVarList = _CollectionUtils.unmodifiableList(list);
+        return this;
     }
 
     @Override
@@ -362,7 +434,11 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final List<String> intoVarList() {
-        return null;
+        final List<String> list = this.intoVarList;
+        if (list == null || list.size() == 0) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return list;
     }
 
     @Override
@@ -462,6 +538,22 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         return noOnBlock.getUseIndexClause();
     }
 
+    /**
+     * @see #window(String)
+     * @see #comma(String)
+     */
+    private _WindowCommaSpec<I> onAddWindow(final _Window window) {
+        List<_Window> windowList = this.windowList;
+        if (windowList == null) {
+            windowList = new ArrayList<>();
+            this.windowList = windowList;
+        } else if (!(window instanceof ArrayList)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        windowList.add(window);
+        return this;
+    }
+
 
     enum MySQLLockMode implements SQLWords {
 
@@ -488,29 +580,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     }//MySQLLock
 
-    enum MySQLLockOption implements SQLWords {
-
-        NOWAIT(" NOWAIT"),
-        SKIP_LOCKED(" SKIP LOCKED");
-
-        final String words;
-
-        MySQLLockOption(String words) {
-            this.words = words;
-        }
-
-        @Override
-        public final String render() {
-            return this.words;
-        }
-
-        @Override
-        public final String toString() {
-            return String.format("%s.%s", MySQLLockOption.class.getSimpleName(), this.name());
-        }
-
-    }//MySQLLockOption
-
 
     interface MySQLStaticComplexCommandSpec<I extends Item>
             extends MySQLQuery._MySQLSelectClause<MySQLQuery._CteSpec<I>> {
@@ -518,6 +587,34 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         void nextCte(String cteName);
 
     }
+
+
+    /**
+     * @see #window(Consumer)
+     * @see #ifWindow(Consumer)
+     */
+    private static final class MySQLWindowBuilderImpl implements MySQLWindowBuilder {
+
+        private final MySQLQueries<?> stmt;
+
+        private MySQLWindowBuilderImpl(MySQLQueries<?> stmt) {
+            this.stmt = stmt;
+        }
+
+        @Override
+        public Window._SimpleAsClause<MySQLWindowBuilder> comma(final String windowName) {
+            if (!_StringUtils.hasText(windowName)) {
+                throw ContextStack.criteriaError(this.stmt.context, _Exceptions::namedWindowNoText);
+            }
+            return WindowClause.namedWindow(windowName, this.stmt.context, this::windowClauseEnd);
+        }
+
+        private MySQLWindowBuilder windowClauseEnd(final _Window window) {
+            this.stmt.onAddWindow(window);
+            return this;
+        }
+
+    }//MySQLWindowBuilderImpl
 
 
     private static final class PartitionJoinClause<I extends Item>

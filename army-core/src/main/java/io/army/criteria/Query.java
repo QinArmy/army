@@ -284,9 +284,9 @@ public interface Query extends RowSet {
 
         WR skipLocked();
 
-        WR ifNoWait(BooleanSupplier supplier);
+        WR ifNoWait(BooleanSupplier predicate);
 
-        WR ifSkipLocked(BooleanSupplier supplier);
+        WR ifSkipLocked(BooleanSupplier predicate);
 
     }
 
@@ -297,9 +297,9 @@ public interface Query extends RowSet {
 
         LR forShare();
 
-        LR ifForUpdate(BooleanSupplier supplier);
+        LR ifForUpdate(BooleanSupplier predicate);
 
-        LR ifForShare(BooleanSupplier supplier);
+        LR ifForShare(BooleanSupplier predicate);
 
     }
 

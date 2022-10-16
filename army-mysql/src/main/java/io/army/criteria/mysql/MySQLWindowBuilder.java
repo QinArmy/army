@@ -1,6 +1,12 @@
 package io.army.criteria.mysql;
 
-public interface MySQLWindowBuilder {
+import io.army.criteria.Window;
+
+public interface MySQLWindowBuilder extends Window.Builder {
+
+
+    @Override
+    Window._SimpleAsClause<MySQLWindowBuilder> comma(String windowName);
 
 
 }

@@ -75,7 +75,7 @@ public interface Statement extends Item {
         AR as(String alias);
     }
 
-    interface _StaticAsClaus<AR> {
+    interface _StaticAsClaus<AR> extends Item {
 
         AR as();
     }
@@ -116,7 +116,7 @@ public interface Statement extends Item {
      * @param <RR> next clause java type
      * @since 1.0
      */
-    interface _RightParenClause<RR> extends _Clause, Item {
+    interface _RightParenClause<RR> extends Item {
 
         RR rightParen();
 
@@ -476,7 +476,7 @@ public interface Statement extends Item {
      *
      * @since 1.0
      */
-    interface _RowCountLimitClause<LR> {
+    interface _RowCountLimitClause<LR> extends Item {
 
         LR limit(Expression rowCount);
 
@@ -521,7 +521,7 @@ public interface Statement extends Item {
 
     }
 
-    interface _LeftParenStringDualClause<PR> {
+    interface _LeftParenStringDualClause<PR> extends Item {
 
         Statement._RightParenClause<PR> leftParen(String string);
 
@@ -530,19 +530,20 @@ public interface Statement extends Item {
 
     }
 
-    interface _LeftParenStringDynamicClause<RR> {
+    interface _LeftParenStringDynamicClause<RR> extends Item {
 
         Statement._RightParenClause<RR> leftParen(Consumer<Consumer<String>> consumer);
     }
 
-    interface _LeftParenStringDynamicOptionalClause<RR> {
+    interface _LeftParenStringDynamicOptionalClause<RR> extends Item {
 
         Statement._RightParenClause<RR> leftParenIf(Consumer<Consumer<String>> consumer);
 
     }
 
 
-    interface _LeftParenStringDualSpec<RR> extends _LeftParenStringDualClause<RR>, _LeftParenStringDynamicClause<RR> {
+    interface _LeftParenStringDualSpec<RR>
+            extends _LeftParenStringDualClause<RR>, _LeftParenStringDynamicClause<RR> {
 
     }
 

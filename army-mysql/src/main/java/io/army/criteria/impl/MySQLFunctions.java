@@ -168,37 +168,37 @@ abstract class MySQLFunctions extends SQLFunctions {
 
         @Override
         public final Window._SimplePartitionBySpec<Void, Expression> leftParen() {
-            return SimpleWindow.anonymousWindow(this.context, this::windowEnd)
+            return WindowClause.anonymousWindow(this.context, this::windowEnd)
                     .leftParen();
         }
 
         @Override
         public final Window._SimplePartitionBySpec<Void, Expression> leftParen(String existingWindowName) {
-            return SimpleWindow.anonymousWindow(this.context, this::windowEnd)
+            return WindowClause.anonymousWindow(this.context, this::windowEnd)
                     .leftParen(existingWindowName);
         }
 
         @Override
         public final Window._SimplePartitionBySpec<Void, Expression> leftParen(Supplier<String> supplier) {
-            return SimpleWindow.anonymousWindow(this.context, this::windowEnd)
+            return WindowClause.anonymousWindow(this.context, this::windowEnd)
                     .leftParen(supplier);
         }
 
         @Override
         public final Window._SimplePartitionBySpec<Void, Expression> leftParen(Function<Void, String> function) {
-            return SimpleWindow.anonymousWindow(this.context, this::windowEnd)
+            return WindowClause.anonymousWindow(this.context, this::windowEnd)
                     .leftParen(function);
         }
 
         @Override
         public final Window._SimplePartitionBySpec<Void, Expression> leftParenIf(Supplier<String> supplier) {
-            return SimpleWindow.anonymousWindow(this.context, this::windowEnd)
+            return WindowClause.anonymousWindow(this.context, this::windowEnd)
                     .leftParenIf(supplier);
         }
 
         @Override
         public final Window._SimplePartitionBySpec<Void, Expression> leftParenIf(Function<Void, String> function) {
-            return SimpleWindow.anonymousWindow(this.context, this::windowEnd)
+            return WindowClause.anonymousWindow(this.context, this::windowEnd)
                     .leftParenIf(function);
         }
 

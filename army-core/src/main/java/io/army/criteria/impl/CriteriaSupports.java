@@ -310,9 +310,6 @@ abstract class CriteriaSupports {
     }//ParenStringConsumerClause
 
 
-
-
-
     private static final class SimpleDelayParamMeta implements TypeMeta {
 
         private final Supplier<MappingType> supplier;

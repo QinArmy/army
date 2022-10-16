@@ -6,11 +6,11 @@ import io.army.criteria.impl.inner._StandardQuery;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 
 import java.util.List;
-import java.util.function.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -83,67 +83,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     private StandardQueries(CriteriaContext context) {
         super(context);
 
-    }
-
-    @Override
-    public final _LockSpec<I> limit(final Expression offset, final Expression rowCount) {
-        if (!(offset instanceof ArmyExpression)) {
-            throw ContextStack.nonArmyExp(this.context);
-        } else if (rowCount instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.dontSupportMultiParam(this.context);
-        }
-        this.offset = (ArmyExpression) offset;
-        this.limit(rowCount);
-        return this;
-    }
-
-    @Override
-    public final _LockSpec<I> limit(BiFunction<MappingType, Number, Expression> operator, long offset, long rowCount) {
-        CriteriaUtils.limitPair(this.context, operator, offset, rowCount, this::limit);
-        return this;
-    }
-
-    @Override
-    public final <N extends Number> _LockSpec<I> limit(BiFunction<MappingType, Number, Expression> operator
-            , Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier) {
-        CriteriaUtils.limitPair(this.context, operator, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
-        return this;
-    }
-
-    @Override
-    public final _LockSpec<I> limit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
-            , String offsetKey, String rowCountKey) {
-        CriteriaUtils.limitPair(this.context, operator, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
-        return this;
-    }
-
-    @Override
-    public final _LockSpec<I> limit(Consumer<BiConsumer<Expression, Expression>> consumer) {
-        consumer.accept(this::limit);
-        if (this.offset == null || this.rowCount() == null) {
-            throw CriteriaUtils.nonOptionalClause(this.context, "limit");
-        }
-        return this;
-    }
-
-    @Override
-    public final <N extends Number> _LockSpec<I> ifLimit(BiFunction<MappingType, Number, Expression> operator
-            , Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier) {
-        CriteriaUtils.ifLimitPair(operator, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
-        return this;
-    }
-
-    @Override
-    public final _LockSpec<I> ifLimit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
-            , String offsetKey, String rowCountKey) {
-        CriteriaUtils.ifLimitPair(operator, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
-        return this;
-    }
-
-    @Override
-    public final _LockSpec<I> ifLimit(Consumer<BiConsumer<Expression, Expression>> consumer) {
-        consumer.accept(this::limit);
-        return this;
     }
 
     @Override
@@ -328,69 +267,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         private StandardBracketQueries(CriteriaContext context) {
             super(context);
         }
-
-
-        @Override
-        public final _QuerySpec<I> limit(final Expression offset, final Expression rowCount) {
-            if (rowCount instanceof SqlValueParam.MultiValue) {
-                throw CriteriaUtils.dontSupportMultiParam(this.context);
-            } else if (!(offset instanceof ArmyExpression)) {
-                throw ContextStack.nonArmyExp(this.context);
-            }
-            this.offset = (ArmyExpression) offset;
-            this.limit(rowCount);
-            return this;
-        }
-
-        @Override
-        public final _QuerySpec<I> limit(BiFunction<MappingType, Number, Expression> operator, long offset, long rowCount) {
-            CriteriaUtils.limitPair(this.context, operator, offset, rowCount, this::limit);
-            return this;
-        }
-
-        @Override
-        public final <N extends Number> _QuerySpec<I> limit(BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier) {
-            CriteriaUtils.limitPair(this.context, operator, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
-            return this;
-        }
-
-        @Override
-        public final _QuerySpec<I> limit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
-                , String offsetKey, String rowCountKey) {
-            CriteriaUtils.limitPair(this.context, operator, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
-            return this;
-        }
-
-        @Override
-        public final _QuerySpec<I> limit(Consumer<BiConsumer<Expression, Expression>> consumer) {
-            consumer.accept(this::limit);
-            if (this.offset == null || this.rowCount() == null) {
-                throw CriteriaUtils.nonOptionalClause(this.context, "limit");
-            }
-            return this;
-        }
-
-        @Override
-        public final <N extends Number> _QuerySpec<I> ifLimit(BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier) {
-            CriteriaUtils.ifLimitPair(operator, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
-            return this;
-        }
-
-        @Override
-        public final _QuerySpec<I> ifLimit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
-                , String offsetKey, String rowCountKey) {
-            CriteriaUtils.ifLimitPair(operator, function.apply(offsetKey), function.apply(rowCountKey), this::limit);
-            return this;
-        }
-
-        @Override
-        public final _QuerySpec<I> ifLimit(Consumer<BiConsumer<Expression, Expression>> consumer) {
-            consumer.accept(this::limit);
-            return this;
-        }
-
 
         @Override
         final Void createRowSetUnion(UnionType unionType, RowSet right) {
