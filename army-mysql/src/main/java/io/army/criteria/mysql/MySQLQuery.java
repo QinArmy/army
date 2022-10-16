@@ -326,6 +326,7 @@ public interface MySQLQuery extends Query, DialectStatement {
             extends _MySQLJoinClause<_IndexHintOnSpec<I>, _OnClause<_JoinSpec<I>>>
             , _MySQLCrossJoinClause<_IndexHintJoinSpec<I>, _JoinSpec<I>>
             , _MySQLDialectJoinClause<_PartitionOnSpec<I>>
+            , _DialectCrossJoinClause<_PartitionJoinSpec<I>>
             , _WhereSpec<I> {
 
     }

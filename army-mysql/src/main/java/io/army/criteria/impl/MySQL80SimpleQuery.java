@@ -522,7 +522,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLQueries<
      */
     private _QueryIndexHintClause<C, _QueryUseIndexJoinSpec<C, Q>> getUserIndexClause() {
         final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock = this.noOnBlock;
-        if (noOnBlock == null || this.context.lastTableBlockWithoutOnClause() != noOnBlock) {
+        if (noOnBlock == null || this.context.lastBlock() != noOnBlock) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         return noOnBlock.getUseIndexClause();

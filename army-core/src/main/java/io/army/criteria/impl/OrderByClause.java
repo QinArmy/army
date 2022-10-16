@@ -37,6 +37,10 @@ abstract class OrderByClause<OR> implements CriteriaContextSpec
     @Override
     public final OR orderBy(SortItem sortItem) {
         this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).onOrderByEvent();
+            ;
+        }
         return (OR) this;
     }
 
@@ -46,6 +50,10 @@ abstract class OrderByClause<OR> implements CriteriaContextSpec
                 (ArmySortItem) sortItem1,
                 (ArmySortItem) sortItem2
         );
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).onOrderByEvent();
+            ;
+        }
         return (OR) this;
     }
 
@@ -56,6 +64,10 @@ abstract class OrderByClause<OR> implements CriteriaContextSpec
                 (ArmySortItem) sortItem2,
                 (ArmySortItem) sortItem3
         );
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).onOrderByEvent();
+            ;
+        }
         return (OR) this;
     }
 
@@ -65,6 +77,10 @@ abstract class OrderByClause<OR> implements CriteriaContextSpec
         if (this.orderByList == null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
         }
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).onOrderByEvent();
+            ;
+        }
         return (OR) this;
     }
 
@@ -72,6 +88,10 @@ abstract class OrderByClause<OR> implements CriteriaContextSpec
     @Override
     public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
         consumer.accept(this::onAddOrderBy);
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).onOrderByEvent();
+            ;
+        }
         return (OR) this;
     }
 
@@ -129,6 +149,7 @@ abstract class OrderByClause<OR> implements CriteriaContextSpec
         }
     }
 
+
     final void clearOrderByList() {
         this.orderByList = null;
     }
@@ -143,6 +164,12 @@ abstract class OrderByClause<OR> implements CriteriaContextSpec
             throw ContextStack.castCriteriaApi(this.context);
         }
         orderByList.add((ArmySortItem) sortItem);
+    }
+
+    interface OrderByEventListener {
+
+        void onOrderByEvent();
+
     }
 
 

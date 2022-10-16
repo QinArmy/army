@@ -376,7 +376,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
 
     private MySQLQuery._IndexHintForJoinClause<C, DT> getIndexHintClause() {
         final MySQLSupports.MySQLNoOnBlock<C, DT> block = this.noOnBlock;
-        if (block == null || this.context.lastTableBlockWithoutOnClause() != block) {
+        if (block == null || this.context.lastBlock() != block) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         return block.getUseIndexClause();

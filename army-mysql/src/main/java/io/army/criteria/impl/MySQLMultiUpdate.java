@@ -289,7 +289,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
      */
     private MySQLQuery._IndexHintForJoinClause<C, UT> getIndexHintClause() {
         final MySQLSupports.MySQLNoOnBlock<C, UT> noOnBlock = this.noOnBlock;
-        if (noOnBlock == null || this.criteriaContext.lastTableBlockWithoutOnClause() != noOnBlock) {
+        if (noOnBlock == null || this.criteriaContext.lastBlock() != noOnBlock) {
             throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
         return noOnBlock.getUseIndexClause();

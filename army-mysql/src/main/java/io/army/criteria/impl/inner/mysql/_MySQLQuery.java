@@ -11,6 +11,8 @@ public interface _MySQLQuery extends _Query, _DialectStatement, MySQLQuery {
 
     boolean groupByWithRollUp();
 
+    boolean orderByWithRollup();
+
     List<String> intoVarList();
 
 

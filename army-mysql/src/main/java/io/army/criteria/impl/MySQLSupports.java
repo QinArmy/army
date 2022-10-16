@@ -68,19 +68,19 @@ abstract class MySQLSupports extends CriteriaSupports {
     }
 
 
-    static final class MySQLNoOnBlock<C, RR> extends TableBlock.DialectNoOnTableBlock
+    static final class MySQLNoOnBlock<RR> extends TableBlock.DialectNoOnTableBlock
             implements _MySQLTableBlock {
 
         private final List<String> partitionList;
 
         private final RR stmt;
 
-        private MySQLQuery._QueryIndexHintClause<C, RR> indexClause;
+        private MySQLQuery._QueryIndexHintClause<RR> indexClause;
 
         private List<MySQLIndexHint> indexHintList;
 
 
-        MySQLNoOnBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias, RR stmt) {
+        MySQLNoOnBlock(_JoinType joinType, @Nullable SQLWords itemWord, TabularItem tableItem, String alias, RR stmt) {
             super(joinType, itemWord, tableItem, alias);
             this.partitionList = Collections.emptyList();
             this.stmt = stmt;
@@ -110,8 +110,8 @@ abstract class MySQLSupports extends CriteriaSupports {
             return indexHintList;
         }
 
-        MySQLQuery._QueryIndexHintClause<C, RR> getUseIndexClause() {
-            MySQLQuery._QueryIndexHintClause<C, RR> indexClause = this.indexClause;
+        MySQLQuery._QueryIndexHintClause<RR> getUseIndexClause() {
+            MySQLQuery._QueryIndexHintClause<RR> indexClause = this.indexClause;
             if (indexClause == null) {
                 final CriteriaContext context;
                 context = ((CriteriaContextSpec) this.stmt).getContext();
@@ -145,17 +145,17 @@ abstract class MySQLSupports extends CriteriaSupports {
      * @param <RR> sub interface of {@link  io.army.criteria.Statement._OnClause}
      * @param <OR> sub interface of {@link MySQLQuery._MySQLJoinClause}
      */
-    static abstract class MySQLOnBlock<C, RR, OR> extends OnClauseTableBlock.OnItemTableBlock<C, OR>
-            implements _MySQLTableBlock, MySQLQuery._QueryIndexHintClause<C, RR> {
+    static abstract class MySQLOnBlock<RR, OR> extends OnClauseTableBlock.OnItemTableBlock<OR>
+            implements _MySQLTableBlock, MySQLQuery._QueryIndexHintClause<RR> {
 
         private final List<String> partitionList;
 
         private List<MySQLIndexHint> indexHintList;
 
-        private MySQLQuery._QueryIndexHintClause<C, RR> useIndexClause;
+        private MySQLQuery._QueryIndexHintClause<RR> useIndexClause;
 
 
-        MySQLOnBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias, OR stmt) {
+        MySQLOnBlock(_JoinType joinType, @Nullable SQLWords itemWord, TabularItem tableItem, String alias, OR stmt) {
             super(joinType, itemWord, tableItem, alias, stmt);
             this.partitionList = Collections.emptyList();
         }
@@ -167,17 +167,17 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
         @Override
-        public final MySQLQuery._IndexPurposeBySpec<C, RR> useIndex() {
+        public final MySQLQuery._IndexPurposeBySpec<RR> useIndex() {
             return this.getUseIndexClause().useIndex();
         }
 
         @Override
-        public final MySQLQuery._IndexPurposeBySpec<C, RR> ignoreIndex() {
+        public final MySQLQuery._IndexPurposeBySpec<RR> ignoreIndex() {
             return this.getUseIndexClause().ignoreIndex();
         }
 
         @Override
-        public final MySQLQuery._IndexPurposeBySpec<C, RR> forceIndex() {
+        public final MySQLQuery._IndexPurposeBySpec<RR> forceIndex() {
             return this.getUseIndexClause().forceIndex();
         }
 
@@ -200,7 +200,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
 
-        private MySQLQuery._QueryIndexHintClause<C, RR> getUseIndexClause() {
+        private MySQLQuery._QueryIndexHintClause<RR> getUseIndexClause() {
             MySQLQuery._QueryIndexHintClause<C, RR> useIndexClause = this.useIndexClause;
             if (useIndexClause == null) {
                 useIndexClause = new IndexHintClause<>(this.getCriteriaContext(), this::addIndexHint);
@@ -225,10 +225,10 @@ abstract class MySQLSupports extends CriteriaSupports {
     }//MySQLOnBlock
 
 
-    static abstract class PartitionAsClause<C, AR> implements Statement._AsClause<AR>, MySQLBlockParams
-            , MySQLQuery._PartitionAndAsClause<C, AR> {
+    static abstract class PartitionAsClause<AR> implements Statement._AsClause<AR>, MySQLBlockParams
+            , MySQLQuery._PartitionAndAsClause<AR> {
 
-        private final CriteriaContext criteriaContext;
+        private final CriteriaContext context;
 
         final _JoinType joinType;
 
@@ -239,24 +239,24 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         String tableAlias;
 
-        PartitionAsClause(CriteriaContext criteriaContext, _JoinType joinType, TableMeta<?> table) {
-            this.criteriaContext = criteriaContext;
+        PartitionAsClause(CriteriaContext context, _JoinType joinType, TableMeta<?> table) {
+            this.context = context;
             this.joinType = joinType;
             this.table = table;
         }
 
         @Override
-        public final Statement._LeftParenStringQuadraOptionalSpec<C, Statement._AsClause<AR>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+        public final Statement._LeftParenStringQuadraOptionalSpec<Statement._AsClause<AR>> partition() {
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
         }
 
         @Override
         public final AR as(final String alias) {
             if (!_StringUtils.hasText(alias)) {
-                throw ContextStack.criteriaError(this.criteriaContext, "table alias must be non-empty.");
+                throw ContextStack.criteriaError(this.context, "table alias must be non-empty.");
             }
             if (this.tableAlias != null || this.partitionList == null) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.tableAlias = alias;
             return this.asEnd(this);
@@ -310,69 +310,69 @@ abstract class MySQLSupports extends CriteriaSupports {
 
     }//PartitionAsClause
 
-
-    static final class MySQLDynamicBlock<C> extends DynamicBlock<C> implements MySQLQuery._IfUseIndexOnSpec<C> {
-
-        final ItemWord itemWord;
-
-        final List<String> partitionList;
-
-        private List<MySQLIndexHint> indexHintList;
-
-        private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndexClause;
-
-        private MySQLDynamicBlock(@Nullable C criteria, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
-            super(criteria, tableItem, alias);
-            this.itemWord = itemWord;
-            this.partitionList = Collections.emptyList();
-        }
-
-        private MySQLDynamicBlock(TableMeta<?> table, String alias, List<String> partitionList
-                , CriteriaContext criteriaContext) {
-            super(table, alias, criteriaContext);
-            this.itemWord = null;
-            this.partitionList = partitionList;
-        }
-
-        @Override
-        public MySQLQuery._IndexPurposeBySpec<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndex() {
-            return this.getUseIndexClause().useIndex();
-        }
-
-        @Override
-        public MySQLQuery._IndexPurposeBySpec<C, MySQLQuery._IfUseIndexOnSpec<C>> ignoreIndex() {
-            return this.getUseIndexClause().ignoreIndex();
-        }
-
-        @Override
-        public MySQLQuery._IndexPurposeBySpec<C, MySQLQuery._IfUseIndexOnSpec<C>> forceIndex() {
-            return this.getUseIndexClause().forceIndex();
-        }
-
-
-        private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._IfUseIndexOnSpec<C>> getUseIndexClause() {
-            MySQLQuery._QueryIndexHintClause<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndexClause = this.useIndexClause;
-            if (useIndexClause == null) {
-                useIndexClause = new IndexHintClause<>(this.criteriaContext, this::addIndexHint);
-                this.useIndexClause = useIndexClause;
-            }
-            return useIndexClause;
-        }
-
-        private MySQLQuery._IfUseIndexOnSpec<C> addIndexHint(final MySQLIndexHint indexHint) {
-            List<MySQLIndexHint> indexHintList = this.indexHintList;
-            if (indexHintList == null) {
-                indexHintList = new ArrayList<>();
-                this.indexHintList = indexHintList;
-            } else if (!(indexHintList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            indexHintList.add(indexHint);
-            return this;
-        }
-
-
-    }//MySQLDynamicBlock
+//
+//    static final class MySQLDynamicBlock<C> extends DynamicBlock<C> implements MySQLQuery._IfUseIndexOnSpec<C> {
+//
+//        final ItemWord itemWord;
+//
+//        final List<String> partitionList;
+//
+//        private List<MySQLIndexHint> indexHintList;
+//
+//        private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndexClause;
+//
+//        private MySQLDynamicBlock(@Nullable C criteria, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
+//            super(criteria, tableItem, alias);
+//            this.itemWord = itemWord;
+//            this.partitionList = Collections.emptyList();
+//        }
+//
+//        private MySQLDynamicBlock(TableMeta<?> table, String alias, List<String> partitionList
+//                , CriteriaContext criteriaContext) {
+//            super(table, alias, criteriaContext);
+//            this.itemWord = null;
+//            this.partitionList = partitionList;
+//        }
+//
+//        @Override
+//        public MySQLQuery._IndexPurposeBySpec<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndex() {
+//            return this.getUseIndexClause().useIndex();
+//        }
+//
+//        @Override
+//        public MySQLQuery._IndexPurposeBySpec<C, MySQLQuery._IfUseIndexOnSpec<C>> ignoreIndex() {
+//            return this.getUseIndexClause().ignoreIndex();
+//        }
+//
+//        @Override
+//        public MySQLQuery._IndexPurposeBySpec<C, MySQLQuery._IfUseIndexOnSpec<C>> forceIndex() {
+//            return this.getUseIndexClause().forceIndex();
+//        }
+//
+//
+//        private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._IfUseIndexOnSpec<C>> getUseIndexClause() {
+//            MySQLQuery._QueryIndexHintClause<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndexClause = this.useIndexClause;
+//            if (useIndexClause == null) {
+//                useIndexClause = new IndexHintClause<>(this.criteriaContext, this::addIndexHint);
+//                this.useIndexClause = useIndexClause;
+//            }
+//            return useIndexClause;
+//        }
+//
+//        private MySQLQuery._IfUseIndexOnSpec<C> addIndexHint(final MySQLIndexHint indexHint) {
+//            List<MySQLIndexHint> indexHintList = this.indexHintList;
+//            if (indexHintList == null) {
+//                indexHintList = new ArrayList<>();
+//                this.indexHintList = indexHintList;
+//            } else if (!(indexHintList instanceof ArrayList)) {
+//                throw ContextStack.castCriteriaApi(this.criteriaContext);
+//            }
+//            indexHintList.add(indexHint);
+//            return this;
+//        }
+//
+//
+//    }//MySQLDynamicBlock
 
 
     private static final class MySQLDynamicTableBlock extends TableBlock.DynamicTableBlock

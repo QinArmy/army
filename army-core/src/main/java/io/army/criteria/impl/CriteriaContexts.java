@@ -593,7 +593,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public _TableBlock lastTableBlockWithoutOnClause() {
+        public _TableBlock lastBlock() {
             String m = "current context don't support lastTableBlockWithoutOnClause()";
             throw ContextStack.criteriaError(this, m);
         }
@@ -736,7 +736,7 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final _TableBlock lastTableBlockWithoutOnClause() {
+        public final _TableBlock lastBlock() {
             final List<_TableBlock> tableBlockList = this.tableBlockList;
             if (tableBlockList.size() == 0) {
                 throw _Exceptions.castCriteriaApi();

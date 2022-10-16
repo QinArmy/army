@@ -68,7 +68,7 @@ interface CriteriaContext {
     void onAddBlock(_TableBlock block);
 
 
-    _TableBlock lastTableBlockWithoutOnClause();
+    _TableBlock lastBlock();
 
     void onAddWindow(String windowName);
 

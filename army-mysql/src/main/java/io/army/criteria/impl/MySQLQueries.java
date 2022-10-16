@@ -53,7 +53,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         , MySQLQuery._GroupByWithRollupSpec<I>
         , MySQLQuery._HavingSpec<I>
         , MySQLQuery._OrderByWithRollupSpec<I>
-        , MySQLQuery._LockOfTableSpec<I> {
+        , MySQLQuery._LockOfTableSpec<I>
+        , OrderByClause.OrderByEventListener {
 
 
     static <I extends Item> MySQLQuery._WithCteSpec<I> subQuery(CriteriaContext outerContext
@@ -66,6 +67,14 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         return new StaticComplexCommand<>(outerContext, cteName, cteComma);
     }
 
+    private MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>> noOnBlock;
+
+    /**
+     * @see #onOrderByEvent()
+     */
+    private Boolean groupByWithRollup;
+
+    private boolean orderByWithRollup;
 
     private List<String> intoVarList;
 
@@ -87,57 +96,96 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final _PartitionJoinSpec<I> from(TableMeta<?> table) {
-        return null;
+        return new PartitionJoinClause<>(this, _JoinType.NONE, table);
     }
 
     @Override
     public final _IndexPurposeBySpec<_IndexHintJoinSpec<I>> useIndex() {
-        return null;
+        return this.getIndexHintClause().useIndex();
     }
 
     @Override
     public final _IndexPurposeBySpec<_IndexHintJoinSpec<I>> ignoreIndex() {
-        return null;
+        return this.getIndexHintClause().ignoreIndex();
     }
 
     @Override
     public final _IndexPurposeBySpec<_IndexHintJoinSpec<I>> forceIndex() {
-        return null;
+        return this.getIndexHintClause().forceIndex();
     }
+
 
     @Override
     public final _PartitionOnSpec<I> leftJoin(TableMeta<?> table) {
-        return null;
+        return new PartitionOnClause<>(this, _JoinType.LEFT_JOIN, table);
     }
 
     @Override
     public final _PartitionOnSpec<I> join(TableMeta<?> table) {
-        return null;
+        return new PartitionOnClause<>(this, _JoinType.JOIN, table);
     }
 
     @Override
     public final _PartitionOnSpec<I> rightJoin(TableMeta<?> table) {
-        return null;
+        return new PartitionOnClause<>(this, _JoinType.RIGHT_JOIN, table);
     }
 
     @Override
     public final _PartitionOnSpec<I> fullJoin(TableMeta<?> table) {
-        return null;
+        return new PartitionOnClause<>(this, _JoinType.FULL_JOIN, table);
     }
 
     @Override
     public final _PartitionOnSpec<I> straightJoin(TableMeta<?> table) {
-        return null;
+        return new PartitionOnClause<>(this, _JoinType.STRAIGHT_JOIN, table);
     }
 
+    @Override
+    public final _PartitionJoinSpec<I> crossJoin(TableMeta<?> table) {
+        return new PartitionJoinClause<>(this, _JoinType.CROSS_JOIN, table);
+    }
+
+    /**
+     * @see #onOrderByEvent()
+     */
     @Override
     public final _HavingSpec<I> withRollup() {
+        if (this.groupByWithRollup == null) {//@see #onOrderByEvent()
+            this.groupByWithRollup = Boolean.TRUE;
+        } else {
+            this.orderByWithRollup = true;
+        }
         return this;
     }
 
+    /**
+     * @see #onOrderByEvent()
+     */
     @Override
-    public final _HavingSpec<I> ifWithRollup(BooleanSupplier supplier) {
+    public final _HavingSpec<I> ifWithRollup(final BooleanSupplier supplier) {
+        if (supplier.getAsBoolean()) {
+            if (this.groupByWithRollup == null) {//@see #onOrderByEvent()
+                this.groupByWithRollup = Boolean.TRUE;
+            } else {
+                this.orderByWithRollup = true;
+            }
+        } else if (this.groupByWithRollup == null) {//@see #onOrderByEvent()
+            this.groupByWithRollup = Boolean.FALSE;
+        } else {
+            this.orderByWithRollup = false;
+        }
         return this;
+    }
+
+    /**
+     * @see #withRollup()
+     * @see #ifWithRollup(BooleanSupplier)
+     */
+    @Override
+    public final void onOrderByEvent() {
+        if (this.groupByWithRollup == null) {
+            this.groupByWithRollup = Boolean.FALSE;
+        }
     }
 
     @Override
@@ -303,7 +351,13 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final boolean groupByWithRollUp() {
-        return false;
+        final Boolean withRollup = this.groupByWithRollup;
+        return withRollup != null && withRollup;
+    }
+
+    @Override
+    public final boolean orderByWithRollup() {
+        return this.orderByWithRollup;
     }
 
     @Override
@@ -312,64 +366,64 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     @Override
-    MySQLCteBuilder createCteBuilder(boolean recursive) {
+    final MySQLCteBuilder createCteBuilder(boolean recursive) {
         return null;
     }
 
     @Override
-    void onEndQuery() {
+    final void onEndQuery() {
 
     }
 
 
     @Override
-    void onClear() {
+    final void onClear() {
 
     }
 
     @Override
-    List<MySQLSyntax.Modifier> asModifierList(List<MySQLSyntax.Modifier> modifiers) {
+    final List<MySQLSyntax.Modifier> asModifierList(@Nullable List<MySQLSyntax.Modifier> modifiers) {
         return null;
     }
 
     @Override
-    List<Hint> asHintList(List<Hint> hints) {
+    final List<Hint> asHintList(@Nullable List<Hint> hints) {
         return null;
     }
 
     @Override
-    _UnionAndQuerySpec<I> createQueryUnion(UnionType unionType) {
+    final _UnionAndQuerySpec<I> createQueryUnion(UnionType unionType) {
         return null;
     }
 
     @Override
-    _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable TableModifier itemWord, TableMeta<?> table
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable TableModifier itemWord, TableMeta<?> table
             , String alias) {
-        return null;
+        return new MySQLSupports.MySQLNoOnBlock<>(joinType, itemWord, table, alias, this);
     }
 
     @Override
-    _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable TabularModifier itemWord, TabularItem tableItem
+    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable TabularModifier itemWord, TabularItem tableItem
             , String alias) {
-        return null;
+        return new MySQLSupports.MySQLNoOnBlock<>(joinType, itemWord, tableItem, alias, this);
     }
 
     @Override
-    _IndexHintOnSpec<I> createTableBlock(_JoinType joinType, @Nullable TableModifier itemWord, TableMeta<?> table
+    final _IndexHintOnSpec<I> createTableBlock(_JoinType joinType, @Nullable TableModifier itemWord, TableMeta<?> table
             , String tableAlias) {
-        return null;
+        return new OnTableBlock<>(joinType, itemWord, table, tableAlias, this);
     }
 
     @Override
-    _OnClause<_JoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable TabularModifier itemWord
+    final _OnClause<_JoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable TabularModifier itemWord
             , TabularItem tableItem, String alias) {
-        return null;
+        return new OnClauseTableBlock.OnItemTableBlock<>(joinType, itemWord, tableItem, alias, this);
     }
 
     @Override
-    _OnClause<_JoinSpec<I>> createCteBlock(_JoinType joinType, @Nullable TabularModifier itemWord
+    final _OnClause<_JoinSpec<I>> createCteBlock(_JoinType joinType, @Nullable TabularModifier itemWord
             , TabularItem tableItem, String alias) {
-        return null;
+        return new OnClauseTableBlock.OnItemTableBlock<>(joinType, itemWord, tableItem, alias, this);
     }
 
 
@@ -392,6 +446,20 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         final MySQLCteComma<I> comma;
         comma = new MySQLCteComma<>(this, recursive, name);
         return comma.complexCommand;
+    }
+
+
+    /**
+     * @see #useIndex()
+     * @see #ignoreIndex()
+     * @see #forceIndex()
+     */
+    private _QueryIndexHintClause<_IndexHintJoinSpec<I>> getIndexHintClause() {
+        final MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>> noOnBlock = this.noOnBlock;
+        if (noOnBlock == null || this.context.lastBlock() != noOnBlock) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return noOnBlock.getUseIndexClause();
     }
 
 
@@ -450,6 +518,73 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         void nextCte(String cteName);
 
     }
+
+
+    private static final class PartitionJoinClause<I extends Item>
+            extends MySQLSupports.PartitionAsClause<_IndexHintJoinSpec<I>>
+            implements MySQLQuery._PartitionJoinSpec<I> {
+
+        private final MySQLQueries<I> stmt;
+
+        private PartitionJoinClause(MySQLQueries<I> stmt, _JoinType joinType, TableMeta<?> table) {
+            super(stmt.context, joinType, table);
+            this.stmt = stmt;
+        }
+
+        @Override
+        _IndexHintJoinSpec<I> asEnd(final MySQLSupports.MySQLBlockParams params) {
+            final MySQLQueries<I> stmt = this.stmt;
+
+            MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>> block;
+            block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
+
+            stmt.context.onAddBlock(block);
+            stmt.noOnBlock = block;// update noOnBlock
+            return stmt;
+        }
+
+
+    }//PartitionJoinClause
+
+
+    private static final class OnTableBlock<I extends Item>
+            extends MySQLSupports.MySQLOnBlock<_IndexHintOnSpec<I>, _JoinSpec<I>>
+            implements _IndexHintOnSpec<I> {
+
+        private OnTableBlock(_JoinType joinType, @Nullable SQLWords itemWord
+                , TabularItem tableItem, String alias, _JoinSpec<I> stmt) {
+            super(joinType, itemWord, tableItem, alias, stmt);
+        }
+
+        private OnTableBlock(MySQLSupports.MySQLBlockParams params, _JoinSpec<I> stmt) {
+            super(params, stmt);
+        }
+
+
+    }//OnTableBlock
+
+    private static final class PartitionOnClause<I extends Item>
+            extends MySQLSupports.PartitionAsClause<_IndexHintOnSpec<I>>
+            implements MySQLQuery._PartitionOnSpec<I> {
+
+        private final MySQLQueries<I> stmt;
+
+        private PartitionOnClause(MySQLQueries<I> stmt, _JoinType joinType, TableMeta<?> table) {
+            super(stmt.context, joinType, table);
+            this.stmt = stmt;
+        }
+
+        @Override
+        _IndexHintOnSpec<I> asEnd(final MySQLSupports.MySQLBlockParams params) {
+            final MySQLQueries<I> stmt = this.stmt;
+            final OnTableBlock<I> block;
+            block = new OnTableBlock<>(params, stmt);
+            stmt.context.onAddBlock(block);
+            return block;
+        }
+
+
+    }//PartitionOnClause
 
     private static final class MySQLCteComma<I extends Item>
             extends SimpleQueries.SelectClauseDispatcher<MySQLSyntax.Modifier, MySQLQuery._FromSpec<I>>

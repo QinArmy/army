@@ -11,11 +11,10 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClause<C, OR> {
+class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<OR> {
 
     private List<_Predicate> predicateList;
 
@@ -89,16 +88,6 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
         return this.stmt;
     }
 
-    @Override
-    public final OR on(BiConsumer<C, Consumer<IPredicate>> consumer) {
-        consumer.accept(this.getCriteria(), this::addPredicate);
-        final List<_Predicate> predicateList = this.predicateList;
-        if (predicateList == null) {
-            throw predicateListIsEmpty();
-        }
-        this.predicateList = _CollectionUtils.unmodifiableList(predicateList);
-        return this.stmt;
-    }
 
     @Override
     public final List<_Predicate> predicateList() {
@@ -110,11 +99,6 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
     }
 
 
-    @Nullable
-    @SuppressWarnings("unchecked")
-    final C getCriteria() {
-        return ((CriteriaSpec<C>) this.stmt).getCriteria();
-    }
 
     final CriteriaContext getCriteriaContext() {
         return ((CriteriaContextSpec) this.stmt).getContext();
@@ -138,11 +122,11 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
     }
 
 
-    static class OnItemTableBlock<C, OR> extends OnClauseTableBlock<C, OR> implements _DialectTableBlock {
+    static class OnItemTableBlock<OR> extends OnClauseTableBlock<OR> implements _DialectTableBlock {
 
-        private final ItemWord itemWord;
+        private final SQLWords itemWord;
 
-        OnItemTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias, OR stmt) {
+        OnItemTableBlock(_JoinType joinType, @Nullable SQLWords itemWord, TabularItem tableItem, String alias, OR stmt) {
             super(joinType, tableItem, alias, stmt);
             this.itemWord = itemWord;
         }

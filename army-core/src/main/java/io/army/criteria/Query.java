@@ -43,11 +43,11 @@ public interface Query extends RowSet {
 
     }
 
-    interface TableModifier {
+    interface TableModifier extends SQLWords {
 
     }
 
-    interface TabularModifier {
+    interface TabularModifier extends SQLWords {
 
     }
 

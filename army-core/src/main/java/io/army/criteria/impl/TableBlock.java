@@ -96,9 +96,9 @@ abstract class TableBlock implements _TableBlock {
 
     static class DialectNoOnTableBlock extends NoOnTableBlock implements _DialectTableBlock {
 
-        private final ItemWord itemWord;
+        private final SQLWords itemWord;
 
-        DialectNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
+        DialectNoOnTableBlock(_JoinType joinType, @Nullable SQLWords itemWord, TabularItem tableItem, String alias) {
             super(joinType, tableItem, alias);
             this.itemWord = itemWord;
         }
@@ -148,7 +148,7 @@ abstract class TableBlock implements _TableBlock {
     interface DialectBlockParams extends BlockParams {
 
         @Nullable
-        ItemWord itemWord();
+        SQLWords itemWord();
 
     }
 
