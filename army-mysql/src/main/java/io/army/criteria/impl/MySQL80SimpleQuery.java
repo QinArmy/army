@@ -32,7 +32,7 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
+abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLQueries<
         C,
         Q,
         MySQL80Query._Select80Clause<C, Q>,      //WE

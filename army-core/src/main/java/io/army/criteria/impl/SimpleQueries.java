@@ -569,6 +569,71 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     abstract SP createQueryUnion(UnionType unionType);
 
 
+    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, SP>
+            extends SimpleQueries<Q, W, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, SP>
+            implements Query._DynamicWithCteClause<B, WE> {
+
+        private boolean recursive;
+
+        private List<_Cte> cteList;
+
+        WithCteSimpleQueries(CriteriaContext context) {
+            super(context);
+        }
+
+        @Override
+        public final WE with(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(builder);
+            return this.endWithClause(builder, true);
+        }
+
+        @Override
+        public final WE withRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(builder);
+            return this.endWithClause(builder, true);
+        }
+
+        @Override
+        public final WE ifWith(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(builder);
+            return this.endWithClause(builder, false);
+        }
+
+        @Override
+        public final WE ifWithRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(builder);
+            return this.endWithClause(builder, false);
+        }
+
+
+        abstract B createCteBuilder(boolean recursive);
+
+
+        final void endStaticWithClause(final boolean recursive) {
+            if (this.cteList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.recursive = recursive;
+            this.cteList = this.context.endWithClause(true);
+        }
+
+        private WE endWithClause(final B builder, final boolean required) {
+            this.recursive = builder.isRecursive();
+            this.cteList = this.context.endWithClause(required);
+            return (WE) this;
+        }
+
+    }//WithCteSimpleQueries
+
+
     static abstract class SelectClauseDispatcher<W extends Query.SelectModifier, SR>
             implements Query._DynamicHintModifierSelectClause<W, SR> {
 

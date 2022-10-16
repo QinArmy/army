@@ -263,7 +263,8 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface _OrderBySpec<I extends Item> extends _OrderByClause<_OrderByWithRollupSpec<I>>, _LimitSpec<I> {
+    interface _OrderBySpec<I extends Item> extends _OrderByClause<_OrderByWithRollupSpec<I>>, _LimitSpec<I>
+            , _UnionSpec<I> {
 
     }
 
@@ -324,7 +325,8 @@ public interface MySQLQuery extends Query, DialectStatement {
     interface _JoinSpec<I extends Item>
             extends _MySQLJoinClause<_IndexHintOnSpec<I>, _OnClause<_JoinSpec<I>>>
             , _MySQLCrossJoinClause<_IndexHintJoinSpec<I>, _JoinSpec<I>>
-            , _MySQLDialectJoinClause<_PartitionOnSpec<I>> {
+            , _MySQLDialectJoinClause<_PartitionOnSpec<I>>
+            , _WhereSpec<I> {
 
     }
 
@@ -376,7 +378,7 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface _UnionAndQuerySpec<I extends Item> extends _WithCteSpec<I>
+    interface _UnionAndQuerySpec<I extends Item> extends _MySQLSelectClause<I>
             , Query._LeftParenClause<_UnionAndQuerySpec<Statement._RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
