@@ -100,6 +100,7 @@ public interface MySQLInsert extends DialectStatement {
 
     }
 
+
     interface _StaticCteAsClause<I extends Item> extends Statement._AsClause<MySQL80Query._Select80Clause<I>> {
 
     }
@@ -121,18 +122,23 @@ public interface MySQLInsert extends DialectStatement {
         <T> _PartitionSpec<Insert, T> insertInto(ComplexTableMeta<P, T> table);
     }
 
-
-    interface _ChildCteComma<P> extends Query._StaticWithCommaClause<_StaticCteLeftParenSpec<_ChildCteComma<P>>>
-            , _ChildInsertIntoSpec<P> {
+    interface _ChildCteSpec<P> extends _CteSpec<_ChildCteComma<P>> {
 
     }
 
+
+    interface _ChildCteComma<P>
+            extends Query._StaticWithCommaClause<_StaticCteLeftParenSpec<_ChildCteSpec<P>>>
+            , _ChildInsertIntoSpec<P> {
+
+    }
 
     interface _ChildWithCteSpec<P> extends Query._DynamicWithCteClause<MySQLCteBuilder, _ChildInsertIntoSpec<P>>
             , Query._StaticWithCteClause<_StaticCteLeftParenSpec<_ChildCteComma<P>>>
             , _ChildInsertIntoSpec<P> {
 
     }
+
 
     interface _PrimaryIntoClause {
 
@@ -153,14 +159,20 @@ public interface MySQLInsert extends DialectStatement {
 
     }
 
-    interface _PrimaryCteComma extends Query._StaticWithCommaClause<_StaticCteLeftParenSpec<_PrimaryCteComma>>
+
+    interface _PrimaryCteSpec extends _CteSpec<_PrimaryCteComma> {
+
+    }
+
+
+    interface _PrimaryCteComma extends Query._StaticWithCommaClause<_StaticCteLeftParenSpec<_PrimaryCteSpec>>
             , _PrimaryInsertIntoSpec {
 
     }
 
 
     interface _PrimaryWithCteSpec extends Query._DynamicWithCteClause<MySQLCteBuilder, _PrimaryInsertIntoSpec>
-            , Query._StaticWithCteClause<_StaticCteLeftParenSpec<_PrimaryCteComma>>
+            , Query._StaticWithCteClause<_StaticCteLeftParenSpec<_PrimaryCteSpec>>
             , _PrimaryInsertIntoSpec {
 
     }

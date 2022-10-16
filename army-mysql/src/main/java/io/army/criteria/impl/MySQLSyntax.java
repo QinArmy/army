@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Hint;
+import io.army.criteria.Query;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.lang.Nullable;
 
@@ -23,6 +24,11 @@ abstract class MySQLSyntax extends Functions.CaseValueFunctions {
      * package constructor
      */
     MySQLSyntax() {
+    }
+
+
+    public interface Modifier extends Query.SelectModifier {
+
     }
 
 

@@ -25,7 +25,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
         extends WhereClause<WR, WA, OR, LR>
         implements Statement._JoinModifierClause<JT, JS>, Statement._CrossJoinModifierClause<FT, FS>
         , DialectStatement._JoinModifierCteClause<JC>, DialectStatement._CrossJoinModifierCteClause<FC>
-        , DialectStatement._StraightJoinModifierClause<JT, JS>, DialectStatement._StraightJoinModifierCteClause<JC> {
+        , DialectStatement._StraightJoinModifierTabularClause<JT, JS>, DialectStatement._StraightJoinModifierCteClause<JC> {
 
 
     final Consumer<_TableBlock> blockConsumer;
@@ -262,14 +262,6 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
         assert as == SQLs.AS;
         return this.onAddCteItem(_JoinType.STRAIGHT_JOIN, modifier, cteName, alias);
     }
-
-
-    @Override
-    public final JT straightJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-        assert as == SQLs.AS;
-        return this.onAddTableItem(_JoinType.STRAIGHT_JOIN, modifier, table, tableAlias);
-    }
-
 
     @Override
     public final <T extends TabularItem> Statement._AsClause<JS> straightJoin(Query.TabularModifier modifier, Supplier<T> supplier) {

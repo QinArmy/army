@@ -1,54 +1,40 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.MySQLs;
 
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 /**
  * <p>
- * This interface representing MySQL SELECT syntax,this interface is base interface of below:
- * <ul>
- *     <li>{@link MySQL80Query}</li>
- * </ul>
+ * This interface representing MySQL 8.0 SELECT syntax.
  * </p>
  *
- * @see MySQL80Query
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/select.html">MySQL 8.0 Select statement</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/union.html">MySQL 8.0 UNION Clause</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/join.html">MySQL 8.0 JOIN Clause</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/select-into.html">MySQL 8.0 SELECT ... INTO Statement</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/nested-join-optimization.html">MySQL 8.0 Nested Join Optimization</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/partitioning-selection.html">MySQL 8.0 Partition Selection</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/innodb-locking-reads.html#innodb-locking-reads-nowait-skip-locked">MySQL 8.0 Locking Read Concurrency with NOWAIT and SKIP LOCKED</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/parenthesized-query-expressions.html">MySQL 8.0 Parenthesized Query Expressions</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/index-hints.html">MySQL 8.0 Index Hints</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html">MySQL 8.0 Optimizer Hints</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/with.html">MySQL 8.0 WITH (Common Table Expressions)</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-named-windows.html">MySQL 8.0 Named Windows</a>
  * @since 1.0
  */
 public interface MySQLQuery extends Query, DialectStatement {
 
-
-    /**
-     * <p>
-     * This interface representing SELECT clause for MySQL.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C>  criteria object java type.
-     * @param <SR> next clause java type
-     * @since 1.0
-     */
-    interface _MySQLSelectClause<C, SR> extends _DialectSelectClause<C, MySQLModifier, SR> {
+    interface _MySQLDynamicWithCteClause<WE> extends _DynamicWithCteClause<MySQLCteBuilder, WE> {
 
     }
 
 
-    interface _MySQLFromLateralClause<C, FS> {
-
-        <T extends SubQuery> FS fromLateral(Supplier<T> supplier, String alias);
-
-        <T extends SubQuery> FS fromLateral(Function<C, T> function, String alias);
-    }
-
-
-    interface _MySQLFromClause<C, FT, FS> extends Statement._FromClause<C, FT, FS>
-            , DialectStatement._FromCteClause<FS>
-            , _MySQLFromLateralClause<C, FS> {
+    interface _MySQLFromClause<FT, FS> extends _FromModifierTabularClause<FT, FS>
+            , _FromCteClause<FS> {
 
     }
 
@@ -62,25 +48,17 @@ public interface MySQLQuery extends Query, DialectStatement {
      *     </ul>
      * </p>
      *
-     * @param <C>  criteria type use to create dynamic statement.
      * @param <JT> next clause java type
      * @param <JS> next clause java type
      * @since 1.0
      */
-    interface _MySQLJoinClause<C, JT, JS> extends Statement._JoinClause<C, JT, JS>
-            , DialectStatement._StraightJoinClause<C, JT, JS>
+    interface _MySQLJoinClause<JT, JS> extends Statement._JoinModifierTabularClause<JT, JS>
+            , DialectStatement._StraightJoinModifierTabularClause<JT, JS>
             , DialectStatement._JoinCteClause<JS>
-            , DialectStatement._StraightJoinCteClause<JS>
-            , DialectStatement._JoinLateralClause<C, JS>
-            , DialectStatement._StraightJoinLateralClause<C, JS> {
+            , DialectStatement._StraightJoinCteClause<JS> {
 
     }
 
-
-    interface _MySQLIfJoinClause<C, FS> extends Statement._IfJoinClause<C, FS>
-            , DialectStatement._IfStraightJoinClause<C, FS> {
-
-    }
 
     /**
      * <p>
@@ -99,10 +77,8 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface _MySQLCrossJoinClause<C, FT, FS> extends Statement._CrossJoinClause<C, FT, FS>
-            , DialectStatement._CrossJoinCteClause<FS>
-            , DialectStatement._CrossJoinLateralClause<C, FS> {
-
+    interface _MySQLCrossJoinClause<FT, FS> extends Statement._CrossJoinModifierTabularClause<FT, FS>
+            , DialectStatement._CrossJoinCteClause<FS> {
     }
 
 
@@ -112,323 +88,82 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface _PartitionAndAsClause<C, AR> extends _PartitionClause<C, Statement._AsClause<AR>> {
+    interface _PartitionAndAsClause<AR> extends _PartitionClause<Statement._AsClause<AR>> {
 
     }
 
 
-    interface _IndexForJoinSpec<C, RR> extends Statement._LeftParenStringDualOptionalSpec<C, RR> {
+    interface _IndexForJoinSpec<RR> extends Statement._LeftParenStringDualOptionalSpec<RR> {
 
-        Statement._LeftParenStringDualOptionalSpec<C, RR> forJoin();
-
-    }
-
-    interface _IndexForOrderBySpec<C, RR> extends Statement._LeftParenStringDualOptionalSpec<C, RR> {
-
-        Statement._LeftParenStringDualOptionalSpec<C, RR> forOrderBy();
+        Statement._LeftParenStringDualOptionalSpec<RR> forJoin();
 
     }
 
+    interface _IndexForOrderBySpec<RR> extends Statement._LeftParenStringDualOptionalSpec<RR> {
 
-    interface _IndexPurposeBySpec<C, RR> extends _IndexForJoinSpec<C, RR>, _IndexForOrderBySpec<C, RR> {
-
-        Statement._LeftParenStringDualOptionalSpec<C, RR> forGroupBy();
+        Statement._LeftParenStringDualOptionalSpec<RR> forOrderBy();
 
     }
 
 
-    interface _IndexHintClause<C, RR> {
+    interface _IndexPurposeBySpec<RR> extends _IndexForJoinSpec<RR>, _IndexForOrderBySpec<RR> {
 
-        Statement._LeftParenStringDualOptionalSpec<C, RR> useIndex();
+        Statement._LeftParenStringDualOptionalSpec<RR> forGroupBy();
 
-        Statement._LeftParenStringDualOptionalSpec<C, RR> ignoreIndex();
-
-        Statement._LeftParenStringDualOptionalSpec<C, RR> forceIndex();
     }
 
 
-    interface _IndexHintForJoinClause<C, RR> extends _IndexHintClause<C, RR> {
+    interface _IndexHintClause<RR> {
+
+        Statement._LeftParenStringDualOptionalSpec<RR> useIndex();
+
+        Statement._LeftParenStringDualOptionalSpec<RR> ignoreIndex();
+
+        Statement._LeftParenStringDualOptionalSpec<RR> forceIndex();
+    }
+
+
+    interface _IndexHintForJoinClause<RR> extends _IndexHintClause<RR> {
 
         @Override
-        _IndexForJoinSpec<C, RR> useIndex();
+        _IndexForJoinSpec<RR> useIndex();
 
         @Override
-        _IndexForJoinSpec<C, RR> ignoreIndex();
+        _IndexForJoinSpec<RR> ignoreIndex();
 
         @Override
-        _IndexForJoinSpec<C, RR> forceIndex();
+        _IndexForJoinSpec<RR> forceIndex();
 
     }
 
 
-    interface _IndexHintForOrderByClause<C, RR> extends _IndexHintClause<C, RR> {
+    interface _IndexHintForOrderByClause<RR> extends _IndexHintClause<RR> {
 
         @Override
-        _IndexForOrderBySpec<C, RR> useIndex();
+        _IndexForOrderBySpec<RR> useIndex();
 
         @Override
-        _IndexForOrderBySpec<C, RR> ignoreIndex();
+        _IndexForOrderBySpec<RR> ignoreIndex();
 
         @Override
-        _IndexForOrderBySpec<C, RR> forceIndex();
+        _IndexForOrderBySpec<RR> forceIndex();
 
     }
 
 
-    interface _QueryIndexHintClause<C, RR> extends _IndexHintForJoinClause<C, RR>, _IndexHintForOrderByClause<C, RR> {
+    interface _QueryIndexHintClause<RR> extends _IndexHintForJoinClause<RR>, _IndexHintForOrderByClause<RR> {
 
         @Override
-        _IndexPurposeBySpec<C, RR> useIndex();
+        _IndexPurposeBySpec<RR> useIndex();
 
         @Override
-        _IndexPurposeBySpec<C, RR> ignoreIndex();
+        _IndexPurposeBySpec<RR> ignoreIndex();
 
         @Override
-        _IndexPurposeBySpec<C, RR> forceIndex();
+        _IndexPurposeBySpec<RR> forceIndex();
 
     }
 
-
-    /**
-     * <p>
-     * This interface representing PARTITION clause in MySQL.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    @Deprecated
-    interface _PartitionClause2<C, PR> {
-
-        PR partition(String partitionName);
-
-        PR partition(String partitionName1, String partitionNam2);
-
-        PR partition(String partitionName1, String partitionNam2, String partitionNam3);
-
-        PR partition(Consumer<Consumer<String>> consumer);
-
-        PR partition(BiConsumer<C, Consumer<String>> consumer);
-
-        PR ifPartition(Consumer<Consumer<String>> consumer);
-
-        PR ifPartition(BiConsumer<C, Consumer<String>> consumer);
-
-    }
-
-
-    @Deprecated
-    interface _UserIndexClause<C, RR> {
-
-    }
-
-
-
-    /**
-     * <p>
-     * This interface representing index hint(FOR ORDER BY) clause in MySQL.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    interface _IndexForOrderByClause<C, IC> {
-
-        IC forOrderBy(List<String> indexList);
-
-        IC forOrderBy(Function<C, List<String>> function);
-    }
-
-    /**
-     * <p>
-     * This interface representing index hint(FOR JOIN) clause in MySQL.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    interface _IndexForJoinClause<C, IC> {
-
-        IC forJoin(List<String> indexList);
-
-        IC forJoin(Function<C, List<String>> function);
-    }
-
-
-    /**
-     * <p>
-     * This interface representing index hint(FOR GROUP BY) clause in MySQL.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    interface _IndexPurposeClause<C, IC> extends _IndexForOrderByClause<C, IC>
-            , _IndexForJoinClause<C, IC> {
-
-        IC forGroupBy(List<String> indexList);
-
-        IC forGroupBy(Function<C, List<String>> function);
-
-    }
-
-    /**
-     * <p>
-     * This interface representing WITH ROLLUP clause in MySQL.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    interface _WithRollupClause<C, WU> {
-
-        WU withRollup();
-
-        WU ifWithRollup(Predicate<C> predicate);
-
-    }
-
-
-    /**
-     * <p>
-     * This interface representing LOCK clause Prior to MySQL 8.0.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    interface _LockClause<C, LO> {
-
-        LO forUpdate();
-
-        LO lockInShareMode();
-
-        LO ifForUpdate(Predicate<C> predicate);
-
-        LO ifLockInShareMode(Predicate<C> predicate);
-
-    }
-
-    /**
-     * <p>
-     * This interface representing lock FOR UPDATE and LOCK IN SHARE MODE clause As of MySQL 8.0.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C>  java criteria object java type
-     * @param <LU> next clause java type
-     * @param <LS> next clause java type
-     * @since 1.0
-     */
-    interface _Lock80Clause<C, LU, LS> {
-
-        LU forUpdate();
-
-        LU forShare();
-
-        LU ifForUpdate(Predicate<C> predicate);
-
-        LU ifForShare(Predicate<C> predicate);
-
-        LS lockInShareMode();
-
-        LS ifLockInShareMode(Predicate<C> predicate);
-
-    }
-
-    /**
-     * <p>
-     * This interface representing lock OF clause As of MySQL 8.0.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C>  java criteria object java type
-     * @param <LO> next clause java type
-     * @since 1.0
-     */
-    interface _Lock80OfClause<C, LO> {
-
-        LO of(String tableAlias);
-
-        LO of(String tableAlias1, String tableAlias2);
-
-        LO of(String tableAlias1, String tableAlias2, String tableAlias3);
-
-        LO of(Supplier<List<String>> supplier);
-
-        LO of(Function<C, List<String>> function);
-
-        LO of(Consumer<List<String>> consumer);
-
-        LO ifOf(Supplier<List<String>> supplier);
-
-        LO ifOf(Function<C, List<String>> function);
-
-    }
-
-    /**
-     * <p>
-     * This interface representing lock NOWAIT and SKIP LOCKED clause in  MySQL 8.0.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C>  java criteria object java type
-     * @param <LS> next clause java type
-     * @since 1.0
-     */
-    interface _Lock80OptionClause<C, LS> {
-
-        LS nowait();
-
-        LS skipLocked();
-
-        LS ifNowait(Predicate<C> predicate);
-
-        LS ifSkipLocked(Predicate<C> predicate);
-
-    }
 
     /**
      * <p>
@@ -440,12 +175,11 @@ public interface MySQLQuery extends Query, DialectStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C>  java criteria object java type
      * @param <IO> next clause java type
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/select-into.html">MySQL 5.7 SELECT ... INTO Statement</a>
      * @since 1.0
      */
-    interface _IntoClause<C, IO> {
+    interface _IntoOptionClause<IO> {
 
         IO into(String varName);
 
@@ -453,32 +187,49 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         IO into(String varName1, String varName2, String varName3);
 
+        IO into(String varName1, String varName2, String varName3, String varName4);
+
         /**
          * @param varNameList non-null and non-empty list.
          */
         IO into(List<String> varNameList);
 
-        /**
-         * @param supplier must return non-null and non-empty list.
-         */
-        IO into(Supplier<List<String>> supplier);
+        IO into(Consumer<Consumer<String>> consumer);
 
-        /**
-         * @param function must return non-null and non-empty list.
-         */
-        IO into(Function<C, List<String>> function);
+    }
 
-        IO into(Consumer<List<String>> consumer);
+
+    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_UnionAndQuerySpec<I>>, _QuerySpec<I> {
+
+    }
+
+    interface _UnionLimitSpec<I extends Item> extends _QuerySpec<I> {
+
+    }
+
+    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionLimitSpec<I>>
+            , _UnionLimitSpec<I>, _UnionSpec<I> {
+
+    }
+
+
+    interface _IntoOptionSpec<I extends Item> extends _IntoOptionClause<_QuerySpec<I>>, _QuerySpec<I> {
+
+    }
+
+    interface _LockWaitOptionSpec<I extends Item> extends _MinLockWaitOptionClause<_IntoOptionSpec<I>>
+            , _IntoOptionSpec<I> {
+
+    }
+
+    interface _LockOfTableSpec<I extends Item> extends _LockOfTableClause<_LockWaitOptionSpec<I>>
+            , _LockWaitOptionSpec<I> {
 
     }
 
     /**
      * <p>
-     * This interface representing the composite of below:
-     *     <ul>
-     *          <li>INTO clause for MySQL</li>
-     *          <li>method {@link _QuerySpec#asQuery()}</li>
-     *     </ul>
+     * This interface representing LOCK clause Prior to MySQL 8.0.
      * </p>
      * <p>
      * <strong>Note:</strong><br/>
@@ -486,192 +237,153 @@ public interface MySQLQuery extends Query, DialectStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _IntoSpec<C, Q extends Query> extends _IntoClause<C, _QuerySpec<Q>>, _QuerySpec<Q> {
+    interface _LockOptionSpec<I extends Item> extends _MinLockOptionClause<_LockOfTableSpec<I>>, _IntoOptionSpec<I> {
+
+        _IntoOptionSpec<I> lockInShareMode();
+
+        _IntoOptionSpec<I> ifLockInShareMode(BooleanSupplier supplier);
+
+    }
+
+    interface _LimitSpec<I extends Item> extends _LimitClause<_LockOptionSpec<I>>, _LockOptionSpec<I> {
 
     }
 
 
-    /*-------------------below nested item interface -------------------*/
+    interface _OrderByWithRollupClause<I extends Item> {
 
+        _LimitSpec<I> withRollup();
 
-    /**
-     * <p>
-     * This interface representing the composite of below:
-     *     <ul>
-     *          <li>{@link _IndexHintClause}</li>
-     *          <li>the composite {@link _NestedJoinSpec}</li>
-     *     </ul>
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    interface _NestedUseIndexJoinSpec<C>
-            extends _QueryIndexHintClause<C, _NestedUseIndexJoinSpec<C>>
-            , _NestedJoinClause<C> {
+        _LimitSpec<I> ifWithRollup(BooleanSupplier supplier);
+    }
+
+    interface _OrderByWithRollupSpec<I extends Item> extends _OrderByWithRollupClause<I>, _LimitSpec<I> {
 
     }
 
-    /**
-     * <p>
-     * This interface representing the composite of below:
-     *     <ul>
-     *          <li>{@link _OnClause}</li>
-     *          <li>the composite {@link _NestedJoinSpec}</li>
-     *     </ul>
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    interface _NestedOnSpec<C> extends _OnClause<C, _NestedJoinSpec<C>>, _NestedJoinSpec<C> {
+    interface _OrderBySpec<I extends Item> extends _OrderByClause<_OrderByWithRollupSpec<I>>, _LimitSpec<I> {
 
     }
 
 
-    /**
-     * <p>
-     * This interface representing the composite of below:
-     *     <ul>
-     *          <li>{@link _IndexHintClause}</li>
-     *          <li>the composite {@link _NestedOnSpec}</li>
-     *     </ul>
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    interface _NestedUseIndexOnSpec<C>
-            extends _QueryIndexHintClause<C, _NestedUseIndexOnSpec<C>>
-            , _NestedOnSpec<C> {
+    interface _WindowCommaSpec<I extends Item> extends _OrderBySpec<I> {
 
-    }
-
-    /**
-     * <p>
-     * This interface representing nested partition clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    interface _NestedPartitionOnClause<C> extends _PartitionClause<C, _AsClause<_NestedUseIndexOnSpec<C>>> {
+        Window._SimpleAsClause<_WindowCommaSpec<I>> comma(String windowName);
 
     }
 
 
-    /**
-     * <p>
-     * This interface representing nested partition clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    interface _NestedPartitionJoinClause<C>
-            extends _PartitionClause<C, _AsClause<_NestedUseIndexJoinSpec<C>>> {
+    interface _WindowSpec<I extends Item> extends _OrderBySpec<I> {
+
+        _OrderBySpec<I> window(Consumer<MySQLWindowBuilder> consumer);
+
+        Window._SimpleAsClause<_WindowCommaSpec<I>> window(String windowName);
+
+    }
+
+    interface _HavingSpec<I extends Item> extends _HavingClause<_WindowSpec<I>>, _WindowSpec<I> {
+
+    }
+
+    interface _GroupByWithRollupSpec<I extends Item> extends _OrderByWithRollupClause<I>, _HavingSpec<I> {
+
+        @Override
+        _HavingSpec<I> withRollup();
+
+        @Override
+        _HavingSpec<I> ifWithRollup(BooleanSupplier supplier);
+
+    }
+
+    interface _GroupBySpec<I extends Item> extends _GroupByClause<_GroupByWithRollupSpec<I>>, _WindowSpec<I> {
+
+    }
+
+    interface _WhereAndSpec<I extends Item> extends _WhereAndClause<_WhereAndSpec<I>>, _GroupBySpec<I> {
+
+    }
+
+    interface _WhereSpec<I extends Item> extends _QueryWhereClause<_GroupBySpec<I>, _WhereAndSpec<I>>, _GroupBySpec<I> {
 
     }
 
 
-    interface _NestedJoinClause<C> extends _MySQLJoinClause<C, _NestedUseIndexOnSpec<C>, _NestedOnSpec<C>>
-            , _MySQLCrossJoinClause<C, _NestedUseIndexJoinSpec<C>, _NestedJoinSpec<C>>
-            , _MySQLIfJoinClause<C, _NestedJoinSpec<C>>
-            , _MySQLDialectJoinClause<_NestedPartitionOnClause<C>>
-            , _DialectCrossJoinClause<_NestedPartitionJoinClause<C>> {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing the composite of below:
-     *     <ul>
-     *          <li>{@link _MySQLJoinClause}</li>
-     *          <li>{@link _CrossJoinCteClause}</li>
-     *          <li>{@link _CrossJoinClause}</li>
-     *          <li>{@link _MySQLDialectJoinClause}</li>
-     *          <li>{@link _DialectCrossJoinClause}</li>
-     *          <li> {@link _RightParenClause}</li>
-     *     </ul>
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    interface _NestedJoinSpec<C> extends _NestedJoinClause<C>
-            , _RightParenClause<NestedItems> {
-
+    interface _IndexHintOnSpec<I extends Item> extends _QueryIndexHintClause<_IndexHintOnSpec<I>>
+            , _OnClause<_JoinSpec<I>> {
 
     }
 
 
-    /**
-     * <p>
-     * This interface representing nested LEFT BRACKET clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    interface _MySQLNestedLeftParenClause<C>
-            extends _LeftParenClause<C, _NestedUseIndexJoinSpec<C>, _NestedJoinSpec<C>>
-            , DialectStatement._DialectLeftParenClause<_NestedPartitionJoinClause<C>>
-            , DialectStatement._LeftParenCteClause<_NestedJoinSpec<C>>
-            , DialectStatement._LeftParenLateralClause<C, _NestedJoinSpec<C>> {
+    interface _PartitionOnSpec<I extends Item> extends _PartitionAndAsClause<_IndexHintOnSpec<I>> {
 
     }
 
-    /*-------------------below if join clause interface -------------------*/
 
-
-    interface _IfOnClause<C> extends Statement._OnClause<C, JoinItemBlock<C>>, ItemBlock<C> {
-
-    }
-
-    interface _IfUseIndexOnSpec<C> extends _QueryIndexHintClause<C, _IfUseIndexOnSpec<C>>, _IfOnClause<C> {
+    interface _JoinSpec<I extends Item>
+            extends _MySQLJoinClause<_IndexHintOnSpec<I>, _OnClause<_JoinSpec<I>>>
+            , _MySQLCrossJoinClause<_IndexHintJoinSpec<I>, _JoinSpec<I>>
+            , _MySQLDialectJoinClause<_PartitionOnSpec<I>> {
 
     }
 
-    interface _IfPartitionAsClause<C> extends _PartitionClause<C, Statement._AsClause<_IfUseIndexOnSpec<C>>> {
+    interface _IndexHintJoinSpec<I extends Item> extends _QueryIndexHintClause<_IndexHintJoinSpec<I>>
+            , _JoinSpec<I> {
+
+    }
+
+
+    interface _PartitionJoinSpec<I extends Item> extends _PartitionAndAsClause<_IndexHintJoinSpec<I>> {
+
+    }
+
+
+    interface _FromSpec<I extends Item> extends _MySQLFromClause<_IndexHintJoinSpec<I>, _JoinSpec<I>>
+            , _DialectFromClause<_PartitionJoinSpec<I>>
+            , _IntoOptionSpec<I>
+            , _UnionSpec<I> {
+
+    }
+
+
+    interface _MySQLSelectClause<I extends Item>
+            extends _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<I>> {
+
+    }
+
+
+    interface _StaticCteAsClause<I extends Item> extends Statement._StaticAsClaus<_MySQLSelectClause<_CteSpec<I>>> {
+
+    }
+
+    interface _StaticCteLeftParenSpec<I extends Item>
+            extends _LeftParenStringQuadraOptionalSpec<_StaticCteAsClause<I>>
+            , _StaticCteAsClause<I> {
+
+    }
+
+
+    interface _CteComma<I extends Item>
+            extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_CteComma<I>>>
+            , _MySQLSelectClause<I> {
+
+    }
+
+    interface _WithCteSpec<I extends Item> extends _MySQLDynamicWithCteClause<_MySQLSelectClause<I>>
+            , _StaticWithCteClause<_StaticCteLeftParenSpec<_CteComma<I>>>
+            , _MySQLSelectClause<I> {
+
+    }
+
+    interface _UnionAndQuerySpec<I extends Item> extends _WithCteSpec<I>
+            , Query._LeftParenClause<_UnionAndQuerySpec<Statement._RightParenClause<_UnionOrderBySpec<I>>>> {
+
+    }
+
+
+    interface _DynamicCteWithSpec extends _MySQLDynamicWithCteClause<_MySQLSelectClause<_CteSpec<MySQLCteBuilder>>>
+            , _MySQLSelectClause<_CteSpec<MySQLCteBuilder>> {
 
     }
 

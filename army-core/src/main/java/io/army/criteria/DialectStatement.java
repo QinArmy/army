@@ -125,14 +125,11 @@ public interface DialectStatement extends Statement {
 
     }
 
-    interface _StraightJoinModifierClause<JT, JS> extends _StraightJoinClause<JT, JS> {
-
-        JT straightJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+    interface _StraightJoinModifierTabularClause<JT, JS> extends _StraightJoinClause<JT, JS> {
 
         <T extends TabularItem> _AsClause<JS> straightJoin(Query.TabularModifier modifier, Supplier<T> supplier);
-
-
     }
+
 
 
 

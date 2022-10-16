@@ -357,7 +357,7 @@ public interface PostgreQuery extends Query, DialectStatement {
     }
 
 
-    interface _GroupBySpec<I extends Item> extends _GroupClause<_HavingSpec<I>>
+    interface _GroupBySpec<I extends Item> extends _GroupByClause<_HavingSpec<I>>
             , _OrderBySpec<I> {
 
     }

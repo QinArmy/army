@@ -208,7 +208,7 @@ public interface StandardQuery extends Query {
      * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _GroupBySpec<I extends Item> extends _GroupClause<_HavingSpec<I>>
+    interface _GroupBySpec<I extends Item> extends _GroupByClause<_HavingSpec<I>>
             , _OrderBySpec<I> {
 
     }

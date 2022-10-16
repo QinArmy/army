@@ -190,24 +190,27 @@ public interface Statement extends Item {
 
     }
 
-    interface _JoinModifierClause<JT, JS> extends _JoinClause<JT, JS> {
 
-        JT leftJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+    interface _JoinModifierTabularClause<JT, JS> extends _JoinClause<JT, JS> {
 
         <T extends TabularItem> _AsClause<JS> leftJoin(Query.TabularModifier modifier, Supplier<T> supplier);
 
-        JT join(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
-
         <T extends TabularItem> _AsClause<JS> join(Query.TabularModifier modifier, Supplier<T> supplier);
-
-        JT rightJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
         <T extends TabularItem> _AsClause<JS> rightJoin(Query.TabularModifier modifier, Supplier<T> supplier);
 
-        JT fullJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
-
-
         <T extends TabularItem> _AsClause<JS> fullJoin(Query.TabularModifier modifier, Supplier<T> supplier);
+    }
+
+    interface _JoinModifierClause<JT, JS> extends _JoinModifierTabularClause<JT, JS> {
+
+        JT leftJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+
+        JT join(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+
+        JT rightJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+
+        JT fullJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
     }
 
@@ -231,15 +234,17 @@ public interface Statement extends Item {
 
     }
 
-    interface _CrossJoinModifierClause<FT, FS> extends _CrossJoinClause<FT, FS> {
+    interface _CrossJoinModifierTabularClause<FT, FS> extends _CrossJoinClause<FT, FS> {
+
+        <T extends TabularItem> _AsClause<FS> crossJoin(Query.TabularModifier modifier, Supplier<T> supplier);
+    }
+
+    interface _CrossJoinModifierClause<FT, FS> extends _CrossJoinModifierTabularClause<FT, FS> {
 
         FT crossJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> _AsClause<FS> crossJoin(Query.TabularModifier modifier, Supplier<T> supplier);
 
     }
-
-
 
 
     /**
@@ -444,7 +449,7 @@ public interface Statement extends Item {
      *
      * @since 1.0
      */
-    interface _OrderByClause<OR> {
+    interface _OrderByClause<OR> extends Item {
 
         OR orderBy(SortItem sortItem);
 

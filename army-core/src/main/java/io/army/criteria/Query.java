@@ -128,11 +128,15 @@ public interface Query extends RowSet {
 
     }
 
-    interface _FromModifierClause<FT, FS> extends _FromClause<FT, FS> {
+    interface _FromModifierTabularClause<FT, FS> extends _FromClause<FT, FS> {
+
+        <T extends TabularItem> Statement._AsClause<FS> from(Query.TabularModifier modifier, Supplier<T> supplier);
+    }
+
+    interface _FromModifierClause<FT, FS> extends _FromModifierTabularClause<FT, FS> {
 
         FT from(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> Statement._AsClause<FS> from(Query.TabularModifier modifier, Supplier<T> supplier);
     }
 
 
@@ -222,7 +226,7 @@ public interface Query extends RowSet {
     }
 
 
-    interface _GroupClause<GR> {
+    interface _GroupByClause<GR> {
 
         GR groupBy(SortItem sortItem);
 

@@ -27,6 +27,7 @@ import java.util.function.Predicate;
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-named-windows.html">MySQL 8.0 Named Windows</a>
  * @since 1.0
  */
+@Deprecated
 public interface MySQL80Query extends MySQLQuery {
 
 
@@ -251,7 +252,7 @@ public interface MySQL80Query extends MySQLQuery {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _GroupClause} </li>
+     *          <li>{@link _GroupByClause} </li>
      *          <li>the composite {@link _WindowSpec}</li>
      *     </ul>
      * </p>
@@ -265,7 +266,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _GroupBySpec<C, Q extends Query> extends _GroupClause<C, _GroupByWithRollupSpec<C, Q>>
+    interface _GroupBySpec<C, Q extends Query> extends _GroupByClause<C, _GroupByWithRollupSpec<C, Q>>
             , _WindowSpec<C, Q> {
 
     }

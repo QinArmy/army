@@ -117,11 +117,10 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C>  java criteria object java type
      * @param <PR> next clause java type
      * @since 1.0
      */
-    interface _PartitionByExpClause<C, PR> {
+    interface _PartitionByExpClause<PR> {
 
         PR partitionBy(Expression exp);
 
@@ -312,7 +311,7 @@ public interface Window {
      * @param <R> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
-    interface _SimpleAsClause<C, R> extends _AsClause<_SimpleLeftParenClause<C, R>> {
+    interface _SimpleAsClause<I extends Item> extends _AsClause<_SimpleLeftParenClause<C, R>> {
 
 
     }
@@ -351,12 +350,11 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> criteria object java type
-     * @param <R> {@link Statement._RightParenClause#rightParen()} return java type
+     * @param <I> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
-    interface _SimplePartitionBySpec<C, R> extends _PartitionByExpClause<C, _SimpleOrderBySpec<C, R>>
-            , _SimpleOrderBySpec<C, R> {
+    interface _SimplePartitionBySpec<I extends Item> extends _PartitionByExpClause<C, _SimpleOrderBySpec<C, R>>
+            , _SimpleOrderBySpec<I> {
 
 
     }
