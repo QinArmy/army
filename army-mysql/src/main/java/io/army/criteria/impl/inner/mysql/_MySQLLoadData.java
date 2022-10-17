@@ -1,11 +1,11 @@
 package io.army.criteria.impl.inner.mysql;
 
 import io.army.criteria.SQLWords;
+import io.army.criteria.impl.MySQLSyntax;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Statement;
-import io.army.criteria.mysql.MySQLModifier;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -18,7 +18,7 @@ import java.util.List;
 public interface _MySQLLoadData extends _Statement, _DialectStatement {
 
 
-    List<MySQLModifier> modifierList();
+    List<MySQLSyntax._MySQLModifier> modifierList();
 
     Path fileName();
 

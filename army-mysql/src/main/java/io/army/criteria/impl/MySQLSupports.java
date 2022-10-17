@@ -56,19 +56,28 @@ abstract class MySQLSupports extends CriteriaSupports {
         return tableBlock;
     }
 
-    static <C, AR> MySQLQuery._PartitionClause<C, Statement._AsClause<AR>> partition(CriteriaContext criteriaContext
-            , BiFunction<List<String>, String, AR> function) {
-        return new SinglePartitionClause<>(criteriaContext, function);
+
+    static MySQLCteBuilder mySQLCteBuilder(boolean recursive, CriteriaContext context) {
+        return new MySQLCteBuilderImpl(recursive, context);
     }
 
 
-    private static final class MySQLCteBuilderImpl implements MySQLCteBuilder {
+    private static final class MySQLCteBuilderImpl
+            extends ParenStringConsumerClause<MySQLQuery._DynamicCteAsClause>
+            implements MySQLCteBuilder
+            , MySQLQuery._DynamicCteLeftParenSpec
+            , Statement._CteSpec<MySQLCteBuilder> {
 
         private final boolean recursive;
 
         private final CriteriaContext context;
 
+        private String cteName;
+
+        private List<String> columnAliasList;
+
         private MySQLCteBuilderImpl(boolean recursive, CriteriaContext context) {
+            super(context);
             this.recursive = recursive;
             this.context = context;
             context.onBeforeWithClause(recursive);
@@ -80,9 +89,52 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
         @Override
-        public MySQLQuery._DynamicCteWithSpec query(final @Nullable String cteName) {
-            return null;
+        public MySQLQuery._DynamicCteLeftParenSpec query(final @Nullable String cteName) {
+            if (!_StringUtils.hasText(cteName)) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::cteNameNotText);
+            } else if (this.cteName != null) {
+                throw CriteriaUtils.cteNotEnd(this.context, this.cteName, cteName);
+            }
+            this.cteName = cteName;
+            return this;
         }
+
+
+        @Override
+        public MySQLQuery._MinWithCteSpec<Statement._CteSpec<MySQLCteBuilder>> as() {
+            final String cteName = this.cteName;
+            if (cteName == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            final List<String> aliasList = this.columnAliasList;
+            final CriteriaContext context = this.context;
+            context.onStartCte(cteName);
+            if (aliasList != null) {
+                context.onCteColumnAlias(cteName, aliasList);
+            }
+            return MySQLQueries.subQuery(this.context, query -> {
+                CriteriaUtils.createAndAddCte(context, cteName, aliasList, query);
+                MySQLCteBuilderImpl.this.cteName = null; //clear for next cte
+                MySQLCteBuilderImpl.this.columnAliasList = null; //clear for next cte
+                return MySQLCteBuilderImpl.this;
+
+            });
+        }
+
+        @Override
+        public MySQLCteBuilder asCte() {
+            return this;
+        }
+
+        @Override
+        MySQLQuery._DynamicCteAsClause stringConsumerEnd(List<String> stringList) {
+            if (this.cteName == null || this.columnAliasList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.columnAliasList = stringList;
+            return this;
+        }
+
 
     }//MySQLCteBuilderImpl
 

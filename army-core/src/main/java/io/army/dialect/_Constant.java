@@ -122,11 +122,11 @@ public interface _Constant {
 
     String SPACE_RIGHT_PAREN = " )";
 
-    String FOR_UPDATE = "FOR UPDATE";
+    String SPACE_FOR_UPDATE = " FOR UPDATE";
 
-    String FOR_SHARE = "FOR SHARE";
+    String SPACE_FOR_SHARE = " FOR SHARE";
 
-    String LOCK_IN_SHARE_MODE = "LOCK IN SHARE MODE";
+    String SPACE_LOCK_IN_SHARE_MODE = " LOCK IN SHARE MODE";
 
     String SPACE_ASC = " ASC";
 

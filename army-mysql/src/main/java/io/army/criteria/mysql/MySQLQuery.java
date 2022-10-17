@@ -355,6 +355,11 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
+    interface _MinWithCteSpec<I extends Item> extends _MySQLDynamicWithCteClause<_MySQLSelectClause<I>>
+            , _MySQLSelectClause<I> {
+
+    }
+
 
     interface _StaticCteAsClause<I extends Item> extends Statement._StaticAsClaus<_MySQLSelectClause<_CteSpec<I>>> {
 
@@ -373,9 +378,9 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface _WithCteSpec<I extends Item> extends _MySQLDynamicWithCteClause<_MySQLSelectClause<I>>
-            , _StaticWithCteClause<_StaticCteLeftParenSpec<_CteComma<I>>>
-            , _MySQLSelectClause<I> {
+
+    interface _WithCteSpec<I extends Item> extends _MinWithCteSpec<I>
+            , _StaticWithCteClause<_StaticCteLeftParenSpec<_CteComma<I>>> {
 
     }
 
@@ -385,12 +390,12 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
-    interface _DynamicCteWithSpec extends _MySQLDynamicWithCteClause<_MySQLSelectClause<_CteSpec<MySQLCteBuilder>>>
-            , _MySQLSelectClause<_CteSpec<MySQLCteBuilder>> {
+    interface _DynamicCteAsClause extends _StaticAsClaus<_MinWithCteSpec<_CteSpec<MySQLCteBuilder>>> {
 
     }
 
-    interface _DynamicCteAsClause extends _StaticAsClaus<> {
+    interface _DynamicCteLeftParenSpec extends _LeftParenStringQuadraOptionalSpec<_DynamicCteAsClause>
+            , _DynamicCteAsClause {
 
     }
 

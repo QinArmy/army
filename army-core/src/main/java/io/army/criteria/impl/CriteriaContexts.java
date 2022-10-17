@@ -36,7 +36,7 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
-    static CriteriaContext selectContext(@Nullable CriteriaContext outerContext) {
+    static CriteriaContext primaryQuery(@Nullable CriteriaContext outerContext) {
         return new SimpleQueryContext(outerContext);
     }
 

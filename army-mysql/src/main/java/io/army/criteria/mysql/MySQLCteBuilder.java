@@ -5,7 +5,7 @@ import io.army.criteria.CteBuilderSpec;
 public interface MySQLCteBuilder extends CteBuilderSpec {
 
 
-    MySQLQuery._Ctel query(String cteName);
+    MySQLQuery._DynamicCteLeftParenSpec query(String cteName);
 
 
 }

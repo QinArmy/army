@@ -1,10 +1,10 @@
 package io.army.criteria.impl.inner.mysql;
 
 import io.army.criteria.Hint;
+import io.army.criteria.impl.MySQLSyntax;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.mysql.MySQLModifier;
 import io.army.meta.FieldMeta;
 
 import java.util.List;
@@ -13,7 +13,7 @@ public interface _MySQLInsert extends _Insert {
 
     List<Hint> hintList();
 
-    List<MySQLModifier> modifierList();
+    List<MySQLSyntax._MySQLModifier> modifierList();
 
     List<String> partitionList();
 

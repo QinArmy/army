@@ -71,6 +71,10 @@ abstract class StandardSyntax extends Functions {
 
     }
 
+    public interface WordLateral extends Query.TabularModifier {
+
+    }
+
     public interface WordsWithTies extends Query.FetchOnlyWithTies {
 
     }
@@ -164,6 +168,32 @@ abstract class StandardSyntax extends Functions {
         }
 
     }//KeyWordAnd
+
+    private enum KeyWordLateral implements WordLateral {
+
+        LATERAL(" LATERAL");
+
+        private final String spaceWord;
+
+        KeyWordLateral(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(SQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+    }//KeyWordLateral
 
     private enum KeyWordFirst implements WordFirst, SQLWords {
 
@@ -478,6 +508,8 @@ abstract class StandardSyntax extends Functions {
     public static final WordAs AS = KeyWordAs.AS;
 
     public static final WordAnd AND = KeyWordAnd.AND;
+
+    public static final WordLateral LATERAL = KeyWordLateral.LATERAL;
 
     public static final WordFirst FIRST = KeyWordFirst.FIRST;
 

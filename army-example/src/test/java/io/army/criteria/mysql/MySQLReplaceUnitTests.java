@@ -5,6 +5,7 @@ import io.army.criteria.Hint;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.ReplaceInsert;
 import io.army.criteria.Visible;
+import io.army.criteria.impl.MySQLSyntax;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Insert;
@@ -45,7 +46,7 @@ public class MySQLReplaceUnitTests {
         ReplaceInsert stmt;
         stmt = MySQLs.domainReplace()
                 .literalMode(LiteralMode.PREFERENCE)
-                .replace(hintSupplier, Collections.singletonList(MySQLModifier.DELAYED))
+                .replace(hintSupplier, Collections.singletonList(MySQLSyntax._MySQLModifier.DELAYED))
                 .into(BankUser_.T)
                 .partition()
                 .leftParen("p1")
@@ -74,7 +75,7 @@ public class MySQLReplaceUnitTests {
         ReplaceInsert stmt;
         stmt = MySQLs.domainReplace()
                 .literalMode(LiteralMode.PREFERENCE)
-                .replace(hintSupplier, Collections.singletonList(MySQLModifier.LOW_PRIORITY))
+                .replace(hintSupplier, Collections.singletonList(MySQLSyntax._MySQLModifier.LOW_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition()
                 .leftParen("p1")

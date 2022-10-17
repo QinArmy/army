@@ -343,6 +343,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("with clause cte list must not empty. ");
     }
 
+    public static CriteriaException cteNameNotText() {
+        return new CriteriaException("Cte name must has text.");
+    }
+
     public static CriteriaException queryInsertDontSupportLateralSubQuery() {
         return new CriteriaException("Query insert don't support lateral sub query.");
     }

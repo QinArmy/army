@@ -4,6 +4,7 @@ import io.army.criteria.DmlInsert;
 import io.army.criteria.Hint;
 import io.army.criteria.Insert;
 import io.army.criteria.ReplaceInsert;
+import io.army.criteria.impl.MySQLSyntax;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.SimpleTableMeta;
@@ -17,9 +18,9 @@ public interface MySQLReplace extends ReplaceInsert, DmlInsert {
 
     interface _ReplaceClause<C, RR> {
 
-        RR replace(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers);
+        RR replace(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers);
 
-        RR replace(Function<C, List<Hint>> hints, List<MySQLModifier> modifiers);
+        RR replace(Function<C, List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers);
 
     }
 

@@ -1,6 +1,7 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.MySQLSyntax;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
@@ -18,7 +19,7 @@ public interface MySQLInsert extends DialectStatement {
 
     interface _InsertClause<IR> {
 
-        IR insert(Supplier<List<Hint>> supplier, List<MySQLModifier> modifiers);
+        IR insert(Supplier<List<Hint>> supplier, List<MySQLSyntax._MySQLModifier> modifiers);
 
     }
 

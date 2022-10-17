@@ -1,10 +1,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
+import io.army.criteria.Query;
 import io.army.criteria.SubQuery;
 import io.army.criteria.TabularItem;
 import io.army.criteria.mysql.MySQLCastType;
-import io.army.criteria.mysql.MySQLModifier;
 import io.army.lang.Nullable;
 
 import java.util.ArrayList;
@@ -69,42 +69,33 @@ abstract class MySQLUtils extends CriteriaUtils {
         return match;
     }
 
-    static int selectModifier(final MySQLModifier modifier) {
+    static int selectModifier(final MySQLSyntax.Modifier modifier) {
         final int level;
-        switch (modifier) {
-            case ALL:
-            case DISTINCT:
-            case DISTINCTROW:
-                level = 1;
-                break;
-            case HIGH_PRIORITY:
-                level = 2;
-                break;
-            case STRAIGHT_JOIN:
-                level = 3;
-                break;
-            case SQL_SMALL_RESULT:
-                level = 4;
-                break;
-            case SQL_BIG_RESULT:
-                level = 5;
-                break;
-            case SQL_BUFFER_RESULT:
-                level = 6;
-                break;
-            case SQL_NO_CACHE:
-                level = 7;
-                break;
-            case SQL_CALC_FOUND_ROWS:
-                level = 8;
-                break;
-            default:
-                level = -1;
+        if (modifier == MySQLs.ALL
+                || modifier == MySQLs.DISTINCT
+                || modifier == MySQLs.DISTINCTROW) {
+            level = 1;
+        } else if (modifier == MySQLs.HIGH_PRIORITY) {
+            level = 2;
+        } else if (modifier == MySQLs.STRAIGHT_JOIN) {
+            level = 3;
+        } else if (modifier == MySQLs.SQL_SMALL_RESULT) {
+            level = 4;
+        } else if (modifier == MySQLs.SQL_BIG_RESULT) {
+            level = 5;
+        } else if (modifier == MySQLs.SQL_BUFFER_RESULT) {
+            level = 6;
+        } else if (modifier == MySQLs.SQL_NO_CACHE) {
+            level = 7;
+        } else if (modifier == MySQLs.SQL_CALC_FOUND_ROWS) {
+            level = 8;
+        } else {
+            level = -1;
         }
         return level;
     }
 
-    static int insertModifier(final MySQLModifier modifier) {
+    static int insertModifier(final MySQLSyntax._MySQLModifier modifier) {
         final int level;
         switch (modifier) {
             case LOW_PRIORITY:
@@ -121,7 +112,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int queryInsertModifier(final MySQLModifier modifier) {
+    static int queryInsertModifier(final MySQLSyntax._MySQLModifier modifier) {
         final int level;
         switch (modifier) {
             case LOW_PRIORITY:
@@ -138,7 +129,7 @@ abstract class MySQLUtils extends CriteriaUtils {
     }
 
 
-    static int replaceModifier(final MySQLModifier modifier) {
+    static int replaceModifier(final MySQLSyntax._MySQLModifier modifier) {
         final int level;
         switch (modifier) {
             case LOW_PRIORITY:
@@ -151,7 +142,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int updateModifier(final MySQLModifier modifier) {
+    static int updateModifier(final MySQLSyntax._MySQLModifier modifier) {
         final int level;
         switch (modifier) {
             case LOW_PRIORITY:
@@ -166,7 +157,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int deleteModifier(final MySQLModifier modifier) {
+    static int deleteModifier(final MySQLSyntax._MySQLModifier modifier) {
         final int level;
         switch (modifier) {
             case LOW_PRIORITY:
@@ -184,7 +175,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int loadDataModifier(final MySQLModifier modifier) {
+    static int loadDataModifier(final MySQLSyntax._MySQLModifier modifier) {
         final int level;
         switch (modifier) {
             case LOW_PRIORITY:
@@ -216,6 +207,11 @@ abstract class MySQLUtils extends CriteriaUtils {
 
     static CriteriaException intoVarListNotEmpty() {
         return new CriteriaException("variable name list must not empty in MySQL INTO clause.");
+    }
+
+    static CriteriaException dontSupportTabularModifier(CriteriaContext context, Query.TabularModifier modifier) {
+        String m = String.format("MySQL don't support modifier[%s]", modifier);
+        return ContextStack.criteriaError(context, m);
     }
 
 

@@ -437,6 +437,9 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     @Override
     public final void clear() {
+        if (this instanceof WithCteSimpleQueries) {
+            ((WithCteSimpleQueries<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?>) this).cteList = null;
+        }
         this.hintList = null;
         this.modifierList = null;
         this.selectItemList = null;
@@ -470,6 +473,13 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     private void endQueryStatement() {
         _Assert.nonPrepared(this.prepared);
+        if (this instanceof WithCteSimpleQueries) {
+            WithCteSimpleQueries<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> withClause;
+            withClause = (WithCteSimpleQueries<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?>) this;
+            if (withClause.cteList == null) {
+                withClause.cteList = Collections.emptyList();
+            }
+        }
         // hint list
         if (this.hintList == null) {
             this.hintList = Collections.emptyList();
@@ -569,7 +579,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, SP>
             extends SimpleQueries<Q, W, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, SP>
-            implements Query._DynamicWithCteClause<B, WE> {
+            implements Query._DynamicWithCteClause<B, WE>
+            , _Statement._WithClauseSpec {
 
         private boolean recursive;
 
@@ -609,6 +620,21 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
             builder = this.createCteBuilder(true);
             consumer.accept(builder);
             return this.endWithClause(builder, false);
+        }
+
+
+        @Override
+        public final boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public final List<_Cte> cteList() {
+            final List<_Cte> list = this.cteList;
+            if (list == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return list;
         }
 
 

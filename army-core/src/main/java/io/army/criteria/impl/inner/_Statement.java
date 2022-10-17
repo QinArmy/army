@@ -55,5 +55,13 @@ public interface _Statement {
 
     }
 
+    interface _WithClauseSpec {
+
+        boolean isRecursive();
+
+        List<_Cte> cteList();
+
+    }
+
 
 }

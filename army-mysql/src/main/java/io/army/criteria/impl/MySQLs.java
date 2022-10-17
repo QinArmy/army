@@ -113,33 +113,18 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
     }
 
 
-    public static MySQL80Query._WithSpec<Void, Select> query() {
-        return MySQL80SimpleQuery.simpleSelect(null);
+    public static MySQLQuery._WithCteSpec<Select> query() {
+        return MySQLQueries.primaryQuery();
     }
 
-    public static <C> MySQL80Query._WithSpec<C, Select> query(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQL80SimpleQuery.simpleSelect(criteria);
+    public static MySQLQuery._WithCteSpec<SubQuery> subQuery() {
+        return MySQLQueries.subQuery(ContextStack.peek(), SQLs::_identity);
     }
 
-    public static MySQL80Query._WithSpec<Void, SubQuery> subQuery() {
-        return MySQL80SimpleQuery.subQuery(null);
-    }
 
-    public static <C> MySQL80Query._WithSpec<C, SubQuery> subQuery(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQL80SimpleQuery.subQuery(criteria);
+    public static MySQLQuery._WithCteSpec<Expression> scalarSubQuery() {
+        return MySQLQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
     }
-
-    public static MySQL80Query._WithSpec<Void, ScalarExpression> scalarSubQuery() {
-        return MySQL80SimpleQuery.scalarSubQuery(null);
-    }
-
-    public static <C> MySQL80Query._WithSpec<C, ScalarExpression> scalarSubQuery(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQL80SimpleQuery.scalarSubQuery(criteria);
-    }
-
 
     public static MySQLDqlValues._ValuesStmtValuesClause<Void, Values> valuesStmt() {
         return MySQLSimpleValues.primaryValues(null);

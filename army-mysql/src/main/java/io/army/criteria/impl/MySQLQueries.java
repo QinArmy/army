@@ -8,6 +8,7 @@ import io.army.criteria.mysql.MySQLCteBuilder;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLWindowBuilder;
 import io.army.dialect._Constant;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -65,6 +66,10 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         , MySQLQuery._LockOfTableSpec<I>
         , OrderByClause.OrderByEventListener {
 
+    static MySQLQuery._WithCteSpec<Select> primaryQuery() {
+        return new SimpleSelect<>(CriteriaContexts.primaryQuery(null), SQLs::_identity);
+    }
+
 
     static <I extends Item> MySQLQuery._WithCteSpec<I> subQuery(CriteriaContext outerContext
             , Function<SubQuery, I> function) {
@@ -95,8 +100,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     private List<String> intoVarList;
 
-    MySQLQueries(CriteriaContext criteriaContext) {
-        super(criteriaContext);
+    MySQLQueries(CriteriaContext context) {
+        super(context);
     }
 
 
@@ -251,7 +256,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final _LockOfTableSpec<I> ifForUpdate(BooleanSupplier predicate) {
-        if (supplier.getAsBoolean()) {
+        if (predicate.getAsBoolean()) {
             this.lockMode = MySQLLockMode.FOR_UPDATE;
         } else {
             this.lockMode = null;
@@ -261,7 +266,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final _LockOfTableSpec<I> ifForShare(BooleanSupplier predicate) {
-        if (supplier.getAsBoolean()) {
+        if (predicate.getAsBoolean()) {
             this.lockMode = MySQLLockMode.FOR_SHARE;
         } else {
             this.lockMode = null;
@@ -443,63 +448,86 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     final MySQLCteBuilder createCteBuilder(boolean recursive) {
-        return null;
+        return MySQLSupports.mySQLCteBuilder(recursive, this.context);
     }
 
     @Override
     final void onEndQuery() {
+        if (this.windowList == null) {
+            this.windowList = Collections.emptyList();
+        }
 
+        if (this.ofTableList == null) {
+            this.ofTableList = Collections.emptyList();
+        }
+        if (this.intoVarList == null) {
+            this.intoVarList = Collections.emptyList();
+        }
     }
 
 
     @Override
     final void onClear() {
-
+        this.windowList = null;
+        this.ofTableList = null;
+        this.intoVarList = null;
     }
 
     @Override
-    final List<MySQLSyntax.Modifier> asModifierList(@Nullable List<MySQLSyntax.Modifier> modifiers) {
-        return null;
+    final List<MySQLs.Modifier> asModifierList(@Nullable List<MySQLs.Modifier> modifiers) {
+        return CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::selectModifier);
     }
 
     @Override
     final List<Hint> asHintList(@Nullable List<Hint> hints) {
-        return null;
+        return MySQLUtils.asHintList(this.context, hints, MySQLHints::castHint);
     }
 
-    @Override
-    final _UnionAndQuerySpec<I> createQueryUnion(UnionType unionType) {
-        return null;
-    }
 
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable TableModifier itemWord, TableMeta<?> table
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table
             , String alias) {
-        return new MySQLSupports.MySQLNoOnBlock<>(joinType, itemWord, table, alias, this);
+        if (modifier != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, this);
     }
 
     @Override
-    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable TabularModifier itemWord, TabularItem tableItem
+    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable TabularModifier modifier, TabularItem tableItem
             , String alias) {
-        return new MySQLSupports.MySQLNoOnBlock<>(joinType, itemWord, tableItem, alias, this);
+        if (modifier != null && modifier != SQLs.LATERAL) {
+            throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+        }
+        return new MySQLSupports.MySQLNoOnBlock<>(joinType, modifier, tableItem, alias, this);
     }
 
+
     @Override
-    final _IndexHintOnSpec<I> createTableBlock(_JoinType joinType, @Nullable TableModifier itemWord, TableMeta<?> table
+    final _IndexHintOnSpec<I> createTableBlock(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table
             , String tableAlias) {
-        return new OnTableBlock<>(joinType, itemWord, table, tableAlias, this);
+        if (modifier != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return new OnTableBlock<>(joinType, null, table, tableAlias, this);
     }
 
     @Override
-    final _OnClause<_JoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable TabularModifier itemWord
+    final _OnClause<_JoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable TabularModifier modifier
             , TabularItem tableItem, String alias) {
-        return new OnClauseTableBlock.OnItemTableBlock<>(joinType, itemWord, tableItem, alias, this);
+        if (modifier != null && modifier != SQLs.LATERAL) {
+            throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+        }
+        return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
     }
 
     @Override
-    final _OnClause<_JoinSpec<I>> createCteBlock(_JoinType joinType, @Nullable TabularModifier itemWord
+    final _OnClause<_JoinSpec<I>> createCteBlock(_JoinType joinType, @Nullable TabularModifier modifier
             , TabularItem tableItem, String alias) {
-        return new OnClauseTableBlock.OnItemTableBlock<>(joinType, itemWord, tableItem, alias, this);
+        if (modifier != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return new OnClauseTableBlock.OnItemTableBlock<>(joinType, null, tableItem, alias, this);
     }
 
 
@@ -555,11 +583,47 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
 
+    private static final class SimpleSelect<I extends Item> extends MySQLQueries<I>
+            implements Select {
+
+        private final Function<Select, I> function;
+
+        private SimpleSelect(CriteriaContext context, Function<Select, I> function) {
+            super(context);
+            this.function = function;
+        }
+
+        @Override
+        I onAsQuery() {
+            return this.function.apply(this);
+        }
+
+        @Override
+        _UnionAndQuerySpec<I> createQueryUnion(UnionType unionType) {
+            return null;
+        }
+
+
+        @Override
+        public String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
+
+
+    }//SimpleSelect
+
+
     enum MySQLLockMode implements SQLWords {
 
-        FOR_UPDATE(_Constant.FOR_UPDATE),
-        LOCK_IN_SHARE_MODE(_Constant.LOCK_IN_SHARE_MODE),
-        FOR_SHARE(_Constant.FOR_SHARE);
+        FOR_UPDATE(_Constant.SPACE_FOR_UPDATE),
+        LOCK_IN_SHARE_MODE(_Constant.SPACE_LOCK_IN_SHARE_MODE),
+        FOR_SHARE(_Constant.SPACE_FOR_SHARE);
 
         final String words;
 
@@ -575,7 +639,11 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         @Override
         public final String toString() {
-            return String.format("%s.%s", MySQLLockMode.class.getSimpleName(), this.name());
+            return _StringUtils.builder()
+                    .append(MySQLLockMode.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
         }
 
     }//MySQLLock

@@ -470,18 +470,18 @@ abstract class MySQLParser extends _AbstractDialectParser {
                 if (this.asOf80) {
                     context.sqlBuilder()
                             .append(_Constant.SPACE)
-                            .append(_Constant.FOR_SHARE);
+                            .append(_Constant.SPACE_FOR_SHARE);
                 } else {
                     context.sqlBuilder()
                             .append(_Constant.SPACE)
-                            .append(_Constant.LOCK_IN_SHARE_MODE);
+                            .append(_Constant.SPACE_LOCK_IN_SHARE_MODE);
                 }
             }
             break;
             case WRITE:
                 context.sqlBuilder()
                         .append(_Constant.SPACE)
-                        .append(_Constant.FOR_UPDATE);
+                        .append(_Constant.SPACE_FOR_UPDATE);
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(lockMode);

@@ -1,6 +1,7 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.MySQLSyntax;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.SimpleTableMeta;
@@ -291,7 +292,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
     interface _ParentAssignmentSetSpec<C, P>
             extends Insert._StaticAssignmentSetClause<C, P, _ParentAssignmentSetSpec<C, P>>, _LoadDataSpec {
 
-        _ChildLoadInfileClause<C, P> child(List<MySQLModifier> modifierList);
+        _ChildLoadInfileClause<C, P> child(List<MySQLSyntax._MySQLModifier> modifierList);
 
     }
 
@@ -415,7 +416,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
     interface _LoadDataClause<C> {
 
-        _LoadInfileClause<C, _StrategyOptionSpec<C>> loadData(List<MySQLModifier> modifierList);
+        _LoadInfileClause<C, _StrategyOptionSpec<C>> loadData(List<MySQLSyntax._MySQLModifier> modifierList);
 
     }
 

@@ -44,7 +44,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
     static SimpleSelect<Select> primaryQuery() {
         // primary no outer context
-        return new SimpleSelect<>(CriteriaContexts.selectContext(null), SQLs::_identity);
+        return new SimpleSelect<>(CriteriaContexts.primaryQuery(null), SQLs::_identity);
     }
 
     static StandardQuery._ParenQueryClause<Select> parenPrimaryQuery() {
@@ -417,7 +417,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         @Override
         _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>> createSelectClause() {
             final CriteriaContext context;
-            context = CriteriaContexts.selectContext(this.bracket.context);
+            context = CriteriaContexts.primaryQuery(this.bracket.context);
             return new SimpleSelect<>(context, this.bracket::parenRowSetEnd);
         }
 

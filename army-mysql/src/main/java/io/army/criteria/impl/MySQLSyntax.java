@@ -3,7 +3,9 @@ package io.army.criteria.impl;
 import io.army.criteria.Hint;
 import io.army.criteria.Query;
 import io.army.criteria.mysql.HintStrategy;
+import io.army.dialect._Constant;
 import io.army.lang.Nullable;
+import io.army.util._StringUtils;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -31,7 +33,102 @@ abstract class MySQLSyntax extends Functions.CaseValueFunctions {
 
     }
 
+    public interface WordDistinct extends Modifier, FuncDistinct {
 
+    }
+
+    private enum MySQLModifier implements Modifier {
+
+
+        ALL,
+        DISTINCTROW,
+
+        HIGH_PRIORITY,
+
+        STRAIGHT_JOIN,
+
+        SQL_SMALL_RESULT,
+        SQL_BIG_RESULT,
+        SQL_BUFFER_RESULT,
+
+        SQL_NO_CACHE,
+        SQL_CALC_FOUND_ROWS,
+
+        LOW_PRIORITY,
+        DELAYED,
+
+        QUICK,
+        IGNORE,
+
+        CONCURRENT,
+        LOCAL;
+
+
+        @Override
+        public final String render() {
+            return this.name();
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(MySQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+
+    }//MySQLModifier
+
+    private enum KeyWordDistinct implements WordDistinct {
+
+        DISTINCT(" DISTINCT");
+
+        private final String spaceWord;
+
+        KeyWordDistinct(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(MySQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+
+    }//WordDistinct
+
+
+    public static final Modifier ALL = MySQLModifier.ALL;
+    public static final WordDistinct DISTINCT = KeyWordDistinct.DISTINCT;
+    public static final Modifier DISTINCTROW = MySQLModifier.DISTINCTROW;
+    public static final Modifier HIGH_PRIORITY = MySQLModifier.HIGH_PRIORITY;
+
+    public static final Modifier STRAIGHT_JOIN = MySQLModifier.STRAIGHT_JOIN;
+    public static final Modifier SQL_SMALL_RESULT = MySQLModifier.SQL_SMALL_RESULT;
+    public static final Modifier SQL_BIG_RESULT = MySQLModifier.SQL_BIG_RESULT;
+    public static final Modifier SQL_BUFFER_RESULT = MySQLModifier.SQL_BUFFER_RESULT;
+
+    public static final Modifier SQL_NO_CACHE = MySQLModifier.SQL_NO_CACHE;
+    public static final Modifier SQL_CALC_FOUND_ROWS = MySQLModifier.SQL_CALC_FOUND_ROWS;
+    public static final Modifier LOW_PRIORITY = MySQLModifier.LOW_PRIORITY;
+    public static final Modifier DELAYED = MySQLModifier.DELAYED;
+
+    public static final Modifier QUICK = MySQLModifier.QUICK;
+    public static final Modifier IGNORE = MySQLModifier.IGNORE;
+    public static final Modifier CONCURRENT = MySQLModifier.CONCURRENT;
+    public static final Modifier LOCAL = MySQLModifier.LOCAL;
 
     /*################################## blow join-order hint ##################################*/
 
@@ -301,6 +398,5 @@ abstract class MySQLSyntax extends Functions.CaseValueFunctions {
     public static Hint qbName(String name) {
         return MySQLHints.qbName(name);
     }
-
 
 }

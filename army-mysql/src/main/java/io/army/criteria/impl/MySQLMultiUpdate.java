@@ -6,7 +6,6 @@ import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLMultiUpdate;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
-import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.dialect.mysql.MySQLDialect;
@@ -50,7 +49,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
 
     private List<Hint> hintList;
 
-    private List<MySQLModifier> modifierList;
+    private List<MySQLSyntax._MySQLModifier> modifierList;
 
     private MySQLSupports.MySQLNoOnBlock<C, UT> noOnBlock;
 
@@ -60,7 +59,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final UP update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final UP update(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers
             , TableMeta<?> table) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
@@ -68,7 +67,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final UT update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final UT update(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers
             , TableMeta<?> table, String tableAlias) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
@@ -89,7 +88,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T extends TabularItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final <T extends TabularItem> US update(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers
             , Supplier<T> supplier, String alias) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
@@ -99,7 +98,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T extends TabularItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final <T extends TabularItem> US update(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers
             , Function<C, T> function, String alias) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
@@ -122,7 +121,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T extends TabularItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers, Supplier<T> supplier, String alias) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
 
@@ -131,7 +130,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T extends TabularItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, Function<C, T> function, String alias) {
+    public final <T extends TabularItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers, Function<C, T> function, String alias) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
 
@@ -187,7 +186,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final List<MySQLModifier> modifierList() {
+    public final List<MySQLSyntax._MySQLModifier> modifierList() {
         return this.modifierList;
     }
 

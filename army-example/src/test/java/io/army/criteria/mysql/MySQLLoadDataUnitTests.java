@@ -1,6 +1,7 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.Visible;
+import io.army.criteria.impl.MySQLSyntax;
 import io.army.criteria.impl.MySQLs;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.example.bank.domain.user.ChinaRegion_;
@@ -25,7 +26,7 @@ public class MySQLLoadDataUnitTests {
         try {
             MySQLLoad stmt;
             stmt = MySQLs.loadDataStmt()
-                    .loadData(Collections.singletonList(MySQLModifier.LOCAL))
+                    .loadData(Collections.singletonList(MySQLSyntax._MySQLModifier.LOCAL))
                     .infile(tempFile)
                     .ignore()
                     .intoTable(ChinaRegion_.T)

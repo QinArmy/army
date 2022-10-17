@@ -314,16 +314,16 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
         return this.onAddNoOnCteItem(_JoinType.CROSS_JOIN, modifier, cteName, alias);
     }
 
-    abstract _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier itemWord, TableMeta<?> table, String alias);
+    abstract _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias);
 
-    abstract _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.TabularModifier itemWord, TabularItem tableItem, String alias);
+    abstract _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias);
 
 
-    abstract JT createTableBlock(_JoinType joinType, @Nullable Query.TableModifier itemWord, TableMeta<?> table, String tableAlias);
+    abstract JT createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias);
 
-    abstract JS createItemBlock(_JoinType joinType, @Nullable Query.TabularModifier itemWord, TabularItem tableItem, String alias);
+    abstract JS createItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias);
 
-    abstract JC createCteBlock(_JoinType joinType, @Nullable Query.TabularModifier itemWord, TabularItem tableItem, String alias);
+    abstract JC createCteBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias);
 
 
     final FT onAddNoOnTableItem(_JoinType joinType, @Nullable Query.TableModifier modifier

@@ -1,6 +1,7 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.MySQLSyntax;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.mysql.MySQLDialect;
@@ -56,7 +57,7 @@ public class MySQLCriteriaUnitTests {
         };
         final Update stmt;
         stmt = MySQLs.singleUpdate()
-                .update(supplier, Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.IGNORE), ChinaCity_.T)
+                .update(supplier, Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.IGNORE), ChinaCity_.T)
                 .partition()
                 .leftParen("p2", "p1")
                 .rightParen()
@@ -135,7 +136,7 @@ public class MySQLCriteriaUnitTests {
 
             final Delete stmt;
             stmt = MySQLs.singleDelete()
-                    .delete(hintSupplier, Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.QUICK, MySQLModifier.IGNORE))
+                    .delete(hintSupplier, Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.QUICK, MySQLSyntax._MySQLModifier.IGNORE))
                     .from(ChinaRegion_.T, "r")
                     .partition()
                     .leftParen("p1")
@@ -195,7 +196,7 @@ public class MySQLCriteriaUnitTests {
 
             final Delete stmt;
             stmt = MySQLs.batchSingleDelete()
-                    .delete(hintSupplier, Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.QUICK, MySQLModifier.IGNORE))
+                    .delete(hintSupplier, Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.QUICK, MySQLSyntax._MySQLModifier.IGNORE))
                     .from(ChinaRegion_.T, "r")
                     .partition()
                     .leftParen("p1")
@@ -239,8 +240,8 @@ public class MySQLCriteriaUnitTests {
                 return hintList;
             };
 
-            final List<MySQLModifier> modifierList;
-            modifierList = Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.QUICK, MySQLModifier.IGNORE);
+            final List<MySQLSyntax._MySQLModifier> modifierList;
+            modifierList = Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.QUICK, MySQLSyntax._MySQLModifier.IGNORE);
             final List<String> deleteTarget = Arrays.asList("c", "r", "u");
             final Delete stmt;
             stmt = MySQLs.multiDelete()
@@ -297,8 +298,8 @@ public class MySQLCriteriaUnitTests {
             paramList.add(Collections.singletonMap(ChinaCity_.ID, 22));
             paramList.add(Collections.singletonMap(ChinaCity_.ID, 88L));
 
-            final List<MySQLModifier> modifierList;
-            modifierList = Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.QUICK, MySQLModifier.IGNORE);
+            final List<MySQLSyntax._MySQLModifier> modifierList;
+            modifierList = Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.QUICK, MySQLSyntax._MySQLModifier.IGNORE);
             final List<String> deleteTarget = Arrays.asList("c", "r");
             final Delete stmt;
             stmt = MySQLs.batchMultiDelete()
@@ -352,7 +353,7 @@ public class MySQLCriteriaUnitTests {
 
             final Update stmt;
             stmt = MySQLs.multiUpdate()
-                    .update(hintSupplier, Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.IGNORE), BankUser_.T)
+                    .update(hintSupplier, Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.IGNORE), BankUser_.T)
                     .partition()
                     .leftParen("p1")
                     .rightParen()
@@ -509,7 +510,7 @@ public class MySQLCriteriaUnitTests {
 
             final Update stmt;
             stmt = MySQLs.batchMultiUpdate()
-                    .update(hintSupplier, Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.IGNORE), User_.T)
+                    .update(hintSupplier, Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.IGNORE), User_.T)
                     .partition()
                     .leftParen("p1")
                     .rightParen()
@@ -633,7 +634,7 @@ public class MySQLCriteriaUnitTests {
         final Insert stmt;
         stmt = MySQLs.domainInsert()
                 .literalMode(LiteralMode.PREFERENCE)
-                .insert(Collections::emptyList, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
+                .insert(Collections::emptyList, Collections.singletonList(MySQLSyntax._MySQLModifier.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 //.insertInto(ChinaCity_.T)
                 .partition()

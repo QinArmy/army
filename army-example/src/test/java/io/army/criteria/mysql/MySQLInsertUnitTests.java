@@ -5,6 +5,7 @@ import io.army.criteria.Hint;
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.Visible;
+import io.army.criteria.impl.MySQLSyntax;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Insert;
@@ -53,7 +54,7 @@ public class MySQLInsertUnitTests {
         Insert stmt;
         stmt = MySQLs.domainInsert()
                 .literalMode(LiteralMode.PREFERENCE)
-                .insert(hintSupplier, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
+                .insert(hintSupplier, Collections.singletonList(MySQLSyntax._MySQLModifier.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition()
                 .leftParen("p1")
@@ -85,8 +86,8 @@ public class MySQLInsertUnitTests {
 
         final List<Person> personList;
         personList = this.createPsersonList();
-        final List<MySQLModifier> modifierList;
-        modifierList = Collections.singletonList(MySQLModifier.HIGH_PRIORITY);
+        final List<MySQLSyntax._MySQLModifier> modifierList;
+        modifierList = Collections.singletonList(MySQLSyntax._MySQLModifier.HIGH_PRIORITY);
         final Insert stmt;
         stmt = MySQLs.domainInsert()
                 .literalMode(LiteralMode.PREFERENCE)
@@ -126,7 +127,7 @@ public class MySQLInsertUnitTests {
         Insert stmt;
         stmt = MySQLs.assignmentInsert()
                 .literalMode(LiteralMode.PREFERENCE)
-                .insert(hintSupplier, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
+                .insert(hintSupplier, Collections.singletonList(MySQLSyntax._MySQLModifier.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition()
                 .leftParen("p1")
@@ -158,7 +159,7 @@ public class MySQLInsertUnitTests {
 
         Insert stmt;
         stmt = MySQLs.queryInsert()
-                .insert(hintSupplier, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
+                .insert(hintSupplier, Collections.singletonList(MySQLSyntax._MySQLModifier.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition()
                 .leftParen("p1")

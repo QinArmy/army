@@ -397,6 +397,11 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(criteriaContext, m);
     }
 
+    static CriteriaException cteNotEnd(CriteriaContext context, String currentCte, String newCte) {
+        String m = String.format("Cte[%s] not end,couldn't start Cte[%s]", currentCte, newCte);
+        return ContextStack.criteriaError(context, m);
+    }
+
     static CriteriaException nonOptionalClause(CriteriaContext context, String clause) {
         String m = String.format("%s clause isn't optional.", clause);
         return ContextStack.criteriaError(context, m);
@@ -496,7 +501,7 @@ abstract class CriteriaUtils {
         return modifierList;
     }
 
-    static <H extends Hint> List<H> asHintList(final CriteriaContext criteriaContext, final @Nullable List<Hint> hintList
+    static <H extends Hint> List<H> asHintList(final CriteriaContext context, final @Nullable List<Hint> hintList
             , final Function<Hint, H> function) {
         if (hintList == null) {
             return Collections.emptyList();
@@ -511,7 +516,7 @@ abstract class CriteriaUtils {
                 final H dialectHint;
                 dialectHint = function.apply(hint);
                 if (dialectHint == null) {
-                    throw ContextStack.criteriaError(criteriaContext, CriteriaUtils::illegalHint, hint);
+                    throw ContextStack.criteriaError(context, CriteriaUtils::illegalHint, hint);
                 }
                 mySqlHintList = Collections.singletonList(dialectHint);
             }
@@ -522,7 +527,7 @@ abstract class CriteriaUtils {
                 for (Hint hint : hintList) {
                     dialectHint = function.apply(hint);
                     if (dialectHint == null) {
-                        throw ContextStack.criteriaError(criteriaContext, CriteriaUtils::illegalHint, hint);
+                        throw ContextStack.criteriaError(context, CriteriaUtils::illegalHint, hint);
                     }
                     tempList.add(dialectHint);
                 }

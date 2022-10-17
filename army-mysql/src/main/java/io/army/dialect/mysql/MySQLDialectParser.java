@@ -2,6 +2,7 @@ package io.army.dialect.mysql;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
+import io.army.criteria.impl.MySQLSyntax;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._MySQLConsultant;
 import io.army.criteria.impl._Pair;
@@ -9,7 +10,6 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLDqlValues;
 import io.army.criteria.mysql.MySQLLoad;
-import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
@@ -494,7 +494,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     private void insertModifiers(StringBuilder sqlBuilder, _MySQLInsert stmt) {
-        for (MySQLModifier modifier : stmt.modifierList()) {
+        for (MySQLSyntax._MySQLModifier modifier : stmt.modifierList()) {
             switch (modifier) {
                 case LOW_PRIORITY:
                 case HIGH_PRIORITY:
@@ -518,9 +518,9 @@ final class MySQLDialectParser extends MySQLParser {
         }
     }
 
-    private void replaceModifiers(List<MySQLModifier> modifierList, StringBuilder sqlBuilder) {
+    private void replaceModifiers(List<MySQLSyntax._MySQLModifier> modifierList, StringBuilder sqlBuilder) {
         assert modifierList.size() == 1;
-        final MySQLModifier modifier = modifierList.get(0);
+        final MySQLSyntax._MySQLModifier modifier = modifierList.get(0);
         switch (modifier) {
             case LOW_PRIORITY:
             case DELAYED:
@@ -532,8 +532,8 @@ final class MySQLDialectParser extends MySQLParser {
         }
     }
 
-    private void updateModifiers(List<MySQLModifier> modifierList, StringBuilder builder) {
-        for (MySQLModifier modifier : modifierList) {
+    private void updateModifiers(List<MySQLSyntax._MySQLModifier> modifierList, StringBuilder builder) {
+        for (MySQLSyntax._MySQLModifier modifier : modifierList) {
             switch (modifier) {
                 case LOW_PRIORITY:
                 case IGNORE:
@@ -547,8 +547,8 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
 
-    private void deleteModifiers(List<MySQLModifier> modifierList, StringBuilder builder) {
-        for (MySQLModifier modifier : modifierList) {
+    private void deleteModifiers(List<MySQLSyntax._MySQLModifier> modifierList, StringBuilder builder) {
+        for (MySQLSyntax._MySQLModifier modifier : modifierList) {
             switch (modifier) {
                 case LOW_PRIORITY:
                 case QUICK:
@@ -565,7 +565,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     private void selectModifiers(List<? extends SQLWords> modifierList, StringBuilder builder) {
         for (SQLWords modifier : modifierList) {
-            switch ((MySQLModifier) modifier) {
+            switch ((MySQLSyntax._MySQLModifier) modifier) {
                 case ALL:
                 case DISTINCT:
                 case DISTINCTROW:
@@ -589,8 +589,8 @@ final class MySQLDialectParser extends MySQLParser {
     /**
      * @see #simpleLoadData(_MySQLLoadData, Visible)
      */
-    private void loadDataModifier(final List<MySQLModifier> modifierList, final StringBuilder sqlBuilder) {
-        for (MySQLModifier modifier : modifierList) {
+    private void loadDataModifier(final List<MySQLSyntax._MySQLModifier> modifierList, final StringBuilder sqlBuilder) {
+        for (MySQLSyntax._MySQLModifier modifier : modifierList) {
             switch (modifier) {
                 case LOW_PRIORITY:
                 case CONCURRENT:
@@ -975,14 +975,14 @@ final class MySQLDialectParser extends MySQLParser {
             , final @Nullable SQLWords lockOption, final StringBuilder sqlBuilder) {
         final String lockModeText;
         lockModeText = lockMode.render();
-        if (!this.asOf80 && lockModeText.equals(_Constant.FOR_SHARE)) {
+        if (!this.asOf80 && lockModeText.equals(_Constant.SPACE_FOR_SHARE)) {
             throw dontSupportLockWord(lockMode);
         }
         sqlBuilder.append(lockModeText); //append lock mode
 
         switch (lockModeText) {
-            case _Constant.FOR_SHARE:
-            case _Constant.FOR_UPDATE: {
+            case _Constant.SPACE_FOR_SHARE:
+            case _Constant.SPACE_FOR_UPDATE: {
                 final int ofSize = ofList.size();
                 if (ofSize > 0) {
                     if (!this.asOf80) {
@@ -1004,7 +1004,7 @@ final class MySQLDialectParser extends MySQLParser {
                 }
             }
             break;
-            case _Constant.LOCK_IN_SHARE_MODE:
+            case _Constant.SPACE_LOCK_IN_SHARE_MODE:
                 break;
             default: {
                 String m = String.format("unknown lock mode[%s]", lockModeText);

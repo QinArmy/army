@@ -1,6 +1,7 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.MySQLSyntax;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -32,9 +33,9 @@ public interface MySQLDelete extends Delete, DialectStatement {
      */
     interface _MySQLSingleDeleteClause<C, DT> extends _DeleteSimpleClause<DT> {
 
-        _SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers);
+        _SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers);
 
-        _SingleDeleteFromClause<DT> delete(Function<C, List<Hint>> hints, List<MySQLModifier> modifiers);
+        _SingleDeleteFromClause<DT> delete(Function<C, List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers);
     }
 
 
@@ -399,9 +400,9 @@ public interface MySQLDelete extends Delete, DialectStatement {
      */
     interface _MultiDeleteClause<C, DT, DS, DP> {
 
-        _MultiDeleteFromClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, List<String> tableAliasList);
+        _MultiDeleteFromClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers, List<String> tableAliasList);
 
-        _MultiDeleteFromAliasClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers);
+        _MultiDeleteFromAliasClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers);
 
         _MultiDeleteFromClause<C, DT, DS, DP> delete(List<String> tableAliasList);
 

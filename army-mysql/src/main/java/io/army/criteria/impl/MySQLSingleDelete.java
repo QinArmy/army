@@ -6,7 +6,6 @@ import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLDelete;
-import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.dialect.mysql.MySQLDialect;
@@ -53,7 +52,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
 
     private List<Hint> hintList;
 
-    private List<MySQLModifier> modifierList;
+    private List<MySQLSyntax._MySQLModifier> modifierList;
 
     private SingleTableMeta<?> table;
 
@@ -72,14 +71,14 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
 
 
     @Override
-    public final _SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers) {
+    public final _SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers) {
         this.hintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         return this;
     }
 
     @Override
-    public final _SingleDeleteFromClause<DT> delete(Function<C, List<Hint>> hints, List<MySQLModifier> modifiers) {
+    public final _SingleDeleteFromClause<DT> delete(Function<C, List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers) {
         this.hintList = MySQLUtils.asHintList(this.context, hints.apply(this.criteria), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         return this;
@@ -214,7 +213,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
     }
 
     @Override
-    public final List<MySQLModifier> modifierList() {
+    public final List<MySQLSyntax._MySQLModifier> modifierList() {
         return this.modifierList;
     }
 
