@@ -137,7 +137,7 @@ public interface Statement extends Item {
      * @param <OR> next clause java type
      * @since 1.0
      */
-    interface _OnClause<OR> {
+    interface _OnClause<OR> extends Item {
 
         OR on(IPredicate predicate);
 
@@ -246,6 +246,25 @@ public interface Statement extends Item {
 
     }
 
+    interface _JoinNestedClause<JN> {
+
+        JN leftJoin();
+
+        JN join();
+
+        JN rightJoin();
+
+        JN fullJoin();
+
+        JN crossJoin();
+
+    }
+
+    interface _StraightJoinNestedClause<JN> {
+
+        JN straightJoin();
+    }
+
 
     /**
      * <p>
@@ -261,14 +280,41 @@ public interface Statement extends Item {
      * @param <LS> next clause java type
      * @since 1.0
      */
-    interface _LeftParenClause<LT, LS> {
+    interface _NestedLeftParenClause<LT, LS> {
 
-        LT leftParen(TableMeta<?> table, String tableAlias);
+        LT leftParen(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> LS leftParen(Supplier<T> supplier, String alias);
-
+        <T extends TabularItem> Statement._AsClause<LS> leftParen(Supplier<T> supplier);
 
     }
+
+    interface _LeftParenModifierTabularClause<LT, LS> extends _NestedLeftParenClause<LT, LS> {
+
+        <T extends TabularItem> Statement._AsClause<LS> leftParen(Query.TabularModifier modifier, Supplier<T> supplier);
+
+    }
+
+    interface _LeftParenModifierClause<LT, LS> extends _LeftParenModifierTabularClause<LT, LS> {
+
+        LT leftParen(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+
+    }
+
+
+    interface _LeftParenCteClause<LC> {
+
+        LC leftParen(String cteName);
+
+        LC leftParen(String cteName, SQLs.WordAs wordAs, String alias);
+    }
+
+
+    interface _NestedDialectLeftParenClause<LP> {
+
+        LP leftParen(TableMeta<?> table);
+
+    }
+
 
     interface _MinWhereClause<WR, WA> {
 

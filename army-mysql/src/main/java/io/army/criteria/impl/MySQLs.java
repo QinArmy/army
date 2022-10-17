@@ -117,14 +117,27 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
         return MySQLQueries.primaryQuery();
     }
 
+    public static MySQLQuery._ParenQueryClause<Select> parenQuery() {
+        return MySQLQueries.primaryParenQuery();
+    }
+
     public static MySQLQuery._WithCteSpec<SubQuery> subQuery() {
         return MySQLQueries.subQuery(ContextStack.peek(), SQLs::_identity);
+    }
+
+    public static MySQLQuery._ParenQueryClause<SubQuery> parenSubQuery() {
+        return MySQLQueries.parenSubQuery(ContextStack.peek(), SQLs::_identity);
     }
 
 
     public static MySQLQuery._WithCteSpec<Expression> scalarSubQuery() {
         return MySQLQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
     }
+
+    public static MySQLQuery._ParenQueryClause<Expression> parenScalarSubQuery() {
+        return MySQLQueries.parenSubQuery(ContextStack.peek(), ScalarExpression::from);
+    }
+
 
     public static MySQLDqlValues._ValuesStmtValuesClause<Void, Values> valuesStmt() {
         return MySQLSimpleValues.primaryValues(null);

@@ -107,6 +107,48 @@ public interface Query extends RowSet {
     }
 
 
+    interface _LeftParenClause<LR> {
+
+        LR leftParen();
+    }
+
+
+    /*################################## blow select clause  interfaces ##################################*/
+
+
+    interface _SelectClause<SR> {
+
+        SR select(SelectItem selectItem);
+
+        SR select(SelectItem selectItem1, SelectItem selectItem2);
+
+        SR select(SelectItem selectItem1, SelectItem selectItem2, SelectItem selectItem3);
+
+
+    }
+
+
+    interface _DynamicSelectClause<SR> extends _SelectClause<SR> {
+
+        SR select(Consumer<Consumer<SelectItem>> consumer);
+
+
+    }
+
+    interface _DynamicModifierSelectClause<W extends SelectModifier, SR> extends _DynamicSelectClause<SR> {
+
+        SR select(W modifier, Consumer<Consumer<SelectItem>> consumer);
+
+    }
+
+    interface _DynamicHintModifierSelectClause<W extends SelectModifier, SR>
+            extends _DynamicModifierSelectClause<W, SR> {
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Consumer<SelectItem>> consumer);
+
+    }
+
+
     /**
      * <p>
      * This interface representing FROM clause.
@@ -137,6 +179,12 @@ public interface Query extends RowSet {
     interface _FromModifierClause<FT, FS> extends _FromModifierTabularClause<FT, FS> {
 
         FT from(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+
+    }
+
+    interface _FromNestedClause<FN> {
+
+        FN from();
 
     }
 
@@ -188,42 +236,6 @@ public interface Query extends RowSet {
     interface _DialectFromClause<FP> {
 
         FP from(TableMeta<?> table);
-    }
-
-
-    /*################################## blow select clause  interfaces ##################################*/
-
-
-    interface _SelectClause<SR> {
-
-        SR select(SelectItem selectItem);
-
-        SR select(SelectItem selectItem1, SelectItem selectItem2);
-
-        SR select(SelectItem selectItem1, SelectItem selectItem2, SelectItem selectItem3);
-
-
-    }
-
-
-    interface _DynamicSelectClause<SR> extends _SelectClause<SR> {
-
-        SR select(Consumer<Consumer<SelectItem>> consumer);
-
-
-    }
-
-    interface _DynamicModifierSelectClause<W extends SelectModifier, SR> extends _DynamicSelectClause<SR> {
-
-        SR select(W modifier, Consumer<Consumer<SelectItem>> consumer);
-
-    }
-
-    interface _DynamicHintModifierSelectClause<W extends SelectModifier, SR>
-            extends _DynamicModifierSelectClause<W, SR> {
-
-        SR select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Consumer<SelectItem>> consumer);
-
     }
 
 
@@ -408,10 +420,6 @@ public interface Query extends RowSet {
         SR space();
     }
 
-    interface _LeftParenClause<LR> {
-
-        LR leftParen();
-    }
 
 
 }

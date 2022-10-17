@@ -66,10 +66,19 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         return new SimpleSelect<>(CriteriaContexts.primaryQuery(null), SQLs::_identity);
     }
 
+    static MySQLQuery._ParenQueryClause<Select> primaryParenQuery() {
+        return new ParenSelect();
+    }
+
 
     static <I extends Item> MySQLQuery._WithCteSpec<I> subQuery(CriteriaContext outerContext
             , Function<SubQuery, I> function) {
         throw new UnsupportedOperationException();
+    }
+
+    static <I extends Item> MySQLQuery._ParenQueryClause<I> parenSubQuery(CriteriaContext outerContext
+            , Function<SubQuery, I> function) {
+        return new ParenSubQuery<>(outerContext, function);
     }
 
     static <I extends Item> MySQLStaticComplexCommandSpec<I> staticComplexCommand(CriteriaContext outerContext
@@ -872,6 +881,56 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
 
     }//StaticComplexCommand
+
+
+    /**
+     * @see #primaryParenQuery()
+     */
+    private static final class ParenSelect implements MySQLQuery._ParenQueryClause<Select> {
+
+        private ParenSelect() {
+        }
+
+        @Override
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<Select>>> leftParen() {
+            final MySQLBracketSelect<Select> bracket;
+            bracket = new MySQLBracketSelect<>(CriteriaContexts.bracketContext(null), SQLs::_identity);
+            return new UnionLeftParenSelectClause<>(bracket);
+        }
+
+    }//ParenSelect
+
+    /**
+     * @see #parenSubQuery(CriteriaContext, Function)
+     */
+    private static final class ParenSubQuery<I extends Item>
+            extends SelectClauseDispatcher<MySQLs.Modifier, MySQLQuery._FromSpec<I>>
+            implements MySQLQuery._ParenQuerySpec<I> {
+
+        private final CriteriaContext outerContext;
+
+        private final Function<SubQuery, I> function;
+
+
+        private ParenSubQuery(CriteriaContext outerContext, Function<SubQuery, I> function) {
+            this.outerContext = outerContext;
+            this.function = function;
+        }
+
+        @Override
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final MySQLBracketSubQuery<I> bracket;
+            bracket = new MySQLBracketSubQuery<>(CriteriaContexts.bracketContext(this.outerContext), this.function);
+            return new UnionLeftParenSubQueryClause<>(bracket);
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<I>> createSelectClause() {
+            return new SimpleSubQuery<>(CriteriaContexts.subQueryContext(this.outerContext), this.function);
+        }
+
+
+    }//ParenSubQuery
 
 
     private static final class MySQLBracketSelect<I extends Item>

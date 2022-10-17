@@ -33,11 +33,15 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
-    interface _MySQLFromClause<FT, FS> extends _FromModifierTabularClause<FT, FS>
+    interface _MySQLFromClause<FT, FS extends Item> extends _FromModifierTabularClause<FT, FS>
             , _FromCteClause<FS> {
 
     }
 
+    interface _MySQLJoinNestedClause<JN> extends Statement._JoinNestedClause<JN>
+            , Statement._StraightJoinNestedClause<JN> {
+
+    }
 
     /**
      * <p>
@@ -79,6 +83,65 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     interface _MySQLCrossJoinClause<FT, FS> extends Statement._CrossJoinModifierTabularClause<FT, FS>
             , DialectStatement._CrossJoinCteClause<FS> {
+    }
+
+
+    interface _MySQLNestedJoinClause<I extends Item>
+            extends _MySQLJoinClause<_NestedIndexHintOnSpec<I>, _NestedOnSpec<I>>
+            , _MySQLCrossJoinClause<_NestedIndexHintCrossSpec<I>, _NestedJoinSpec<I>>
+            , _MySQLJoinNestedClause<_NestedLeftParenSpec<I>>
+            , _MySQLDialectJoinClause<_NestedPartitionOnSpec<I>>
+            , _DialectCrossJoinClause<_NestedPartitionCrossSpec<I>> {
+
+    }
+
+
+    interface _NestedJoinSpec<I extends Item> extends _MySQLNestedJoinClause<I>
+            , _RightParenClause<I> {
+
+    }
+
+    interface _NestedOnSpec<I extends Item> extends _OnClause<_NestedJoinSpec<I>>, _NestedJoinSpec<I> {
+
+    }
+
+    interface _NestedIndexHintOnSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintOnSpec<I>>
+            , _NestedOnSpec<I> {
+
+    }
+
+    interface _NestedPartitionOnSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintOnSpec<I>> {
+
+    }
+
+    interface _NestedIndexHintCrossSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintCrossSpec<I>>
+            , _NestedJoinSpec<I> {
+
+    }
+
+    interface _NestedPartitionCrossSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintCrossSpec<I>> {
+
+    }
+
+    interface _NestedIndexHintJoinSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintJoinSpec<I>>
+            , _MySQLNestedJoinClause<I> {
+
+    }
+
+    interface _NestedPartitionJoinSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintJoinSpec<I>> {
+
+    }
+
+    interface _MySQLNestedLeftParenClause<LT, LS> extends _LeftParenModifierTabularClause<LT, LS>
+            , _LeftParenCteClause<LS> {
+
+    }
+
+    interface _NestedLeftParenSpec<I extends Item>
+            extends _MySQLNestedLeftParenClause<_NestedIndexHintJoinSpec<I>, _MySQLNestedJoinClause<I>>
+            , _NestedDialectLeftParenClause<_NestedPartitionJoinSpec<I>>
+            , _LeftParenClause<_MySQLNestedJoinClause<I>> {
+
     }
 
 
@@ -325,6 +388,7 @@ public interface MySQLQuery extends Query, DialectStatement {
     interface _JoinSpec<I extends Item>
             extends _MySQLJoinClause<_IndexHintOnSpec<I>, _OnClause<_JoinSpec<I>>>
             , _MySQLCrossJoinClause<_IndexHintJoinSpec<I>, _JoinSpec<I>>
+            , _MySQLJoinNestedClause<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>>
             , _MySQLDialectJoinClause<_PartitionOnSpec<I>>
             , _DialectCrossJoinClause<_PartitionJoinSpec<I>>
             , _WhereSpec<I> {
@@ -344,6 +408,7 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     interface _FromSpec<I extends Item> extends _MySQLFromClause<_IndexHintJoinSpec<I>, _JoinSpec<I>>
             , _DialectFromClause<_PartitionJoinSpec<I>>
+            , _FromNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>
             , _IntoOptionSpec<I>
             , _UnionSpec<I> {
 
@@ -396,6 +461,15 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     interface _DynamicCteLeftParenSpec extends _LeftParenStringQuadraOptionalSpec<_DynamicCteAsClause>
             , _DynamicCteAsClause {
+
+    }
+
+    interface _ParenQueryClause<I extends Item>
+            extends Query._LeftParenClause<_UnionAndQuerySpec<Statement._RightParenClause<_UnionOrderBySpec<I>>>> {
+
+    }
+
+    interface _ParenQuerySpec<I extends Item> extends _ParenQueryClause<I>, _MySQLSelectClause<I> {
 
     }
 

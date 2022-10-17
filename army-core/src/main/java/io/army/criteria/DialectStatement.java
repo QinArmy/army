@@ -336,7 +336,7 @@ public interface DialectStatement extends Statement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <LS> same with the LS of {@link _LeftParenClause}
+     * @param <LS> same with the LS of {@link _NestedLeftParenClause}
      * @since 1.0
      */
     interface _LeftParenCteClause<LS> {
