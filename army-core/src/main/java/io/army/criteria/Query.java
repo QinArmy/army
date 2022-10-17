@@ -100,6 +100,7 @@ public interface Query extends RowSet {
 
     }
 
+
     interface _StaticWithCommaClause<CR> extends Item {
 
         CR comma(String name);

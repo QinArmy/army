@@ -197,7 +197,6 @@ abstract class BracketRowSet<I extends Item, Q extends RowSet, RR, OR, LR, SP, S
     }
 
 
-
     @Override
     public final void appendSql(final _SqlContext context) {
         final RowSet rowSet = this.rowSet;
@@ -241,7 +240,6 @@ abstract class BracketRowSet<I extends Item, Q extends RowSet, RR, OR, LR, SP, S
     }
 
 
-
     void onEndQuery() {
         //no-op
     }
@@ -251,7 +249,9 @@ abstract class BracketRowSet<I extends Item, Q extends RowSet, RR, OR, LR, SP, S
 
     abstract SP createQueryUnion(UnionType unionType);
 
-    abstract UR createRowSetUnion(UnionType unionType, S right);
+    UR createRowSetUnion(UnionType unionType, S right) {
+        throw new UnsupportedOperationException();
+    }
 
 
     private SP unionQuery(final UnionType unionType) {

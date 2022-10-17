@@ -326,7 +326,7 @@ public interface StandardQuery extends Query {
      * @since 1.0
      */
     interface _SelectSpec<I extends Item>
-            extends _DynamicModifierSelectClause<SQLs.SelectModifier, _FromSpec<I>>
+            extends _DynamicModifierSelectClause<SQLs.Modifier, _FromSpec<I>>
             , Item {
 
     }

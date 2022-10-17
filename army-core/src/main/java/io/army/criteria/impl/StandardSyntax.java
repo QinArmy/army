@@ -30,16 +30,16 @@ abstract class StandardSyntax extends Functions {
     }
 
 
-    public interface SelectModifier extends Query.SelectModifier {
+    public interface Modifier extends Query.SelectModifier {
 
     }
 
 
-    public interface WordAll extends SelectModifier {
+    public interface WordAll extends Modifier {
 
     }
 
-    public interface WordDistinct extends SelectModifier, FuncDistinct {
+    public interface WordDistinct extends Modifier, FuncDistinct {
 
     }
 

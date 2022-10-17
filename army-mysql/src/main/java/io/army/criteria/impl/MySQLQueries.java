@@ -26,15 +26,11 @@ import java.util.function.Function;
 
 /**
  * <p>
- * This class is base class of below:
- *     <ul>
- *         <li>{@link MySQL80SimpleQuery}</li>
- *     </ul>
+ * This class is base class of the implementation of {@link MySQLQuery}:
  * </p>
  *
  * @since 1.0
  */
-@SuppressWarnings("unchecked")
 abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQueries<
         I,
         MySQLCteBuilder,
@@ -593,16 +589,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             this.function = function;
         }
 
-        @Override
-        I onAsQuery() {
-            return this.function.apply(this);
-        }
-
-        @Override
-        _UnionAndQuerySpec<I> createQueryUnion(UnionType unionType) {
-            return null;
-        }
-
 
         @Override
         public String toString() {
@@ -615,8 +601,41 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             return s;
         }
 
+        @Override
+        I onAsQuery() {
+            return this.function.apply(this);
+        }
+
+        @Override
+        _UnionAndQuerySpec<I> createQueryUnion(UnionType unionType) {
+            UnionType.standardUnionType(this.context, unionType);
+            return new UnionAndSelectClause<>(this, unionType, this.function);
+        }
+
 
     }//SimpleSelect
+
+    private static final class SimpleSubQuery<I extends Item> extends MySQLQueries<I>
+            implements SubQuery {
+
+        private final Function<SubQuery, I> function;
+
+        private SimpleSubQuery(CriteriaContext context, Function<SubQuery, I> function) {
+            super(context);
+            this.function = function;
+        }
+
+        @Override
+        I onAsQuery() {
+            return this.function.apply(this);
+        }
+
+        @Override
+        _UnionAndQuerySpec<I> createQueryUnion(final UnionType unionType) {
+            UnionType.standardUnionType(this.context, unionType);
+            return new UnionAndSubQueryClause<>(this, unionType, this.function);
+        }
+    }//SimpleSubQuery
 
 
     enum MySQLLockMode implements SQLWords {
@@ -625,15 +644,15 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         LOCK_IN_SHARE_MODE(_Constant.SPACE_LOCK_IN_SHARE_MODE),
         FOR_SHARE(_Constant.SPACE_FOR_SHARE);
 
-        final String words;
+        final String spaceWords;
 
-        MySQLLockMode(String words) {
-            this.words = words;
+        MySQLLockMode(String spaceWords) {
+            this.spaceWords = spaceWords;
         }
 
         @Override
         public final String render() {
-            return this.words;
+            return this.spaceWords;
         }
 
 
@@ -853,6 +872,235 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
 
     }//StaticComplexCommand
+
+
+    private static final class MySQLBracketSelect<I extends Item>
+            extends BracketRowSet<
+            I,
+            Select,
+            MySQLQuery._UnionOrderBySpec<I>,
+            MySQLQuery._UnionLimitSpec<I>,
+            _QuerySpec<I>,
+            MySQLQuery._UnionAndQuerySpec<I>,
+            RowSet,
+            Void> implements MySQLQuery._UnionOrderBySpec<I>
+            , Statement._RightParenClause<MySQLQuery._UnionOrderBySpec<I>>
+            , Select {
+
+        private final Function<Select, I> function;
+
+        private MySQLBracketSelect(CriteriaContext context, Function<Select, I> function) {
+            super(context);
+            this.function = function;
+        }
+
+        @Override
+        public String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
+
+        @Override
+        I onAsQuery() {
+            return this.function.apply(this);
+        }
+
+        @Override
+        _UnionAndQuerySpec<I> createQueryUnion(final UnionType unionType) {
+            UnionType.standardUnionType(this.context, unionType);
+            return new UnionAndSelectClause<>(this, unionType, this.function);
+        }
+
+    }//MySQLBracketSelect
+
+
+    private static final class MySQLBracketSubQuery<I extends Item>
+            extends BracketRowSet<
+            I,
+            SubQuery,
+            MySQLQuery._UnionOrderBySpec<I>,
+            MySQLQuery._UnionLimitSpec<I>,
+            _QuerySpec<I>,
+            MySQLQuery._UnionAndQuerySpec<I>,
+            RowSet,
+            Void> implements MySQLQuery._UnionOrderBySpec<I>
+            , Statement._RightParenClause<MySQLQuery._UnionOrderBySpec<I>>
+            , SubQuery {
+
+        private final Function<SubQuery, I> function;
+
+        private MySQLBracketSubQuery(CriteriaContext context, Function<SubQuery, I> function) {
+            super(context);
+            this.function = function;
+        }
+
+        @Override
+        I onAsQuery() {
+            return this.function.apply(this);
+        }
+
+        @Override
+        _UnionAndQuerySpec<I> createQueryUnion(final UnionType unionType) {
+            UnionType.standardUnionType(this.context, unionType);
+            return new UnionAndSubQueryClause<>(this, unionType, this.function);
+        }
+
+    }//MySQLBracketSubQuery
+
+
+    private static final class UnionLeftParenSubQueryClause<I extends Item>
+            extends SelectClauseDispatcher<MySQLs.Modifier, MySQLQuery._FromSpec<_RightParenClause<MySQLQuery._UnionOrderBySpec<I>>>>
+            implements MySQLQuery._UnionAndQuerySpec<_RightParenClause<MySQLQuery._UnionOrderBySpec<I>>> {
+
+        private final MySQLBracketSubQuery<I> bracket;
+
+        private UnionLeftParenSubQueryClause(MySQLBracketSubQuery<I> bracket) {
+            this.bracket = bracket;
+        }
+
+        @Override
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<_RightParenClause<_UnionOrderBySpec<I>>>>> leftParen() {
+            final CriteriaContext context;
+            context = CriteriaContexts.bracketContext(this.bracket.context);
+
+            final MySQLBracketSubQuery<_RightParenClause<_UnionOrderBySpec<I>>> newBracket;
+            newBracket = new MySQLBracketSubQuery<>(context, this.bracket::parenRowSetEnd);
+            return new UnionLeftParenSubQueryClause<>(newBracket);
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>> createSelectClause() {
+            final CriteriaContext context;
+            context = CriteriaContexts.primaryQuery(this.bracket.context);
+            return new SimpleSubQuery<>(context, this.bracket::parenRowSetEnd);
+        }
+
+
+    }//UnionLeftParenSubQueryClause
+
+    private static final class UnionAndSubQueryClause<I extends Item>
+            extends SelectClauseDispatcher<MySQLs.Modifier, MySQLQuery._FromSpec<I>>
+            implements MySQLQuery._UnionAndQuerySpec<I> {
+
+        private final SubQuery left;
+
+        private final UnionType unionType;
+
+        private final Function<SubQuery, I> function;
+
+        private UnionAndSubQueryClause(SubQuery left, UnionType unionType, Function<SubQuery, I> function) {
+            this.left = left;
+            this.unionType = unionType;
+            this.function = function;
+        }
+
+
+        @Override
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final CriteriaContext leftContext, context;
+            leftContext = ((CriteriaContextSpec) this.left).getContext();
+            context = CriteriaContexts.unionBracketContext(leftContext);
+
+            final MySQLBracketSubQuery<I> bracket;
+            bracket = new MySQLBracketSubQuery<>(context, this::unionRight);
+            return new UnionLeftParenSubQueryClause<>(bracket);
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<I>> createSelectClause() {
+            final CriteriaContext leftContext, context;
+            leftContext = ((CriteriaContextSpec) this.left).getContext();
+
+            context = CriteriaContexts.unionSubQueryContext(leftContext);
+            return new SimpleSubQuery<>(context, this::unionRight);
+        }
+
+        private I unionRight(final SubQuery right) {
+            return this.function.apply(new UnionSubQuery(this.left, this.unionType, right));
+        }
+
+
+    }//UnionAndSubQueryClause
+
+
+    private static final class UnionLeftParenSelectClause<I extends Item>
+            extends SelectClauseDispatcher<MySQLs.Modifier, MySQLQuery._FromSpec<_RightParenClause<MySQLQuery._UnionOrderBySpec<I>>>>
+            implements MySQLQuery._UnionAndQuerySpec<_RightParenClause<MySQLQuery._UnionOrderBySpec<I>>> {
+
+        private final MySQLBracketSelect<I> bracket;
+
+        private UnionLeftParenSelectClause(MySQLBracketSelect<I> bracket) {
+            this.bracket = bracket;
+        }
+
+        @Override
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<_RightParenClause<_UnionOrderBySpec<I>>>>> leftParen() {
+            final CriteriaContext context;
+            context = CriteriaContexts.bracketContext(this.bracket.context);
+
+            final MySQLBracketSelect<_RightParenClause<_UnionOrderBySpec<I>>> newBracket;
+            newBracket = new MySQLBracketSelect<>(context, this.bracket::parenRowSetEnd);
+            return new UnionLeftParenSelectClause<>(newBracket);
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>> createSelectClause() {
+            final CriteriaContext context;
+            context = CriteriaContexts.primaryQuery(this.bracket.context);
+            return new SimpleSelect<>(context, this.bracket::parenRowSetEnd);
+        }
+
+
+    }//UnionLeftParenSelectClause
+
+    private static final class UnionAndSelectClause<I extends Item>
+            extends SelectClauseDispatcher<MySQLs.Modifier, MySQLQuery._FromSpec<I>>
+            implements MySQLQuery._UnionAndQuerySpec<I> {
+
+        private final Select left;
+
+        private final UnionType unionType;
+
+        private final Function<Select, I> function;
+
+        private UnionAndSelectClause(Select left, UnionType unionType, Function<Select, I> function) {
+            this.left = left;
+            this.unionType = unionType;
+            this.function = function;
+        }
+
+
+        @Override
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final CriteriaContext leftContext, context;
+            leftContext = ((CriteriaContextSpec) this.left).getContext();
+            context = CriteriaContexts.unionBracketContext(leftContext);
+
+            final MySQLBracketSelect<I> bracket;
+            bracket = new MySQLBracketSelect<>(context, this::unionRight);
+            return new UnionLeftParenSelectClause<>(bracket);
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<I>> createSelectClause() {
+            final CriteriaContext leftContext, context;
+            leftContext = ((CriteriaContextSpec) this.left).getContext();
+
+            context = CriteriaContexts.unionSelectContext(leftContext);
+            return new SimpleSelect<>(context, this::unionRight);
+        }
+
+        private I unionRight(final Select right) {
+            return this.function.apply(new UnionSelect(MySQLDialect.MySQL80, this.left, this.unionType, right));
+        }
+
+
+    }//UnionSelectClause
 
 
 }

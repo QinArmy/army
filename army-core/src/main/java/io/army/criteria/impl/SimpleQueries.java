@@ -800,62 +800,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     }//ComplexSelectCommand
 
 
-    static abstract class WithSelectClauseDispatcher<B extends CteBuilderSpec, WE, WS, W extends Query.SelectModifier, SR>
-            extends SelectClauseDispatcher<W, SR>
-            implements _DynamicWithCteClause<B, WE>
-            , Query._StaticWithCteClause<WS> {
-
-        WithSelectClauseDispatcher() {
-        }
-
-        @Override
-        public final WE with(Consumer<B> consumer) {
-            return this.createDynamicWithClause()
-                    .with(consumer);
-        }
-
-
-        @Override
-        public final WE withRecursive(Consumer<B> consumer) {
-            return this.createDynamicWithClause()
-                    .withRecursive(consumer);
-        }
-
-
-        @Override
-        public final WE ifWith(Consumer<B> consumer) {
-            return this.createDynamicWithClause()
-                    .ifWith(consumer);
-        }
-
-
-        @Override
-        public final WE ifWithRecursive(Consumer<B> consumer) {
-            return this.createDynamicWithClause()
-                    .ifWithRecursive(consumer);
-        }
-
-
-        @Override
-        public final WS with(String name) {
-            return this.createStaticWithClause()
-                    .with(name);
-        }
-
-        @Override
-        public final WS withRecursive(String name) {
-            return this.createStaticWithClause()
-                    .withRecursive(name);
-        }
-
-
-        abstract _DynamicWithCteClause<B, WE> createDynamicWithClause();
-
-        abstract Query._StaticWithCteClause<WS> createStaticWithClause();
-
-
-    }//WithSelectClauseDispatcher
-
 
     private static abstract class UnionQuery implements _UnionQuery, Statement, CriteriaContextSpec {
 
@@ -922,17 +866,17 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     }//UnionSubQuery
 
-    static final class UnionSelect extends UnionQuery implements Select {
+     static final class UnionSelect extends UnionQuery implements Select {
 
-        private final Dialect dialect;
+         private final Dialect dialect;
 
-        UnionSelect(Dialect dialect, RowSet left, UnionType unionType, RowSet right) {
-            super(left, unionType, right);
-            this.dialect = dialect;
-        }
+         UnionSelect(Dialect dialect, RowSet left, UnionType unionType, RowSet right) {
+             super(left, unionType, right);
+             this.dialect = dialect;
+         }
 
-        @Override
-        public String mockAsString(Dialect dialect, Visible visible, boolean none) {
+         @Override
+         public String mockAsString(Dialect dialect, Visible visible, boolean none) {
             final DialectParser parser;
             parser = _MockDialects.from(dialect);
             final Stmt stmt;

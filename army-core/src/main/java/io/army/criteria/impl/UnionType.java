@@ -1,11 +1,8 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
 import io.army.criteria.Query;
 import io.army.criteria.SQLWords;
 import io.army.dialect._Constant;
-import io.army.lang.Nullable;
-import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 enum UnionType implements SQLWords, Query.UnionModifier {
@@ -31,6 +28,7 @@ enum UnionType implements SQLWords, Query.UnionModifier {
         this.spaceWords = keyWords;
     }
 
+
     @Override
     public final String render() {
         return this.spaceWords;
@@ -46,71 +44,17 @@ enum UnionType implements SQLWords, Query.UnionModifier {
                 .toString();
     }
 
-
-    static UnionType from(final CriteriaContext context, final UnionType unionType
-            , final @Nullable Query.UnionModifier modifier) {
-        final UnionType actualType;
+    static void standardUnionType(final CriteriaContext context, final UnionType unionType) {
         switch (unionType) {
-            case UNION: {
-                if (modifier == null) {
-                    actualType = unionType;
-                } else if (modifier == SQLs.DISTINCT) {
-                    actualType = UnionType.UNION_DISTINCT;
-                } else if (modifier == SQLs.ALL) {
-                    actualType = UnionType.UNION_ALL;
-                } else {
-                    throw errorUnionModifier(context, modifier);
-                }
-            }
-            break;
-            case EXCEPT: {
-                if (modifier == null) {
-                    actualType = unionType;
-                } else if (modifier == SQLs.DISTINCT) {
-                    actualType = UnionType.EXCEPT_DISTINCT;
-                } else if (modifier == SQLs.ALL) {
-                    actualType = UnionType.EXCEPT_ALL;
-                } else {
-                    throw errorUnionModifier(context, modifier);
-                }
-            }
-            break;
-            case MINUS: {
-                if (modifier == null) {
-                    actualType = unionType;
-                } else if (modifier == SQLs.DISTINCT) {
-                    actualType = UnionType.MINUS_DISTINCT;
-                } else if (modifier == SQLs.ALL) {
-                    actualType = UnionType.MINUS_ALL;
-                } else {
-                    throw errorUnionModifier(context, modifier);
-                }
-            }
-            break;
-            case INTERSECT: {
-                if (modifier == null) {
-                    actualType = unionType;
-                } else if (modifier == SQLs.DISTINCT) {
-                    actualType = UnionType.INTERSECT_DISTINCT;
-                } else if (modifier == SQLs.ALL) {
-                    actualType = UnionType.INTERSECT_ALL;
-                } else {
-                    throw errorUnionModifier(context, modifier);
-                }
-            }
-            break;
+            case UNION:
+            case UNION_ALL:
+            case UNION_DISTINCT:
+                break;
             default:
-                throw _Exceptions.unexpectedEnum(unionType);
+                throw ContextStack.castCriteriaApi(context);
         }
-        return actualType;
     }
 
-
-    private static CriteriaException errorUnionModifier(CriteriaContext context
-            , @Nullable Query.UnionModifier modifier) {
-        String m = String.format("%s error %s", Query.UnionModifier.class.getName(), modifier);
-        return ContextStack.criteriaError(context, m);
-    }
 
 
 }

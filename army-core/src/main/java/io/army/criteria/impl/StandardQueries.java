@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._StandardQuery;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect.mysql.MySQLDialect;
@@ -21,7 +20,7 @@ import java.util.function.Supplier;
  */
 abstract class StandardQueries<I extends Item> extends SimpleQueries<
         I,
-        SQLs.SelectModifier,
+        StandardSyntax.Modifier,
         StandardQuery._FromSpec<I>, // SR
         StandardQuery._JoinSpec<I>,// FT
         StandardQuery._JoinSpec<I>,// FS
@@ -63,21 +62,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
 
-    private static void assertUnionType(final CriteriaContext context, final UnionType unionType) {
-        switch (unionType) {
-            case UNION:
-            case UNION_ALL:
-            case UNION_DISTINCT:
-                break;
-            default:
-                throw ContextStack.castCriteriaApi(context);
-        }
-    }
-
-
     private LockMode lockMode;
-
-    private ArmyExpression offset;
 
 
     private StandardQueries(CriteriaContext context) {
@@ -114,7 +99,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final List<SQLs.SelectModifier> asModifierList(final @Nullable List<SQLs.SelectModifier> modifiers) {
+    final List<StandardSyntax.Modifier> asModifierList(final @Nullable List<StandardSyntax.Modifier> modifiers) {
         if (modifiers == null) {
             throw ContextStack.nullPointer(this.context);
         }
@@ -122,32 +107,36 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
-        if (itemWord != null) {
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table
+            , String alias) {
+        if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         return new TableBlock.NoOnTableBlock(joinType, table, alias);
     }
 
     @Override
-    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
-        if (itemWord != null) {
+    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable TabularModifier modifier, TabularItem tableItem
+            , String alias) {
+        if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         return new TableBlock.NoOnTableBlock(joinType, tableItem, alias);
     }
 
     @Override
-    final _OnClause<_JoinSpec<I>> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
-        if (itemWord != null) {
+    final _OnClause<_JoinSpec<I>> createTableBlock(_JoinType joinType, @Nullable TableModifier modifier
+            , TableMeta<?> table, String tableAlias) {
+        if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         return new OnClauseTableBlock<>(joinType, table, tableAlias, this);
     }
 
     @Override
-    final _OnClause<_JoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
-        if (itemWord != null) {
+    final _OnClause<_JoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable TabularModifier modifier
+            , TabularItem tableItem, String alias) {
+        if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
@@ -155,7 +144,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     @Override
-    final Void createCteBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
+    final Void createCteBlock(_JoinType joinType, @Nullable TabularModifier modifier, TabularItem tableItem
+            , String alias) {
         throw ContextStack.castCriteriaApi(this.context);
     }
 
@@ -166,10 +156,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
 
-    @Override
-    public final _Expression offset() {
-        return this.offset;
-    }
 
     @Override
     final void onClear() {
@@ -217,7 +203,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         @Override
         _UnionAndQuerySpec<Q> createQueryUnion(final UnionType unionType) {
-            StandardQueries.assertUnionType(this.context, unionType);
+            UnionType.standardUnionType(this.context, unionType);
             return new UnionAndSelectClause<>(this, unionType, this.function);
         }
 
@@ -242,7 +228,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         @Override
         _UnionAndQuerySpec<Q> createQueryUnion(final UnionType unionType) {
-            StandardQueries.assertUnionType(this.context, unionType);
+            UnionType.standardUnionType(this.context, unionType);
             return new UnionAndSubQueryClause<>(this, unionType, this.function);
         }
 
@@ -262,7 +248,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             Void> implements StandardQuery._UnionOrderBySpec<I>
             , Statement._RightParenClause<_UnionOrderBySpec<I>> {
 
-        private ArmyExpression offset;
 
         private StandardBracketQueries(CriteriaContext context) {
             super(context);
@@ -274,10 +259,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             throw ContextStack.castCriteriaApi(this.context);
         }
 
-        @Override
-        public final _Expression offset() {
-            return this.offset;
-        }
 
 
     }//StandardBracketQueries
@@ -301,7 +282,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         @Override
         _UnionAndQuerySpec<I> createQueryUnion(final UnionType unionType) {
-            StandardQueries.assertUnionType(this.context, unionType);
+            UnionType.standardUnionType(this.context, unionType);
             return new UnionAndSelectClause<>(this, unionType, this.function);
         }
 
@@ -337,7 +318,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         @Override
         _UnionAndQuerySpec<I> createQueryUnion(final UnionType unionType) {
-            StandardQueries.assertUnionType(this.context, unionType);
+            UnionType.standardUnionType(this.context, unionType);
             return new UnionAndSubQueryClause<>(this, unionType, this.function);
         }
 
@@ -366,7 +347,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
      * @see #parenSubQuery(CriteriaContext, Function)
      */
     private static final class ParenSubQuery<I extends Item>
-            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<I>>
+            extends SelectClauseDispatcher<StandardSyntax.Modifier, StandardQuery._FromSpec<I>>
             implements StandardQuery._ParenQuerySpec<I> {
 
         private final CriteriaContext outerContext;
@@ -387,15 +368,16 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<I>> createSelectClause() {
+        _DynamicHintModifierSelectClause<StandardSyntax.Modifier, _FromSpec<I>> createSelectClause() {
             return new SimpleSubQuery<>(CriteriaContexts.subQueryContext(this.outerContext), this.function);
         }
 
 
     }//ParenSubQuery
 
+
     private static final class UnionLeftParenSelectClause<I extends Item>
-            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>>
+            extends SelectClauseDispatcher<StandardSyntax.Modifier, StandardQuery._FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>>
             implements _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> {
 
         private final StandardBracketSelect<I> bracket;
@@ -415,7 +397,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>> createSelectClause() {
+        _DynamicHintModifierSelectClause<StandardSyntax.Modifier, _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>> createSelectClause() {
             final CriteriaContext context;
             context = CriteriaContexts.primaryQuery(this.bracket.context);
             return new SimpleSelect<>(context, this.bracket::parenRowSetEnd);
@@ -425,7 +407,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }//UnionLeftParenSelectClause
 
     private static final class UnionAndSelectClause<I extends Item>
-            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<I>>
+            extends SelectClauseDispatcher<StandardSyntax.Modifier, StandardQuery._FromSpec<I>>
             implements _UnionAndQuerySpec<I> {
 
         private final Select left;
@@ -452,7 +434,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<I>> createSelectClause() {
+        _DynamicHintModifierSelectClause<StandardSyntax.Modifier, _FromSpec<I>> createSelectClause() {
             final CriteriaContext leftContext, context;
             leftContext = ((CriteriaContextSpec) this.left).getContext();
 
@@ -469,7 +451,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     private static final class UnionLeftParenSubQueryClause<I extends Item>
-            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>>
+            extends SelectClauseDispatcher<StandardSyntax.Modifier, StandardQuery._FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>>
             implements _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> {
         private final BracketSubQuery<I> outerBracket;
 
@@ -488,7 +470,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>> createSelectClause() {
+        _DynamicHintModifierSelectClause<StandardSyntax.Modifier, _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>> createSelectClause() {
             final CriteriaContext context;
             context = CriteriaContexts.subQueryContext(this.outerBracket.context);
             return new SimpleSubQuery<>(context, this.outerBracket::parenRowSetEnd);
@@ -503,7 +485,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
      * @see BracketSubQuery#createQueryUnion(UnionType)
      */
     private static final class UnionAndSubQueryClause<I extends Item>
-            extends SelectClauseDispatcher<SQLs.SelectModifier, StandardQuery._FromSpec<I>>
+            extends SelectClauseDispatcher<StandardSyntax.Modifier, StandardQuery._FromSpec<I>>
             implements _UnionAndQuerySpec<I> {
 
         private final SubQuery left;
@@ -531,7 +513,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
         @Override
-        _DynamicHintModifierSelectClause<SQLs.SelectModifier, _FromSpec<I>> createSelectClause() {
+        _DynamicHintModifierSelectClause<StandardSyntax.Modifier, _FromSpec<I>> createSelectClause() {
             final CriteriaContext leftContext, context;
             leftContext = ((CriteriaContextSpec) this.left).getContext();
 

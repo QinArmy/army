@@ -387,7 +387,7 @@ abstract class CriteriaUtils {
         return rowCount;
     }
 
-    static int standardModifier(final SQLs.SelectModifier distinct) {
+    static int standardModifier(final StandardSyntax.Modifier distinct) {
         return (distinct == SQLs.DISTINCT || distinct == SQLs.ALL) ? 1 : -1;
     }
 
@@ -396,6 +396,7 @@ abstract class CriteriaUtils {
                 , Long.class.getName(), Integer.class.getName(), Short.class.getName(), Byte.class.getName(), value);
         return ContextStack.criteriaError(criteriaContext, m);
     }
+
 
     static CriteriaException cteNotEnd(CriteriaContext context, String currentCte, String newCte) {
         String m = String.format("Cte[%s] not end,couldn't start Cte[%s]", currentCte, newCte);
