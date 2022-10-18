@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._PartRowSet;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
@@ -185,6 +182,27 @@ abstract class CriteriaUtils {
             throw unionTypeError(left, message);
         }
 
+    }
+
+
+    static List<_Predicate> asPredicateList(CriteriaContext context, final List<IPredicate> list) {
+        final List<_Predicate> predicateList;
+        final int size = list.size();
+        switch (size) {
+            case 0:
+                throw ContextStack.criteriaError(context, _Exceptions::predicateListIsEmpty);
+            case 1:
+                predicateList = Collections.singletonList((OperationPredicate) list.get(0));
+                break;
+            default: {
+                final List<_Predicate> tempList = new ArrayList<>(size);
+                for (IPredicate predicate : list) {
+                    tempList.add((OperationPredicate) predicate);
+                }
+                predicateList = Collections.unmodifiableList(tempList);
+            }
+        }
+        return predicateList;
     }
 
 

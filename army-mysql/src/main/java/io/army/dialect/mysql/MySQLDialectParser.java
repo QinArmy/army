@@ -784,7 +784,7 @@ final class MySQLDialectParser extends MySQLParser {
                 case RIGHT_JOIN:
                 case FULL_JOIN:
                 case STRAIGHT_JOIN: {
-                    predicateList = block.predicateList();
+                    predicateList = block.onClauseList();
                     if (!nested || predicateList.size() > 0) {
                         this.onClause(predicateList, context);
                     }
@@ -792,7 +792,7 @@ final class MySQLDialectParser extends MySQLParser {
                 break;
                 case NONE:
                 case CROSS_JOIN: {
-                    if (block.predicateList().size() > 0) {
+                    if (block.onClauseList().size() > 0) {
                         throw _Exceptions.joinTypeNoOnClause(joinType);
                     }
                 }

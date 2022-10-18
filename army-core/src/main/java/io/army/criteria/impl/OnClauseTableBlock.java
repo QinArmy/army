@@ -62,8 +62,8 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
     }
 
     @Override
-    public final OR on(Function<Object, IPredicate> operator1, DataField operandField1
-            , Function<Object, IPredicate> operator2, DataField operandField2) {
+    public final OR on(Function<Expression, IPredicate> operator1, DataField operandField1
+            , Function<Expression, IPredicate> operator2, DataField operandField2) {
         if (this.predicateList != null) {
             throw ContextStack.castCriteriaApi(this.getCriteriaContext());
         }
@@ -90,7 +90,7 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
 
 
     @Override
-    public final List<_Predicate> predicateList() {
+    public final List<_Predicate> onClauseList() {
         final List<_Predicate> predicateList = this.predicateList;
         if (predicateList == null | predicateList instanceof ArrayList) {
             throw ContextStack.castCriteriaApi(this.getCriteriaContext());

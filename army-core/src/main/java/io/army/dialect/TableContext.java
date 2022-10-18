@@ -203,7 +203,7 @@ final class TableContext {
             }
 
             //3.2 find parent from left
-            if (i == 0 || (parentId = findParentId(child, alias, block.predicateList())) == null) {
+            if (i == 0 || (parentId = findParentId(child, alias, block.onClauseList())) == null) {
                 throw noInnerJoinParent(child, alias, context);
             }
             if (parentId instanceof FieldMeta) {
@@ -236,7 +236,7 @@ final class TableContext {
             case JOIN:
             case STRAIGHT_JOIN: {
                 match = block.tableItem() == child.parentMeta()
-                        && findParentId(child, childAlias, block.predicateList()) != null;
+                        && findParentId(child, childAlias, block.onClauseList()) != null;
             }
             break;
             default://no-op
@@ -286,7 +286,7 @@ final class TableContext {
             }
             if (tableItem instanceof ChildTableMeta && ((ChildTableMeta<?>) tableItem).parentMeta() == parent) {
                 //brother table
-                parentId = findParentId((ChildTableMeta<?>) tableItem, block.alias(), block.predicateList());
+                parentId = findParentId((ChildTableMeta<?>) tableItem, block.alias(), block.onClauseList());
                 if (parentId == null) {
                     // finding failure
                     break;

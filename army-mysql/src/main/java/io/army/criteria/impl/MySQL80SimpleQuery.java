@@ -31,6 +31,7 @@ import java.util.function.*;
  * @see MySQL80UnionQuery
  * @since 1.0
  */
+@Deprecated
 @SuppressWarnings("unchecked")
 abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLQueries<
         C,

@@ -343,7 +343,7 @@ public interface DialectStatement extends Statement {
 
         LS leftParen(String cteName);
 
-        LS leftParen(String cteName, String alias);
+        LS leftParen(String cteName, SQLs.WordAs wordAs, String alias);
     }
 
 

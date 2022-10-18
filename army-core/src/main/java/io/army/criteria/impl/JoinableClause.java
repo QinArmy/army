@@ -1,11 +1,18 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._DialectTableBlock;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.util.ArrayUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -403,6 +410,114 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
         String m = String.format("error %s instance %s.", Query.TabularModifier.class.getName(), modifier);
         return ContextStack.criteriaError(this.context, m);
     }
+
+
+    @SuppressWarnings("unchecked")
+    static abstract class NestedJoinClause<FT, FS, FC, JT, JS, JC, OR>
+            extends JoinableClause<FT, FS, FC, JT, JS, JC, Object, Object, Object, Object>
+            implements Statement._OnClause<OR>
+            , _DialectTableBlock {
+
+        private final _JoinType joinType;
+
+        private final SQLWords modifier;
+
+        private final TabularItem tabularItem;
+
+        private final String alias;
+
+        private List<_Predicate> onPredicateList;
+
+        NestedJoinClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer
+                , _JoinType joinType, @Nullable SQLWords modifier
+                , TabularItem tabularItem, String alias) {
+            super(context, blockConsumer);
+            this.joinType = joinType;
+            this.modifier = modifier;
+            this.tabularItem = tabularItem;
+            this.alias = alias;
+        }
+
+        NestedJoinClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer
+                , TableBlock.DialectBlockParams params) {
+            super(context, blockConsumer);
+            this.joinType = params.joinType();
+            this.modifier = params.itemWord();
+            this.tabularItem = params.tableItem();
+            this.alias = params.alias();
+        }
+
+        @Override
+        public final OR on(IPredicate predicate) {
+            this.onPredicateList = Collections.singletonList((OperationPredicate) predicate);
+            return (OR) this;
+        }
+
+        @Override
+        public final OR on(IPredicate predicate1, IPredicate predicate2) {
+            this.onPredicateList = ArrayUtils.asUnmodifiableList(
+                    (OperationPredicate) predicate1,
+                    (OperationPredicate) predicate2
+            );
+            return (OR) this;
+        }
+
+        @Override
+        public final OR on(Function<Expression, IPredicate> operator, DataField operandField) {
+            this.onPredicateList = Collections.singletonList((OperationPredicate) operator.apply(operandField));
+            return (OR) this;
+        }
+
+        @Override
+        public final OR on(Function<Expression, IPredicate> operator1, DataField operandField1
+                , Function<Expression, IPredicate> operator2, DataField operandField2) {
+            this.onPredicateList = ArrayUtils.asUnmodifiableList(
+                    (OperationPredicate) operator1.apply(operandField1),
+                    (OperationPredicate) operator2.apply(operandField2)
+            );
+            return (OR) this;
+        }
+
+        @Override
+        public final OR on(Consumer<Consumer<IPredicate>> consumer) {
+            final List<IPredicate> list = new ArrayList<>();
+            consumer.accept(list::add);
+            this.onPredicateList = CriteriaUtils.asPredicateList(this.context, list);
+            return (OR) this;
+        }
+
+        @Override
+        public final _JoinType jointType() {
+            return this.joinType;
+        }
+
+        @Override
+        public final SQLWords itemWord() {
+            return this.modifier;
+        }
+
+        @Override
+        public final TabularItem tableItem() {
+            return this.tabularItem;
+        }
+
+        @Override
+        public final String alias() {
+            return this.alias;
+        }
+
+        @Override
+        public final List<_Predicate> onClauseList() {
+            List<_Predicate> list = this.onPredicateList;
+            if (list == null) {
+                list = Collections.emptyList();
+                this.onPredicateList = list;
+            }
+            return list;
+        }
+
+
+    }//NestedJoinClause
 
 
 }

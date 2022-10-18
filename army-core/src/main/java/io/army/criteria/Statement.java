@@ -145,8 +145,8 @@ public interface Statement extends Item {
 
         OR on(Function<Expression, IPredicate> operator, DataField operandField);
 
-        OR on(Function<Object, IPredicate> operator1, DataField operandField1
-                , Function<Object, IPredicate> operator2, DataField operandField2);
+        OR on(Function<Expression, IPredicate> operator1, DataField operandField1
+                , Function<Expression, IPredicate> operator2, DataField operandField2);
 
         OR on(Consumer<Consumer<IPredicate>> consumer);
 
@@ -169,7 +169,7 @@ public interface Statement extends Item {
      * @see _CrossJoinClause
      * @since 1.0
      */
-    interface _JoinClause<JT, JS> {
+    interface _JoinClause<JT, JS> extends Item {
 
         JT leftJoin(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 

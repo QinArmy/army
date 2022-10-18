@@ -140,7 +140,7 @@ public interface MySQLQuery extends Query, DialectStatement {
     interface _NestedLeftParenSpec<I extends Item>
             extends _MySQLNestedLeftParenClause<_NestedIndexHintJoinSpec<I>, _MySQLNestedJoinClause<I>>
             , _NestedDialectLeftParenClause<_NestedPartitionJoinSpec<I>>
-            , _LeftParenClause<_MySQLNestedJoinClause<I>> {
+            , _LeftParenClause<_NestedLeftParenSpec<_MySQLNestedJoinClause<I>>> {
 
     }
 

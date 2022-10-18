@@ -19,6 +19,7 @@ import io.army.util._Exceptions;
  * @see MySQL80SimpleQuery
  * @since 1.0
  */
+@Deprecated
 @SuppressWarnings("unchecked")
 abstract class MySQL80UnionQuery<C, Q extends Query> extends UnionRowSet<
         C,

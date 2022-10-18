@@ -120,10 +120,14 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         return this.createComplexCommand(true, name);
     }
 
-
     @Override
     public final _PartitionJoinSpec<I> from(TableMeta<?> table) {
         return new PartitionJoinClause<>(this, _JoinType.NONE, table);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_JoinSpec<I>> from() {
+        return null;
     }
 
     @Override
@@ -170,6 +174,36 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     @Override
     public final _PartitionJoinSpec<I> crossJoin(TableMeta<?> table) {
         return new PartitionJoinClause<>(this, _JoinType.CROSS_JOIN, table);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> leftJoin() {
+        return null;
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> join() {
+        return null;
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> rightJoin() {
+        return null;
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> fullJoin() {
+        return null;
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> crossJoin() {
+        return null;
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> straightJoin() {
+        return null;
     }
 
     /**

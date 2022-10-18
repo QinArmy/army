@@ -876,7 +876,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
                 case JOIN:
                 case RIGHT_JOIN:
                 case FULL_JOIN: {
-                    predicateList = block.predicateList();
+                    predicateList = block.onClauseList();
                     if (!nested || predicateList.size() > 0) {
                         this.onClause(predicateList, context);
                     }
@@ -884,7 +884,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
                 break;
                 case NONE:
                 case CROSS_JOIN: {
-                    if (block.predicateList().size() > 0) {
+                    if (block.onClauseList().size() > 0) {
                         throw _Exceptions.joinTypeNoOnClause(joinType);
                     }
                 }
