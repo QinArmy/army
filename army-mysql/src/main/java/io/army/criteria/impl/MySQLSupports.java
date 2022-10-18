@@ -221,8 +221,8 @@ abstract class MySQLSupports extends CriteriaSupports {
         private MySQLQuery._QueryIndexHintClause<RR> useIndexClause;
 
 
-        MySQLOnBlock(_JoinType joinType, @Nullable SQLWords itemWord, TabularItem tableItem, String alias, OR stmt) {
-            super(joinType, itemWord, tableItem, alias, stmt);
+        MySQLOnBlock(_JoinType joinType, @Nullable SQLWords modifier, TabularItem tableItem, String alias, OR stmt) {
+            super(joinType, modifier, tableItem, alias, stmt);
             this.partitionList = Collections.emptyList();
         }
 

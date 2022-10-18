@@ -124,21 +124,21 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
 
     static class OnItemTableBlock<OR> extends OnClauseTableBlock<OR> implements _DialectTableBlock {
 
-        private final SQLWords itemWord;
+        private final SQLWords modifier;
 
-        OnItemTableBlock(_JoinType joinType, @Nullable SQLWords itemWord, TabularItem tableItem, String alias, OR stmt) {
+        OnItemTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TabularItem tableItem, String alias, OR stmt) {
             super(joinType, tableItem, alias, stmt);
-            this.itemWord = itemWord;
+            this.modifier = modifier;
         }
 
         OnItemTableBlock(TableBlock.DialectBlockParams params, OR stmt) {
             super(params, stmt);
-            this.itemWord = params.itemWord();
+            this.modifier = params.itemWord();
         }
 
         @Override
         public final SQLWords itemWord() {
-            return this.itemWord;
+            return this.modifier;
         }
 
 

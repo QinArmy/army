@@ -5,6 +5,8 @@ import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._TableItemGroup;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
+import io.army.criteria.mysql.MySQLCrosses;
+import io.army.criteria.mysql.MySQLJoins;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -284,6 +286,42 @@ abstract class MySQLNestedJoins {
         @Override
         public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._NestedJoinSpec<I>> crossJoin() {
             return new NestedLeftParenClause<>(this.context, _JoinType.CROSS_JOIN, this::nestedCrossJoinEnd);
+        }
+
+        @Override
+        public final MySQLQuery._NestedJoinSpec<I> ifLeftJoin(Consumer<MySQLJoins> consumer) {
+            consumer.accept(MySQLDynamicJoins.joinBuilder(this.context, _JoinType.LEFT_JOIN, this.blockConsumer));
+            return this;
+        }
+
+        @Override
+        public final MySQLQuery._NestedJoinSpec<I> ifJoin(Consumer<MySQLJoins> consumer) {
+            consumer.accept(MySQLDynamicJoins.joinBuilder(this.context, _JoinType.JOIN, this.blockConsumer));
+            return this;
+        }
+
+        @Override
+        public final MySQLQuery._NestedJoinSpec<I> ifRightJoin(Consumer<MySQLJoins> consumer) {
+            consumer.accept(MySQLDynamicJoins.joinBuilder(this.context, _JoinType.RIGHT_JOIN, this.blockConsumer));
+            return this;
+        }
+
+        @Override
+        public final MySQLQuery._NestedJoinSpec<I> ifFullJoin(Consumer<MySQLJoins> consumer) {
+            consumer.accept(MySQLDynamicJoins.joinBuilder(this.context, _JoinType.FULL_JOIN, this.blockConsumer));
+            return this;
+        }
+
+        @Override
+        public final MySQLQuery._NestedJoinSpec<I> ifStraightJoin(Consumer<MySQLJoins> consumer) {
+            consumer.accept(MySQLDynamicJoins.joinBuilder(this.context, _JoinType.STRAIGHT_JOIN, this.blockConsumer));
+            return this;
+        }
+
+        @Override
+        public final MySQLQuery._NestedJoinSpec<I> ifCrossJoin(Consumer<MySQLCrosses> consumer) {
+            consumer.accept(MySQLDynamicJoins.crossBuilder(this.context, this.blockConsumer));
+            return this;
         }
 
         @Override

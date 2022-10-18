@@ -411,6 +411,20 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
         return ContextStack.criteriaError(this.context, m);
     }
 
+    static abstract class DynamicJoinClause<FT, FS, FC, JT, JS, JC>
+            extends JoinableClause<FT, FS, FC, JT, JS, JC, Object, Object, Object, Object> {
+
+        DynamicJoinClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer) {
+            super(context, blockConsumer);
+        }
+
+        DynamicJoinClause(CriteriaContext context) {
+            super(context);
+        }
+
+
+    }//DynamicJoinClause
+
 
     @SuppressWarnings("unchecked")
     static abstract class NestedJoinClause<FT, FS, FC, JT, JS, JC, OR>

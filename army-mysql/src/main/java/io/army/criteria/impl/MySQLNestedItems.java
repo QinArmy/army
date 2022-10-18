@@ -27,6 +27,7 @@ import java.util.List;
  * @see MySQLs#nestedItems(Object)
  * @since 1.0
  */
+@Deprecated
 final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
         C,
         MySQLQuery._NestedUseIndexJoinSpec<C>,

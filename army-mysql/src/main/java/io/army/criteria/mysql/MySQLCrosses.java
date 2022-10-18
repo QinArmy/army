@@ -10,11 +10,18 @@ import java.util.function.Supplier;
 
 public interface MySQLCrosses extends Statement.JoinBuilder {
 
-    void tabular(TableMeta<?> table, SQLs.WordAs wordAs, String alias);
+    MySQLQuery._DynamicIndexHintJoinClause tabular(TableMeta<?> table, SQLs.WordAs wordAs, String alias);
 
-    <T extends TabularItem> Statement._AsClause<T> tabular(Supplier<T> supplier);
+    MySQLQuery._DynamicPartitionJoinClause tabular(TableMeta<?> table);
 
-    <T extends TabularItem> Statement._AsClause<T> tabular(Query.TabularModifier modifier, Supplier<T> supplier);
+    <T extends TabularItem> Statement._AsClause<MySQLQuery._DynamicJoinSpec> tabular(Supplier<T> supplier);
+
+    <T extends TabularItem> Statement._AsClause<MySQLQuery._DynamicJoinSpec> tabular(Query.TabularModifier modifier
+            , Supplier<T> supplier);
+
+    MySQLQuery._DynamicJoinSpec tabular(String cteName);
+
+    MySQLQuery._DynamicJoinSpec tabular(String cteName, SQLs.WordAs wordAs, String alias);
 
 
 }

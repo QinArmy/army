@@ -4,9 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
-import io.army.criteria.mysql.MySQLCteBuilder;
-import io.army.criteria.mysql.MySQLQuery;
-import io.army.criteria.mysql.MySQLWindowBuilder;
+import io.army.criteria.mysql.*;
 import io.army.dialect._Constant;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
@@ -204,6 +202,42 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     @Override
     public final _NestedLeftParenSpec<_JoinSpec<I>> crossJoin() {
         return MySQLNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::nestedLeftParenJoinEnd);
+    }
+
+    @Override
+    public final _JoinSpec<I> ifLeftJoin(Consumer<MySQLJoins> consumer) {
+        consumer.accept(MySQLDynamicJoins.joinBuilder(this.context, _JoinType.LEFT_JOIN, this.blockConsumer));
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> ifJoin(Consumer<MySQLJoins> consumer) {
+        consumer.accept(MySQLDynamicJoins.joinBuilder(this.context, _JoinType.JOIN, this.blockConsumer));
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> ifRightJoin(Consumer<MySQLJoins> consumer) {
+        consumer.accept(MySQLDynamicJoins.joinBuilder(this.context, _JoinType.RIGHT_JOIN, this.blockConsumer));
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> ifFullJoin(Consumer<MySQLJoins> consumer) {
+        consumer.accept(MySQLDynamicJoins.joinBuilder(this.context, _JoinType.FULL_JOIN, this.blockConsumer));
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> ifStraightJoin(Consumer<MySQLJoins> consumer) {
+        consumer.accept(MySQLDynamicJoins.joinBuilder(this.context, _JoinType.STRAIGHT_JOIN, this.blockConsumer));
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> ifCrossJoin(Consumer<MySQLCrosses> consumer) {
+        consumer.accept(MySQLDynamicJoins.crossBuilder(this.context, this.blockConsumer));
+        return this;
     }
 
     /**
@@ -619,7 +653,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         joinType.assertNoneCrossType();
         final TableBlock.NoOnTableBlock block;
         block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
-        this.context.onAddBlock(block);
+        this.blockConsumer.accept(block);
         return this;
     }
 
@@ -635,7 +669,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         final OnClauseTableBlock<_JoinSpec<I>> block;
         block = new OnClauseTableBlock<>(joinType, nestedItems, "", this);
-        this.context.onAddBlock(block);
+        this.blockConsumer.accept(block);
         return block;
     }
 

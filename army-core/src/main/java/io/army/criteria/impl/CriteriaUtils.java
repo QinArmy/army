@@ -621,6 +621,10 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(((CriteriaContextSpec) child).getContext(), m);
     }
 
+    static CriteriaException duplicateTabularMethod(CriteriaContext context) {
+        return ContextStack.criteriaError(context, "duplicate tabular method");
+    }
+
 
     private static CriteriaException noDefaultMappingType(CriteriaContext criteriaContext, final Object value) {
         String m = String.format("Not found default %s for %s."

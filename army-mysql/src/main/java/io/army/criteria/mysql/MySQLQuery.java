@@ -275,36 +275,34 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface _DynamicIndexHintOnClause<I extends Item> extends _QueryIndexHintClause<_DynamicIndexHintOnClause<I>>
-            , _OnClause<_DynamicJoinSpec<I>> {
+    interface _DynamicIndexHintOnClause extends _QueryIndexHintClause<_DynamicIndexHintOnClause>
+            , _OnClause<_DynamicJoinSpec> {
 
     }
 
-    interface _DynamicPartitionOnClause<I extends Item>
-            extends _PartitionAndAsClause<_DynamicIndexHintOnClause<I>> {
+    interface _DynamicPartitionOnClause extends _PartitionAndAsClause<_DynamicIndexHintOnClause> {
 
     }
 
 
-    interface _DynamicJoinSpec<I extends Item>
-            extends _MySQLJoinClause<_DynamicIndexHintOnClause<I>, _OnClause<_DynamicJoinSpec<I>>>
-            , _MySQLCrossJoinClause<_DynamicIndexHintJoinClause<I>, _DynamicJoinSpec<I>>
-            , _MySQLJoinNestedClause<_NestedLeftParenSpec<_OnClause<_DynamicJoinSpec<I>>>>
-            , _CrossJoinNestedClause<_NestedLeftParenSpec<_DynamicJoinSpec<I>>>
-            , _MySQLDynamicJoinClause<_DynamicJoinSpec<I>>
-            , _MySQLDynamicCrossJoinClause<_DynamicJoinSpec<I>>
-            , _MySQLDialectJoinClause<_DynamicPartitionOnClause<I>>
-            , _DialectCrossJoinClause<_DynamicPartitionJoinClause<I>> {
+    interface _DynamicJoinSpec
+            extends _MySQLJoinClause<_DynamicIndexHintOnClause, _OnClause<_DynamicJoinSpec>>
+            , _MySQLCrossJoinClause<_DynamicIndexHintJoinClause, _DynamicJoinSpec>
+            , _MySQLJoinNestedClause<_NestedLeftParenSpec<_OnClause<_DynamicJoinSpec>>>
+            , _CrossJoinNestedClause<_NestedLeftParenSpec<_DynamicJoinSpec>>
+            , _MySQLDynamicJoinClause<_DynamicJoinSpec>
+            , _MySQLDynamicCrossJoinClause<_DynamicJoinSpec>
+            , _MySQLDialectJoinClause<_DynamicPartitionOnClause>
+            , _DialectCrossJoinClause<_DynamicPartitionJoinClause> {
 
     }
 
-    interface _DynamicIndexHintJoinClause<I extends Item> extends _QueryIndexHintClause<_DynamicIndexHintJoinClause<I>>
-            , _DynamicJoinSpec<I> {
+    interface _DynamicIndexHintJoinClause extends _QueryIndexHintClause<_DynamicIndexHintJoinClause>
+            , _DynamicJoinSpec {
 
     }
 
-    interface _DynamicPartitionJoinClause<I extends Item>
-            extends _PartitionAndAsClause<_DynamicIndexHintJoinClause<I>> {
+    interface _DynamicPartitionJoinClause extends _PartitionAndAsClause<_DynamicIndexHintJoinClause> {
 
     }
 
