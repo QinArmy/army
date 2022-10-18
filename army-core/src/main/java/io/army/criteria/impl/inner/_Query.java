@@ -18,7 +18,7 @@ public interface _Query extends _PartRowSet {
     /**
      * @return a unmodifiable list
      */
-    List<_Predicate> predicateList();
+    List<_Predicate> wherePredicateList();
 
     /**
      * @return a unmodifiable list

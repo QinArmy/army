@@ -428,11 +428,6 @@ abstract class CriteriaSupports {
     }//BiDelayParamMetaWrapper
 
 
-    @Deprecated
-    interface CteBuilderSpec {
-
-        void endWithClause(boolean required);
-    }
 
     @SuppressWarnings("unchecked")
     private static abstract class UpdateSetClause<F extends DataField, SR>

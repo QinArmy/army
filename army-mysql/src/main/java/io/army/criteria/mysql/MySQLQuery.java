@@ -85,63 +85,12 @@ public interface MySQLQuery extends Query, DialectStatement {
             , DialectStatement._CrossJoinCteClause<FS> {
     }
 
-
-    interface _MySQLNestedJoinClause<I extends Item>
-            extends _MySQLJoinClause<_NestedIndexHintOnSpec<I>, _NestedOnSpec<I>>
-            , _MySQLCrossJoinClause<_NestedIndexHintCrossSpec<I>, _NestedJoinSpec<I>>
-            , _MySQLJoinNestedClause<_NestedLeftParenSpec<_NestedOnSpec<I>>>
-            , _CrossJoinNestedClause<_NestedLeftParenSpec<_NestedJoinSpec<I>>>
-            , _MySQLDialectJoinClause<_NestedPartitionOnSpec<I>>
-            , _DialectCrossJoinClause<_NestedPartitionCrossSpec<I>> {
+    interface _MySQLDynamicJoinClause<JD> extends _DynamicJoinClause<MySQLJoins, JD>
+            , _DynamicStraightJoinClause<MySQLJoins, JD> {
 
     }
 
-
-    interface _NestedJoinSpec<I extends Item> extends _MySQLNestedJoinClause<I>
-            , _RightParenClause<I> {
-
-    }
-
-    interface _NestedOnSpec<I extends Item> extends _OnClause<_NestedJoinSpec<I>>, _NestedJoinSpec<I> {
-
-    }
-
-    interface _NestedIndexHintOnSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintOnSpec<I>>
-            , _NestedOnSpec<I> {
-
-    }
-
-    interface _NestedPartitionOnSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintOnSpec<I>> {
-
-    }
-
-    interface _NestedIndexHintCrossSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintCrossSpec<I>>
-            , _NestedJoinSpec<I> {
-
-    }
-
-    interface _NestedPartitionCrossSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintCrossSpec<I>> {
-
-    }
-
-    interface _NestedIndexHintJoinSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintJoinSpec<I>>
-            , _MySQLNestedJoinClause<I> {
-
-    }
-
-    interface _NestedPartitionJoinSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintJoinSpec<I>> {
-
-    }
-
-    interface _MySQLNestedLeftParenClause<LT, LS> extends _LeftParenModifierTabularClause<LT, LS>
-            , _LeftParenCteClause<LS> {
-
-    }
-
-    interface _NestedLeftParenSpec<I extends Item>
-            extends _MySQLNestedLeftParenClause<_NestedIndexHintJoinSpec<I>, _MySQLNestedJoinClause<I>>
-            , _NestedDialectLeftParenClause<_NestedPartitionJoinSpec<I>>
-            , _LeftParenClause<_NestedLeftParenSpec<_MySQLNestedJoinClause<I>>> {
+    interface _MySQLDynamicCrossJoinClause<JD> extends _DynamicCrossJoinClause<MySQLCrosses, JD> {
 
     }
 
@@ -261,6 +210,101 @@ public interface MySQLQuery extends Query, DialectStatement {
         IO into(Consumer<Consumer<String>> consumer);
 
         IO ifInto(Consumer<Consumer<String>> consumer);
+
+    }
+
+
+    interface _MySQLNestedJoinClause<I extends Item>
+            extends _MySQLJoinClause<_NestedIndexHintOnSpec<I>, _NestedOnSpec<I>>
+            , _MySQLCrossJoinClause<_NestedIndexHintCrossSpec<I>, _NestedJoinSpec<I>>
+            , _MySQLJoinNestedClause<_NestedLeftParenSpec<_NestedOnSpec<I>>>
+            , _CrossJoinNestedClause<_NestedLeftParenSpec<_NestedJoinSpec<I>>>
+            , _MySQLDynamicJoinClause<_NestedJoinSpec<I>>
+            , _MySQLDynamicCrossJoinClause<_NestedJoinSpec<I>>
+            , _MySQLDialectJoinClause<_NestedPartitionOnSpec<I>>
+            , _DialectCrossJoinClause<_NestedPartitionCrossSpec<I>> {
+
+    }
+
+
+    interface _NestedJoinSpec<I extends Item> extends _MySQLNestedJoinClause<I>
+            , _RightParenClause<I> {
+
+    }
+
+    interface _NestedOnSpec<I extends Item> extends _OnClause<_NestedJoinSpec<I>>, _NestedJoinSpec<I> {
+
+    }
+
+    interface _NestedIndexHintOnSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintOnSpec<I>>
+            , _NestedOnSpec<I> {
+
+    }
+
+    interface _NestedPartitionOnSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintOnSpec<I>> {
+
+    }
+
+    interface _NestedIndexHintCrossSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintCrossSpec<I>>
+            , _NestedJoinSpec<I> {
+
+    }
+
+    interface _NestedPartitionCrossSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintCrossSpec<I>> {
+
+    }
+
+    interface _NestedIndexHintJoinSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintJoinSpec<I>>
+            , _MySQLNestedJoinClause<I> {
+
+    }
+
+    interface _NestedPartitionJoinSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintJoinSpec<I>> {
+
+    }
+
+    interface _MySQLNestedLeftParenClause<LT, LS> extends _LeftParenModifierTabularClause<LT, LS>
+            , _LeftParenCteClause<LS> {
+
+    }
+
+    interface _NestedLeftParenSpec<I extends Item>
+            extends _MySQLNestedLeftParenClause<_NestedIndexHintJoinSpec<I>, _MySQLNestedJoinClause<I>>
+            , _NestedDialectLeftParenClause<_NestedPartitionJoinSpec<I>>
+            , _LeftParenClause<_NestedLeftParenSpec<_MySQLNestedJoinClause<I>>> {
+
+    }
+
+    interface _DynamicIndexHintOnClause<I extends Item> extends _QueryIndexHintClause<_DynamicIndexHintOnClause<I>>
+            , _OnClause<_DynamicJoinSpec<I>> {
+
+    }
+
+    interface _DynamicPartitionOnClause<I extends Item>
+            extends _PartitionAndAsClause<_DynamicIndexHintOnClause<I>> {
+
+    }
+
+
+    interface _DynamicJoinSpec<I extends Item>
+            extends _MySQLJoinClause<_DynamicIndexHintOnClause<I>, _OnClause<_DynamicJoinSpec<I>>>
+            , _MySQLCrossJoinClause<_DynamicIndexHintJoinClause<I>, _DynamicJoinSpec<I>>
+            , _MySQLJoinNestedClause<_NestedLeftParenSpec<_OnClause<_DynamicJoinSpec<I>>>>
+            , _CrossJoinNestedClause<_NestedLeftParenSpec<_DynamicJoinSpec<I>>>
+            , _MySQLDynamicJoinClause<_DynamicJoinSpec<I>>
+            , _MySQLDynamicCrossJoinClause<_DynamicJoinSpec<I>>
+            , _MySQLDialectJoinClause<_DynamicPartitionOnClause<I>>
+            , _DialectCrossJoinClause<_DynamicPartitionJoinClause<I>> {
+
+    }
+
+    interface _DynamicIndexHintJoinClause<I extends Item> extends _QueryIndexHintClause<_DynamicIndexHintJoinClause<I>>
+            , _DynamicJoinSpec<I> {
+
+    }
+
+    interface _DynamicPartitionJoinClause<I extends Item>
+            extends _PartitionAndAsClause<_DynamicIndexHintJoinClause<I>> {
 
     }
 
@@ -391,6 +435,8 @@ public interface MySQLQuery extends Query, DialectStatement {
             , _MySQLCrossJoinClause<_IndexHintJoinSpec<I>, _JoinSpec<I>>
             , _MySQLJoinNestedClause<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>>
             , _CrossJoinNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>
+            , _MySQLDynamicJoinClause<_JoinSpec<I>>
+            , _MySQLDynamicCrossJoinClause<_JoinSpec<I>>
             , _MySQLDialectJoinClause<_PartitionOnSpec<I>>
             , _DialectCrossJoinClause<_PartitionJoinSpec<I>>
             , _WhereSpec<I> {

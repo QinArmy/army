@@ -29,7 +29,7 @@ abstract class WhereClause<WR, WA, OR, LR> extends LimitRowOrderByClause<OR, LR>
         implements Statement._WhereClause<WR, WA>
         , Statement._WhereAndClause<WA>
         , Update._UpdateWhereAndClause<WA>
-        , _Statement._PredicateListSpec {
+        , _Statement._WherePredicateListSpec {
 
     final CriteriaContext context;
 
@@ -58,6 +58,7 @@ abstract class WhereClause<WR, WA, OR, LR> extends LimitRowOrderByClause<OR, LR>
     public final WA where(Supplier<IPredicate> supplier) {
         return this.and(supplier.get());
     }
+
     @Override
     public final WA where(Function<Expression, IPredicate> expOperator, Expression operand) {
         return this.and(expOperator.apply(operand));
@@ -350,7 +351,6 @@ abstract class WhereClause<WR, WA, OR, LR> extends LimitRowOrderByClause<OR, LR>
     }
 
 
-
     @Override
     public final <E> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         final E expression;
@@ -456,17 +456,14 @@ abstract class WhereClause<WR, WA, OR, LR> extends LimitRowOrderByClause<OR, LR>
         return (WA) this;
     }
 
-
     @Override
-    public final List<_Predicate> predicateList() {
+    public final List<_Predicate> wherePredicateList() {
         final List<_Predicate> list = this.predicateList;
         if (list == null || list instanceof ArrayList) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         return list;
     }
-
-
 
 
     final List<_Predicate> endWhereClause() {

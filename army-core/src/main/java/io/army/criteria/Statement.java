@@ -51,6 +51,10 @@ public interface Statement extends Item {
 
     }
 
+    interface JoinBuilder {
+
+    }
+
     interface _CteSpec<I extends Item> extends Item {
 
         I asCte();
@@ -266,6 +270,28 @@ public interface Statement extends Item {
     interface _CrossJoinNestedClause<FN> {
 
         FN crossJoin();
+    }
+
+
+    interface _DynamicJoinClause<B extends JoinBuilder, JD> {
+
+        JD ifLeftJoin(Consumer<B> consumer);
+
+        JD ifJoin(Consumer<B> consumer);
+
+        JD ifRightJoin(Consumer<B> consumer);
+
+        JD ifFullJoin(Consumer<B> consumer);
+    }
+
+    interface _DynamicCrossJoinClause<B extends JoinBuilder, JD> {
+
+        JD ifCrossJoin(Consumer<B> consumer);
+    }
+
+    interface _DynamicStraightJoinClause<B extends JoinBuilder, JD> {
+
+        JD ifStraightJoin(Consumer<B> consumer);
     }
 
 

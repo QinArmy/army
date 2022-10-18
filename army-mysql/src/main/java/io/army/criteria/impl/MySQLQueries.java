@@ -73,7 +73,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     static <I extends Item> MySQLQuery._WithCteSpec<I> subQuery(CriteriaContext outerContext
             , Function<SubQuery, I> function) {
-        throw new UnsupportedOperationException();
+         return new SimpleSubQuery<>(outerContext, function);
     }
 
     static <I extends Item> MySQLQuery._ParenQueryClause<I> parenSubQuery(CriteriaContext outerContext
@@ -474,6 +474,25 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     @Override
     public final boolean orderByWithRollup() {
         return this.orderByWithRollup;
+    }
+
+    @Override
+    public final List<TableMeta<?>> lockOfTableList() {
+        final List<TableMeta<?>> list = this.ofTableList;
+        if (list == null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return list;
+    }
+
+    @Override
+    public final SQLWords lockMode() {
+        return this.lockMode;
+    }
+
+    @Override
+    public final SQLWords lockWaitOption() {
+        return this.lockWaitOption;
     }
 
     @Override

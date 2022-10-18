@@ -11,9 +11,9 @@ public interface _Statement {
 
     void clear();
 
-    interface _PredicateListSpec {
+    interface _WherePredicateListSpec {
 
-        List<_Predicate> predicateList();
+        List<_Predicate> wherePredicateList();
     }
 
     interface _OrderByListSpec {

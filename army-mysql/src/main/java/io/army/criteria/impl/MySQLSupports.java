@@ -1,7 +1,9 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.*;
+import io.army.criteria.SQLWords;
+import io.army.criteria.Statement;
+import io.army.criteria.TabularItem;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
@@ -16,7 +18,6 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 abstract class MySQLSupports extends CriteriaSupports {
@@ -29,19 +30,6 @@ abstract class MySQLSupports extends CriteriaSupports {
     static <RR> MySQLQuery._QueryIndexHintClause<RR> indexHintClause(CriteriaContext context
             , Function<MySQLIndexHint, RR> function) {
         return new IndexHintClause<>(context, function);
-    }
-
-    static <C> MySQLQuery._IfPartitionAsClause<C> block(@Nullable C criteria, TableMeta<?> table) {
-        return new IfPartitionAsClause<>(ContextStack.getCurrentContext(criteria), table);
-    }
-
-    static <C> MySQLQuery._IfUseIndexOnSpec<C> block(@Nullable C criteria, @Nullable ItemWord itemWord
-            , TabularItem tableItem, String alias) {
-        if (!(tableItem instanceof TableMeta || tableItem instanceof SubQuery || tableItem instanceof CteItem)) {
-            String m = "currently,MySQL support TableMeta or SubQuery or CteItem";
-            throw ContextStack.criteriaError(ContextStack.peek(), m);
-        }
-        return new MySQLDynamicBlock<>(criteria, itemWord, tableItem, alias);
     }
 
     static _TableBlock createDynamicBlock(final _JoinType joinType, final DynamicBlock<?> block) {
@@ -279,7 +267,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
         private MySQLQuery._QueryIndexHintClause<RR> getUseIndexClause() {
-            MySQLQuery._QueryIndexHintClause<C, RR> useIndexClause = this.useIndexClause;
+            MySQLQuery._QueryIndexHintClause<RR> useIndexClause = this.useIndexClause;
             if (useIndexClause == null) {
                 useIndexClause = new IndexHintClause<>(this.getCriteriaContext(), this::addIndexHint);
                 this.useIndexClause = useIndexClause;
@@ -556,88 +544,6 @@ abstract class MySQLSupports extends CriteriaSupports {
     }//IndexHintClause
 
 
-    private static final class IfPartitionAsClause<C> implements MySQLQuery._IfPartitionAsClause<C>
-            , Statement._AsClause<MySQLQuery._IfUseIndexOnSpec<C>> {
-
-        private final CriteriaContext criteriaContext;
-
-        private final TableMeta<?> table;
-
-        private List<String> partitionList;
-
-        private IfPartitionAsClause(CriteriaContext criteriaContext, TableMeta<?> table) {
-            this.criteriaContext = criteriaContext;
-            this.table = table;
-        }
-
-        @Override
-        public MySQLQuery._IfUseIndexOnSpec<C> as(final String alias) {
-            final List<String> partitionList = this.partitionList;
-            if (partitionList == null) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            if (!_StringUtils.hasText(alias)) {
-                throw ContextStack.criteriaError(this.criteriaContext, _Exceptions::tableItemAliasNoText
-                        , this.table);
-            }
-            return new MySQLDynamicBlock<>(this.table, alias, partitionList, this.criteriaContext);
-        }
-
-        @Override
-        public Statement._LeftParenStringQuadraOptionalSpec<C, Statement._AsClause<MySQLQuery._IfUseIndexOnSpec<C>>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
-        }
-
-        private Statement._AsClause<MySQLQuery._IfUseIndexOnSpec<C>> partitionEnd(List<String> partitionList) {
-            if (this.partitionList != null) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            this.partitionList = partitionList;
-            return this;
-        }
-
-
-    }//IfPartitionAsClause
-
-
-    private static final class SinglePartitionClause<C, AR>
-            implements MySQLQuery._PartitionClause<C, Statement._AsClause<AR>>
-            , Statement._AsClause<AR> {
-
-        private final CriteriaContext criteriaContext;
-
-        private final BiFunction<List<String>, String, AR> function;
-
-        private List<String> partitionList;
-
-        private SinglePartitionClause(CriteriaContext criteriaContext, BiFunction<List<String>, String, AR> function) {
-            this.criteriaContext = criteriaContext;
-            this.function = function;
-        }
-
-        @Override
-        public Statement._LeftParenStringQuadraOptionalSpec<C, Statement._AsClause<AR>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
-        }
-
-        @Override
-        public AR as(final String alias) {
-            final List<String> partitionList = this.partitionList;
-            if (partitionList == null) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            if (!_StringUtils.hasText(alias)) {
-                throw ContextStack.criteriaError(this.criteriaContext, "alias no text");
-            }
-            return this.function.apply(partitionList, alias);
-        }
-
-        private Statement._AsClause<AR> partitionEnd(List<String> partitionList) {
-            this.partitionList = partitionList;
-            return this;
-        }
-
-    }//SinglePartitionClause
 
 
 }

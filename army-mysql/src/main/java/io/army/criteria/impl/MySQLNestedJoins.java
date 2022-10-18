@@ -19,6 +19,13 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * <p>
+ * This class hold MySQL nested join implementations
+ * </p>
+ *
+ * @since 1.0
+ */
 abstract class MySQLNestedJoins {
 
     private MySQLNestedJoins() {

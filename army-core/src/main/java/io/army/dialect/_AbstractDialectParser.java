@@ -1699,7 +1699,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
         final List<_TableBlock> blockList = query.tableBlockList();
         this.standardTableReferences(blockList, context, false);
         //4. where clause
-        this.queryWhereClause(blockList, query.predicateList(), context);
+        this.queryWhereClause(blockList, query.wherePredicateList(), context);
 
         //5. groupBy clause
         final List<? extends SortItem> groupByList = query.groupByList();
