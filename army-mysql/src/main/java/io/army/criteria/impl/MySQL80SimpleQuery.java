@@ -482,7 +482,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLQueries<
     @Override
     public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         MySQLUtils.assertItemWord(this.context, itemWord, tableItem);
-        return new TableBlock.DialectNoOnTableBlock(joinType, itemWord, tableItem, alias);
+        return new TableBlock.NoOnModifierTableBlock(joinType, itemWord, tableItem, alias);
     }
 
     @Override

@@ -26,7 +26,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
     }
 
-    static <C, RR> MySQLQuery._QueryIndexHintClause<C, RR> indexHintClause(CriteriaContext context
+    static <RR> MySQLQuery._QueryIndexHintClause<RR> indexHintClause(CriteriaContext context
             , Function<MySQLIndexHint, RR> function) {
         return new IndexHintClause<>(context, function);
     }
@@ -146,7 +146,7 @@ abstract class MySQLSupports extends CriteriaSupports {
     }
 
 
-    static final class MySQLNoOnBlock<RR> extends TableBlock.DialectNoOnTableBlock
+    static final class MySQLNoOnBlock<RR> extends TableBlock.NoOnModifierTableBlock
             implements _MySQLTableBlock {
 
         private final List<String> partitionList;
@@ -306,7 +306,7 @@ abstract class MySQLSupports extends CriteriaSupports {
     static abstract class PartitionAsClause<AR> implements Statement._AsClause<AR>, MySQLBlockParams
             , MySQLQuery._PartitionAndAsClause<AR> {
 
-        private final CriteriaContext context;
+        final CriteriaContext context;
 
         final _JoinType joinType;
 
@@ -489,8 +489,8 @@ abstract class MySQLSupports extends CriteriaSupports {
     }//MySQLDynamicTableBlock
 
 
-    private static final class IndexHintClause<C, RR> extends CriteriaSupports.ParenStringConsumerClause<C, RR>
-            implements MySQLQuery._IndexPurposeBySpec<C, RR>, MySQLQuery._QueryIndexHintClause<C, RR> {
+    private static final class IndexHintClause<RR> extends CriteriaSupports.ParenStringConsumerClause<RR>
+            implements MySQLQuery._IndexPurposeBySpec<RR>, MySQLQuery._QueryIndexHintClause<RR> {
 
         private final Function<MySQLIndexHint, RR> function;
 
@@ -504,37 +504,37 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
         @Override
-        public MySQLQuery._IndexPurposeBySpec<C, RR> useIndex() {
+        public MySQLQuery._IndexPurposeBySpec<RR> useIndex() {
             this.command = MySQLIndexHint.Command.USE_INDEX;
             return this;
         }
 
         @Override
-        public MySQLQuery._IndexPurposeBySpec<C, RR> ignoreIndex() {
+        public MySQLQuery._IndexPurposeBySpec<RR> ignoreIndex() {
             this.command = MySQLIndexHint.Command.IGNORE_INDEX;
             return this;
         }
 
         @Override
-        public MySQLQuery._IndexPurposeBySpec<C, RR> forceIndex() {
+        public MySQLQuery._IndexPurposeBySpec<RR> forceIndex() {
             this.command = MySQLIndexHint.Command.FORCE_INDEX;
             return this;
         }
 
         @Override
-        public Statement._LeftParenStringDualOptionalSpec<C, RR> forJoin() {
+        public Statement._LeftParenStringDualOptionalSpec<RR> forJoin() {
             this.purpose = MySQLIndexHint.Purpose.FOR_JOIN;
             return this;
         }
 
         @Override
-        public Statement._LeftParenStringDualOptionalSpec<C, RR> forOrderBy() {
+        public Statement._LeftParenStringDualOptionalSpec<RR> forOrderBy() {
             this.purpose = MySQLIndexHint.Purpose.FOR_ORDER_BY;
             return this;
         }
 
         @Override
-        public Statement._LeftParenStringDualOptionalSpec<C, RR> forGroupBy() {
+        public Statement._LeftParenStringDualOptionalSpec<RR> forGroupBy() {
             this.purpose = MySQLIndexHint.Purpose.FOR_GROUP_BY;
             return this;
         }

@@ -256,13 +256,16 @@ public interface Statement extends Item {
 
         JN fullJoin();
 
-        JN crossJoin();
-
     }
 
     interface _StraightJoinNestedClause<JN> {
 
         JN straightJoin();
+    }
+
+    interface _CrossJoinNestedClause<FN> {
+
+        FN crossJoin();
     }
 
 

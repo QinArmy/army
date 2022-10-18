@@ -97,7 +97,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
         if (!(itemWord == null || (itemWord == ItemWord.LATERAL && tableItem instanceof SubQuery))) {
             throw ContextStack.castCriteriaApi(this.criteriaContext);
         }
-        return new TableBlock.DialectNoOnTableBlock(joinType, itemWord, tableItem, alias);
+        return new TableBlock.NoOnModifierTableBlock(joinType, itemWord, tableItem, alias);
     }
 
     @Override

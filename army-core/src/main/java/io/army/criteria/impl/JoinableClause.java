@@ -439,12 +439,18 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
         }
 
         NestedJoinClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer
-                , TableBlock.DialectBlockParams params) {
+                , TableBlock.BlockParams params) {
             super(context, blockConsumer);
             this.joinType = params.joinType();
-            this.modifier = params.itemWord();
             this.tabularItem = params.tableItem();
             this.alias = params.alias();
+
+            if (params instanceof TableBlock.DialectBlockParams) {
+                this.modifier = ((TableBlock.DialectBlockParams) params).itemWord();
+            } else {
+                this.modifier = null;
+            }
+
         }
 
         @Override

@@ -127,7 +127,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final _NestedLeftParenSpec<_JoinSpec<I>> from() {
-        return null;
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::nestedLeftParenJoinEnd);
     }
 
     @Override
@@ -178,32 +178,32 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> leftJoin() {
-        return null;
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::nestedLeftParenOnEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> join() {
-        return null;
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::nestedLeftParenOnEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> rightJoin() {
-        return null;
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::nestedLeftParenOnEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> fullJoin() {
-        return null;
-    }
-
-    @Override
-    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> crossJoin() {
-        return null;
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::nestedLeftParenOnEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> straightJoin() {
-        return null;
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.STRAIGHT_JOIN, this::nestedLeftParenOnEnd);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_JoinSpec<I>> crossJoin() {
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::nestedLeftParenJoinEnd);
     }
 
     /**
@@ -591,6 +591,34 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         return comma.complexCommand;
     }
 
+
+    /**
+     * @see #from()
+     * @see #crossJoin()
+     */
+    private _JoinSpec<I> nestedLeftParenJoinEnd(final _JoinType joinType, final NestedItems nestedItems) {
+        joinType.assertNoneCrossType();
+        final TableBlock.NoOnTableBlock block;
+        block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
+        this.context.onAddBlock(block);
+        return this;
+    }
+
+    /**
+     * @see #leftJoin()
+     * @see #join()
+     * @see #rightJoin()
+     * @see #fullJoin()
+     * @see #straightJoin()
+     */
+    private _OnClause<_JoinSpec<I>> nestedLeftParenOnEnd(final _JoinType joinType, final NestedItems nestedItems) {
+        joinType.assertMySQLJoinType();
+
+        final OnClauseTableBlock<_JoinSpec<I>> block;
+        block = new OnClauseTableBlock<>(joinType, nestedItems, "", this);
+        this.context.onAddBlock(block);
+        return block;
+    }
 
     /**
      * @see #useIndex()

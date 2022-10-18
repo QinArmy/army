@@ -89,7 +89,8 @@ public interface MySQLQuery extends Query, DialectStatement {
     interface _MySQLNestedJoinClause<I extends Item>
             extends _MySQLJoinClause<_NestedIndexHintOnSpec<I>, _NestedOnSpec<I>>
             , _MySQLCrossJoinClause<_NestedIndexHintCrossSpec<I>, _NestedJoinSpec<I>>
-            , _MySQLJoinNestedClause<_NestedLeftParenSpec<I>>
+            , _MySQLJoinNestedClause<_NestedLeftParenSpec<_NestedOnSpec<I>>>
+            , _CrossJoinNestedClause<_NestedLeftParenSpec<_NestedJoinSpec<I>>>
             , _MySQLDialectJoinClause<_NestedPartitionOnSpec<I>>
             , _DialectCrossJoinClause<_NestedPartitionCrossSpec<I>> {
 
@@ -389,6 +390,7 @@ public interface MySQLQuery extends Query, DialectStatement {
             extends _MySQLJoinClause<_IndexHintOnSpec<I>, _OnClause<_JoinSpec<I>>>
             , _MySQLCrossJoinClause<_IndexHintJoinSpec<I>, _JoinSpec<I>>
             , _MySQLJoinNestedClause<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>>
+            , _CrossJoinNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>
             , _MySQLDialectJoinClause<_PartitionOnSpec<I>>
             , _DialectCrossJoinClause<_PartitionJoinSpec<I>>
             , _WhereSpec<I> {

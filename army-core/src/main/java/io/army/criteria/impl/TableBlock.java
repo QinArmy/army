@@ -94,16 +94,16 @@ abstract class TableBlock implements _TableBlock {
 
     }//NoOnTableBlock
 
-    static class DialectNoOnTableBlock extends NoOnTableBlock implements _DialectTableBlock {
+    static class NoOnModifierTableBlock extends NoOnTableBlock implements _DialectTableBlock {
 
         private final SQLWords itemWord;
 
-        DialectNoOnTableBlock(_JoinType joinType, @Nullable SQLWords itemWord, TabularItem tableItem, String alias) {
+        NoOnModifierTableBlock(_JoinType joinType, @Nullable SQLWords itemWord, TabularItem tableItem, String alias) {
             super(joinType, tableItem, alias);
             this.itemWord = itemWord;
         }
 
-        DialectNoOnTableBlock(DialectBlockParams params) {
+        NoOnModifierTableBlock(DialectBlockParams params) {
             super(params);
             this.itemWord = params.itemWord();
         }
