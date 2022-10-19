@@ -236,15 +236,17 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
         throw new UnsupportedOperationException();
     }
 
-    final void endUpdateSetClause() {
-        final List<_ItemPair> itemPairList = this.itemPairList;
+    final List<_ItemPair> endUpdateSetClause() {
+        List<_ItemPair> itemPairList = this.itemPairList;
         if (itemPairList == null || itemPairList.size() == 0) {
             throw ContextStack.criteriaError(this.context, _Exceptions::setClauseNotExists);
         } else if (itemPairList instanceof ArrayList) {
-            this.itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
+            itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
+            this.itemPairList = itemPairList;
         } else {
             throw ContextStack.castCriteriaApi(this.context);
         }
+        return itemPairList;
 
     }
 

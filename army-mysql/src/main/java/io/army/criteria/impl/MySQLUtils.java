@@ -95,19 +95,16 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int insertModifier(final MySQLSyntax._MySQLModifier modifier) {
+    static int insertModifier(final MySQLSyntax.Modifier modifier) {
         final int level;
-        switch (modifier) {
-            case LOW_PRIORITY:
-            case DELAYED:
-            case HIGH_PRIORITY:
-                level = 1;
-                break;
-            case IGNORE:
-                level = 2;
-                break;
-            default:
-                level = -1;
+        if (modifier == MySQLs.LOW_PRIORITY
+                || modifier == MySQLs.DELAYED
+                || modifier == MySQLs.HIGH_PRIORITY) {
+            level = 1;
+        } else if (modifier == MySQLs.IGNORE) {
+            level = 2;
+        } else {
+            level = -1;
         }
         return level;
     }

@@ -71,7 +71,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     static <I extends Item> MySQLQuery._WithCteSpec<I> subQuery(CriteriaContext outerContext
             , Function<SubQuery, I> function) {
-         return new SimpleSubQuery<>(outerContext, function);
+        return new SimpleSubQuery<>(outerContext, function);
     }
 
     static <I extends Item> MySQLQuery._ParenQueryClause<I> parenSubQuery(CriteriaContext outerContext
@@ -79,9 +79,9 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         return new ParenSubQuery<>(outerContext, function);
     }
 
-    static <I extends Item> MySQLStaticComplexCommandSpec<I> staticComplexCommand(CriteriaContext outerContext
-            , String cteName, I cteComma) {
-        return new StaticComplexCommand<>(outerContext, cteName, cteComma);
+    static <I extends Item> Function<String, MySQLQuery._StaticCteLeftParenSpec<I>> complexCte(CriteriaContext context
+            , I cteComma) {
+        return new StaticComplexCommand<>(context, cteComma)::nextCte;
     }
 
     private MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>> noOnBlock;
@@ -640,7 +640,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         context.onStartCte(name);
 
         final MySQLCteComma<I> comma;
-        comma = new MySQLCteComma<>(this, recursive, name);
+        comma = new MySQLCteComma<>(this, recursive);
         return comma.complexCommand;
     }
 
@@ -792,14 +792,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }//MySQLLock
 
 
-    interface MySQLStaticComplexCommandSpec<I extends Item>
-            extends MySQLQuery._MySQLSelectClause<MySQLQuery._CteSpec<I>> {
-
-        void nextCte(String cteName);
-
-    }
-
-
     /**
      * @see #window(Consumer)
      * @see #ifWindow(Consumer)
@@ -903,23 +895,16 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         private final StaticComplexCommand<_CteComma<I>> complexCommand;
 
-        private MySQLCteComma(MySQLQueries<I> statement, boolean recursive, String cteName) {
+        private MySQLCteComma(MySQLQueries<I> statement, boolean recursive) {
             this.statement = statement;
             this.recursive = recursive;
-            this.complexCommand = new StaticComplexCommand<>(statement.context, cteName, this);
+            this.complexCommand = new StaticComplexCommand<>(statement.context, this);
+
         }
 
         @Override
-        public _StaticCteLeftParenSpec<_CteComma<I>> comma(final @Nullable String name) {
-            final StaticComplexCommand<_CteComma<I>> complexCommand = this.complexCommand;
-            if (name == null) {
-                throw ContextStack.nullPointer(complexCommand.context);
-            } else if (complexCommand.cteName != null) {
-                throw ContextStack.castCriteriaApi(this.statement.context);
-            }
-            complexCommand.context.onStartCte(name);
-            complexCommand.cteName = name;
-            return complexCommand;
+        public _StaticCteLeftParenSpec<_CteComma<I>> comma(final String name) {
+            return this.complexCommand.nextCte(name);
         }
 
         @Override
@@ -938,10 +923,10 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             MySQLs.Modifier,
             MySQLQuery._FromSpec<MySQLQuery._CteSpec<I>>,
             _StaticCteAsClause<I>>
-            implements MySQLStaticComplexCommandSpec<I>
-            , MySQLQuery._StaticCteLeftParenSpec<I>
+            implements MySQLQuery._StaticCteLeftParenSpec<I>
             , _RightParenClause<_StaticCteAsClause<I>>
-            , MySQLQuery._CteSpec<I> {
+            , _MySQLSelectClause<_CteSpec<I>>
+            , Statement._CteSpec<I> {
 
         private final I cteComma;
 
@@ -949,9 +934,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         private List<String> columnAliasList;
 
-        private StaticComplexCommand(CriteriaContext context, String cteName, I cteComma) {
+        private StaticComplexCommand(CriteriaContext context, I cteComma) {
             super(context);
-            this.cteName = cteName;
             this.cteComma = cteComma;
         }
 
@@ -964,11 +948,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        public void nextCte(String cteName) {
-            if (this.cteName != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.cteName = cteName;
+        public I asCte() {
+            return this.cteComma;
         }
 
         @Override
@@ -989,9 +970,15 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             return this;
         }
 
-        @Override
-        public I asCte() {
-            return this.cteComma;
+        private MySQLQuery._StaticCteLeftParenSpec<I> nextCte(final @Nullable String cteName) {
+            if (this.cteName != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            } else if (cteName == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            this.context.onStartCte(cteName);
+            this.cteName = cteName;
+            return this;
         }
 
 

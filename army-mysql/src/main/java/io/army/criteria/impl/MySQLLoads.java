@@ -974,7 +974,7 @@ abstract class MySQLLoads {
             this.columnOrUserVarList = clause.columnOrUserVarList();
 
             clause.endAssignmentSetClause();
-            this.columItemPairList = clause.pairList();
+            this.columItemPairList = clause.assignmentPairList();
 
         }
 

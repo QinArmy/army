@@ -91,10 +91,10 @@ final class AssignmentInsertContext extends StatementContext
         this.migration = nonChildStmt.isMigration();
         this.literalMode = nonChildStmt.literalMode();
         this.duplicateKeyClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec;
-        this.pairList = nonChildStmt.pairList();
+        this.pairList = nonChildStmt.assignmentPairList();
 
         final Map<FieldMeta<?>, _Expression> pairMap;
-        pairMap = nonChildStmt.pairMap();
+        pairMap = nonChildStmt.assignmentMap();
         assert pairMap.size() == this.pairList.size();
 
         if (this.migration) {
@@ -147,7 +147,7 @@ final class AssignmentInsertContext extends StatementContext
                 && this.literalMode == parentContext.literalMode
                 && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta();
 
-        this.pairList = stmt.pairList();
+        this.pairList = stmt.assignmentPairList();
 
         if (this.migration) {
             this.fieldList = Collections.emptyList();
@@ -436,10 +436,10 @@ final class AssignmentInsertContext extends StatementContext
             super(domainStmt.table(), context.parser.mappingEnv());
 
             if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
-                this.nonChildPairMap = ((_Insert._ChildAssignmentInsert) domainStmt).parentStmt().pairMap();
-                this.childPairMap = domainStmt.pairMap();
+                this.nonChildPairMap = ((_Insert._ChildAssignmentInsert) domainStmt).parentStmt().assignmentMap();
+                this.childPairMap = domainStmt.assignmentMap();
             } else {
-                this.nonChildPairMap = domainStmt.pairMap();
+                this.nonChildPairMap = domainStmt.assignmentMap();
                 this.childPairMap = Collections.emptyMap();
             }
 

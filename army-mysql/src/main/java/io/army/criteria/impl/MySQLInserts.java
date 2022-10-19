@@ -1,19 +1,22 @@
 package io.army.criteria.impl;
 
-import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner.mysql._MySQLInsert;
+import io.army.criteria.mysql.MySQLCteBuilder;
 import io.army.criteria.mysql.MySQLInsert;
+import io.army.criteria.mysql.MySQLQuery;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.modelgen._MetaBridge;
 import io.army.util._CollectionUtils;
-import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -36,23 +39,9 @@ abstract class MySQLInserts extends InsertSupport {
         throw new UnsupportedOperationException();
     }
 
-
-    static <C> MySQLInsert._OptionSpec<C> domainInsert(@Nullable C criteria) {
-        return new DomainInsertOptionClause<>(criteria);
+    static MySQLInsert._PrimaryOptionSpec primaryInsert() {
+        return null;
     }
-
-    static <C> MySQLInsert._ValueOptionSpec<C> valueInsert(@Nullable C criteria) {
-        return new ValueInsertOptionClause<>(criteria);
-    }
-
-    static <C> MySQLInsert._AssignmentOptionSpec<C> assignmentInsert(@Nullable C criteria) {
-        return new AssignmentInsertOptionClause<>(criteria);
-    }
-
-    static <C> MySQLInsert._QueryInsertIntoSpec<C> queryInsert(@Nullable C criteria) {
-        return new QueryInsertIntoClause<>(criteria);
-    }
-
 
     interface ClauseBeforeRowAlias extends ColumnListClause {
 
@@ -72,522 +61,296 @@ abstract class MySQLInserts extends InsertSupport {
         CT parentStmtEnd(List<_Pair<FieldMeta<?>, _Expression>> pairList);
     }
 
+    private static final class PrimaryComma implements MySQLInsert._PrimaryCteComma {
 
-    @SuppressWarnings("unchecked")
-    private static abstract class MySQLInsertClause<C, MR, NR, PR, IR> extends NonQueryInsertOptionsImpl<MR, NR, PR>
-            implements MySQLInsert._InsertClause<C, IR> {
+        private final boolean recursive;
+
+        private final PrimaryInsertIntoClause primaryClause;
+
+        private final Function<String, MySQLQuery._StaticCteLeftParenSpec<MySQLInsert._PrimaryCteComma>> function;
+
+        private PrimaryComma(boolean recursive, PrimaryInsertIntoClause primaryClause) {
+            this.recursive = recursive;
+            this.primaryClause = primaryClause;
+            this.function = MySQLQueries.complexCte(primaryClause.context, this);
+        }
+
+        @Override
+        public MySQLQuery._StaticCteLeftParenSpec<MySQLInsert._PrimaryCteComma> comma(String name) {
+            return this.function.apply(name);
+        }
+
+        @Override
+        public MySQLInsert._PrimaryIntoClause insert(Supplier<List<Hint>> supplier, List<MySQLSyntax.Modifier> modifiers) {
+            return this.staticCteEnd().insert(supplier, modifiers);
+        }
+
+        @Override
+        public <T> MySQLInsert._PartitionSpec<Insert, T> insertInto(SimpleTableMeta<T> table) {
+            return this.staticCteEnd().insertInto(table);
+        }
+
+        @Override
+        public <P> MySQLInsert._PartitionSpec<Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>>, P> insertInto(ParentTableMeta<P> table) {
+            return this.staticCteEnd().insertInto(table);
+        }
+
+        private PrimaryInsertIntoClause staticCteEnd() {
+            final PrimaryInsertIntoClause primaryClause = this.primaryClause;
+            primaryClause.endStaticWithClause(this.recursive);
+            return primaryClause;
+        }
+
+    }//PrimaryComma
+
+    private static final class PrimaryInsertIntoClause extends InsertSupport.NonQueryWithCteOption<
+            MySQLInsert._PrimaryNullOptionSpec,
+            MySQLInsert._PrimaryPreferLiteralSpec,
+            MySQLInsert._PrimaryWithCteSpec,
+            MySQLCteBuilder,
+            MySQLInsert._PrimaryInsertIntoSpec>
+            implements MySQLInsert._PrimaryOptionSpec
+            , MySQLInsert._PrimaryIntoClause {
 
         private List<Hint> hintList;
 
-        private List<MySQLSyntax._MySQLModifier> modifierList;
+        private List<MySQLSyntax.Modifier> modifierList;
 
-        private MySQLInsertClause(CriteriaContext criteriaContext) {
-            super(criteriaContext);
+        private PrimaryInsertIntoClause() {
+            super(CriteriaContexts.primaryInsertContext());
+            ContextStack.push(this.context);
         }
 
 
         @Override
-        public final IR insert(Supplier<List<Hint>> supplier, List<MySQLSyntax._MySQLModifier> modifiers) {
-            this.hintList = MySQLUtils.asHintList(this.context, supplier.get(), MySQLHints::castHint);
-            this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::insertModifier);
-            return (IR) this;
+        public MySQLQuery._StaticCteLeftParenSpec<MySQLInsert._PrimaryCteComma> with(String name) {
+            final boolean recursive = false;
+            this.context.onBeforeWithClause(recursive);
+            return new PrimaryComma(recursive, this).function.apply(name);
         }
 
         @Override
-        public final IR insert(Function<C, List<Hint>> function, List<MySQLSyntax._MySQLModifier> modifiers) {
-            this.hintList = MySQLUtils.asHintList(this.context, function.apply(this.context.criteria())
-                    , MySQLHints::castHint);
-            this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::insertModifier);
-            return (IR) this;
-        }
-
-
-        final List<Hint> hintList() {
-            List<Hint> list = this.hintList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        final List<MySQLSyntax._MySQLModifier> modifierList() {
-            List<MySQLSyntax._MySQLModifier> list = this.modifierList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-
-    }//InsertClause
-
-
-    @SuppressWarnings("unchecked")
-    private static abstract class DuplicateKeyUpdateClause<C, T, UR, DR>
-            implements Insert._CommaFieldValuePairClause<C, T, UR>
-            , MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, T, UR>
-            , MySQLInsert._StaticOnDuplicateKeyFieldClause<C, T, UR>
-            , MySQLInsert._DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<T>, DR> {
-
-        final CriteriaContext context;
-
-        final C criteria;
-
-        final ClauseBeforeRowAlias clause;
-
-        final TableMeta<?> table;
-
-        private boolean optionalOnDuplicateKey = true;
-
-        private Map<FieldMeta<?>, Boolean> fieldMap;
-
-        private List<_Pair<FieldMeta<?>, _Expression>> duplicatePairList;
-
-        private DuplicateKeyUpdateClause(ClauseBeforeRowAlias clause) {
-            this.context = clause.getContext();
-            this.criteria = this.context.criteria();
-            this.clause = clause;
-            this.table = clause.table();
-        }
-
-
-        @Override
-        public final UR update(FieldMeta<T> field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableParam(field, value));
-            return (UR) this;
+        public MySQLQuery._StaticCteLeftParenSpec<MySQLInsert._PrimaryCteComma> withRecursive(String name) {
+            final boolean recursive = true;
+            this.context.onBeforeWithClause(recursive);
+            return new PrimaryComma(recursive, this).function.apply(name);
         }
 
         @Override
-        public final UR updateLiteral(FieldMeta<T> field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableLiteral(field, value));
-            return (UR) this;
-        }
-
-        @Override
-        public final UR updateExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
-            this.addValuePair(field, supplier.get());
-            return (UR) this;
-        }
-
-        @Override
-        public final UR updateExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
-            this.addValuePair(field, function.apply(this.criteria));
-            return (UR) this;
-        }
-
-        @Override
-        public final UR comma(FieldMeta<T> field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableParam(field, value));
-            return (UR) this;
-        }
-
-        @Override
-        public final UR commaLiteral(FieldMeta<T> field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableLiteral(field, value));
-            return (UR) this;
-        }
-
-        @Override
-        public final UR commaExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
-            this.addValuePair(field, supplier.get());
-            return (UR) this;
-        }
-
-        @Override
-        public final UR commaExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
-            this.addValuePair(field, function.apply(this.criteria));
-            return (UR) this;
-        }
-
-        @Override
-        public final MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, T, UR> onDuplicateKey() {
-            this.optionalOnDuplicateKey = false;
+        public MySQLInsert._PrimaryIntoClause insert(Supplier<List<Hint>> supplier, List<MySQLSyntax.Modifier> modifiers) {
+            this.hintList = CriteriaUtils.asHintList(this.context, supplier.get(), MySQLHints::castHint);
+            this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::insertModifier);
             return this;
         }
 
         @Override
-        public final DR onDuplicateKeyUpdate(Consumer<PairConsumer<T>> consumer) {
-            this.optionalOnDuplicateKey = false;
-            final DynamicPairsConstructor<T> constructor;
-            constructor = new DynamicPairsConstructor<>(this.context, this.clause::validateField);
-            constructor.row();
-            consumer.accept(constructor);
-
-            List<_Pair<FieldMeta<?>, _Expression>> duplicatePairList;//TODO
-            constructor.endPairConsumer();
-            return (DR) this;
-        }
-
-        @Override
-        public final DR onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<T>> consumer) {
-            this.optionalOnDuplicateKey = false;
-            consumer.accept(this.criteria, this);
-            return (DR) this;
-        }
-
-        @Override
-        public final DR ifOnDuplicateKeyUpdate(Consumer<PairConsumer<T>> consumer) {
-            this.optionalOnDuplicateKey = true;
-            consumer.accept(this);
-            return (DR) this;
-        }
-
-        @Override
-        public final DR ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<T>> consumer) {
-            this.optionalOnDuplicateKey = true;
-            consumer.accept(this.criteria, this);
-            return (DR) this;
-        }
-
-
-
-        final List<_Pair<FieldMeta<?>, _Expression>> endDuplicateKeyClause() {
-            List<_Pair<FieldMeta<?>, _Expression>> pairList = this.duplicatePairList;
-            if (pairList == null) {
-                if (!this.optionalOnDuplicateKey) {
-                    String m = "You don't add any field and value pair";
-                    throw ContextStack.criteriaError(this.context, m);
-                }
-                pairList = Collections.emptyList();
-            } else if (pairList instanceof ArrayList) {
-                pairList = Collections.unmodifiableList(pairList);
-            } else {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.duplicatePairList = pairList;
-            return pairList;
-        }
-
-        private void addValuePair(final FieldMeta<T> field, final @Nullable Expression value) {
-
-            if (!(value instanceof ArmyExpression)) {
-                throw ContextStack.nonArmyExp(this.context);
-            }
-
-            if (field.tableMeta() != this.table) {
-                throw ContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
-            }
-            if (field.updateMode() != UpdateMode.UPDATABLE) {
-                throw ContextStack.criteriaError(this.context, _Exceptions::nonUpdatableField, field);
-            }
-
-            switch (field.fieldName()) {
-                case _MetaBridge.UPDATE_TIME:
-                case _MetaBridge.VERSION:
-                    throw ContextStack.criteriaError(this.context, _Exceptions::armyManageField, field);
-            }
-
-            Map<FieldMeta<?>, Boolean> filedMap = this.fieldMap;
-            if (filedMap == null) {
-                filedMap = new HashMap<>();
-                this.fieldMap = filedMap;
-            }
-            if (filedMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                throw duplicationValuePair(this.context, field);
-            }
-
-            List<_Pair<FieldMeta<?>, _Expression>> pairList = this.duplicatePairList;
-            if (pairList == null) {
-                pairList = new ArrayList<>();
-                this.duplicatePairList = pairList;
-            }
-            pairList.add(_Pair.create(field, (ArmyExpression) value));
-        }
-
-
-    }//DuplicateKeyUpdateClause
-
-
-    private static final class NonParentDuplicateKeyUpdateSpec<C, T>
-            extends DuplicateKeyUpdateClause<
-            C,
-            T,
-            MySQLInsert._StaticAssignmentCommaFieldSpec<C, T>,
-            Insert._InsertSpec>
-            implements MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, T>
-            , MySQLInsert._StaticAssignmentCommaFieldSpec<C, T> {
-
-
-        private NonParentDuplicateKeyUpdateSpec(ClauseBeforeRowAlias clause) {
-            super(clause);
-        }
-
-
-        @Override
-        public Insert asInsert() {
-            return this.clause.endInsert(this.endDuplicateKeyClause());
-        }
-
-
-    }//NonParentDuplicateKeyUpdateSpec
-
-
-    private static final class ParentDuplicateKeyUpdateSpec<C, P, CT>
-            extends DuplicateKeyUpdateClause<
-            C,
-            P,
-            MySQLInsert._ParentStaticAssignmentCommaFieldSpec<C, P, CT>,
-            MySQLInsert._MySQLChildSpec<CT>>
-            implements MySQLInsert._ParentOnDuplicateKeyUpdateFieldSpec<C, P, CT>
-            , MySQLInsert._ParentStaticAssignmentCommaFieldSpec<C, P, CT> {
-
-        private ParentDuplicateKeyUpdateSpec(ParentClauseBeforeRowAlias<CT> clause) {
-            super(clause);
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public CT child() {
-            return ((ParentClauseBeforeRowAlias<CT>) this.clause).parentStmtEnd(this.endDuplicateKeyClause());
-        }
-
-        @Override
-        public Insert asInsert() {
-            return this.clause.endInsert(this.endDuplicateKeyClause());
-        }
-
-    }//ParentDuplicateKeyUpdateSpec
-
-
-    /*-------------------below domain insert syntax classes-------------------*/
-
-    private static final class DomainInsertOptionClause<C>
-            extends MySQLInsertClause<
-            C,
-            MySQLInsert._NullOptionSpec<C>,
-            MySQLInsert._PreferLiteralSpec<C>,
-            MySQLInsert._DomainInsertIntoSpec<C>,
-            MySQLInsert._DomainIntoClause<C>>
-            implements MySQLInsert._OptionSpec<C>, MySQLInsert._DomainIntoClause<C> {
-
-
-        private DomainInsertOptionClause(@Nullable C criteria) {
-            super(CriteriaContexts.primaryInsertContext(criteria));
-            ContextStack.setContextStack(this.context);
-        }
-
-        @Override
-        public <T> MySQLInsert._DomainPartitionSpec<C, T> into(SimpleTableMeta<T> table) {
-            return new DomainPartitionClause<>(this, table);
-        }
-
-        @Override
-        public <T> MySQLInsert._DomainParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
-            return new DomainParentPartitionClause<>(this, table);
-        }
-
-
-        @Override
-        public <T> MySQLInsert._DomainPartitionSpec<C, T> insertInto(SimpleTableMeta<T> table) {
-            return new DomainPartitionClause<>(this, table);
-        }
-
-        @Override
-        public <T> MySQLInsert._DomainParentPartitionSpec<C, T> insertInto(ParentTableMeta<T> table) {
-            return new DomainParentPartitionClause<>(this, table);
-        }
-
-
-    }//DomainInsertOptionClause
-
-
-    private static final class DomainPartitionClause<C, T>
-            extends DomainValueShortClause<
-            C,
-            T,
-            MySQLInsert._DomainDefaultSpec<C, T>,
-            MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, T>>
-            implements MySQLInsert._DomainPartitionSpec<C, T>
-            , MySQLInserts.ClauseBeforeRowAlias {
-
-        private final DomainParentPartitionClause<C, ?> parentClause;
-
-        private final List<Hint> hintList;
-
-        private final List<MySQLSyntax._MySQLModifier> modifierList;
-
-        private List<String> partitionList;
-
-        private DomainPartitionClause(DomainInsertOptionClause<C> clause, SimpleTableMeta<T> table) {
-            super(clause, table);
-            this.hintList = clause.hintList();
-            this.modifierList = clause.modifierList();
-            this.parentClause = null;
-
-        }
-
-        private DomainPartitionClause(DomainParentPartitionClause<C, ?> parentClause, ChildTableMeta<T> table) {
-            super(parentClause, table);
-            this.hintList = _CollectionUtils.safeList(parentClause.childHintList);
-            this.modifierList = _CollectionUtils.safeList(parentClause.childModifierList);
-            this.parentClause = parentClause;
-        }
-
-        @Override
-        public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._DomainColumnListSpec<C, T>> partition() {
-            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
-        }
-
-
-        @Override
-        public Insert endInsert(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
-            final Insert._InsertSpec spec;
-            if (pairList.size() == 0) {
-                if (this.parentClause == null) {
-                    spec = new DomainInsertStatement(this);
-                } else {
-                    final _Insert._DomainInsert parentStatement;
-                    parentStatement = this.parentClause.createParentStmt(this::domainList);
-                    spec = new DomainChildInsertStatement(this, parentStatement);
-                }
-            } else if (this.parentClause == null) {
-                spec = new DomainInsertWithDuplicateKey(this, pairList);
-            } else {
-                final _Insert._DomainInsert parentStatement;
-                parentStatement = this.parentClause.createParentStmt(this::domainList);
-                spec = new DomainChildInsertWithDuplicateKey(this, parentStatement, pairList);
-            }
-            return spec.asInsert();
-        }
-
-
-        @Override
-        MySQLInsert._DomainDefaultSpec<C, T> columnListEnd() {
-            return this;
-        }
-
-        @Override
-        MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, T> valuesEnd() {
-            return new NonParentDuplicateKeyUpdateSpec<>(this);
-        }
-
-        private MySQLInsert._DomainColumnListSpec<C, T> partitionEnd(List<String> partitionList) {
-            this.partitionList = partitionList;
-            return this;
-        }
-
-    }//DomainPartitionClause
-
-
-    private static final class DomainParentPartitionClause<C, P>
-            extends DomainValueShortClause<
-            C,
-            P,
-            MySQLInsert._DomainParentColumnDefaultSpec<C, P>,
-            MySQLInsert._ParentOnDuplicateKeyUpdateFieldSpec<C, P, MySQLInsert._DomainChildInsertIntoSpec<C, P>>>
-            implements MySQLInsert._DomainParentPartitionSpec<C, P>
-            , MySQLInserts.ParentClauseBeforeRowAlias<MySQLInsert._DomainChildInsertIntoSpec<C, P>>
-            , MySQLInsert._DomainChildInsertIntoSpec<C, P>
-            , MySQLInsert._DomainChildIntoClause<C, P>
-            , ValueSyntaxOptions {
-
-        private final List<Hint> hintList;
-
-        private final List<MySQLSyntax._MySQLModifier> modifierList;
-
-        private List<String> partitionList;
-
-        private List<_Pair<FieldMeta<?>, _Expression>> duplicatePairList;
-
-        private List<Hint> childHintList;
-
-        private List<MySQLSyntax._MySQLModifier> childModifierList;
-
-        private DomainParentPartitionClause(DomainInsertOptionClause<C> clause, ParentTableMeta<P> table) {
-            super(clause, table);
-            this.hintList = clause.hintList();
-            this.modifierList = clause.modifierList();
-        }
-
-
-        @Override
-        public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._DomainParentColumnsSpec<C, P>> partition() {
-            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
-        }
-
-        @Override
-        public MySQLInsert._DomainChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLSyntax._MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.context, supplier.get(), MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
-                    , MySQLUtils::insertModifier);
-            return this;
-        }
-
-        @Override
-        public MySQLInsert._DomainChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLSyntax._MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.context, function.apply(this.criteria)
-                    , MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
-                    , MySQLUtils::insertModifier);
-            return this;
-        }
-
-        @Override
-        public <T> MySQLInsert._DomainPartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
+        public <T> MySQLInsert._PartitionSpec<Insert, T> into(SimpleTableMeta<T> table) {
             return this.insertInto(table);
         }
 
         @Override
-        public <T> MySQLInsert._DomainPartitionSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
-            final DomainPartitionClause<C, T> childClause;
-            childClause = new DomainPartitionClause<>(this, table);
-            this.childHintList = null;
-            this.childModifierList = null;
-            return childClause;
+        public <P> MySQLInsert._PartitionSpec<Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>>, P> into(ParentTableMeta<P> table) {
+            return this.insertInto(table);
         }
 
         @Override
-        MySQLInsert._DomainParentColumnDefaultSpec<C, P> columnListEnd() {
-            return this;
+        public <T> MySQLInsert._PartitionSpec<Insert, T> insertInto(SimpleTableMeta<T> table) {
+            return null;
         }
 
         @Override
-        MySQLInsert._ParentOnDuplicateKeyUpdateFieldSpec<C, P, MySQLInsert._DomainChildInsertIntoSpec<C, P>> valuesEnd() {
-            return new ParentDuplicateKeyUpdateSpec<>(this);
+        public <P> MySQLInsert._PartitionSpec<Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>>, P> insertInto(ParentTableMeta<P> table) {
+            return null;
+        }
+
+
+        @Override
+        MySQLCteBuilder createCteBuilder(boolean recursive) {
+            return null;
+        }
+
+
+    }//PrimaryInsertIntoClause
+
+
+    private static final class StaticOnDuplicateKeyClause<I extends Item, F extends TableField>
+            extends SetWhereClause<
+            F,
+            ItemPairs<F>,
+            MySQLInsert._StaticOnDuplicateKeySetSpec<I, F>,
+            Object,
+            Object,
+            Object,
+            Object,
+            Object> implements MySQLInsert._StaticOnDuplicateKeySetSpec<I, F> {
+
+        private final MySQLComplexValuesClause<I, ?> clause;
+
+        private StaticOnDuplicateKeyClause(MySQLComplexValuesClause<I, ?> clause) {
+            super(clause.context, clause.insertTable);
+            this.clause = clause;
+        }
+
+        private StaticOnDuplicateKeyClause(MySQLComplexValuesClause<I, ?> clause, String rowAlias) {
+            super(clause.context, clause.insertTable);
+            this.clause = clause;
         }
 
         @Override
-        public Insert endInsert(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
-            if (this.duplicatePairList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.duplicatePairList = pairList;
-            return this.createParentStmt(this::domainList)
+        public I asInsert() {
+            return this.clause.onDuplicateKeyClauseEnd(this.endUpdateSetClause())
                     .asInsert();
         }
 
-        public MySQLInsert._DomainChildInsertIntoSpec<C, P> parentStmtEnd(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
-            if (this.duplicatePairList != null) {
+        @Override
+        ItemPairs<F> createItemPairBuilder(Consumer<ItemPair> consumer) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+
+    }//StaticOnDuplicateKeyClause
+
+    private static final class OnDuplicateKeyUpdateClause<I extends Item, F extends TableField>
+            implements MySQLInsert._OnDuplicateKeyUpdateSpec<I, F> {
+
+
+        private final MySQLComplexValuesClause<I, ?> valuesClause;
+
+        private OnDuplicateKeyUpdateClause(MySQLComplexValuesClause<I, ?> valuesClause) {
+            this.valuesClause = valuesClause;
+        }
+
+
+        @Override
+        public MySQLInsert._StaticOnDuplicateKeySetClause<I, F> onDuplicateKey() {
+            return new StaticOnDuplicateKeyClause<>(this.valuesClause, this.valuesClause.rowAlias);
+        }
+
+        @Override
+        public Statement._DmlInsertSpec<I> onDuplicateKey(Consumer<ItemPairs<F>> consumer) {
+            consumer.accept(CriteriaSupports.itemPairs(this.valuesClause::onAddConflictPair));
+            if (this.valuesClause.conflictPairList == null) {
+                throw ContextStack.criteriaError(this.valuesClause.context, "You don't add conflict pair.");
+            }
+            return this.valuesClause;
+        }
+
+        @Override
+        public Statement._DmlInsertSpec<I> ifOnDuplicateKey(Consumer<ItemPairs<F>> consumer) {
+            consumer.accept(CriteriaSupports.itemPairs(this.valuesClause::onAddConflictPair));
+            return this.valuesClause;
+        }
+
+        @Override
+        public I asInsert() {
+            return this.valuesClause.asInsert();
+        }
+
+
+    }//OnDuplicateKeyUpdateClause
+
+
+    private static final class MySQLComplexValuesClause<I extends Item, T> extends ComplexInsertValuesAssignmentClause<
+            T,
+            MySQLInsert._ComplexColumnDefaultSpec<I, T>,
+            MySQLInsert._ValuesColumnDefaultSpec<I, T>,
+            MySQLInsert._OnAsRowAliasSpec<I, T>,
+            MySQLInsert._StaticAssignmentSpec<I, T>>
+            implements MySQLInsert._PartitionSpec<I, T>
+            , MySQLInsert._ComplexColumnDefaultSpec<I, T>
+            , MySQLInsert._OnAsRowAliasSpec<I, T> {
+
+        private final Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction;
+
+        private List<String> partitionList;
+
+        private String rowAlias;
+
+        private List<_ItemPair> conflictPairList;
+
+        private MySQLComplexValuesClause(WithValueSyntaxOptions options, TableMeta<T> table
+                , Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
+            super(options, table);
+            this.dmlFunction = dmlFunction;
+        }
+
+        @Override
+        public Statement._LeftParenStringQuadraOptionalSpec<MySQLInsert._ColumnListSpec<I, T>> partition() {
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
+        }
+
+        @Override
+        public MySQLInsert._MySQLStaticValuesLeftParenClause<I, T> values() {
+            return null;
+        }
+
+        @Override
+        public MySQLQuery._MySQLSelectClause<MySQLInsert._OnDuplicateKeyUpdateSpec<I, FieldMeta<T>>> space() {
+            return MySQLQueries.subQuery(this.context, this::queryInsertEnd);
+        }
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateSpec<I, TypeTableField<T>> as(final String rowAlias) {
+            if (!_StringUtils.hasText(rowAlias)) {
+                throw ContextStack.criteriaError(this.context, "rowAlias no text");
+            }
+            this.rowAlias = rowAlias;
+            return new OnDuplicateKeyUpdateClause<>(this);
+        }
+
+        @Override
+        public MySQLInsert._StaticOnDuplicateKeySetClause<I, FieldMeta<T>> onDuplicateKey() {
+            return new StaticOnDuplicateKeyClause<>(this);
+        }
+
+        @Override
+        public Statement._DmlInsertSpec<I> onDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+            consumer.accept(CriteriaSupports.itemPairs(this::onAddConflictPair));
+            if (this.conflictPairList == null) {
+                throw ContextStack.criteriaError(this.context, "You don't add conflict pair.");
+            }
+            return this;
+        }
+
+        @Override
+        public Statement._DmlInsertSpec<I> ifOnDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+            consumer.accept(CriteriaSupports.itemPairs(this::onAddConflictPair));
+            return this;
+        }
+
+        @Override
+        public I asInsert() {
+            this.endStaticAssignmentClauseIfNeed();
+            return this.dmlFunction.apply(this);
+        }
+
+        private Statement._DmlInsertSpec<I> onDuplicateKeyClauseEnd(final List<_ItemPair> itemPairList) {
+            if (this.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            this.endColumnDefaultClause();
-            this.duplicatePairList = pairList;
+            this.conflictPairList = itemPairList;
+            return this;
+        }
+
+        private MySQLInsert._OnDuplicateKeyUpdateSpec<I, FieldMeta<T>> queryInsertEnd(final SubQuery query) {
+            this.staticSpaceSubQueryClauseEnd(query);
+            return this;
+        }
+
+        private void onAddConflictPair(final ItemPair pair) {
+            //TODO
+        }
+
+        private MySQLInsert._ColumnListSpec<I, T> partitionEnd(final List<String> list) {
+            if (this.partitionList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.partitionList = list;
             return this;
         }
 
 
-        private MySQLInsert._DomainParentColumnsSpec<C, P> partitionEnd(List<String> partitionList) {
-            this.partitionList = partitionList;
-            return this;
-        }
-
-
-        private DomainInsertStatement createParentStmt(Supplier<List<?>> supplier) {
-            final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.duplicatePairList;
-            if (pairList == null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            final DomainInsertStatement statement;
-            if (pairList.size() == 0) {
-                statement = new DomainInsertStatement(this, supplier);
-            } else {
-                statement = new DomainInsertWithDuplicateKey(this, pairList, supplier);
-            }
-            return statement;
-        }
-
-
-    }//DomainParentPartitionClause
+    }//MySQLComplexValuesClause
 
 
     static abstract class MySQLValueSyntaxStatement extends ValueSyntaxInsertStatement<Insert>

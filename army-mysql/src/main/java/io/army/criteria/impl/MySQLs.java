@@ -16,64 +16,8 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
     private MySQLs() {
     }
 
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
-     */
-    public static MySQLInsert._OptionSpec<Void> domainInsert() {
-        return MySQLInserts.domainInsert(null);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
-     */
-    public static <C> MySQLInsert._OptionSpec<C> domainInsert(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLInserts.domainInsert(criteria);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
-     */
-    public static MySQLInsert._ValueOptionSpec<Void> valueInsert() {
-        return MySQLInserts.valueInsert(null);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
-     */
-    public static <C> MySQLInsert._ValueOptionSpec<C> valueInsert(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLInserts.valueInsert(criteria);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
-     */
-    public static MySQLInsert._AssignmentOptionSpec<Void> assignmentInsert() {
-        return MySQLInserts.assignmentInsert(null);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
-     */
-    public static <C> MySQLInsert._AssignmentOptionSpec<C> assignmentInsert(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLInserts.assignmentInsert(criteria);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
-     */
-    public static MySQLInsert._QueryInsertIntoSpec<Void> queryInsert() {
-        return MySQLInserts.queryInsert(null);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
-     */
-    public static <C> MySQLInsert._QueryInsertIntoSpec<C> queryInsert(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLInserts.queryInsert(criteria);
+    public static MySQLInsert._PrimaryOptionSpec singleInsert() {
+        return MySQLInserts.primaryInsert();
     }
 
     public static MySQLReplace._DomainOptionSpec<Void> domainReplace() {

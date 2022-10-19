@@ -365,12 +365,12 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinClause<
             if (((MySQLDynamicJoins) this).noOnBlock != null || this.started) {
                 throw CriteriaUtils.duplicateTabularMethod(this.context);
             }
+            this.started = true;
             assert wordAs == SQLs.AS;
             final MySQLSupports.MySQLNoOnBlock<MySQLQuery._DynamicIndexHintJoinClause> block;
             block = new MySQLSupports.MySQLNoOnBlock<>(this.joinType, null, table, alias, this);
             this.blockConsumer.accept(block);
             ((MySQLDynamicJoins) this).noOnBlock = block; // update noOnBlock
-            this.started = true;
             return this;
         }
 
@@ -388,6 +388,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinClause<
             if (this.started) {
                 throw CriteriaUtils.duplicateTabularMethod(this.context);
             }
+            this.started = true;
             final TabularItem tabularItem;
             tabularItem = supplier.get();
             if (tabularItem == null) {
@@ -400,7 +401,6 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinClause<
                 this.blockConsumer.accept(block);
                 return this;
             };
-            this.started = true;
             return asClause;
         }
 
