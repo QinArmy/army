@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner.mysql._MySQLInsert;
-import io.army.criteria.mysql.MySQLCteBuilder;
 import io.army.criteria.mysql.MySQLInsert;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.dialect.mysql.MySQLDialect;
@@ -42,53 +41,9 @@ abstract class MySQLInserts extends InsertSupport {
     }
 
 
-    private static final class PrimaryComma implements MySQLInsert._PrimaryCteComma {
-
-        private final boolean recursive;
-
-        private final PrimaryInsertIntoClause primaryClause;
-
-        private final Function<String, MySQLQuery._StaticCteLeftParenSpec<MySQLInsert._PrimaryCteComma>> function;
-
-        private PrimaryComma(boolean recursive, PrimaryInsertIntoClause primaryClause) {
-            this.recursive = recursive;
-            this.primaryClause = primaryClause;
-            this.function = MySQLQueries.complexCte(primaryClause.context, this);
-        }
-
-        @Override
-        public MySQLQuery._StaticCteLeftParenSpec<MySQLInsert._PrimaryCteComma> comma(String name) {
-            return this.function.apply(name);
-        }
-
-        @Override
-        public MySQLInsert._PrimaryIntoClause insert(Supplier<List<Hint>> supplier, List<MySQLSyntax.Modifier> modifiers) {
-            return this.staticWithClauseEnd().insert(supplier, modifiers);
-        }
-
-        @Override
-        public <T> MySQLInsert._PartitionSpec<Insert, T> insertInto(SimpleTableMeta<T> table) {
-            return this.staticWithClauseEnd().insertInto(table);
-        }
-
-        @Override
-        public <P> MySQLInsert._PartitionSpec<Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>>, P> insertInto(ParentTableMeta<P> table) {
-            return this.staticWithClauseEnd().insertInto(table);
-        }
-
-        private PrimaryInsertIntoClause staticWithClauseEnd() {
-            final PrimaryInsertIntoClause primaryClause = this.primaryClause;
-            primaryClause.endStaticWithClause(this.recursive);
-            return primaryClause;
-        }
-
-    }//PrimaryComma
-
-    private static final class PrimaryInsertIntoClause extends InsertSupport.NonQueryWithCteOption<
+    private static final class PrimaryInsertIntoClause extends InsertSupport.NonQueryInsertOptionsImpl<
             MySQLInsert._PrimaryNullOptionSpec,
             MySQLInsert._PrimaryPreferLiteralSpec,
-            MySQLInsert._PrimaryWithCteSpec,
-            MySQLCteBuilder,
             MySQLInsert._PrimaryInsertIntoSpec>
             implements MySQLInsert._PrimaryOptionSpec
             , MySQLInsert._PrimaryIntoClause {
@@ -104,20 +59,6 @@ abstract class MySQLInserts extends InsertSupport {
 
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<MySQLInsert._PrimaryCteComma> with(String name) {
-            final boolean recursive = false;
-            this.context.onBeforeWithClause(recursive);
-            return new PrimaryComma(recursive, this).function.apply(name);
-        }
-
-        @Override
-        public MySQLQuery._StaticCteLeftParenSpec<MySQLInsert._PrimaryCteComma> withRecursive(String name) {
-            final boolean recursive = true;
-            this.context.onBeforeWithClause(recursive);
-            return new PrimaryComma(recursive, this).function.apply(name);
-        }
-
-        @Override
         public MySQLInsert._PrimaryIntoClause insert(Supplier<List<Hint>> supplier, List<MySQLs.Modifier> modifiers) {
             this.hintList = CriteriaUtils.asHintList(this.context, supplier.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::insertModifier);
@@ -129,8 +70,9 @@ abstract class MySQLInserts extends InsertSupport {
             return new MySQLComplexValuesClause<>(this, table, this::simpleInsertEnd);
         }
 
+
         @Override
-        public <P> MySQLInsert._PartitionSpec<Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>>, P> into(ParentTableMeta<P> table) {
+        public <P> MySQLInsert._PartitionSpec<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>, P> into(ParentTableMeta<P> table) {
             return new MySQLComplexValuesClause<>(this, table, this::parentInsertEnd);
         }
 
@@ -140,14 +82,8 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public <P> MySQLInsert._PartitionSpec<Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>>, P> insertInto(ParentTableMeta<P> table) {
+        public <P> MySQLInsert._PartitionSpec<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>, P> insertInto(ParentTableMeta<P> table) {
             return new MySQLComplexValuesClause<>(this, table, this::parentInsertEnd);
-        }
-
-
-        @Override
-        MySQLCteBuilder createCteBuilder(boolean recursive) {
-            return MySQLSupports.mySQLCteBuilder(recursive, this.context);
         }
 
 
@@ -174,11 +110,11 @@ abstract class MySQLInserts extends InsertSupport {
             return spec.asInsert();
         }
 
-        private <P> Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>> parentInsertEnd(
+        private <P> Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>> parentInsertEnd(
                 final MySQLComplexValuesClause<?, ?> clause) {
             final InsertMode mode;
             mode = clause.getInsertMode();
-            final Statement._DmlInsertSpec<Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>>> spec;
+            final Statement._DmlInsertSpec<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>> spec;
             switch (mode) {
                 case DOMAIN:
                     spec = new PrimaryParentDomainInsertStatement<>(clause);
@@ -201,52 +137,9 @@ abstract class MySQLInserts extends InsertSupport {
 
     }//PrimaryInsertIntoClause
 
-    private static final class ChildCteComma<P> implements MySQLInsert._ChildCteComma<P> {
 
-        private final boolean recursive;
-
-        private final ChildInsertIntoClause<P> clause;
-
-        private final Function<String, MySQLQuery._StaticCteLeftParenSpec<MySQLInsert._ChildCteComma<P>>> function;
-
-        private ChildCteComma(boolean recursive, ChildInsertIntoClause<P> clause) {
-            this.recursive = recursive;
-            this.clause = clause;
-            this.function = MySQLQueries.complexCte(clause.context, this);
-        }
-
-        @Override
-        public MySQLQuery._StaticCteLeftParenSpec<MySQLInsert._ChildCteComma<P>> comma(String name) {
-            return this.function.apply(name);
-        }
-
-        @Override
-        public MySQLInsert._ChildIntoClause<P> insert(Supplier<List<Hint>> supplier
-                , List<MySQLs.Modifier> modifiers) {
-            return this.endStaticWithClause().insert(supplier, modifiers);
-        }
-
-        @Override
-        public <T> MySQLInsert._PartitionSpec<Insert, T> insertInto(ComplexTableMeta<P, T> table) {
-            return this.endStaticWithClause().insertInto(table);
-        }
-
-        private ChildInsertIntoClause<P> endStaticWithClause() {
-            final ChildInsertIntoClause<P> clause = this.clause;
-            clause.endStaticWithClause(this.recursive);
-            return clause;
-        }
-
-
-    }//ChildCteComma
-
-
-    private static final class ChildInsertIntoClause<P> extends ChildDynamicWithClause<
-            MySQLCteBuilder,
-            MySQLInsert._ChildInsertIntoSpec<P>>
-            implements ValueSyntaxOptions
-            , MySQLInsert._ChildWithCteSpec<P>
-            , MySQLInsert._ChildIntoClause<P> {
+    private static final class ChildInsertIntoClause<P> extends ChildOptionClause
+            implements MySQLInsert._ChildInsertIntoSpec<P>, MySQLInsert._ChildIntoClause<P> {
 
         private final Function<MySQLComplexValuesClause<?, ?>, Insert> dmlFunction;
 
@@ -261,21 +154,6 @@ abstract class MySQLInserts extends InsertSupport {
             ContextStack.push(this.context);
         }
 
-        @Override
-        public MySQLQuery._StaticCteLeftParenSpec<MySQLInsert._ChildCteComma<P>> with(String name) {
-            final boolean recursive = false;
-            this.context.onBeforeWithClause(recursive);
-            return new ChildCteComma<>(recursive, this)
-                    .function.apply(name);
-        }
-
-        @Override
-        public MySQLQuery._StaticCteLeftParenSpec<MySQLInsert._ChildCteComma<P>> withRecursive(String name) {
-            final boolean recursive = true;
-            this.context.onBeforeWithClause(recursive);
-            return new ChildCteComma<>(recursive, this)
-                    .function.apply(name);
-        }
 
         @Override
         public MySQLInsert._ChildIntoClause<P> insert(Supplier<List<Hint>> supplier, List<MySQLs.Modifier> modifiers) {
@@ -292,11 +170,6 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public <T> MySQLInsert._PartitionSpec<Insert, T> into(ComplexTableMeta<P, T> table) {
             return new MySQLComplexValuesClause<>(this, table, this.dmlFunction);
-        }
-
-        @Override
-        MySQLCteBuilder createCteBuilder(boolean recursive) {
-            return MySQLSupports.mySQLCteBuilder(recursive, this.context);
         }
 
 
@@ -541,6 +414,10 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public I asInsert() {
             this.endStaticAssignmentClauseIfNeed();
+            if (this.getInsertMode() == InsertMode.QUERY && this.modifierList.contains(MySQLs.DELAYED)) {
+                String m = String.format("MySQL query insert don't support modifier[%s].", MySQLs.DELAYED);
+                throw ContextStack.criteriaError(this.context, m);
+            }
             return this.dmlFunction.apply(this);
         }
 
@@ -693,8 +570,8 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     private static final class PrimaryParentDomainInsertStatement<P>
-            extends DomainInsertStatement<Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>>>
-            implements Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>> {
+            extends DomainInsertStatement<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>>
+            implements Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>> {
 
         private final List<?> originalDomainList;
 
@@ -713,7 +590,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public _ChildWithCteSpec<P> child() {
+        public _ChildInsertIntoSpec<P> child() {
             this.prepared();
             return new ChildInsertIntoClause<>(this, this::childInsertEnd);
         }
@@ -780,8 +657,8 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     private static final class PrimaryParentValueInsertStatement<P>
-            extends ValueInsertStatement<Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>>>
-            implements Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>> {
+            extends ValueInsertStatement<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>>
+            implements Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>> {
 
         private PrimaryParentValueInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
@@ -789,7 +666,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public _ChildWithCteSpec<P> child() {
+        public _ChildInsertIntoSpec<P> child() {
             this.prepared();
             return new ChildInsertIntoClause<>(this, this::childInsertEnd);
         }
@@ -907,8 +784,8 @@ abstract class MySQLInserts extends InsertSupport {
     }//PrimaryChildAssignmentStatement
 
     private static final class PrimaryParentAssignmentInsertStatement<P>
-            extends PrimaryAssignmentStatement<Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>>>
-            implements Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>> {
+            extends PrimaryAssignmentStatement<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>>
+            implements Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>> {
 
         private PrimaryParentAssignmentInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
@@ -916,7 +793,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._ChildWithCteSpec<P> child() {
+        public MySQLInsert._ChildInsertIntoSpec<P> child() {
             this.prepared();
             return new ChildInsertIntoClause<>(this, this::childInsertEnd);
         }
@@ -1033,8 +910,8 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     private static final class PrimaryParentQueryInsertStatement<P>
-            extends PrimaryQueryInsertStatement<Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>>>
-            implements Insert._ParentInsert<MySQLInsert._ChildWithCteSpec<P>> {
+            extends PrimaryQueryInsertStatement<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>>
+            implements Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>> {
 
         private PrimaryParentQueryInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
@@ -1042,7 +919,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public _ChildWithCteSpec<P> child() {
+        public _ChildInsertIntoSpec<P> child() {
             this.prepared();
             return new ChildInsertIntoClause<>(this, this::childInsertEnd);
         }

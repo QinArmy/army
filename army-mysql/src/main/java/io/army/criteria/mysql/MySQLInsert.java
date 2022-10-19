@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 public interface MySQLInsert extends DialectStatement {
 
 
-    interface _InsertClause<IR> {
+    interface _InsertClause<IR> extends Item {
 
         IR insert(Supplier<List<Hint>> supplier, List<MySQLs.Modifier> modifiers);
 
@@ -54,7 +54,7 @@ public interface MySQLInsert extends DialectStatement {
 
 
 
-    /*-------------------below domain insert syntax interfaces  -------------------*/
+    /*-------------------below insert syntax interfaces  -------------------*/
 
     interface _MySQLStaticValuesLeftParenClause<I extends Item, T>
             extends Insert._StaticValueLeftParenClause<T, _StaticValuesLeftParenSpec<I, T>> {
@@ -114,17 +114,6 @@ public interface MySQLInsert extends DialectStatement {
         <T> _PartitionSpec<Insert, T> insertInto(ComplexTableMeta<P, T> table);
     }
 
-    interface _ChildCteComma<P>
-            extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_ChildCteComma<P>>>
-            , _ChildInsertIntoSpec<P> {
-
-    }
-
-    interface _ChildWithCteSpec<P> extends Query._DynamicWithCteClause<MySQLCteBuilder, _ChildInsertIntoSpec<P>>
-            , Query._StaticWithCteClause<MySQLQuery._StaticCteLeftParenSpec<_ChildCteComma<P>>>
-            , _ChildInsertIntoSpec<P> {
-
-    }
 
 
     interface _PrimaryIntoClause {
@@ -132,7 +121,7 @@ public interface MySQLInsert extends DialectStatement {
         <T> _PartitionSpec<Insert, T> into(SimpleTableMeta<T> table);
 
 
-        <P> _PartitionSpec<Insert._ParentInsert<_ChildWithCteSpec<P>>, P> into(ParentTableMeta<P> table);
+        <P> _PartitionSpec<Insert._ParentInsert<_ChildInsertIntoSpec<P>>, P> into(ParentTableMeta<P> table);
 
     }
 
@@ -142,25 +131,13 @@ public interface MySQLInsert extends DialectStatement {
         <T> _PartitionSpec<Insert, T> insertInto(SimpleTableMeta<T> table);
 
 
-        <P> _PartitionSpec<Insert._ParentInsert<_ChildWithCteSpec<P>>, P> insertInto(ParentTableMeta<P> table);
+        <P> _PartitionSpec<Insert._ParentInsert<_ChildInsertIntoSpec<P>>, P> insertInto(ParentTableMeta<P> table);
 
     }
 
 
-    interface _PrimaryCteComma extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_PrimaryCteComma>>
+    interface _PrimaryPreferLiteralSpec extends Insert._PreferLiteralClause<_PrimaryInsertIntoSpec>
             , _PrimaryInsertIntoSpec {
-
-    }
-
-
-    interface _PrimaryWithCteSpec extends MySQLQuery._MySQLDynamicWithCteClause<_PrimaryInsertIntoSpec>
-            , Query._StaticWithCteClause<MySQLQuery._StaticCteLeftParenSpec<_PrimaryCteComma>>
-            , _PrimaryInsertIntoSpec {
-
-    }
-
-
-    interface _PrimaryPreferLiteralSpec extends Insert._PreferLiteralClause<_PrimaryWithCteSpec>, _PrimaryWithCteSpec {
 
     }
 

@@ -20,8 +20,8 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
         return MySQLInserts.primaryInsert();
     }
 
-    public static MySQLReplace._DomainOptionSpec<Void> domainReplace() {
-        return MySQLReplaces.domainReplace(null);
+    public static MySQLReplace._PrimaryOptionSpec singleReplace() {
+        return MySQLReplaces.primaryReplace();
     }
 
     public static MySQLQuery._WithCteSpec<Select> query() {

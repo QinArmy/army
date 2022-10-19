@@ -258,9 +258,8 @@ abstract class InsertSupport {
 
     }//NonQueryWithCteOption
 
-    static abstract class ChildDynamicWithClause<B extends CteBuilderSpec, WE>
-            implements Query._DynamicWithCteClause<B, WE>
-            , WithValueSyntaxOptions {
+
+    static abstract class ChildOptionClause implements ValueSyntaxOptions {
 
         final CriteriaContext context;
 
@@ -270,15 +269,47 @@ abstract class InsertSupport {
 
         private final LiteralMode literalMode;
 
+
+        ChildOptionClause(ValueSyntaxOptions options, CriteriaContext context) {
+            this.context = context;
+            this.migration = options.isMigration();
+            this.nullHandleMode = options.nullHandle();
+            this.literalMode = options.literalMode();
+        }
+
+
+        @Override
+        public final CriteriaContext getContext() {
+            return this.context;
+        }
+
+        @Override
+        public final NullHandleMode nullHandle() {
+            return this.nullHandleMode;
+        }
+
+        @Override
+        public final boolean isMigration() {
+            return this.migration;
+        }
+
+        @Override
+        public final LiteralMode literalMode() {
+            return this.literalMode;
+        }
+
+
+    }//ChildOptionClause
+
+    static abstract class ChildDynamicWithClause<B extends CteBuilderSpec, WE>
+            extends ChildOptionClause
+            implements Query._DynamicWithCteClause<B, WE>, WithValueSyntaxOptions {
         private boolean recursive;
 
         private List<_Cte> cteList;
 
         ChildDynamicWithClause(ValueSyntaxOptions options, CriteriaContext childContext) {
-            this.context = childContext;
-            this.migration = options.isMigration();
-            this.nullHandleMode = options.nullHandle();
-            this.literalMode = options.literalMode();
+            super(options, childContext);
         }
 
         @Override
@@ -314,27 +345,6 @@ abstract class InsertSupport {
             builder = this.createCteBuilder(true);
             consumer.accept(builder);
             return this.endDynamicWithClause(builder, false);
-        }
-
-
-        @Override
-        public final CriteriaContext getContext() {
-            return this.context;
-        }
-
-        @Override
-        public final NullHandleMode nullHandle() {
-            return this.nullHandleMode;
-        }
-
-        @Override
-        public final boolean isMigration() {
-            return this.migration;
-        }
-
-        @Override
-        public final LiteralMode literalMode() {
-            return this.literalMode;
         }
 
         @Override

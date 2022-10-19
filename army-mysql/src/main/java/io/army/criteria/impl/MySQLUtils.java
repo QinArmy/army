@@ -126,15 +126,13 @@ abstract class MySQLUtils extends CriteriaUtils {
     }
 
 
-    static int replaceModifier(final MySQLSyntax._MySQLModifier modifier) {
+    static int replaceModifier(final MySQLs.Modifier modifier) {
         final int level;
-        switch (modifier) {
-            case LOW_PRIORITY:
-            case DELAYED:
-                level = 1;
-                break;
-            default:
-                level = -1;
+        if (modifier == MySQLs.LOW_PRIORITY
+                || modifier == MySQLs.DELAYED) {
+            level = 1;
+        } else {
+            level = -1;
         }
         return level;
     }
