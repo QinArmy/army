@@ -1,9 +1,12 @@
 package io.army.criteria.impl;
 
+import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._ItemPair;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
+import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -66,6 +69,12 @@ abstract class CriteriaSupports {
 
     static <F extends DataField> BatchRowPairs<F> batchRowPairs(Consumer<ItemPair> consumer) {
         return new BatchRowItemPairsImpl<>(consumer);
+    }
+
+    static <F extends DataField> ItemPairs<F> simpleFieldItemPairs(CriteriaContext context
+            , @Nullable TableMeta<?> updateTable, Consumer<_ItemPair> consumer) {
+        assert updateTable != null;
+        return new SimpleFieldItemPairs<>(context, updateTable, consumer);
     }
 
 
@@ -428,7 +437,6 @@ abstract class CriteriaSupports {
     }//BiDelayParamMetaWrapper
 
 
-
     @SuppressWarnings("unchecked")
     private static abstract class UpdateSetClause<F extends DataField, SR>
             implements Update._StaticBatchSetClause<F, SR>
@@ -439,6 +447,12 @@ abstract class CriteriaSupports {
         private UpdateSetClause(Consumer<ItemPair> consumer) {
             this.consumer = consumer;
         }
+
+        private UpdateSetClause() {
+            assert this instanceof SimpleFieldItemPairs;
+            this.consumer = this::onAddSimpleField;
+        }
+
 
         @Override
         public final SR set(F field, Expression value) {
@@ -623,8 +637,53 @@ abstract class CriteriaSupports {
             return (SR) this;
         }
 
+        void onAddSimpleField(final ItemPair pair) {
+            throw new UnsupportedOperationException();
+        }
 
     }//UpdateSetClause
+
+
+    private static final class SimpleFieldItemPairs<F extends DataField> extends UpdateSetClause<F, ItemPairs<F>>
+            implements ItemPairs<F> {
+
+        private final CriteriaContext context;
+
+        private final TableMeta<?> updateTable;
+
+        private final Consumer<_ItemPair> fieldConsumer;
+
+        private SimpleFieldItemPairs(CriteriaContext context, TableMeta<?> updateTable
+                , Consumer<_ItemPair> fieldConsumer) {
+            super();
+            this.updateTable = updateTable;
+            this.context = context;
+            this.fieldConsumer = fieldConsumer;
+        }
+
+
+        @Override
+        void onAddSimpleField(final ItemPair pair) {
+            final SQLs.FieldItemPair fieldPair;
+            final TableField field;
+            if (!(pair instanceof SQLs.FieldItemPair)) {
+                //here, support only simple filed
+                throw ContextStack.castCriteriaApi(this.context);
+            } else if (!((fieldPair = (SQLs.FieldItemPair) pair).field instanceof TableField)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            } else if ((field = (TableField) fieldPair.field).tableMeta() != this.updateTable) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
+            } else if (field.updateMode() == UpdateMode.IMMUTABLE) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
+            } else if (!field.nullable() && ((ArmyExpression) fieldPair.right).isNullValue()) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
+            } else {
+                this.fieldConsumer.accept(fieldPair);
+            }
+        }
+
+
+    }//SimpleFieldItemPairs
 
     private static final class ItemPairsImpl<F extends DataField> extends UpdateSetClause<F, ItemPairs<F>>
             implements ItemPairs<F> {

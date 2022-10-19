@@ -7,7 +7,6 @@ import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -34,9 +33,15 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
 
     final TableMeta<?> updateTable;
 
-    SetWhereClause(CriteriaContext context, TableMeta<?> updateTable) {
+    private final String tableAlias;
+
+    /**
+     * @param tableAlias for {@link SingleUpdate} non-null and  non-empty,for other non-null
+     */
+    SetWhereClause(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
         super(context);
         this.updateTable = updateTable;
+        this.tableAlias = tableAlias;
     }
 
 
@@ -258,21 +263,25 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
         }
 
         final SQLs.FieldItemPair fieldPair;
-        final FieldMeta<?> field;
+        final TableField field;
         if (pair instanceof SQLs.RowItemPair) {
             assert !(this instanceof _DomainUpdate);
             itemPairList.add((SQLs.RowItemPair) pair);
         } else if (!(pair instanceof SQLs.FieldItemPair)) {
-            throw new CriteriaException(String.format("unknown %s", ItemPair.class.getName()));
-        } else if (!((fieldPair = (SQLs.FieldItemPair) pair).field instanceof FieldMeta)) {
+            throw ContextStack.criteriaError(this.context, String.format("unknown %s", ItemPair.class.getName()));
+        } else if (!((fieldPair = (SQLs.FieldItemPair) pair).field instanceof TableField)) {
             throw ContextStack.castCriteriaApi(this.context);
-        } else if ((field = (FieldMeta<?>) fieldPair.field).updateMode() == UpdateMode.IMMUTABLE) {
+        } else if ((field = (TableField) fieldPair.field).updateMode() == UpdateMode.IMMUTABLE) {
             throw ContextStack.criteriaError(this.context, _Exceptions::immutableField, field);
         } else if (!field.nullable() && ((ArmyExpression) fieldPair.right).isNullValue()) {
             throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
         } else if (!(this instanceof _DomainUpdate)) {
+            if (field instanceof QualifiedField
+                    && !this.tableAlias.equals(((QualifiedField<?>) field).tableAlias())) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
+            }
             itemPairList.add(fieldPair);
-        } else if (field.tableMeta() != this.updateTable) {
+        } else if (!this.updateTable.isComplexField(field.fieldMeta())) {
             throw ContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
         } else if (this.updateTable instanceof ChildTableMeta) {
             this.onAddChildItemPair(fieldPair);
@@ -281,11 +290,6 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
         }
         return (SR) this;
     }
-
-
-
-
-
 
 
 }

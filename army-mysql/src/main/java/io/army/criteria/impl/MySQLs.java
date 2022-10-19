@@ -24,39 +24,6 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
         return MySQLReplaces.domainReplace(null);
     }
 
-    public static <C> MySQLReplace._DomainOptionSpec<C> domainReplace(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLReplaces.domainReplace(criteria);
-    }
-
-    public static MySQLReplace._ValueReplaceOptionSpec<Void> valueReplace() {
-        return MySQLReplaces.valueReplace(null);
-    }
-
-    public static <C> MySQLReplace._ValueReplaceOptionSpec<C> valueReplace(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLReplaces.valueReplace(criteria);
-    }
-
-    public static MySQLReplace._AssignmentOptionSpec<Void> assignmentReplace() {
-        return MySQLReplaces.assignmentReplace(null);
-    }
-
-    public static <C> MySQLReplace._AssignmentOptionSpec<C> assignmentReplace(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLReplaces.assignmentReplace(criteria);
-    }
-
-    public static MySQLReplace._QueryReplaceIntoSpec<Void> queryReplace() {
-        return MySQLReplaces.queryReplace(null);
-    }
-
-    public static <C> MySQLReplace._QueryReplaceIntoSpec<C> queryReplace(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLReplaces.queryReplace(criteria);
-    }
-
-
     public static MySQLQuery._WithCteSpec<Select> query() {
         return MySQLQueries.primaryQuery();
     }

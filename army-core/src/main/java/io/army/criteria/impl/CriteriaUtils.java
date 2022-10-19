@@ -646,6 +646,10 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(ContextStack.peek(), m);
     }
 
+    static CriteriaException conflictClauseIsEmpty(CriteriaContext context) {
+        return ContextStack.criteriaError(valuesClause.context, "You don't add conflict pair.");
+    }
+
 
     private static CriteriaException unknownSelectItem(final RowSet left, final SelectItem item) {
         return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext()

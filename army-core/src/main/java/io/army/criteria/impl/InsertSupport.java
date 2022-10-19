@@ -948,7 +948,7 @@ abstract class InsertSupport {
         /**
          * @param rowPairList a unmodified list,empty is allowed.
          */
-        final void staticValuesClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowPairList) {
+        final VR staticValuesClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowPairList) {
             if (this.insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -956,9 +956,10 @@ abstract class InsertSupport {
 
             this.rowPairList = rowPairList;
             this.insertMode = InsertMode.VALUES;
+            return (VR) this;
         }
 
-        final void staticSpaceSubQueryClauseEnd(final SubQuery subQuery) {
+        final VR staticSpaceQueryEnd(final SubQuery subQuery) {
             if (this.insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -966,6 +967,7 @@ abstract class InsertSupport {
 
             this.subQuery = subQuery;
             this.insertMode = InsertMode.QUERY;
+            return (VR) this;
         }
 
 
@@ -973,16 +975,6 @@ abstract class InsertSupport {
             final InsertMode mode = this.insertMode;
             if (mode == null) {
                 throw ContextStack.castCriteriaApi(this.context);
-            }
-            return mode;
-        }
-
-        final InsertMode assertInsertMode(final @Nullable ComplexInsertValuesClause<?, ?, ?, ?> parent) {
-            final InsertMode mode = this.insertMode;
-            assert mode != null;
-            if (parent != null && mode == parent.insertMode) {
-                String m = String.format("%s and %s insert syntax not match", this.insertTable, parent.insertTable);
-                throw ContextStack.criteriaError(this.context, m);
             }
             return mode;
         }
@@ -1011,23 +1003,20 @@ abstract class InsertSupport {
             return domainList;
         }
 
-        /**
-         * @return a unmodified list,new instance each time.
-         */
-        final List<?> domainListForChild(final ComplexInsertValuesClause<?, ?, ?, ?> parent) {
-            assert this.insertTable instanceof ChildTableMeta;
-            assert parent.insertTable instanceof ParentTableMeta;
 
-            final List<?> domainList = this.domainList, parentDomainList = parent.domainList;
+        final void domainListForChild(final List<?> originalList) {
+            assert this.insertTable instanceof ChildTableMeta;
+
+            final List<?> domainList = this.domainList;
             if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            if (domainList != parentDomainList
-                    && domainList.get(0) != parentDomainList.get(0)) {
-                String m = String.format("%s and %s domain list not match.", this.insertTable, parent.insertTable);
+            if (domainList != originalList
+                    && domainList.get(0) != originalList.get(0)) {
+                String m = String.format("%s and %s domain list not match.", this.insertTable
+                        , ((ChildTableMeta<T>) this.insertTable).parentMeta());
                 throw ContextStack.criteriaError(this.context, m);
             }
-            return _CollectionUtils.asUnmodifiableList(domainList);
         }
 
         @Override
@@ -1083,9 +1072,8 @@ abstract class InsertSupport {
                 throw ContextStack.nullPointer(this.context);
             } else if (!(value instanceof ArmyExpression)) {
                 throw ContextStack.nonArmyExp(this.context);
-            } else {
-                this.fieldValidator.accept(field, (ArmyExpression) value);
             }
+            this.fieldValidator.accept(field, (ArmyExpression) value);
             assert assignmentMap != null;
             if (assignmentMap.putIfAbsent(field, (ArmyExpression) value) != null) {
                 throw duplicationValuePair(this.context, field);
@@ -1199,7 +1187,7 @@ abstract class InsertSupport {
             extends ComplexInsertValuesClause<T, CR, DR, VR>
             implements Insert._StaticAssignmentSetClause<T, SR>
             , Insert._DynamicAssignmentSetClause<T, VR>
-            , _Insert._AssignmentStatementSpec {
+            , _Insert._AssignmentInsert {
 
         private List<_Pair<FieldMeta<?>, _Expression>> assignmentPairList;
 
@@ -1394,9 +1382,9 @@ abstract class InsertSupport {
 
         private Map<FieldMeta<?>, _Expression> rowValuesMap;
 
-        StaticColumnValuePairClause(CriteriaContext criteriaContext
+        StaticColumnValuePairClause(CriteriaContext context
                 , BiConsumer<FieldMeta<?>, ArmyExpression> validator) {
-            this.context = criteriaContext;
+            this.context = context;
             this.validator = validator;
         }
 
@@ -1895,6 +1883,7 @@ abstract class InsertSupport {
 
     }//AssignmentSetClause
 
+    @Deprecated
 
     static abstract class AssignmentInsertClause<T, SR>
             extends AssignmentSetClause<T, SR>
@@ -2227,6 +2216,7 @@ abstract class InsertSupport {
 
     }//ConflictUpdateSetClause
 
+    @Deprecated
     @SuppressWarnings("unchecked")
     static abstract class ConflictUpdateWhereClause<T, SR, WR, WA> extends ConflictUpdateSetClause<T, SR>
             implements Statement._MinQueryWhereClause<WR, WA>
@@ -2636,7 +2626,7 @@ abstract class InsertSupport {
 
         private final LiteralMode preferLiteral;
 
-        private final List<_Pair<FieldMeta<?>, _Expression>> rowPairList;
+        private final List<_Pair<FieldMeta<?>, _Expression>> assignmentPariList;
 
         private final Map<FieldMeta<?>, _Expression> fieldMap;
 
@@ -2644,7 +2634,7 @@ abstract class InsertSupport {
             super(clause);
             this.migration = clause.isMigration();
             this.preferLiteral = clause.literalMode();
-            this.rowPairList = clause.assignmentPairList();
+            this.assignmentPariList = clause.assignmentPairList();
 
             this.fieldMap = clause.assignmentMap();
         }
@@ -2652,6 +2642,12 @@ abstract class InsertSupport {
         @Override
         public final boolean isMigration() {
             return this.migration;
+        }
+
+        @Override
+        public final NullHandleMode nullHandle() {
+            //assignment don't support this
+            return NullHandleMode.INSERT_DEFAULT;
         }
 
         @Override
@@ -2666,7 +2662,7 @@ abstract class InsertSupport {
 
         @Override
         public final List<_Pair<FieldMeta<?>, _Expression>> assignmentPairList() {
-            return this.rowPairList;
+            return this.assignmentPariList;
         }
 
     }//AbstractAssignmentInsertStatement
@@ -2715,8 +2711,8 @@ abstract class InsertSupport {
 
         @Override
         public final NullHandleMode nullHandle() {
-            //always null,query insert don't support this
-            return null;
+            //always INSERT_DEFAULT,query insert don't support this
+            return NullHandleMode.INSERT_DEFAULT;
         }
 
         @Override

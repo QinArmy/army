@@ -1206,7 +1206,7 @@ abstract class MySQLReplaces extends InsertSupport {
     static class QueryReplaceStatement extends QuerySyntaxInsertStatement<ReplaceInsert>
             implements MySQLReplace
             , ReplaceInsert._ReplaceSpec
-            , _MySQLInsert._MySQQueryInsert
+            , _MySQLInsert._MySQLQueryInsert
             , _Insert._SupportConflictClauseSpec {
 
         private final List<Hint> hintList;

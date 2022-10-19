@@ -110,12 +110,21 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final _StaticCteLeftParenSpec<_CteComma<I>> with(String name) {
-        return this.createComplexCommand(false, name);
+
+        final CriteriaContext context = this.context;
+        final boolean recursive = false;
+        context.onBeforeWithClause(recursive);
+        return new MySQLCteComma<>(this, recursive)
+                .complexCommand.nextCte(name);
     }
 
     @Override
     public final _StaticCteLeftParenSpec<_CteComma<I>> withRecursive(String name) {
-        return this.createComplexCommand(true, name);
+        final CriteriaContext context = this.context;
+        final boolean recursive = true;
+        context.onBeforeWithClause(recursive);
+        return new MySQLCteComma<>(this, recursive)
+                .complexCommand.nextCte(name);
     }
 
     @Override
@@ -626,23 +635,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     /*################################## blow private method ##################################*/
 
-    /**
-     * @see #with(String)
-     * @see #withRecursive(String)
-     */
-    private _StaticCteLeftParenSpec<_CteComma<I>> createComplexCommand(final boolean recursive
-            , final @Nullable String name) {
-        if (name == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        final CriteriaContext context = this.context;
-        context.onBeforeWithClause(recursive);
-        context.onStartCte(name);
-
-        final MySQLCteComma<I> comma;
-        comma = new MySQLCteComma<>(this, recursive);
-        return comma.complexCommand;
-    }
 
 
     /**

@@ -1,24 +1,28 @@
 package io.army.criteria.impl.inner.mysql;
 
 import io.army.criteria.Hint;
-import io.army.criteria.impl.MySQLSyntax;
+import io.army.criteria.SQLWords;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 
 import java.util.List;
 
-public interface _MySQLInsert extends _Insert {
+public interface _MySQLInsert extends _Insert, _Insert._ConflictActionClauseSpec, _Insert._SupportConflictClauseSpec {
 
     List<Hint> hintList();
 
-    List<MySQLSyntax._MySQLModifier> modifierList();
+    List<? extends SQLWords> modifierList();
 
     List<String> partitionList();
 
+    @Nullable
+    String rowAlias();
 
 
+    @Deprecated
     interface _InsertWithDuplicateKey extends _SupportConflictClauseSpec {
 
         List<_Pair<FieldMeta<?>, _Expression>> duplicatePairList();
@@ -26,10 +30,15 @@ public interface _MySQLInsert extends _Insert {
     }
 
 
-
-
     interface _MySQLDomainInsert extends _Insert._DomainInsert, _MySQLInsert {
 
+
+    }
+
+    interface _MySQLChildDomainInsert extends _Insert._ChildDomainInsert, _MySQLDomainInsert {
+
+        @Override
+        _MySQLDomainInsert parentStmt();
 
     }
 
@@ -37,14 +46,34 @@ public interface _MySQLInsert extends _Insert {
 
     }
 
+    interface _MySQLChildValueInsert extends _Insert._ChildValuesInsert, _MySQLValueInsert {
+
+        @Override
+        _MySQLValueInsert parentStmt();
+
+    }
+
     interface _MySQLAssignmentInsert extends _Insert._AssignmentInsert, _MySQLInsert {
 
     }
 
-    interface _MySQQueryInsert extends _QueryInsert, _MySQLInsert {
+    interface _MySQLChildAssignmentInsert extends _Insert._ChildAssignmentInsert, _MySQLAssignmentInsert {
+
+        @Override
+        _MySQLAssignmentInsert parentStmt();
 
     }
 
+    interface _MySQLQueryInsert extends _QueryInsert, _MySQLInsert {
+
+    }
+
+    interface _MySQLChildQueryInsert extends _Insert._ChildQueryInsert, _MySQLQueryInsert {
+
+        @Override
+        _MySQLQueryInsert parentStmt();
+
+    }
 
 
 }

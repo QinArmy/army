@@ -1,6 +1,9 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.*;
+import io.army.criteria.LiteralMode;
+import io.army.criteria.NullHandleMode;
+import io.army.criteria.SelectItem;
+import io.army.criteria.SubQuery;
 import io.army.criteria.impl._Pair;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -17,7 +20,7 @@ public interface _Insert extends _Statement {
 
     interface _ConflictActionClauseSpec {
 
-        List<ItemPair> updateSetClauseList();
+        List<_ItemPair> updateSetClauseList();
 
 
     }

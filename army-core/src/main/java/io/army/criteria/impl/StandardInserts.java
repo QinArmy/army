@@ -185,7 +185,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         private Statement._DmlInsertSpec<I> staticInsertQueryEnd(final SubQuery subQuery) {
-            this.staticSpaceSubQueryClauseEnd(subQuery);
+            this.staticSpaceQueryEnd(subQuery);
             return this;
         }
 

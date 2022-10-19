@@ -136,7 +136,7 @@ final class MySQLDialectParser extends MySQLParser {
     @Override
     protected void queryInsert(final _QueryInsertContext context, final _Insert._QueryInsert stmt) {
         assert context.parser() == this;
-        final _MySQLInsert._MySQQueryInsert insert = (_MySQLInsert._MySQQueryInsert) stmt;
+        final _MySQLInsert._MySQLQueryInsert insert = (_MySQLInsert._MySQLQueryInsert) stmt;
         //1. append insert common part
         this.appendInsertCommonPart(context, insert);
         //2. column list
@@ -503,7 +503,7 @@ final class MySQLDialectParser extends MySQLParser {
                             .append(modifier.render());
                     break;
                 case DELAYED: {
-                    if (stmt instanceof _MySQLInsert._MySQQueryInsert) {
+                    if (stmt instanceof _MySQLInsert._MySQLQueryInsert) {
                         throw new CriteriaException(String.format("%s QUERY INSERT don't support %s"
                                 , this.dialect, modifier));
                     }

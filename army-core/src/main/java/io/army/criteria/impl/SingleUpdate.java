@@ -18,13 +18,10 @@ abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField
         , _Update, _SingleUpdate {
 
 
-    private final String tableAlias;
-
     private Boolean prepared;
 
     SingleUpdate(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
-        super(context, updateTable);
-        this.tableAlias = tableAlias;
+        super(context, updateTable, tableAlias);
     }
 
 
