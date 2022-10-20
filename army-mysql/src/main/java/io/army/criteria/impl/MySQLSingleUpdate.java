@@ -39,11 +39,11 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
         , _MySQLSingleUpdate, MySQLQuery._IndexHintForOrderByClause<C, UT>
         , _MySQLWithClause, MySQLUpdate, Update._UpdateSpec {
 
-    static <C> _SingleWithAndUpdateSpec<C> simple(@Nullable C criteria) {
+    static <C> _SingleWithSpec<C> simple(@Nullable C criteria) {
         return new SimpleUpdateClause<>(criteria);
     }
 
-    static <C> _BatchSingleWithAndUpdateSpec<C> batch(@Nullable C criteria) {
+    static <C> _BatchSingleWithSpec<C> batch(@Nullable C criteria) {
         return new BatchUpdateClause<>(criteria);
     }
 
@@ -450,8 +450,8 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
     }//PartitionAndAsClause
 
 
-    private static final class SimpleUpdateClause<C> extends SingleUpdateClause<C, _SingleUpdate57Clause<C>>
-            implements _SingleWithAndUpdateSpec<C> {
+    private static final class SimpleUpdateClause<C> extends SingleUpdateClause<C, _SingleUpdateClause<C>>
+            implements _SingleWithSpec<C> {
 
         private SimpleUpdateClause(@Nullable C criteria) {
             super(criteria);
@@ -538,8 +538,8 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
 
 
     private static final class BatchUpdateClause<C>
-            extends SingleUpdateClause<C, MySQLUpdate._BatchSingleUpdate57Clause<C>>
-            implements _BatchSingleWithAndUpdateSpec<C> {
+            extends SingleUpdateClause<C, _BatchSingleUpdateClause<C>>
+            implements _BatchSingleWithSpec<C> {
 
         private BatchUpdateClause(@Nullable C criteria) {
             super(criteria);

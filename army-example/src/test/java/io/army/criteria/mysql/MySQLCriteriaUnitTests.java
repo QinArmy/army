@@ -632,9 +632,9 @@ public class MySQLCriteriaUnitTests {
     @Test
     public void parentDomainInsert() {
         final Insert stmt;
-        stmt = MySQLs.domainInsert()
+        stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
-                .insert(Collections::emptyList, Collections.singletonList(MySQLSyntax._MySQLModifier.HIGH_PRIORITY))
+                .insert(Collections::emptyList, Collections.singletonList(MySQLs.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 //.insertInto(ChinaCity_.T)
                 .partition()
@@ -642,7 +642,7 @@ public class MySQLCriteriaUnitTests {
                 .rightParen()
                 .value(new ChinaRegion<>())
                 .onDuplicateKey()
-                .updateLiteral(ChinaCity_.name, "荒海")
+                .set(ChinaCity_.name, SQLs::param, "荒海")
                 .asInsert();
 
         printStmt(stmt);

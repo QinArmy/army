@@ -35,7 +35,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
         , _MySQLMultiUpdate, _MySQLWithClause, MySQLUpdate, Update._UpdateSpec {
 
 
-    static <C> _WithAndMultiUpdateSpec<C> simple(@Nullable C criteria) {
+    static <C> _MultiWithSpec<C> simple(@Nullable C criteria) {
         return new SimpleUpdate<>(criteria);
     }
 
@@ -324,7 +324,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
             MySQLUpdate._MultiWhereAndSpec<C>>                      //WA
             implements MySQLUpdate._MultiJoinSpec<C>, MySQLUpdate._MultiWhereSpec<C>
             , MySQLUpdate._MultiWhereAndSpec<C>, MySQLUpdate._MultiIndexHintJoinSpec<C>
-            , MySQLUpdate._WithAndMultiUpdateSpec<C> {
+            , _MultiWithSpec<C> {
 
 
         private SimpleUpdate(@Nullable C criteria) {

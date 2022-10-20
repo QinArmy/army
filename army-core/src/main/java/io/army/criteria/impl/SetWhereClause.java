@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA, OR, LR>
         extends WhereClause<WR, WA, OR, LR>
         implements Update._StaticBatchSetClause<F, SR>
-        , Update._DynamicSetClause<F, PS, SD>
+        , Update._DynamicSetClause<PS, SD>
         , Update._StaticRowSetClause<F, SR>
         , _Statement._ItemPairList
         , _Statement._TableMetaSpec {

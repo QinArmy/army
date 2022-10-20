@@ -69,30 +69,30 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
     }
 
 
-    public static MySQLUpdate._SingleWithAndUpdateSpec<Void> singleUpdate() {
+    public static MySQLUpdate._SingleWithSpec<Void> singleUpdate() {
         return MySQLSingleUpdate.simple(null);
     }
 
-    public static <C> MySQLUpdate._SingleWithAndUpdateSpec<C> singleUpdate(C criteria) {
+    public static <C> MySQLUpdate._SingleWithSpec<C> singleUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLSingleUpdate.simple(criteria);
     }
 
-    public static MySQLUpdate._BatchSingleWithAndUpdateSpec<Void> batchSingleUpdate() {
+    public static MySQLUpdate._BatchSingleWithSpec<Void> batchSingleUpdate() {
         return MySQLSingleUpdate.batch(null);
     }
 
-    public static <C> MySQLUpdate._BatchSingleWithAndUpdateSpec<C> batchSingleUpdate(C criteria) {
+    public static <C> MySQLUpdate._BatchSingleWithSpec<C> batchSingleUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLSingleUpdate.batch(criteria);
     }
 
 
-    public static MySQLUpdate._WithAndMultiUpdateSpec<Void> multiUpdate() {
+    public static MySQLUpdate._MultiWithSpec<Void> multiUpdate() {
         return MySQLMultiUpdate.simple(null);
     }
 
-    public static <C> MySQLUpdate._WithAndMultiUpdateSpec<C> multiUpdate(C criteria) {
+    public static <C> MySQLUpdate._MultiWithSpec<C> multiUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLMultiUpdate.simple(criteria);
     }

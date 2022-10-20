@@ -109,23 +109,6 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int queryInsertModifier(final MySQLSyntax._MySQLModifier modifier) {
-        final int level;
-        switch (modifier) {
-            case LOW_PRIORITY:
-            case HIGH_PRIORITY:
-                level = 1;
-                break;
-            case IGNORE:
-                level = 2;
-                break;
-            default:
-                level = -1;
-        }
-        return level;
-    }
-
-
     static int replaceModifier(final MySQLs.Modifier modifier) {
         final int level;
         if (modifier == MySQLs.LOW_PRIORITY
@@ -137,51 +120,41 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int updateModifier(final MySQLSyntax._MySQLModifier modifier) {
+    static int updateModifier(final MySQLSyntax.Modifier modifier) {
         final int level;
-        switch (modifier) {
-            case LOW_PRIORITY:
-                level = 1;
-                break;
-            case IGNORE:
-                level = 2;
-                break;
-            default:
-                level = -1;
+        if (modifier == MySQLs.LOW_PRIORITY) {
+            level = 1;
+        } else if (modifier == MySQLs.IGNORE) {
+            level = 2;
+        } else {
+            level = -1;
         }
         return level;
     }
 
-    static int deleteModifier(final MySQLSyntax._MySQLModifier modifier) {
+    static int deleteModifier(final MySQLSyntax.Modifier modifier) {
         final int level;
-        switch (modifier) {
-            case LOW_PRIORITY:
-                level = 1;
-                break;
-            case QUICK:
-                level = 2;
-                break;
-            case IGNORE:
-                level = 3;
-                break;
-            default:
-                level = -1;
+        if (modifier == MySQLs.LOW_PRIORITY) {
+            level = 1;
+        } else if (modifier == MySQLs.QUICK) {
+            level = 2;
+        } else if (modifier == MySQLs.IGNORE) {
+            level = 3;
+        } else {
+            level = -1;
         }
         return level;
     }
 
-    static int loadDataModifier(final MySQLSyntax._MySQLModifier modifier) {
+    static int loadDataModifier(final MySQLSyntax.Modifier modifier) {
         final int level;
-        switch (modifier) {
-            case LOW_PRIORITY:
-            case CONCURRENT:
-                level = 1;
-                break;
-            case LOCAL:
-                level = 2;
-                break;
-            default:
-                level = -1;
+        if (modifier == MySQLs.LOW_PRIORITY
+                || modifier == MySQLs.CONCURRENT) {
+            level = 1;
+        } else if (modifier == MySQLs.LOCAL) {
+            level = 2;
+        } else {
+            level = -1;
         }
         return level;
     }

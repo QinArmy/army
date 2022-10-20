@@ -1,7 +1,6 @@
 package io.army.criteria;
 
 
-import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 
 import java.util.function.BiFunction;
@@ -24,11 +23,7 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
     }
 
-    interface _DynamicSetClause<F extends DataField, B extends _ItemPairBuilder, SR> {
-
-        /**
-         * @see SQLs#itemPair(DataField, Object)
-         */
+    interface _DynamicSetClause<B extends _ItemPairBuilder, SR> {
         SR set(Consumer<B> consumer);
 
     }
