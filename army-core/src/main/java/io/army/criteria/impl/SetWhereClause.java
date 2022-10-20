@@ -33,7 +33,7 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
 
     final TableMeta<?> updateTable;
 
-    private final String tableAlias;
+     final String tableAlias;
 
     /**
      * @param tableAlias for {@link SingleUpdate} non-null and  non-empty,for other non-null
@@ -42,6 +42,8 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
         super(context);
         this.updateTable = updateTable;
         this.tableAlias = tableAlias;
+        assert this.updateTable != null;
+        assert this.tableAlias != null;
     }
 
 

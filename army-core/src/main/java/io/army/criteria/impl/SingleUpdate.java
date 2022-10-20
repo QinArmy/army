@@ -68,10 +68,6 @@ abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField
     }
 
 
-    void onAddChildItem(SQLs.FieldItemPair pair) {
-        throw new UnsupportedOperationException();
-    }
-
     abstract I onAsUpdate();
 
     Q onAsReturningUpdate() {

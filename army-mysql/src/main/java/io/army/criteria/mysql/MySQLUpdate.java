@@ -224,7 +224,7 @@ public interface MySQLUpdate extends DialectStatement {
      */
     interface _BatchLimitSpec<I extends Item>
             extends Update._DmlRowCountLimitClause<_BatchParamClause<_DmlUpdateSpec<I>>>
-            , Statement._BatchParamClause<_BatchParamClause<_DmlUpdateSpec<I>>> {
+            , Statement._BatchParamClause<_DmlUpdateSpec<I>> {
 
     }
 

@@ -1,12 +1,6 @@
 package io.army.criteria.impl.inner;
 
-import java.util.List;
-
-public interface _Dml extends _Statement {
+public interface _Dml extends _Statement, _Statement._WherePredicateListSpec {
 
 
-    /**
-     * @return a unmodifiable list
-     */
-    List<_Predicate> predicateList();
 }

@@ -2,8 +2,10 @@ package io.army.criteria.impl;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
+import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
@@ -77,6 +79,94 @@ abstract class CriteriaSupports {
         return new SimpleFieldItemPairs<>(context, updateTable, consumer);
     }
 
+
+    static abstract class WithClause<B extends CteBuilderSpec, WE> implements Query._DynamicWithCteClause<B, WE>
+            , _Statement._WithClauseSpec {
+
+        final CriteriaContext context;
+
+        private boolean recursive;
+
+        private List<_Cte> cteList;
+
+        WithClause(CriteriaContext context) {
+            this.context = context;
+        }
+
+        @Override
+        public final WE with(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, true);
+        }
+
+
+        @Override
+        public final WE withRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, true);
+        }
+
+
+        @Override
+        public final WE ifWith(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, false);
+        }
+
+
+        @Override
+        public final WE ifWithRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, false);
+        }
+
+        @Override
+        public final boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public final List<_Cte> cteList() {
+            List<_Cte> cteList = this.cteList;
+            if (cteList == null) {
+                cteList = Collections.emptyList();
+                this.cteList = cteList;
+            }
+            return cteList;
+        }
+
+
+        final void endStaticWithClause(final boolean recursive) {
+            if (this.cteList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.recursive = recursive;
+            this.cteList = this.context.endWithClause(true);//static with syntax is required
+        }
+
+
+        abstract B createCteBuilder(boolean recursive);
+
+
+        @SuppressWarnings("unchecked")
+        private WE endDynamicWithClause(final B builder, final boolean required) {
+            if (this.cteList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.recursive = builder.isRecursive();
+            this.cteList = this.context.endWithClause(required);
+            return (WE) this;
+        }
+
+    }//WithClause
 
     static final class RowConstructorImpl implements RowConstructor {
 

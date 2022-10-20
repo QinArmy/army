@@ -3,14 +3,12 @@ package io.army.criteria.impl.inner.mysql;
 
 import io.army.criteria.SortItem;
 import io.army.criteria.impl.inner._SingleUpdate;
-import io.army.meta.TableMeta;
+import io.army.criteria.impl.inner._Statement;
 
 import java.util.List;
 
-public interface _MySQLSingleUpdate extends _MySQLUpdate, _SingleUpdate {
+public interface _MySQLSingleUpdate extends _MySQLUpdate, _SingleUpdate, _Statement._RowCountSpec {
 
-    @Override
-    TableMeta<?> table();
 
     List<String> partitionList();
 
@@ -23,6 +21,5 @@ public interface _MySQLSingleUpdate extends _MySQLUpdate, _SingleUpdate {
      */
     List<? extends SortItem> orderByList();
 
-    long rowCount();
 
 }
