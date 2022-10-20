@@ -1053,7 +1053,7 @@ abstract class MySQLMultiUpdate<WE, UT, PS extends Update._ItemPairBuilder, SR, 
         @Override
         public List<?> paramList() {
             final List<?> list = this.paramList;
-            if (list != null) {
+            if (list == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             return list;
