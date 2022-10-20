@@ -79,19 +79,13 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
     }
 
     public static MySQLUpdate._MultiWithSpec multiUpdate() {
-        return MySQLMultiUpdate.simple(null);
+        return MySQLMultiUpdate.simple();
     }
 
 
-    public static MySQLUpdate._BatchWithAndMultiUpdateSpec<Void> batchMultiUpdate() {
-        return MySQLMultiUpdate.batch(null);
+    public static MySQLUpdate._BatchMultiWithSpec batchMultiUpdate() {
+        return MySQLMultiUpdate.batch();
     }
-
-    public static <C> MySQLUpdate._BatchWithAndMultiUpdateSpec<C> batchMultiUpdate(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLMultiUpdate.batch(criteria);
-    }
-
 
     public static MySQLDelete._WithAndSingleDeleteSpec<Void> singleDelete() {
         return MySQLSingleDelete.simple(null);
