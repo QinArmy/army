@@ -590,6 +590,11 @@ public interface MySQLUpdate extends DialectStatement {
 
         <T extends TabularItem> _AsClause<_MultiJoinSpec<Update>> update(Supplier<T> supplier);
 
+        <T extends TabularItem> _AsClause<_MultiJoinSpec<Update>> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
+                , Query.TabularModifier modifier, Supplier<T> supplier);
+
+        <T extends TabularItem> _AsClause<_MultiJoinSpec<Update>> update(Query.TabularModifier modifier, Supplier<T> supplier);
+
         _MultiJoinSpec<Update> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName);
 
         _MultiJoinSpec<Update> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName, SQLs.WordAs wordAs, String alias);
@@ -836,6 +841,11 @@ public interface MySQLUpdate extends DialectStatement {
                 , Supplier<T> supplier);
 
         <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<Update>> update(Supplier<T> supplier);
+
+        <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<Update>> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
+                , Query.TabularModifier modifier, Supplier<T> supplier);
+
+        <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<Update>> update(Query.TabularModifier modifier, Supplier<T> supplier);
 
         _BatchMultiJoinSpec<Update> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName);
 

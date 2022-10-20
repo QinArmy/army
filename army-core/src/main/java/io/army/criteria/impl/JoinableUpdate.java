@@ -26,6 +26,7 @@ import java.util.function.*;
  *     </ul>
  * </p>
  */
+@Deprecated
 @SuppressWarnings("unchecked")
 abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS, JP, WR, WA, U extends DmlStatement.DmlUpdate>
         extends DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>

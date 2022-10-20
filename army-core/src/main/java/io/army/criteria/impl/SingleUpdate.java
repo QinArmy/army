@@ -8,6 +8,7 @@ import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._Update;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
+import io.army.util._Exceptions;
 
 
 abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA, OR, LR>
@@ -62,7 +63,6 @@ abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField
     }
 
 
-
     void onClear() {
         //no-op
     }
@@ -77,8 +77,11 @@ abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField
 
     private void endUpdateStatement() {
         _Assert.nonPrepared(this.prepared);
+        this.endUpdateSetClause();
+        if (this.endWhereClause().size() == 0) {
+            throw ContextStack.criteriaError(this.context, _Exceptions::dmlNoWhereClause);
+        }
         this.endOrderByClause();
-        this.endWhereClause();
         ContextStack.pop(this.context);
         this.prepared = Boolean.TRUE;
     }

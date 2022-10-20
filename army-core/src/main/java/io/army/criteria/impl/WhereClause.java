@@ -466,6 +466,10 @@ abstract class WhereClause<WR, WA, OR, LR> extends LimitRowOrderByClause<OR, LR>
     }
 
 
+    final void clearWhereClause() {
+        this.predicateList = null;
+    }
+
     final List<_Predicate> endWhereClause() {
         List<_Predicate> list = this.predicateList;
         if (list instanceof ArrayList) {
