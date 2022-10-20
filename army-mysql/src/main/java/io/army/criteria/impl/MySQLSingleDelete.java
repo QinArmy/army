@@ -38,11 +38,11 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
         , MySQLDelete._SingleDeleteFromClause<DT>, _MySQLWithClause, MySQLDelete, Delete._DeleteSpec {
 
 
-    static <C> _WithAndSingleDeleteSpec<C> simple(@Nullable C criteria) {
+    static <C> _SingleWithSpec<C> simple(@Nullable C criteria) {
         return new SimpleDelete<>(criteria);
     }
 
-    static <C> _BatchWithAndSingleDeleteSpec<C> batch(@Nullable C criteria) {
+    static <C> _BatchSingleWithSpec<C> batch(@Nullable C criteria) {
         return new BatchDelete<>(criteria);
     }
 
@@ -339,7 +339,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
             MySQLDelete._SingleWhereAndSpec<C>,
             MySQLDelete._LimitSpec<C>,
             Delete._DeleteSpec>
-            implements MySQLDelete._WithAndSingleDeleteSpec<C>, MySQLDelete._SinglePartitionSpec<C>
+            implements _SingleWithSpec<C>, MySQLDelete._SinglePartitionSpec<C>
             , MySQLDelete._SingleWhereAndSpec<C> {
 
         private SimpleDelete(@Nullable C criteria) {
@@ -359,7 +359,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
             MySQLDelete._BatchSingleWhereAndSpec<C>,
             MySQLDelete._BatchLimitSpec<C>,
             Statement._BatchParamClause<C, Delete._DeleteSpec>>
-            implements MySQLDelete._BatchWithAndSingleDeleteSpec<C>, MySQLDelete._BatchSinglePartitionSpec<C>
+            implements _BatchSingleWithSpec<C>, MySQLDelete._BatchSinglePartitionSpec<C>
             , MySQLDelete._BatchSingleWhereAndSpec<C>, _BatchDml {
 
         private List<?> paramList;
