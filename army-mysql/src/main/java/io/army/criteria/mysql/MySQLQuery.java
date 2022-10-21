@@ -33,7 +33,7 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
-    interface _MySQLFromClause<FT, FS extends Item> extends _FromModifierTabularClause<FT, FS>
+    interface _MySQLFromClause<FT, FS> extends _FromModifierTabularClause<FT, FS>
             , _FromCteClause<FS> {
 
     }

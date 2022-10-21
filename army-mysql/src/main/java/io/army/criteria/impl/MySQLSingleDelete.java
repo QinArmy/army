@@ -63,7 +63,9 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
     }
 
     @Override
-    public final DT deleteFrom(final @Nullable SingleTableMeta<?> table, final @Nullable String tableAlias) {
+    public final DT deleteFrom(final @Nullable SingleTableMeta<?> table, SQLs.WordAs wordAs
+            , final @Nullable String tableAlias) {
+        assert wordAs == SQLs.AS;
         if (this.deleteTable != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -84,7 +86,7 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
 
     @Override
     public final DT from(SingleTableMeta<?> table, StandardSyntax.WordAs wordAs, String alias) {
-        return this.deleteFrom(table, alias);
+        return this.deleteFrom(table, wordAs, alias);
     }
 
     @Override
@@ -160,6 +162,9 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         if (this.partitionList == null) {
             this.partitionList = Collections.emptyList();
         }
+        if (this.deleteTable == null || this.tableAlias == null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
         if (this instanceof BatchDeleteStatement && ((BatchDeleteStatement<I>) this).paramList == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -212,8 +217,8 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         }
 
         @Override
-        public _SinglePartitionSpec<I> deleteFrom(SingleTableMeta<?> table, String tableAlias) {
-            return this.endStaticWithClause().deleteFrom(table, tableAlias);
+        public _SinglePartitionSpec<I> deleteFrom(SingleTableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+            return this.endStaticWithClause().deleteFrom(table, wordAs, tableAlias);
         }
 
         @Override
@@ -287,8 +292,8 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         }
 
         @Override
-        public _BatchSinglePartitionSpec<I> deleteFrom(SingleTableMeta<?> table, String tableAlias) {
-            return this.endStaticWithClause().deleteFrom(table, tableAlias);
+        public _BatchSinglePartitionSpec<I> deleteFrom(SingleTableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+            return this.endStaticWithClause().deleteFrom(table, wordAs, tableAlias);
         }
 
         @Override

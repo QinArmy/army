@@ -51,6 +51,10 @@ public interface Statement extends Item {
 
     }
 
+    interface DmlStatementSpec {
+
+    }
+
     interface JoinBuilder {
 
     }
@@ -666,7 +670,7 @@ public interface Statement extends Item {
         I asDelete();
     }
 
-    interface _DqlReturningDeleteSpec<Q extends Item> {
+    interface _DqlDeleteSpec<Q extends Item> {
 
         Q asReturningDelete();
     }

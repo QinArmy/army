@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-public interface ReturningUpdate extends DqlStatement, DialectStatement {
+public interface ReturningUpdate extends DqlStatement, DialectStatement, Statement.DmlStatementSpec {
 
 
 }

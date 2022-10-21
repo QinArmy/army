@@ -18,7 +18,7 @@ abstract class SingleDelete<I extends Item, Q extends Item, WR, WA, OR, LR> exte
         implements _SingleDelete
         , Statement
         , Statement._DmlDeleteSpec<I>
-        , Statement._DqlReturningDeleteSpec<Q> {
+        , Statement._DqlDeleteSpec<Q> {
 
 
     private Boolean prepared;

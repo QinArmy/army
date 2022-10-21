@@ -1,12 +1,18 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.DmlStatement;
-import io.army.criteria.SubStatement;
+import io.army.criteria.CteBuilderSpec;
+import io.army.criteria.Item;
+import io.army.criteria.Query;
+import io.army.criteria.Statement;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._MultiDelete;
+import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.util._Assert;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 
 /**
@@ -14,10 +20,12 @@ import java.util.List;
  * This class is base class of multi-table delete implementation.
  * </p>
  */
-abstract class MultiDelete<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA, D extends DmlStatement.DmlDelete>
-        extends DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
-        implements DmlStatement.DmlDelete, DmlStatement._DmlDeleteSpec<D>
-        , _MultiDelete, JoinableClause.ClauseCreator<FP, JT, JS, JP> {
+abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
+        extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, Object, Object>
+        implements _MultiDelete
+        , Statement._DmlDeleteSpec<I>
+        , Statement._DqlDeleteSpec<Q>
+        , Statement {
 
 
     private Boolean prepared;
@@ -25,8 +33,9 @@ abstract class MultiDelete<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA, D extends DmlS
     private List<_TableBlock> tableBlockList;
 
 
-    MultiDelete(CriteriaContext criteriaContext) {
-        super(criteriaContext);
+    MultiDelete(CriteriaContext context) {
+        super(context);
+        ContextStack.push(this.context);
     }
 
     @Override
@@ -40,46 +49,149 @@ abstract class MultiDelete<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA, D extends DmlS
         return prepared != null && prepared;
     }
 
-    @SuppressWarnings("unchecked")
+
     @Override
-    public final D asDelete() {
-        _Assert.nonPrepared(this.prepared);
-        this.validateBeforeClearContext();
-        if (this instanceof SubStatement) {
-            ContextStack.pop(this.context);
-        } else {
-            ContextStack.clearContextStack(this.context);
-        }
-        this.tableBlockList = this.context.endContext();
-        this.asDmlStatement();
-        this.onAsDelete();
-        this.prepared = Boolean.TRUE;
-        return (D) this;
+    public final I asDelete() {
+        this.endDeleteStatement();
+        return this.onAsDelete();
     }
 
+    @Override
+    public final Q asReturningDelete() {
+        this.endDeleteStatement();
+        return this.onAsReturningDelete();
+    }
 
     @Override
     public final void clear() {
         _Assert.prepared(this.prepared);
         this.prepared = Boolean.FALSE;
-        this.clearWherePredicate();
+        this.clearWhereClause();
         this.tableBlockList = null;
         this.onClear();
     }
 
     @Override
     public final List<_TableBlock> tableBlockList() {
-        return this.tableBlockList;
+        final List<_TableBlock> list = this.tableBlockList;
+        if (list == null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return list;
     }
 
 
-    abstract void onAsDelete();
+    abstract I onAsDelete();
+
+    Q onAsReturningDelete() {
+        throw new UnsupportedOperationException();
+    }
 
     abstract void onClear();
 
-    void validateBeforeClearContext() {
-        // no-op
+    void onEndStatement() {
+        throw new UnsupportedOperationException();
     }
+
+
+    private void endDeleteStatement() {
+        _Assert.nonPrepared(this.prepared);
+        this.endWhereClause();
+        this.onEndStatement();
+        final CriteriaContext context = this.context;
+        this.tableBlockList = context.endContext();
+        ContextStack.pop(context);
+        this.prepared = Boolean.TRUE;
+    }
+
+
+    static abstract class WithMultiDelete<I extends Item, Q extends Item, B extends CteBuilderSpec, WE, FT, FS, FC, JT, JS, JC, WR, WA>
+            extends MultiDelete<I, Q, FT, FS, FC, JT, JS, JC, WR, WA> implements Query._DynamicWithCteClause<B, WE>
+            , _Statement._WithClauseSpec {
+
+        private boolean recursive;
+
+        private List<_Cte> cteList;
+
+        WithMultiDelete(CriteriaContext context) {
+            super(context);
+        }
+
+
+        @Override
+        public final WE with(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, true);
+        }
+
+
+        @Override
+        public final WE withRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, true);
+        }
+
+
+        @Override
+        public final WE ifWith(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, false);
+        }
+
+
+        @Override
+        public final WE ifWithRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, false);
+        }
+
+        @Override
+        public final boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public final List<_Cte> cteList() {
+            List<_Cte> cteList = this.cteList;
+            if (cteList == null) {
+                cteList = Collections.emptyList();
+                this.cteList = cteList;
+            }
+            return cteList;
+        }
+
+
+        final void endStaticWithClause(final boolean recursive) {
+            if (this.cteList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.recursive = recursive;
+            this.cteList = this.context.endWithClause(true);//static with syntax is required
+        }
+
+
+        abstract B createCteBuilder(boolean recursive);
+
+
+        @SuppressWarnings("unchecked")
+        private WE endDynamicWithClause(final B builder, final boolean required) {
+            if (this.cteList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.recursive = builder.isRecursive();
+            this.cteList = this.context.endWithClause(required);
+            return (WE) this;
+        }
+
+    }//WithMultiDelete
 
 
 }

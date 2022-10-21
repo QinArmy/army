@@ -3,10 +3,9 @@ package io.army.criteria;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
-import io.army.meta.SimpleTableMeta;
 import io.army.meta.SingleTableMeta;
 
-public interface Delete extends NarrowDmlStatement, DmlStatement.DmlDelete {
+public interface Delete extends NarrowDmlStatement, DmlStatement.DmlDelete, PrimaryStatement {
 
 
     @Deprecated
@@ -33,9 +32,9 @@ public interface Delete extends NarrowDmlStatement, DmlStatement.DmlDelete {
 
     }
 
-    interface _DeleteSimpleClause<DT> {
+    interface _SingleDeleteClause<DT> {
 
-        DT deleteFrom(SimpleTableMeta<?> table, String alias);
+        DT deleteFrom(SingleTableMeta<?> table, SQLs.WordAs wordAs, String alias);
 
     }
 

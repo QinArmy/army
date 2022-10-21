@@ -3,7 +3,6 @@ package io.army.criteria.mysql;
 import io.army.criteria.*;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
-import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -32,9 +31,8 @@ public interface MySQLDelete extends DialectStatement {
      * @param <DT> next clause java type
      * @since 1.0
      */
-    interface _SingleDeleteClause<DT> {
+    interface _SingleDeleteClause<DT> extends Delete._SingleDeleteClause<DT> {
 
-        DT deleteFrom(SingleTableMeta<?> table, String tableAlias);
 
         Delete._SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers);
 

@@ -451,7 +451,7 @@ final class MySQLDialectParser extends MySQLParser {
         //4. modifier
         this.deleteModifiers(stmt.modifierList(), sqlBuilder);
         //5. delete table clause
-        final boolean usingSyntax = stmt.usingSyntax();
+        final boolean usingSyntax = stmt.isUsingSyntax();
         if (usingSyntax) {
             sqlBuilder.append(_Constant.SPACE_FROM);
         }

@@ -477,12 +477,12 @@ abstract class WhereClause<WR, WA, OR, LR> extends LimitRowOrderByClause<OR, LR>
             this.predicateList = list;
         } else if (list != null) {
             throw ContextStack.castCriteriaApi(this.context);
-        } else if (this instanceof SimpleQueries) {
+        } else if (this instanceof Statement.DmlStatementSpec) {
+            //dml statement must have where clause
+            throw ContextStack.criteriaError(this.context, _Exceptions::dmlNoWhereClause);
+        } else {
             list = Collections.emptyList();
             this.predicateList = list;
-        } else {
-            //dml statement must have where clause
-            throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
         }
         return list;
     }
