@@ -106,7 +106,7 @@ abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, J
 
 
     static abstract class WithMultiDelete<I extends Item, Q extends Item, B extends CteBuilderSpec, WE, FT, FS, FC, JT, JS, JC, WR, WA>
-            extends MultiDelete<I, Q, FT, FS, FC, JT, JS, JC, WR, WA> implements Query._DynamicWithCteClause<B, WE>
+            extends MultiDelete<I, Q, FT, FS, FC, JT, JS, JC, WR, WA> implements Query._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
 
         private boolean recursive;

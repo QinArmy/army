@@ -208,7 +208,7 @@ public interface PostgreInsert extends DialectStatement {
 
     interface _ChildWithCteSpec<P>
             extends PostgreQuery._PostgreDynamicWithClause<_ChildInsertIntoClause<P>>
-            , Query._StaticWithCteClause<_StaticCteLeftParenSpec<_ChildCteComma<P>, _ChildCteComma<P>>>
+            , Query._StaticWithClause<_StaticCteLeftParenSpec<_ChildCteComma<P>, _ChildCteComma<P>>>
             , _ChildInsertIntoClause<P> {
 
     }
@@ -302,7 +302,7 @@ public interface PostgreInsert extends DialectStatement {
 
     interface _PrimaryWithCteSpec
             extends PostgreQuery._PostgreDynamicWithClause<_PrimaryInsertIntoClause>
-            , Query._StaticWithCteClause<_StaticCteLeftParenSpec<_ParentCteComma, _ParentCteComma>>
+            , Query._StaticWithClause<_StaticCteLeftParenSpec<_ParentCteComma, _ParentCteComma>>
             , _PrimaryInsertIntoClause {
 
     }

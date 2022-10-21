@@ -80,7 +80,7 @@ abstract class SingleDelete<I extends Item, Q extends Item, WR, WA, OR, LR> exte
 
 
     static abstract class WithSingleDelete<I extends Item, Q extends Item, B extends CteBuilderSpec, WE, WR, WA, OR, LR>
-            extends SingleDelete<I, Q, WR, WA, OR, LR> implements Query._DynamicWithCteClause<B, WE>
+            extends SingleDelete<I, Q, WR, WA, OR, LR> implements Query._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
 
         private boolean recursive;

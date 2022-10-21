@@ -20,7 +20,7 @@ import java.util.function.*;
 public interface PostgreQuery extends Query, DialectStatement {
 
     interface _PostgreDynamicWithClause<SR>
-            extends _DynamicWithCteClause<PostgreCteBuilder, SR> {
+            extends _DynamicWithClause<PostgreCteBuilder, SR> {
 
     }
 
@@ -507,7 +507,7 @@ public interface PostgreQuery extends Query, DialectStatement {
      * @since 1.0
      */
     interface _WithCteSpec<I extends Item> extends _PostgreDynamicWithClause<_PostgreSelectClause<I>>
-            , _StaticWithCteClause<_StaticCteLeftParenSpec<_CteComma<I>>>
+            , _StaticWithClause<_StaticCteLeftParenSpec<_CteComma<I>>>
             , _PostgreSelectClause<I> {
 
     }

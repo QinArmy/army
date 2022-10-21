@@ -81,7 +81,7 @@ public interface Query extends RowSet {
     }
 
 
-    interface _DynamicWithCteClause<B extends CteBuilderSpec, WE> extends Item {
+    interface _DynamicWithClause<B extends CteBuilderSpec, WE> extends Item {
         WE with(Consumer<B> consumer);
 
         WE withRecursive(Consumer<B> consumer);
@@ -92,7 +92,7 @@ public interface Query extends RowSet {
 
     }
 
-    interface _StaticWithCteClause<WS> {
+    interface _StaticWithClause<WS> {
 
         WS with(String name);
 

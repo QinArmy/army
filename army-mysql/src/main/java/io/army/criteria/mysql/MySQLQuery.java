@@ -28,7 +28,7 @@ import java.util.function.Consumer;
  */
 public interface MySQLQuery extends Query, DialectStatement {
 
-    interface _MySQLDynamicWithCteClause<WE> extends _DynamicWithCteClause<MySQLCteBuilder, WE> {
+    interface _MySQLDynamicWithCteClause<WE> extends _DynamicWithClause<MySQLCteBuilder, WE> {
 
     }
 
@@ -491,7 +491,7 @@ public interface MySQLQuery extends Query, DialectStatement {
 
 
     interface _WithCteSpec<I extends Item> extends _MinWithCteSpec<I>
-            , _StaticWithCteClause<_StaticCteLeftParenSpec<_CteComma<I>>> {
+            , _StaticWithClause<_StaticCteLeftParenSpec<_CteComma<I>>> {
 
     }
 

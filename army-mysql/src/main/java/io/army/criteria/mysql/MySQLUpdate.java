@@ -155,29 +155,29 @@ public interface MySQLUpdate extends DialectStatement {
 
     }
 
-    interface _SingleUpdateClause {
+    interface _SingleUpdateClause<I extends Item> {
 
-        <T> _SingleIndexHintSpec<Update, T> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, SingleTableMeta<T> table, String alias);
+        <T> _SingleIndexHintSpec<I, T> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, SingleTableMeta<T> table, SQLs.WordAs wordAs, String alias);
 
-        <P> _SingleIndexHintSpec<Update, P> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, ComplexTableMeta<P, ?> table, String alias);
+        <P> _SingleIndexHintSpec<I, P> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, ComplexTableMeta<P, ?> table, SQLs.WordAs wordAs, String alias);
 
-        <T> _SingleIndexHintSpec<Update, T> update(SingleTableMeta<T> table, String alias);
+        <T> _SingleIndexHintSpec<I, T> update(SingleTableMeta<T> table, SQLs.WordAs wordAs, String alias);
 
-        <P> _SingleIndexHintSpec<Update, P> update(ComplexTableMeta<P, ?> table, String alias);
+        <P> _SingleIndexHintSpec<I, P> update(ComplexTableMeta<P, ?> table, SQLs.WordAs wordAs, String alias);
 
-        <T> _SinglePartitionClause<Update, T> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, SingleTableMeta<T> table);
+        <T> _SinglePartitionClause<I, T> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, SingleTableMeta<T> table);
 
-        <P> _SinglePartitionClause<Update, P> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, ComplexTableMeta<P, ?> table);
+        <P> _SinglePartitionClause<I, P> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, ComplexTableMeta<P, ?> table);
 
-        <T> _SinglePartitionClause<Update, T> update(SingleTableMeta<T> table);
+        <T> _SinglePartitionClause<I, T> update(SingleTableMeta<T> table);
 
-        <P> _SinglePartitionClause<Update, P> update(ComplexTableMeta<P, ?> table);
+        <P> _SinglePartitionClause<I, P> update(ComplexTableMeta<P, ?> table);
 
     }
 
 
-    interface _SingleComma extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma>>
-            , _SingleUpdateClause {
+    interface _SingleComma<I extends Item> extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>>>
+            , _SingleUpdateClause<I> {
 
     }
 
@@ -197,10 +197,10 @@ public interface MySQLUpdate extends DialectStatement {
      *
      * @since 1.0
      */
-    interface _SingleWithSpec
-            extends MySQLQuery._MySQLDynamicWithCteClause<_SingleUpdateClause>
-            , Query._StaticWithCteClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma>>
-            , _SingleUpdateClause {
+    interface _SingleWithSpec<I extends Item>
+            extends MySQLQuery._MySQLDynamicWithCteClause<_SingleUpdateClause<I>>
+            , Query._StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>>>
+            , _SingleUpdateClause<I> {
 
     }
 
@@ -343,31 +343,31 @@ public interface MySQLUpdate extends DialectStatement {
 
     }
 
-    interface _BatchSingleUpdateClause {
+    interface _BatchSingleUpdateClause<I extends Item> {
 
 
-        <T> _BatchSingleIndexHintSpec<Update, T> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, SingleTableMeta<T> table, String alias);
+        <T> _BatchSingleIndexHintSpec<I, T> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, SingleTableMeta<T> table, SQLs.WordAs wordAs, String alias);
 
-        <P> _BatchSingleIndexHintSpec<Update, P> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, ComplexTableMeta<P, ?> table, String alias);
+        <P> _BatchSingleIndexHintSpec<I, P> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, ComplexTableMeta<P, ?> table, SQLs.WordAs wordAs, String alias);
 
-        <T> _BatchSingleIndexHintSpec<Update, T> update(SingleTableMeta<T> table, String alias);
+        <T> _BatchSingleIndexHintSpec<I, T> update(SingleTableMeta<T> table, SQLs.WordAs wordAs, String alias);
 
-        <P> _BatchSingleIndexHintSpec<Update, P> update(ComplexTableMeta<P, ?> table, String alias);
+        <P> _BatchSingleIndexHintSpec<I, P> update(ComplexTableMeta<P, ?> table, SQLs.WordAs wordAs, String alias);
 
-        <T> _BatchSinglePartitionClause<Update, T> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, SingleTableMeta<T> table);
+        <T> _BatchSinglePartitionClause<I, T> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, SingleTableMeta<T> table);
 
-        <P> _BatchSinglePartitionClause<Update, P> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, ComplexTableMeta<P, ?> table);
+        <P> _BatchSinglePartitionClause<I, P> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, ComplexTableMeta<P, ?> table);
 
-        <T> _BatchSinglePartitionClause<Update, T> update(SingleTableMeta<T> table);
+        <T> _BatchSinglePartitionClause<I, T> update(SingleTableMeta<T> table);
 
-        <P> _BatchSinglePartitionClause<Update, P> update(ComplexTableMeta<P, ?> table);
+        <P> _BatchSinglePartitionClause<I, P> update(ComplexTableMeta<P, ?> table);
 
     }
 
 
-    interface _BatchSingleComma
-            extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma>>
-            , _BatchSingleUpdateClause {
+    interface _BatchSingleComma<I extends Item>
+            extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
+            , _BatchSingleUpdateClause<I> {
 
     }
 
@@ -387,10 +387,10 @@ public interface MySQLUpdate extends DialectStatement {
      *
      * @since 1.0
      */
-    interface _BatchSingleWithSpec
-            extends MySQLQuery._MySQLDynamicWithCteClause<_BatchSingleUpdateClause>
-            , Query._StaticWithCteClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma>>
-            , _BatchSingleUpdateClause {
+    interface _BatchSingleWithSpec<I extends Item>
+            extends MySQLQuery._MySQLDynamicWithCteClause<_BatchSingleUpdateClause<I>>
+            , Query._StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
+            , _BatchSingleUpdateClause<I> {
 
     }
 
@@ -625,7 +625,7 @@ public interface MySQLUpdate extends DialectStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link MySQLQuery._MySQLDynamicWithCteClause}</li>
-     *          <li>{@link Query._StaticWithCteClause}</li>
+     *          <li>{@link Query._StaticWithClause}</li>
      *          <li>{@link MultiUpdateClause}</li>
      *     </ul>
      * </p>
@@ -638,7 +638,7 @@ public interface MySQLUpdate extends DialectStatement {
      * @since 1.0
      */
     interface _MultiWithSpec extends MySQLQuery._MySQLDynamicWithCteClause<MultiUpdateClause>
-            , Query._StaticWithCteClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma>>
+            , Query._StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma>>
             , MultiUpdateClause {
 
     }
@@ -877,7 +877,7 @@ public interface MySQLUpdate extends DialectStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link MySQLQuery._MySQLDynamicWithCteClause}</li>
-     *          <li>{@link Query._StaticWithCteClause}</li>
+     *          <li>{@link Query._StaticWithClause}</li>
      *          <li>{@link _BatchMultiUpdateClause}</li>
      *     </ul>
      * </p>
@@ -890,7 +890,7 @@ public interface MySQLUpdate extends DialectStatement {
      * @since 1.0
      */
     interface _BatchMultiWithSpec extends MySQLQuery._MySQLDynamicWithCteClause<_BatchMultiUpdateClause>
-            , Query._StaticWithCteClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma>>
+            , Query._StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma>>
             , _BatchMultiUpdateClause {
 
     }

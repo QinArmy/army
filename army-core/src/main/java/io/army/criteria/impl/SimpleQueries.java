@@ -579,7 +579,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, SP>
             extends SimpleQueries<Q, W, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, SP>
-            implements Query._DynamicWithCteClause<B, WE>
+            implements _DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
 
         private boolean recursive;
