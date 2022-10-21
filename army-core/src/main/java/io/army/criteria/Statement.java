@@ -641,22 +641,7 @@ public interface Statement extends Item {
     }
 
 
-    /**
-     * <p>
-     * This interface representing any sql clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface _Clause {
 
-
-    }
 
 
     interface _DmlInsertSpec<I extends Item> extends Item {

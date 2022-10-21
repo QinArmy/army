@@ -2,7 +2,6 @@ package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Cte;
-import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.function.BiConsumer;
@@ -350,24 +349,7 @@ public interface DialectStatement extends Statement {
 
 
 
-    /**
-     * <p>
-     * This interface representing FROM clause for single-table DELETE syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>/
-     *
-     * @param <DT> next clause java type
-     * @since 1.0
-     */
-    interface _SingleDeleteFromClause<DT> {
 
-        DT from(SingleTableMeta<?> table, String alias);
-
-    }
 
 
 

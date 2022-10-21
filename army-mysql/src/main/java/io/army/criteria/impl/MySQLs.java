@@ -87,41 +87,22 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
         return MySQLMultiUpdate.batch();
     }
 
-    public static MySQLDelete._SingleWithSpec<Void> singleDelete() {
-        return MySQLSingleDelete.simple(null);
-    }
-
-    public static <C> MySQLDelete._SingleWithSpec<C> singleDelete(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLSingleDelete.simple(criteria);
-    }
-
-    public static MySQLDelete._BatchSingleWithSpec<Void> batchSingleDelete() {
-        return MySQLSingleDelete.batch(null);
-    }
-
-    public static <C> MySQLDelete._BatchSingleWithSpec<C> batchSingleDelete(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLSingleDelete.batch(criteria);
-    }
-
-    public static MySQLDelete._WithAndMultiDeleteSpec<Void> multiDelete() {
-        return MySQLMultiDelete.simple(null);
-    }
-
-    public static <C> MySQLDelete._WithAndMultiDeleteSpec<C> multiDelete(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLMultiDelete.simple(criteria);
+    public static MySQLDelete._SingleWithSpec<Delete> singleDelete() {
+        return MySQLSingleDelete.simple(SQLs::_identity);
     }
 
 
-    public static MySQLDelete._BatchWithAndMultiDeleteSpec<Void> batchMultiDelete() {
-        return MySQLMultiDelete.batch(null);
+    public static MySQLDelete._BatchSingleWithSpec<Delete> batchSingleDelete() {
+        return MySQLSingleDelete.batch(SQLs::_identity);
     }
 
-    public static <C> MySQLDelete._BatchWithAndMultiDeleteSpec<C> batchMultiDelete(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLMultiDelete.batch(criteria);
+    public static MySQLDelete._MultiWithSpec<Delete> multiDelete() {
+        return MySQLMultiDelete.simple();
+    }
+
+
+    public static MySQLDelete._BatchMultiWithSpec<Delete> batchMultiDelete() {
+        return MySQLMultiDelete.batch();
     }
 
 

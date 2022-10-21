@@ -31,12 +31,12 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         extends WithCteMultiDelete<C, SubQuery, WE, DT, DS, DP, DS, JT, JS, JP, WR, WA, Delete>
-        implements _MySQLMultiDelete, MySQLDelete._MultiDeleteClause<C, DT, DS, DP>
+        implements _MySQLMultiDelete, MySQLDelete._SimpleMultiDeleteClause<C, DT, DS, DP>
         , MySQLDelete._MultiDeleteFromClause<C, DT, DS, DP>, MySQLDelete._MultiDeleteUsingClause<C, DT, DS, DP>
         , MySQLQuery._IndexHintForJoinClause<C, DT>, _MySQLWithClause, MySQLDelete, Delete._DeleteSpec {
 
 
-    static <C> _WithAndMultiDeleteSpec<C> simple(@Nullable C criteria) {
+    static <C> _MultiWithSpec<C> simple(@Nullable C criteria) {
         return new SimpleDelete<>(criteria);
     }
 
@@ -75,7 +75,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final _MultiDeleteFromAliasClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers) {
+    public final _SimpleMultiDeleteFromAliasClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers) {
         this.hintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         return new FromTableAliasClause<>(this::fromAliasEnd);
@@ -397,7 +397,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
             MySQLDelete._MultiPartitionOnClause<C>,
             _DeleteSpec,
             MySQLDelete._MultiWhereAndSpec<C>>
-            implements MySQLDelete._WithAndMultiDeleteSpec<C>, MySQLDelete._MultiIndexHintJoinSpec<C>
+            implements _MultiWithSpec<C>, MySQLDelete._MultiIndexHintJoinSpec<C>
             , MySQLDelete._MultiWhereAndSpec<C> {
 
         private SimpleDelete(@Nullable C criteria) {
@@ -647,7 +647,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
 
 
     private static final class FromTableAliasClause<C, DT, DS, DP>
-            implements _MultiDeleteFromAliasClause<C, DT, DS, DP> {
+            implements _SimpleMultiDeleteFromAliasClause<C, DT, DS, DP> {
 
         private final Function<List<String>, _MultiDeleteUsingClause<C, DT, DS, DP>> function;
 

@@ -2,247 +2,94 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
-import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
-import io.army.criteria.impl.inner.mysql._MySQLWithClause;
+import io.army.criteria.mysql.MySQLCteBuilder;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLQuery;
-import io.army.criteria.mysql.MySQLUpdate;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
-import io.army.util.ArrayUtils;
-import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
  * <p>
+ * This class hold the implementations of MySQL single-table DELETE syntax
+ * </p>
+ * <p>
  * This class is base class of below:
  *     <ul>
- *         <li>{@link MySQLSingleDelete.SimpleDelete}</li>
- *         <li>{@link MySQLSingleDelete.BatchDelete}</li>
+ *         <li>{@link MySQLSingleDelete.SimpleDeleteStatement}</li>
+ *         <li>{@link MySQLSingleDelete.BatchDeleteStatement}</li>
  *     </ul>
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
-        extends WithCteSingleDelete<C, SubQuery, WE, WR, WA, Delete>
-        implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
-        , MySQLQuery._PartitionClause<C, PR>, _MySQLSingleDelete, MySQLDelete._MySQLSingleDeleteClause<C, DT>
-        , MySQLDelete._SingleDeleteFromClause<DT>, _MySQLWithClause, MySQLDelete, Delete._DeleteSpec {
+abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
+        extends SingleDelete.WithSingleDelete<I, Item, MySQLCteBuilder, WE, WR, WA, OR, LR>
+        implements MySQLDelete, _MySQLSingleDelete, Delete
+        , MySQLDelete._SingleDeleteClause<DT>
+        , MySQLQuery._PartitionClause<PR>
+        , Delete._SingleDeleteFromClause<DT> {
 
 
-    static <C> _SingleWithSpec<C> simple(@Nullable C criteria) {
-        return new SimpleDelete<>(criteria);
+    static <I extends Item> _SingleWithSpec<I> simple(Function<Delete, I> function) {
+        return new SimpleDeleteStatement<>(function);
     }
 
-    static <C> _BatchSingleWithSpec<C> batch(@Nullable C criteria) {
-        return new BatchDelete<>(criteria);
+    static <I extends Item> _BatchSingleWithSpec<I> batch(Function<Delete, I> function) {
+        return new BatchDeleteStatement<>(function);
     }
 
-    private boolean recursive;
-
-    private List<_Cte> cteList;
+    private final Function<Delete, I> function;
 
     private List<Hint> hintList;
 
-    private List<MySQLSyntax._MySQLModifier> modifierList;
+    private List<MySQLSyntax.Modifier> modifierList;
 
-    private SingleTableMeta<?> table;
+    private SingleTableMeta<?> deleteTable;
 
-    private String alias;
+    private String tableAlias;
 
     private List<String> partitionList;
 
-    private List<ArmySortItem> orderByList;
 
-    private long rowCount = -1L;
-
-
-    private MySQLSingleDelete(@Nullable C criteria) {
-        super(CriteriaContexts.primarySingleDmlContext(criteria));
+    private MySQLSingleDelete(Function<Delete, I> function) {
+        super(CriteriaContexts.primarySingleDmlContext());
+        this.function = function;
     }
 
+    @Override
+    public final DT deleteFrom(final @Nullable SingleTableMeta<?> table, final @Nullable String tableAlias) {
+        if (this.deleteTable != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        if (table == null || tableAlias == null) {
+            throw ContextStack.nullPointer(this.context);
+        }
+        this.deleteTable = table;
+        this.tableAlias = tableAlias;
+        return (DT) this;
+    }
 
     @Override
-    public final _SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers) {
+    public final _SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers) {
         this.hintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
+        this.modifierList = MySQLUtils.asModifierList(this.context, modifierList, MySQLUtils::deleteModifier);
         return this;
     }
 
     @Override
-    public final _SingleDeleteFromClause<DT> delete(Function<C, List<Hint>> hints, List<MySQLSyntax._MySQLModifier> modifiers) {
-        this.hintList = MySQLUtils.asHintList(this.context, hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
-        return this;
+    public final DT from(SingleTableMeta<?> table, StandardSyntax.WordAs wordAs, String alias) {
+        return this.deleteFrom(table, alias);
     }
 
     @Override
-    public final DT deleteFrom(SingleTableMeta<?> table, String alias) {
-        this.table = table;
-        this.alias = alias;
-        return (DT) this;
-    }
-
-    @Override
-    public final DT from(SingleTableMeta<?> table, String alias) {
-        this.table = table;
-        this.alias = alias;
-        return (DT) this;
-    }
-
-    @Override
-    public final _LeftParenStringQuadraOptionalSpec<C, PR> partition() {
+    public final _LeftParenStringQuadraOptionalSpec<PR> partition() {
         return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
-    }
-
-
-    @Override
-    public final OR orderBy(SortItem sortItem) {
-        this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
-        return (OR) this;
-    }
-
-    @Override
-    public final OR orderBy(SortItem sortItem1, SortItem sortItem2) {
-        this.orderByList = ArrayUtils.asUnmodifiableList(
-                (ArmySortItem) sortItem1,
-                (ArmySortItem) sortItem2
-        );
-        return (OR) this;
-    }
-
-    @Override
-    public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
-        this.orderByList = ArrayUtils.asUnmodifiableList(
-                (ArmySortItem) sortItem1,
-                (ArmySortItem) sortItem2,
-                (ArmySortItem) sortItem3
-        );
-        return (OR) this;
-    }
-
-    @Override
-    public final OR orderBy(Consumer<Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
-                .orderBy(consumer);
-    }
-
-    @Override
-    public final OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
-                .orderBy(consumer);
-    }
-
-    @Override
-    public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
-                .ifOrderBy(consumer);
-    }
-
-    @Override
-    public final OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
-                .ifOrderBy(consumer);
-    }
-
-    @Override
-    public final LR limit(long rowCount) {
-        this.rowCount = rowCount;
-        return (LR) this;
-    }
-
-    @Override
-    public final LR limit(Supplier<? extends Number> supplier) {
-        this.rowCount = MySQLUtils.asLimitParam(this.context, supplier.get());
-        return (LR) this;
-    }
-
-    @Override
-    public final LR limit(Function<C, ? extends Number> function) {
-        this.rowCount = MySQLUtils.asLimitParam(this.context, function.apply(this.criteria));
-        return (LR) this;
-    }
-
-    @Override
-    public final LR limit(Function<String, ?> function, String keyName) {
-        this.rowCount = MySQLUtils.asLimitParam(this.context, function.apply(keyName));
-        return (LR) this;
-    }
-
-    @Override
-    public final LR ifLimit(Supplier<? extends Number> supplier) {
-        this.rowCount = MySQLUtils.asIfLimitParam(this.context, supplier.get());
-        return (LR) this;
-    }
-
-    @Override
-    public final LR ifLimit(Function<C, ? extends Number> function) {
-        this.rowCount = MySQLUtils.asIfLimitParam(this.context, function.apply(this.criteria));
-        return (LR) this;
-    }
-
-    @Override
-    public final LR ifLimit(Function<String, ?> function, String keyName) {
-        this.rowCount = MySQLUtils.asIfLimitParam(this.context, function.apply(keyName));
-        return (LR) this;
-    }
-
-    /*################################## blow _MySQLSingleDelete method ##################################*/
-
-    @Override
-    public final boolean isRecursive() {
-        return this.recursive;
-    }
-
-    @Override
-    public final List<_Cte> cteList() {
-        return this.cteList;
-    }
-
-    @Override
-    public final List<Hint> hintList() {
-        return this.hintList;
-    }
-
-    @Override
-    public final List<MySQLSyntax._MySQLModifier> modifierList() {
-        return this.modifierList;
-    }
-
-    @Override
-    public final SingleTableMeta<?> table() {
-        final SingleTableMeta<?> table = this.table;
-        assert table != null;
-        return table;
-    }
-
-    @Override
-    public final String tableAlias() {
-        return this.alias;
-    }
-
-    @Override
-    public final List<String> partitionList() {
-        return this.partitionList;
-    }
-
-
-    @Override
-    public final List<? extends SortItem> orderByList() {
-        return this.orderByList;
-    }
-
-    @Override
-    public final long rowCount() {
-        return this.rowCount;
     }
 
     @Override
@@ -256,150 +103,273 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
         return s;
     }
 
+    @Override
+    public final List<Hint> hintList() {
+        final List<Hint> list = this.hintList;
+        if (list == null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return list;
+    }
 
     @Override
-    final void doWithCte(boolean recursive, List<_Cte> cteList) {
-        this.recursive = recursive;
-        this.cteList = cteList;
+    public final List<MySQLs.Modifier> modifierList() {
+        final List<MySQLs.Modifier> list = this.modifierList;
+        if (list == null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return list;
+    }
+
+    @Override
+    public final SingleTableMeta<?> table() {
+        final SingleTableMeta<?> deleteTable = this.deleteTable;
+        if (deleteTable == null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return deleteTable;
+    }
+
+    @Override
+    public final String tableAlias() {
+        final String alias = this.tableAlias;
+        if (alias == null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return alias;
     }
 
 
     @Override
-    final void onAsDelete() {
-        if (this.cteList == null) {
-            this.cteList = Collections.emptyList();
+    public final List<String> partitionList() {
+        final List<String> list = this.partitionList;
+        if (list == null) {
+            throw ContextStack.castCriteriaApi(this.context);
         }
+        return list;
+    }
+
+    @Override
+    final I onAsDelete() {
         if (this.hintList == null) {
             this.hintList = Collections.emptyList();
         }
         if (this.modifierList == null) {
             this.modifierList = Collections.emptyList();
         }
-        if (this.table == null || this.alias == null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-
         if (this.partitionList == null) {
             this.partitionList = Collections.emptyList();
         }
-        if (this.orderByList == null) {
-            this.orderByList = Collections.emptyList();
+        if (this instanceof BatchDeleteStatement && ((BatchDeleteStatement<I>) this).paramList == null) {
+            throw ContextStack.castCriteriaApi(this.context);
         }
-        if (this instanceof BatchDelete && ((BatchDelete<C>) this).paramList == null) {
-            throw _Exceptions.batchParamEmpty();
-        }
-
-
+        return this.function.apply(this);
     }
 
     @Override
     final void onClear() {
-        this.cteList = null;
         this.hintList = null;
         this.modifierList = null;
         this.partitionList = null;
-
-        this.orderByList = null;
-        this.rowCount = -1L;
-
-        if (this instanceof BatchDelete) {
-            ((BatchDelete<C>) this).paramList = null;
+        if (this instanceof BatchDeleteStatement) {
+            ((BatchDeleteStatement<I>) this).paramList = null;
         }
+
     }
 
-    /**
-     * @see #partition()
-     */
-    private PR partitionEnd(List<String> partitionList) {
-        if (this.partitionList == null) {
+    @Override
+    final MySQLCteBuilder createCteBuilder(boolean recursive) {
+        return MySQLSupports.mySQLCteBuilder(recursive, this.context);
+    }
+
+
+    private PR partitionEnd(final List<String> list) {
+        if (this.partitionList != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        this.partitionList = partitionList;
+        this.partitionList = list;
         return (PR) this;
     }
 
 
-    private OR orderByEnd(List<ArmySortItem> itemList) {
-        if (this.orderByList != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        this.orderByList = itemList;
-        return (OR) this;
-    }
+    private static final class SingleComma<I extends Item> implements MySQLDelete._SingleComma<I> {
 
+        private final boolean recursive;
 
-    /*################################## blow inner class ##################################*/
+        private final SimpleDeleteStatement<I> statement;
 
-    private static final class SimpleDelete<C> extends MySQLSingleDelete<
-            C,
-            MySQLDelete._SingleDelete57Clause<C>,
-            MySQLDelete._SinglePartitionSpec<C>,
-            MySQLDelete._SingleWhereClause<C>,
-            MySQLDelete._OrderBySpec<C>,
-            MySQLDelete._SingleWhereAndSpec<C>,
-            MySQLDelete._LimitSpec<C>,
-            Delete._DeleteSpec>
-            implements _SingleWithSpec<C>, MySQLDelete._SinglePartitionSpec<C>
-            , MySQLDelete._SingleWhereAndSpec<C> {
+        private final Function<String, MySQLQuery._StaticCteLeftParenSpec<MySQLDelete._SingleComma<I>>> function;
 
-        private SimpleDelete(@Nullable C criteria) {
-            super(criteria);
-
+        private SingleComma(boolean recursive, SimpleDeleteStatement<I> statement) {
+            this.recursive = recursive;
+            this.statement = statement;
+            this.function = MySQLQueries.complexCte(statement.context, this);
         }
 
+        @Override
+        public MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>> comma(String name) {
+            return this.function.apply(name);
+        }
 
-    }//SimpleDelete
+        @Override
+        public _SinglePartitionSpec<I> deleteFrom(SingleTableMeta<?> table, String tableAlias) {
+            return this.endStaticWithClause().deleteFrom(table, tableAlias);
+        }
 
-    private static final class BatchDelete<C> extends MySQLSingleDelete<
-            C,
-            MySQLDelete._BatchSingleDeleteClause<C>,
-            MySQLDelete._BatchSinglePartitionSpec<C>,
-            MySQLDelete._BatchSingleWhereClause<C>,
-            MySQLDelete._BatchOrderBySpec<C>,
-            MySQLDelete._BatchSingleWhereAndSpec<C>,
-            MySQLDelete._BatchLimitSpec<C>,
-            Statement._BatchParamClause<C, Delete._DeleteSpec>>
-            implements _BatchSingleWithSpec<C>, MySQLDelete._BatchSinglePartitionSpec<C>
-            , MySQLDelete._BatchSingleWhereAndSpec<C>, _BatchDml {
+        @Override
+        public _SingleDeleteFromClause<_SinglePartitionSpec<I>> delete(Supplier<List<Hint>> hints
+                , List<MySQLSyntax.Modifier> modifiers) {
+            return this.endStaticWithClause().delete(hints, modifiers);
+        }
+
+        private SimpleDeleteStatement<I> endStaticWithClause() {
+            final SimpleDeleteStatement<I> statement = this.statement;
+            statement.endStaticWithClause(this.recursive);
+            return statement;
+        }
+
+
+    }//SingleComma
+
+
+    private static final class SimpleDeleteStatement<I extends Item> extends MySQLSingleDelete<
+            I,
+            MySQLDelete._SimpleSingleDeleteClause<I>,
+            MySQLDelete._SinglePartitionSpec<I>,
+            MySQLDelete._SingleWhereClause<I>,
+            MySQLDelete._OrderBySpec<I>,
+            MySQLDelete._SingleWhereAndSpec<I>,
+            MySQLDelete._LimitSpec<I>,
+            Statement._DmlDeleteSpec<I>>
+            implements MySQLDelete._SingleWithSpec<I>
+            , MySQLDelete._SinglePartitionSpec<I>
+            , MySQLDelete._SingleWhereAndSpec<I> {
+
+        private SimpleDeleteStatement(Function<Delete, I> function) {
+            super(function);
+        }
+
+        @Override
+        public MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>> with(String name) {
+            final boolean recursive = false;
+            this.context.onBeforeWithClause(recursive);
+            return new SingleComma<>(recursive, this).function.apply(name);
+        }
+
+        @Override
+        public MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>> withRecursive(String name) {
+            final boolean recursive = true;
+            this.context.onBeforeWithClause(recursive);
+            return new SingleComma<>(recursive, this).function.apply(name);
+        }
+
+
+    }//SimpleDeleteStatement
+
+
+    private static final class BatchSingleComma<I extends Item> implements _BatchSingleComma<I> {
+
+        private final boolean recursive;
+
+        private final BatchDeleteStatement<I> statement;
+
+        private final Function<String, MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>> function;
+
+        private BatchSingleComma(boolean recursive, BatchDeleteStatement<I> statement) {
+            this.recursive = recursive;
+            this.statement = statement;
+            this.function = MySQLQueries.complexCte(statement.context, this);
+        }
+
+        @Override
+        public MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>> comma(String name) {
+            return this.function.apply(name);
+        }
+
+        @Override
+        public _BatchSinglePartitionSpec<I> deleteFrom(SingleTableMeta<?> table, String tableAlias) {
+            return this.endStaticWithClause().deleteFrom(table, tableAlias);
+        }
+
+        @Override
+        public _SingleDeleteFromClause<_BatchSinglePartitionSpec<I>> delete(Supplier<List<Hint>> hints
+                , List<MySQLSyntax.Modifier> modifiers) {
+            return this.endStaticWithClause().delete(hints, modifiers);
+        }
+
+        private BatchDeleteStatement<I> endStaticWithClause() {
+            final BatchDeleteStatement<I> statement = this.statement;
+            statement.endStaticWithClause(this.recursive);
+            return statement;
+        }
+
+
+    }//BatchSingleComma
+
+
+    private static final class BatchDeleteStatement<I extends Item> extends MySQLSingleDelete<
+            I,
+            MySQLDelete._BatchSingleDeleteClause<I>,
+            MySQLDelete._BatchSinglePartitionSpec<I>,
+            MySQLDelete._BatchSingleWhereClause<I>,
+            MySQLDelete._BatchOrderBySpec<I>,
+            MySQLDelete._BatchSingleWhereAndSpec<I>,
+            MySQLDelete._BatchLimitSpec<I>,
+            Statement._BatchParamClause<_DmlDeleteSpec<I>>>
+            implements MySQLDelete._BatchSingleWithSpec<I>
+            , MySQLDelete._BatchSinglePartitionSpec<I>
+            , MySQLDelete._BatchSingleWhereAndSpec<I>
+            , _BatchDml {
 
         private List<?> paramList;
 
-        private BatchDelete(@Nullable C criteria) {
-            super(criteria);
-
+        private BatchDeleteStatement(Function<Delete, I> function) {
+            super(function);
         }
 
         @Override
-        public <P> _DeleteSpec paramList(List<P> paramList) {
-            this.paramList = MySQLUtils.paramList(paramList);
+        public MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>> with(String name) {
+            final boolean recursive = false;
+            this.context.onBeforeWithClause(recursive);
+            return new BatchSingleComma<>(recursive, this).function.apply(name);
+        }
+
+        @Override
+        public MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>> withRecursive(String name) {
+            final boolean recursive = true;
+            this.context.onBeforeWithClause(recursive);
+            return new BatchSingleComma<>(recursive, this).function.apply(name);
+        }
+
+        @Override
+        public <P> _DmlDeleteSpec<I> paramList(List<P> paramList) {
+            this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
         }
 
         @Override
-        public <P> _DeleteSpec paramList(Supplier<List<P>> supplier) {
-            this.paramList = MySQLUtils.paramList(supplier.get());
+        public <P> _DmlDeleteSpec<I> paramList(Supplier<List<P>> supplier) {
+            this.paramList = CriteriaUtils.paramList(this.context, supplier.get());
             return this;
         }
 
         @Override
-        public <P> _DeleteSpec paramList(Function<C, List<P>> function) {
-            this.paramList = MySQLUtils.paramList(function.apply(this.criteria));
-            return this;
-        }
-
-        @Override
-        public _DeleteSpec paramList(Function<String, ?> function, String keyName) {
-            this.paramList = MySQLUtils.paramList((List<?>) function.apply(keyName));
+        public _DmlDeleteSpec<I> paramList(Function<String, ?> function, String keyName) {
+            this.paramList = CriteriaUtils.paramList(this.context, (List<?>) function.apply(keyName));
             return this;
         }
 
         @Override
         public List<?> paramList() {
-            return this.paramList;
+            final List<?> list = this.paramList;
+            if (list == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return list;
         }
 
 
-    }//BatchDelete
+    }//BatchDeleteStatement
 
 
 }
