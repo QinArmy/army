@@ -78,13 +78,13 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
         return MySQLSingleUpdate.batch(SQLs::_identity);
     }
 
-    public static MySQLUpdate._MultiWithSpec multiUpdate() {
-        return MySQLMultiUpdate.simple();
+    public static MySQLUpdate._MultiWithSpec<Update> multiUpdate() {
+        return MySQLMultiUpdate.simple(SQLs::_identity);
     }
 
 
-    public static MySQLUpdate._BatchMultiWithSpec batchMultiUpdate() {
-        return MySQLMultiUpdate.batch();
+    public static MySQLUpdate._BatchMultiWithSpec<Update> batchMultiUpdate() {
+        return MySQLMultiUpdate.batch(SQLs::_identity);
     }
 
     public static MySQLDelete._SingleWithSpec<Delete> singleDelete() {
