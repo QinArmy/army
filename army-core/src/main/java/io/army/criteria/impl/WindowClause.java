@@ -25,13 +25,15 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class WindowClause<I extends Item, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA extends Item, MB extends Item, R>
+abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
         extends OrderByClause<OR>
         implements _Window
         , Statement._StaticAsClaus<AR>, Window._LeftParenNameClause<LR>, Window._PartitionByExpClause<PR>
-        , Statement._OrderByClause<OR>, Window._FrameUnitsClause<FR, FC>, Window._FrameBetweenClause<BR, BC>
-        , Window._FrameExpBoundClause<MA>, Window._FrameBetweenAndClause<FC, NC>, Window._FrameNonExpBoundClause<MB>
-        , Statement._RightParenClause<R>, CriteriaContextSpec, Window {
+        , Statement._OrderByClause<OR>, Window._FrameUnitExpClause<FE>, Window._FrameUnitNoExpClause<FB>
+        , Window._FrameBetweenExpClause<BE>, Statement._StaticBetweenClause<BN>
+        , Window._FrameBetweenAndExpClause<FE>, Statement._StaticAndClause<NN>
+        , Window._FrameExpBoundClause, Window._FrameNonExpBoundClause
+        , Statement._RightParenClause<I>, CriteriaContextSpec, Window {
 
 
     static <I extends Item> Window._SimpleAsClause<I> namedWindow(String windowName, CriteriaContext context
@@ -53,7 +55,7 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FR, FC, BR, BC, NC, 
 
     private final String windowName;
 
-    private final Function<_Window, R> function;
+    private final Function<_Window, I> function;
 
     final CriteriaContext context;
 
@@ -83,7 +85,7 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FR, FC, BR, BC, NC, 
      * Constructor for named {@link  Window}
      * </p>
      */
-    WindowClause(String windowName, CriteriaContext context, Function<_Window, R> function) {
+    WindowClause(String windowName, CriteriaContext context, Function<_Window, I> function) {
         super(context);
         assert _StringUtils.hasText(windowName);
         this.windowName = windowName;
@@ -97,7 +99,7 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FR, FC, BR, BC, NC, 
      * Constructor for anonymous {@link  Window}
      * </p>
      */
-    WindowClause(CriteriaContext context, Function<_Window, R> function) {
+    WindowClause(CriteriaContext context, Function<_Window, I> function) {
         super(context);
         this.windowName = null;
         this.function = function;
@@ -182,21 +184,21 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FR, FC, BR, BC, NC, 
     }
 
     @Override
-    public final FR rows() {
+    public final FB rows() {
         this.frameUnits = FrameUnits.ROWS;
         this.betweenExtent = Boolean.TRUE;
-        return (FR) this;
+        return (FB) this;
     }
 
     @Override
-    public final FR range() {
+    public final FB range() {
         this.frameUnits = FrameUnits.RANGE;
         this.betweenExtent = Boolean.TRUE;
-        return (FR) this;
+        return (FB) this;
     }
 
     @Override
-    public final FR ifRows(BooleanSupplier predicate) {
+    public final FB ifRows(BooleanSupplier predicate) {
         if (predicate.getAsBoolean()) {
             this.frameUnits = FrameUnits.ROWS;
             this.betweenExtent = Boolean.FALSE;
@@ -204,11 +206,11 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FR, FC, BR, BC, NC, 
             this.frameUnits = null;
             this.betweenExtent = null;
         }
-        return (FR) this;
+        return (FB) this;
     }
 
     @Override
-    public final FR ifRange(BooleanSupplier predicate) {
+    public final FB ifRange(BooleanSupplier predicate) {
         if (predicate.getAsBoolean()) {
             this.frameUnits = FrameUnits.RANGE;
             this.betweenExtent = Boolean.FALSE;
@@ -216,160 +218,160 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FR, FC, BR, BC, NC, 
             this.frameUnits = null;
             this.betweenExtent = null;
         }
-        return (FR) this;
+        return (FB) this;
     }
 
     @Override
-    public final FC rows(final Expression expression) {
+    public final FE rows(final Expression expression) {
         if (!(expression instanceof ArmyExpression)) {
             throw ContextStack.nonArmyExp(this.context);
         }
         this.frameUnits = FrameUnits.ROWS;
         this.betweenExtent = Boolean.FALSE;
         this.frameStartExp = (ArmyExpression) expression;
-        return (FC) this;
+        return (FE) this;
     }
 
     @Override
-    public final FC rows(Supplier<Expression> supplier) {
+    public final FE rows(Supplier<Expression> supplier) {
         return this.rows(supplier.get());
     }
 
     @Override
-    public final <E> FC rows(Function<E, Expression> valueOperator, E value) {
+    public final <E> FE rows(Function<E, Expression> valueOperator, E value) {
         return this.rows(valueOperator.apply(value));
     }
 
     @Override
-    public final <E> FC rows(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+    public final <E> FE rows(Function<E, Expression> valueOperator, Supplier<E> supplier) {
         return this.rows(valueOperator.apply(supplier.get()));
     }
 
     @Override
-    public final FC rows(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+    public final FE rows(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
         return this.rows(valueOperator.apply(function.apply(keyName)));
     }
 
     @Override
-    public final FC range(final Expression expression) {
+    public final FE range(final Expression expression) {
         if (!(expression instanceof ArmyExpression)) {
             throw ContextStack.nonArmyExp(this.context);
         }
         this.frameUnits = FrameUnits.RANGE;
         this.betweenExtent = Boolean.FALSE;
         this.frameStartExp = (ArmyExpression) expression;
-        return (FC) this;
+        return (FE) this;
     }
 
     @Override
-    public final FC range(Supplier<Expression> supplier) {
+    public final FE range(Supplier<Expression> supplier) {
         return this.range(supplier.get());
     }
 
     @Override
-    public final <E> FC range(Function<E, Expression> valueOperator, E value) {
+    public final <E> FE range(Function<E, Expression> valueOperator, E value) {
         return this.range(valueOperator.apply(value));
     }
 
     @Override
-    public final <E> FC range(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+    public final <E> FE range(Function<E, Expression> valueOperator, Supplier<E> supplier) {
         return this.range(valueOperator.apply(supplier.get()));
     }
 
     @Override
-    public final FC range(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+    public final FE range(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
         return this.range(valueOperator.apply(function.apply(keyName)));
     }
 
     @Override
-    public final FC ifRows(Supplier<Expression> supplier) {
+    public final FE ifRows(Supplier<Expression> supplier) {
         final Expression expression;
         expression = supplier.get();
         if (expression != null) {
             this.rows(expression);
         }
-        return (FC) this;
+        return (FE) this;
     }
 
     @Override
-    public final <E> FC ifRows(Function<E, Expression> valueOperator, @Nullable E value) {
+    public final <E> FE ifRows(Function<E, Expression> valueOperator, @Nullable E value) {
         if (value != null) {
             this.rows(valueOperator.apply(value));
         }
-        return (FC) this;
+        return (FE) this;
     }
 
     @Override
-    public final <E> FC ifRows(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+    public final <E> FE ifRows(Function<E, Expression> valueOperator, Supplier<E> supplier) {
         final E value;
         value = supplier.get();
         if (value != null) {
             this.rows(valueOperator.apply(value));
         }
-        return (FC) this;
+        return (FE) this;
     }
 
     @Override
-    public final FC ifRows(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+    public final FE ifRows(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
             this.rows(valueOperator.apply(value));
         }
-        return (FC) this;
+        return (FE) this;
     }
 
     @Override
-    public final FC ifRange(Supplier<Expression> supplier) {
+    public final FE ifRange(Supplier<Expression> supplier) {
         final Expression expression;
         expression = supplier.get();
         if (expression != null) {
             this.range(expression);
         }
-        return (FC) this;
+        return (FE) this;
     }
 
     @Override
-    public final <E> FC ifRange(Function<E, Expression> valueOperator, @Nullable E value) {
+    public final <E> FE ifRange(Function<E, Expression> valueOperator, @Nullable E value) {
         if (value != null) {
             this.range(valueOperator.apply(value));
         }
-        return (FC) this;
+        return (FE) this;
     }
 
     @Override
-    public final <E> FC ifRange(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+    public final <E> FE ifRange(Function<E, Expression> valueOperator, Supplier<E> supplier) {
         final E value;
         value = supplier.get();
         if (value != null) {
             this.range(valueOperator.apply(value));
         }
-        return (FC) this;
+        return (FE) this;
     }
 
     @Override
-    public final FC ifRange(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+    public final FE ifRange(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
             this.range(valueOperator.apply(value));
         }
-        return (FC) this;
+        return (FE) this;
     }
 
     @Override
-    public final BR between() {
+    public final BN between() {
         if (this.frameUnits != null) {
             if (this.betweenExtent != Boolean.TRUE) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.frameStartExp = null;
         }
-        return (BR) this;
+        return (BN) this;
     }
 
     @Override
-    public final BC between(final Expression expression) {
+    public final BE between(final Expression expression) {
         if (this.frameUnits != null) {
             if (this.betweenExtent != Boolean.TRUE) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -379,42 +381,42 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FR, FC, BR, BC, NC, 
             }
             this.frameStartExp = (ArmyExpression) expression;
         }
-        return (BC) this;
+        return (BE) this;
     }
 
     @Override
-    public final BC between(Supplier<Expression> supplier) {
+    public final BE between(Supplier<Expression> supplier) {
         return this.between(supplier.get());
     }
 
     @Override
-    public final <E> BC between(Function<E, Expression> valueOperator, E value) {
+    public final <E> BE between(Function<E, Expression> valueOperator, E value) {
         return this.between(valueOperator.apply(value));
     }
 
     @Override
-    public final <E> BC between(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+    public final <E> BE between(Function<E, Expression> valueOperator, Supplier<E> supplier) {
         return this.between(valueOperator.apply(supplier.get()));
     }
 
     @Override
-    public final BC between(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+    public final BE between(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
         return this.between(valueOperator.apply(function.apply(keyName)));
     }
 
     @Override
-    public final FC and() {
+    public final NN and() {
         if (this.frameUnits != null) {
             if (this.betweenExtent != Boolean.TRUE) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.frameEndExp = null;
         }
-        return (FC) this;
+        return (NN) this;
     }
 
     @Override
-    public final NC and(final Expression expression) {
+    public final FE and(final Expression expression) {
         if (this.frameUnits != null) {
             if (this.betweenExtent != Boolean.TRUE) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -424,31 +426,31 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FR, FC, BR, BC, NC, 
             }
             this.frameEndExp = (ArmyExpression) expression;
         }
-        return (NC) this;
+        return (FE) this;
     }
 
     @Override
-    public final NC and(Supplier<Expression> supplier) {
+    public final FE and(Supplier<Expression> supplier) {
         return this.and(supplier.get());
     }
 
     @Override
-    public final <E> NC and(Function<E, Expression> valueOperator, E value) {
+    public final <E> FE and(Function<E, Expression> valueOperator, E value) {
         return this.and(valueOperator.apply(value));
     }
 
     @Override
-    public final <E> NC and(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+    public final <E> FE and(Function<E, Expression> valueOperator, Supplier<E> supplier) {
         return this.and(valueOperator.apply(supplier.get()));
     }
 
     @Override
-    public final NC and(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+    public final FE and(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
         return this.and(valueOperator.apply(function.apply(keyName)));
     }
 
     @Override
-    public final R rightParen() {
+    public final I rightParen() {
         _Assert.nonPrepared(this.prepared);
         this.prepared = Boolean.TRUE;
         return this.function.apply(this);
@@ -691,20 +693,17 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FR, FC, BR, BC, NC, 
 
     private static class SimpleWindow<I extends Item> extends WindowClause<
             I,
-            _SimpleLeftParenClause<I>,      //AR
-            _SimplePartitionBySpec<I>,        //LR
-            _SimpleOrderBySpec<I>,            //PR,
-            _SimpleFrameUnitsSpec<I>,         //OR
-            _SimpleFrameBetweenClause<I>,     //FR
-            _SimpleFrameEndNonExpBoundClause<I>, //FC
-            _SimpleFrameNonExpBoundClause<I>, //BR
-            _SimpleFrameExpBoundClause<I>,    //BC
-            _SimpleFrameEndExpBoundClause<I>,    //NC
-            Item,                                //MA
-            Item,                                //MB
-            I>                                               //R
+            _SimpleLeftParenClause<I>,
+            _SimplePartitionBySpec<I>,
+            _SimpleOrderBySpec<I>,
+            _SimpleFrameUnitsSpec<I>,
+            _SimpleFrameBetweenSpec<I>,
+            _SimpleFrameEndExpBoundClause<I>,
+            _SimpleFrameNonExpBoundClause<I>,
+            _SimpleFrameExpBoundClause<I>,
+            _SimpleFrameEndNonExpBoundClause<I>>
             implements Window._SimpleAsClause<I>, Window._SimpleLeftParenClause<I>
-            , Window._SimplePartitionBySpec<I>, Window._SimpleFrameBetweenClause<I>,
+            , Window._SimplePartitionBySpec<I>, _SimpleFrameBetweenSpec<I>,
             Window._SimpleFrameEndNonExpBoundClause<I>, Window._SimpleFrameNonExpBoundClause<I>
             , Window._SimpleFrameExpBoundClause<I>, Window._SimpleFrameEndExpBoundClause<I>
             , Window._SimpleFrameBetweenAndClause<I> {

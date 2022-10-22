@@ -24,6 +24,10 @@ public interface PostgreQuery extends Query, DialectStatement {
 
     }
 
+    interface _PostgreOrderByClause<OR> extends _OrderByClause<OR> {
+        //TODO add dialect method
+    }
+
     interface _PostgreLockClause<R> extends _MinLockOptionClause<R> {
 
         R forNoKeyUpdate();
@@ -215,6 +219,190 @@ public interface PostgreQuery extends Query, DialectStatement {
 
     }
 
+
+    interface _FrameExclusionClause<R> {
+
+        R excludeCurrentRow();
+
+        R excludeGroup();
+
+        R excludeTies();
+
+        R excludeNoOthers();
+
+        R ifExcludeCurrentRow(BooleanSupplier supplier;
+
+        R ifExcludeGroup(BooleanSupplier supplier);
+
+        R ifExcludeTies(BooleanSupplier supplier);
+
+        R ifExcludeNoOthers(BooleanSupplier supplier);
+
+    }
+
+
+    interface _RepeatableClause<RR> {
+
+        RR repeatable(Expression seed);
+
+        RR repeatable(Supplier<Expression> supplier);
+
+        RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Number seedValue);
+
+        RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Supplier<Number> supplier);
+
+        RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        RR ifRepeatable(Supplier<Expression> supplier);
+
+        RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator, @Nullable Number seedValue);
+
+        RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator, Supplier<Number> supplier);
+
+        RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+
+    }
+
+    interface _TableSampleClause<TR> {
+
+        TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer);
+
+        <T> TR tableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
+                , BiFunction<MappingType, T, Expression> valueOperator, T argument);
+
+        <T> TR tableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
+                , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier);
+
+        TR tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
+                , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        TR ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer);
+
+        <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
+                , BiFunction<MappingType, T, Expression> valueOperator, T argument);
+
+        <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
+                , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier);
+
+        TR ifTableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
+                , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+
+    }
+
+    interface _FrameExclusionSpec<I extends Item>
+            extends _FrameExclusionClause<_RightParenClause<I>>, _RightParenClause<I> {
+
+    }
+
+    interface _PostgreFrameEndNonExpBoundClause<I extends Item> extends Window._FrameNonExpBoundClause {
+
+        @Override
+        _FrameExclusionSpec<I> currentRow();
+
+        @Override
+        _FrameExclusionSpec<I> unboundedPreceding();
+
+        @Override
+        _FrameExclusionSpec<I> unboundedFollowing();
+    }
+
+    interface _PostgreFrameEndExpBoundClause<I extends Item> extends Window._FrameExpBoundClause {
+
+        @Override
+        _FrameExclusionSpec<I> preceding();
+
+        @Override
+        _FrameExclusionSpec<I> following();
+    }
+
+    interface _PostgreFrameBetweenAndClause<I extends Item>
+            extends Window._FrameBetweenAndExpClause<_PostgreFrameEndExpBoundClause<I>>
+            , _StaticAndClause<_PostgreFrameEndNonExpBoundClause<I>> {
+
+    }
+
+
+    interface _PostgreFrameStartNonExpBoundClause<I extends Item> extends Window._FrameNonExpBoundClause {
+
+        @Override
+        _PostgreFrameBetweenAndClause<I> currentRow();
+
+        @Override
+        _PostgreFrameBetweenAndClause<I> unboundedPreceding();
+
+        @Override
+        _PostgreFrameBetweenAndClause<I> unboundedFollowing();
+    }
+
+    interface _PostgreFrameStartExpBoundClause<I extends Item> extends Window._FrameExpBoundClause {
+
+        @Override
+        _PostgreFrameBetweenAndClause<I> preceding();
+
+        @Override
+        _PostgreFrameBetweenAndClause<I> following();
+
+    }
+
+    interface _PostgreFrameBetweenSpec<I extends Item>
+            extends Window._FrameBetweenExpClause<_PostgreFrameStartExpBoundClause<I>>
+            , _StaticBetweenClause<_PostgreFrameStartNonExpBoundClause<I>>
+            , _PostgreFrameStartNonExpBoundClause<I> {
+
+    }
+
+    interface _PostgreFrameUnitSpec<I extends Item>
+            extends Window._FrameUnitExpClause<_PostgreFrameEndExpBoundClause<I>>
+            , Window._FrameUnitNoExpClause<_PostgreFrameBetweenSpec<I>>
+            , Statement._RightParenClause<I> {
+
+        _PostgreFrameBetweenSpec<I> groups();
+
+        _PostgreFrameBetweenSpec<I> ifGroups(BooleanSupplier predicate);
+
+        _PostgreFrameEndExpBoundClause<I> groups(Expression expression);
+
+        _PostgreFrameEndExpBoundClause<I> groups(Supplier<Expression> supplier);
+
+        <E> _PostgreFrameEndExpBoundClause<I> groups(Function<E, Expression> valueOperator, @Nullable E value);
+
+        <E> _PostgreFrameEndExpBoundClause<I> groups(Function<E, Expression> valueOperator, Supplier<E> supplier);
+
+        _PostgreFrameEndExpBoundClause<I> groups(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        _PostgreFrameEndExpBoundClause<I> ifGroups(Supplier<Expression> supplier);
+
+        <E> _PostgreFrameEndExpBoundClause<I> ifGroups(Function<E, Expression> valueOperator, @Nullable E value);
+
+        <E> _PostgreFrameEndExpBoundClause<I> ifGroups(Function<E, Expression> valueOperator, Supplier<E> supplier);
+
+        _PostgreFrameEndExpBoundClause<I> ifGroups(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+
+    }
+
+    interface _WindowOrderBySpec<I extends Item> extends _PostgreOrderByClause<_PostgreFrameUnitSpec<I>>
+            , _PostgreFrameUnitSpec<I> {
+
+    }
+
+    interface _WindowPartitionBySpec<I extends Item> extends Window._PartitionByExpClause<_WindowOrderBySpec<I>>
+            , _WindowOrderBySpec<I> {
+
+    }
+
+    interface _WindowLeftParenClause<I extends Item>
+            extends Window._LeftParenNameClause<_WindowPartitionBySpec<I>> {
+
+    }
+
+    interface _WindowAsClause<I extends Item> extends Statement._StaticAsClaus<_WindowLeftParenClause<I>> {
+
+    }
+
+
     interface _UnionSpec<I extends Item> extends _QueryUnionClause<_UnionAndQuerySpec<I>>
             , _QueryIntersectClause<_UnionAndQuerySpec<I>>
             , _QueryExceptClause<_UnionAndQuerySpec<I>>
@@ -280,13 +468,13 @@ public interface PostgreQuery extends Query, DialectStatement {
                 , String keyName, FetchRow row);
     }
 
-    interface _UnionOrderBySpec<I extends Item> extends Statement._OrderByClause<_UnionLimitSpec<I>>
+    interface _UnionOrderBySpec<I extends Item> extends _PostgreOrderByClause<_UnionLimitSpec<I>>
             , _UnionLimitSpec<I>, _UnionSpec<I> {
 
     }
 
 
-    interface _LockWaitOptionSpec<I extends Item> extends _MinLockWaitOptionClause<_LockSpec<I>>, _LockSpec<I> {
+    interface _LockWaitOptionSpec<I extends Item> extends _MinLockWaitOptionClause<_LockSpec<I>>, _LockSpec<I> {//TODO validate multi-lock clause
 
 
     }
@@ -347,19 +535,31 @@ public interface PostgreQuery extends Query, DialectStatement {
     }
 
 
-    interface _OrderBySpec<I extends Item> extends _OrderByClause<_LimitSpec<I>>, _LimitSpec<I>, _UnionSpec<I> {
+    interface _OrderBySpec<I extends Item> extends _PostgreOrderByClause<_LimitSpec<I>>, _LimitSpec<I>, _UnionSpec<I> {
+
+    }
+
+    interface _WindowCommaSpec<I extends Item>
+            extends Window._StaticWindowCommaClause<_WindowAsClause<_WindowCommaSpec<I>>>
+            , _OrderBySpec<I> {
+
+    }
+
+    interface _WindowSpec<I extends Item> extends Window._DynamicWindowClause<PostgreWindows, _OrderBySpec<I>>
+            , Window._StaticWindowClause<_WindowAsClause<_WindowCommaSpec<I>>>
+            , _OrderBySpec<I> {
 
     }
 
 
-    interface _HavingSpec<I extends Item> extends _HavingClause<_OrderBySpec<I>>, _OrderBySpec<I> {
+    interface _HavingSpec<I extends Item> extends _HavingClause<_WindowSpec<I>>, _WindowSpec<I> {
 
     }
 
 
     interface _GroupBySpec<I extends Item> extends _GroupByClause<_HavingSpec<I>>
-            , _OrderBySpec<I> {
-
+            , _WindowSpec<I> {
+        //TODO add dialect method
     }
 
     interface _WhereAndSpec<I extends Item> extends _WhereAndClause<_WhereAndSpec<I>>, _GroupBySpec<I> {
@@ -371,55 +571,6 @@ public interface PostgreQuery extends Query, DialectStatement {
 
     }
 
-    interface _RepeatableClause<RR> {
-
-        RR repeatable(Expression seed);
-
-        RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Number seedValue);
-
-        RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Supplier<Number> supplier);
-
-        RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        RR repeatable(Supplier<Expression> supplier);
-
-        RR ifRepeatable(Supplier<Expression> supplier);
-
-        RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator, @Nullable Number seedValue);
-
-        RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator, Supplier<Number> supplier);
-
-        RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-
-    }
-
-    interface _TableSampleClause<TR> {
-
-        TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer);
-
-        <T> TR tableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-                , BiFunction<MappingType, T, Expression> valueOperator, T argument);
-
-        <T> TR tableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-                , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier);
-
-        TR tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
-                , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        TR ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer);
-
-        <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-                , BiFunction<MappingType, T, Expression> valueOperator, T argument);
-
-        <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-                , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier);
-
-        TR ifTableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
-                , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-
-    }
 
     interface _RepeatableOnClause<I extends Item> extends _RepeatableClause<_OnClause<_JoinSpec<I>>>
             , _OnClause<_JoinSpec<I>> {
@@ -432,6 +583,14 @@ public interface PostgreQuery extends Query, DialectStatement {
     }
 
 
+    interface _JoinSpec<I extends Item> extends _JoinModifierClause<_TableSampleOnSpec<I>, _OnClause<_JoinSpec<I>>>
+            , _CrossJoinModifierClause<_TableSampleJoinSpec<I>, _JoinSpec<I>>
+            , _JoinCteClause<_OnClause<_JoinSpec<I>>>, _CrossJoinCteClause<_JoinSpec<I>>
+            , _WhereSpec<I> {
+        //TODO add dialect function tabular
+
+    }
+
     interface _RepeatableJoinClause<I extends Item> extends _RepeatableClause<_JoinSpec<I>>, _JoinSpec<I> {
 
     }
@@ -442,24 +601,15 @@ public interface PostgreQuery extends Query, DialectStatement {
     }
 
 
-    interface _JoinSpec<I extends Item> extends _JoinModifierClause<_TableSampleOnSpec<I>, _OnClause<_JoinSpec<I>>>
-            , _CrossJoinModifierClause<_TableSampleJoinSpec<I>, _JoinSpec<I>>
-            , _JoinCteClause<_OnClause<_JoinSpec<I>>>, _CrossJoinCteClause<_JoinSpec<I>>
-            , _WhereSpec<I> {
-
-    }
-
-
     interface _PostgreFromClause<FT, FS> extends _FromModifierClause<FT, FS>
             , _FromModifierCteClause<FS> {
-
+        //TODO add dialect function tabular
     }
 
 
     interface _FromSpec<I extends Item> extends _PostgreFromClause<_TableSampleJoinSpec<I>, _JoinSpec<I>>
             , _UnionSpec<I> {
 
-        //TODO function Tabular item
     }
 
 
@@ -475,6 +625,7 @@ public interface PostgreQuery extends Query, DialectStatement {
     }
 
 
+
     /**
      * <p>
      * static sub-statement syntax forbid the WITH clause ,because it destroy the Readability of code.
@@ -487,8 +638,19 @@ public interface PostgreQuery extends Query, DialectStatement {
 
     }
 
+    interface _StaticCteMaterializedSpec<I extends Item> extends _StaticCteComplexCommandSpec<I> {
+
+        _StaticCteComplexCommandSpec<I> materialized();
+
+        _StaticCteComplexCommandSpec<I> notMaterialized();
+
+        _StaticCteComplexCommandSpec<I> ifMaterialized(BooleanSupplier predicate);
+
+        _StaticCteComplexCommandSpec<I> ifNotMaterialized(BooleanSupplier predicate);
+    }
+
     interface _StaticCteAsClause<I extends Item>
-            extends Statement._StaticAsClaus<_StaticCteComplexCommandSpec<I>> {
+            extends Statement._StaticAsClaus<_StaticCteMaterializedSpec<I>> {
 
     }
 

@@ -88,6 +88,16 @@ public interface Statement extends Item {
         AR as();
     }
 
+    interface _StaticBetweenClause<BR> {
+
+        BR between();
+    }
+
+    interface _StaticAndClause<AR> extends Item {
+
+        AR and();
+    }
+
 
     /**
      * <p>

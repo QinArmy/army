@@ -136,6 +136,19 @@ public interface Window {
 
     }
 
+
+    interface _FrameUnitNoExpClause<FR> {
+
+        FR rows();
+
+        FR range();
+
+        FR ifRows(BooleanSupplier predicate);
+
+        FR ifRange(BooleanSupplier predicate);
+
+    }
+
     /**
      * <p>
      * This interface representing FRAME_UNITS  clause  in FRAME clause.
@@ -146,18 +159,9 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <FR> next clause java type,sub interface of {@link _FrameBetweenClause }
      * @param <FC> next clause java type
      */
-    interface _FrameUnitsClause<FR, FC> {
-
-        FR rows();
-
-        FR range();
-
-        FR ifRows(BooleanSupplier predicate);
-
-        FR ifRange(BooleanSupplier predicate);
+    interface _FrameUnitExpClause<FC> {
 
         FC rows(Expression expression);
 
@@ -209,24 +213,22 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <BR> next clause java type
-     * @param <BC> next clause java type
+     * @param <BE> next clause java type
      */
-    interface _FrameBetweenClause<BR, BC> extends Item {
+    interface _FrameBetweenExpClause<BE> extends Item {
 
-        BR between();
+        BE between(Expression expression);
 
-        BC between(Expression expression);
+        BE between(Supplier<Expression> supplier);
 
-        BC between(Supplier<Expression> supplier);
+        <E> BE between(Function<E, Expression> valueOperator, E value);
 
-        <E> BC between(Function<E, Expression> valueOperator, E value);
+        <E> BE between(Function<E, Expression> valueOperator, Supplier<E> supplier);
 
-        <E> BC between(Function<E, Expression> valueOperator, Supplier<E> supplier);
-
-        BC between(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        BE between(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
     }
+
 
     /**
      * <p>
@@ -238,22 +240,19 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <AR> next clause java type
-     * @param <AC> next clause java type
+     * @param <AE> next clause java type
      */
-    interface _FrameBetweenAndClause<AR, AC> extends Item {
+    interface _FrameBetweenAndExpClause<AE> extends Item {
 
-        AR and();
+        AE and(Expression expression);
 
-        AC and(Expression expression);
+        AE and(Supplier<Expression> supplier);
 
-        AC and(Supplier<Expression> supplier);
+        <E> AE and(Function<E, Expression> valueOperator, E value);
 
-        <E> AC and(Function<E, Expression> valueOperator, E value);
+        <E> AE and(Function<E, Expression> valueOperator, Supplier<E> supplier);
 
-        <E> AC and(Function<E, Expression> valueOperator, Supplier<E> supplier);
-
-        AC and(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        AE and(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
     }
 
@@ -266,17 +265,15 @@ public interface Window {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
-     *
-     * @param <R> next clause java type
      * @since 1.0
      */
-    interface _FrameNonExpBoundClause<R extends Item> extends Item {
+    interface _FrameNonExpBoundClause {
 
-        R currentRow();
+        Item currentRow();
 
-        R unboundedPreceding();
+        Item unboundedPreceding();
 
-        R unboundedFollowing();
+        Item unboundedFollowing();
 
     }
 
@@ -289,15 +286,13 @@ public interface Window {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
-     *
-     * @param <BR> next clause java type
      * @since 1.0
      */
-    interface _FrameExpBoundClause<BR extends Item> extends Item {
+    interface _FrameExpBoundClause {
 
-        BR preceding();
+        Item preceding();
 
-        BR following();
+        Item following();
 
     }
 
@@ -324,7 +319,7 @@ public interface Window {
      * @since 1.0
      */
     interface _SimpleFrameEndExpBoundClause<I extends Item>
-            extends _FrameExpBoundClause<Item> {
+            extends _FrameExpBoundClause {
 
         @Override
         Statement._RightParenClause<I> preceding();
@@ -348,7 +343,7 @@ public interface Window {
      * @since 1.0
      */
     interface _SimpleFrameEndNonExpBoundClause<I extends Item>
-            extends _FrameNonExpBoundClause<Item> {
+            extends _FrameNonExpBoundClause {
 
         @Override
         Statement._RightParenClause<I> currentRow();
@@ -374,7 +369,7 @@ public interface Window {
      * @since 1.0
      */
     interface _SimpleFrameExpBoundClause<R extends Item>
-            extends _FrameExpBoundClause<Item> {
+            extends _FrameExpBoundClause {
 
 
         @Override
@@ -400,7 +395,7 @@ public interface Window {
      * @since 1.0
      */
     interface _SimpleFrameNonExpBoundClause<I extends Item>
-            extends _FrameNonExpBoundClause<Item> {
+            extends _FrameNonExpBoundClause {
 
         @Override
         _SimpleFrameBetweenAndClause<I> currentRow();
@@ -427,7 +422,8 @@ public interface Window {
      * @since 1.0
      */
     interface _SimpleFrameBetweenAndClause<I extends Item>
-            extends _FrameBetweenAndClause<_SimpleFrameEndNonExpBoundClause<I>, _SimpleFrameEndExpBoundClause<I>> {
+            extends _FrameBetweenAndExpClause<_SimpleFrameEndExpBoundClause<I>>
+            , Statement._StaticAndClause<_SimpleFrameEndNonExpBoundClause<I>> {
 
     }
 
@@ -444,8 +440,10 @@ public interface Window {
      * @param <I> {@link Statement._RightParenClause#rightParen()} return java typ
      * @since 1.0
      */
-    interface _SimpleFrameBetweenClause<I extends Item>
-            extends _FrameBetweenClause<_SimpleFrameNonExpBoundClause<I>, _SimpleFrameExpBoundClause<I>> {
+    interface _SimpleFrameBetweenSpec<I extends Item>
+            extends _FrameBetweenExpClause<_SimpleFrameExpBoundClause<I>>
+            , Statement._StaticBetweenClause<_SimpleFrameNonExpBoundClause<I>>
+            , _SimpleFrameNonExpBoundClause<I> {
 
     }
 
@@ -453,7 +451,7 @@ public interface Window {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _FrameUnitsClause}</li>
+     *          <li>{@link _FrameUnitExpClause}</li>
      *          <li>{@link Statement._RightParenClause}</li>
      *     </ul>
      * </p>
@@ -467,7 +465,8 @@ public interface Window {
      * @since 1.0
      */
     interface _SimpleFrameUnitsSpec<I extends Item>
-            extends _FrameUnitsClause<_SimpleFrameBetweenClause<I>, _SimpleFrameEndNonExpBoundClause<I>>
+            extends _FrameUnitExpClause<_SimpleFrameEndExpBoundClause<I>>
+            , _FrameUnitNoExpClause<_SimpleFrameBetweenSpec<I>>
             , Statement._RightParenClause<I> {
 
     }
