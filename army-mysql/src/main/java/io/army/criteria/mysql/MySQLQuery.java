@@ -482,6 +482,16 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
+    interface _PrimaryComplexCommand {
+
+    }
+
+    interface _MultiStmtSemicolonSpec extends _MultiStmtSpec {
+
+        _PrimaryComplexCommand semicolon();
+
+    }
+
 
     interface _CteComma<I extends Item>
             extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_CteComma<I>>>

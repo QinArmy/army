@@ -2,10 +2,7 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.MySQLs;
-import io.army.meta.ComplexTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.SimpleTableMeta;
+import io.army.meta.*;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -148,6 +145,39 @@ public interface MySQLInsert extends DialectStatement {
 
     interface _PrimaryOptionSpec extends Insert._MigrationOptionClause<_PrimaryNullOptionSpec>
             , _PrimaryNullOptionSpec {
+
+    }
+
+
+    interface _PrimaryIntoSingleClause<I extends Item> {
+
+        <T> _PartitionSpec<I, T> into(SingleTableMeta<T> table);
+
+    }
+
+
+    interface _PrimaryInsertIntoSingleSpec<I extends Item> extends _InsertClause<_PrimaryIntoSingleClause<I>>, Item {
+
+        <T> _PartitionSpec<I, T> insertInto(SingleTableMeta<T> table);
+
+    }
+
+
+    interface _PrimaryPreferLiteralSingleSpec<I extends Item>
+            extends Insert._PreferLiteralClause<_PrimaryInsertIntoSingleSpec<I>>
+            , _PrimaryInsertIntoSingleSpec<I> {
+
+    }
+
+    interface _PrimaryNullOptionSingleSpec<I extends Item>
+            extends Insert._NullOptionClause<_PrimaryPreferLiteralSingleSpec<I>>
+            , _PrimaryPreferLiteralSingleSpec<I> {
+
+    }
+
+    interface _PrimaryOptionSingleSpec<I extends Item>
+            extends Insert._MigrationOptionClause<_PrimaryNullOptionSingleSpec<I>>
+            , _PrimaryNullOptionSingleSpec<I> {
 
     }
 

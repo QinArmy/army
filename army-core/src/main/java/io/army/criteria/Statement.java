@@ -675,5 +675,10 @@ public interface Statement extends Item {
         Q asReturningDelete();
     }
 
+    interface _MultiStmtSpec extends Item {
+
+        MultiStatement asMultiStmt();
+
+    }
 
 }
