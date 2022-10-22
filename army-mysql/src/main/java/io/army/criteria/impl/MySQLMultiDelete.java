@@ -34,7 +34,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
         , MySQLDelete._MultiDeleteAliasClause<DT>
         , MySQLQuery._MySQLFromClause<FT, FS>
         , MySQLQuery._IndexHintForJoinClause<FT>
-        , Query._FromNestedClause<MySQLQuery._NestedLeftParenSpec<FS>>
+        , Statement._FromNestedClause<MySQLQuery._NestedLeftParenSpec<FS>>
         , Delete {
 
 

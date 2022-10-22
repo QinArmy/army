@@ -174,6 +174,144 @@ public interface Statement extends Item {
 
     /**
      * <p>
+     * This interface representing FROM clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <FT> next clause java type
+     * @param <FS> next clause java type
+     * @since 1.0
+     */
+    interface _FromClause<FT, FS> {
+
+        FT from(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+
+        <T extends TabularItem> _AsClause<FS> from(Supplier<T> supplier);
+
+    }
+
+    interface _FromModifierTabularClause<FT, FS> extends _FromClause<FT, FS> {
+
+        <T extends TabularItem> _AsClause<FS> from(Query.TabularModifier modifier, Supplier<T> supplier);
+    }
+
+    interface _FromModifierClause<FT, FS> extends _FromModifierTabularClause<FT, FS> {
+
+        FT from(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+
+    }
+
+    interface _FromNestedClause<FN> {
+
+        FN from();
+
+    }
+
+    /**
+     * <p>
+     * This interface representing dialect FROM clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <FC> same with the FS of {@link _FromClause}
+     * @see _FromClause
+     * @since 1.0
+     */
+    interface _FromCteClause<FC> {
+
+        FC from(String cteName);
+
+        FC from(String cteName, SQLs.WordAs wordAs, String alias);
+
+    }
+
+    interface _FromModifierCteClause<FC> extends _FromCteClause<FC> {
+
+        FC from(Query.TabularModifier modifier, String cteName);
+
+        FC from(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+    }
+
+
+    /**
+     * <p>
+     * This interface representing FROM clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <FT> next clause java type
+     * @param <FS> next clause java type
+     * @since 1.0
+     */
+    interface _UsingItemClause<FT, FS> {
+
+        FT using(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+
+        <T extends TabularItem> _AsClause<FS> using(Supplier<T> supplier);
+
+    }
+
+    interface _UsingModifierTabularClause<FT, FS> extends _FromClause<FT, FS> {
+
+        <T extends TabularItem> _AsClause<FS> using(Query.TabularModifier modifier, Supplier<T> supplier);
+    }
+
+    interface _UsingModifierClause<FT, FS> extends _FromModifierTabularClause<FT, FS> {
+
+        FT using(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+
+    }
+
+    interface _UsingNestedClause<FN> {
+
+        FN using();
+
+    }
+
+    /**
+     * <p>
+     * This interface representing dialect FROM clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <FC> same with the FS of {@link _FromClause}
+     * @see _FromClause
+     * @since 1.0
+     */
+    interface _UsingCteClause<FC> {
+
+        FC using(String cteName);
+
+        FC using(String cteName, SQLs.WordAs wordAs, String alias);
+
+    }
+
+    interface _UsingModifierCteClause<FC> extends _FromCteClause<FC> {
+
+        FC using(Query.TabularModifier modifier, String cteName);
+
+        FC using(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+    }
+
+
+    /**
+     * <p>
      * This interface representing JOIN clause.
      * </p>
      * <p>

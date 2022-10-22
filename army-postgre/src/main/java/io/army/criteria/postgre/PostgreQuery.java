@@ -414,6 +414,86 @@ public interface PostgreQuery extends Query, DialectStatement {
     }
 
 
+    interface _PostgreJoinClause<JT, JS> extends _JoinModifierClause<JT, JS>
+            , _JoinCteClause<JS> {
+
+    }
+
+    interface _PostgreCrossClause<FT, FS> extends _CrossJoinModifierClause<FT, FS>
+            , _CrossJoinCteClause<FS> {
+
+    }
+
+
+    interface _PostgreDynamicJoinClause<JD> extends _DynamicJoinClause<PostgreJoins, JD> {
+
+    }
+
+    interface _PostgreDynamicCrossJoinClause<JD> extends _DynamicCrossJoinClause<PostgreCrosses, JD> {
+
+    }
+
+
+    interface _PostgreNestedJoinClause<I extends Item>
+            extends _PostgreJoinClause<_NestedIndexHintOnSpec<I>, _NestedOnSpec<I>>
+            , _PostgreCrossClause<_NestedIndexHintCrossSpec<I>, _NestedJoinSpec<I>>
+            , _JoinNestedClause<_NestedLeftParenSpec<_NestedOnSpec<I>>>
+            , _CrossJoinNestedClause<_NestedLeftParenSpec<_NestedJoinSpec<I>>>
+            , _PostgreDynamicJoinClause<_NestedJoinSpec<I>>
+            , _PostgreDynamicCrossJoinClause<_NestedJoinSpec<I>> {
+
+    }
+
+
+    interface _NestedJoinSpec<I extends Item> extends _PostgreNestedJoinClause<I>
+            , _RightParenClause<I> {
+
+    }
+
+    interface _NestedOnSpec<I extends Item> extends _OnClause<_NestedJoinSpec<I>>, _NestedJoinSpec<I> {
+
+    }
+
+    interface _NestedIndexHintOnSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintOnSpec<I>>
+            , _NestedOnSpec<I> {
+
+    }
+
+    interface _NestedPartitionOnSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintOnSpec<I>> {
+
+    }
+
+    interface _NestedIndexHintCrossSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintCrossSpec<I>>
+            , _NestedJoinSpec<I> {
+
+    }
+
+    interface _NestedPartitionCrossSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintCrossSpec<I>> {
+
+    }
+
+    interface _NestedIndexHintJoinSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintJoinSpec<I>>
+            , _MySQLNestedJoinClause<I> {
+
+    }
+
+    interface _NestedPartitionJoinSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintJoinSpec<I>> {
+
+    }
+
+    interface _MySQLNestedLeftParenClause<LT, LS> extends _LeftParenModifierTabularClause<LT, LS>
+            , _LeftParenCteClause<LS> {
+
+    }
+
+    interface _NestedLeftParenSpec<I extends Item>
+            extends _MySQLNestedLeftParenClause<_NestedIndexHintJoinSpec<I>, _MySQLNestedJoinClause<I>>
+            , _NestedDialectLeftParenClause<_NestedPartitionJoinSpec<I>>
+            , _LeftParenClause<_NestedLeftParenSpec<_MySQLNestedJoinClause<I>>> {
+
+    }
+
+
     interface _UnionSpec<I extends Item> extends _QueryUnionClause<_UnionAndQuerySpec<I>>
             , _QueryIntersectClause<_UnionAndQuerySpec<I>>
             , _QueryExceptClause<_UnionAndQuerySpec<I>>
@@ -594,12 +674,17 @@ public interface PostgreQuery extends Query, DialectStatement {
     }
 
 
+    interface _JoinFunctionClause<JF> {
+        //TODO add dialect function tabular
+    }
+
+
     interface _JoinSpec<I extends Item> extends _JoinModifierClause<_TableSampleOnSpec<I>, _OnClause<_JoinSpec<I>>>
             , _CrossJoinModifierClause<_TableSampleJoinSpec<I>, _JoinSpec<I>>
             , _JoinCteClause<_OnClause<_JoinSpec<I>>>, _CrossJoinCteClause<_JoinSpec<I>>
             , _WhereSpec<I> {
-        //TODO add dialect function tabular
 
+        //TODO add dialect function tabular
     }
 
     interface _RepeatableJoinClause<I extends Item> extends _RepeatableClause<_JoinSpec<I>>, _JoinSpec<I> {
@@ -619,6 +704,7 @@ public interface PostgreQuery extends Query, DialectStatement {
 
 
     interface _FromSpec<I extends Item> extends _PostgreFromClause<_TableSampleJoinSpec<I>, _JoinSpec<I>>
+            , _FromNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>
             , _UnionSpec<I> {
 
     }
@@ -739,6 +825,10 @@ public interface PostgreQuery extends Query, DialectStatement {
 
     }
 
+    interface _MinWithSpec<I extends Item> extends _PostgreDynamicWithClause<_PostgreSelectClause<I>>
+            , _PostgreSelectClause<I> {
+
+    }
 
     /**
      * <p>
@@ -747,22 +837,8 @@ public interface PostgreQuery extends Query, DialectStatement {
      *
      * @since 1.0
      */
-    interface _WithCteSpec<I extends Item> extends _PostgreDynamicWithClause<_PostgreSelectClause<I>>
-            , _StaticWithClause<_StaticCteLeftParenSpec<_CteComma<I>>>
-            , _PostgreSelectClause<I> {
-
-    }
-
-
-    /**
-     * <p>
-     * sub-statement syntax forbid static WITH syntax,because it destroy the simpleness of SQL.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface _SubWithCteSpec<I extends Item> extends _PostgreDynamicWithClause<_PostgreSelectClause<I>>
-            , _PostgreSelectClause<I> {
+    interface _WithCteSpec<I extends Item> extends _MinWithSpec<I>
+            , _StaticWithClause<_StaticCteLeftParenSpec<_CteComma<I>>> {
 
     }
 

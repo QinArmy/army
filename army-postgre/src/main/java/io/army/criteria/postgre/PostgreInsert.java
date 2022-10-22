@@ -17,11 +17,6 @@ import java.util.function.Supplier;
 public interface PostgreInsert extends DialectStatement {
 
 
-    interface _ReturningSpec<I extends Item, Q extends Item>
-            extends DialectStatement._StaticReturningClause<I, Q>
-            , DialectStatement._DynamicReturningClause<I, Q> {
-
-    }
 
     interface _DoUpdateWhereAndSpec<I extends Item, Q extends Item>
             extends Statement._MinWhereAndClause<_DoUpdateWhereAndSpec<I, Q>>

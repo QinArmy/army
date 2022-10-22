@@ -11,40 +11,49 @@ import java.util.function.Supplier;
 
 public interface DialectStatement extends Statement {
 
-    interface _StaticReturningCommaUnaryClause<Q extends Item>
-            extends DqlInsert._DqlInsertSpec<Q> {
 
-        _StaticReturningCommaUnaryClause<Q> comma(Selection selection);
+    interface _StaticReturningCommaClause<R> {
+
+        R comma(NamedExpression expression);
+
+        R comma(Expression expression, SQLs.WordAs wordAs, String alias);
+
+        _AsClause<R> comma(Supplier<Expression> supplier);
+
+        R comma(NamedExpression exp1, NamedExpression exp2);
+
+        R comma(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3);
+
+        R comma(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4);
+    }
+
+
+    interface _StaticReturningClause<R> {
+
+        R returning(NamedExpression expression);
+
+        R returning(Expression expression, SQLs.WordAs wordAs, String alias);
+
+        _AsClause<R> returning(Supplier<Expression> supplier);
+
+        R returning(NamedExpression exp1, NamedExpression exp2);
+
+        R returning(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3);
+
+        R returning(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4);
 
     }
 
 
-    interface _StaticReturningCommaDualClause<Q extends Item>
-            extends DqlInsert._DqlInsertSpec<Q> {
+    interface _DynamicReturningClause<R> {
 
-        DqlInsert._DqlInsertSpec<Q> comma(Selection selectItem);
+        R returningAll();
 
-        _StaticReturningCommaDualClause<Q> comma(Selection selectItem1, Selection selectItem2);
-
-    }
-
-
-    interface _StaticReturningClause<I extends Item, Q extends Item> extends _DmlInsertSpec<I> {
-
-        _StaticReturningCommaUnaryClause<Q> returning(Selection selectItem);
-
-        _StaticReturningCommaDualClause<Q> returning(Selection selectItem1, Selection selectItem2);
-    }
-
-
-    interface _DynamicReturningClause<I extends Item, Q extends Item> extends _DmlInsertSpec<I> {
-
-        DqlInsert._DqlInsertSpec<Q> returningAll();
-
-        DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<Selection>> consumer);
+        R returning(Consumer<ReturningBuilder> consumer);
 
 
     }
+
 
 
     /**
@@ -60,6 +69,7 @@ public interface DialectStatement extends Statement {
      * @param <C>  criteria object java type
      * @param <WE> next clause java type
      */
+    @Deprecated
     interface _WithCteClause2<C, SS extends SubStatement, WE> {
 
         WE with(String cteName, Supplier<? extends SS> supplier);
@@ -90,8 +100,6 @@ public interface DialectStatement extends Statement {
     }
 
 
-
-
     interface _FromLateralClause<C, FS> {
 
         <T extends TabularItem> FS fromLateral(Supplier<T> supplier, String alias);
@@ -99,6 +107,12 @@ public interface DialectStatement extends Statement {
         <T extends TabularItem> FS fromLateral(Function<C, T> function, String alias);
 
     }
+
+    interface _WhereCurrentOfClause<R> {
+
+        R whereCurrentOf(String cursorName);
+    }
+
 
     /**
      * <p>

@@ -306,7 +306,7 @@ public interface StandardQuery extends Query {
      * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _FromSpec<I extends Item> extends Query._FromClause<_JoinSpec<I>, _JoinSpec<I>>
+    interface _FromSpec<I extends Item> extends Statement._FromClause<_JoinSpec<I>, _JoinSpec<I>>
             , _UnionSpec<I> {
 
     }
