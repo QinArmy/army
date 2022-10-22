@@ -51,6 +51,10 @@ abstract class StandardSyntax extends Functions {
 
     }
 
+    public interface WordDefault extends Expression {
+
+    }
+
     public interface WordOnly extends Query.TableModifier, Query.FetchOnlyWithTies {
 
     }
@@ -388,7 +392,7 @@ abstract class StandardSyntax extends Functions {
      * This class representing sql {@code DEFAULT} key word.
      * </p>
      */
-    private static final class DefaultWord extends NonOperationExpression {
+    private static final class DefaultWord extends NonOperationExpression implements WordDefault {
 
         private DefaultWord() {
         }
@@ -531,7 +535,7 @@ abstract class StandardSyntax extends Functions {
 
     public static final IPredicate FALSE = new BooleanWord(false);
 
-    public static final Expression DEFAULT = new DefaultWord();
+    public static final WordDefault DEFAULT = new DefaultWord();
 
     public static final Expression NULL = new NullWord();
 

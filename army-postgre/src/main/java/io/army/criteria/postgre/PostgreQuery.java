@@ -230,7 +230,7 @@ public interface PostgreQuery extends Query, DialectStatement {
 
         R excludeNoOthers();
 
-        R ifExcludeCurrentRow(BooleanSupplier supplier;
+        R ifExcludeCurrentRow(BooleanSupplier supplier);
 
         R ifExcludeGroup(BooleanSupplier supplier);
 
@@ -289,6 +289,17 @@ public interface PostgreQuery extends Query, DialectStatement {
                 , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
 
+    }
+
+    interface _CteMaterializedClause<R> {
+
+        R materialized();
+
+        R notMaterialized();
+
+        R ifMaterialized(BooleanSupplier predicate);
+
+        R ifNotMaterialized(BooleanSupplier predicate);
     }
 
     interface _FrameExclusionSpec<I extends Item>
@@ -624,6 +635,78 @@ public interface PostgreQuery extends Query, DialectStatement {
 
     }
 
+    interface _CyclePathColumnClause<I extends Item> {
+
+        _CteSpec<I> using(String cyclePathColumnName);
+
+    }
+
+    interface _CycleToMarkValueSpec<I extends Item> extends _CyclePathColumnClause<I> {
+
+        _CyclePathColumnClause<I> to(Expression cycleMarkValue, SQLs.WordDefault wordDefault, Expression cycleMarkDefault);
+
+        _CyclePathColumnClause<I> to(Consumer<BiConsumer<Expression, Expression>> consumer);
+
+        _CyclePathColumnClause<I> ifTo(Consumer<BiConsumer<Expression, Expression>> consumer);
+
+    }
+
+    interface _SetCycleMarkColumnClause<I extends Item> {
+
+        _CycleToMarkValueSpec<I> set(String cycleMarkColumnName);
+    }
+
+    interface _CteCycleSpec<I extends Item> extends _CteSpec<I> {
+
+        _SetCycleMarkColumnClause<I> cycle(String columnName);
+
+        _SetCycleMarkColumnClause<I> cycle(String columnName1, String columnName2);
+
+        _SetCycleMarkColumnClause<I> cycle(String columnName1, String columnName2, String columnName3);
+
+        _CommaStringQuadraSpec<_SetCycleMarkColumnClause<I>> cycle(String columnName1, String columnName2, String columnName3, String columnName4);
+
+        _SetCycleMarkColumnClause<I> cycle(Consumer<Consumer<String>> consumer);
+
+        _SetCycleMarkColumnClause<I> ifCycle(Consumer<Consumer<String>> consumer);
+
+
+    }
+
+
+    interface _SetSearchSeqColumnClause<I extends Item> {
+
+        _CteCycleSpec<I> set(String searchSeqColumnName);
+
+    }
+
+    interface _SearchFirstByClause<I extends Item> {
+
+        _SetSearchSeqColumnClause<I> firstBy(String columnName);
+
+        _SetSearchSeqColumnClause<I> firstBy(String columnName1, String columnName2);
+
+        _SetSearchSeqColumnClause<I> firstBy(String columnName1, String columnName2, String columnName3);
+
+        _CommaStringQuadraSpec<_SetSearchSeqColumnClause<I>> firstBy(String columnName1, String columnName2, String columnName3, String columnName4);
+
+        _SetSearchSeqColumnClause<I> firstBy(Consumer<Consumer<String>> consumer);
+
+        _SetSearchSeqColumnClause<I> ifFirstBy(Consumer<Consumer<String>> consumer);
+
+    }
+
+    interface _CteSearchSpec<I extends Item> extends _CteCycleSpec<I> {
+
+        _SearchFirstByClause<I> searchBreadth();
+
+        _SearchFirstByClause<I> searchDepth();
+
+        _SearchFirstByClause<I> searchBreadth(BooleanSupplier predicate);
+
+        _SearchFirstByClause<I> searchDepth(BooleanSupplier predicate);
+
+    }
 
 
     /**
@@ -633,20 +716,16 @@ public interface PostgreQuery extends Query, DialectStatement {
      *
      * @since 1.0
      */
-    interface _StaticCteComplexCommandSpec<I extends Item> extends _PostgreSelectClause<_CteSpec<I>>
+    interface _StaticCteComplexCommandSpec<I extends Item> extends _PostgreSelectClause<_CteSearchSpec<I>>
             , PostgreInsert._SubInsertIntoClause<_CteSpec<I>, _CteSpec<I>> {
 
     }
 
-    interface _StaticCteMaterializedSpec<I extends Item> extends _StaticCteComplexCommandSpec<I> {
 
-        _StaticCteComplexCommandSpec<I> materialized();
+    interface _StaticCteMaterializedSpec<I extends Item>
+            extends _CteMaterializedClause<_StaticCteComplexCommandSpec<I>>
+            , _StaticCteComplexCommandSpec<I> {
 
-        _StaticCteComplexCommandSpec<I> notMaterialized();
-
-        _StaticCteComplexCommandSpec<I> ifMaterialized(BooleanSupplier predicate);
-
-        _StaticCteComplexCommandSpec<I> ifNotMaterialized(BooleanSupplier predicate);
     }
 
     interface _StaticCteAsClause<I extends Item>
