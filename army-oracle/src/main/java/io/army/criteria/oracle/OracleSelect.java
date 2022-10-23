@@ -1,268 +1,340 @@
 package io.army.criteria.oracle;
 
-import io.army.criteria.Expression;
-import io.army.criteria.Select;
+import io.army.criteria.*;
+import io.army.criteria.impl.SQLs;
+import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 
-public interface OracleSelect extends Select {
-
-
-    /*################################## blow oracle select clause  interfaces ##################################*/
-
-/*
-
-    interface WithAble<C> e {
-
-        PLSQLDeclarationAble<C> with();
-    }
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 
-    interface PLSQLDeclarationAble<C> extends QueryFactoryAble<C> {
-
-        QueryFactoryClauseAble<C> declaration(OracleDeclaration declaration);
-
-        QueryFactoryClauseAble<C> declaration(Function<C, OracleDeclaration> function);
-
-        QueryFactoryClauseAble<C> declarationList(List<OracleDeclaration> declarationList);
-
-        QueryFactoryClauseAble<C> declarationList(Function<C, List<OracleDeclaration>> function);
-    }
-
-    interface QueryFactoryAble<C> extends SelectSQLAble {
-
-        SelectPartAble<C> factory(QueryFactory factory);
-
-        SelectPartAble<C> factory(Function<C, QueryFactory> function);
-
-        SelectPartAble<C> factoryList(List<QueryFactory> factoryList);
-
-        SelectPartAble<C> factoryList(Function<C, List<QueryFactory>> function);
-    }
-
-
-    interface QueryFactoryClauseAble<C> extends QueryFactoryAble<C>, SelectPartAble<C> {
-
-    }
-
-
-    interface SelectPartAble<C> extends SelectSQLAble {
-
-        <S extends SelectPart> FromAble<C> select(Distinct distinct, Function<C, List<S>> function);
-
-        <S extends SelectPart> FromAble<C> select(Function<C, List<S>> function);
-
-        FromAble<C> select(Distinct distinct, SelectPart selectPart);
-
-        FromAble<C> select(SelectPart selectPart);
-
-        <S extends SelectPart> FromAble<C> select(Distinct distinct, List<S> selectPartList);
-
-        <S extends SelectPart> FromAble<C> select(List<S> selectPartList);
-    }
-
-
-    interface FromAble<C> extends UnionClause<C> {
-
-        TableRouteAble<C> from(TableMeta<?> tableMeta, String tableAlias);
-
-        TableRouteAble<C> from(TableMeta<?> tableMeta, Function<C, TableOptionalClause> function, String tableAlias);
-
-        JoinAble<C> from(Function<C, SubQuery> function, String subQueryAlia);
-
-        JoinAble<C> from(Function<C, SubQuery> function, SubQueryOptionalClause optionalClause, String subQueryAlia);
-
-        JoinAble<C> from(String queryName, String queryAlias);
-
-        JoinAble<C> from(String queryName, Function<C, TableOptionalClause> function, String queryAlias);
-
-        JoinAble<C> fromCollection(Function<C, TableCollection> function, String collectionAlias);
-
-        JoinAble<C> fromCollection(Function<C, TableCollection> function, Function<C, TableOptionalClause> clauseFunction, String collectionAlias);
-
-    }
-
-    interface TableRouteAble<C> extends JoinAble<C> {
-
-        JoinAble<C> route(int databaseIndex, int tableIndex);
-
-        JoinAble<C> route(int tableIndex);
-    }
-
-
-    interface OnAble<C> extends SelectSQLAble {
-
-        JoinAble<C> on(List<IPredicate> predicateList);
-
-        JoinAble<C> on(IPredicate predicate);
-
-        JoinAble<C> on(Function<C, List<IPredicate>> function);
-
-    }
-
-    interface JoinAble<C> extends WhereAble<C> {
-
-        OnAble<C> leftJoin(TableMeta<?> tableMeta, String tableAlias);
-
-        OnAble<C> leftJoin(Function<C, SubQuery> function, String subQueryAlia);
-
-        OnAble<C> join(TableMeta<?> tableMeta, String tableAlias);
-
-        OnAble<C> join(Function<C, SubQuery> function, String subQueryAlia);
-
-        OnAble<C> rightJoin(TableMeta<?> tableMeta, String tableAlias);
-
-        OnAble<C> rightJoin(Function<C, SubQuery> function, String subQueryAlia);
-    }
-
-    interface WhereAble<C> extends GroupByAble<C> {
-
-        GroupByAble<C> where(List<IPredicate> predicateList);
-
-        GroupByAble<C> where(Function<C, List<IPredicate>> function);
-
-        WhereAndAble<C> where(IPredicate predicate);
-    }
-
-    interface WhereAndAble<C> extends GroupByAble<C> {
-
-        */
 /**
- * @see Expression#ifEqual(Object)
- *//*
+ * <p>
+ * This interface representing Oracle SELECT syntax.
+ * </p>
+ *
+ * @see <a href="https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/SELECT.html#GUID-CFA006CA-6FF1-4972-821E-6996142A51C6">Oracle SELECT syntax</a>
+ * @since 1.0
+ */
+public interface OracleSelect extends Query, OracleStatement {
 
-        WhereAndAble<C> and(@Nullable IPredicate predicate);
+    /**
+     * @see <a href="https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/SELECT.html#GUID-CFA006CA-6FF1-4972-821E-6996142A51C6">Lock wait syntax</a>
+     */
+    interface _OracleLockWaitOptionClause<LR> extends _MinLockOptionClause<LR> {
 
-        WhereAndAble<C> and(Function<C, IPredicate> function);
+        LR wait(int seconds);
 
-        WhereAndAble<C> ifAnd(Predicate<C> testPredicate, Function<C, IPredicate> function);
+        LR wait(Supplier<Integer> supplier);
+
+        LR ifWait(Supplier<Integer> supplier);
+    }
+
+
+    /**
+     * @see <a href="https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/SELECT.html#GUID-CFA006CA-6FF1-4972-821E-6996142A51C6">Lock of colunn syntax</a>
+     */
+    interface _OracleLockOfColumnClause<OR> {
+
+        OR of(TableField field);
+
+        OR of(TableField field1, TableField field2);
+
+        OR of(TableField field1, TableField field2, TableField field3);
+
+        OR of(TableField field1, TableField field2, TableField field3, TableField field4);
+
+        OR of(Consumer<Consumer<TableField>> consumer);
+
+        OR ifOf(Consumer<Consumer<TableField>> consumer);
 
     }
 
 
-    interface GroupByAble<C> extends OrderByAble<C> {
+    interface _OracleFetchClause<R> extends _QueryFetchClause<R> {
 
-        HavingAble<C> groupBy(SortPart sortPart);
-
-        HavingAble<C> groupBy(List<SortPart> sortPartList);
-
-        HavingAble<C> groupBy(Function<C, List<SortPart>> function);
-
-        HavingAble<C> ifGroupBy(Predicate<C> test, SortPart sortPart);
-
-        HavingAble<C> ifGroupBy(Predicate<C> test, Function<C, List<SortPart>> function);
-
-    }
-
-    interface HavingAble<C> extends OrderByAble<C> {
-
-        OrderByAble<C> having(IPredicate predicate);
-
-        OrderByAble<C> having(Function<C, List<IPredicate>> function);
-
-        OrderByAble<C> ifHaving(Predicate<C> predicate, Function<C, List<IPredicate>> function);
-
-        OrderByAble<C> ifHaving(Predicate<C> testPredicate, IPredicate predicate);
-    }
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param percent      the percentage of the total number of selected rows
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R fetch(Query.FetchFirstNext firstOrNext, Expression percent, SQLs.WordPercent wordPercent, Query.FetchRow row
+                , Query.FetchOnlyWithTies onlyWithTies);
 
 
-    interface OrderByAble<C> extends OrderByClause<C>, LimitAble<C> {
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param percent      non-null,the percentage of the total number of selected rows
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Number percent, SQLs.WordPercent wordPercent, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
 
-        @Override
-        LimitAble<C> orderBy(SortPart sortPart);
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param supplier     {@link  Supplier#get()} return non-null percent
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        <N extends Number> R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Supplier<N> supplier, SQLs.WordPercent wordPercent, Query.FetchRow row
+                , Query.FetchOnlyWithTies onlyWithTies);
 
-        @Override
-        LimitClause<C> orderBy(List<SortPart> sortPartList);
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param function     {@link Function#apply(Object)} return non-null percent
+         * @param keyName      keyName that is passed to function
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Function<String, ?> function, String keyName, SQLs.WordPercent wordPercent
+                , Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
 
-        @Override
-        LimitAble<C> orderBy(Function<C, List<SortPart>> function);
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param percent      nullable,percent
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , @Nullable Number percent, SQLs.WordPercent wordPercent, Query.FetchRow row
+                , Query.FetchOnlyWithTies onlyWithTies);
 
-        @Override
-        LimitAble<C> ifOrderBy(Predicate<C> test, SortPart sortPart);
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param supplier     return nullable percent
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        <N extends Number> R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Supplier<N> supplier, SQLs.WordPercent wordPercent, Query.FetchRow row
+                , Query.FetchOnlyWithTies onlyWithTies);
 
-        @Override
-        LimitAble<C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function);
-    }
-
-
-    interface LimitAble<C> extends LimitClause<C>, LockAble<C> {
-
-        LockAble<C> limit(int rowCount);
-
-        LockAble<C> limit(int offset, int rowCount);
-
-        LockAble<C> limit(Function<C, Pair<Integer, Integer>> function);
-
-        LockAble<C> ifLimit(Predicate<C> predicate, int rowCount);
-
-        LockAble<C> ifLimit(Predicate<C> predicate, int offset, int rowCount);
-
-        LockAble<C> ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
-    }
-
-    interface LockAble<C> extends SelectAble, UnionClause<C> {
-
-        SelectAble lock(LockMode lockMode);
-
-        SelectAble lock(Function<C, LockMode> function);
-
-        SelectAble ifLock(Predicate<C> predicate, LockMode lockMode);
-
-        SelectAble ifLock(Predicate<C> predicate, Function<C, LockMode> function);
-
-    }
-
-
-    interface UnionAble<C> extends UnionClause<C>, OrderByClause<C> {
-
-    }
-
-    interface UnionClause<C> extends SelectAble {
-
-        UnionAble<C> brackets();
-
-        <S extends Select> UnionAble<C> union(Function<C, S> function);
-
-        <S extends Select> UnionAble<C> unionAll(Function<C, S> function);
-
-        <S extends Select> UnionAble<C> unionDistinct(Function<C, S> function);
-
-    }
-
-    interface OrderByClause<C> extends LimitClause<C> {
-
-        LimitClause<C> orderBy(SortPart sortPart);
-
-        LimitClause<C> orderBy(List<SortPart> sortPartList);
-
-        LimitClause<C> orderBy(Function<C, List<SortPart>> function);
-
-        LimitClause<C> ifOrderBy(Predicate<C> test, SortPart sortPart);
-
-        LimitClause<C> ifOrderBy(Predicate<C> test, Function<C, List<SortPart>> function);
-    }
-
-    interface LimitClause<C> extends  {
-
-        SelectAble limit(int rowCount);
-
-        SelectAble limit(int offset, int rowCount);
-
-        SelectAble limit(Function<C, Pair<Integer, Integer>> function);
-
-        SelectAble ifLimit(Predicate<C> predicate, int rowCount);
-
-        SelectAble ifLimit(Predicate<C> predicate, int offset, int rowCount);
-
-        SelectAble ifLimit(Predicate<C> predicate, Function<C, Pair<Integer, Integer>> function);
-    }
-
-
-    interface TableOptionalClause {
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param function     {@link Function#apply(Object)} return nullable percent
+         * @param keyName      keyName that is passed to function
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Function<String, ?> function, String keyName, SQLs.WordPercent wordPercent
+                , Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
 
     }
 
-    interface SubQueryOptionalClause {
+
+    interface _OracleStaticOrderByClause<OR> extends _StaticOrderByClause<OR> {
+
+        OR orderSiblingsBy(Expression exp1);
+
+        OR orderSiblingsBy(Expression exp1, Expression exp2);
+
+        OR orderSiblingsBy(Expression exp1, Expression exp2, Expression exp3);
+
+        OR orderSiblingsBy(Expression exp1, AscDesc ascDesc);
+
+        OR orderSiblingsBy(Expression exp1, AscDesc ascDesc, NullsFirstLast nullOption);
+
+        OR orderSiblingsBy(Expression exp1, AscDesc ascDesc1, Expression exp2, AscDesc ascDesc2);
 
     }
-*/
+
+    interface _OracleDynamicOrderByClause<OR> extends _DynamicOrderByClause<OR> {
+
+        OR orderSiblingsBy(Consumer<SortNullItems> consumer);
+
+        OR ifOrderSiblingsBy(Consumer<SortNullItems> consumer);
+    }
+
+
+    interface _WindowOrderByCommaSpec<I extends Item>
+            extends _StaticOrderByCommaClause<_WindowOrderByCommaSpec<I>>
+            , Window._SimpleFrameUnitsSpec<I> {
+
+    }
+
+    interface _WindowOrderBySpec<I extends Item> extends _OracleStaticOrderByClause<_WindowOrderByCommaSpec<I>>
+            , _OracleDynamicOrderByClause<Window._SimpleFrameUnitsSpec<I>>
+            , Window._SimpleFrameUnitsSpec<I> {
+
+    }
+
+    interface _WindowPartitionBySpec<I extends Item> extends Window._PartitionByExpClause<_WindowOrderBySpec<I>>
+            , _WindowOrderBySpec<I> {
+
+    }
+
+
+    interface _WindowLeftParenSpec<I extends Item> extends Window._LeftParenNameClause<_WindowPartitionBySpec<I>>
+            , _WindowPartitionBySpec<I> {
+
+    }
+
+    interface _WindowAsClause<I extends Item> extends _StaticAsClaus<_WindowLeftParenSpec<I>> {
+
+    }
+
+
+    interface _UnionLockWaitOptionSpec<I extends Item>
+            extends _OracleLockWaitOptionClause<_AsQueryClause<I>>, _AsQueryClause<I> {
+
+    }
+
+
+    interface _UnionLockOfColumnSpec<I extends Item>
+            extends _OracleLockOfColumnClause<_UnionLockWaitOptionSpec<I>>
+            , _UnionLockWaitOptionSpec<I> {
+
+    }
+
+
+    interface _UnionLockSpec<I extends Item>
+            extends _LockForUpdateClause<_UnionLockOfColumnSpec<I>>
+            , _AsQueryClause<I> {
+
+
+    }
+
+    interface _UnionFetchSpec<I extends Item> extends _QueryFetchClause<_UnionLockSpec<I>>
+            , _UnionLockSpec<I> {
+
+    }
+
+
+    interface _UnionOffsetSpec<I extends Item> extends _QueryOffsetClause<_UnionFetchSpec<I>>
+            , _UnionLockSpec<I> {
+
+    }
+
+    interface _UnionOrderByCommaSpec<I extends Item>
+            extends _StaticOrderByNullsCommaClause<_UnionOrderByCommaSpec<I>>
+            , _UnionOffsetSpec<I> {
+
+    }
+
+
+    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_UnionAndQuerySpec<I>>
+            , _QueryIntersectClause<_UnionAndQuerySpec<I>>
+            , _QueryMinusClause<_UnionAndQuerySpec<I>>
+            , _AsQueryClause<I> {
+
+    }
+
+    interface _UnionOrderBySpec<I extends Item> extends _OracleStaticOrderByClause<_UnionOrderByCommaSpec<I>>
+            , _OracleDynamicOrderByClause<_UnionOffsetSpec<I>>
+            , _UnionOffsetSpec<I>
+            , _UnionSpec<I> {
+
+    }
+
+
+    interface _LockWaitOptionSpec<I extends Item>
+            extends _OracleLockWaitOptionClause<_AsQueryClause<I>>, _AsQueryClause<I> {
+
+    }
+
+
+    interface _LockOfColumnSpec<I extends Item>
+            extends _OracleLockOfColumnClause<_LockWaitOptionSpec<I>>
+            , _LockWaitOptionSpec<I> {
+
+    }
+
+
+    interface _LockSpec<I extends Item>
+            extends _LockForUpdateClause<_LockOfColumnSpec<I>>
+            , _AsQueryClause<I> {
+
+
+    }
+
+    interface _FetchSpec<I extends Item> extends _QueryFetchClause<_LockSpec<I>>
+            , _LockSpec<I> {
+
+    }
+
+
+    interface _OffsetSpec<I extends Item> extends _QueryOffsetClause<_FetchSpec<I>>
+            , _LockSpec<I> {
+
+    }
+
+    interface _OrderByCommaSpec<I extends Item>
+            extends _StaticOrderByNullsCommaClause<_OrderByCommaSpec<I>>
+            , _OffsetSpec<I> {
+
+    }
+
+    interface _OrderBySpec<I extends Item> extends _OracleStaticOrderByClause<_OrderByCommaSpec<I>>
+            , _OracleDynamicOrderByClause<_OffsetSpec<I>>
+            , _OffsetSpec<I> {
+
+    }
+
+    interface _WindowCommaSpec<I extends Item> extends Window._StaticWindowCommaClause<_WindowCommaSpec<I>>
+            , _OrderBySpec<I> {
+
+    }
+
+    interface _WindowsSpec<I extends Item> extends Window._StaticWindowClause<_WindowCommaSpec<I>>
+            , Window._DynamicWindowClause<OracleWindowBuilder, _OrderBySpec<I>>
+            , _OrderBySpec<I> {
+
+    }
+
+
+    interface _MinWithSpec<I extends Item> {
+
+    }
+
+
+    interface _UnionAndQuerySpec<I extends Item> extends _MinWithSpec<I>
+            , Query._LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+
+    }
 
 }

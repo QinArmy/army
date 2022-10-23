@@ -55,7 +55,6 @@ public interface DialectStatement extends Statement {
     }
 
 
-
     /**
      * <p>
      * This interface representing WITH clause(Common Table Expressions).

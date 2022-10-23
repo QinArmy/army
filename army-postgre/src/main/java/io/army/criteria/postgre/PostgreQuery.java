@@ -24,7 +24,7 @@ public interface PostgreQuery extends Query, PostgreCommand {
 
     }
 
-    interface _PostgreOrderByClause<OR> extends _OrderByClause<OR> {
+    interface _PostgreOrderByClause<OR> extends _StaticOrderByClause<OR> {
         //TODO add dialect method
     }
 
@@ -41,174 +41,7 @@ public interface PostgreQuery extends Query, PostgreCommand {
     }
 
 
-    interface _PostgreFetchClause<R> {
 
-
-        /**
-         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
-         * @param operator     the method reference of below:
-         *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                     </ul>
-         * @param count        non-negative
-         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
-         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
-         */
-        R fetch(FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , long count, FetchRow row, FetchOnlyWithTies onlyWithTies);
-
-        /**
-         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
-         * @param operator     the method reference of below:
-         *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                     </ul>
-         * @param supplier     return non-negative integer
-         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
-         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
-         */
-        <N extends Number> R fetch(FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> supplier, FetchRow row, FetchOnlyWithTies onlyWithTies);
-
-        /**
-         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
-         * @param operator     the method reference of below:
-         *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                     </ul>
-         * @param function     {@link Function#apply(Object)} return non-negative integer
-         * @param keyName      keyName that is passed to function
-         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
-         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
-         */
-        R fetch(FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Function<String, ?> function, String keyName, FetchRow row, FetchOnlyWithTies onlyWithTies);
-
-        /**
-         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
-         * @param operator     the method reference of below:
-         *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                     </ul>
-         * @param count        non-negative
-         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
-         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
-         */
-        R ifFetch(FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , @Nullable Number count, FetchRow row, FetchOnlyWithTies onlyWithTies);
-
-        /**
-         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
-         * @param operator     the method reference of below:
-         *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                     </ul>
-         * @param supplier     return non-negative integer
-         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
-         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
-         */
-        <N extends Number> R ifFetch(FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> supplier, FetchRow row, FetchOnlyWithTies onlyWithTies);
-
-        /**
-         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
-         * @param operator     the method reference of below:
-         *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                     </ul>
-         * @param function     {@link Function#apply(Object)} return non-negative integer
-         * @param keyName      keyName that is passed to function
-         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
-         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
-         */
-        R ifFetch(FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Function<String, ?> function, String keyName, FetchRow row, FetchOnlyWithTies onlyWithTies);
-    }
-
-
-    interface _PostgreOffsetClause<R> {
-
-
-        /**
-         * @param operator the method reference of below:
-         *                 <ul>
-         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                 </ul>
-         * @param start    non-negative integer
-         * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
-         */
-        R offset(BiFunction<MappingType, Number, Expression> operator, long start, FetchRow row);
-
-
-        /**
-         * @param operator the method reference of below:
-         *                 <ul>
-         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                 </ul>
-         * @param supplier return non-negative integer
-         * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
-         */
-        <N extends Number> R offset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier
-                , FetchRow row);
-
-        /**
-         * @param operator the method reference of below:
-         *                 <ul>
-         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                 </ul>
-         * @param function {@link Function#apply(Object)} return non-negative integer
-         * @param keyName  keyName that is passed to function
-         * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
-         */
-        R offset(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
-                , String keyName, FetchRow row);
-
-        /**
-         * @param operator the method reference of below:
-         *                 <ul>
-         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                 </ul>
-         * @param start    non-negative integer
-         * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
-         */
-        R ifOffset(BiFunction<MappingType, Number, Expression> operator, @Nullable Number start, FetchRow row);
-
-        /**
-         * @param operator the method reference of below:
-         *                 <ul>
-         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                 </ul>
-         * @param supplier return non-negative integer
-         * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
-         */
-        <N extends Number> R ifOffset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier
-                , FetchRow row);
-
-        /**
-         * @param operator the method reference of below:
-         *                 <ul>
-         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                 </ul>
-         * @param function {@link Function#apply(Object)} return non-negative integer
-         * @param keyName  keyName that is passed to function
-         * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
-         */
-        R ifOffset(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
-                , String keyName, FetchRow row);
-
-    }
 
 
     interface _PostgreLimitClause<LR> extends _RowCountLimitClause<LR> {
@@ -533,7 +366,7 @@ public interface PostgreQuery extends Query, PostgreCommand {
     interface _UnionSpec<I extends Item> extends _QueryUnionClause<_UnionAndQuerySpec<I>>
             , _QueryIntersectClause<_UnionAndQuerySpec<I>>
             , _QueryExceptClause<_UnionAndQuerySpec<I>>
-            , _QuerySpec<I> {
+            , _AsQueryClause<I> {
 
     }
 
@@ -556,15 +389,15 @@ public interface PostgreQuery extends Query, PostgreCommand {
     }
 
 
-    interface _UnionLockSpec<I extends Item> extends _PostgreLockClause<_UnionLockOfTableSpec<I>>, _QuerySpec<I> {
+    interface _UnionLockSpec<I extends Item> extends _PostgreLockClause<_UnionLockOfTableSpec<I>>, _AsQueryClause<I> {
 
     }
 
-    interface _UnionFetchSpec<I extends Item> extends _PostgreFetchClause<_UnionLockSpec<I>>, _UnionLockSpec<I> {
+    interface _UnionFetchSpec<I extends Item> extends _QueryFetchClause<_UnionLockSpec<I>>, _UnionLockSpec<I> {
 
     }
 
-    interface _UnionOffsetSpec<I extends Item> extends _PostgreOffsetClause<_UnionLockSpec<I>>, _UnionLockSpec<I> {
+    interface _UnionOffsetSpec<I extends Item> extends _QueryOffsetClause<_UnionLockSpec<I>>, _UnionLockSpec<I> {
 
 
     }
@@ -614,19 +447,19 @@ public interface PostgreQuery extends Query, PostgreCommand {
     }
 
 
-    interface _LockSpec<I extends Item> extends _PostgreLockClause<_LockOfTableSpec<I>>, _QuerySpec<I> {
+    interface _LockSpec<I extends Item> extends _PostgreLockClause<_LockOfTableSpec<I>>, _AsQueryClause<I> {
 
 
     }
 
 
-    interface _FetchSpec<I extends Item> extends _PostgreFetchClause<_LockSpec<I>>, _LockSpec<I> {
+    interface _FetchSpec<I extends Item> extends _QueryFetchClause<_LockSpec<I>>, _LockSpec<I> {
 
 
     }
 
 
-    interface _OffsetSpec<I extends Item> extends _PostgreOffsetClause<_LockSpec<I>>, _LockSpec<I> {
+    interface _OffsetSpec<I extends Item> extends _QueryOffsetClause<_LockSpec<I>>, _LockSpec<I> {
 
 
     }

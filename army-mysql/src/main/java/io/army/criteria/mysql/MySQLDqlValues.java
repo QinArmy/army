@@ -26,7 +26,7 @@ public interface MySQLDqlValues extends DialectStatement, RowSet.DqlValues {
 
     }
 
-    interface _UnionOrderBySpec<C, U extends DqlValues> extends Statement._OrderByClause<C, _UnionLimitSpec<C, U>>
+    interface _UnionOrderBySpec<C, U extends DqlValues> extends _StaticOrderByClause<C, _UnionLimitSpec<C, U>>
             , _UnionLimitSpec<C, U> {
 
     }
@@ -38,7 +38,7 @@ public interface MySQLDqlValues extends DialectStatement, RowSet.DqlValues {
 
 
     interface _OrderBySpec<C, U extends DqlValues>
-            extends Statement._OrderByClause<C, _LimitSpec<C, U>>, _LimitSpec<C, U> {
+            extends _StaticOrderByClause<C, _LimitSpec<C, U>>, _LimitSpec<C, U> {
 
     }
 

@@ -59,6 +59,15 @@ public interface Statement extends Item {
 
     }
 
+    interface AscDesc {
+
+    }
+
+    interface NullsFirstLast {
+
+    }
+
+
     interface _CteSpec<I extends Item> extends Item {
 
         I asCte();
@@ -664,6 +673,20 @@ public interface Statement extends Item {
     }
 
 
+    interface _StaticOrderByCommaClause<OR> {
+
+        OR comma(Expression exp, AscDesc ascDesc);
+
+        OR comma(Expression exp1, AscDesc ascDesc1, Expression exp2, AscDesc ascDesc2);
+
+    }
+
+    interface _StaticOrderByNullsCommaClause<OR> extends _StaticOrderByCommaClause<OR> {
+
+        OR comma(Expression exp, AscDesc ascDesc, NullsFirstLast nullOption);
+
+    }
+
     /**
      * <p>
      * This interface representing ORDER BY clause.
@@ -676,7 +699,7 @@ public interface Statement extends Item {
      *
      * @since 1.0
      */
-    interface _OrderByClause<OR> extends Item {
+    interface _StaticOrderByClause<OR> extends Item {
 
         OR orderBy(SortItem sortItem);
 
@@ -684,10 +707,14 @@ public interface Statement extends Item {
 
         OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3);
 
-        OR orderBy(Consumer<Consumer<SortItem>> consumer);
+    }
 
-        OR ifOrderBy(Consumer<Consumer<SortItem>> consumer);
 
+    interface _DynamicOrderByClause<OR> {
+
+        OR orderBy(Consumer<SortItems> consumer);
+
+        OR ifOrderBy(Consumer<SortItems> consumer);
     }
 
 

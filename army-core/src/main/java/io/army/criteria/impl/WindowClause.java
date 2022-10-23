@@ -29,7 +29,7 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
         extends OrderByClause<OR>
         implements _Window
         , Statement._StaticAsClaus<AR>, Window._LeftParenNameClause<LR>, Window._PartitionByExpClause<PR>
-        , Statement._OrderByClause<OR>, Window._FrameUnitExpClause<FE>, Window._FrameUnitNoExpClause<FB>
+        , Statement._StaticOrderByClause<OR>, Window._FrameUnitExpClause<FE>, Window._FrameUnitNoExpClause<FB>
         , Window._FrameBetweenExpClause<BE>, Statement._StaticBetweenClause<BN>
         , Window._FrameBetweenAndExpClause<FE>, Statement._StaticAndClause<NN>
         , Window._FrameExpBoundClause, Window._FrameNonExpBoundClause

@@ -51,6 +51,10 @@ abstract class StandardSyntax extends Functions {
 
     }
 
+    public interface WordPercent {
+
+    }
+
     public interface WordDefault extends Expression {
 
     }
@@ -158,6 +162,32 @@ abstract class StandardSyntax extends Functions {
 
     }//KeyWordAs
 
+    private enum KeyWordPercent implements WordPercent, SQLWords {
+
+        PERCENT(" PERCENT");
+
+        private final String spaceWord;
+
+        KeyWordPercent(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(SQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+    }//KeyWordPercent
+
     private enum KeyWordAnd implements WordAnd {
 
         AND;
@@ -172,6 +202,33 @@ abstract class StandardSyntax extends Functions {
         }
 
     }//KeyWordAnd
+
+    private enum KeyWordAscDesc implements Statement.AscDesc, SQLWords {
+
+        ASC(" ASC"),
+        DESC(" DESC");
+
+        private final String spaceWord;
+
+        KeyWordAscDesc(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(SQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+    }//KeyWordAscDesc
 
     private enum KeyWordLateral implements WordLateral {
 
@@ -519,6 +576,8 @@ abstract class StandardSyntax extends Functions {
 
     public static final WordNext NEXT = KeyWordNext.NEXT;
 
+    public static final WordPercent PERCENT = KeyWordPercent.PERCENT;
+
     public static final SymbolPeriod PERIOD = SQLSymbolPeriod.PERIOD;
 
     public static final WordOnly ONLY = KeyWordOny.ONLY;
@@ -526,6 +585,10 @@ abstract class StandardSyntax extends Functions {
     public static final WordRow ROW = KeyWordRow.ROW;
 
     public static final WordRows ROWS = KeyWordRows.ROWS;
+
+    public static final Statement.AscDesc ASC = KeyWordAscDesc.ASC;
+
+    public static final Statement.AscDesc DESC = KeyWordAscDesc.DESC;
 
     public static final WordsWithTies WITH_TIES = KeyWordWithTies.WITH_TIES;
 

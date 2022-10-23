@@ -307,21 +307,21 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
-    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_UnionAndQuerySpec<I>>, _QuerySpec<I> {
+    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_UnionAndQuerySpec<I>>, _AsQueryClause<I> {
 
     }
 
-    interface _UnionLimitSpec<I extends Item> extends _QuerySpec<I> {
+    interface _UnionLimitSpec<I extends Item> extends _AsQueryClause<I> {
 
     }
 
-    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionLimitSpec<I>>
+    interface _UnionOrderBySpec<I extends Item> extends _StaticOrderByClause<_UnionLimitSpec<I>>
             , _UnionLimitSpec<I>, _UnionSpec<I> {
 
     }
 
 
-    interface _IntoOptionSpec<I extends Item> extends _IntoOptionClause<_QuerySpec<I>>, _QuerySpec<I> {
+    interface _IntoOptionSpec<I extends Item> extends _IntoOptionClause<_AsQueryClause<I>>, _AsQueryClause<I> {
 
     }
 
@@ -371,7 +371,7 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface _OrderBySpec<I extends Item> extends _OrderByClause<_OrderByWithRollupSpec<I>>, _LimitSpec<I>
+    interface _OrderBySpec<I extends Item> extends _StaticOrderByClause<_OrderByWithRollupSpec<I>>, _LimitSpec<I>
             , _UnionSpec<I> {
 
     }

@@ -23,7 +23,7 @@ abstract class BracketRowSet<I extends Item, Q extends RowSet, RR, OR, LR, SP, S
         , Query._RowSetExceptClause<S, UR>
         , Query._RowSetMinusClause<S, UR>
         , TabularItem.DerivedTableSpec
-        , Query._QuerySpec<I>, Statement._RightParenClause<RR>
+        , Query._AsQueryClause<I>, Statement._RightParenClause<RR>
         , Statement, _SelfDescribed {
 
 

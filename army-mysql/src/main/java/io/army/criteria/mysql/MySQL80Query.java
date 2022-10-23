@@ -377,7 +377,7 @@ public interface MySQL80Query extends MySQLQuery {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _OrderByClause}</li>
+     *          <li>{@link _StaticOrderByClause}</li>
      *          <li>the composite {@link _LimitSpec}</li>
      *     </ul>
      * </p>
@@ -392,7 +392,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @since 1.0
      */
     interface _OrderBySpec<C, Q extends Query>
-            extends _OrderByClause<C, _OrderByWithRollupSpec<C, Q>>, _LimitSpec<C, Q> {
+            extends _StaticOrderByClause<C, _OrderByWithRollupSpec<C, Q>>, _LimitSpec<C, Q> {
 
     }
 
@@ -530,7 +530,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _UnionOrderBySpec<C, Q extends Query> extends _OrderByClause<C, _UnionLimitSpec<C, Q>>
+    interface _UnionOrderBySpec<C, Q extends Query> extends _StaticOrderByClause<C, _UnionLimitSpec<C, Q>>
             , _UnionLimitSpec<C, Q> {
 
     }
@@ -563,7 +563,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>UNION clause for MySQL 8.0</li>
-     *          <li>method {@link _QuerySpec#asQuery()}</li>
+     *          <li>method {@link _AsQueryClause#asQuery()}</li>
      *     </ul>
      * </p>
      * <p>
@@ -577,7 +577,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @since 1.0
      */
     interface _UnionSpec<C, Q extends Query>
-            extends _QueryUnionClause<C, _UnionOrderBySpec<C, Q>, _WithSpec<C, Q>>, _QuerySpec<Q> {
+            extends _QueryUnionClause<C, _UnionOrderBySpec<C, Q>, _WithSpec<C, Q>>, _AsQueryClause<Q> {
 
 
     }

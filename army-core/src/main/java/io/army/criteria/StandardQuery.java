@@ -44,7 +44,7 @@ public interface StandardQuery extends Query {
      * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _UnionLimitSpec<I extends Item> extends _LimitClause<_QuerySpec<I>>, _QuerySpec<I> {
+    interface _UnionLimitSpec<I extends Item> extends _LimitClause<_AsQueryClause<I>>, _AsQueryClause<I> {
 
     }
 
@@ -69,7 +69,7 @@ public interface StandardQuery extends Query {
      * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _UnionOrderBySpec<I extends Item> extends Statement._OrderByClause<_UnionLimitSpec<I>>
+    interface _UnionOrderBySpec<I extends Item> extends Statement._StaticOrderByClause<_UnionLimitSpec<I>>
             , _UnionLimitQuerySpec<I> {
 
     }
@@ -80,7 +80,7 @@ public interface StandardQuery extends Query {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>UNION clause for standard syntax</li>
-     *          <li>method {@link _QuerySpec#asQuery()}</li>
+     *          <li>method {@link _AsQueryClause#asQuery()}</li>
      *     </ul>
      * </p>
      * <p>
@@ -92,7 +92,7 @@ public interface StandardQuery extends Query {
      * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _UnionSpec<I extends Item> extends _QuerySpec<I>
+    interface _UnionSpec<I extends Item> extends _AsQueryClause<I>
             , _QueryUnionClause<_UnionAndQuerySpec<I>> {
 
     }
@@ -115,11 +115,11 @@ public interface StandardQuery extends Query {
      * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _LockSpec<I extends Item> extends _QuerySpec<I> {
+    interface _LockSpec<I extends Item> extends _AsQueryClause<I> {
 
-        _QuerySpec<I> lock(LockMode lockMode);
+        _AsQueryClause<I> lock(LockMode lockMode);
 
-        _QuerySpec<I> ifLock(Supplier<LockMode> supplier);
+        _AsQueryClause<I> ifLock(Supplier<LockMode> supplier);
 
     }
 
@@ -164,7 +164,7 @@ public interface StandardQuery extends Query {
      * @since 1.0
      */
     interface _OrderBySpec<I extends Item> extends _LimitSpec<I>
-            , Statement._OrderByClause<_LimitSpec<I>> {
+            , Statement._StaticOrderByClause<_LimitSpec<I>> {
 
     }
 

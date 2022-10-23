@@ -319,8 +319,10 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, RightOpe
 
     Expression bracket();
 
+    @Deprecated
     SortItem asc();
 
+    @Deprecated
     SortItem desc();
 
 

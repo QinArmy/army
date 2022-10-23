@@ -49,7 +49,7 @@ public interface MySQLUpdate extends DialectStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link MySQLUpdate._LimitSpec}</li>
-     *          <li>method {@link Statement._OrderByClause}</li>
+     *          <li>method {@link _StaticOrderByClause}</li>
      *     </ul>
      * </p>
      * <p>
@@ -60,7 +60,7 @@ public interface MySQLUpdate extends DialectStatement {
      *
      * @since 1.0
      */
-    interface _OrderBySpec<I extends Item> extends Statement._OrderByClause<_LimitSpec<I>>, _LimitSpec<I> {
+    interface _OrderBySpec<I extends Item> extends _StaticOrderByClause<_LimitSpec<I>>, _LimitSpec<I> {
 
     }
 
@@ -233,7 +233,7 @@ public interface MySQLUpdate extends DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link Statement._OrderByClause}</li>
+     *          <li>{@link _StaticOrderByClause}</li>
      *          <li>method {@link _BatchLimitSpec}</li>
      *     </ul>
      * </p>
@@ -242,9 +242,10 @@ public interface MySQLUpdate extends DialectStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
+     *
      * @since 1.0
      */
-    interface _BatchOrderBySpec<I extends Item> extends _OrderByClause<_BatchLimitSpec<I>>
+    interface _BatchOrderBySpec<I extends Item> extends _StaticOrderByClause<_BatchLimitSpec<I>>
             , _BatchLimitSpec<I> {
 
     }

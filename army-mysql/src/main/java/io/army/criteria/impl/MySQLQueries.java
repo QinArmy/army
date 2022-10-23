@@ -460,37 +460,37 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     @Override
-    public final _QuerySpec<I> into(String varName) {
+    public final _AsQueryClause<I> into(String varName) {
         this.intoVarList = Collections.singletonList(varName);
         return this;
     }
 
     @Override
-    public final _QuerySpec<I> into(String varName1, String varName2) {
+    public final _AsQueryClause<I> into(String varName1, String varName2) {
         this.intoVarList = ArrayUtils.asUnmodifiableList(varName1, varName2);
         return this;
     }
 
     @Override
-    public final _QuerySpec<I> into(String varName1, String varName2, String varName3) {
+    public final _AsQueryClause<I> into(String varName1, String varName2, String varName3) {
         this.intoVarList = ArrayUtils.asUnmodifiableList(varName1, varName2, varName3);
         return this;
     }
 
     @Override
-    public final _QuerySpec<I> into(String varName1, String varName2, String varName3, String varName4) {
+    public final _AsQueryClause<I> into(String varName1, String varName2, String varName3, String varName4) {
         this.intoVarList = ArrayUtils.asUnmodifiableList(varName1, varName2, varName3, varName4);
         return this;
     }
 
     @Override
-    public final _QuerySpec<I> into(List<String> varNameList) {
+    public final _AsQueryClause<I> into(List<String> varNameList) {
         this.intoVarList = _CollectionUtils.asUnmodifiableList(varNameList);
         return this;
     }
 
     @Override
-    public final _QuerySpec<I> into(Consumer<Consumer<String>> consumer) {
+    public final _AsQueryClause<I> into(Consumer<Consumer<String>> consumer) {
         final List<String> list = new ArrayList<>();
         consumer.accept(list::add);
         if (list.size() == 0) {
@@ -501,7 +501,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     @Override
-    public final _QuerySpec<I> ifInto(Consumer<Consumer<String>> consumer) {
+    public final _AsQueryClause<I> ifInto(Consumer<Consumer<String>> consumer) {
         final List<String> list = new ArrayList<>();
         consumer.accept(list::add);
         this.intoVarList = _CollectionUtils.unmodifiableList(list);
@@ -1033,7 +1033,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             Select,
             MySQLQuery._UnionOrderBySpec<I>,
             MySQLQuery._UnionLimitSpec<I>,
-            _QuerySpec<I>,
+            _AsQueryClause<I>,
             MySQLQuery._UnionAndQuerySpec<I>,
             RowSet,
             Void> implements MySQLQuery._UnionOrderBySpec<I>
@@ -1078,7 +1078,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             SubQuery,
             MySQLQuery._UnionOrderBySpec<I>,
             MySQLQuery._UnionLimitSpec<I>,
-            _QuerySpec<I>,
+            _AsQueryClause<I>,
             MySQLQuery._UnionAndQuerySpec<I>,
             RowSet,
             Void> implements MySQLQuery._UnionOrderBySpec<I>

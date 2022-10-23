@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 
 @SuppressWarnings("unchecked")
 abstract class OrderByClause<OR> implements CriteriaContextSpec
-        , Statement._OrderByClause<OR>
+        , Statement._StaticOrderByClause<OR>
         , _Statement._OrderByListSpec
         , Statement.StatementMockSpec {
 

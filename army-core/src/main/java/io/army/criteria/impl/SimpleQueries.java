@@ -33,7 +33,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         implements Query._DynamicHintModifierSelectClause<W, SR>
         , Statement._FromModifierClause<FT, FS>, Statement._FromModifierCteClause<FC>
         , Statement._QueryWhereClause<WR, WA>, Query._GroupByClause<GR>
-        , Query._HavingClause<HR>, Query._QuerySpec<Q>
+        , Query._HavingClause<HR>, Query._AsQueryClause<Q>
         , TabularItem.DerivedTableSpec, Query._QueryUnionClause<SP>
         , Query._QueryIntersectClause<SP>, Query._QueryExceptClause<SP>
         , Query._QueryMinusClause<SP>, Query

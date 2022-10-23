@@ -34,12 +34,12 @@ abstract class CriteriaSupports {
         return new ParenStringConsumerClause<>(context, function);
     }
 
-    static <OR> Statement._OrderByClause<OR> orderByClause(CriteriaContext criteriaContext
+    static <OR> Statement._StaticOrderByClause<OR> orderByClause(CriteriaContext criteriaContext
             , Function<List<ArmySortItem>, OR> function) {
         throw new UnsupportedOperationException();
     }
 
-    static <OR> Statement._OrderByClause<OR> voidOrderByClause(CriteriaContext criteriaContext
+    static <OR> Statement._StaticOrderByClause<OR> voidOrderByClause(CriteriaContext criteriaContext
             , Function<List<ArmySortItem>, OR> function) {
         throw new UnsupportedOperationException();
     }

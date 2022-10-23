@@ -64,7 +64,7 @@ public interface MySQLDelete extends DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link io.army.criteria.Statement._OrderByClause}</li>
+     *          <li>{@link _StaticOrderByClause}</li>
      *          <li>{@link _LimitSpec}</li>
      *     </ul>
      * </p>
@@ -73,9 +73,10 @@ public interface MySQLDelete extends DialectStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
+     *
      * @since 1.0
      */
-    interface _OrderBySpec<I extends Item> extends _OrderByClause<_LimitSpec<I>>, _LimitSpec<I> {
+    interface _OrderBySpec<I extends Item> extends _StaticOrderByClause<_LimitSpec<I>>, _LimitSpec<I> {
 
     }
 
@@ -197,7 +198,7 @@ public interface MySQLDelete extends DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link Statement._OrderByClause}</li>
+     *          <li>{@link _StaticOrderByClause}</li>
      *          <li>{@link MySQLDelete._BatchLimitSpec}</li>
      *     </ul>
      * </p>
@@ -206,9 +207,10 @@ public interface MySQLDelete extends DialectStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
+     *
      * @since 1.0
      */
-    interface _BatchOrderBySpec<I extends Item> extends _OrderByClause<_BatchLimitSpec<I>>
+    interface _BatchOrderBySpec<I extends Item> extends _StaticOrderByClause<_BatchLimitSpec<I>>
             , _BatchLimitSpec<I> {
 
     }

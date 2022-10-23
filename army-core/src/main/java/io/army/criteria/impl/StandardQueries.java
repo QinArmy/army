@@ -71,7 +71,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    public final _QuerySpec<I> lock(@Nullable LockMode lockMode) {
+    public final _AsQueryClause<I> lock(@Nullable LockMode lockMode) {
         if (lockMode == null) {
             throw ContextStack.nullPointer(this.context);
         }
@@ -80,7 +80,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    public final _QuerySpec<I> ifLock(Supplier<LockMode> supplier) {
+    public final _AsQueryClause<I> ifLock(Supplier<LockMode> supplier) {
         this.lockMode = supplier.get();
         return this;
     }
@@ -242,7 +242,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             Q,
             _UnionOrderBySpec<I>,
             _UnionLimitSpec<I>,
-            _QuerySpec<I>,
+            _AsQueryClause<I>,
             _UnionAndQuerySpec<I>,
             RowSet,
             Void> implements StandardQuery._UnionOrderBySpec<I>

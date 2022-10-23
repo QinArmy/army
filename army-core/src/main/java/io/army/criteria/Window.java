@@ -476,7 +476,7 @@ public interface Window {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link Statement._OrderByClause} clause in WINDOW clause</li>
+     *          <li>{@link Statement._StaticOrderByClause} clause in WINDOW clause</li>
      *          <li>the composite {@link _SimpleFrameUnitsSpec}</li>
      *     </ul>
      * </p>
@@ -489,7 +489,7 @@ public interface Window {
      * @param <I> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
-    interface _SimpleOrderBySpec<I extends Item> extends Statement._OrderByClause<_SimpleFrameUnitsSpec<I>>
+    interface _SimpleOrderBySpec<I extends Item> extends Statement._StaticOrderByClause<_SimpleFrameUnitsSpec<I>>
             , _SimpleFrameUnitsSpec<I> {
 
     }
