@@ -1,13 +1,12 @@
 package io.army.criteria.postgre;
 
-import io.army.criteria.DialectStatement;
 import io.army.criteria.Item;
 import io.army.criteria.Query;
 import io.army.criteria.Update;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.TableMeta;
 
-public interface PostgreDelete extends DialectStatement {
+public interface PostgreDelete extends PostgreCommand {
 
 
     interface _PostgreUsingClause<FT, FS> extends _UsingModifierClause<FT, FS>

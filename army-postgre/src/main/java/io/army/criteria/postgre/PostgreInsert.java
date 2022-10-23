@@ -14,8 +14,7 @@ import java.util.function.Supplier;
  * @see <a href="https://www.postgresql.org/docs/current/sql-insert.html">Postgre INSERT syntax</a>
  * @since 1.0
  */
-public interface PostgreInsert extends DialectStatement {
-
+public interface PostgreInsert extends PostgreCommand {
 
 
     interface _DoUpdateWhereAndSpec<I extends Item, Q extends Item>

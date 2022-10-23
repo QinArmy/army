@@ -1,11 +1,14 @@
 package io.army.criteria.postgre;
 
-import io.army.criteria.*;
+import io.army.criteria.Item;
+import io.army.criteria.Query;
+import io.army.criteria.RowPairs;
+import io.army.criteria.Update;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
-public interface PostgreUpdate extends DialectStatement {
+public interface PostgreUpdate extends PostgreCommand {
 
 
     interface _StaticReturningCommaSpec<Q extends Item>

@@ -17,7 +17,7 @@ import java.util.function.*;
  * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">Postgre SELECT syntax</a>
  * @since 1.0
  */
-public interface PostgreQuery extends Query, DialectStatement {
+public interface PostgreQuery extends Query, PostgreCommand {
 
     interface _PostgreDynamicWithClause<SR>
             extends _DynamicWithClause<PostgreCteBuilder, SR> {
