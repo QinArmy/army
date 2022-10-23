@@ -419,7 +419,7 @@ public interface PostgreQuery extends Query, DialectStatement {
 
     }
 
-    interface _PostgreCrossClause<FT, FS> extends _CrossJoinModifierClause<FT, FS>
+    interface _PostgreCrossJoinClause<FT, FS> extends _CrossJoinModifierClause<FT, FS>
             , _CrossJoinCteClause<FS> {
 
     }
@@ -435,8 +435,8 @@ public interface PostgreQuery extends Query, DialectStatement {
 
 
     interface _PostgreNestedJoinClause<I extends Item>
-            extends _PostgreJoinClause<_NestedIndexHintOnSpec<I>, _NestedOnSpec<I>>
-            , _PostgreCrossClause<_NestedIndexHintCrossSpec<I>, _NestedJoinSpec<I>>
+            extends _PostgreJoinClause<_NestedTableSampleOnSpec<I>, _NestedOnSpec<I>>
+            , _PostgreCrossJoinClause<_NestedTableSampleCrossSpec<I>, _NestedJoinSpec<I>>
             , _JoinNestedClause<_NestedLeftParenSpec<_NestedOnSpec<I>>>
             , _CrossJoinNestedClause<_NestedLeftParenSpec<_NestedJoinSpec<I>>>
             , _PostgreDynamicJoinClause<_NestedJoinSpec<I>>
@@ -454,42 +454,78 @@ public interface PostgreQuery extends Query, DialectStatement {
 
     }
 
-    interface _NestedIndexHintOnSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintOnSpec<I>>
+    interface _NestedRepeatableOnClause<I extends Item> extends _RepeatableClause<_NestedOnSpec<I>>
             , _NestedOnSpec<I> {
 
     }
 
-    interface _NestedPartitionOnSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintOnSpec<I>> {
+    interface _NestedTableSampleOnSpec<I extends Item> extends _TableSampleClause<_NestedRepeatableOnClause<I>>
+            , _NestedOnSpec<I> {
 
     }
 
-    interface _NestedIndexHintCrossSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintCrossSpec<I>>
+
+    interface _NestedRepeatableCrossClause<I extends Item> extends _RepeatableClause<_NestedJoinSpec<I>>
             , _NestedJoinSpec<I> {
 
     }
 
-    interface _NestedPartitionCrossSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintCrossSpec<I>> {
+    interface _NestedTableSampleCrossSpec<I extends Item> extends _TableSampleClause<_NestedRepeatableCrossClause<I>>
+            , _NestedJoinSpec<I> {
 
     }
 
-    interface _NestedIndexHintJoinSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintJoinSpec<I>>
-            , _MySQLNestedJoinClause<I> {
+    interface _NestedRepeatableJoinClause<I extends Item> extends _RepeatableClause<_PostgreNestedJoinClause<I>>
+            , _PostgreNestedJoinClause<I> {
 
     }
 
-    interface _NestedPartitionJoinSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintJoinSpec<I>> {
+    interface _NestedTableSampleJoinSpec<I extends Item> extends _TableSampleClause<_NestedRepeatableJoinClause<I>>
+            , _PostgreNestedJoinClause<I> {
 
     }
 
-    interface _MySQLNestedLeftParenClause<LT, LS> extends _LeftParenModifierTabularClause<LT, LS>
+
+    interface _PostgreNestedLeftParenClause<LT, LS> extends _LeftParenModifierClause<LT, LS>
             , _LeftParenCteClause<LS> {
 
     }
 
     interface _NestedLeftParenSpec<I extends Item>
-            extends _MySQLNestedLeftParenClause<_NestedIndexHintJoinSpec<I>, _MySQLNestedJoinClause<I>>
-            , _NestedDialectLeftParenClause<_NestedPartitionJoinSpec<I>>
-            , _LeftParenClause<_NestedLeftParenSpec<_MySQLNestedJoinClause<I>>> {
+            extends _PostgreNestedLeftParenClause<_NestedTableSampleJoinSpec<I>, _PostgreNestedJoinClause<I>>
+            , _LeftParenClause<_NestedLeftParenSpec<_PostgreNestedJoinClause<I>>> {
+
+    }
+
+
+    interface _DynamicRepeatableOnSpec extends _RepeatableClause<_OnClause<_DynamicJoinSpec>>
+            , _OnClause<_DynamicJoinSpec> {
+
+    }
+
+    interface _DynamicTableSampleOnSpec extends _TableSampleClause<_DynamicRepeatableOnSpec>
+            , _OnClause<_DynamicJoinSpec> {
+
+    }
+
+
+    interface _DynamicJoinSpec
+            extends _PostgreJoinClause<_DynamicTableSampleOnSpec, _OnClause<_DynamicJoinSpec>>
+            , _PostgreCrossJoinClause<_DynamicTableSampleJoinSpec, _DynamicJoinSpec>
+            , _JoinNestedClause<_NestedLeftParenSpec<_OnClause<_DynamicJoinSpec>>>
+            , _CrossJoinNestedClause<_NestedLeftParenSpec<_DynamicJoinSpec>>
+            , _PostgreDynamicJoinClause<_DynamicJoinSpec>
+            , _PostgreDynamicCrossJoinClause<_DynamicJoinSpec> {
+
+    }
+
+    interface _DynamicTableRepeatableJoinSpec extends _RepeatableClause<_DynamicJoinSpec>
+            , _DynamicJoinSpec {
+
+    }
+
+    interface _DynamicTableSampleJoinSpec extends _TableSampleClause<_DynamicTableRepeatableJoinSpec>
+            , _DynamicJoinSpec {
 
     }
 
@@ -679,9 +715,13 @@ public interface PostgreQuery extends Query, DialectStatement {
     }
 
 
-    interface _JoinSpec<I extends Item> extends _JoinModifierClause<_TableSampleOnSpec<I>, _OnClause<_JoinSpec<I>>>
-            , _CrossJoinModifierClause<_TableSampleJoinSpec<I>, _JoinSpec<I>>
-            , _JoinCteClause<_OnClause<_JoinSpec<I>>>, _CrossJoinCteClause<_JoinSpec<I>>
+    interface _JoinSpec<I extends Item>
+            extends _PostgreJoinClause<_TableSampleOnSpec<I>, _OnClause<_JoinSpec<I>>>
+            , _PostgreCrossJoinClause<_TableSampleJoinSpec<I>, _JoinSpec<I>>
+            , _JoinNestedClause<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>>
+            , _CrossJoinNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>
+            , _PostgreDynamicJoinClause<_JoinSpec<I>>
+            , _PostgreDynamicCrossJoinClause<_JoinSpec<I>>
             , _WhereSpec<I> {
 
         //TODO add dialect function tabular
@@ -698,12 +738,13 @@ public interface PostgreQuery extends Query, DialectStatement {
 
 
     interface _PostgreFromClause<FT, FS> extends _FromModifierClause<FT, FS>
-            , _FromModifierCteClause<FS> {
+            , _FromCteClause<FS> {
         //TODO add dialect function tabular
     }
 
 
-    interface _FromSpec<I extends Item> extends _PostgreFromClause<_TableSampleJoinSpec<I>, _JoinSpec<I>>
+    interface _FromSpec<I extends Item>
+            extends _PostgreFromClause<_TableSampleJoinSpec<I>, _JoinSpec<I>>
             , _FromNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>
             , _UnionSpec<I> {
 

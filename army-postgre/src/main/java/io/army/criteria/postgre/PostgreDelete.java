@@ -2,6 +2,7 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.DialectStatement;
 import io.army.criteria.Item;
+import io.army.criteria.Query;
 import io.army.criteria.Update;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.TableMeta;
@@ -12,6 +13,13 @@ public interface PostgreDelete extends DialectStatement {
     interface _PostgreUsingClause<FT, FS> extends _UsingModifierClause<FT, FS>
             , _UsingCteClause<FS> {
 
+    }
+
+    interface _PostgreDeleteClause<R> {
+
+        R delete(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+
+        R delete(SQLs.WordOnly wordOnly, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
     }
 
 
@@ -44,72 +52,66 @@ public interface PostgreDelete extends DialectStatement {
 
 
     interface _RepeatableOnClause<I extends Item, Q extends Item>
-            extends PostgreQuery._RepeatableClause<_OnClause<_JoinSpec<I, Q>>>
-            , _OnClause<_JoinSpec<I, Q>> {
+            extends PostgreQuery._RepeatableClause<_OnClause<_SingleJoinSpec<I, Q>>>
+            , _OnClause<_SingleJoinSpec<I, Q>> {
 
     }
 
     interface _TableSampleOnSpec<I extends Item, Q extends Item>
             extends PostgreQuery._TableSampleClause<_RepeatableOnClause<I, Q>>
-            , _OnClause<_JoinSpec<I, Q>> {
+            , _OnClause<_SingleJoinSpec<I, Q>> {
 
     }
 
 
-    interface _JoinSpec<I extends Item, Q extends Item>
-            extends _JoinModifierClause<_TableSampleOnSpec<I, Q>, _OnClause<_JoinSpec<I, Q>>>
-            , _CrossJoinModifierClause<_TableSampleJoinSpec<I, Q>, _JoinSpec<I, Q>>
-            , _JoinCteClause<_OnClause<_JoinSpec<I, Q>>>, _CrossJoinCteClause<_JoinSpec<I, Q>>
+    interface _SingleJoinSpec<I extends Item, Q extends Item>
+            extends PostgreQuery._PostgreJoinClause<_TableSampleOnSpec<I, Q>, _OnClause<_SingleJoinSpec<I, Q>>>
+            , PostgreQuery._PostgreCrossJoinClause<_TableSampleJoinSpec<I, Q>, _SingleJoinSpec<I, Q>>
+            , _JoinNestedClause<PostgreQuery._NestedLeftParenSpec<_OnClause<_SingleJoinSpec<I, Q>>>>
+            , _CrossJoinNestedClause<PostgreQuery._NestedLeftParenSpec<_SingleJoinSpec<I, Q>>>
+            , PostgreQuery._PostgreDynamicJoinClause<_SingleJoinSpec<I, Q>>
+            , PostgreQuery._PostgreDynamicCrossJoinClause<_SingleJoinSpec<I, Q>>
             , _SingleWhereClause<I, Q> {
 
         //TODO add dialect function tabular
-
     }
 
     interface _RepeatableJoinClause<I extends Item, Q extends Item>
-            extends PostgreQuery._RepeatableClause<_JoinSpec<I, Q>>, _JoinSpec<I, Q> {
+            extends PostgreQuery._RepeatableClause<_SingleJoinSpec<I, Q>>, _SingleJoinSpec<I, Q> {
 
     }
 
 
     interface _TableSampleJoinSpec<I extends Item, Q extends Item>
-            extends PostgreQuery._TableSampleClause<_RepeatableJoinClause<I, Q>>, _JoinSpec<I, Q> {
+            extends PostgreQuery._TableSampleClause<_RepeatableJoinClause<I, Q>>, _SingleJoinSpec<I, Q> {
 
     }
 
 
-    interface _SingleFromClause<I extends Item, Q extends Item>
-            extends PostgreQuery._PostgreFromClause<_TableSampleJoinSpec<I, Q>, _JoinSpec<I, Q>> {
+    interface _SingleUsingSpec<I extends Item, Q extends Item>
+            extends _PostgreUsingClause<_TableSampleJoinSpec<I, Q>, _SingleJoinSpec<I, Q>>
+            , _UsingNestedClause<PostgreQuery._NestedLeftParenSpec<_SingleJoinSpec<I, Q>>>
+            , _SingleWhereClause<I, Q> {
         //TODO add dialect function tabular
     }
 
 
-    interface _SingleUsingSpec<I extends Item, Q extends Item, T>
-            extends _PostgreUsingClause<_TableSampleJoinSpec<I, Q>, _JoinSpec<I, Q>>
-            , _UsingNestedClause<_JoinSpec<I, Q>> {
-
-
-    }
-
-    interface _SingleUpdateClause<I extends Item, Q extends Item> {
-
-        <T> _SingleSetClause<I, Q, T> update(TableMeta<T> table, SQLs.WordAs wordAs, String tableAlias);
-
-        <T> _SingleSetClause<I, Q, T> update(SQLs.WordOnly wordOnly, TableMeta<T> table, SQLs.WordAs wordAs, String tableAlias);
+    interface _SingleDeleteClause<I extends Item, Q extends Item>
+            extends _PostgreDeleteClause<_SingleUsingSpec<I, Q>> {
 
     }
 
 
     interface _SingleMinWithSpec<I extends Item, Q extends Item>
-            extends PostgreQuery._PostgreDynamicWithClause<_SingleUpdateClause<I, Q>>
-            , _SingleUpdateClause<I, Q> {
+            extends PostgreQuery._PostgreDynamicWithClause<_SingleDeleteClause<I, Q>>
+            , _SingleDeleteClause<I, Q> {
 
     }
 
 
     interface _CteComma<I extends Item, Q extends Item>
             extends Query._StaticWithCommaClause<PostgreQuery._StaticCteLeftParenSpec<_CteComma<I, Q>>>
-            , _SingleUpdateClause<I, Q> {
+            , _SingleDeleteClause<I, Q> {
 
     }
 
@@ -151,77 +153,66 @@ public interface PostgreDelete extends DialectStatement {
 
 
     interface _BatchRepeatableOnClause<I extends Item, Q extends Item>
-            extends PostgreQuery._RepeatableClause<_OnClause<_BatchJoinSpec<I, Q>>>
-            , _OnClause<_BatchJoinSpec<I, Q>> {
+            extends PostgreQuery._RepeatableClause<_OnClause<_BatchSingleJoinSpec<I, Q>>>
+            , _OnClause<_BatchSingleJoinSpec<I, Q>> {
 
     }
 
     interface _BatchTableSampleOnSpec<I extends Item, Q extends Item>
             extends PostgreQuery._TableSampleClause<_BatchRepeatableOnClause<I, Q>>
-            , _OnClause<_BatchJoinSpec<I, Q>> {
+            , _OnClause<_BatchSingleJoinSpec<I, Q>> {
 
     }
 
 
-    interface _BatchJoinSpec<I extends Item, Q extends Item>
-            extends _JoinModifierClause<_BatchTableSampleOnSpec<I, Q>, _OnClause<_BatchJoinSpec<I, Q>>>
-            , _CrossJoinModifierClause<_BatchTableSampleJoinSpec<I, Q>, _BatchJoinSpec<I, Q>>
-            , _JoinCteClause<_OnClause<_BatchJoinSpec<I, Q>>>, _CrossJoinCteClause<_BatchJoinSpec<I, Q>>
+    interface _BatchSingleJoinSpec<I extends Item, Q extends Item>
+            extends PostgreQuery._PostgreJoinClause<_BatchTableSampleOnSpec<I, Q>, _OnClause<_BatchSingleJoinSpec<I, Q>>>
+            , PostgreQuery._PostgreCrossJoinClause<_BatchTableSampleJoinSpec<I, Q>, _BatchSingleJoinSpec<I, Q>>
+            , _JoinNestedClause<PostgreQuery._NestedLeftParenSpec<_OnClause<_BatchSingleJoinSpec<I, Q>>>>
+            , _CrossJoinNestedClause<PostgreQuery._NestedLeftParenSpec<_BatchSingleJoinSpec<I, Q>>>
+            , PostgreQuery._PostgreDynamicJoinClause<_BatchSingleJoinSpec<I, Q>>
+            , PostgreQuery._PostgreDynamicCrossJoinClause<_BatchSingleJoinSpec<I, Q>>
             , _BatchSingleWhereClause<I, Q> {
 
         //TODO add dialect function tabular
-
     }
 
     interface _BatchRepeatableJoinClause<I extends Item, Q extends Item>
-            extends PostgreQuery._RepeatableClause<_BatchJoinSpec<I, Q>>, _BatchJoinSpec<I, Q> {
+            extends PostgreQuery._RepeatableClause<_BatchSingleJoinSpec<I, Q>>, _BatchSingleJoinSpec<I, Q> {
 
     }
 
 
     interface _BatchTableSampleJoinSpec<I extends Item, Q extends Item>
-            extends PostgreQuery._TableSampleClause<_BatchRepeatableJoinClause<I, Q>>, _BatchJoinSpec<I, Q> {
+            extends PostgreQuery._TableSampleClause<_BatchRepeatableJoinClause<I, Q>>, _BatchSingleJoinSpec<I, Q> {
 
     }
 
 
-    interface _BatchSingleFromClause<I extends Item, Q extends Item>
-            extends PostgreQuery._PostgreFromClause<_BatchTableSampleJoinSpec<I, Q>, _BatchJoinSpec<I, Q>> {
+    interface _BatchSingleUsingSpec<I extends Item, Q extends Item>
+            extends _PostgreUsingClause<_TableSampleJoinSpec<I, Q>, _BatchSingleJoinSpec<I, Q>>
+            , _UsingNestedClause<PostgreQuery._NestedLeftParenSpec<_BatchSingleJoinSpec<I, Q>>>
+            , _SingleWhereClause<I, Q> {
         //TODO add dialect function tabular
     }
 
-    interface _BatchSingleSetClause<I extends Item, Q extends Item, T>
-            extends Update._StaticRowSetClause<FieldMeta<T>, _BatchSingleFromSpec<I, Q, T>>
-            , Update._DynamicSetClause<RowPairs<FieldMeta<T>>, _BatchSingleFromClause<I, Q>> {
 
-    }
-
-
-    interface _BatchSingleFromSpec<I extends Item, Q extends Item, T> extends _BatchSingleFromClause<I, Q>
-            , _BatchSingleSetClause<I, Q, T> {
-
-
-    }
-
-    interface _BatchSingleUpdateClause<I extends Item, Q extends Item> {
-
-        <T> _BatchSingleSetClause<I, Q, T> update(TableMeta<T> table, SQLs.WordAs wordAs, String tableAlias);
-
-        <T> _BatchSingleSetClause<I, Q, T> update(SQLs.WordOnly wordOnly, TableMeta<T> table, SQLs.WordAs wordAs, String tableAlias);
+    interface _BatchSingleDeleteClause<I extends Item, Q extends Item>
+            extends _PostgreDeleteClause<_BatchSingleUsingSpec<I, Q>> {
 
     }
 
 
     interface _BatchSingleMinWithSpec<I extends Item, Q extends Item>
-            extends PostgreQuery._PostgreDynamicWithClause<_BatchSingleUpdateClause<I, Q>>
-            , _BatchSingleUpdateClause<I, Q> {
+            extends PostgreQuery._PostgreDynamicWithClause<_BatchSingleDeleteClause<I, Q>>
+            , _BatchSingleDeleteClause<I, Q> {
 
     }
 
 
     interface _BatchCteComma<I extends Item, Q extends Item>
             extends Query._StaticWithCommaClause<PostgreQuery._StaticCteLeftParenSpec<_BatchCteComma<I, Q>>>
-            , _BatchSingleUpdateClause<I, Q> {
+            , _BatchSingleDeleteClause<I, Q> {
 
     }
 
