@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CteBuilderSpec;
+import io.army.criteria.DialectStatement;
 import io.army.criteria.Item;
-import io.army.criteria.Query;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._MultiDelete;
@@ -106,7 +106,7 @@ abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, J
 
 
     static abstract class WithMultiDelete<I extends Item, Q extends Item, B extends CteBuilderSpec, WE, FT, FS, FC, JT, JS, JC, WR, WA>
-            extends MultiDelete<I, Q, FT, FS, FC, JT, JS, JC, WR, WA> implements Query._DynamicWithClause<B, WE>
+            extends MultiDelete<I, Q, FT, FS, FC, JT, JS, JC, WR, WA> implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
 
         private boolean recursive;

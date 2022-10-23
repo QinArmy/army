@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CteBuilderSpec;
+import io.army.criteria.DialectStatement;
 import io.army.criteria.Item;
-import io.army.criteria.Query;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._SingleDelete;
@@ -80,7 +80,7 @@ abstract class SingleDelete<I extends Item, Q extends Item, WR, WA, OR, LR> exte
 
 
     static abstract class WithSingleDelete<I extends Item, Q extends Item, B extends CteBuilderSpec, WE, WR, WA, OR, LR>
-            extends SingleDelete<I, Q, WR, WA, OR, LR> implements Query._DynamicWithClause<B, WE>
+            extends SingleDelete<I, Q, WR, WA, OR, LR> implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
 
         private boolean recursive;

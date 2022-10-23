@@ -32,7 +32,7 @@ public interface Insert extends DmlStatement, DmlInsert {
      * @since 1.0
      */
     @Deprecated
-    interface _InsertSpec extends _DmlInsertSpec<Insert> {
+    interface _InsertSpec extends _DmlInsertClause<Insert> {
 
     }
 

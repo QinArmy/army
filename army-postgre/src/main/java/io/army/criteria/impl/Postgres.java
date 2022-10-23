@@ -65,11 +65,11 @@ public abstract class Postgres extends PostgreFuncSyntax {
     public static final Modifier ONLY = new Modifier(" ONLY");
 
 
-    public static PostgreInsert._PrimaryOptionSpec singleInsert() {
+    public static PostgreInsert._SingleOptionSpec singleInsert() {
         return PostgreInserts.primaryInsert();
     }
 
-    public static PostgreQuery._WithCteSpec<Select> query() {
+    public static PostgreQuery._WithSpec<Select> query() {
         return PostgreQueries.primaryQuery();
     }
 

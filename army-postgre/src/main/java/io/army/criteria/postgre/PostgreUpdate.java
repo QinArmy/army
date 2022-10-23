@@ -1,14 +1,13 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.Item;
-import io.army.criteria.Query;
 import io.army.criteria.RowPairs;
 import io.army.criteria.Update;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
-public interface PostgreUpdate extends PostgreCommand {
+public interface PostgreUpdate extends PostgreStatement {
 
 
     interface _StaticReturningCommaSpec<Q extends Item>
@@ -53,12 +52,12 @@ public interface PostgreUpdate extends PostgreCommand {
 
 
     interface _SingleJoinSpec<I extends Item, Q extends Item>
-            extends PostgreQuery._PostgreJoinClause<_TableSampleOnSpec<I, Q>, _OnClause<_SingleJoinSpec<I, Q>>>
-            , PostgreQuery._PostgreCrossJoinClause<_TableSampleJoinSpec<I, Q>, _SingleJoinSpec<I, Q>>
-            , _JoinNestedClause<PostgreQuery._NestedLeftParenSpec<_OnClause<_SingleJoinSpec<I, Q>>>>
-            , _CrossJoinNestedClause<PostgreQuery._NestedLeftParenSpec<_SingleJoinSpec<I, Q>>>
-            , PostgreQuery._PostgreDynamicJoinClause<_SingleJoinSpec<I, Q>>
-            , PostgreQuery._PostgreDynamicCrossJoinClause<_SingleJoinSpec<I, Q>>
+            extends _PostgreJoinClause<_TableSampleOnSpec<I, Q>, _OnClause<_SingleJoinSpec<I, Q>>>
+            , _PostgreCrossJoinClause<_TableSampleJoinSpec<I, Q>, _SingleJoinSpec<I, Q>>
+            , _JoinNestedClause<_NestedLeftParenSpec<_OnClause<_SingleJoinSpec<I, Q>>>>
+            , _CrossJoinNestedClause<_NestedLeftParenSpec<_SingleJoinSpec<I, Q>>>
+            , _PostgreDynamicJoinClause<_SingleJoinSpec<I, Q>>
+            , _PostgreDynamicCrossJoinClause<_SingleJoinSpec<I, Q>>
             , _SingleWhereClause<I, Q> {
 
         //TODO add dialect function tabular
@@ -114,13 +113,13 @@ public interface PostgreUpdate extends PostgreCommand {
 
 
     interface _CteComma<I extends Item, Q extends Item>
-            extends Query._StaticWithCommaClause<PostgreQuery._StaticCteLeftParenSpec<_CteComma<I, Q>>>
+            extends _StaticWithCommaClause<PostgreQuery._StaticCteLeftParenSpec<_CteComma<I, Q>>>
             , _SingleUpdateClause<I, Q> {
 
     }
 
     interface _SingleWithSpec<I extends Item, Q extends Item> extends _SingleMinWithSpec<I, Q>
-            , Query._StaticWithClause<PostgreQuery._StaticCteLeftParenSpec<_CteComma<I, Q>>> {
+            , _StaticWithClause<PostgreQuery._StaticCteLeftParenSpec<_CteComma<I, Q>>> {
 
     }
 
@@ -170,12 +169,12 @@ public interface PostgreUpdate extends PostgreCommand {
 
 
     interface _BatchSingleJoinSpec<I extends Item, Q extends Item>
-            extends PostgreQuery._PostgreJoinClause<_BatchTableSampleOnSpec<I, Q>, _OnClause<_BatchSingleJoinSpec<I, Q>>>
-            , PostgreQuery._PostgreCrossJoinClause<_BatchTableSampleJoinSpec<I, Q>, _BatchSingleJoinSpec<I, Q>>
-            , _JoinNestedClause<PostgreQuery._NestedLeftParenSpec<_OnClause<_BatchSingleJoinSpec<I, Q>>>>
-            , _CrossJoinNestedClause<PostgreQuery._NestedLeftParenSpec<_BatchSingleJoinSpec<I, Q>>>
-            , PostgreQuery._PostgreDynamicJoinClause<_BatchSingleJoinSpec<I, Q>>
-            , PostgreQuery._PostgreDynamicCrossJoinClause<_BatchSingleJoinSpec<I, Q>>
+            extends _PostgreJoinClause<_BatchTableSampleOnSpec<I, Q>, _OnClause<_BatchSingleJoinSpec<I, Q>>>
+            , _PostgreCrossJoinClause<_BatchTableSampleJoinSpec<I, Q>, _BatchSingleJoinSpec<I, Q>>
+            , _JoinNestedClause<_NestedLeftParenSpec<_OnClause<_BatchSingleJoinSpec<I, Q>>>>
+            , _CrossJoinNestedClause<_NestedLeftParenSpec<_BatchSingleJoinSpec<I, Q>>>
+            , _PostgreDynamicJoinClause<_BatchSingleJoinSpec<I, Q>>
+            , _PostgreDynamicCrossJoinClause<_BatchSingleJoinSpec<I, Q>>
             , _BatchSingleWhereClause<I, Q> {
 
         //TODO add dialect function tabular
@@ -195,7 +194,7 @@ public interface PostgreUpdate extends PostgreCommand {
 
 
     interface _BatchSingleFromClause<I extends Item, Q extends Item>
-            extends PostgreQuery._PostgreFromClause<_BatchTableSampleJoinSpec<I, Q>, _BatchSingleJoinSpec<I, Q>>
+            extends _PostgreFromClause<_BatchTableSampleJoinSpec<I, Q>, _BatchSingleJoinSpec<I, Q>>
             , _FromNestedClause<PostgreQuery._NestedLeftParenSpec<_BatchSingleJoinSpec<I, Q>>>
             , _BatchSingleWhereClause<I, Q> {
         //TODO add dialect function tabular
@@ -231,13 +230,13 @@ public interface PostgreUpdate extends PostgreCommand {
 
 
     interface _BatchCteComma<I extends Item, Q extends Item>
-            extends Query._StaticWithCommaClause<PostgreQuery._StaticCteLeftParenSpec<_BatchCteComma<I, Q>>>
+            extends _StaticWithCommaClause<PostgreQuery._StaticCteLeftParenSpec<_BatchCteComma<I, Q>>>
             , _BatchSingleUpdateClause<I, Q> {
 
     }
 
     interface _BatchSingleWithSpec<I extends Item, Q extends Item> extends _BatchSingleMinWithSpec<I, Q>
-            , Query._StaticWithClause<PostgreQuery._StaticCteLeftParenSpec<_BatchCteComma<I, Q>>> {
+            , _StaticWithClause<PostgreQuery._StaticCteLeftParenSpec<_BatchCteComma<I, Q>>> {
 
     }
 

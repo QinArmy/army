@@ -28,18 +28,18 @@ public interface MySQLInsert extends DialectStatement {
 
     interface _StaticOnDuplicateKeySetSpec<I extends Item, F extends TableField>
             extends _StaticOnDuplicateKeySetClause<I, F>
-            , _DmlInsertSpec<I> {
+            , _DmlInsertClause<I> {
 
     }
 
 
-    interface _OnDuplicateKeyUpdateSpec<I extends Item, F extends TableField> extends _DmlInsertSpec<I> {
+    interface _OnDuplicateKeyUpdateSpec<I extends Item, F extends TableField> extends _DmlInsertClause<I> {
 
         _StaticOnDuplicateKeySetClause<I, F> onDuplicateKey();
 
-        _DmlInsertSpec<I> onDuplicateKey(Consumer<ItemPairs<F>> consumer);
+        _DmlInsertClause<I> onDuplicateKey(Consumer<ItemPairs<F>> consumer);
 
-        _DmlInsertSpec<I> ifOnDuplicateKey(Consumer<ItemPairs<F>> consumer);
+        _DmlInsertClause<I> ifOnDuplicateKey(Consumer<ItemPairs<F>> consumer);
     }
 
 
@@ -72,7 +72,7 @@ public interface MySQLInsert extends DialectStatement {
     }
 
     interface _ComplexColumnDefaultSpec<I extends Item, T> extends _ValuesColumnDefaultSpec<I, T>
-            , Query._StaticSpaceClause<MySQLQuery._MySQLSelectClause<_OnDuplicateKeyUpdateSpec<I, FieldMeta<T>>>> {
+            , _StaticSpaceClause<MySQLQuery._MySQLSelectClause<_OnDuplicateKeyUpdateSpec<I, FieldMeta<T>>>> {
 
     }
 

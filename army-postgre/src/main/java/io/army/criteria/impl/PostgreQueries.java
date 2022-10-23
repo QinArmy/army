@@ -9,7 +9,7 @@ import java.util.function.Function;
 abstract class PostgreQueries {
 
 
-    static <Q extends Item> PostgreQuery._WithCteSpec<Q> primaryQuery() {
+    static <Q extends Item> PostgreQuery._WithSpec<Q> primaryQuery() {
         throw new UnsupportedOperationException();
     }
 

@@ -20,21 +20,21 @@ public interface StandardInsert extends StandardStatement {
     }
 
     interface _ValueStaticLeftParenSpec<T, I extends Item>
-            extends _StandardValueStaticLeftParenClause<T, I>, _DmlInsertSpec<I> {
+            extends _StandardValueStaticLeftParenClause<T, I>, _DmlInsertClause<I> {
 
     }
 
     interface _ValuesColumnDefaultSpec<T, I extends Item>
             extends Insert._ColumnDefaultClause<T, _ValuesColumnDefaultSpec<T, I>>
-            , Insert._DomainValueClause<T, _DmlInsertSpec<I>>
-            , Insert._DynamicValuesClause<T, _DmlInsertSpec<I>>
+            , Insert._DomainValueClause<T, _DmlInsertClause<I>>
+            , Insert._DynamicValuesClause<T, _DmlInsertClause<I>>
             , Insert._StaticValuesClause<_StandardValueStaticLeftParenClause<T, I>> {
 
     }
 
 
     interface _ComplexColumnDefaultSpec<T, I extends Item> extends _ValuesColumnDefaultSpec<T, I>
-            , Query._StaticSpaceClause<StandardQuery._SelectSpec<_DmlInsertSpec<I>>> {
+            , DialectStatement._StaticSpaceClause<StandardQuery._SelectSpec<_DmlInsertClause<I>>> {
 
     }
 

@@ -44,7 +44,7 @@ abstract class PostgreInserts extends InsertSupport {
     }
 
 
-    static PostgreInsert._PrimaryOptionSpec primaryInsert() {
+    static PostgreInsert._SingleOptionSpec primaryInsert() {
         return new PrimaryInsertIntoClause();
     }
 
@@ -60,7 +60,7 @@ abstract class PostgreInserts extends InsertSupport {
     /*-------------------below private method -------------------*/
 
     private static SubInsert createSubInsert(final PostgreComplexInsertValuesClause<?, ?, ?> clause) {
-        final Statement._DmlInsertSpec<SubInsert> spec;
+        final Statement._DmlInsertClause<SubInsert> spec;
         final InsertMode mode = clause.getInsertMode();
         switch (mode) {
             case DOMAIN:
@@ -79,7 +79,7 @@ abstract class PostgreInserts extends InsertSupport {
     }
 
     private static SubReturningInsert createSubReturningInsert(final PostgreComplexInsertValuesClause<?, ?, ?> clause) {
-        final DqlInsert._DqlInsertSpec<SubReturningInsert> spec;
+        final Statement._DqlInsertClause<SubReturningInsert> spec;
         final InsertMode mode = clause.getInsertMode();
         switch (mode) {
             case DOMAIN:
@@ -231,13 +231,13 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public DqlInsert._DqlInsertSpec<Q> returningAll() {
+        public Statement._DqlInsertClause<Q> returningAll() {
             return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
                     .returningAll();
         }
 
         @Override
-        public DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<Selection>> consumer) {
+        public Statement._DqlInsertClause<Q> returning(Consumer<Consumer<Selection>> consumer) {
             return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
                     .returning(consumer);
         }
@@ -415,13 +415,13 @@ abstract class PostgreInserts extends InsertSupport {
     /*-------------------below insert after values syntax class-------------------*/
 
 
-    private static final class ParentCteCommaClause implements PostgreInsert._ParentCteComma {
+    private static final class ParentCteCommaClause implements PostgreInsert._SingleCteComma {
 
         private final boolean recursive;
 
         private final PrimaryInsertIntoClause primaryClause;
 
-        private final StaticCteComplexCommandClause<PostgreInsert._ParentCteComma, PostgreInsert._ParentCteComma> commandClause;
+        private final StaticCteComplexCommandClause<PostgreInsert._SingleCteComma, PostgreInsert._SingleCteComma> commandClause;
 
         private ParentCteCommaClause(boolean recursive, String name, PrimaryInsertIntoClause primaryClause) {
             this.recursive = recursive;
@@ -430,8 +430,8 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._StaticCteLeftParenSpec<PostgreInsert._ParentCteComma, PostgreInsert._ParentCteComma> comma(final @Nullable String name) {
-            final StaticCteComplexCommandClause<PostgreInsert._ParentCteComma, PostgreInsert._ParentCteComma> commandClause;
+        public PostgreInsert._StaticCteLeftParenSpec<PostgreInsert._SingleCteComma, PostgreInsert._SingleCteComma> comma(final @Nullable String name) {
+            final StaticCteComplexCommandClause<PostgreInsert._SingleCteComma, PostgreInsert._SingleCteComma> commandClause;
             commandClause = this.commandClause;
             if (name == null) {
                 throw ContextStack.nullPointer(commandClause.context);
@@ -446,7 +446,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._PrimaryInsertIntoClause space() {
+        public PostgreInsert._SingleInsertIntoClause space() {
             final PrimaryInsertIntoClause primaryClause = this.primaryClause;
             primaryClause.endStaticWithClause(this.recursive);
             return primaryClause;
@@ -525,7 +525,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._SubInsertIntoClause<I, Q> literalMode(LiteralMode mode) {
+        public PostgreInsert._ComplexInsertIntoClause<I, Q> literalMode(LiteralMode mode) {
             return PostgreInserts.staticSubInsert(this.context, this::cteInsertEnd, this::cteReturnInsertEnd)
                     .literalMode(mode);
         }
@@ -580,12 +580,12 @@ abstract class PostgreInserts extends InsertSupport {
     }//StaticCteComplexCommandClause
 
     private static final class PrimaryInsertIntoClause extends NonQueryWithCteOption<
-            PostgreInsert._PrimaryNullOptionSpec,
-            PostgreInsert._PrimaryPreferLiteralSpec,
-            PostgreInsert._PrimaryWithCteSpec,
+            PostgreInsert._SingleNullOptionSpec,
+            PostgreInsert._SinglePreferLiteralSpec,
+            PostgreInsert._SingleWithCteSpec,
             PostgreCteBuilder,
-            PostgreInsert._PrimaryInsertIntoClause>
-            implements PostgreInsert._PrimaryOptionSpec {
+            PostgreInsert._SingleInsertIntoClause>
+            implements PostgreInsert._SingleOptionSpec {
 
         private PrimaryInsertIntoClause() {
             super(CriteriaContexts.primaryInsertContext());
@@ -594,7 +594,7 @@ abstract class PostgreInserts extends InsertSupport {
 
 
         @Override
-        public PostgreInsert._StaticCteLeftParenSpec<PostgreInsert._ParentCteComma, PostgreInsert._ParentCteComma> with(final @Nullable String name) {
+        public PostgreInsert._StaticCteLeftParenSpec<PostgreInsert._SingleCteComma, PostgreInsert._SingleCteComma> with(final @Nullable String name) {
             final CriteriaContext context = this.context;
             if (name == null) {
                 throw ContextStack.nullPointer(context);
@@ -606,7 +606,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._StaticCteLeftParenSpec<PostgreInsert._ParentCteComma, PostgreInsert._ParentCteComma> withRecursive(final @Nullable String name) {
+        public PostgreInsert._StaticCteLeftParenSpec<PostgreInsert._SingleCteComma, PostgreInsert._SingleCteComma> withRecursive(final @Nullable String name) {
             final CriteriaContext context = this.context;
             if (name == null) {
                 throw ContextStack.nullPointer(context);
@@ -638,7 +638,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         private <P> PostgreInsert._ParentInsert<P> parentInsertEnd(final PostgreComplexInsertValuesClause<?, ?, ?> clause) {
-            final Statement._DmlInsertSpec<PostgreInsert._ParentInsert<P>> spec;
+            final Statement._DmlInsertClause<PostgreInsert._ParentInsert<P>> spec;
             final InsertMode mode;
             mode = clause.getInsertMode();
             switch (mode) {
@@ -658,7 +658,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         private <P> PostgreInsert._ParentReturnInsert<P> parentReturningInsertEnd(PostgreComplexInsertValuesClause<?, ?, ?> clause) {
-            final DqlInsert._DqlInsertSpec<PostgreInsert._ParentReturnInsert<P>> spec;
+            final Statement._DqlInsertClause<PostgreInsert._ParentReturnInsert<P>> spec;
             final InsertMode mode;
             mode = clause.getInsertMode();
             switch (mode) {
@@ -678,7 +678,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         private Insert insertEnd(PostgreComplexInsertValuesClause<?, ?, ?> clause) {
-            final Statement._DmlInsertSpec<Insert> spec;
+            final Statement._DmlInsertClause<Insert> spec;
             final InsertMode mode;
             mode = clause.getInsertMode();
             switch (mode) {
@@ -698,7 +698,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         private ReturningInsert returningInsertEnd(PostgreComplexInsertValuesClause<?, ?, ?> clause) {
-            final DqlInsert._DqlInsertSpec<ReturningInsert> spec;
+            final Statement._DqlInsertClause<ReturningInsert> spec;
             final InsertMode mode;
             mode = clause.getInsertMode();
             switch (mode) {
@@ -780,7 +780,7 @@ abstract class PostgreInserts extends InsertSupport {
             extends NonQueryInsertOptionsImpl<
             PostgreInsert._StaticSubNullOptionSpec<I, Q>,
             PostgreInsert._StaticSubPreferLiteralSpec<I, Q>,
-            PostgreInsert._SubInsertIntoClause<I, Q>>
+            PostgreInsert._ComplexInsertIntoClause<I, Q>>
             implements PostgreInsert._StaticSubOptionSpec<I, Q>
             , WithValueSyntaxOptions {
 
@@ -832,7 +832,7 @@ abstract class PostgreInserts extends InsertSupport {
             PostgreInsert._DynamicSubPreferLiteralSpec<I, I>,
             PostgreInsert._DynamicSubWithCteSpec<I, I>,
             PostgreCteBuilder,
-            PostgreInsert._SubInsertIntoClause<I, I>>
+            PostgreInsert._ComplexInsertIntoClause<I, I>>
             implements PostgreInsert._DynamicSubOptionSpec<I, I>
             , Statement._RightParenClause<PostgreInsert._DynamicSubOptionSpec<I, I>>
             , PostgreInsert._DynamicSubInsert<I> {
@@ -1107,7 +1107,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<Selection>> consumer) {
+        public Statement._DqlInsertClause<Q> returning(Consumer<Consumer<Selection>> consumer) {
             consumer.accept(this::comma);
             if (this.selectItemList == null) {
                 throw ContextStack.criteriaError(this.context, _Exceptions::returningListEmpty);
@@ -1117,7 +1117,7 @@ abstract class PostgreInserts extends InsertSupport {
 
 
         @Override
-        public DqlInsert._DqlInsertSpec<Q> returningAll() {
+        public Statement._DqlInsertClause<Q> returningAll() {
             if (this.selectItemList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -1190,7 +1190,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public DqlInsert._DqlInsertSpec<Q> returningAll() {
+        public Statement._DqlInsertClause<Q> returningAll() {
             this.clause.staticValuesClauseEnd(this.endValuesClause());
             return this.clause.returningAll();
         }
@@ -1208,7 +1208,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public DqlInsert._DqlInsertSpec<Q> returning(Consumer<Consumer<Selection>> consumer) {
+        public Statement._DqlInsertClause<Q> returning(Consumer<Consumer<Selection>> consumer) {
             this.clause.staticValuesClauseEnd(this.endValuesClause());
             return this.clause.returning(consumer);
         }

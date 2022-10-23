@@ -323,7 +323,7 @@ abstract class MultiUpdate<I extends Item, Q extends Item, F extends DataField, 
 
     static abstract class WithMultiUpdate<I extends Item, Q extends Item, B extends CteBuilderSpec, WE, F extends DataField, PS extends Update._ItemPairBuilder, SR, FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
             extends MultiUpdate<I, Q, F, PS, SR, FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
-            implements Query._DynamicWithClause<B, WE>
+            implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
 
         private boolean recursive;

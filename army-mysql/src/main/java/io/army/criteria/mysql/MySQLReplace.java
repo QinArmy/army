@@ -27,20 +27,20 @@ public interface MySQLReplace extends ReplaceInsert, DmlInsert {
     }
 
     interface _StaticValuesLeftParenSpec<I extends Item, T> extends _MySQLStaticValuesLeftParenClause<I, T>
-            , _DmlInsertSpec<I> {
+            , _DmlInsertClause<I> {
 
     }
 
     interface _ValueColumnDefaultSpec<I extends Item, T>
             extends Insert._ColumnDefaultClause<T, _ValueColumnDefaultSpec<I, T>>
-            , Insert._DomainValueClause<T, _DmlInsertSpec<I>>
+            , Insert._DomainValueClause<T, _DmlInsertClause<I>>
             , Insert._StaticValuesClause<_MySQLStaticValuesLeftParenClause<I, T>>
-            , Insert._DynamicValuesClause<T, _DmlInsertSpec<I>> {
+            , Insert._DynamicValuesClause<T, _DmlInsertClause<I>> {
 
     }
 
     interface _ComplexColumnDefaultSpec<I extends Item, T> extends _ValueColumnDefaultSpec<I, T>
-            , Query._StaticSpaceClause<MySQLQuery._WithCteSpec<_DmlInsertSpec<I>> {
+            , _StaticSpaceClause<MySQLQuery._WithCteSpec<_DmlInsertClause<I>> {
 
     }
 

@@ -140,7 +140,7 @@ public interface MySQLDelete extends DialectStatement {
     }
 
     interface _SingleComma<I extends Item>
-            extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>>>
+            extends _StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>>>
             , _SimpleSingleDeleteClause<I> {
 
     }
@@ -149,8 +149,8 @@ public interface MySQLDelete extends DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link Query._DynamicWithClause}</li>
-     *          <li>{@link Query._StaticWithClause}</li>
+     *          <li>{@link _DynamicWithClause}</li>
+     *          <li>{@link _StaticWithClause}</li>
      *          <li>{@link _SimpleSingleDeleteClause}</li>
      *     </ul>
      * </p>
@@ -163,8 +163,8 @@ public interface MySQLDelete extends DialectStatement {
      * @since 1.0
      */
     interface _SingleWithSpec<I extends Item>
-            extends Query._DynamicWithClause<MySQLCteBuilder, _SimpleSingleDeleteClause<I>>
-            , Query._StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>>>
+            extends _DynamicWithClause<MySQLCteBuilder, _SimpleSingleDeleteClause<I>>
+            , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>>>
             , _SimpleSingleDeleteClause<I> {
 
 
@@ -293,7 +293,7 @@ public interface MySQLDelete extends DialectStatement {
     }
 
     interface _BatchSingleComma<I extends Item>
-            extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
+            extends _StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
             , _BatchSingleDeleteClause<I> {
 
     }
@@ -302,7 +302,7 @@ public interface MySQLDelete extends DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link Query._DynamicWithClause}</li>
+     *          <li>{@link _DynamicWithClause}</li>
      *          <li>{@link MySQLDelete._BatchSingleDeleteClause}</li>
      *     </ul>
      * </p>
@@ -315,8 +315,8 @@ public interface MySQLDelete extends DialectStatement {
      * @since 1.0
      */
     interface _BatchSingleWithSpec<I extends Item>
-            extends Query._DynamicWithClause<MySQLCteBuilder, _BatchSingleDeleteClause<I>>
-            , Query._StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
+            extends _DynamicWithClause<MySQLCteBuilder, _BatchSingleDeleteClause<I>>
+            , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
             , _BatchSingleDeleteClause<I> {
 
     }
@@ -538,7 +538,7 @@ public interface MySQLDelete extends DialectStatement {
     }
 
     interface _MultiComma<I extends Item>
-            extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>>>
+            extends _StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>>>
             , _SimpleMultiDeleteClause<I> {
 
     }
@@ -548,7 +548,7 @@ public interface MySQLDelete extends DialectStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link MySQLQuery._MySQLDynamicWithCteClause}</li>
-     *          <li>{@link Query._StaticWithClause}</li>
+     *          <li>{@link _StaticWithClause}</li>
      *          <li>{@link _SimpleMultiDeleteClause}</li>
      *     </ul>
      * </p>
@@ -561,7 +561,7 @@ public interface MySQLDelete extends DialectStatement {
      * @since 1.0
      */
     interface _MultiWithSpec<I extends Item> extends MySQLQuery._MySQLDynamicWithCteClause<_SimpleMultiDeleteClause<I>>
-            , Query._StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>>>
+            , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>>>
             , _SimpleMultiDeleteClause<I> {
 
     }
@@ -738,7 +738,7 @@ public interface MySQLDelete extends DialectStatement {
     }
 
     interface _BatchMultiComma<I extends Item>
-            extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>>>
+            extends _StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>>>
             , _BatchMultiDeleteClause<I> {
 
     }
@@ -748,7 +748,7 @@ public interface MySQLDelete extends DialectStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link MySQLQuery._MySQLDynamicWithCteClause}</li>
-     *          <li>{@link Query._StaticWithClause}</li>
+     *          <li>{@link _StaticWithClause}</li>
      *          <li>{@link _SimpleMultiDeleteClause}</li>
      *     </ul>
      * </p>
@@ -762,7 +762,7 @@ public interface MySQLDelete extends DialectStatement {
      */
     interface _BatchMultiWithSpec<I extends Item>
             extends MySQLQuery._MySQLDynamicWithCteClause<_BatchMultiDeleteClause<I>>
-            , Query._StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>>>
+            , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>>>
             , _BatchMultiDeleteClause<I> {
 
     }

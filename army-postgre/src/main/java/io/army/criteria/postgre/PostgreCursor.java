@@ -1,6 +1,6 @@
 package io.army.criteria.postgre;
 
-public interface PostgreCursor extends PostgreCommand {
+public interface PostgreCursor extends PostgreStatement {
 
 
 }

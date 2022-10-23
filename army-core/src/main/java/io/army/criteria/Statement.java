@@ -820,13 +820,15 @@ public interface Statement extends Item {
     }
 
 
-
-
-
-    interface _DmlInsertSpec<I extends Item> extends Item {
+    interface _DmlInsertClause<I extends Item> extends Item {
 
         I asInsert();
 
+    }
+
+    interface _DqlInsertClause<Q extends Item> {
+
+        Q asReturningInsert();
     }
 
 
@@ -855,5 +857,6 @@ public interface Statement extends Item {
         MultiStatement asMultiStmt();
 
     }
+
 
 }

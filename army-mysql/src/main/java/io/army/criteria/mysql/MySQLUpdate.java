@@ -176,7 +176,7 @@ public interface MySQLUpdate extends DialectStatement {
     }
 
 
-    interface _SingleComma<I extends Item> extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>>>
+    interface _SingleComma<I extends Item> extends _StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>>>
             , _SingleUpdateClause<I> {
 
     }
@@ -199,7 +199,7 @@ public interface MySQLUpdate extends DialectStatement {
      */
     interface _SingleWithSpec<I extends Item>
             extends MySQLQuery._MySQLDynamicWithCteClause<_SingleUpdateClause<I>>
-            , Query._StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>>>
+            , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>>>
             , _SingleUpdateClause<I> {
 
     }
@@ -367,7 +367,7 @@ public interface MySQLUpdate extends DialectStatement {
 
 
     interface _BatchSingleComma<I extends Item>
-            extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
+            extends _StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
             , _BatchSingleUpdateClause<I> {
 
     }
@@ -390,7 +390,7 @@ public interface MySQLUpdate extends DialectStatement {
      */
     interface _BatchSingleWithSpec<I extends Item>
             extends MySQLQuery._MySQLDynamicWithCteClause<_BatchSingleUpdateClause<I>>
-            , Query._StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
+            , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
             , _BatchSingleUpdateClause<I> {
 
     }
@@ -616,7 +616,7 @@ public interface MySQLUpdate extends DialectStatement {
 
 
     interface _MultiComma<I extends Item>
-            extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>>>
+            extends _StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>>>
             , MultiUpdateClause<I> {
 
     }
@@ -627,7 +627,7 @@ public interface MySQLUpdate extends DialectStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link MySQLQuery._MySQLDynamicWithCteClause}</li>
-     *          <li>{@link Query._StaticWithClause}</li>
+     *          <li>{@link _StaticWithClause}</li>
      *          <li>{@link MultiUpdateClause}</li>
      *     </ul>
      * </p>
@@ -640,7 +640,7 @@ public interface MySQLUpdate extends DialectStatement {
      * @since 1.0
      */
     interface _MultiWithSpec<I extends Item> extends MySQLQuery._MySQLDynamicWithCteClause<MultiUpdateClause<I>>
-            , Query._StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>>>
+            , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>>>
             , MultiUpdateClause<I> {
 
     }
@@ -869,7 +869,7 @@ public interface MySQLUpdate extends DialectStatement {
 
 
     interface _BatchMultiComma<I extends Item>
-            extends Query._StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>>>
+            extends _StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>>>
             , _BatchMultiUpdateClause<I> {
 
     }
@@ -880,7 +880,7 @@ public interface MySQLUpdate extends DialectStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link MySQLQuery._MySQLDynamicWithCteClause}</li>
-     *          <li>{@link Query._StaticWithClause}</li>
+     *          <li>{@link _StaticWithClause}</li>
      *          <li>{@link _BatchMultiUpdateClause}</li>
      *     </ul>
      * </p>
@@ -894,7 +894,7 @@ public interface MySQLUpdate extends DialectStatement {
      */
     interface _BatchMultiWithSpec<I extends Item>
             extends MySQLQuery._MySQLDynamicWithCteClause<_BatchMultiUpdateClause<I>>
-            , Query._StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>>>
+            , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>>>
             , _BatchMultiUpdateClause<I> {
 
     }

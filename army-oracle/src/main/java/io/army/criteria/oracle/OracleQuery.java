@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  * @see <a href="https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/SELECT.html#GUID-CFA006CA-6FF1-4972-821E-6996142A51C6">Oracle SELECT syntax</a>
  * @since 1.0
  */
-public interface OracleSelect extends Query, OracleStatement {
+public interface OracleQuery extends Query, OracleStatement {
 
     /**
      * @see <a href="https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/SELECT.html#GUID-CFA006CA-6FF1-4972-821E-6996142A51C6">Lock wait syntax</a>

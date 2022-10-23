@@ -10,7 +10,7 @@ package io.army.criteria;
 public interface ReturningInsert extends DqlStatement, DialectStatement, DqlInsert {
 
     @Deprecated
-    interface _ReturningInsertSpec extends _DqlInsertSpec<ReturningInsert> {
+    interface _ReturningInsertSpec extends _DqlInsertClause<ReturningInsert> {
 
     }
 

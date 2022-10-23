@@ -83,32 +83,6 @@ public interface Query extends RowSet {
     }
 
 
-    interface _DynamicWithClause<B extends CteBuilderSpec, WE> extends Item {
-        WE with(Consumer<B> consumer);
-
-        WE withRecursive(Consumer<B> consumer);
-
-        WE ifWith(Consumer<B> consumer);
-
-        WE ifWithRecursive(Consumer<B> consumer);
-
-    }
-
-    interface _StaticWithClause<WS> {
-
-        WS with(String name);
-
-        WS withRecursive(String name);
-
-    }
-
-
-    interface _StaticWithCommaClause<CR> extends Item {
-
-        CR comma(String name);
-    }
-
-
     interface _LeftParenClause<LR> {
 
         LR leftParen();
@@ -528,13 +502,6 @@ public interface Query extends RowSet {
         LR ifLimit(Consumer<BiConsumer<Expression, Expression>> consumer);
 
     }
-
-
-    interface _StaticSpaceClause<SR> {
-
-        SR space();
-    }
-
 
 
 }

@@ -359,12 +359,37 @@ public interface DialectStatement extends Statement {
     }
 
 
+    interface _SimpleCteLeftParenSpec<I extends Item> extends _LeftParenStringQuadraOptionalSpec<_StaticAsClaus<I>> {
+
+    }
 
 
+    interface _DynamicWithClause<B extends CteBuilderSpec, WE> extends Item {
+        WE with(Consumer<B> consumer);
 
+        WE withRecursive(Consumer<B> consumer);
 
+        WE ifWith(Consumer<B> consumer);
 
+        WE ifWithRecursive(Consumer<B> consumer);
 
+    }
 
+    interface _StaticWithClause<WS> {
 
+        WS with(String name);
+
+        WS withRecursive(String name);
+
+    }
+
+    interface _StaticWithCommaClause<CR> extends Item {
+
+        CR comma(String name);
+    }
+
+    interface _StaticSpaceClause<SR> {
+
+        SR space();
+    }
 }

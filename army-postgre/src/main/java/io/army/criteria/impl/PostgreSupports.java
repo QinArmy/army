@@ -29,7 +29,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public PostgreInsert._DynamicSubInsert<Void, PostgreCteBuilder> cteInsert(final @Nullable String name) {
+        public PostgreInsert._DynamicSubInsert<Void, PostgreCteBuilder> singleInsert(final @Nullable String name) {
             if (name == null) {
                 throw ContextStack.nullPointer(this.context);
             }

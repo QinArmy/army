@@ -48,7 +48,7 @@ abstract class MySQLInserts extends InsertSupport {
     private static Insert createSimpleInsert(final MySQLComplexValuesClause<?, ?> clause) {
         final InsertMode mode;
         mode = clause.getInsertMode();
-        final Statement._DmlInsertSpec<Insert> spec;
+        final Statement._DmlInsertClause<Insert> spec;
         switch (mode) {
             case DOMAIN:
                 spec = new PrimarySimpleDomainInsertStatement(clause);
@@ -72,7 +72,7 @@ abstract class MySQLInserts extends InsertSupport {
             final MySQLComplexValuesClause<?, ?> clause) {
         final InsertMode mode;
         mode = clause.getInsertMode();
-        final Statement._DmlInsertSpec<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>> spec;
+        final Statement._DmlInsertClause<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>> spec;
         switch (mode) {
             case DOMAIN:
                 spec = new PrimaryParentDomainInsertStatement<>(clause);
@@ -283,7 +283,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Statement._DmlInsertSpec<I> onDuplicateKey(Consumer<ItemPairs<F>> consumer) {
+        public Statement._DmlInsertClause<I> onDuplicateKey(Consumer<ItemPairs<F>> consumer) {
             final MySQLComplexValuesClause<I, ?> valuesClause = this.valuesClause;
             if (valuesClause.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(valuesClause.context);
@@ -300,7 +300,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Statement._DmlInsertSpec<I> ifOnDuplicateKey(Consumer<ItemPairs<F>> consumer) {
+        public Statement._DmlInsertClause<I> ifOnDuplicateKey(Consumer<ItemPairs<F>> consumer) {
             final MySQLComplexValuesClause<I, ?> valuesClause = this.valuesClause;
             if (valuesClause.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(valuesClause.context);
@@ -346,13 +346,13 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Statement._DmlInsertSpec<I> onDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+        public Statement._DmlInsertClause<I> onDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
             return this.valuesClause.staticValuesClauseEnd(this.endValuesClause())
                     .onDuplicateKey(consumer);
         }
 
         @Override
-        public Statement._DmlInsertSpec<I> ifOnDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+        public Statement._DmlInsertClause<I> ifOnDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
             return this.valuesClause.staticValuesClauseEnd(this.endValuesClause())
                     .ifOnDuplicateKey(consumer);
         }
@@ -443,7 +443,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Statement._DmlInsertSpec<I> onDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+        public Statement._DmlInsertClause<I> onDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
             if (this.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -457,7 +457,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Statement._DmlInsertSpec<I> ifOnDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+        public Statement._DmlInsertClause<I> ifOnDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
             if (this.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -480,7 +480,7 @@ abstract class MySQLInserts extends InsertSupport {
             return this.dmlFunction.apply(this);
         }
 
-        private Statement._DmlInsertSpec<I> onDuplicateKeyClauseEnd(final List<_ItemPair> itemPairList) {
+        private Statement._DmlInsertClause<I> onDuplicateKeyClauseEnd(final List<_ItemPair> itemPairList) {
             if (this.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }

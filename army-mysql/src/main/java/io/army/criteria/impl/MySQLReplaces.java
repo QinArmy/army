@@ -77,7 +77,7 @@ abstract class MySQLReplaces extends InsertSupport {
         private ReplaceInsert simpleReplaceEnd(MySQLComplexValuesClause<?, ?> clause) {
             final InsertMode mode;
             mode = clause.getInsertMode();
-            final Statement._DmlInsertSpec<ReplaceInsert> spec;
+            final Statement._DmlInsertClause<ReplaceInsert> spec;
             switch (mode) {
                 case DOMAIN:
                     spec = new PrimarySimpleDomainReplaceStatement(clause);
@@ -100,7 +100,7 @@ abstract class MySQLReplaces extends InsertSupport {
         private <P> MySQLReplace._ParentReplace<P> parentReplaceEnd(MySQLComplexValuesClause<?, ?> clause) {
             final InsertMode mode;
             mode = clause.getInsertMode();
-            final Statement._DmlInsertSpec<MySQLReplace._ParentReplace<P>> spec;
+            final Statement._DmlInsertClause<MySQLReplace._ParentReplace<P>> spec;
             switch (mode) {
                 case DOMAIN:
                     spec = new PrimaryParentDomainReplaceStatement<>(clause);
@@ -189,11 +189,11 @@ abstract class MySQLReplaces extends InsertSupport {
             T,
             MySQLReplace._ComplexColumnDefaultSpec<I, T>,
             MySQLReplace._ValueColumnDefaultSpec<I, T>,
-            MySQLReplace._DmlInsertSpec<I>,
-            MySQLReplace._DmlInsertSpec<I>>
+            Statement._DmlInsertClause<I>,
+            Statement._DmlInsertClause<I>>
             implements MySQLReplace._PartitionSpec<I, T>
             , MySQLReplace._ComplexColumnDefaultSpec<I, T>
-            , MySQLReplace._DmlInsertSpec<I> {
+            , Statement._DmlInsertClause<I> {
 
         private final Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction;
 
@@ -230,7 +230,7 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public MySQLQuery._WithCteSpec<Statement._DmlInsertSpec<I>> space() {
+        public MySQLQuery._WithCteSpec<Statement._DmlInsertClause<I>> space() {
             return MySQLQueries.subQuery(this.context, this::staticSpaceQueryEnd);
         }
 

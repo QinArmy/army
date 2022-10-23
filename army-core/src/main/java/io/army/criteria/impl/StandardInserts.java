@@ -57,7 +57,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         private <P> Insert._ParentInsert<StandardInsert._ChildInsertIntoClause<P>> parentInsertEnd(final StandardComplexValuesClause<?, ?> clause) {
-            final Statement._DmlInsertSpec<Insert._ParentInsert<StandardInsert._ChildInsertIntoClause<P>>> spec;
+            final Statement._DmlInsertClause<Insert._ParentInsert<StandardInsert._ChildInsertIntoClause<P>>> spec;
 
             final InsertMode mode;
             mode = clause.getInsertMode();
@@ -79,7 +79,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         private Insert simpleInsertEnd(final StandardComplexValuesClause<?, ?> clause) {
-            final Statement._DmlInsertSpec<Insert> spec;
+            final Statement._DmlInsertClause<Insert> spec;
             final InsertMode mode;
             mode = clause.getInsertMode();
             switch (mode) {
@@ -154,10 +154,10 @@ abstract class StandardInserts extends InsertSupport {
             T,
             StandardInsert._ComplexColumnDefaultSpec<T, I>,
             StandardInsert._ValuesColumnDefaultSpec<T, I>,
-            Statement._DmlInsertSpec<I>>
+            Statement._DmlInsertClause<I>>
             implements StandardInsert._ColumnListSpec<T, I>
             , StandardInsert._ComplexColumnDefaultSpec<T, I>
-            , Statement._DmlInsertSpec<I> {
+            , Statement._DmlInsertClause<I> {
 
         private final Function<StandardComplexValuesClause<?, ?>, I> dmlFunction;
 
@@ -175,7 +175,7 @@ abstract class StandardInserts extends InsertSupport {
 
 
         @Override
-        public StandardQuery._SelectSpec<Statement._DmlInsertSpec<I>> space() {
+        public StandardQuery._SelectSpec<Statement._DmlInsertClause<I>> space() {
             return StandardQueries.subQuery(this.context, this::staticInsertQueryEnd);
         }
 
@@ -184,7 +184,7 @@ abstract class StandardInserts extends InsertSupport {
             return this.dmlFunction.apply(this);
         }
 
-        private Statement._DmlInsertSpec<I> staticInsertQueryEnd(final SubQuery subQuery) {
+        private Statement._DmlInsertClause<I> staticInsertQueryEnd(final SubQuery subQuery) {
             this.staticSpaceQueryEnd(subQuery);
             return this;
         }
