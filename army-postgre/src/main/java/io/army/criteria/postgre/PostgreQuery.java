@@ -70,16 +70,6 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _CteMaterializedClause<R> {
-
-        R materialized();
-
-        R notMaterialized();
-
-        R ifMaterialized(BooleanSupplier predicate);
-
-        R ifNotMaterialized(BooleanSupplier predicate);
-    }
 
     interface _FrameExclusionSpec<I extends Item>
             extends _FrameExclusionClause<_RightParenClause<I>>, _RightParenClause<I> {
@@ -409,7 +399,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
 
     interface _PostgreSelectClause<I extends Item> extends _SelectClause<_FromSpec<I>>
-            , _DynamicModifierSelectClause<Postgres.SelectModifier, _FromSpec<I>> {
+            , _DynamicModifierSelectClause<Postgres.Modifier, _FromSpec<I>> {
 
 
     }
@@ -421,7 +411,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     interface _CyclePathColumnClause<I extends Item> {
 
-        _CteSpec<I> using(String cyclePathColumnName);
+        _AsCteClause<I> using(String cyclePathColumnName);
 
     }
 
@@ -440,7 +430,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
         _CycleToMarkValueSpec<I> set(String cycleMarkColumnName);
     }
 
-    interface _CteCycleSpec<I extends Item> extends _CteSpec<I> {
+    interface _CteCycleSpec<I extends Item> extends _AsCteClause<I> {
 
         _SetCycleMarkColumnClause<I> cycle(String columnName);
 
@@ -509,6 +499,17 @@ public interface PostgreQuery extends Query, PostgreStatement {
      */
     interface _WithSpec<I extends Item> extends _MinWithSpec<I>
             , _StaticWithClause<_StaticCteLeftParenSpec<_CteComma<I>>> {
+
+    }
+
+    interface _DynamicSubMaterializedSpec<I extends Item>
+            extends _CteMaterializedClause<_MinWithSpec<I>>
+            , _MinWithSpec<I> {
+
+    }
+
+    interface _DynamicCteQuerySpec
+            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_AsCteClause<PostgreCteBuilder>>> {
 
     }
 

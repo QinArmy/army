@@ -6,11 +6,11 @@ import java.util.function.Supplier;
 
 public interface ReturningBuilder {
 
-    ReturningBuilder selection(NamedExpression expression);
+    ReturningBuilder selection(Selection selection);
 
     ReturningBuilder selection(Expression expression, SQLs.WordAs wordAs, String alias);
 
-    Statement._AsClause<ReturningBuilder> selection(Supplier<Expression> supplier);
+    ReturningBuilder selection(Supplier<Selection> supplier);
 
     ReturningBuilder selection(NamedExpression exp1, NamedExpression exp2);
 

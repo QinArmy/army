@@ -118,6 +118,18 @@ public interface PostgreDelete extends PostgreStatement {
 
     }
 
+    interface _DynamicSubMaterializedSpec<I extends Item>
+            extends _CteMaterializedClause<_SingleMinWithSpec<I, I>>
+            , _SingleMinWithSpec<I, I> {
+
+    }
+
+
+    interface _DynamicCteDeleteSpec
+            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_AsCteClause<PostgreCteBuilder>>> {
+
+    }
+
     /*-------------------below batch syntax -------------------*/
 
 

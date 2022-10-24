@@ -4,10 +4,7 @@ import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public interface PostgreStatement extends DialectStatement {
 
@@ -79,6 +76,18 @@ public interface PostgreStatement extends DialectStatement {
                 , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
 
+    }
+
+
+    interface _CteMaterializedClause<R> {
+
+        R materialized();
+
+        R notMaterialized();
+
+        R ifMaterialized(BooleanSupplier predicate);
+
+        R ifNotMaterialized(BooleanSupplier predicate);
     }
 
 
@@ -198,13 +207,13 @@ public interface PostgreStatement extends DialectStatement {
      */
     interface _StaticCteComplexCommandSpec<I extends Item>
             extends PostgreQuery._PostgreSelectClause<PostgreQuery._CteSearchSpec<I>>
-            , PostgreInsert._StaticSubOptionSpec<_CteSpec<I>, _CteSpec<I>> {
+            , PostgreInsert._StaticSubOptionSpec<_AsCteClause<I>> {
 
     }
 
 
     interface _StaticCteMaterializedSpec<I extends Item>
-            extends PostgreQuery._CteMaterializedClause<_StaticCteComplexCommandSpec<I>>
+            extends _CteMaterializedClause<_StaticCteComplexCommandSpec<I>>
             , _StaticCteComplexCommandSpec<I> {
 
     }

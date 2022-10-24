@@ -913,12 +913,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     private static final class StaticComplexCommand<I extends Item>
             extends SimpleQueries.ComplexSelectCommand<
             MySQLs.Modifier,
-            MySQLQuery._FromSpec<MySQLQuery._CteSpec<I>>,
+            MySQLQuery._FromSpec<_AsCteClause<I>>,
             _StaticCteAsClause<I>>
             implements MySQLQuery._StaticCteLeftParenSpec<I>
             , _RightParenClause<_StaticCteAsClause<I>>
-            , _MySQLSelectClause<_CteSpec<I>>
-            , Statement._CteSpec<I> {
+            , _MySQLSelectClause<_AsCteClause<I>>
+            , _AsCteClause<I> {
 
         private final I cteComma;
 
@@ -932,7 +932,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        public _MySQLSelectClause<_CteSpec<I>> as() {
+        public _MySQLSelectClause<_AsCteClause<I>> as() {
             if (this.cteName == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -945,7 +945,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<_CteSpec<I>>> createSelectClause() {
+        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<_AsCteClause<I>>> createSelectClause() {
             return MySQLQueries.subQuery(this.context, this::queryEnd);
         }
 
@@ -955,7 +955,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             return this;
         }
 
-        private _CteSpec<I> queryEnd(final SubQuery query) {
+        private _AsCteClause<I> queryEnd(final SubQuery query) {
             CriteriaUtils.createAndAddCte(this.context, this.cteName, this.columnAliasList, query);
             this.cteName = null;
             this.columnAliasList = null;

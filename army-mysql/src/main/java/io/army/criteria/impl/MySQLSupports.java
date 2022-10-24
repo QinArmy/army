@@ -54,7 +54,7 @@ abstract class MySQLSupports extends CriteriaSupports {
             extends ParenStringConsumerClause<MySQLQuery._DynamicCteAsClause>
             implements MySQLCteBuilder
             , MySQLQuery._DynamicCteLeftParenSpec
-            , Statement._CteSpec<MySQLCteBuilder> {
+            , Statement._AsCteClause<MySQLCteBuilder> {
 
         private final boolean recursive;
 
@@ -89,7 +89,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
         @Override
-        public MySQLQuery._MinWithCteSpec<Statement._CteSpec<MySQLCteBuilder>> as() {
+        public MySQLQuery._MinWithCteSpec<Statement._AsCteClause<MySQLCteBuilder>> as() {
             final String cteName = this.cteName;
             if (cteName == null) {
                 throw ContextStack.castCriteriaApi(this.context);

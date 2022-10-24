@@ -34,15 +34,22 @@ abstract class CriteriaSupports {
         return new ParenStringConsumerClause<>(context, function);
     }
 
+    @Deprecated
     static <OR> Statement._StaticOrderByClause<OR> orderByClause(CriteriaContext criteriaContext
             , Function<List<ArmySortItem>, OR> function) {
         throw new UnsupportedOperationException();
     }
 
+    @Deprecated
     static <OR> Statement._StaticOrderByClause<OR> voidOrderByClause(CriteriaContext criteriaContext
             , Function<List<ArmySortItem>, OR> function) {
         throw new UnsupportedOperationException();
     }
+
+    static ReturningBuilder returningBuilder(Consumer<Selection> consumer) {
+        return new ReturningBuilderImpl(consumer);
+    }
+
 
     static TypeMeta delayParamMeta(TypeMeta.Delay paramMeta, Function<MappingType, MappingType> function) {
         return new DelayParamMetaWrapper(paramMeta, function);
@@ -812,6 +819,64 @@ abstract class CriteriaSupports {
         }
 
     } //RowItemPairsImpl
+
+
+    private static final class ReturningBuilderImpl implements ReturningBuilder {
+
+        private final Consumer<Selection> consumer;
+
+        private ReturningBuilderImpl(Consumer<Selection> consumer) {
+            this.consumer = consumer;
+        }
+
+        @Override
+        public ReturningBuilder selection(Selection selection) {
+            this.consumer.accept(selection);
+            return this;
+        }
+
+        @Override
+        public ReturningBuilder selection(Expression expression, SQLs.WordAs wordAs, String alias) {
+            this.consumer.accept(Selections.forExp((ArmyExpression) expression, alias));
+            return this;
+        }
+
+        @Override
+        public ReturningBuilder selection(Supplier<Selection> supplier) {
+            this.consumer.accept(supplier.get());
+            return this;
+        }
+
+        @Override
+        public ReturningBuilder selection(NamedExpression exp1, NamedExpression exp2) {
+            final Consumer<Selection> consumer = this.consumer;
+            consumer.accept(exp1);
+            consumer.accept(exp2);
+            return this;
+        }
+
+        @Override
+        public ReturningBuilder selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3) {
+            final Consumer<Selection> consumer = this.consumer;
+            consumer.accept(exp1);
+            consumer.accept(exp2);
+            consumer.accept(exp3);
+            return this;
+        }
+
+        @Override
+        public ReturningBuilder selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3
+                , NamedExpression exp4) {
+            final Consumer<Selection> consumer = this.consumer;
+            consumer.accept(exp1);
+            consumer.accept(exp2);
+            consumer.accept(exp3);
+            consumer.accept(exp4);
+            return this;
+        }
+
+
+    }//ReturningBuilderImpl
 
 
 }

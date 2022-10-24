@@ -472,7 +472,7 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
-    interface _StaticCteAsClause<I extends Item> extends Statement._StaticAsClaus<_MySQLSelectClause<_CteSpec<I>>> {
+    interface _StaticCteAsClause<I extends Item> extends Statement._StaticAsClaus<_MySQLSelectClause<_AsCteClause<I>>> {
 
     }
 
@@ -511,7 +511,7 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
-    interface _DynamicCteAsClause extends _StaticAsClaus<_MinWithCteSpec<_CteSpec<MySQLCteBuilder>>> {
+    interface _DynamicCteAsClause extends _StaticAsClaus<_MinWithCteSpec<_AsCteClause<MySQLCteBuilder>>> {
 
     }
 
