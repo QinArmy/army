@@ -3,11 +3,19 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.postgre._PostgreCteStatement;
 import io.army.criteria.postgre.*;
+import io.army.dialect._Constant;
 import io.army.lang.Nullable;
+import io.army.util.ArrayUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._StringUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 
 abstract class PostgreSupports extends CriteriaSupports {
@@ -180,19 +188,302 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     }//PostgreDynamicDeleteLeftParenClause
 
+    private enum CteSearchOption implements SQLWords {
+
+        BREADTH(" BREADTH"),
+        DEPTH(" DEPTH");
+
+        private final String spaceWord;
+
+        CteSearchOption(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(CteSearchOption.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+
+    }//CteSearchOption
+
+
+    private static final class PostgreCteSearchClause<I extends Item>
+            implements PostgreStatement._CteSearchSpec<I>
+            , _PostgreCteStatement._SearchOptionClauseSpec
+            , PostgreStatement._SearchFirstByClause<I>
+            , PostgreStatement._SetSearchSeqColumnClause<I>
+            , PostgreStatement._SetCycleMarkColumnClause<I>
+            , PostgreStatement._CycleToMarkValueSpec<I>
+            , PostgreStatement._CyclePathColumnClause<I> {
+
+        private final CriteriaContext context;
+
+        private final SubQuery subQuery;
+
+        private final Function<_PostgreCteStatement, I> function;
+
+        private CteSearchOption searchOption;
+
+        private List<String> searchColumnList;
+
+        private String searchSeqColumnName;
+
+        private List<String> cycleColumnList;
+
+        private String cycleMarkColumnName;
+
+        private ArmyExpression cycleMarkValue;
+
+        private ArmyExpression cycleMarkDefault;
+
+        private String cyclePathColumnName;
+
+        private PostgreCteSearchClause(CriteriaContext context, SubQuery subQuery
+                , Function<_PostgreCteStatement, I> function) {
+            this.context = context;
+            this.subQuery = subQuery;
+            this.function = function;
+        }
+
+        @Override
+        public PostgreStatement._SearchFirstByClause<I> searchBreadth() {
+            this.searchOption = CteSearchOption.BREADTH;
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SearchFirstByClause<I> searchDepth() {
+            this.searchOption = CteSearchOption.DEPTH;
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SearchFirstByClause<I> searchBreadth(BooleanSupplier predicate) {
+            if (predicate.getAsBoolean()) {
+                this.searchOption = CteSearchOption.BREADTH;
+            } else {
+                this.searchOption = null;
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SearchFirstByClause<I> searchDepth(BooleanSupplier predicate) {
+            if (predicate.getAsBoolean()) {
+                this.searchOption = CteSearchOption.DEPTH;
+            } else {
+                this.searchOption = null;
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SetSearchSeqColumnClause<I> firstBy(String columnName) {
+            if (this.searchOption != null) {
+                this.searchColumnList = Collections.singletonList(columnName);
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SetSearchSeqColumnClause<I> firstBy(String columnName1, String columnName2) {
+            if (this.searchOption != null) {
+                this.searchColumnList = ArrayUtils.asUnmodifiableList(columnName1, columnName2);
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SetSearchSeqColumnClause<I> firstBy(String columnName1, String columnName2
+                , String columnName3) {
+            if (this.searchOption != null) {
+                this.searchColumnList = ArrayUtils.asUnmodifiableList(columnName1, columnName2, columnName3);
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SetSearchSeqColumnClause<I> firstBy(
+                String columnName1, String columnName2, String columnName3, String columnName4) {
+            if (this.searchOption != null) {
+                this.searchColumnList = ArrayUtils.asUnmodifiableList(columnName1, columnName2
+                        , columnName3, columnName4);
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SetSearchSeqColumnClause<I> firstBy(Consumer<Consumer<String>> consumer) {
+            if (this.searchOption != null) {
+                final List<String> list = new ArrayList<>();
+                consumer.accept(list::add);
+                if (list.size() == 0) {
+                    throw ContextStack.criteriaError(this.context, "firstBy column list required");
+                }
+                this.searchColumnList = _CollectionUtils.unmodifiableList(list);
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SetSearchSeqColumnClause<I> ifFirstBy(Consumer<Consumer<String>> consumer) {
+            if (this.searchOption != null) {
+                final List<String> list = new ArrayList<>();
+                consumer.accept(list::add);
+                if (list.size() > 0) {
+                    this.searchColumnList = _CollectionUtils.unmodifiableList(list);
+                } else {
+                    this.searchColumnList = Collections.emptyList();
+                }
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreCteSearchClause<I> set(String searchSeqColumnName) {
+            if (this.searchOption != null) {
+                this.searchSeqColumnName = searchSeqColumnName;
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SetCycleMarkColumnClause<I> cycle(String columnName) {
+            this.cycleColumnList = Collections.singletonList(columnName);
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SetCycleMarkColumnClause<I> cycle(String columnName1, String columnName2) {
+            this.cycleColumnList = ArrayUtils.asUnmodifiableList(columnName1, columnName2);
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SetCycleMarkColumnClause<I> cycle(String columnName1, String columnName2
+                , String columnName3) {
+            this.cycleColumnList = ArrayUtils.asUnmodifiableList(columnName1, columnName2, columnName3);
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SetCycleMarkColumnClause<I> cycle(String columnName1
+                , String columnName2, String columnName3, String columnName4) {
+            this.cycleColumnList = ArrayUtils.asUnmodifiableList(columnName1, columnName2, columnName3, columnName4);
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SetCycleMarkColumnClause<I> cycle(Consumer<Consumer<String>> consumer) {
+            final List<String> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() == 0) {
+                throw ContextStack.criteriaError(this.context, "cycle column list required");
+            }
+            this.cycleColumnList = _CollectionUtils.unmodifiableList(list);
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._SetCycleMarkColumnClause<I> ifCycle(Consumer<Consumer<String>> consumer) {
+            final List<String> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() > 0) {
+                this.cycleColumnList = _CollectionUtils.unmodifiableList(list);
+            } else {
+                this.cycleColumnList = null;
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._CyclePathColumnClause<I> to(Expression cycleMarkValue
+                , StandardSyntax.WordDefault wordDefault, Expression cycleMarkDefault) {
+            if (this.cycleColumnList != null) {
+                if (wordDefault != SQLs.DEFAULT) {
+                    throw CriteriaUtils.unknownWords(this.context, wordDefault);
+                }
+                this.cycleMarkValue = (ArmyExpression) cycleMarkValue;
+                this.cycleMarkDefault = (ArmyExpression) cycleMarkDefault;
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._CyclePathColumnClause<I> to(Consumer<BiConsumer<Expression, Expression>> consumer) {
+            if (this.cycleColumnList != null) {
+                consumer.accept(this::toMarkValueAndDefault);
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreStatement._CyclePathColumnClause<I> ifTo(Consumer<BiConsumer<Expression, Expression>> consumer) {
+            if (this.cycleColumnList != null) {
+                consumer.accept(this::toMarkValueAndDefault);
+                if (this.cycleMarkValue == null || this.cycleMarkDefault == null) {
+                    throw ContextStack.criteriaError(this.context, "cycle to clause required");
+                }
+            }
+            return this;
+        }
+
+        @Override
+        public Statement._AsCteClause<I> using(String cyclePathColumnName) {
+            if (this.cycleColumnList != null) {
+                this.cyclePathColumnName = cyclePathColumnName;
+            }
+            return this;
+        }
+
+        @Override
+        public I asCte() {
+            return null;
+        }
+
+        private void toMarkValueAndDefault(Expression markValue, Expression markDefault) {
+            this.cycleMarkValue = (ArmyExpression) markValue;
+            this.cycleMarkDefault = (ArmyExpression) markDefault;
+        }
+
+
+    }//PostgreCteSearchClause
+
 
     private static final class PostgreDynamicQueryLeftParenClause
             extends PostgreDynamicDmlCteLeftParenClause<
-            PostgreQuery._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>>>
+            PostgreQuery._DynamicSubMaterializedSpec<PostgreStatement._CteSearchSpec<PostgreCteBuilder>>>
             implements PostgreQuery._DynamicCteQuerySpec {
 
         private PostgreDynamicQueryLeftParenClause(String name, PostgreCteBuilderImpl cteBuilder) {
             super(name, cteBuilder);
         }
 
+
         @Override
-        public PostgreQuery._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>> as() {
-            return PostgreQueries.dynamicCteQuery(this.cteBuilder.context, this::subStmtEnd);
+        public PostgreQuery._DynamicSubMaterializedSpec<PostgreStatement._CteSearchSpec<PostgreCteBuilder>> as() {
+            return PostgreQueries.dynamicCteQuery(this.cteBuilder.context, this::subQueryEnd);
+        }
+
+        private PostgreStatement._CteSearchSpec<PostgreCteBuilder> subQueryEnd(SubQuery subQuery) {
+            return new PostgreCteSearchClause<>(this.cteBuilder.context, subQuery, this::searchOptionEnd);
+        }
+
+        private PostgreCteBuilder searchOptionEnd(SubStatement statement) {
+            //TODO 将 search_seq_col_name 等加入 输出列
+            return this.subStmtEnd(statement)
+                    .asCte();
         }
 
 

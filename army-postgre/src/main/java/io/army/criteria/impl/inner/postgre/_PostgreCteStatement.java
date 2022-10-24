@@ -12,4 +12,14 @@ public interface _PostgreCteStatement extends SubStatement {
     SubStatement subStatement();
 
 
+    interface _SearchOptionClauseSpec {
+
+
+    }
+
+    interface _CycleOptionClauseSpec {
+
+    }
+
+
 }

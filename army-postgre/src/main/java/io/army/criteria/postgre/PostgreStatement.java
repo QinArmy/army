@@ -1,6 +1,7 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 
@@ -198,6 +199,80 @@ public interface PostgreStatement extends DialectStatement {
 
     }
 
+
+    interface _CyclePathColumnClause<I extends Item> {
+
+        _AsCteClause<I> using(String cyclePathColumnName);
+
+    }
+
+    interface _CycleToMarkValueSpec<I extends Item> extends _CyclePathColumnClause<I> {
+
+        _CyclePathColumnClause<I> to(Expression cycleMarkValue, SQLs.WordDefault wordDefault, Expression cycleMarkDefault);
+
+        _CyclePathColumnClause<I> to(Consumer<BiConsumer<Expression, Expression>> consumer);
+
+        _CyclePathColumnClause<I> ifTo(Consumer<BiConsumer<Expression, Expression>> consumer);
+
+    }
+
+    interface _SetCycleMarkColumnClause<I extends Item> {
+
+        _CycleToMarkValueSpec<I> set(String cycleMarkColumnName);
+    }
+
+    interface _CteCycleSpec<I extends Item> extends _AsCteClause<I> {
+
+        _SetCycleMarkColumnClause<I> cycle(String columnName);
+
+        _SetCycleMarkColumnClause<I> cycle(String columnName1, String columnName2);
+
+        _SetCycleMarkColumnClause<I> cycle(String columnName1, String columnName2, String columnName3);
+
+        _SetCycleMarkColumnClause<I> cycle(String columnName1, String columnName2, String columnName3, String columnName4);
+
+        _SetCycleMarkColumnClause<I> cycle(Consumer<Consumer<String>> consumer);
+
+        _SetCycleMarkColumnClause<I> ifCycle(Consumer<Consumer<String>> consumer);
+
+
+    }
+
+
+    interface _SetSearchSeqColumnClause<I extends Item> {
+
+        _CteCycleSpec<I> set(String searchSeqColumnName);
+
+    }
+
+    interface _SearchFirstByClause<I extends Item> {
+
+        _SetSearchSeqColumnClause<I> firstBy(String columnName);
+
+        _SetSearchSeqColumnClause<I> firstBy(String columnName1, String columnName2);
+
+        _SetSearchSeqColumnClause<I> firstBy(String columnName1, String columnName2, String columnName3);
+
+        _SetSearchSeqColumnClause<I> firstBy(String columnName1, String columnName2, String columnName3, String columnName4);
+
+        _SetSearchSeqColumnClause<I> firstBy(Consumer<Consumer<String>> consumer);
+
+        _SetSearchSeqColumnClause<I> ifFirstBy(Consumer<Consumer<String>> consumer);
+
+    }
+
+    interface _CteSearchSpec<I extends Item> extends _CteCycleSpec<I> {
+
+        _SearchFirstByClause<I> searchBreadth();
+
+        _SearchFirstByClause<I> searchDepth();
+
+        _SearchFirstByClause<I> searchBreadth(BooleanSupplier predicate);
+
+        _SearchFirstByClause<I> searchDepth(BooleanSupplier predicate);
+
+    }
+
     /**
      * <p>
      * static sub-statement syntax forbid the WITH clause ,because it destroy the Readability of code.
@@ -206,8 +281,9 @@ public interface PostgreStatement extends DialectStatement {
      * @since 1.0
      */
     interface _StaticCteComplexCommandSpec<I extends Item>
-            extends PostgreQuery._PostgreSelectClause<PostgreQuery._CteSearchSpec<I>>
-            , PostgreInsert._StaticSubOptionSpec<_AsCteClause<I>> {
+            extends PostgreQuery._PostgreSelectClause<_CteSearchSpec<I>>
+            , PostgreInsert._StaticSubOptionSpec<_AsCteClause<I>>
+            , PostgreUpdate._SingleUpdateClause<_AsCteClause<I>, _AsCteClause<I>> {
 
     }
 
