@@ -10,10 +10,7 @@ import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
@@ -675,13 +672,23 @@ public interface Statement extends Item {
 
     interface _StaticOrderByCommaClause<OR> {
 
+        OR comma(Expression exp);
+
         OR comma(Expression exp, AscDesc ascDesc);
+
+        OR comma(Expression exp1, Expression exp2);
+
+        OR comma(Expression exp1, AscDesc ascDesc1, Expression exp2);
+
+        OR comma(Expression exp1, Expression exp2, AscDesc ascDesc2);
 
         OR comma(Expression exp1, AscDesc ascDesc1, Expression exp2, AscDesc ascDesc2);
 
     }
 
     interface _StaticOrderByNullsCommaClause<OR> extends _StaticOrderByCommaClause<OR> {
+
+        OR comma(Expression exp, NullsFirstLast nullOption);
 
         OR comma(Expression exp, AscDesc ascDesc, NullsFirstLast nullOption);
 
@@ -701,11 +708,17 @@ public interface Statement extends Item {
      */
     interface _StaticOrderByClause<OR> extends Item {
 
-        OR orderBy(SortItem sortItem);
+        OR orderBy(Expression exp);
 
-        OR orderBy(SortItem sortItem1, SortItem sortItem2);
+        OR orderBy(Expression exp, AscDesc ascDesc);
 
-        OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3);
+        OR orderBy(Expression exp1, Expression exp2);
+
+        OR orderBy(Expression exp1, AscDesc ascDesc1, Expression exp2);
+
+        OR orderBy(Expression exp1, Expression exp2, AscDesc ascDesc2);
+
+        OR orderBy(Expression exp1, AscDesc ascDesc1, Expression exp2, AscDesc ascDesc2);
 
     }
 
@@ -748,11 +761,333 @@ public interface Statement extends Item {
 
     }
 
+
     interface _DmlRowCountLimitClause<LR> extends _RowCountLimitClause<LR> {
 
         LR limit(BiFunction<MappingType, String, Expression> operator, String paramName);
 
         LR ifLimit(BiFunction<MappingType, String, Expression> operator, @Nullable String paramName);
+    }
+
+    interface _RowCountLimitAllClause<LR> extends _RowCountLimitClause<LR> {
+
+        LR limitAll();
+
+        LR ifLimitAll(BooleanSupplier supplier);
+
+    }
+
+
+    interface _QueryOffsetClause<R> {
+
+        R offset(Expression start, Query.FetchRow row);
+
+
+        /**
+         * @param operator the method reference of below:
+         *                 <ul>
+         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                 </ul>
+         * @param start    non-negative integer
+         * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
+         */
+        R offset(BiFunction<MappingType, Number, Expression> operator, long start, Query.FetchRow row);
+
+
+        /**
+         * @param operator the method reference of below:
+         *                 <ul>
+         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                 </ul>
+         * @param supplier return non-negative integer
+         * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
+         */
+        <N extends Number> R offset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier
+                , Query.FetchRow row);
+
+        /**
+         * @param operator the method reference of below:
+         *                 <ul>
+         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                 </ul>
+         * @param function {@link Function#apply(Object)} return non-negative integer
+         * @param keyName  keyName that is passed to function
+         * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
+         */
+        R offset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function
+                , String keyName, Query.FetchRow row);
+
+        /**
+         * @param operator the method reference of below:
+         *                 <ul>
+         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                 </ul>
+         * @param start    non-negative integer
+         * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
+         */
+        R ifOffset(BiFunction<MappingType, Number, Expression> operator, @Nullable Number start, Query.FetchRow row);
+
+        /**
+         * @param operator the method reference of below:
+         *                 <ul>
+         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                 </ul>
+         * @param supplier return non-negative integer
+         * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
+         */
+        <N extends Number> R ifOffset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier
+                , Query.FetchRow row);
+
+        /**
+         * @param operator the method reference of below:
+         *                 <ul>
+         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                 </ul>
+         * @param function {@link Function#apply(Object)} return non-negative integer
+         * @param keyName  keyName that is passed to function
+         * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
+         */
+        R ifOffset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function
+                , String keyName, Query.FetchRow row);
+
+    }
+
+    interface _QueryFetchClause<R> {
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param count        non-negative
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R fetch(Query.FetchFirstNext firstOrNext, Expression count, Query.FetchRow row
+                , Query.FetchOnlyWithTies onlyWithTies);
+
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param count        non-negative
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , long count, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param supplier     return non-negative integer
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        <N extends Number> R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Supplier<N> supplier, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param function     {@link Function#apply(Object)} return non-negative integer
+         * @param keyName      keyName that is passed to function
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
+                , Function<String, ?> function, String keyName, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param count        non-negative
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , @Nullable Number count, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param supplier     return non-negative integer
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        <N extends Number> R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Supplier<N> supplier, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param function     {@link Function#apply(Object)} return non-negative integer
+         * @param keyName      keyName that is passed to function
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
+                , Function<String, ?> function, String keyName, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+    }
+
+    interface _LimitClause<LR> extends _RowCountLimitClause<LR> {
+
+        LR limit(Expression offset, Expression rowCount);
+
+        LR limit(BiFunction<MappingType, Number, Expression> operator, long offset, long rowCount);
+
+        <N extends Number> LR limit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier);
+
+        LR limit(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String offsetKey, String rowCountKey);
+
+        LR limit(Consumer<BiConsumer<Expression, Expression>> consumer);
+
+
+        <N extends Number> LR ifLimit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> offsetSupplier, Supplier<N> rowCountSupplier);
+
+        LR ifLimit(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String offsetKey, String rowCountKey);
+
+        LR ifLimit(Consumer<BiConsumer<Expression, Expression>> consumer);
+
+    }
+
+    interface _FetchPercentClause<R> extends _QueryFetchClause<R> {
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param percent      the percentage of the total number of selected rows
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R fetch(Query.FetchFirstNext firstOrNext, Expression percent, SQLs.WordPercent wordPercent, Query.FetchRow row
+                , Query.FetchOnlyWithTies onlyWithTies);
+
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param percent      non-null,the percentage of the total number of selected rows
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Number percent, SQLs.WordPercent wordPercent, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param supplier     {@link  Supplier#get()} return non-null percent
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        <N extends Number> R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Supplier<N> supplier, SQLs.WordPercent wordPercent, Query.FetchRow row
+                , Query.FetchOnlyWithTies onlyWithTies);
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param function     {@link Function#apply(Object)} return non-null percent
+         * @param keyName      keyName that is passed to function
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
+                , Function<String, ?> function, String keyName, SQLs.WordPercent wordPercent
+                , Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param percent      nullable,percent
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , @Nullable Number percent, SQLs.WordPercent wordPercent, Query.FetchRow row
+                , Query.FetchOnlyWithTies onlyWithTies);
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param supplier     return nullable percent
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        <N extends Number> R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
+                , Supplier<N> supplier, SQLs.WordPercent wordPercent, Query.FetchRow row
+                , Query.FetchOnlyWithTies onlyWithTies);
+
+        /**
+         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
+         * @param operator     the method reference of below:
+         *                     <ul>
+         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                     </ul>
+         * @param function     {@link Function#apply(Object)} return nullable percent
+         * @param keyName      keyName that is passed to function
+         * @param wordPercent  {@link SQLs#PERCENT}
+         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
+         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
+         */
+        R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
+                , Function<String, ?> function, String keyName, SQLs.WordPercent wordPercent
+                , Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
+
     }
 
 

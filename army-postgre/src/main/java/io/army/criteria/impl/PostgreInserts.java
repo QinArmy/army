@@ -406,60 +406,20 @@ abstract class PostgreInserts extends InsertSupport {
             PostgreInsert._DynamicSubWithCteSpec<I>,
             PostgreCteBuilder,
             PostgreInsert._ComplexInsertIntoClause<I, I>>
-            implements PostgreInsert._DynamicSubInsertSpec<I>
-            , PostgreInsert._DynamicSubMaterializedSpec<I>
-            , Statement._StaticAsClaus<PostgreInsert._DynamicSubMaterializedSpec<I>> {
+            implements PostgreInsert._DynamicSubMaterializedSpec<I> {
 
-
-        private final String name;
-
-        private final I item;
+        private final Function<SubStatement, I> function;
 
         private PostgreSupports.MaterializedOption materializedOption;
 
         private List<String> columnAliasList;
 
-        private DynamicSubInsertIntoClause(final CriteriaContext outContext, String name, I item) {
+        private DynamicSubInsertIntoClause(final CriteriaContext outContext, Function<SubStatement, I> function) {
             super(CriteriaContexts.cteInsertContext(outContext));
-            this.name = name;
-            this.item = item;
+            this.function = function;
             ContextStack.push(this.context);
         }
 
-        @Override
-        public Statement._RightParenClause<Statement._StaticAsClaus<PostgreInsert._DynamicSubMaterializedSpec<I>>> leftParen(String string) {
-            return CriteriaSupports.stringQuadra(this.context, this::columnAliasEnd)
-                    .leftParen(string);
-        }
-
-        @Override
-        public Statement._CommaStringDualSpec<Statement._StaticAsClaus<PostgreInsert._DynamicSubMaterializedSpec<I>>> leftParen(String string1, String string2) {
-            return CriteriaSupports.stringQuadra(this.context, this::columnAliasEnd)
-                    .leftParen(string1, string2);
-        }
-
-        @Override
-        public Statement._CommaStringQuadraSpec<Statement._StaticAsClaus<PostgreInsert._DynamicSubMaterializedSpec<I>>> leftParen(String string1, String string2, String string3, String string4) {
-            return CriteriaSupports.stringQuadra(this.context, this::columnAliasEnd)
-                    .leftParen(string1, string2, string3, string4);
-        }
-
-        @Override
-        public Statement._RightParenClause<Statement._StaticAsClaus<PostgreInsert._DynamicSubMaterializedSpec<I>>> leftParen(Consumer<Consumer<String>> consumer) {
-            return CriteriaSupports.stringQuadra(this.context, this::columnAliasEnd)
-                    .leftParen(consumer);
-        }
-
-        @Override
-        public Statement._RightParenClause<Statement._StaticAsClaus<PostgreInsert._DynamicSubMaterializedSpec<I>>> leftParenIf(Consumer<Consumer<String>> consumer) {
-            return CriteriaSupports.stringQuadra(this.context, this::columnAliasEnd)
-                    .leftParenIf(consumer);
-        }
-
-        @Override
-        public PostgreInsert._DynamicSubMaterializedSpec<I> as() {
-            return this;
-        }
 
         @Override
         public PostgreInsert._DynamicSubOptionSpec<I> materialized() {
@@ -498,12 +458,6 @@ abstract class PostgreInserts extends InsertSupport {
             return new PostgreComplexValuesClause<>(this, table, this::subInsertEnd, this::subReturningInsertEnd);
         }
 
-
-        @Override
-        public I asCte() {
-            return this.item;
-        }
-
         @Override
         PostgreCteBuilder createCteBuilder(final boolean recursive) {
             return PostgreSupports.cteBuilder(recursive, this.context);
@@ -513,14 +467,9 @@ abstract class PostgreInserts extends InsertSupport {
             final SubInsert subInsert;
             subInsert = PostgreInserts.subInsertEnd(clause);
             final PostgreSupports.MaterializedOption option = this.materializedOption;
-            final SubStatement subStatement;
-            subStatement = option == null ? subInsert : new PostgreSupports.PostgreSubStatement(option, subInsert);
-
-            final CriteriaContext outerContext;
-            outerContext = this.context.getOuterContext();
-            assert outerContext != null;
-            CriteriaUtils.createAndAddCte(outerContext, this.name, this.columnAliasList, subStatement);
-            return this.item;
+            return this.function.apply(
+                    option == null ? subInsert : new PostgreSupports.PostgreSubStatement(option, subInsert)
+            );
         }
 
         private I subReturningInsertEnd(final PostgreComplexValuesClause<?, ?, ?> clause) {
@@ -532,13 +481,6 @@ abstract class PostgreInserts extends InsertSupport {
             );
         }
 
-        private Statement._StaticAsClaus<PostgreInsert._DynamicSubMaterializedSpec<I>> columnAliasEnd(final List<String> list) {
-            if (this.columnAliasList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.columnAliasList = list;
-            return this;
-        }
 
     }//DynamicSubInsertIntoClause
 
@@ -761,6 +703,8 @@ abstract class PostgreInserts extends InsertSupport {
             PostgreInsert._ReturningSpec<I, Q>,
             PostgreInsert._DoUpdateWhereAndSpec<I, Q>,
             Object,
+            Object,
+            Object,
             Object>
             implements PostgreInsert._DoUpdateWhereSpec<T, I, Q>
             , PostgreInsert._DoUpdateWhereAndSpec<I, Q> {
@@ -843,6 +787,8 @@ abstract class PostgreInserts extends InsertSupport {
             extends WhereClause<
             PostgreInsert._ConflictActionClause<T, I, Q>,
             PostgreInsert._ConflictTargetWhereAndSpec<T, I, Q>,
+            Object,
+            Object,
             Object,
             Object>
             implements PostgreInsert._ConflictTargetOptionSpec<T, I, Q>

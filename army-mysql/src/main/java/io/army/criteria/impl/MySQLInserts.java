@@ -236,6 +236,8 @@ abstract class MySQLInserts extends InsertSupport {
             Object,
             Object,
             Object,
+            Object,
+            Object,
             Object> implements MySQLInsert._StaticOnDuplicateKeySetSpec<I, F> {
 
         private final MySQLComplexValuesClause<I, ?> clause;

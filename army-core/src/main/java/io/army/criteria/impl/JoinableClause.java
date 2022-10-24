@@ -28,8 +28,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
-        extends WhereClause<WR, WA, OR, LR>
+abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
+        extends WhereClause<WR, WA, OR, LR, LO, LF>
         implements Statement._JoinModifierClause<JT, JS>, Statement._CrossJoinModifierClause<FT, FS>
         , DialectStatement._JoinModifierCteClause<JC>, DialectStatement._CrossJoinModifierCteClause<FC>
         , DialectStatement._StraightJoinModifierTabularClause<JT, JS>, DialectStatement._StraightJoinModifierCteClause<JC> {
@@ -412,7 +412,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
     }
 
     static abstract class DynamicJoinClause<FT, FS, FC, JT, JS, JC>
-            extends JoinableClause<FT, FS, FC, JT, JS, JC, Object, Object, Object, Object> {
+            extends JoinableClause<FT, FS, FC, JT, JS, JC, Object, Object, Object, Object, Object, Object> {
 
         DynamicJoinClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer) {
             super(context, blockConsumer);

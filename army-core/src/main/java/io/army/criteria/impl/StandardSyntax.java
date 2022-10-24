@@ -87,6 +87,7 @@ abstract class StandardSyntax extends Functions {
 
     }
 
+
     public interface SymbolPeriod {
 
     }
@@ -109,11 +110,7 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
 
@@ -136,11 +133,7 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
 
@@ -153,11 +146,7 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
     }//KeyWordAs
@@ -179,11 +168,7 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
     }//KeyWordPercent
@@ -194,21 +179,17 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
     }//KeyWordAnd
 
-    private enum KeyWordAscDesc implements Statement.AscDesc, SQLWords {
+    enum KeyWordAscDesc implements Statement.AscDesc, SQLWords {
 
         ASC(" ASC"),
         DESC(" DESC");
 
-        private final String spaceWord;
+        final String spaceWord;
 
         KeyWordAscDesc(String spaceWord) {
             this.spaceWord = spaceWord;
@@ -221,11 +202,7 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
     }//KeyWordAscDesc
@@ -247,11 +224,7 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
     }//KeyWordLateral
@@ -273,11 +246,7 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
     }//KeyWordFirst
@@ -299,14 +268,35 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
     }//KeyWordNext
+
+
+    enum KeyWordsNullsFirstLast implements Statement.NullsFirstLast, SQLWords {
+
+        NULLS_FIRST(" NULLS FIRST"),
+        NULLS_LAST(" NULLS LAST");
+
+        final String spaceWords;
+
+        KeyWordsNullsFirstLast(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+    }//KeyWordsNullsFirstLast
+
 
     private enum KeyWordRow implements WordRow, SQLWords {
 
@@ -325,11 +315,7 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
     }//KeyWordRow
@@ -351,11 +337,7 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
     }//KeyWordRows
@@ -377,11 +359,7 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
     }//KeyWordNext
@@ -403,11 +381,7 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
     }//KeyWordOny
@@ -419,11 +393,7 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
     }//SQLSymbolPoint
@@ -434,11 +404,7 @@ abstract class StandardSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(SQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
     }//SQLSymbolStar
@@ -580,6 +546,10 @@ abstract class StandardSyntax extends Functions {
 
     public static final SymbolPeriod PERIOD = SQLSymbolPeriod.PERIOD;
 
+    public static final Statement.NullsFirstLast NULLS_FIRST = KeyWordsNullsFirstLast.NULLS_FIRST;
+
+    public static final Statement.NullsFirstLast NULLS_LAST = KeyWordsNullsFirstLast.NULLS_LAST;
+
     public static final WordOnly ONLY = KeyWordOny.ONLY;
 
     public static final WordRow ROW = KeyWordRow.ROW;
@@ -627,6 +597,18 @@ abstract class StandardSyntax extends Functions {
      */
     public static Expression count(Expression expr) {
         return SQLFunctions.oneArgFunc("COUNT", expr, LongType.INSTANCE);
+    }
+
+
+
+    /*-------------------below private method-------------------*/
+
+    private static String keyWordsToString(Enum<?> wordEnum) {
+        return _StringUtils.builder()
+                .append(SQLs.class.getSimpleName())
+                .append(_Constant.POINT)
+                .append(wordEnum.name())
+                .toString();
     }
 
 

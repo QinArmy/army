@@ -11,8 +11,8 @@ import io.army.util._Assert;
 import io.army.util._Exceptions;
 
 
-abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA, OR, LR>
-        extends SetWhereClause<F, PS, SR, SD, WR, WA, OR, LR>
+abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA, OR, LR, LO, LF>
+        extends SetWhereClause<F, PS, SR, SD, WR, WA, OR, LR, LO, LF>
         implements Statement
         , Statement._DmlUpdateSpec<I>
         , Statement._DqlUpdateSpec<Q>

@@ -28,8 +28,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, SP>
-        extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
+abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+        extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         implements Query._DynamicHintModifierSelectClause<W, SR>
         , Statement._FromModifierClause<FT, FS>, Statement._FromModifierCteClause<FC>
         , Statement._QueryWhereClause<WR, WA>, Query._GroupByClause<GR>
@@ -438,7 +438,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     @Override
     public final void clear() {
         if (this instanceof WithCteSimpleQueries) {
-            ((WithCteSimpleQueries<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?>) this).cteList = null;
+            ((WithCteSimpleQueries<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?>) this).cteList = null;
         }
         this.hintList = null;
         this.modifierList = null;
@@ -474,8 +474,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     private void endQueryStatement() {
         _Assert.nonPrepared(this.prepared);
         if (this instanceof WithCteSimpleQueries) {
-            WithCteSimpleQueries<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> withClause;
-            withClause = (WithCteSimpleQueries<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?>) this;
+            WithCteSimpleQueries<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> withClause;
+            withClause = (WithCteSimpleQueries<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?>) this;
             if (withClause.cteList == null) {
                 withClause.cteList = Collections.emptyList();
             }
@@ -577,8 +577,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     abstract SP createQueryUnion(UnionType unionType);
 
 
-    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, SP>
-            extends SimpleQueries<Q, W, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, SP>
+    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+            extends SimpleQueries<Q, W, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
             implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
 

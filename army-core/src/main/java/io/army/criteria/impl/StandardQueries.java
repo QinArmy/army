@@ -34,6 +34,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._OrderBySpec<I>, // HR
         StandardQuery._LimitSpec<I>, // OR
         StandardQuery._LockSpec<I>, // LR
+        Object,
+        Object,
         StandardQuery._UnionAndQuerySpec<I>> // SP
 
         implements StandardQuery, StandardQuery._SelectSpec<I>, StandardQuery._FromSpec<I>
@@ -156,7 +158,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
 
-
     @Override
     final void onClear() {
         this.lockMode = null;
@@ -243,9 +244,11 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             _UnionOrderBySpec<I>,
             _UnionLimitSpec<I>,
             _AsQueryClause<I>,
+            Object,
+            Object,
             _UnionAndQuerySpec<I>,
             RowSet,
-            Void> implements StandardQuery._UnionOrderBySpec<I>
+            Object> implements StandardQuery._UnionOrderBySpec<I>
             , Statement._RightParenClause<_UnionOrderBySpec<I>> {
 
 
@@ -254,11 +257,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        final Void createRowSetUnion(UnionType unionType, RowSet right) {
+        final Object createRowSetUnion(UnionType unionType, RowSet right) {
             //standard query don't support union VALUES statement
             throw ContextStack.castCriteriaApi(this.context);
         }
-
 
 
     }//StandardBracketQueries

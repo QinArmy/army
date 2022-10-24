@@ -29,7 +29,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
-        extends SingleDelete.WithSingleDelete<I, Item, MySQLCteBuilder, WE, WR, WA, OR, LR>
+        extends SingleDelete.WithSingleDelete<I, Item, MySQLCteBuilder, WE, WR, WA, OR, LR, Object, Object>
         implements MySQLDelete, _MySQLSingleDelete, Delete
         , MySQLDelete._SingleDeleteClause<DT>
         , MySQLQuery._PartitionClause<PR>

@@ -628,15 +628,6 @@ abstract class OperationExpression implements ArmyExpression {
         return BracketsExpression.bracket(this);
     }
 
-    @Override
-    public final SortItem asc() {
-        return new SortItemImpl(this, true);
-    }
-
-    @Override
-    public final SortItem desc() {
-        return new SortItemImpl(this, false);
-    }
 
 
     interface MutableParamMetaSpec {

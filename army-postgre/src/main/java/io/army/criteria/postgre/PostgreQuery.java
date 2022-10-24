@@ -40,13 +40,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
 
 
-    interface _PostgreLimitClause<LR> extends _RowCountLimitClause<LR> {
 
-        LR limitAll();
-
-        LR ifLimitAll(BooleanSupplier supplier);
-
-    }
 
 
     interface _FrameExclusionClause<R> {
@@ -222,7 +216,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _UnionLimitSpec<I extends Item> extends _PostgreLimitClause<_UnionOffsetSpec<I>>, _UnionOffsetSpec<I> {
+    interface _UnionLimitSpec<I extends Item> extends _RowCountLimitAllClause<_UnionOffsetSpec<I>>, _UnionOffsetSpec<I> {
 
         @Override
         _UnionFetchSpec<I> offset(BiFunction<MappingType, Number, Expression> operator, long start, FetchRow row);
@@ -232,7 +226,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
                 , Supplier<N> supplier, FetchRow row);
 
         @Override
-        _UnionFetchSpec<I> offset(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
+        _UnionFetchSpec<I> offset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function
                 , String keyName, FetchRow row);
 
         @Override
@@ -244,7 +238,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
                 , Supplier<N> supplier, FetchRow row);
 
         @Override
-        _UnionFetchSpec<I> ifOffset(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
+        _UnionFetchSpec<I> ifOffset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function
                 , String keyName, FetchRow row);
     }
 
@@ -279,39 +273,34 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _OffsetSpec<I extends Item> extends _QueryOffsetClause<_LockSpec<I>>, _LockSpec<I> {
+    interface _OffsetSpec<I extends Item> extends _QueryOffsetClause<_FetchSpec<I>>, _LockSpec<I> {
 
 
     }
 
 
-    interface _LimitSpec<I extends Item> extends _PostgreLimitClause<_OffsetSpec<I>>, _OffsetSpec<I> {
+    interface _LimitSpec<I extends Item> extends _RowCountLimitAllClause<_OffsetSpec<I>>, _OffsetSpec<I> {
 
+        @Override
+        _FetchSpec<I> offset(Expression start, FetchRow row);
 
         @Override
         _FetchSpec<I> offset(BiFunction<MappingType, Number, Expression> operator, long start, FetchRow row);
 
         @Override
-        <N extends Number> _FetchSpec<I> offset(BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> supplier, FetchRow row);
+        <N extends Number> _FetchSpec<I> offset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier, FetchRow row);
 
         @Override
-        _FetchSpec<I> offset(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
-                , String keyName, FetchRow row);
+        _FetchSpec<I> offset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String keyName, FetchRow row);
 
         @Override
-        _FetchSpec<I> ifOffset(BiFunction<MappingType, Number, Expression> operator, @Nullable Number start
-                , FetchRow row);
+        _FetchSpec<I> ifOffset(BiFunction<MappingType, Number, Expression> operator, @Nullable Number start, FetchRow row);
 
         @Override
-        <N extends Number> _FetchSpec<I> ifOffset(BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> supplier, FetchRow row);
+        <N extends Number> _FetchSpec<I> ifOffset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier, FetchRow row);
 
         @Override
-        _FetchSpec<I> ifOffset(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
-                , String keyName, FetchRow row);
-
-
+        _FetchSpec<I> ifOffset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String keyName, FetchRow row);
     }
 
 

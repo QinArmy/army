@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 
-abstract class SingleDelete<I extends Item, Q extends Item, WR, WA, OR, LR> extends WhereClause<WR, WA, OR, LR>
+abstract class SingleDelete<I extends Item, Q extends Item, WR, WA, OR, LR, LO, LF>
+        extends WhereClause<WR, WA, OR, LR, LO, LF>
         implements _SingleDelete
         , Statement
         , Statement._DmlDeleteSpec<I>
@@ -79,8 +80,9 @@ abstract class SingleDelete<I extends Item, Q extends Item, WR, WA, OR, LR> exte
     }
 
 
-    static abstract class WithSingleDelete<I extends Item, Q extends Item, B extends CteBuilderSpec, WE, WR, WA, OR, LR>
-            extends SingleDelete<I, Q, WR, WA, OR, LR> implements DialectStatement._DynamicWithClause<B, WE>
+    static abstract class WithSingleDelete<I extends Item, Q extends Item, B extends CteBuilderSpec, WE, WR, WA, OR, LR, LO, LF>
+            extends SingleDelete<I, Q, WR, WA, OR, LR, LO, LF>
+            implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
 
         private boolean recursive;

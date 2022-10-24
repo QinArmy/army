@@ -44,7 +44,7 @@ public interface StandardQuery extends Query {
      * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _UnionLimitSpec<I extends Item> extends _LimitClause<_AsQueryClause<I>>, _AsQueryClause<I> {
+    interface _UnionLimitSpec<I extends Item> extends Statement._LimitClause<_AsQueryClause<I>>, _AsQueryClause<I> {
 
     }
 
@@ -141,7 +141,7 @@ public interface StandardQuery extends Query {
      * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _LimitSpec<I extends Item> extends _LockSpec<I>, _LimitClause<_LockSpec<I>> {
+    interface _LimitSpec<I extends Item> extends _LockSpec<I>, Statement._LimitClause<_LockSpec<I>> {
 
     }
 

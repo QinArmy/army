@@ -1,13 +1,8 @@
 package io.army.criteria.oracle;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.SQLs;
-import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 
@@ -50,119 +45,6 @@ public interface OracleQuery extends Query, OracleStatement {
         OR of(Consumer<Consumer<TableField>> consumer);
 
         OR ifOf(Consumer<Consumer<TableField>> consumer);
-
-    }
-
-
-    interface _OracleFetchClause<R> extends _QueryFetchClause<R> {
-
-        /**
-         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
-         * @param percent      the percentage of the total number of selected rows
-         * @param wordPercent  {@link SQLs#PERCENT}
-         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
-         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
-         */
-        R fetch(Query.FetchFirstNext firstOrNext, Expression percent, SQLs.WordPercent wordPercent, Query.FetchRow row
-                , Query.FetchOnlyWithTies onlyWithTies);
-
-
-        /**
-         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
-         * @param operator     the method reference of below:
-         *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                     </ul>
-         * @param percent      non-null,the percentage of the total number of selected rows
-         * @param wordPercent  {@link SQLs#PERCENT}
-         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
-         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
-         */
-        R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Number percent, SQLs.WordPercent wordPercent, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
-
-        /**
-         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
-         * @param operator     the method reference of below:
-         *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                     </ul>
-         * @param supplier     {@link  Supplier#get()} return non-null percent
-         * @param wordPercent  {@link SQLs#PERCENT}
-         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
-         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
-         */
-        <N extends Number> R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> supplier, SQLs.WordPercent wordPercent, Query.FetchRow row
-                , Query.FetchOnlyWithTies onlyWithTies);
-
-        /**
-         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
-         * @param operator     the method reference of below:
-         *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                     </ul>
-         * @param function     {@link Function#apply(Object)} return non-null percent
-         * @param keyName      keyName that is passed to function
-         * @param wordPercent  {@link SQLs#PERCENT}
-         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
-         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
-         */
-        R fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Function<String, ?> function, String keyName, SQLs.WordPercent wordPercent
-                , Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
-
-        /**
-         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
-         * @param operator     the method reference of below:
-         *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                     </ul>
-         * @param percent      nullable,percent
-         * @param wordPercent  {@link SQLs#PERCENT}
-         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
-         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
-         */
-        R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , @Nullable Number percent, SQLs.WordPercent wordPercent, Query.FetchRow row
-                , Query.FetchOnlyWithTies onlyWithTies);
-
-        /**
-         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
-         * @param operator     the method reference of below:
-         *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                     </ul>
-         * @param supplier     return nullable percent
-         * @param wordPercent  {@link SQLs#PERCENT}
-         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
-         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
-         */
-        <N extends Number> R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> supplier, SQLs.WordPercent wordPercent, Query.FetchRow row
-                , Query.FetchOnlyWithTies onlyWithTies);
-
-        /**
-         * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
-         * @param operator     the method reference of below:
-         *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
-         *                     </ul>
-         * @param function     {@link Function#apply(Object)} return nullable percent
-         * @param keyName      keyName that is passed to function
-         * @param wordPercent  {@link SQLs#PERCENT}
-         * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
-         * @param onlyWithTies {@link SQLs#ONLY} or {@link SQLs#WITH_TIES}
-         */
-        R ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-                , Function<String, ?> function, String keyName, SQLs.WordPercent wordPercent
-                , Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies);
 
     }
 

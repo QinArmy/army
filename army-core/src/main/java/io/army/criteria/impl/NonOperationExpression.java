@@ -616,16 +616,6 @@ abstract class NonOperationExpression implements ArmyExpression {
         throw unsupportedOperation();
     }
 
-    @Override
-    public final SortItem asc() {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final SortItem desc() {
-        throw unsupportedOperation();
-    }
-
 
     static UnsupportedOperationException unsupportedOperation() {
         return new UnsupportedOperationException("Non Expression not support this method.");

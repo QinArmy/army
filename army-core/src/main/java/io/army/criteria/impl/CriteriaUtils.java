@@ -647,7 +647,15 @@ abstract class CriteriaUtils {
     }
 
     static CriteriaException conflictClauseIsEmpty(CriteriaContext context) {
-        return ContextStack.criteriaError(valuesClause.context, "You don't add conflict pair.");
+        return ContextStack.criteriaError(context, "You don't add conflict pair.");
+    }
+
+    static CriteriaException unknownWords(CriteriaContext context, @Nullable Object word) {
+        return ContextStack.criteriaError(context, String.format("unknown word[%s]", word));
+    }
+
+    static CriteriaException unknownWords(@Nullable Object word) {
+        return unknownWords(ContextStack.peek(), word);
     }
 
 
