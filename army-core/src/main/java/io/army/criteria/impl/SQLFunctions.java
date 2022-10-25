@@ -18,12 +18,15 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 abstract class SQLFunctions {
 
     SQLFunctions() {
         throw new UnsupportedOperationException();
     }
+
+    private static final Pattern FUNC_NAME_PATTERN = Pattern.compile("^[_a-zA-Z]\\w*$");
 
     enum FuncWord implements SQLWords {
 
@@ -102,6 +105,7 @@ abstract class SQLFunctions {
             , final Expression two, final Expression three, TypeMeta returnType) {
         return new ComplexArgFunc(name, threeArgList(name, one, two, three), returnType);
     }
+
 
     static IPredicate twoArgPredicateFunc(final String name, final Expression one, final Expression two) {
         return new ComplexFuncPredicate(name, twoArgList(name, one, two));

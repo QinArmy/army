@@ -646,6 +646,13 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(ContextStack.peek(), m);
     }
 
+
+    static CriteriaException dontSupportTabularModifier(CriteriaContext context, Object modifier) {
+        String m = String.format("Don't support modifier[%s]", modifier);
+        return ContextStack.criteriaError(context, m);
+    }
+
+
     static CriteriaException conflictClauseIsEmpty(CriteriaContext context) {
         return ContextStack.criteriaError(context, "You don't add conflict pair.");
     }

@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
-import io.army.criteria.Query;
 import io.army.criteria.SubQuery;
 import io.army.criteria.TabularItem;
 import io.army.criteria.mysql.MySQLCastType;
@@ -175,11 +174,6 @@ abstract class MySQLUtils extends CriteriaUtils {
 
     static CriteriaException intoVarListNotEmpty() {
         return new CriteriaException("variable name list must not empty in MySQL INTO clause.");
-    }
-
-    static CriteriaException dontSupportTabularModifier(CriteriaContext context, Query.TabularModifier modifier) {
-        String m = String.format("MySQL don't support modifier[%s]", modifier);
-        return ContextStack.criteriaError(context, m);
     }
 
 

@@ -71,12 +71,16 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
     @Override
     public final _StaticCteLeftParenSpec<_CteComma<I>> with(String name) {
-        return null;
+        final boolean recursive = false;
+        this.context.onBeforeWithClause(recursive);
+        return new CteComma<>(recursive, this).function.apply(name);
     }
 
     @Override
     public final _StaticCteLeftParenSpec<_CteComma<I>> withRecursive(String name) {
-        return null;
+        final boolean recursive = true;
+        this.context.onBeforeWithClause(recursive);
+        return new CteComma<>(recursive, this).function.apply(name);
     }
 
     @Override
@@ -298,6 +302,38 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     final _OnClause<_JoinSpec<I>> createCteBlock(_JoinType joinType, @Nullable TabularModifier modifier, TabularItem tableItem, String alias) {
         return null;
     }
+
+
+    private static final class CteComma<I extends Item>
+            extends SelectClauseDispatcher<PostgreSyntax.Modifier, PostgreQuery._FromSpec<I>>
+            implements PostgreQuery._CteComma<I> {
+
+        private final boolean recursive;
+
+        private final PostgreQueries<I> clause;
+
+        private final Function<String, PostgreStatement._StaticCteLeftParenSpec<PostgreQuery._CteComma<I>>> function;
+
+
+        private CteComma(boolean recursive, PostgreQueries<I> clause) {
+            this.recursive = recursive;
+            this.clause = clause;
+            this.function = PostgreQueries.complexCte(clause.context, this);
+        }
+
+        @Override
+        public _StaticCteLeftParenSpec<_CteComma<I>> comma(String name) {
+            return this.function.apply(name);
+        }
+
+        @Override
+        _DynamicHintModifierSelectClause<PostgreSyntax.Modifier, _FromSpec<I>> createSelectClause() {
+            this.clause.endStaticWithClause(this.recursive);
+            return this.clause;
+        }
+
+
+    }//CteComma
 
 
 }

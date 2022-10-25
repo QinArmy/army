@@ -36,11 +36,11 @@ abstract class MySQLNestedJoins {
 
     static <I extends Item> MySQLQuery._NestedLeftParenSpec<I> nestedItem(CriteriaContext context
             , _JoinType joinType, BiFunction<_JoinType, NestedItems, I> function) {
-        return new NestedLeftParenClause<>(context, joinType, function);
+        return new MySQLNestedLeftParenClause<>(context, joinType, function);
     }
 
 
-    private static final class NestedLeftParenClause<I extends Item>
+    private static final class MySQLNestedLeftParenClause<I extends Item>
             implements MySQLQuery._NestedLeftParenSpec<I>, _TableItemGroup
             , NestedItems {
 
@@ -52,7 +52,7 @@ abstract class MySQLNestedJoins {
 
         private List<_TableBlock> blockList = new ArrayList<>();
 
-        private NestedLeftParenClause(CriteriaContext context, _JoinType joinType
+        private MySQLNestedLeftParenClause(CriteriaContext context, _JoinType joinType
                 , BiFunction<_JoinType, NestedItems, I> function) {
             this.context = context;
             this.joinType = joinType;
@@ -61,7 +61,7 @@ abstract class MySQLNestedJoins {
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<MySQLQuery._MySQLNestedJoinClause<I>> leftParen() {
-            return new NestedLeftParenClause<>(this.context, _JoinType.NONE, this::nestedNestedJoinEnd);
+            return new MySQLNestedLeftParenClause<>(this.context, _JoinType.NONE, this::nestedNestedJoinEnd);
         }
 
         @Override
@@ -148,6 +148,7 @@ abstract class MySQLNestedJoins {
             return new PartitionJoinClause<>(this.context, this::onAddTableBlock
                     , _JoinType.NONE, table, this::thisNestedJoinEnd);
         }
+
 
         @Override
         public List<? extends _TableBlock> tableGroup() {
@@ -260,32 +261,32 @@ abstract class MySQLNestedJoins {
 
         @Override
         public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._NestedOnSpec<I>> leftJoin() {
-            return new NestedLeftParenClause<>(this.context, _JoinType.LEFT_JOIN, this::nestedJoinEnd);
+            return new MySQLNestedLeftParenClause<>(this.context, _JoinType.LEFT_JOIN, this::nestedJoinEnd);
         }
 
         @Override
         public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._NestedOnSpec<I>> join() {
-            return new NestedLeftParenClause<>(this.context, _JoinType.JOIN, this::nestedJoinEnd);
+            return new MySQLNestedLeftParenClause<>(this.context, _JoinType.JOIN, this::nestedJoinEnd);
         }
 
         @Override
         public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._NestedOnSpec<I>> rightJoin() {
-            return new NestedLeftParenClause<>(this.context, _JoinType.RIGHT_JOIN, this::nestedJoinEnd);
+            return new MySQLNestedLeftParenClause<>(this.context, _JoinType.RIGHT_JOIN, this::nestedJoinEnd);
         }
 
         @Override
         public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._NestedOnSpec<I>> fullJoin() {
-            return new NestedLeftParenClause<>(this.context, _JoinType.FULL_JOIN, this::nestedJoinEnd);
+            return new MySQLNestedLeftParenClause<>(this.context, _JoinType.FULL_JOIN, this::nestedJoinEnd);
         }
 
         @Override
         public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._NestedOnSpec<I>> straightJoin() {
-            return new NestedLeftParenClause<>(this.context, _JoinType.STRAIGHT_JOIN, this::nestedJoinEnd);
+            return new MySQLNestedLeftParenClause<>(this.context, _JoinType.STRAIGHT_JOIN, this::nestedJoinEnd);
         }
 
         @Override
         public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._NestedJoinSpec<I>> crossJoin() {
-            return new NestedLeftParenClause<>(this.context, _JoinType.CROSS_JOIN, this::nestedCrossJoinEnd);
+            return new MySQLNestedLeftParenClause<>(this.context, _JoinType.CROSS_JOIN, this::nestedCrossJoinEnd);
         }
 
         @Override
@@ -497,7 +498,7 @@ abstract class MySQLNestedJoins {
 
 
     /**
-     * @see NestedLeftParenClause
+     * @see MySQLNestedLeftParenClause
      * @see PartitionJoinClause
      */
     private static final class NestedIndexHintJoinClause<I extends Item>
@@ -505,7 +506,7 @@ abstract class MySQLNestedJoins {
             implements MySQLQuery._NestedIndexHintJoinSpec<I> {
 
         /**
-         * @see NestedLeftParenClause#leftParen(TableMeta, StandardSyntax.WordAs, String)
+         * @see MySQLNestedLeftParenClause#leftParen(TableMeta, StandardSyntax.WordAs, String)
          */
         private NestedIndexHintJoinClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer
                 , _JoinType joinType, @Nullable SQLWords modifier
@@ -574,7 +575,7 @@ abstract class MySQLNestedJoins {
 
 
     /**
-     * @see NestedLeftParenClause
+     * @see MySQLNestedLeftParenClause
      */
     private static final class PartitionJoinClause<I extends Item>
             extends MySQLSupports.PartitionAsClause<MySQLQuery._NestedIndexHintJoinSpec<I>>
@@ -585,7 +586,7 @@ abstract class MySQLNestedJoins {
         private final Supplier<I> supplier;
 
         /**
-         * @see NestedLeftParenClause#leftParen(TableMeta)
+         * @see MySQLNestedLeftParenClause#leftParen(TableMeta)
          */
         private PartitionJoinClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer
                 , _JoinType joinType, TableMeta<?> table, Supplier<I> supplier) {

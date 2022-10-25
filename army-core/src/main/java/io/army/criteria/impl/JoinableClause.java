@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._DialectTableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner._TableItemGroup;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -11,6 +12,7 @@ import io.army.util.ArrayUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -418,17 +420,71 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
             super(context, blockConsumer);
         }
 
-        DynamicJoinClause(CriteriaContext context) {
-            super(context);
-        }
-
 
     }//DynamicJoinClause
 
 
+    static abstract class NestedLeftParenClause<I extends Item>
+            implements _TableItemGroup, NestedItems {
+
+        final CriteriaContext context;
+
+        private final _JoinType joinType;
+
+        private final BiFunction<_JoinType, NestedItems, I> function;
+
+        private List<_TableBlock> blockList = new ArrayList<>();
+
+        NestedLeftParenClause(CriteriaContext context, _JoinType joinType
+                , BiFunction<_JoinType, NestedItems, I> function) {
+            this.context = context;
+            this.joinType = joinType;
+            this.function = function;
+        }
+
+
+        @Override
+        public final List<? extends _TableBlock> tableGroup() {
+            final List<_TableBlock> blockList = this.blockList;
+            if (blockList == null || blockList instanceof ArrayList) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return blockList;
+        }
+
+
+        final void onAddTableBlock(final _TableBlock block) {
+            final List<_TableBlock> blockList = this.blockList;
+            if (!(blockList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            blockList.add(block);
+        }
+
+        final void onAddNestedNested(final _TableBlock block) {
+            final List<_TableBlock> blockList = this.blockList;
+            if (!(blockList instanceof ArrayList && blockList.size() == 0)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            blockList.add(block);
+        }
+
+
+        final I thisNestedJoinEnd() {
+            final List<_TableBlock> blockList = this.blockList;
+            if (!(blockList instanceof ArrayList && blockList.size() > 0)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.blockList = Collections.unmodifiableList(blockList);
+            return this.function.apply(this.joinType, this);
+        }
+
+    }//NestedLeftParenClause
+
+
     @SuppressWarnings("unchecked")
     static abstract class NestedJoinClause<FT, FS, FC, JT, JS, JC, OR>
-            extends JoinableClause<FT, FS, FC, JT, JS, JC, Object, Object, Object, Object>
+            extends JoinableClause<FT, FS, FC, JT, JS, JC, Object, Object, Object, Object, Object, Object>
             implements Statement._OnClause<OR>
             , _DialectTableBlock {
 

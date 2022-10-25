@@ -39,7 +39,7 @@ public interface PostgreStatement extends DialectStatement {
 
         RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Supplier<Number> supplier);
 
-        RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Function<String, ?> function, String keyName);
+        RR repeatable(BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
         RR ifRepeatable(Supplier<Expression> supplier);
 
@@ -47,12 +47,16 @@ public interface PostgreStatement extends DialectStatement {
 
         RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator, Supplier<Number> supplier);
 
-        RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator, Function<String, ?> function, String keyName);
+        RR ifRepeatable(BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
 
     }
 
     interface _TableSampleClause<TR> {
+
+        TR tableSample(Expression method);
+
+        TR tableSample(String methodName, Expression argument);
 
         TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer);
 
@@ -68,7 +72,7 @@ public interface PostgreStatement extends DialectStatement {
         TR ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer);
 
         <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-                , BiFunction<MappingType, T, Expression> valueOperator, T argument);
+                , BiFunction<MappingType, T, Expression> valueOperator, @Nullable T argument);
 
         <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
                 , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier);
@@ -152,7 +156,7 @@ public interface PostgreStatement extends DialectStatement {
     interface _NestedLeftParenSpec<I extends Item>
             extends _PostgreNestedLeftParenClause<_NestedTableSampleJoinSpec<I>, _PostgreNestedJoinClause<I>>
             , Query._LeftParenClause<_NestedLeftParenSpec<_PostgreNestedJoinClause<I>>> {
-
+        //TODO add nested function
     }
 
 

@@ -5,7 +5,9 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner.postgre._PostgreCteStatement;
 import io.army.criteria.postgre.*;
 import io.army.dialect._Constant;
+import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
+import io.army.meta.TypeMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._StringUtils;
@@ -30,6 +32,13 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     static PostgreCteBuilder cteBuilder(final boolean recursive, final CriteriaContext context) {
         return new PostgreCteBuilderImpl(recursive, context);
+    }
+
+    static ArmyExpression sampleMethod(final String name, final List<Expression> argList) {
+        if (!Functions.FUN_NAME_PATTER.matcher(name).matches()) {
+            throw Functions._customFuncNameError(name);
+        }
+        return new SampleMethod(name, argList);
     }
 
 
@@ -635,6 +644,44 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
     }//PostgreCteBuilderImpl
+
+    private static final class SampleMethod extends NonOperationExpression {
+
+        private final String name;
+
+        private final List<Expression> argList;
+
+        private SampleMethod(String name, List<Expression> argList) {
+            this.name = name;
+            this.argList = argList;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            throw unsupportedOperation();
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN);
+
+            final List<Expression> argList = this.argList;
+            final int size = argList.size();
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.COMMA);
+                }
+                ((ArmyExpression) argList.get(i)).appendSql(context);
+            }
+
+            sqlBuilder.append(_Constant.RIGHT_PAREN);
+        }
+
+    }//SampleMethod
 
 
 }

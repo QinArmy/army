@@ -568,66 +568,66 @@ abstract class Functions {
 
     /*-------------------below custom function -------------------*/
 
-    private static final Pattern FUN_NAME_PATTER = Pattern.compile("^[_a-zA-Z][_\\w]*$");
+     static final Pattern FUN_NAME_PATTER = Pattern.compile("^[_a-zA-Z][_\\w]*$");
 
     public static Expression customFunc(String name, TypeMeta returnType) {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw customFuncNameError(name);
+            throw _customFuncNameError(name);
         }
         return SQLFunctions.noArgFunc(name, returnType);
     }
 
     public static IPredicate customFunc(String name) {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw customFuncNameError(name);
+            throw _customFuncNameError(name);
         }
         return SQLFunctions.noArgFuncPredicate(name);
     }
 
     public static Expression customFunc(String name, Expression expr, TypeMeta returnType) {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw customFuncNameError(name);
+            throw _customFuncNameError(name);
         }
         return SQLFunctions.oneArgFunc(name, expr, returnType);
     }
 
     public static IPredicate customFunc(String name, Expression expr) {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw customFuncNameError(name);
+            throw _customFuncNameError(name);
         }
         return SQLFunctions.oneArgFuncPredicate(name, expr);
     }
 
     public static Expression customFunc(String name, Expression expr1, Expression expr2, TypeMeta returnType) {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw customFuncNameError(name);
+            throw _customFuncNameError(name);
         }
         return SQLFunctions.twoArgFunc(name, expr1, expr2, returnType);
     }
 
     public static IPredicate customFunc(String name, Expression expr1, Expression expr2) {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw customFuncNameError(name);
+            throw _customFuncNameError(name);
         }
         return SQLFunctions.twoArgPredicateFunc(name, expr1, expr2);
     }
 
     public static Expression customFunc(String name, List<Expression> expList, TypeMeta returnType) {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw customFuncNameError(name);
+            throw _customFuncNameError(name);
         }
         return SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
     }
 
     public static IPredicate customFunc(String name, List<Expression> expList) {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw customFuncNameError(name);
+            throw _customFuncNameError(name);
         }
         return SQLFunctions.complexArgPredicate(name, _createSimpleMultiArgList(expList));
     }
 
 
-    private static CriteriaException customFuncNameError(String name) {
+    static CriteriaException _customFuncNameError(String name) {
         String m = String.format("custom function name[%s] error.", name);
         return ContextStack.criteriaError(ContextStack.peek(), m);
     }

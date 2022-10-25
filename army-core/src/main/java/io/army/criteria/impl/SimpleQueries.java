@@ -641,12 +641,13 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         abstract B createCteBuilder(boolean recursive);
 
 
-        final void endStaticWithClause(final boolean recursive) {
+        final WE endStaticWithClause(final boolean recursive) {
             if (this.cteList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(true);
+            return (WE) this;
         }
 
         private WE endWithClause(final B builder, final boolean required) {
