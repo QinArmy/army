@@ -59,7 +59,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
     static <I extends Item> PostgreQuery._DynamicSubMaterializedSpec<I> dynamicCteQuery(CriteriaContext outerContext
-            , Function<SubQuery, I> function) {
+            , Function<SubStatement, I> function) {
         throw new UnsupportedOperationException();
     }
 

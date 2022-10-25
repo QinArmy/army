@@ -2,7 +2,10 @@ package io.army.criteria.impl.inner.postgre;
 
 import io.army.criteria.SQLWords;
 import io.army.criteria.SubStatement;
+import io.army.criteria.impl.inner._Expression;
 import io.army.lang.Nullable;
+
+import java.util.List;
 
 public interface _PostgreCteStatement extends SubStatement {
 
@@ -12,14 +15,30 @@ public interface _PostgreCteStatement extends SubStatement {
     SubStatement subStatement();
 
 
-    interface _SearchOptionClauseSpec {
+    interface _SearchOptionClauseSpec extends _PostgreCteStatement {
 
+        @Nullable
+        SQLWords searchOption();
+
+        List<String> firstByList();
+
+        String searchSeqColumnName();
+
+        @Nullable
+        List<String> cycleColumnList();
+
+        String cycleMarkColumnName();
+
+        @Nullable
+        _Expression cycleMarkValue();
+
+        @Nullable
+        _Expression cycleMarkDefault();
+
+        String cyclePathColumnName();
 
     }
 
-    interface _CycleOptionClauseSpec {
-
-    }
 
 
 }

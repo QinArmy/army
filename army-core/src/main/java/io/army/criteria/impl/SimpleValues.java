@@ -29,7 +29,7 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
         implements Values._StaticValueLeftParenClause<RR>
         , Values._StaticValueRowCommaDualSpec<RR>
         , Values._StaticValueRowCommaQuadraSpec<RR>
-        , Values._ValuesDynamicClause<C, VR>
+        , Values._DynamicValuesClause<C, VR>
         , RowSet.DqlValues
         , Values._ValuesSpec<V>
         , _Values {

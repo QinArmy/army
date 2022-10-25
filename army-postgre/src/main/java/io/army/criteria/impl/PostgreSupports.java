@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner.postgre._PostgreCteStatement;
 import io.army.criteria.postgre.*;
 import io.army.dialect._Constant;
@@ -229,13 +230,13 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final CriteriaContext context;
 
-        private final SubQuery subQuery;
+        private final SubStatement subStmt;
 
-        private final Function<_PostgreCteStatement, I> function;
+        private final Function<SubStatement, I> function;
 
         private CteSearchOption searchOption;
 
-        private List<String> searchColumnList;
+        private List<String> firstByColumnList;
 
         private String searchSeqColumnName;
 
@@ -249,10 +250,10 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private String cyclePathColumnName;
 
-        private PostgreCteSearchClause(CriteriaContext context, SubQuery subQuery
-                , Function<_PostgreCteStatement, I> function) {
+        private PostgreCteSearchClause(CriteriaContext context, SubStatement subStmt
+                , Function<SubStatement, I> function) {
             this.context = context;
-            this.subQuery = subQuery;
+            this.subStmt = subStmt;
             this.function = function;
         }
 
@@ -291,7 +292,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         @Override
         public PostgreStatement._SetSearchSeqColumnClause<I> firstBy(String columnName) {
             if (this.searchOption != null) {
-                this.searchColumnList = Collections.singletonList(columnName);
+                this.firstByColumnList = Collections.singletonList(columnName);
             }
             return this;
         }
@@ -299,7 +300,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         @Override
         public PostgreStatement._SetSearchSeqColumnClause<I> firstBy(String columnName1, String columnName2) {
             if (this.searchOption != null) {
-                this.searchColumnList = ArrayUtils.asUnmodifiableList(columnName1, columnName2);
+                this.firstByColumnList = ArrayUtils.asUnmodifiableList(columnName1, columnName2);
             }
             return this;
         }
@@ -308,7 +309,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         public PostgreStatement._SetSearchSeqColumnClause<I> firstBy(String columnName1, String columnName2
                 , String columnName3) {
             if (this.searchOption != null) {
-                this.searchColumnList = ArrayUtils.asUnmodifiableList(columnName1, columnName2, columnName3);
+                this.firstByColumnList = ArrayUtils.asUnmodifiableList(columnName1, columnName2, columnName3);
             }
             return this;
         }
@@ -317,7 +318,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         public PostgreStatement._SetSearchSeqColumnClause<I> firstBy(
                 String columnName1, String columnName2, String columnName3, String columnName4) {
             if (this.searchOption != null) {
-                this.searchColumnList = ArrayUtils.asUnmodifiableList(columnName1, columnName2
+                this.firstByColumnList = ArrayUtils.asUnmodifiableList(columnName1, columnName2
                         , columnName3, columnName4);
             }
             return this;
@@ -331,29 +332,17 @@ abstract class PostgreSupports extends CriteriaSupports {
                 if (list.size() == 0) {
                     throw ContextStack.criteriaError(this.context, "firstBy column list required");
                 }
-                this.searchColumnList = _CollectionUtils.unmodifiableList(list);
+                this.firstByColumnList = _CollectionUtils.unmodifiableList(list);
             }
             return this;
         }
 
         @Override
-        public PostgreStatement._SetSearchSeqColumnClause<I> ifFirstBy(Consumer<Consumer<String>> consumer) {
-            if (this.searchOption != null) {
-                final List<String> list = new ArrayList<>();
-                consumer.accept(list::add);
-                if (list.size() > 0) {
-                    this.searchColumnList = _CollectionUtils.unmodifiableList(list);
-                } else {
-                    this.searchColumnList = Collections.emptyList();
-                }
-            }
-            return this;
-        }
-
-        @Override
-        public PostgreCteSearchClause<I> set(String searchSeqColumnName) {
-            if (this.searchOption != null) {
-                this.searchSeqColumnName = searchSeqColumnName;
+        public PostgreCteSearchClause<I> set(String columnName) {
+            if (this.cycleColumnList != null) {
+                this.cycleMarkColumnName = columnName;
+            } else if (this.searchOption != null && this.searchSeqColumnName == null) {
+                this.searchSeqColumnName = columnName;
             }
             return this;
         }
@@ -449,7 +438,96 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public I asCte() {
-            return null;
+            final SubStatement statement;
+            if (this.searchOption != null || this.cycleColumnList != null) {
+                statement = this;
+            } else {
+                statement = this.subStmt;
+            }
+            return this.function.apply(statement);
+        }
+
+
+        @Override
+        public SQLWords materializedOption() {
+            final SubStatement subQuery = this.subStmt;
+            return subQuery instanceof _PostgreCteStatement
+                    ? ((_PostgreCteStatement) subQuery).materializedOption()
+                    : null;
+        }
+
+        @Override
+        public SubStatement subStatement() {
+            final SubStatement subQuery = this.subStmt;
+            return subQuery instanceof _PostgreCteStatement
+                    ? ((_PostgreCteStatement) subQuery).subStatement()
+                    : subQuery;
+        }
+
+        @Override
+        public void prepared() {
+            this.subStmt.prepared();
+        }
+
+        @Override
+        public boolean isPrepared() {
+            return this.subStmt.isPrepared();
+        }
+
+        @Override
+        public SQLWords searchOption() {
+            return this.searchOption;
+        }
+
+        @Override
+        public List<String> firstByList() {
+            final List<String> list = this.firstByColumnList;
+            if (list == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return list;
+        }
+
+        @Override
+        public String searchSeqColumnName() {
+            final String columnName = this.searchSeqColumnName;
+            if (columnName == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return columnName;
+        }
+
+        @Override
+        public List<String> cycleColumnList() {
+            return this.cycleColumnList;
+        }
+
+        @Override
+        public String cycleMarkColumnName() {
+            final String columnName = this.cycleMarkColumnName;
+            if (columnName == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return columnName;
+        }
+
+        @Override
+        public _Expression cycleMarkValue() {
+            return this.cycleMarkValue;
+        }
+
+        @Override
+        public _Expression cycleMarkDefault() {
+            return this.cycleMarkDefault;
+        }
+
+        @Override
+        public String cyclePathColumnName() {
+            final String columnName = this.cyclePathColumnName;
+            if (columnName == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return columnName;
         }
 
         private void toMarkValueAndDefault(Expression markValue, Expression markDefault) {
@@ -476,7 +554,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             return PostgreQueries.dynamicCteQuery(this.cteBuilder.context, this::subQueryEnd);
         }
 
-        private PostgreStatement._CteSearchSpec<PostgreCteBuilder> subQueryEnd(SubQuery subQuery) {
+        private PostgreStatement._CteSearchSpec<PostgreCteBuilder> subQueryEnd(SubStatement subQuery) {
             return new PostgreCteSearchClause<>(this.cteBuilder.context, subQuery, this::searchOptionEnd);
         }
 

@@ -723,11 +723,11 @@ public interface Statement extends Item {
     }
 
 
-    interface _DynamicOrderByClause<OR> {
+    interface _DynamicOrderByClause<B extends SortItems, OR> {
 
-        OR orderBy(Consumer<SortItems> consumer);
+        OR orderBy(Consumer<B> consumer);
 
-        OR ifOrderBy(Consumer<SortItems> consumer);
+        OR ifOrderBy(Consumer<B> consumer);
     }
 
 
@@ -1190,6 +1190,12 @@ public interface Statement extends Item {
     interface _MultiStmtSpec extends Item {
 
         MultiStatement asMultiStmt();
+
+    }
+
+    interface _AsValuesClause<I extends Item> {
+
+        I asValues();
 
     }
 

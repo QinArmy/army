@@ -257,8 +257,6 @@ public interface PostgreStatement extends DialectStatement {
 
         _SetSearchSeqColumnClause<I> firstBy(Consumer<Consumer<String>> consumer);
 
-        _SetSearchSeqColumnClause<I> ifFirstBy(Consumer<Consumer<String>> consumer);
-
     }
 
     interface _CteSearchSpec<I extends Item> extends _CteCycleSpec<I> {
@@ -283,7 +281,8 @@ public interface PostgreStatement extends DialectStatement {
     interface _StaticCteComplexCommandSpec<I extends Item>
             extends PostgreQuery._PostgreSelectClause<_CteSearchSpec<I>>
             , PostgreInsert._StaticSubOptionSpec<_AsCteClause<I>>
-            , PostgreUpdate._SingleUpdateClause<_AsCteClause<I>, _AsCteClause<I>> {
+            , PostgreUpdate._SingleUpdateClause<_AsCteClause<I>, _AsCteClause<I>>
+            , PostgreDelete._SingleDeleteClause<_AsCteClause<I>, _AsCteClause<I>> {
 
     }
 
@@ -303,6 +302,12 @@ public interface PostgreStatement extends DialectStatement {
             extends Statement._LeftParenStringQuadraSpec<_StaticCteAsClause<I>>
             , _StaticCteAsClause<I> {
 
+    }
+
+
+    interface _AsCommandClause<I extends Item> extends Item {
+
+        I asCommand();
     }
 
 

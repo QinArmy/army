@@ -181,11 +181,6 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _UnionAndQuerySpec<I extends Item> extends _WithSpec<I>
-            , Query._LeftParenClause<_UnionAndQuerySpec<Statement._RightParenClause<_UnionOrderBySpec<I>>>> {
-
-    }
-
     interface _UnionLockWaitOptionSpec<I extends Item> extends _MinLockWaitOptionClause<_UnionLockSpec<I>>
             , _UnionLockSpec<I> {
 
@@ -421,6 +416,11 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     interface _DynamicCteQuerySpec
             extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_CteSearchSpec<PostgreCteBuilder>>> {
+
+    }
+
+    interface _UnionAndQuerySpec<I extends Item> extends _WithSpec<I>
+            , Query._LeftParenClause<_UnionAndQuerySpec<Statement._RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 
