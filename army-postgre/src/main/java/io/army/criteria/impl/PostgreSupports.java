@@ -122,12 +122,13 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private ArmyExpression seed;
 
-        PostgreTableBlock(_JoinType joinType, TabularItem tableItem, @Nullable SQLWords modifier, String alias, OR stmt) {
+        PostgreTableBlock(_JoinType joinType, @Nullable SQLWords modifier
+                , TabularItem tableItem, String alias, OR stmt) {
             super(joinType, tableItem, alias, stmt);
             this.modifier = modifier;
         }
 
-        PostgreTableBlock(_JoinType joinType, TabularItem tableItem, @Nullable SQLWords modifier, String alias) {
+        PostgreTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TabularItem tableItem, String alias) {
             super(joinType, tableItem, alias);
             this.modifier = modifier;
         }
@@ -312,8 +313,8 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     static final class PostgreNoOnTableBlock extends PostgreTableBlock<Object, Object, Object> {
 
-        PostgreNoOnTableBlock(_JoinType joinType, TableMeta<?> table, @Nullable SQLWords modifier, String alias) {
-            super(joinType, table, modifier, alias);
+        PostgreNoOnTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table, String alias) {
+            super(joinType, modifier, table, alias);
         }
 
     }//PostgreNoOnTableBlock
@@ -321,9 +322,9 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     static abstract class PostgreOnTableBlock<TR, RR, OR> extends PostgreTableBlock<TR, RR, OR> {
 
-        PostgreOnTableBlock(_JoinType joinType, TabularItem tableItem
-                , @Nullable SQLWords modifier, String alias, OR stmt) {
-            super(joinType, tableItem, modifier, alias, stmt);
+        PostgreOnTableBlock(_JoinType joinType, @Nullable SQLWords modifier
+                , TabularItem tableItem, String alias, OR stmt) {
+            super(joinType, modifier, tableItem, alias, stmt);
         }
 
 

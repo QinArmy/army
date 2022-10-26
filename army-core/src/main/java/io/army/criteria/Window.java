@@ -19,9 +19,7 @@ public interface Window {
 
     interface Builder extends Item {
 
-        Item window
-
-        window(String name);
+        Item window(String name);
 
     }
 

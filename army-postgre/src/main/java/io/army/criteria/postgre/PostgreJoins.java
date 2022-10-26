@@ -12,6 +12,8 @@ public interface PostgreJoins extends Statement.JoinBuilder {
 
     PostgreStatement._DynamicTableSampleOnSpec tabular(TableMeta<?> table, SQLs.WordAs wordAs, String alias);
 
+    PostgreStatement._DynamicTableSampleOnSpec tabular(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String alias);
+
     <T extends TabularItem> Statement._AsClause<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> tabular(Supplier<T> supplier);
 
     <T extends TabularItem> Statement._AsClause<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> tabular(Query.TabularModifier modifier
