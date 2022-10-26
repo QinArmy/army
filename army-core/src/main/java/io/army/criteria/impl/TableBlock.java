@@ -109,7 +109,7 @@ abstract class TableBlock implements _TableBlock {
         }
 
         @Override
-        public final SQLWords itemWord() {
+        public final SQLWords modifier() {
             return this.itemWord;
         }
 

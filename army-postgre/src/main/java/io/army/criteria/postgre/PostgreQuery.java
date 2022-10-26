@@ -41,28 +41,27 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     interface _FrameExclusionClause<R> {
 
-        R excludeCurrentRow();
-
-        R excludeGroup();
-
-        R excludeTies();
-
-        R excludeNoOthers();
-
-        R ifExcludeCurrentRow(BooleanSupplier supplier);
-
-        R ifExcludeGroup(BooleanSupplier supplier);
-
-        R ifExcludeTies(BooleanSupplier supplier);
-
-        R ifExcludeNoOthers(BooleanSupplier supplier);
 
     }
 
 
+    interface _FrameExclusionSpec<I extends Item> extends _RightParenClause<I> {
 
-    interface _FrameExclusionSpec<I extends Item>
-            extends _FrameExclusionClause<_RightParenClause<I>>, _RightParenClause<I> {
+        _RightParenClause<I> excludeCurrentRow();
+
+        _RightParenClause<I> excludeGroup();
+
+        _RightParenClause<I> excludeTies();
+
+        _RightParenClause<I> excludeNoOthers();
+
+        _RightParenClause<I> ifExcludeCurrentRow(BooleanSupplier predicate);
+
+        _RightParenClause<I> ifExcludeGroup(BooleanSupplier predicate);
+
+        _RightParenClause<I> ifExcludeTies(BooleanSupplier predicate);
+
+        _RightParenClause<I> ifExcludeNoOthers(BooleanSupplier predicate);
 
     }
 

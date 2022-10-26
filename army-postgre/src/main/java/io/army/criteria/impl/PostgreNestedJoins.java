@@ -15,12 +15,20 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+
+/**
+ * <p>
+ * This class hold the implementation of Postgre nested join.
+ * </p>
+ *
+ * @since 1.0
+ */
 
 final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeftParenClause<I>
         implements PostgreStatement._NestedLeftParenSpec<I> {
@@ -45,7 +53,22 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         block = new NestedTableSampleJoinClause<>(this.context, this::onAddTableBlock
                 , _JoinType.NONE, null, table, tableAlias, this::thisNestedJoinEnd);
 
-        this.onAddTableBlock(block);
+        this.onAddFirstBlock(block);
+        return block;
+    }
+
+    @Override
+    public PostgreStatement._NestedTableSampleJoinSpec<I> leftParen(final Query.TableModifier modifier
+            , TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
+        assert wordAs == SQLs.AS;
+        if (modifier != SQLs.ONLY) {
+            throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+        }
+        final NestedTableSampleJoinClause<I> block;
+        block = new NestedTableSampleJoinClause<>(this.context, this::onAddTableBlock
+                , _JoinType.NONE, modifier, table, tableAlias, this::thisNestedJoinEnd);
+
+        this.onAddFirstBlock(block);
         return block;
     }
 
@@ -61,7 +84,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             final PostgreNestedJoinClause<I> block;
             block = new PostgreNestedJoinClause<>(this.context, this::onAddTableBlock
                     , _JoinType.NONE, null, tabularItem, alias, this::thisNestedJoinEnd);
-            this.onAddTableBlock(block);
+            this.onAddFirstBlock(block);
             return block;
         };
         return asClause;
@@ -82,26 +105,12 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             final PostgreNestedJoinClause<I> block;
             block = new PostgreNestedJoinClause<>(this.context, this::onAddTableBlock
                     , _JoinType.NONE, modifier, tabularItem, alias, this::thisNestedJoinEnd);
-            this.onAddTableBlock(block);
+            this.onAddFirstBlock(block);
             return block;
         };
         return asClause;
     }
 
-    @Override
-    public PostgreStatement._NestedTableSampleJoinSpec<I> leftParen(final Query.TableModifier modifier
-            , TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
-        assert wordAs == SQLs.AS;
-        if (modifier != SQLs.ONLY) {
-            throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
-        }
-        final NestedTableSampleJoinClause<I> block;
-        block = new NestedTableSampleJoinClause<>(this.context, this::onAddTableBlock
-                , _JoinType.NONE, modifier, table, tableAlias, this::thisNestedJoinEnd);
-
-        this.onAddTableBlock(block);
-        return block;
-    }
 
     @Override
     public PostgreStatement._PostgreNestedJoinClause<I> leftParen(String cteName) {
@@ -109,7 +118,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         final PostgreNestedJoinClause<I> block;
         block = new PostgreNestedJoinClause<>(context, this::onAddTableBlock
                 , _JoinType.NONE, null, context.refCte(cteName), "", this::thisNestedJoinEnd);
-        this.onAddTableBlock(block);
+        this.onAddFirstBlock(block);
         return block;
     }
 
@@ -126,7 +135,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         final PostgreNestedJoinClause<I> block;
         block = new PostgreNestedJoinClause<>(context, this::onAddTableBlock
                 , _JoinType.NONE, null, context.refCte(cteName), alias, this::thisNestedJoinEnd);
-        this.onAddTableBlock(block);
+        this.onAddFirstBlock(block);
         return block;
     }
 
@@ -143,7 +152,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         final PostgreNestedJoinClause<I> clause;
         clause = new PostgreNestedJoinClause<>(this.context, this::onAddTableBlock
                 , joinType, null, nestedItems, "", this::thisNestedJoinEnd);
-        this.onAddNestedNested(clause);
+        this.onAddFirstBlock(clause);
         return clause;
     }
 
@@ -231,31 +240,50 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         @Override
         final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
                 , TableMeta<?> table, String alias) {
-            return null;
+            if (modifier != null && modifier != SQLs.ONLY) {
+                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            }
+            return new NestedTableSampleCrossClause<>(this.context, this.blockConsumer, joinType, modifier, table
+                    , alias, this.supplier);
         }
 
         @Override
         final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
                 , TabularItem tableItem, String alias) {
-            return null;
+            if (modifier != null && modifier != SQLs.LATERAL) {
+                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            }
+            return new TableBlock.NoOnTableBlock(joinType, tableItem, alias);
         }
 
         @Override
         final PostgreStatement._NestedTableSampleOnSpec<I> createTableBlock(_JoinType joinType
                 , @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
-            return null;
+            if (modifier != null && modifier != SQLs.ONLY) {
+                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            }
+            return new NestedTableSampleOnClause<>(this.context, this.blockConsumer, joinType, modifier, table
+                    , tableAlias, this.supplier);
         }
 
         @Override
         final PostgreStatement._NestedOnSpec<I> createItemBlock(_JoinType joinType
                 , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
-            return null;
+            if (modifier != null && modifier != SQLs.LATERAL) {
+                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            }
+            return new PostgreNestedJoinClause<>(this.context, this.blockConsumer, joinType, modifier
+                    , tableItem, alias, this.supplier);
         }
 
         @Override
         final PostgreStatement._NestedOnSpec<I> createCteBlock(_JoinType joinType
                 , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
-            return null;
+            if (modifier != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return new PostgreNestedJoinClause<>(this.context, this.blockConsumer, joinType, null
+                    , tableItem, alias, this.supplier);
         }
 
         /**
@@ -319,7 +347,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         public final TR tableSample(String methodName, Expression argument) {
-            this.sampleMethod = PostgreSupports.sampleMethod(methodName, Collections.singletonList(argument));
+            this.sampleMethod = SQLFunctions.oneArgVoidFunc(methodName, argument);
             return (TR) this;
         }
 
@@ -327,7 +355,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         public final TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
             final List<Expression> expList = new ArrayList<>();
             consumer.accept(expList::add);
-            this.sampleMethod = PostgreSupports.sampleMethod(methodName, expList);
+            this.sampleMethod = SQLFunctions.multiArgVoidFunc(methodName, expList);
             return (TR) this;
         }
 
@@ -355,7 +383,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             final List<Expression> expList = new ArrayList<>();
             consumer.accept(expList::add);
             if (expList.size() > 0) {
-                this.sampleMethod = PostgreSupports.sampleMethod(methodName, expList);
+                this.sampleMethod = SQLFunctions.multiArgVoidFunc(methodName, expList);
             }
             return (TR) this;
         }
@@ -483,9 +511,9 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         private NestedTableSampleJoinClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer
                 , _JoinType joinType, @Nullable SQLWords modifier
-                , TabularItem tabularItem, String alias
+                , TableMeta<?> table, String alias
                 , Supplier<I> supplier) {
-            super(context, blockConsumer, joinType, modifier, tabularItem, alias, supplier);
+            super(context, blockConsumer, joinType, modifier, table, alias, supplier);
         }
 
 
@@ -499,9 +527,9 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         private NestedTableSampleCrossClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer
                 , _JoinType joinType, @Nullable SQLWords modifier
-                , TabularItem tabularItem, String alias
+                , TableMeta<?> table, String alias
                 , Supplier<I> supplier) {
-            super(context, blockConsumer, joinType, modifier, tabularItem, alias, supplier);
+            super(context, blockConsumer, joinType, modifier, table, alias, supplier);
         }
 
 
@@ -515,9 +543,9 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         private NestedTableSampleOnClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer
                 , _JoinType joinType, @Nullable SQLWords modifier
-                , TabularItem tabularItem, String alias
+                , TableMeta<?> table, String alias
                 , Supplier<I> supplier) {
-            super(context, blockConsumer, joinType, modifier, tabularItem, alias, supplier);
+            super(context, blockConsumer, joinType, modifier, table, alias, supplier);
         }
 
 

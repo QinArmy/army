@@ -10,16 +10,16 @@ import java.util.function.Supplier;
 
 public interface PostgreJoins extends Statement.JoinBuilder {
 
-    PostgreQuery._DynamicTableSampleOnSpec tabular(TableMeta<?> table, SQLs.WordAs wordAs, String alias);
+    PostgreStatement._DynamicTableSampleOnSpec tabular(TableMeta<?> table, SQLs.WordAs wordAs, String alias);
 
-    <T extends TabularItem> Statement._AsClause<Statement._OnClause<PostgreQuery._DynamicJoinSpec>> tabular(Supplier<T> supplier);
+    <T extends TabularItem> Statement._AsClause<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> tabular(Supplier<T> supplier);
 
-    <T extends TabularItem> Statement._AsClause<Statement._OnClause<PostgreQuery._DynamicJoinSpec>> tabular(Query.TabularModifier modifier
+    <T extends TabularItem> Statement._AsClause<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> tabular(Query.TabularModifier modifier
             , Supplier<T> supplier);
 
-    Statement._OnClause<PostgreQuery._DynamicJoinSpec> tabular(String cteName);
+    Statement._OnClause<PostgreStatement._DynamicJoinSpec> tabular(String cteName);
 
-    Statement._OnClause<PostgreQuery._DynamicJoinSpec> tabular(String cteName, SQLs.WordAs wordAs, String alias);
+    Statement._OnClause<PostgreStatement._DynamicJoinSpec> tabular(String cteName, SQLs.WordAs wordAs, String alias);
 
 
     //TODO add dialect function tabular

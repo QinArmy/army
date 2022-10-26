@@ -19,7 +19,9 @@ public interface Window {
 
     interface Builder extends Item {
 
-        Item comma(String windowName);
+        Item window
+
+        window(String name);
 
     }
 
@@ -137,15 +139,15 @@ public interface Window {
     }
 
 
-    interface _FrameUnitNoExpClause<FR> {
+    interface _FrameUnitNoExpClause<FB> {
 
-        FR rows();
+        FB rows();
 
-        FR range();
+        FB range();
 
-        FR ifRows(BooleanSupplier predicate);
+        FB ifRows(BooleanSupplier predicate);
 
-        FR ifRange(BooleanSupplier predicate);
+        FB ifRange(BooleanSupplier predicate);
 
     }
 

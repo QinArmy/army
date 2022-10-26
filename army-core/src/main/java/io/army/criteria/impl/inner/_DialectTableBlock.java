@@ -6,6 +6,6 @@ import io.army.lang.Nullable;
 public interface _DialectTableBlock extends _TableBlock {
 
     @Nullable
-    SQLWords itemWord();
+    SQLWords modifier();
 
 }

@@ -31,7 +31,6 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinClause<
         return new MySQLCrossJoinBuilder(context, blockConsumer);
     }
 
-    final _JoinType joinType;
 
     /**
      * <p>
@@ -46,8 +45,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinClause<
     private MySQLSupports.MySQLNoOnBlock<MySQLQuery._DynamicIndexHintJoinClause> noOnBlock;
 
     private MySQLDynamicJoins(CriteriaContext context, _JoinType joinTyp, Consumer<_TableBlock> blockConsumer) {
-        super(context, blockConsumer);
-        this.joinType = joinTyp;
+        super(context, joinTyp, blockConsumer);
     }
 
 

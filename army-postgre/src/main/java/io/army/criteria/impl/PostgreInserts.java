@@ -306,7 +306,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         @Override
         PostgreCteBuilder createCteBuilder(final boolean recursive) {
-            return PostgreSupports.cteBuilder(recursive, this.context);
+            return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
 
@@ -351,7 +351,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         @Override
         PostgreCteBuilder createCteBuilder(boolean recursive) {
-            return PostgreSupports.cteBuilder(recursive, this.context);
+            return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
 
@@ -460,7 +460,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         @Override
         PostgreCteBuilder createCteBuilder(final boolean recursive) {
-            return PostgreSupports.cteBuilder(recursive, this.context);
+            return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
         private I subInsertEnd(final PostgreComplexValuesClause<?, ?, ?> clause) {
@@ -554,7 +554,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         @Override
         PostgreCteBuilder createCteBuilder(final boolean recursive) {
-            return PostgreSupports.cteBuilder(recursive, this.context);
+            return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
 

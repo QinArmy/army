@@ -185,52 +185,30 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
 
     @Override
     public final FB rows() {
-        this.frameUnits = FrameUnits.ROWS;
-        this.betweenExtent = Boolean.TRUE;
-        return (FB) this;
+        return this.frameUnit(FrameUnits.ROWS);
     }
 
     @Override
     public final FB range() {
-        this.frameUnits = FrameUnits.RANGE;
-        this.betweenExtent = Boolean.TRUE;
-        return (FB) this;
+        return this.frameUnit(FrameUnits.RANGE);
     }
+
 
     @Override
     public final FB ifRows(BooleanSupplier predicate) {
-        if (predicate.getAsBoolean()) {
-            this.frameUnits = FrameUnits.ROWS;
-            this.betweenExtent = Boolean.FALSE;
-        } else {
-            this.frameUnits = null;
-            this.betweenExtent = null;
-        }
-        return (FB) this;
+        return this.ifFrameUnit(predicate, FrameUnits.ROWS);
     }
 
     @Override
     public final FB ifRange(BooleanSupplier predicate) {
-        if (predicate.getAsBoolean()) {
-            this.frameUnits = FrameUnits.RANGE;
-            this.betweenExtent = Boolean.FALSE;
-        } else {
-            this.frameUnits = null;
-            this.betweenExtent = null;
-        }
-        return (FB) this;
+        return this.ifFrameUnit(predicate, FrameUnits.RANGE);
     }
 
     @Override
-    public final FE rows(final Expression expression) {
-        if (!(expression instanceof ArmyExpression)) {
-            throw ContextStack.nonArmyExp(this.context);
-        }
-        this.frameUnits = FrameUnits.ROWS;
-        this.betweenExtent = Boolean.FALSE;
-        this.frameStartExp = (ArmyExpression) expression;
-        return (FE) this;
+    public final FE rows(final @Nullable Expression expression) {
+        return this.frameUnit(FrameUnits.ROWS, expression);
     }
+
 
     @Override
     public final FE rows(Supplier<Expression> supplier) {
@@ -254,13 +232,7 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
 
     @Override
     public final FE range(final Expression expression) {
-        if (!(expression instanceof ArmyExpression)) {
-            throw ContextStack.nonArmyExp(this.context);
-        }
-        this.frameUnits = FrameUnits.RANGE;
-        this.betweenExtent = Boolean.FALSE;
-        this.frameStartExp = (ArmyExpression) expression;
-        return (FE) this;
+        return this.frameUnit(FrameUnits.RANGE, expression);
     }
 
     @Override
@@ -522,10 +494,19 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
                 appendFrameBound(this.frameEndExp, this.frameEndBound, context, sqlBuilder);
             }
 
+            if (this instanceof FrameExclusionSpec) {
+                ((FrameExclusionSpec) this).appendFrameExclusion(context);
+            }
+
         }
         //7.)
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
+    }
+
+    interface FrameExclusionSpec {
+
+        void appendFrameExclusion(_SqlContext context);
     }
 
 
@@ -551,6 +532,48 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
     }
 
     /*################################## blow package method ##################################*/
+
+    /**
+     * @see #rows()
+     * @see #range()
+     */
+    final FB frameUnit(FrameUnits units) {
+        this.frameUnits = units;
+        this.betweenExtent = Boolean.TRUE;
+        return (FB) this;
+    }
+
+    /**
+     * @see #ifRows(BooleanSupplier)
+     * @see #ifRange(BooleanSupplier)
+     */
+    final FB ifFrameUnit(BooleanSupplier predicate, FrameUnits units) {
+        if (predicate.getAsBoolean()) {
+            this.frameUnits = units;
+            this.betweenExtent = Boolean.TRUE;
+        } else {
+            this.frameUnits = null;
+            this.betweenExtent = null;
+        }
+        return (FB) this;
+    }
+
+
+    /**
+     * @see #rows(Expression)
+     * @see #range(Expression)
+     */
+    final FE frameUnit(FrameUnits units, final @Nullable Expression expression) {
+        if (expression == null) {
+            throw ContextStack.nullPointer(this.context);
+        } else if (!(expression instanceof ArmyExpression)) {
+            throw ContextStack.nonArmyExp(this.context);
+        }
+        this.frameUnits = units;
+        this.betweenExtent = Boolean.FALSE;
+        this.frameStartExp = (ArmyExpression) expression;
+        return (FE) this;
+    }
 
 
     /**
@@ -632,10 +655,11 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
     }
 
 
-    private enum FrameUnits implements SQLWords {
+    enum FrameUnits implements SQLWords {
 
         ROWS(" ROWS"),
-        RANGE(" RANGE");
+        RANGE(" RANGE"),
+        GROUPS(" GROUPS");
 
         private final String spaceWord;
 

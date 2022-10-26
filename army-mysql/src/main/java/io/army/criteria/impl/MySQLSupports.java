@@ -459,7 +459,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
         @Override
-        public SQLWords itemWord() {
+        public SQLWords modifier() {
             return this.itemWord;
         }
 

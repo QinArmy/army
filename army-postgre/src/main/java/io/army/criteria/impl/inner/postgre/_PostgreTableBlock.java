@@ -1,10 +1,10 @@
 package io.army.criteria.impl.inner.postgre;
 
+import io.army.criteria.impl.inner._DialectTableBlock;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 
-public interface _PostgreTableBlock extends _TableBlock {
+public interface _PostgreTableBlock extends _DialectTableBlock {
 
     @Nullable
     _Expression sampleMethod();

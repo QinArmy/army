@@ -4,5 +4,7 @@ import io.army.criteria.Window;
 
 public interface PostgreWindows extends Window.Builder {
 
+    @Override
+    PostgreQuery._WindowAsClause<PostgreWindows> window(String name);
 
 }

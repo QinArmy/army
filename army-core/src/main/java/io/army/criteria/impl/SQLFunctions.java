@@ -9,6 +9,7 @@ import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
+import io.army.mapping.VoidType;
 import io.army.meta.TypeMeta;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -306,6 +307,41 @@ abstract class SQLFunctions {
 
         argList.add(three);
         return argList;
+    }
+
+    static ArmyExpression oneArgVoidFunc(final String name, final Expression arg) {
+        if (!Functions.FUN_NAME_PATTER.matcher(name).matches()) {
+            throw Functions._customFuncNameError(name);
+        }
+        return new MultiArgVoidFunction(name, Collections.singletonList(arg));
+    }
+
+    static ArmyExpression multiArgVoidFunc(final String name, final List<? extends Expression> argList) {
+        if (!Functions.FUN_NAME_PATTER.matcher(name).matches()) {
+            throw Functions._customFuncNameError(name);
+        } else if (argList.size() == 0) {
+            throw CriteriaUtils.funcArgListIsEmpty(name);
+        }
+        return new MultiArgVoidFunction(name, _CollectionUtils.unmodifiableList(argList));
+    }
+
+
+    static void appendMultiArgFunc(final String name, final List<? extends Expression> argList
+            , final _SqlContext context) {
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder()
+                .append(_Constant.SPACE)
+                .append(name)
+                .append(_Constant.LEFT_PAREN);
+        final int size = argList.size();
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.COMMA);
+            }
+            ((ArmyExpression) argList.get(i)).appendSql(context);
+        }
+
+        sqlBuilder.append(_Constant.RIGHT_PAREN);
     }
 
 
@@ -636,6 +672,92 @@ abstract class SQLFunctions {
 
 
     }//OneArgFuncPredicate
+
+
+    private static final class MultiArgFunction extends OperationExpression implements FunctionSpec {
+
+        private final String name;
+
+        private final List<? extends Expression> argList;
+
+        private final TypeMeta returnType;
+
+        private MultiArgFunction(String name, List<? extends Expression> argList, TypeMeta returnType) {
+            this.name = name;
+            this.argList = argList;
+            this.returnType = returnType;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.returnType;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            SQLFunctions.appendMultiArgFunc(this.name, this.argList, context);
+        }
+
+
+    }//MultiArgFunction
+
+    private static final class MultiArgVoidFunction extends NonOperationExpression implements FunctionSpec {
+
+        private final String name;
+
+        private final List<? extends Expression> argList;
+
+        private MultiArgVoidFunction(String name, List<? extends Expression> argList) {
+            this.name = name;
+            this.argList = argList;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return VoidType.INSTANCE;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            SQLFunctions.appendMultiArgFunc(this.name, this.argList, context);
+        }
+
+
+    }//MultiArgVoidFunction
+
+    private static final class MultiArgVoidFunction extends OperationPredicate implements FunctionSpec {
+
+        private final String name;
+
+        private final List<? extends Expression> argList;
+
+        private MultiArgVoidFunction(String name, List<? extends Expression> argList) {
+            this.name = name;
+            this.argList = argList;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN);
+
+            final List<? extends Expression> argList = this.argList;
+            final int size = argList.size();
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.COMMA);
+                }
+                ((ArmyExpression) argList.get(i)).appendSql(context);
+            }
+
+            sqlBuilder.append(_Constant.RIGHT_PAREN);
+        }
+
+
+    }//MultiArgFunction
 
 
     private static final class ComplexFuncPredicate extends OperationPredicate implements FunctionSpec {

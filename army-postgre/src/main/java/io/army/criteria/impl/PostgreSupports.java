@@ -2,12 +2,16 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.postgre._PostgreCteStatement;
+import io.army.criteria.impl.inner.postgre._PostgreTableBlock;
 import io.army.criteria.postgre.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.meta.TypeMeta;
+import io.army.mapping.BigDecimalType;
+import io.army.mapping.MappingType;
+import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._StringUtils;
@@ -15,10 +19,7 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.*;
 
 
 abstract class PostgreSupports extends CriteriaSupports {
@@ -30,15 +31,18 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     static final List<Selection> RETURNING_ALL = Collections.emptyList();
 
-    static PostgreCteBuilder cteBuilder(final boolean recursive, final CriteriaContext context) {
+    static PostgreCteBuilder postgreCteBuilder(final boolean recursive, final CriteriaContext context) {
         return new PostgreCteBuilderImpl(recursive, context);
     }
 
-    static ArmyExpression sampleMethod(final String name, final List<Expression> argList) {
-        if (!Functions.FUN_NAME_PATTER.matcher(name).matches()) {
-            throw Functions._customFuncNameError(name);
-        }
-        return new SampleMethod(name, argList);
+    static <I extends Item> PostgreQuery._WindowAsClause<I> postgreNamedWindow(String name, CriteriaContext context
+            , Function<_Window, I> function) {
+        return new PostgreWindow<>(name, context, function);
+    }
+
+    static <I extends Item> PostgreQuery._WindowAsClause<I> postgreAnonymousWindow(CriteriaContext context
+            , Function<_Window, I> function) {
+        return new PostgreWindow<>(context, function);
     }
 
 
@@ -105,6 +109,225 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
     }//PostgreSubStatement
+
+    @SuppressWarnings("unchecked")
+    static abstract class PostgreTableBlock<TR, RR, OR> extends OnClauseTableBlock<OR>
+            implements _PostgreTableBlock
+            , PostgreStatement._TableSampleClause<TR>
+            , PostgreStatement._RepeatableClause<RR> {
+
+        private final SQLWords modifier;
+
+        private ArmyExpression sampleMethod;
+
+        private ArmyExpression seed;
+
+        PostgreTableBlock(_JoinType joinType, TabularItem tableItem, @Nullable SQLWords modifier, String alias, OR stmt) {
+            super(joinType, tableItem, alias, stmt);
+            this.modifier = modifier;
+        }
+
+        PostgreTableBlock(_JoinType joinType, TabularItem tableItem, @Nullable SQLWords modifier, String alias) {
+            super(joinType, tableItem, alias);
+            this.modifier = modifier;
+        }
+
+
+        @Override
+        public final TR tableSample(final @Nullable Expression method) {
+            if (method == null) {
+                throw ContextStack.nullPointer(this.getContext());
+            }
+            this.sampleMethod = (ArmyExpression) method;
+            return (TR) this;
+        }
+
+        @Override
+        public final TR tableSample(String methodName, Expression argument) {
+            this.sampleMethod = SQLFunctions.oneArgVoidFunc(methodName, argument);
+            return (TR) this;
+        }
+
+        @Override
+        public final TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
+            final List<Expression> expList = new ArrayList<>();
+            consumer.accept(expList::add);
+            this.sampleMethod = SQLFunctions.multiArgVoidFunc(methodName, expList);
+            return (TR) this;
+        }
+
+        @Override
+        public final <T> TR tableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
+                , BiFunction<MappingType, T, Expression> valueOperator, T argument) {
+            return this.tableSample(method.apply(valueOperator, argument));
+        }
+
+        @Override
+        public final <T> TR tableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
+                , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier) {
+            return this.tableSample(method.apply(valueOperator, supplier.get()));
+        }
+
+        @Override
+        public final TR tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
+                , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function
+                , String keyName) {
+            return this.tableSample(method.apply(valueOperator, function.apply(keyName)));
+        }
+
+        @Override
+        public final TR ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
+            final List<Expression> expList = new ArrayList<>();
+            consumer.accept(expList::add);
+            if (expList.size() > 0) {
+                this.sampleMethod = SQLFunctions.multiArgVoidFunc(methodName, expList);
+            }
+            return (TR) this;
+        }
+
+        @Override
+        public final <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
+                , BiFunction<MappingType, T, Expression> valueOperator, @Nullable T argument) {
+            if (argument != null) {
+                this.tableSample(method.apply(valueOperator, argument));
+            }
+            return (TR) this;
+        }
+
+        @Override
+        public final <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
+                , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier) {
+            final T argument;
+            argument = supplier.get();
+            if (argument != null) {
+                this.tableSample(method.apply(valueOperator, argument));
+            }
+            return (TR) this;
+        }
+
+        @Override
+        public final TR ifTableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
+                , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function
+                , String keyName) {
+            final Object argument;
+            argument = function.apply(keyName);
+            if (argument != null) {
+                this.tableSample(method.apply(valueOperator, argument));
+            }
+            return (TR) this;
+        }
+
+        @Override
+        public final RR repeatable(final @Nullable Expression seed) {
+            if (seed == null) {
+                throw ContextStack.nullPointer(this.getContext());
+            }
+            this.seed = (ArmyExpression) seed;
+            return (RR) this;
+        }
+
+        @Override
+        public final RR repeatable(Supplier<Expression> supplier) {
+            return this.repeatable(supplier.get());
+        }
+
+        @Override
+        public final RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Number seedValue) {
+            return this.repeatable(valueOperator.apply(BigDecimalType.INSTANCE, seedValue));
+        }
+
+        @Override
+        public final RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator
+                , Supplier<Number> supplier) {
+            return this.repeatable(valueOperator.apply(BigDecimalType.INSTANCE, supplier.get()));
+        }
+
+        @Override
+        public final RR repeatable(BiFunction<MappingType, Object, Expression> valueOperator
+                , Function<String, ?> function
+                , String keyName) {
+            return this.repeatable(valueOperator.apply(BigDecimalType.INSTANCE, function.apply(keyName)));
+        }
+
+        @Override
+        public final RR ifRepeatable(Supplier<Expression> supplier) {
+            final Expression expression;
+            if ((expression = supplier.get()) != null) {
+                this.seed = (ArmyExpression) expression;
+            }
+            return (RR) this;
+        }
+
+        @Override
+        public final RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator
+                , @Nullable Number seedValue) {
+            if (seedValue != null) {
+                this.repeatable(valueOperator.apply(BigDecimalType.INSTANCE, seedValue));
+            }
+            return (RR) this;
+        }
+
+        @Override
+        public final RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator
+                , Supplier<Number> supplier) {
+            final Number seedValue;
+            if ((seedValue = supplier.get()) != null) {
+                this.repeatable(valueOperator.apply(BigDecimalType.INSTANCE, seedValue));
+            }
+            return (RR) this;
+        }
+
+        @Override
+        public final RR ifRepeatable(BiFunction<MappingType, Object, Expression> valueOperator
+                , Function<String, ?> function, String keyName) {
+            final Object seedValue;
+            if ((seedValue = function.apply(keyName)) != null) {
+                this.repeatable(valueOperator.apply(BigDecimalType.INSTANCE, seedValue));
+            }
+            return (RR) this;
+        }
+
+        @Override
+        public final SQLWords modifier() {
+            return this.modifier;
+        }
+
+        @Override
+        public final _Expression sampleMethod() {
+            return this.sampleMethod;
+        }
+
+        @Override
+        public final _Expression seed() {
+            return this.seed;
+        }
+
+        CriteriaContext getContext() {
+            return ContextStack.peek();
+        }
+
+
+    }//PostgreTableBlock
+
+
+    static final class PostgreNoOnTableBlock extends PostgreTableBlock<Object, Object, Object> {
+
+        PostgreNoOnTableBlock(_JoinType joinType, TableMeta<?> table, @Nullable SQLWords modifier, String alias) {
+            super(joinType, table, modifier, alias);
+        }
+
+    }//PostgreNoOnTableBlock
+
+
+    static abstract class PostgreOnTableBlock<TR, RR, OR> extends PostgreTableBlock<TR, RR, OR> {
+
+        PostgreOnTableBlock(_JoinType joinType, TabularItem tableItem
+                , @Nullable SQLWords modifier, String alias, OR stmt) {
+            super(joinType, tableItem, modifier, alias, stmt);
+        }
+
+
+    }//PostgreOnTableBlock
 
 
     private static abstract class PostgreDynamicDmlCteLeftParenClause<I extends Item>
@@ -645,43 +868,250 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     }//PostgreCteBuilderImpl
 
-    private static final class SampleMethod extends NonOperationExpression {
+    private enum FrameExclusion implements SQLWords {
 
-        private final String name;
+        EXCLUDE_CURRENT_ROW(" EXCLUDE CURRENT ROW"),
+        EXCLUDE_GROUP(" EXCLUDE GROUP"),
+        EXCLUDE_TIES(" EXCLUDE TIES"),
+        EXCLUDE_NO_OTHERS(" EXCLUDE NO OTHERS");
 
-        private final List<Expression> argList;
+        private final String spaceWords;
 
-        private SampleMethod(String name, List<Expression> argList) {
-            this.name = name;
-            this.argList = argList;
+        FrameExclusion(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
         }
 
         @Override
-        public TypeMeta typeMeta() {
-            throw unsupportedOperation();
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(FrameExclusion.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+    }//FrameExclusion
+
+
+    private static final class PostgreWindow<I extends Item> extends WindowClause<
+            I,
+            PostgreQuery._WindowLeftParenClause<I>,
+            PostgreQuery._WindowPartitionBySpec<I>,
+            PostgreQuery._WindowOrderBySpec<I>,
+            PostgreQuery._PostgreFrameUnitSpec<I>,
+            PostgreQuery._PostgreFrameBetweenSpec<I>,
+            PostgreQuery._PostgreFrameEndExpBoundClause<I>,
+            PostgreQuery._PostgreFrameStartNonExpBoundClause<I>,
+            PostgreQuery._PostgreFrameStartExpBoundClause<I>,
+            PostgreQuery._PostgreFrameEndNonExpBoundClause<I>>
+            implements PostgreQuery._WindowAsClause<I>
+            , PostgreQuery._WindowLeftParenClause<I>
+            , PostgreQuery._WindowPartitionBySpec<I>
+            , PostgreQuery._PostgreFrameBetweenSpec<I>
+            , PostgreQuery._PostgreFrameStartExpBoundClause<I>
+            , PostgreQuery._PostgreFrameStartNonExpBoundClause<I>
+            , PostgreQuery._PostgreFrameEndExpBoundClause<I>
+            , PostgreQuery._PostgreFrameEndNonExpBoundClause<I>
+            , PostgreQuery._PostgreFrameBetweenAndClause<I>
+            , PostgreQuery._FrameExclusionSpec<I>
+            , WindowClause.FrameExclusionSpec {
+
+        private FrameExclusion frameExclusion;
+
+        private PostgreWindow(String windowName, CriteriaContext context, Function<_Window, I> function) {
+            super(windowName, context, function);
+        }
+
+        private PostgreWindow(CriteriaContext context, Function<_Window, I> function) {
+            super(context, function);
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name)
-                    .append(_Constant.LEFT_PAREN);
+        public PostgreQuery._PostgreFrameBetweenSpec<I> groups() {
+            return this.frameUnit(FrameUnits.GROUPS);
+        }
 
-            final List<Expression> argList = this.argList;
-            final int size = argList.size();
-            for (int i = 0; i < size; i++) {
-                if (i > 0) {
-                    sqlBuilder.append(_Constant.COMMA);
-                }
-                ((ArmyExpression) argList.get(i)).appendSql(context);
+        @Override
+        public PostgreQuery._PostgreFrameBetweenSpec<I> ifGroups(BooleanSupplier predicate) {
+            return this.ifFrameUnit(predicate, FrameUnits.GROUPS);
+        }
+
+        @Override
+        public PostgreQuery._PostgreFrameEndExpBoundClause<I> groups(Expression expression) {
+            return this.frameUnit(FrameUnits.GROUPS, expression);
+        }
+
+        @Override
+        public PostgreQuery._PostgreFrameEndExpBoundClause<I> groups(Supplier<Expression> supplier) {
+            return this.frameUnit(FrameUnits.GROUPS, supplier.get());
+        }
+
+        @Override
+        public <E> PostgreQuery._PostgreFrameEndExpBoundClause<I> groups(Function<E, Expression> valueOperator
+                , @Nullable E value) {
+            return this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(value));
+        }
+
+        @Override
+        public <E> PostgreQuery._PostgreFrameEndExpBoundClause<I> groups(Function<E, Expression> valueOperator
+                , Supplier<E> supplier) {
+            return this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(supplier.get()));
+        }
+
+        @Override
+        public PostgreQuery._PostgreFrameEndExpBoundClause<I> groups(Function<Object, Expression> valueOperator
+                , Function<String, ?> function, String keyName) {
+            return this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(function.apply(keyName)));
+        }
+
+        @Override
+        public PostgreQuery._PostgreFrameEndExpBoundClause<I> ifGroups(Supplier<Expression> supplier) {
+            final Expression expression;
+            if ((expression = supplier.get()) != null) {
+                this.frameUnit(FrameUnits.GROUPS, expression);
             }
-
-            sqlBuilder.append(_Constant.RIGHT_PAREN);
+            return this;
         }
 
-    }//SampleMethod
+        @Override
+        public <E> PostgreQuery._PostgreFrameEndExpBoundClause<I> ifGroups(Function<E, Expression> valueOperator
+                , @Nullable E value) {
+            if (value != null) {
+                this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(value));
+            }
+            return this;
+        }
+
+        @Override
+        public <E> PostgreQuery._PostgreFrameEndExpBoundClause<I> ifGroups(Function<E, Expression> valueOperator
+                , Supplier<E> supplier) {
+            final E value;
+            if ((value = supplier.get()) != null) {
+                this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(value));
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreQuery._PostgreFrameEndExpBoundClause<I> ifGroups(Function<Object, Expression> valueOperator
+                , Function<String, ?> function, String keyName) {
+            final Object value;
+            if ((value = function.apply(keyName)) != null) {
+                this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(value));
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreWindow<I> currentRow() {
+            this.bound(FrameBound.CURRENT_ROW);
+            return this;
+        }
+
+        @Override
+        public PostgreWindow<I> unboundedPreceding() {
+            this.bound(FrameBound.UNBOUNDED_PRECEDING);
+            return this;
+        }
+
+        @Override
+        public PostgreWindow<I> unboundedFollowing() {
+            this.bound(FrameBound.UNBOUNDED_FOLLOWING);
+            return this;
+        }
+
+        @Override
+        public PostgreWindow<I> preceding() {
+            this.bound(FrameBound.PRECEDING);
+            return this;
+        }
+
+        @Override
+        public PostgreWindow<I> following() {
+            this.bound(FrameBound.FOLLOWING);
+            return this;
+        }
+
+        @Override
+        public Statement._RightParenClause<I> excludeCurrentRow() {
+            this.frameExclusion = FrameExclusion.EXCLUDE_CURRENT_ROW;
+            return this;
+        }
+
+        @Override
+        public Statement._RightParenClause<I> excludeGroup() {
+            this.frameExclusion = FrameExclusion.EXCLUDE_GROUP;
+            return this;
+        }
+
+        @Override
+        public Statement._RightParenClause<I> excludeTies() {
+            this.frameExclusion = FrameExclusion.EXCLUDE_TIES;
+            return this;
+        }
+
+        @Override
+        public Statement._RightParenClause<I> excludeNoOthers() {
+            this.frameExclusion = FrameExclusion.EXCLUDE_NO_OTHERS;
+            return this;
+        }
+
+        @Override
+        public Statement._RightParenClause<I> ifExcludeCurrentRow(BooleanSupplier predicate) {
+            if (predicate.getAsBoolean()) {
+                this.frameExclusion = FrameExclusion.EXCLUDE_CURRENT_ROW;
+            } else {
+                this.frameExclusion = null;
+            }
+            return this;
+        }
+
+        @Override
+        public Statement._RightParenClause<I> ifExcludeGroup(BooleanSupplier predicate) {
+            if (predicate.getAsBoolean()) {
+                this.frameExclusion = FrameExclusion.EXCLUDE_GROUP;
+            } else {
+                this.frameExclusion = null;
+            }
+            return this;
+        }
+
+        @Override
+        public Statement._RightParenClause<I> ifExcludeTies(BooleanSupplier predicate) {
+            if (predicate.getAsBoolean()) {
+                this.frameExclusion = FrameExclusion.EXCLUDE_TIES;
+            } else {
+                this.frameExclusion = null;
+            }
+            return this;
+        }
+
+        @Override
+        public Statement._RightParenClause<I> ifExcludeNoOthers(BooleanSupplier predicate) {
+            if (predicate.getAsBoolean()) {
+                this.frameExclusion = FrameExclusion.EXCLUDE_NO_OTHERS;
+            } else {
+                this.frameExclusion = null;
+            }
+            return this;
+        }
+
+        @Override
+        public void appendFrameExclusion(final _SqlContext context) {
+            final FrameExclusion exclusion = this.frameExclusion;
+            if (exclusion != null) {
+                context.sqlBuilder().append(exclusion);
+            }
+        }
+
+
+    }//PostgreWindow
 
 
 }

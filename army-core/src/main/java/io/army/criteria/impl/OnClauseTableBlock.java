@@ -25,6 +25,13 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
         this.stmt = stmt;
     }
 
+    @SuppressWarnings("unchecked")
+    OnClauseTableBlock(_JoinType joinType, TabularItem tableItem, String alias) {
+        super(joinType, tableItem, alias);
+        assert joinType == _JoinType.CROSS_JOIN || joinType == _JoinType.NONE;
+        this.stmt = (OR) this;
+    }
+
     OnClauseTableBlock(BlockParams params, OR stmt) {
         super(params);
         this.stmt = stmt;
@@ -137,7 +144,7 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
         }
 
         @Override
-        public final SQLWords itemWord() {
+        public final SQLWords modifier() {
             return this.modifier;
         }
 

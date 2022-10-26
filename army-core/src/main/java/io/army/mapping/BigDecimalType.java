@@ -78,6 +78,10 @@ public final class BigDecimalType extends _NumericType implements _NumericType._
             value = new BigDecimal((BigInteger) nonNull);
         } else if (nonNull instanceof Boolean) {
             value = (Boolean) nonNull ? BigDecimal.ONE : BigDecimal.ZERO;
+        } else if (nonNull instanceof Double) {
+            value = BigDecimal.valueOf((Double) nonNull);
+        } else if (nonNull instanceof Float) {
+            value = BigDecimal.valueOf((Float) nonNull);
         } else if (nonNull instanceof String) {
             try {
                 value = new BigDecimal((String) nonNull);

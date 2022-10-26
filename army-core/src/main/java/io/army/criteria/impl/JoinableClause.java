@@ -341,7 +341,13 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         final _TableBlock block;
         block = createNoOnTableBlock(joinType, modifier, table, alias);
         this.blockConsumer.accept(block);
-        return (FT) this;
+        final FT clause;
+        if (block instanceof JoinableClause) {
+            clause = (FT) block;
+        } else {
+            clause = (FT) this;
+        }
+        return clause;
     }
 
     /**
@@ -416,8 +422,11 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     static abstract class DynamicJoinClause<FT, FS, FC, JT, JS, JC>
             extends JoinableClause<FT, FS, FC, JT, JS, JC, Object, Object, Object, Object, Object, Object> {
 
-        DynamicJoinClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer) {
+        final _JoinType joinType;
+
+        DynamicJoinClause(CriteriaContext context, _JoinType joinTyp, Consumer<_TableBlock> blockConsumer) {
             super(context, blockConsumer);
+            this.joinType = joinTyp;
         }
 
 
@@ -461,7 +470,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
             blockList.add(block);
         }
 
-        final void onAddNestedNested(final _TableBlock block) {
+        final void onAddFirstBlock(final _TableBlock block) {
             final List<_TableBlock> blockList = this.blockList;
             if (!(blockList instanceof ArrayList && blockList.size() == 0)) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -568,7 +577,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         }
 
         @Override
-        public final SQLWords itemWord() {
+        public final SQLWords modifier() {
             return this.modifier;
         }
 
