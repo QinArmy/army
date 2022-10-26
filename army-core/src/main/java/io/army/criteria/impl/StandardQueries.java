@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._StandardQuery;
 import io.army.criteria.impl.inner._TableBlock;
+import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -64,7 +65,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
 
-    private LockMode lockMode;
+    private LockMode0 lockMode;
 
 
     private StandardQueries(CriteriaContext context) {
@@ -73,7 +74,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    public final _AsQueryClause<I> lock(@Nullable LockMode lockMode) {
+    public final _AsQueryClause<I> lock(@Nullable LockMode0 lockMode) {
         if (lockMode == null) {
             throw ContextStack.nullPointer(this.context);
         }
@@ -82,14 +83,14 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    public final _AsQueryClause<I> ifLock(Supplier<LockMode> supplier) {
+    public final _AsQueryClause<I> ifLock(Supplier<LockMode0> supplier) {
         this.lockMode = supplier.get();
         return this;
     }
 
 
     @Override
-    public final LockMode lockMode() {
+    public final LockMode0 lockMode() {
         return this.lockMode;
     }
 
@@ -163,7 +164,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         this.lockMode = null;
     }
 
-
+    @Override
+    final Dialect queryDialect() {
+        return MySQLDialect.MySQL57;
+    }
 
 
     /*################################## blow private inter class method ##################################*/
@@ -182,18 +186,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         private SimpleSelect(CriteriaContext context, Function<Select, Q> function) {
             super(context);
             this.function = function;
-        }
-
-
-        @Override
-        public String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
         }
 
 
@@ -262,6 +254,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             throw ContextStack.castCriteriaApi(this.context);
         }
 
+        @Override
+        final Dialect queryDialect() {
+            return MySQLDialect.MySQL57;
+        }
 
     }//StandardBracketQueries
 
@@ -288,16 +284,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             return new UnionAndSelectClause<>(this, unionType, this.function);
         }
 
-        @Override
-        public String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
-        }
 
 
     }//StandardBracketSelect

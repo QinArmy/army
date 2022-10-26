@@ -8,8 +8,8 @@ import io.army.util._StringUtils;
 
 public enum PostgreDialect implements Dialect {
 
-     POSTGRE14(14)
-    ;
+    POSTGRE14(14),
+    POSTGRE15(15);
 
 
     private final byte version;

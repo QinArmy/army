@@ -301,4 +301,11 @@ public interface Query extends RowSet {
     }
 
 
+    interface _WithSelectDispatcher<B extends CteBuilderSpec, WE, W extends SelectModifier, SR>
+            extends DialectStatement._DynamicWithClause<B, WE>
+            , _DynamicHintModifierSelectClause<W, SR> {
+
+    }
+
+
 }

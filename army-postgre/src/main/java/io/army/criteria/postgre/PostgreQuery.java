@@ -32,9 +32,9 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
         R forKeyShare();
 
-        R ifForNoKeyUpdate(BooleanSupplier supplier);
+        R ifForNoKeyUpdate(BooleanSupplier predicate);
 
-        R ifForKeyShare(BooleanSupplier supplier);
+        R ifForKeyShare(BooleanSupplier predicate);
 
     }
 
@@ -201,35 +201,14 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _UnionOffsetSpec<I extends Item> extends _QueryOffsetClause<_UnionLockSpec<I>>, _UnionLockSpec<I> {
+    interface _UnionOffsetSpec<I extends Item> extends _QueryOffsetClause<_UnionFetchSpec<I>>, _UnionLockSpec<I> {
 
 
     }
 
-    interface _UnionLimitSpec<I extends Item> extends _RowCountLimitAllClause<_UnionOffsetSpec<I>>, _UnionOffsetSpec<I> {
+    interface _UnionLimitSpec<I extends Item> extends _RowCountLimitAllClause<_UnionOffsetSpec<I>>
+            , _UnionOffsetSpec<I> {
 
-        @Override
-        _UnionFetchSpec<I> offset(BiFunction<MappingType, Number, Expression> operator, long start, FetchRow row);
-
-        @Override
-        <N extends Number> _UnionFetchSpec<I> offset(BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> supplier, FetchRow row);
-
-        @Override
-        _UnionFetchSpec<I> offset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function
-                , String keyName, FetchRow row);
-
-        @Override
-        _UnionFetchSpec<I> ifOffset(BiFunction<MappingType, Number, Expression> operator, @Nullable Number start
-                , FetchRow row);
-
-        @Override
-        <N extends Number> _UnionFetchSpec<I> ifOffset(BiFunction<MappingType, Number, Expression> operator
-                , Supplier<N> supplier, FetchRow row);
-
-        @Override
-        _UnionFetchSpec<I> ifOffset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function
-                , String keyName, FetchRow row);
     }
 
     interface _UnionOrderBySpec<I extends Item> extends _PostgreOrderByClause<_UnionLimitSpec<I>>
@@ -418,8 +397,17 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _UnionAndQuerySpec<I extends Item> extends _WithSpec<I>
-            , Query._LeftParenClause<_UnionAndQuerySpec<Statement._RightParenClause<_UnionOrderBySpec<I>>>> {
+    interface _UnionAndQuerySpec<I extends Item> extends _MinWithSpec<I>
+            , Query._LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+
+    }
+
+    interface _ParenQueryClause<I extends Item>
+            extends _LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+
+    }
+
+    interface _ParenQuerySpec<I extends Item> extends _ParenQueryClause<I>, _WithSpec<I> {
 
     }
 

@@ -9,22 +9,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-public interface StandardQuery extends Query {
-
-
-    interface _UnionAndQuerySpec<I extends Item> extends _SelectSpec<I>
-            , _LeftParenClause<_UnionAndQuerySpec<Statement._RightParenClause<_UnionOrderBySpec<I>>>> {
-
-    }
-
-    interface _ParenQueryClause<I extends Item>
-            extends _LeftParenClause<_UnionAndQuerySpec<Statement._RightParenClause<_UnionOrderBySpec<I>>>> {
-
-    }
-
-    interface _ParenQuerySpec<I extends Item> extends _ParenQueryClause<I>, _SelectSpec<I> {
-
-    }
+public interface StandardQuery extends Query, Statement {
 
 
     /**
@@ -117,9 +102,9 @@ public interface StandardQuery extends Query {
      */
     interface _LockSpec<I extends Item> extends _AsQueryClause<I> {
 
-        _AsQueryClause<I> lock(LockMode lockMode);
+        _AsQueryClause<I> lock(LockMode0 lockMode);
 
-        _AsQueryClause<I> ifLock(Supplier<LockMode> supplier);
+        _AsQueryClause<I> ifLock(Supplier<LockMode0> supplier);
 
     }
 
@@ -328,6 +313,20 @@ public interface StandardQuery extends Query {
     interface _SelectSpec<I extends Item>
             extends _DynamicModifierSelectClause<SQLs.Modifier, _FromSpec<I>>
             , Item {
+
+    }
+
+    interface _UnionAndQuerySpec<I extends Item> extends _SelectSpec<I>
+            , _LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+
+    }
+
+    interface _ParenQueryClause<I extends Item>
+            extends _LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+
+    }
+
+    interface _ParenQuerySpec<I extends Item> extends _ParenQueryClause<I>, _SelectSpec<I> {
 
     }
 

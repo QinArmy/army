@@ -1,6 +1,6 @@
 package io.army.dialect.mysql;
 
-import io.army.criteria.LockMode;
+import io.army.criteria.LockMode0;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchDml;
@@ -464,7 +464,7 @@ abstract class MySQLParser extends _AbstractDialectParser {
     }
 
     @Override
-    protected final void standardLockClause(final LockMode lockMode, final _SqlContext context) {
+    protected final void standardLockClause(final LockMode0 lockMode, final _SqlContext context) {
         switch (lockMode) {
             case READ: {
                 if (this.asOf80) {

@@ -55,6 +55,22 @@ enum UnionType implements SQLWords, Query.UnionModifier {
         }
     }
 
+    static void exceptType(final CriteriaContext context, final UnionType unionType) {
+        switch (unionType) {
+            case UNION:
+            case UNION_ALL:
+            case UNION_DISTINCT:
+            case INTERSECT:
+            case INTERSECT_ALL:
+            case INTERSECT_DISTINCT:
+            case EXCEPT:
+            case EXCEPT_ALL:
+            case EXCEPT_DISTINCT:
+                break;
+            default:
+                throw ContextStack.castCriteriaApi(context);
+        }
+    }
 
 
 }

@@ -450,6 +450,17 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         this.onClear();
     }
 
+    @Override
+    public final String toString() {
+        final String s;
+        if (this instanceof PrimaryStatement && this.isPrepared()) {
+            s = this.mockAsString(this.queryDialect(), Visible.ONLY_VISIBLE, true);
+        } else {
+            s = super.toString();
+        }
+        return s;
+    }
+
 
     @Override
     public final Selection selection(final String derivedAlias) {
@@ -459,6 +470,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         return this.context.selection(derivedAlias);
     }
 
+    abstract Dialect queryDialect();
 
     abstract void onEndQuery();
 
@@ -580,14 +592,20 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
             extends SimpleQueries<Q, W, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
             implements DialectStatement._DynamicWithClause<B, WE>
-            , _Statement._WithClauseSpec {
+            , _Statement._WithClauseSpec
+            , Query._WithSelectDispatcher<B, WE, W, SR> {
 
         private boolean recursive;
 
         private List<_Cte> cteList;
 
-        WithCteSimpleQueries(CriteriaContext context) {
+        WithCteSimpleQueries(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
             super(context);
+            if (withSpec != null) {
+                this.recursive = withSpec.isRecursive();
+                this.cteList = withSpec.cteList();
+                assert this.cteList != null;
+            }
         }
 
         @Override
@@ -735,6 +753,35 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
 
     }//SelectClauseDispatcher
+
+    static abstract class WithSelectClauseDispatcher<B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR>
+            extends SelectClauseDispatcher<W, SR> implements Query._WithSelectDispatcher<B, WE, W, SR> {
+
+        @Override
+        public final WE with(Consumer<B> consumer) {
+            return this.createSelectClause().with(consumer);
+        }
+
+        @Override
+        public final WE withRecursive(Consumer<B> consumer) {
+            return this.createSelectClause().withRecursive(consumer);
+        }
+
+        @Override
+        public final WE ifWith(Consumer<B> consumer) {
+            return this.createSelectClause().ifWith(consumer);
+        }
+
+        @Override
+        public final WE ifWithRecursive(Consumer<B> consumer) {
+            return this.createSelectClause().ifWithRecursive(consumer);
+        }
+
+        @Override
+        abstract _WithSelectDispatcher<B, WE, W, SR> createSelectClause();
+
+
+    }//WithSelectClauseDispatcher
 
 
     static abstract class ComplexSelectCommand<W extends Query.SelectModifier, SR, RR>

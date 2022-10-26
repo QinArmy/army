@@ -35,7 +35,7 @@ public class StandardQueryUnitTests {
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))// group by is empty ,so having clause no action
                 .orderBy(User_.id.desc())
                 .limit(SQLs::literal, 0, 10)
-                .lock(LockMode.READ)
+                .lock(LockMode0.READ)
                 .asQuery();
 
         printStmt(stmt);
@@ -56,7 +56,7 @@ public class StandardQueryUnitTests {
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
                 .orderBy(Person_.id.desc())
                 .limit(SQLs::literal, 0, 10)
-                .lock(LockMode.WRITE)
+                .lock(LockMode0.WRITE)
                 .asQuery();
 
         printStmt(stmt);

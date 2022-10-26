@@ -29,16 +29,16 @@ public abstract class Postgres extends PostgreFuncSyntax {
     }
 
     public static PostgreQuery._WithSpec<Select> query() {
-        return PostgreQueries.primaryQuery();
+        return PostgreQueries.primaryQuery(null, SQLs::_identity);
     }
 
 
-    public static PostgreQuery._SubWithCteSpec<SubQuery> subQuery() {
+    public static PostgreQuery._WithSpec<SubQuery> subQuery() {
         return PostgreQueries.subQuery(ContextStack.peek(), SQLs::_identity);
     }
 
 
-    public static PostgreQuery._SubWithCteSpec<Expression> scalarSubQuery() {
+    public static PostgreQuery._WithSpec<Expression> scalarSubQuery() {
         return PostgreQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
     }
 

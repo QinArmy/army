@@ -590,7 +590,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
         this.standardLimitClause(query.offset(), query.rowCount(), context);
     }
 
-    protected void standardLockClause(LockMode lockMode, _SqlContext context) {
+    protected void standardLockClause(LockMode0 lockMode, _SqlContext context) {
         throw new UnsupportedOperationException();
     }
 
@@ -1714,7 +1714,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
         this.standardLimitClause(query.offset(), query.rowCount(), context);
 
         //8. lock clause
-        final LockMode lock = query.lockMode();
+        final LockMode0 lock = query.lockMode();
         if (lock != null) {
             this.standardLockClause(lock, context);
         }

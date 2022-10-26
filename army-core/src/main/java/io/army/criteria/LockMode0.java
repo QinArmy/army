@@ -3,7 +3,8 @@ package io.army.criteria;
 /**
  *
  */
-public enum LockMode {
+@Deprecated
+public enum LockMode0 {
 
     /**
      * Pessimistic read lock.
