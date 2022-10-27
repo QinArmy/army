@@ -1,13 +1,12 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CteBuilderSpec;
-import io.army.criteria.DialectStatement;
-import io.army.criteria.Item;
-import io.army.criteria.Statement;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._MultiDelete;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._TableBlock;
+import io.army.dialect.Dialect;
+import io.army.lang.Nullable;
 import io.army.util._Assert;
 
 import java.util.Collections;
@@ -21,7 +20,7 @@ import java.util.function.Consumer;
  * </p>
  */
 abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
-        extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, Object, Object>
+        extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, Object, Object, Object, Object>
         implements _MultiDelete
         , Statement._DmlDeleteSpec<I>
         , Statement._DqlDeleteSpec<Q>
@@ -80,6 +79,18 @@ abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, J
         return list;
     }
 
+    @Override
+    public final String toString() {
+        final String s;
+        if (this instanceof PrimaryStatement && this.isPrepared()) {
+            s = this.mockAsString(this.statementDialect(), Visible.ONLY_VISIBLE, true);
+        } else {
+            s = super.toString();
+        }
+        return s;
+    }
+
+    abstract Dialect statementDialect();
 
     abstract I onAsDelete();
 
@@ -113,8 +124,13 @@ abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, J
 
         private List<_Cte> cteList;
 
-        WithMultiDelete(CriteriaContext context) {
+        WithMultiDelete(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
             super(context);
+            if (withSpec != null) {
+                this.recursive = withSpec.isRecursive();
+                this.cteList = withSpec.cteList();
+                assert this.cteList != null;
+            }
         }
 
 

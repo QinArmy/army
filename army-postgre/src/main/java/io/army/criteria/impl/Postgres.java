@@ -41,11 +41,11 @@ public abstract class Postgres extends PostgreFuncSyntax {
         return PostgreQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
     }
 
-    static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> singleUpdate() {
+    public static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> singleUpdate() {
         return PostgreUpdates.single(SQLs::_identity, SQLs::_identity);
     }
 
-    static PostgreUpdate._BatchSingleWithSpec<Update, ReturningUpdate> batchSingleUpdate() {
+    public static PostgreUpdate._BatchSingleWithSpec<Update, ReturningUpdate> batchSingleUpdate() {
         return PostgreUpdates.batch(SQLs::_identity, SQLs::_identity);
     }
 

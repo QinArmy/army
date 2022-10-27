@@ -1,5 +1,6 @@
 package io.army.criteria.postgre;
 
+import io.army.criteria.BatchRowPairs;
 import io.army.criteria.Item;
 import io.army.criteria.RowPairs;
 import io.army.criteria.Update;
@@ -134,7 +135,7 @@ public interface PostgreUpdate extends PostgreStatement {
 
 
     interface _DynamicCteUpdateSpec
-            extends _SimpleCteLeftParenSpec<_SubMaterializedSpec<_AsCteClause<PostgreCteBuilder>>> {
+            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_AsCteClause<PostgreCteBuilder>>> {
 
     }
 
@@ -218,7 +219,7 @@ public interface PostgreUpdate extends PostgreStatement {
 
     interface _BatchSingleSetClause<I extends Item, Q extends Item, T>
             extends Update._StaticRowSetClause<FieldMeta<T>, _BatchSingleFromSpec<I, Q, T>>
-            , Update._DynamicSetClause<RowPairs<FieldMeta<T>>, _BatchSingleFromClause<I, Q>> {
+            , Update._DynamicSetClause<BatchRowPairs<FieldMeta<T>>, _BatchSingleFromClause<I, Q>> {
 
     }
 

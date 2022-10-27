@@ -7,6 +7,7 @@ import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._Statement;
+import io.army.lang.Nullable;
 import io.army.util._Assert;
 
 import java.util.Collections;
@@ -89,8 +90,13 @@ abstract class SingleDelete<I extends Item, Q extends Item, WR, WA, OR, LR, LO, 
 
         private List<_Cte> cteList;
 
-        WithSingleDelete(CriteriaContext context) {
+        WithSingleDelete(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
             super(context);
+            if (withSpec != null) {
+                this.recursive = withSpec.isRecursive();
+                this.cteList = withSpec.cteList();
+                assert this.cteList != null;
+            }
         }
 
 
