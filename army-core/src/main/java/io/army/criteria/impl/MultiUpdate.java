@@ -24,11 +24,10 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class MultiUpdate<I extends Item, Q extends Item, F extends DataField, PS extends Update._ItemPairBuilder, SR, FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
-        extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
+abstract class MultiUpdate<I extends Item, Q extends Item, F extends DataField, SR, FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
+        extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         implements _MultiUpdate
         , Update._StaticBatchSetClause<F, SR>
-        , Update._DynamicSetClause<PS, SR>
         , Update._StaticRowSetClause<F, SR>
         , _Statement._ItemPairList
         , Statement._DmlUpdateSpec<I>
@@ -216,12 +215,6 @@ abstract class MultiUpdate<I extends Item, Q extends Item, F extends DataField, 
     }
 
     @Override
-    public final SR set(Consumer<PS> consumer) {
-        consumer.accept(this.createItemPairBuilder(this::onAddItemPair));
-        return (SR) this;
-    }
-
-    @Override
     public final List<_TableBlock> tableBlockList() {
         final List<_TableBlock> list = this.tableBlockList;
         if (list == null) {
@@ -272,7 +265,6 @@ abstract class MultiUpdate<I extends Item, Q extends Item, F extends DataField, 
         this.onClear();
     }
 
-    abstract PS createItemPairBuilder(Consumer<ItemPair> consumer);
 
     abstract I onAsUpdate();
 
@@ -284,7 +276,7 @@ abstract class MultiUpdate<I extends Item, Q extends Item, F extends DataField, 
         //no-op
     }
 
-    private SR onAddItemPair(final ItemPair pair) {
+    final SR onAddItemPair(final ItemPair pair) {
         if (!(pair instanceof SQLs.ArmyItemPair)) {
             String m = String.format("unknown %s[%s]", ItemPair.class.getName(), _ClassUtils.safeClassName(pair));
             throw ContextStack.criteriaError(this.context, m);
@@ -321,8 +313,8 @@ abstract class MultiUpdate<I extends Item, Q extends Item, F extends DataField, 
     }
 
 
-    static abstract class WithMultiUpdate<I extends Item, Q extends Item, B extends CteBuilderSpec, WE, F extends DataField, PS extends Update._ItemPairBuilder, SR, FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
-            extends MultiUpdate<I, Q, F, PS, SR, FT, FS, FC, JT, JS, JC, WR, WA, OR, LR>
+    static abstract class WithMultiUpdate<I extends Item, Q extends Item, B extends CteBuilderSpec, WE, F extends DataField, SR, FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
+            extends MultiUpdate<I, Q, F, SR, FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
             implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
 
@@ -330,8 +322,12 @@ abstract class MultiUpdate<I extends Item, Q extends Item, F extends DataField, 
 
         private List<_Cte> cteList;
 
-        WithMultiUpdate(CriteriaContext context) {
+        WithMultiUpdate(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
             super(context);
+            if (withSpec != null) {
+                this.recursive = withSpec.isRecursive();
+                this.cteList = withSpec.cteList();
+            }
         }
 
         @Override

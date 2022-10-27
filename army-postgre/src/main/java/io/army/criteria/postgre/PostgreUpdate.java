@@ -76,23 +76,19 @@ public interface PostgreUpdate extends PostgreStatement {
     }
 
 
-    interface _SingleFromClause<I extends Item, Q extends Item>
-            extends PostgreQuery._PostgreFromClause<_TableSampleJoinSpec<I, Q>, _SingleJoinSpec<I, Q>>
-            , _FromNestedClause<PostgreQuery._NestedLeftParenSpec<_SingleJoinSpec<I, Q>>>
-            , _SingleWhereClause<I, Q> {
-        //TODO add dialect function tabular
-    }
-
     interface _SingleSetClause<I extends Item, Q extends Item, T>
             extends Update._StaticRowSetClause<FieldMeta<T>, _SingleFromSpec<I, Q, T>>
-            , Update._DynamicSetClause<RowPairs<FieldMeta<T>>, _SingleFromClause<I, Q>> {
+            , Update._DynamicSetClause<RowPairs<FieldMeta<T>>, _SingleFromSpec<I, Q, T>> {
 
     }
 
 
-    interface _SingleFromSpec<I extends Item, Q extends Item, T> extends _SingleFromClause<I, Q>
+    interface _SingleFromSpec<I extends Item, Q extends Item, T>
+            extends _PostgreFromClause<_TableSampleJoinSpec<I, Q>, _SingleJoinSpec<I, Q>>
+            , _FromNestedClause<_NestedLeftParenSpec<_SingleJoinSpec<I, Q>>>
+            , _SingleWhereClause<I, Q>
             , _SingleSetClause<I, Q, T> {
-
+        //TODO add dialect function tabular
 
     }
 

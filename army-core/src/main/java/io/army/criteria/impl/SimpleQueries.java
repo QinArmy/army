@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
-import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
@@ -31,7 +30,6 @@ import java.util.function.Supplier;
 abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
         extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         implements Query._DynamicHintModifierSelectClause<W, SR>
-        , Statement._FromModifierClause<FT, FS>, Statement._FromModifierCteClause<FC>
         , Statement._QueryWhereClause<WR, WA>, Query._GroupByClause<GR>
         , Query._HavingClause<HR>, Query._AsQueryClause<Q>
         , TabularItem.DerivedTableSpec, Query._QueryUnionClause<SP>
@@ -108,49 +106,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     /*################################## blow FromSpec method ##################################*/
 
-    @Override
-    public final FT from(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddNoOnTableItem(_JoinType.NONE, null, table, tableAlias);
-    }
-
-    @Override
-    public final <T extends TabularItem> _AsClause<FS> from(Supplier<T> supplier) {
-        return this.onAddNoOnQueryItem(_JoinType.NONE, null, supplier.get());
-    }
-
-    @Override
-    public final FT from(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddNoOnTableItem(_JoinType.NONE, modifier, table, tableAlias);
-    }
-
-    @Override
-    public final <T extends TabularItem> _AsClause<FS> from(Query.TabularModifier modifier, Supplier<T> supplier) {
-        return this.onAddNoOnQueryItem(_JoinType.NONE, modifier, supplier.get());
-    }
-
-    @Override
-    public final FC from(String cteName) {
-        return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, "");
-    }
-
-    @Override
-    public final FC from(String cteName, SQLs.WordAs wordAs, String alias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, alias);
-    }
-
-    @Override
-    public final FC from(Query.TabularModifier modifier, String cteName) {
-        return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, "");
-    }
-
-    @Override
-    public final FC from(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, alias);
-    }
 
     @Override
     public final WR ifWhere(Consumer<Consumer<IPredicate>> consumer) {

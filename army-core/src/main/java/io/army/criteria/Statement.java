@@ -269,12 +269,12 @@ public interface Statement extends Item {
 
     }
 
-    interface _UsingModifierTabularClause<FT, FS> extends _FromClause<FT, FS> {
+    interface _UsingModifierTabularClause<FT, FS> extends _UsingItemClause<FT, FS> {
 
         <T extends TabularItem> _AsClause<FS> using(Query.TabularModifier modifier, Supplier<T> supplier);
     }
 
-    interface _UsingModifierClause<FT, FS> extends _FromModifierTabularClause<FT, FS> {
+    interface _UsingModifierClause<FT, FS> extends _UsingModifierTabularClause<FT, FS> {
 
         FT using(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
@@ -308,7 +308,7 @@ public interface Statement extends Item {
 
     }
 
-    interface _UsingModifierCteClause<FC> extends _FromCteClause<FC> {
+    interface _UsingModifierCteClause<FC> extends _UsingCteClause<FC> {
 
         FC using(Query.TabularModifier modifier, String cteName);
 

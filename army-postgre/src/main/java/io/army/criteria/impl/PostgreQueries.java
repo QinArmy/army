@@ -715,7 +715,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
         @Override
         _UnionAndQuerySpec<I> createQueryUnion(UnionType unionType) {
-            return null;
+            return new UnionAndSelectClause<>(this, unionType, this.function);
         }
 
 
@@ -1276,6 +1276,10 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
 
     }//CteComma
+
+    private static final class CteComplexCommand<I extends Item> {
+
+    }
 
 
 }

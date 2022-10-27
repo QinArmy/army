@@ -60,22 +60,22 @@ public interface PostgreStatement extends DialectStatement {
 
         TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer);
 
-        <T> TR tableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-                , BiFunction<MappingType, T, Expression> valueOperator, T argument);
+        <E> TR tableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method
+                , BiFunction<MappingType, E, Expression> valueOperator, E argument);
 
-        <T> TR tableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-                , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier);
+        <E> TR tableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method
+                , BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier);
 
         TR tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
                 , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
         TR ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer);
 
-        <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-                , BiFunction<MappingType, T, Expression> valueOperator, @Nullable T argument);
+        <E> TR ifTableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method
+                , BiFunction<MappingType, E, Expression> valueOperator, @Nullable E argument);
 
-        <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-                , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier);
+        <E> TR ifTableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method
+                , BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier);
 
         TR ifTableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
                 , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);

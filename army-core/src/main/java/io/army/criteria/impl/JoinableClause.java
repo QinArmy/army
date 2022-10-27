@@ -33,8 +33,11 @@ import java.util.function.Supplier;
 abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         extends WhereClause<WR, WA, OR, LR, LO, LF>
         implements Statement._JoinModifierClause<JT, JS>, Statement._CrossJoinModifierClause<FT, FS>
+        , Statement._FromModifierClause<FT, FS>, Statement._FromModifierCteClause<FC>
+        , Statement._UsingModifierClause<FT, FS>, Statement._UsingModifierCteClause<FC>
         , DialectStatement._JoinModifierCteClause<JC>, DialectStatement._CrossJoinModifierCteClause<FC>
-        , DialectStatement._StraightJoinModifierTabularClause<JT, JS>, DialectStatement._StraightJoinModifierCteClause<JC> {
+        , DialectStatement._StraightJoinModifierTabularClause<JT, JS>
+        , DialectStatement._StraightJoinModifierCteClause<JC> {
 
 
     final Consumer<_TableBlock> blockConsumer;
@@ -59,6 +62,95 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         super(context);
         this.blockConsumer = context::onAddBlock;
     }
+
+    @Override
+    public final FT from(TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
+        assert wordAs == SQLs.AS;
+        return this.onAddNoOnTableItem(_JoinType.NONE, null, table, tableAlias);
+    }
+
+    @Override
+    public final FT from(Query.TableModifier modifier, TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
+        assert wordAs == SQLs.AS;
+        return this.onAddNoOnTableItem(_JoinType.NONE, modifier, table, tableAlias);
+    }
+
+    @Override
+    public final <T extends TabularItem> Statement._AsClause<FS> from(Supplier<T> supplier) {
+        return this.onAddNoOnQueryItem(_JoinType.NONE, null, supplier.get());
+    }
+
+    @Override
+    public final <T extends TabularItem> Statement._AsClause<FS> from(Query.TabularModifier modifier, Supplier<T> supplier) {
+        return this.onAddNoOnQueryItem(_JoinType.NONE, modifier, supplier.get());
+    }
+
+    @Override
+    public final FC from(String cteName) {
+        return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, "");
+    }
+
+    @Override
+    public final FC from(String cteName, StandardSyntax.WordAs wordAs, String alias) {
+        assert wordAs == SQLs.AS;
+        return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, alias);
+    }
+
+    @Override
+    public final FC from(Query.TabularModifier modifier, String cteName) {
+        return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, "");
+    }
+
+    @Override
+    public final FC from(Query.TabularModifier modifier, String cteName, StandardSyntax.WordAs wordAs, String alias) {
+        assert wordAs == SQLs.AS;
+        return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, alias);
+    }
+
+    @Override
+    public final FT using(TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
+        assert wordAs == SQLs.AS;
+        return this.onAddNoOnTableItem(_JoinType.NONE, null, table, tableAlias);
+    }
+
+    @Override
+    public final FT using(Query.TableModifier modifier, TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
+        assert wordAs == SQLs.AS;
+        return this.onAddNoOnTableItem(_JoinType.NONE, modifier, table, tableAlias);
+    }
+
+    @Override
+    public final <T extends TabularItem> Statement._AsClause<FS> using(Supplier<T> supplier) {
+        return this.onAddNoOnQueryItem(_JoinType.NONE, null, supplier.get());
+    }
+
+    @Override
+    public final <T extends TabularItem> Statement._AsClause<FS> using(Query.TabularModifier modifier, Supplier<T> supplier) {
+        return this.onAddNoOnQueryItem(_JoinType.NONE, modifier, supplier.get());
+    }
+
+    @Override
+    public final FC using(String cteName) {
+        return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, "");
+    }
+
+    @Override
+    public final FC using(String cteName, StandardSyntax.WordAs wordAs, String alias) {
+        assert wordAs == SQLs.AS;
+        return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, alias);
+    }
+
+    @Override
+    public final FC using(Query.TabularModifier modifier, String cteName) {
+        return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, "");
+    }
+
+    @Override
+    public final FC using(Query.TabularModifier modifier, String cteName, StandardSyntax.WordAs wordAs, String alias) {
+        assert wordAs == SQLs.AS;
+        return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, alias);
+    }
+
 
 
     /*################################## blow JoinSpec method ##################################*/
@@ -364,7 +456,13 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
             final _TableBlock block;
             block = createNoOnItemBlock(joinType, modifier, item, alias);
             this.blockConsumer.accept(block);
-            return (FS) JoinableClause.this;
+            final FS clause;
+            if (block instanceof JoinableClause) {
+                clause = (FS) block;
+            } else {
+                clause = (FS) this;
+            }
+            return clause;
         };
     }
 
