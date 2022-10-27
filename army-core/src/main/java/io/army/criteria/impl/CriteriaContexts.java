@@ -144,6 +144,11 @@ abstract class CriteriaContexts {
         return new SingleDmlContext(null);
     }
 
+    static CriteriaContext joinableSingleDmlContext(@Nullable CriteriaContext outerContext) {
+        throw new UnsupportedOperationException();
+    }
+
+
     static CriteriaContext primaryValuesContext() {
         return new ValuesContext(null);
     }

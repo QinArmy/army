@@ -119,6 +119,12 @@ public interface PostgreUpdate extends PostgreStatement {
 
     }
 
+    interface _StaticSubMaterializedSpec<I extends Item>
+            extends _CteMaterializedClause<_SingleUpdateClause<I, I>>
+            , _SingleUpdateClause<I, I> {
+
+    }
+
 
     interface _DynamicSubMaterializedSpec<I extends Item>
             extends _CteMaterializedClause<_SingleMinWithSpec<I, I>>
@@ -128,7 +134,7 @@ public interface PostgreUpdate extends PostgreStatement {
 
 
     interface _DynamicCteUpdateSpec
-            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_AsCteClause<PostgreCteBuilder>>> {
+            extends _SimpleCteLeftParenSpec<_SubMaterializedSpec<_AsCteClause<PostgreCteBuilder>>> {
 
     }
 

@@ -390,7 +390,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     private static final class PostgreDynamicUpdateLeftParenClause
             extends PostgreDynamicDmlCteLeftParenClause<
-            PostgreUpdate._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>>>
+            PostgreUpdate._SubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>>>
             implements PostgreUpdate._DynamicCteUpdateSpec {
 
         private PostgreDynamicUpdateLeftParenClause(String name, PostgreCteBuilderImpl cteBuilder) {
@@ -399,7 +399,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
         @Override
-        public PostgreUpdate._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>> as() {
+        public PostgreUpdate._SubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>> as() {
             return PostgreUpdates.dynamicCteUpdate(this.cteBuilder.context, this::subStmtEnd);
         }
 

@@ -412,8 +412,6 @@ abstract class PostgreInserts extends InsertSupport {
 
         private PostgreSupports.MaterializedOption materializedOption;
 
-        private List<String> columnAliasList;
-
         private DynamicSubInsertIntoClause(final CriteriaContext outContext, Function<SubStatement, I> function) {
             super(CriteriaContexts.cteInsertContext(outContext));
             this.function = function;

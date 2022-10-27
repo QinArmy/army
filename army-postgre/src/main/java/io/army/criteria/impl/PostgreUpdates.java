@@ -15,10 +15,7 @@ import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 @SuppressWarnings("unchecked")
 abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS extends Item, JT, JS, TR, WR, WA>
@@ -34,9 +31,35 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
         , PostgreStatement._PostgreDynamicCrossJoinClause<FS> {
 
 
-    static <I extends Item> PostgreUpdate._DynamicSubMaterializedSpec<I> dynamicCteUpdate(CriteriaContext outerContext
+    static <I extends Item, Q extends Item> PostgreUpdate._SingleWithSpec<I, Q> single(
+            Function<Update, I> dmlFunction
+            , Function<ReturningUpdate, Q> dqlFunction) {
+        final CriteriaContext context;
+        context = CriteriaContexts.joinableSingleDmlContext(null);
+        return new PrimarySimpleUpdateClause<>(context, dmlFunction, dqlFunction);
+    }
+
+    static <I extends Item, Q extends Item> PostgreUpdate._BatchSingleWithSpec<I, Q> batch(
+            Function<Update, I> dmlFunction
+            , Function<ReturningUpdate, Q> dqlFunction) {
+        final CriteriaContext context;
+        context = CriteriaContexts.joinableSingleDmlContext(null);
+        return new BatchUpdateClause<>(context, dmlFunction, dqlFunction);
+    }
+
+
+    static <I extends Item> _DynamicSubMaterializedSpec<I> dynamicCteUpdate(CriteriaContext outerContext
             , Function<SubStatement, I> function) {
-        throw new UnsupportedOperationException();
+        final CriteriaContext context;
+        context = CriteriaContexts.joinableSingleDmlContext(outerContext);
+        return new DynamicSubSimpleUpdateClause<>(context, function);
+    }
+
+    static <I extends Item> _StaticSubMaterializedSpec<I> staticCteUpdate(CriteriaContext outerContext
+            , Function<SubStatement, I> function) {
+        final CriteriaContext context;
+        context = CriteriaContexts.joinableSingleDmlContext(outerContext);
+        return new StaticSubSimpleUpdateClause<>(context, function);
     }
 
     private final SQLWords modifier;
@@ -534,29 +557,31 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
 
     }//PrimarySimpleUpdate
 
-    private static final class SubSimpleUpdate<I extends Item, Q extends Item, T>
-            extends SimpleUpdate<I, Q, T>
+    private static final class SubSimpleUpdate<I extends Item, T>
+            extends SimpleUpdate<I, I, T>
             implements SubUpdate, SubReturningUpdate {
 
-        private final Function<SubUpdate, I> dmlFunction;
+        private final Function<SubStatement, I> function;
 
-        private final Function<SubReturningUpdate, Q> dqlFunction;
+        private final PostgreSupports.MaterializedOption materializedOption;
 
-        private SubSimpleUpdate(SubSimpleUpdateClause<I, Q> clause) {
+        private SubSimpleUpdate(SubSimpleUpdateClause<I, ?> clause) {
             super(clause);
-            this.dmlFunction = clause.dmlFunction;
-            this.dqlFunction = clause.dqlFunction;
+            this.function = clause.function;
+            this.materializedOption = clause.materializedOption;
         }
 
 
         @Override
         I onAsUpdate() {
-            return this.dmlFunction.apply(this);
+            final PostgreSupports.MaterializedOption option = this.materializedOption;
+            return this.function.apply(option == null ? this : new PostgreSupports.PostgreSubStatement(option, this));
         }
 
         @Override
-        Q onAsReturningUpdate() {
-            return this.dqlFunction.apply(this);
+        I onAsReturningUpdate() {
+            final PostgreSupports.MaterializedOption option = this.materializedOption;
+            return this.function.apply(option == null ? this : new PostgreSupports.PostgreSubStatement(option, this));
         }
 
     }//SubSimpleUpdate
@@ -983,23 +1008,53 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
 
     }//PrimarySimpleUpdateClause
 
-    private static final class SubSimpleUpdateClause<I extends Item, Q extends Item>
-            extends SimpleUpdateClause<I, Q> {
+    private static abstract class SubSimpleUpdateClause<I extends Item, MR>
+            extends SimpleUpdateClause<I, I>
+            implements _CteMaterializedClause<MR> {
 
-        private final Function<SubUpdate, I> dmlFunction;
+        private final Function<SubStatement, I> function;
 
-        private final Function<SubReturningUpdate, Q> dqlFunction;
+        private PostgreSupports.MaterializedOption materializedOption;
 
-        private SubSimpleUpdateClause(CriteriaContext context
-                , Function<SubUpdate, I> dmlFunction
-                , Function<SubReturningUpdate, Q> dqlFunction) {
+        private SubSimpleUpdateClause(CriteriaContext context, Function<SubStatement, I> function) {
             super(context);
-            this.dmlFunction = dmlFunction;
-            this.dqlFunction = dqlFunction;
+            this.function = function;
         }
 
         @Override
-        public <T> _SingleSetClause<I, Q, T> update(TableMeta<T> table, SQLs.WordAs wordAs, String tableAlias) {
+        public final MR materialized() {
+            this.materializedOption = PostgreSupports.MaterializedOption.MATERIALIZED;
+            return (MR) this;
+        }
+
+        @Override
+        public final MR notMaterialized() {
+            this.materializedOption = PostgreSupports.MaterializedOption.NOT_MATERIALIZED;
+            return (MR) this;
+        }
+
+        @Override
+        public final MR ifMaterialized(BooleanSupplier predicate) {
+            if (predicate.getAsBoolean()) {
+                this.materializedOption = PostgreSupports.MaterializedOption.MATERIALIZED;
+            } else {
+                this.materializedOption = null;
+            }
+            return (MR) this;
+        }
+
+        @Override
+        public final MR ifNotMaterialized(BooleanSupplier predicate) {
+            if (predicate.getAsBoolean()) {
+                this.materializedOption = PostgreSupports.MaterializedOption.NOT_MATERIALIZED;
+            } else {
+                this.materializedOption = null;
+            }
+            return (MR) this;
+        }
+
+        @Override
+        public final <T> _SingleSetClause<I, I, T> update(TableMeta<T> table, SQLs.WordAs wordAs, String tableAlias) {
             assert wordAs == SQLs.AS;
             this.updateTable = table;
             this.tableAlias = tableAlias;
@@ -1007,7 +1062,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
         }
 
         @Override
-        public <T> _SingleSetClause<I, Q, T> update(SQLs.WordOnly wordOnly, TableMeta<T> table, SQLs.WordAs wordAs
+        public final <T> _SingleSetClause<I, I, T> update(SQLs.WordOnly wordOnly, TableMeta<T> table, SQLs.WordAs wordAs
                 , String tableAlias) {
             assert wordAs == SQLs.AS;
             if (wordOnly != SQLs.ONLY) {
@@ -1021,6 +1076,28 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
 
 
     } //SubSimpleUpdateClause
+
+    private static final class DynamicSubSimpleUpdateClause<I extends Item>
+            extends SubSimpleUpdateClause<I, _SingleMinWithSpec<I, I>>
+            implements _DynamicSubMaterializedSpec<I> {
+
+        private DynamicSubSimpleUpdateClause(CriteriaContext context, Function<SubStatement, I> function) {
+            super(context, function);
+        }
+
+
+    }//DynamicSubSimpleUpdateClause
+
+    private static final class StaticSubSimpleUpdateClause<I extends Item>
+            extends SubSimpleUpdateClause<I, _SingleUpdateClause<I, I>>
+            implements _StaticSubMaterializedSpec<I> {
+
+        private StaticSubSimpleUpdateClause(CriteriaContext context, Function<SubStatement, I> function) {
+            super(context, function);
+        }
+
+
+    }//StaticSubSimpleUpdateClause
 
 
     private static final class BatchComma<I extends Item, Q extends Item> implements _BatchCteComma<I, Q> {

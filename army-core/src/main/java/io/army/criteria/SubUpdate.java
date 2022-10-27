@@ -7,7 +7,7 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface SubUpdate extends DmlStatement.DmlUpdate {
+public interface SubUpdate extends SubStatement, DmlStatement.DmlUpdate {
 
 
 }
