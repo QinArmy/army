@@ -135,16 +135,17 @@ public interface PostgreUpdate extends PostgreStatement {
     /*-------------------below batch syntax -------------------*/
 
 
+
     interface _BatchStaticReturningCommaSpec<Q extends Item>
-            extends _StaticReturningCommaClause<_StaticReturningCommaSpec<Q>>
-            , _DqlUpdateSpec<Q> {
+            extends _StaticReturningCommaClause<_BatchStaticReturningCommaSpec<Q>>
+            , _BatchParamClause<_DqlUpdateSpec<Q>> {
 
     }
 
     interface _BatchReturningSpec<I extends Item, Q extends Item>
             extends _StaticReturningClause<_BatchStaticReturningCommaSpec<Q>>
-            , _DynamicReturningClause<_DqlUpdateSpec<Q>>
-            , _DmlUpdateSpec<I> {
+            , _DynamicReturningClause<_BatchParamClause<_DqlUpdateSpec<Q>>>
+            , _BatchParamClause<_DmlUpdateSpec<I>> {
 
     }
 

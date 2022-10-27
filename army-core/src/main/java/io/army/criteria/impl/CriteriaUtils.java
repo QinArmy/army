@@ -670,6 +670,10 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(ContextStack.peek(), String.format("%s arg list is empty", name));
     }
 
+    static CriteriaException returningListIsEmpty(CriteriaContext context) {
+        return ContextStack.criteriaError(context, "RETURNING list is empty");
+    }
+
     private static CriteriaException unknownSelectItem(final RowSet left, final SelectItem item) {
         return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext()
                 , _Exceptions::unknownSelectItem, item);

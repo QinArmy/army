@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
@@ -13,7 +12,7 @@ import java.util.Objects;
 
 abstract class Selections implements _Selection {
 
-    static Selection forExp(_Expression expression, String alias) {
+    static Selection forExp(Expression expression, String alias) {
         return new ExpressionSelection((ArmyExpression) expression, alias);
     }
 
