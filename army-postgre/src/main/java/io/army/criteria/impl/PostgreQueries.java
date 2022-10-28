@@ -23,7 +23,7 @@ import java.util.function.*;
 
 abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpleQueries<
         I,
-        PostgreCteBuilder,
+        PostgreCtes,
         PostgreQuery._PostgreSelectClause<I>,
         PostgreSyntax.Modifier,
         PostgreQuery._FromSpec<I>,
@@ -516,7 +516,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
 
     @Override
-    final PostgreCteBuilder createCteBuilder(boolean recursive) {
+    final PostgreCtes createCteBuilder(boolean recursive) {
         return PostgreSupports.postgreCteBuilder(recursive, this.context);
     }
 
@@ -990,7 +990,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
      */
     private static final class ParenSelect<I extends Item>
             extends WithSelectClauseDispatcher<
-            PostgreCteBuilder,
+            PostgreCtes,
             _PostgreSelectClause<I>,
             Postgres.Modifier,
             _FromSpec<I>>
@@ -1034,7 +1034,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
      */
     private static final class ParenSubQuery<I extends Item>
             extends WithSelectClauseDispatcher<
-            PostgreCteBuilder,
+            PostgreCtes,
             _PostgreSelectClause<I>,
             Postgres.Modifier,
             _FromSpec<I>>
@@ -1078,7 +1078,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
     private static final class UnionLeftParenSelectClause<I extends Item>
             extends WithSelectClauseDispatcher<
-            PostgreCteBuilder,
+            PostgreCtes,
             PostgreQuery._PostgreSelectClause<_RightParenClause<_UnionOrderBySpec<I>>>,
             Postgres.Modifier,
             PostgreQuery._FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>>
@@ -1113,7 +1113,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
     private static final class UnionAndSelectClause<I extends Item>
             extends WithSelectClauseDispatcher<
-            PostgreCteBuilder,
+            PostgreCtes,
             PostgreQuery._PostgreSelectClause<I>,
             Postgres.Modifier,
             PostgreQuery._FromSpec<I>>
@@ -1161,7 +1161,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
     private static final class UnionLeftParenSubQueryClause<I extends Item>
             extends WithSelectClauseDispatcher<
-            PostgreCteBuilder,
+            PostgreCtes,
             _PostgreSelectClause<_RightParenClause<_UnionOrderBySpec<I>>>,
             Postgres.Modifier,
             _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>>
@@ -1199,7 +1199,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
      */
     private static final class UnionAndSubQueryClause<I extends Item>
             extends WithSelectClauseDispatcher<
-            PostgreCteBuilder,
+            PostgreCtes,
             _PostgreSelectClause<I>,
             Postgres.Modifier,
             _FromSpec<I>>

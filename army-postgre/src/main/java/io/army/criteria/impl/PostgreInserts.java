@@ -7,7 +7,7 @@ import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner.postgre._ConflictTargetItem;
 import io.army.criteria.impl.inner.postgre._PostgreInsert;
-import io.army.criteria.postgre.PostgreCteBuilder;
+import io.army.criteria.postgre.PostgreCtes;
 import io.army.criteria.postgre.PostgreInsert;
 import io.army.criteria.postgre.PostgreStatement;
 import io.army.dialect._Constant;
@@ -265,7 +265,7 @@ abstract class PostgreInserts extends InsertSupport {
             PostgreInsert._PrimaryNullOptionSpec,
             PostgreInsert._PrimaryPreferLiteralSpec,
             PostgreInsert._PrimaryWithCteSpec,
-            PostgreCteBuilder,
+            PostgreCtes,
             PostgreInsert._PrimaryInsertIntoClause>
             implements PostgreInsert._PrimaryOptionSpec {
 
@@ -305,7 +305,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        PostgreCteBuilder createCteBuilder(final boolean recursive) {
+        PostgreCtes createCteBuilder(final boolean recursive) {
             return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
@@ -313,7 +313,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//PrimaryInsertIntoClause
 
     private static final class ChildInsertIntoClause<P> extends ChildDynamicWithClause<
-            PostgreCteBuilder,
+            PostgreCtes,
             PostgreInsert._ChildInsertIntoClause<P>>
             implements PostgreInsert._ChildWithCteSpec<P> {
 
@@ -350,7 +350,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        PostgreCteBuilder createCteBuilder(boolean recursive) {
+        PostgreCtes createCteBuilder(boolean recursive) {
             return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
@@ -404,7 +404,7 @@ abstract class PostgreInserts extends InsertSupport {
             PostgreInsert._DynamicSubNullOptionSpec<I>,
             PostgreInsert._DynamicSubPreferLiteralSpec<I>,
             PostgreInsert._DynamicSubWithCteSpec<I>,
-            PostgreCteBuilder,
+            PostgreCtes,
             PostgreInsert._ComplexInsertIntoClause<I, I>>
             implements PostgreInsert._DynamicSubMaterializedSpec<I> {
 
@@ -457,7 +457,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        PostgreCteBuilder createCteBuilder(final boolean recursive) {
+        PostgreCtes createCteBuilder(final boolean recursive) {
             return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 
@@ -514,7 +514,7 @@ abstract class PostgreInserts extends InsertSupport {
             PostgreInsert._ComplexNullOptionSpec<I>,
             PostgreInsert._ComplexPreferLiteralSpec<I>,
             PostgreInsert._ComplexWithSpec<I>,
-            PostgreCteBuilder,
+            PostgreCtes,
             PostgreInsert._ComplexInsertIntoClause<I, I>>
             implements PostgreInsert._ComplexOptionSpec<I> {
 
@@ -551,7 +551,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        PostgreCteBuilder createCteBuilder(final boolean recursive) {
+        PostgreCtes createCteBuilder(final boolean recursive) {
             return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 

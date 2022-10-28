@@ -393,7 +393,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
     interface _DynamicCteQuerySpec
-            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_CteSearchSpec<PostgreCteBuilder>>> {
+            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_CteSearchSpec<PostgreCtes>>> {
 
     }
 

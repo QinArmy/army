@@ -5,7 +5,7 @@ import io.army.criteria.Item;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-public interface PostgreCursor extends PostgreStatement {
+public interface PostgreCommand extends PostgreStatement {
 
     interface CursorDirection {
 

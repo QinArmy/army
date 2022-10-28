@@ -31,7 +31,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     static final List<Selection> RETURNING_ALL = Collections.emptyList();
 
-    static PostgreCteBuilder postgreCteBuilder(final boolean recursive, final CriteriaContext context) {
+    static PostgreCtes postgreCteBuilder(final boolean recursive, final CriteriaContext context) {
         return new PostgreCteBuilderImpl(recursive, context);
     }
 
@@ -335,7 +335,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             extends ParenStringConsumerClause<Statement._StaticAsClaus<I>>
             implements DialectStatement._SimpleCteLeftParenSpec<I>
             , Statement._StaticAsClaus<I>
-            , Statement._AsCteClause<PostgreCteBuilder> {
+            , Statement._AsCteClause<PostgreCtes> {
 
         private final String name;
 
@@ -351,7 +351,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
         @Override
-        public final PostgreCteBuilder asCte() {
+        public final PostgreCtes asCte() {
             return this.cteBuilder;
         }
 
@@ -364,7 +364,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             return this;
         }
 
-        final Statement._AsCteClause<PostgreCteBuilder> subStmtEnd(final SubStatement stmt) {
+        final Statement._AsCteClause<PostgreCtes> subStmtEnd(final SubStatement stmt) {
             CriteriaUtils.createAndAddCte(this.cteBuilder.context, this.name, this.columnAliasList, stmt);
             return this;
         }
@@ -374,7 +374,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     private static final class PostgreDynamicInsertLeftParenClause
             extends PostgreDynamicDmlCteLeftParenClause<
-            PostgreInsert._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>>>
+            PostgreInsert._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>>>
             implements PostgreInsert._DynamicSubInsertSpec {
 
         private PostgreDynamicInsertLeftParenClause(String name, PostgreCteBuilderImpl cteBuilder) {
@@ -382,7 +382,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public PostgreInsert._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>> as() {
+        public PostgreInsert._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>> as() {
             return PostgreInserts.dynamicSubInsert(this.context, this::subStmtEnd);
         }
 
@@ -390,7 +390,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     private static final class PostgreDynamicUpdateLeftParenClause
             extends PostgreDynamicDmlCteLeftParenClause<
-            PostgreUpdate._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>>>
+            PostgreUpdate._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>>>
             implements PostgreUpdate._DynamicCteUpdateSpec {
 
         private PostgreDynamicUpdateLeftParenClause(String name, PostgreCteBuilderImpl cteBuilder) {
@@ -399,7 +399,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
         @Override
-        public PostgreUpdate._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>> as() {
+        public PostgreUpdate._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>> as() {
             return PostgreUpdates.dynamicCteUpdate(this.cteBuilder.context, this::subStmtEnd);
         }
 
@@ -407,7 +407,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     private static final class PostgreDynamicDeleteLeftParenClause
             extends PostgreDynamicDmlCteLeftParenClause<
-            PostgreDelete._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>>>
+            PostgreDelete._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>>>
             implements PostgreDelete._DynamicCteDeleteSpec {
 
         private PostgreDynamicDeleteLeftParenClause(String name, PostgreCteBuilderImpl cteBuilder) {
@@ -416,7 +416,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
         @Override
-        public PostgreDelete._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>> as() {
+        public PostgreDelete._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>> as() {
             return PostgreDeletes.dynamicCteDelete(this.cteBuilder.context, this::subStmtEnd);
         }
 
@@ -774,7 +774,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     private static final class PostgreDynamicQueryLeftParenClause
             extends PostgreDynamicDmlCteLeftParenClause<
-            PostgreQuery._DynamicSubMaterializedSpec<PostgreStatement._CteSearchSpec<PostgreCteBuilder>>>
+            PostgreQuery._DynamicSubMaterializedSpec<PostgreStatement._CteSearchSpec<PostgreCtes>>>
             implements PostgreQuery._DynamicCteQuerySpec {
 
         private PostgreDynamicQueryLeftParenClause(String name, PostgreCteBuilderImpl cteBuilder) {
@@ -783,15 +783,15 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
         @Override
-        public PostgreQuery._DynamicSubMaterializedSpec<PostgreStatement._CteSearchSpec<PostgreCteBuilder>> as() {
+        public PostgreQuery._DynamicSubMaterializedSpec<PostgreStatement._CteSearchSpec<PostgreCtes>> as() {
             return PostgreQueries.dynamicCteQuery(this.cteBuilder.context, this::subQueryEnd);
         }
 
-        private PostgreStatement._CteSearchSpec<PostgreCteBuilder> subQueryEnd(SubStatement subQuery) {
+        private PostgreStatement._CteSearchSpec<PostgreCtes> subQueryEnd(SubStatement subQuery) {
             return new PostgreCteSearchClause<>(this.cteBuilder.context, subQuery, this::searchOptionEnd);
         }
 
-        private PostgreCteBuilder searchOptionEnd(SubStatement statement) {
+        private PostgreCtes searchOptionEnd(SubStatement statement) {
             //TODO 将 search_seq_col_name 等加入 输出列
             return this.subStmtEnd(statement)
                     .asCte();
@@ -803,7 +803,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     private static final class PostgreDynamicValuesLeftParenClause
             extends PostgreDynamicDmlCteLeftParenClause<
-            PostgreValues._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>>>
+            PostgreValues._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>>>
             implements PostgreValues._DynamicCteValuesSpec {
 
         private PostgreDynamicValuesLeftParenClause(String name, PostgreCteBuilderImpl cteBuilder) {
@@ -811,14 +811,14 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public PostgreValues._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCteBuilder>> as() {
+        public PostgreValues._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>> as() {
             return PostgreValuesStatements.dynamicCteValues(this.cteBuilder.context, this::subStmtEnd);
         }
 
     }//PostgreDynamicValuesLeftParenClause
 
 
-    private static final class PostgreCteBuilderImpl implements PostgreCteBuilder {
+    private static final class PostgreCteBuilderImpl implements PostgreCtes {
 
         private final boolean recursive;
 

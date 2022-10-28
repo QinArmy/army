@@ -25,7 +25,7 @@ import java.util.function.*;
  */
 @SuppressWarnings("unchecked")
 abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS extends Item, JT, JS, TR, WR, WA>
-        extends MultiDelete.WithMultiDelete<I, Q, PostgreCteBuilder, WE, FT, FS, FS, JT, JS, JS, WR, WA>
+        extends MultiDelete.WithMultiDelete<I, Q, PostgreCtes, WE, FT, FS, FS, JT, JS, JS, WR, WA>
         implements PostgreDelete, _PostgreDelete
         , PostgreStatement._TableSampleClause<TR>
         , PostgreStatement._RepeatableClause<FS>
@@ -302,7 +302,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
 
 
     @Override
-    final PostgreCteBuilder createCteBuilder(boolean recursive) {
+    final PostgreCtes createCteBuilder(boolean recursive) {
         return PostgreSupports.postgreCteBuilder(recursive, this.context);
     }
 

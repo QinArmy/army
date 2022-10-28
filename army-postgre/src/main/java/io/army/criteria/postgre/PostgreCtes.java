@@ -2,7 +2,7 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.CteBuilderSpec;
 
-public interface PostgreCteBuilder extends CteBuilderSpec {
+public interface PostgreCtes extends CteBuilderSpec {
 
    PostgreInsert._DynamicSubInsertSpec singleInsert(String name);
 

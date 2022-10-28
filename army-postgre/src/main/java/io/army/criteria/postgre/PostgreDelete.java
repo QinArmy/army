@@ -140,7 +140,7 @@ public interface PostgreDelete extends PostgreStatement {
 
 
     interface _DynamicCteDeleteSpec
-            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_AsCteClause<PostgreCteBuilder>>> {
+            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_AsCteClause<PostgreCtes>>> {
 
     }
 

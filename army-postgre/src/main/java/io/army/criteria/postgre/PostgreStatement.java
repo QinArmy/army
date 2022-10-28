@@ -199,7 +199,7 @@ public interface PostgreStatement extends DialectStatement {
 
 
     interface _PostgreDynamicWithClause<SR>
-            extends _DynamicWithClause<PostgreCteBuilder, SR> {
+            extends _DynamicWithClause<PostgreCtes, SR> {
 
     }
 

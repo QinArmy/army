@@ -16,6 +16,17 @@ import java.util.function.Supplier;
  */
 public interface PostgreInsert extends PostgreStatement {
 
+    interface _OverridingValueClause<R> {
+
+        R overridingSystemValue();
+
+        R overridingUserValue();
+
+        R ifOverridingSystemValue(BooleanSupplier predicate);
+
+        R ifOverridingUserValue(BooleanSupplier predicate);
+    }
+
     interface _StaticReturningCommaSpec<Q extends Item>
             extends _StaticReturningCommaClause<_StaticReturningCommaSpec<Q>>
             , _DqlInsertClause<Q> {
@@ -156,15 +167,8 @@ public interface PostgreInsert extends PostgreStatement {
     }
 
     interface _OverridingValueSpec<T, I extends Item, Q extends Item>
-            extends _ValuesDefaultSpec<T, I, Q> {
+            extends _ValuesDefaultSpec<T, I, Q>, _OverridingValueClause<_ValuesDefaultSpec<T, I, Q>> {
 
-        _ValuesDefaultSpec<T, I, Q> overridingSystemValue();
-
-        _ValuesDefaultSpec<T, I, Q> overridingUserValue();
-
-        _ValuesDefaultSpec<T, I, Q> ifOverridingSystemValue(BooleanSupplier supplier);
-
-        _ValuesDefaultSpec<T, I, Q> ifOverridingUserValue(BooleanSupplier supplier);
 
     }
 
@@ -349,7 +353,6 @@ public interface PostgreInsert extends PostgreStatement {
     interface _ComplexNullOptionSpec<I extends Item>
             extends Insert._NullOptionClause<_ComplexPreferLiteralSpec<I>>
             , _ComplexPreferLiteralSpec<I> {
-
     }
 
     interface _ComplexOptionSpec<I extends Item>
@@ -396,7 +399,7 @@ public interface PostgreInsert extends PostgreStatement {
     }
 
     interface _DynamicSubInsertSpec
-            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_AsCteClause<PostgreCteBuilder>>> {
+            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_AsCteClause<PostgreCtes>>> {
 
     }
 

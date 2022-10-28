@@ -102,7 +102,7 @@ public interface PostgreValues extends PostgreStatement, RowSet.DqlValues {
     }
 
     interface _DynamicCteValuesSpec
-            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_AsCteClause<PostgreCteBuilder>>> {
+            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_AsCteClause<PostgreCtes>>> {
 
     }
 

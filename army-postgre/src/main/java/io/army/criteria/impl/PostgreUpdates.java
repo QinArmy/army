@@ -19,7 +19,7 @@ import java.util.function.*;
 
 @SuppressWarnings("unchecked")
 abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS extends Item, JT, JS, TR, WR, WA>
-        extends MultiUpdate.WithMultiUpdate<I, Q, PostgreCteBuilder, Object, FieldMeta<T>, SR, FT, FS, FS, JT, JS, JS, WR, WA, Object, Object, Object, Object>
+        extends MultiUpdate.WithMultiUpdate<I, Q, PostgreCtes, Object, FieldMeta<T>, SR, FT, FS, FS, JT, JS, JS, WR, WA, Object, Object, Object, Object>
         implements PostgreUpdate, _PostgreUpdate
         , PostgreStatement._TableSampleClause<TR>
         , PostgreStatement._RepeatableClause<FS>
@@ -281,7 +281,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
 
 
     @Override
-    final PostgreCteBuilder createCteBuilder(boolean recursive) {
+    final PostgreCtes createCteBuilder(boolean recursive) {
         //WITH clause have ended
         throw ContextStack.castCriteriaApi(this.context);
     }
@@ -906,7 +906,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
 
 
     private static abstract class PostgreUpdateClause<WE>
-            extends CriteriaSupports.WithClause<PostgreCteBuilder, WE> {
+            extends CriteriaSupports.WithClause<PostgreCtes, WE> {
         SQLWords modifier;
 
         TableMeta<?> updateTable;
@@ -919,7 +919,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
         }
 
         @Override
-        final PostgreCteBuilder createCteBuilder(boolean recursive) {
+        final PostgreCtes createCteBuilder(boolean recursive) {
             return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
 

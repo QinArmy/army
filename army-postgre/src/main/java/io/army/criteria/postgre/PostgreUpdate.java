@@ -143,7 +143,7 @@ public interface PostgreUpdate extends PostgreStatement {
 
 
     interface _DynamicCteUpdateSpec
-            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_AsCteClause<PostgreCteBuilder>>> {
+            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_AsCteClause<PostgreCtes>>> {
 
     }
 
