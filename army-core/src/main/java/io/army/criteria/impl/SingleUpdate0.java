@@ -13,7 +13,7 @@ import io.army.criteria.impl.inner._SingleUpdate;
  */
 @Deprecated
 abstract class SingleUpdate0<C, F extends DataField, SR, WR, WA, U extends DmlStatement.DmlUpdate>
-        extends JoinableUpdate<C, F, SR, Void, Void, Void, Void, Void, Void, Void, WR, WA, U>
+        extends JoinableUpdate0<C, F, SR, Void, Void, Void, Void, Void, Void, Void, WR, WA, U>
         implements _SingleUpdate {
 
 

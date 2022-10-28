@@ -8,14 +8,12 @@ import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._Update;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
-import io.army.util._Exceptions;
 
 
-abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA, OR, LR, LO, LF>
+abstract class SingleUpdate<I extends Item, F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA, OR, LR, LO, LF>
         extends SetWhereClause<F, PS, SR, SD, WR, WA, OR, LR, LO, LF>
         implements Statement
         , Statement._DmlUpdateSpec<I>
-        , Statement._DqlUpdateSpec<Q>
         , _Update, _SingleUpdate {
 
 
@@ -45,12 +43,6 @@ abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField
     }
 
     @Override
-    public final Q asReturningUpdate() {
-        this.endUpdateStatement();
-        return this.onAsReturningUpdate();
-    }
-
-    @Override
     public final void clear() {
         _Assert.prepared(this.prepared);
         this.prepared = Boolean.FALSE;
@@ -70,17 +62,11 @@ abstract class SingleUpdate<I extends Item, Q extends Item, F extends TableField
 
     abstract I onAsUpdate();
 
-    Q onAsReturningUpdate() {
-        throw ContextStack.castCriteriaApi(this.context);
-    }
 
-
-    private void endUpdateStatement() {
+    final void endUpdateStatement() {
         _Assert.nonPrepared(this.prepared);
         this.endUpdateSetClause();
-        if (this.endWhereClause().size() == 0) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::dmlNoWhereClause);
-        }
+        this.endWhereClause()
         this.endOrderByClause();
         ContextStack.pop(this.context);
         this.prepared = Boolean.TRUE;

@@ -26,15 +26,15 @@ public interface StandardUpdate extends StandardStatement {
 
     interface _StandardSetClause<I extends Item, F extends TableField>
             extends Update._StaticSetClause<F, _WhereSpec<I, F>>
-            , Update._DynamicSetClause<F, ItemPairs<F>, _StandardWhereClause<I>> {
+            , Update._DynamicSetClause<ItemPairs<F>, _StandardWhereClause<I>> {
 
     }
 
-    interface _SingleUpdateClause {
+    interface _SingleUpdateClause<I extends Item> {
 
-        <T> _StandardSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias);
+        <T> _StandardSetClause<I, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias);
 
-        <P> _StandardSetClause<Update, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias);
+        <P> _StandardSetClause<I, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias);
 
 
     }
@@ -63,7 +63,7 @@ public interface StandardUpdate extends StandardStatement {
 
     interface _BatchSetClause<I extends Item, F extends TableField>
             extends Update._StaticBatchSetClause<F, _BatchWhereSpec<I, F>>
-            , Update._DynamicSetClause<F, BatchItemPairs<F>, _BatchWhereClause<I>> {
+            , Update._DynamicSetClause<BatchItemPairs<F>, _BatchWhereClause<I>> {
 
 
     }

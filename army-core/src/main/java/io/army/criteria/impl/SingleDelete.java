@@ -15,12 +15,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 
-abstract class SingleDelete<I extends Item, Q extends Item, WR, WA, OR, LR, LO, LF>
+abstract class SingleDelete<I extends Item, WR, WA, OR, LR, LO, LF>
         extends WhereClause<WR, WA, OR, LR, LO, LF>
         implements _SingleDelete
         , Statement
-        , Statement._DmlDeleteSpec<I>
-        , Statement._DqlDeleteSpec<Q> {
+        , Statement._DmlDeleteSpec<I> {
 
 
     private Boolean prepared;
@@ -54,22 +53,12 @@ abstract class SingleDelete<I extends Item, Q extends Item, WR, WA, OR, LR, LO, 
         return this.onAsDelete();
     }
 
-    @Override
-    public final Q asReturningDelete() {
-        this.endDeleteStatement();
-        return this.onAsReturningDelete();
-    }
 
     void onClear() {
 
     }
 
-
     abstract I onAsDelete();
-
-    Q onAsReturningDelete() {
-        throw ContextStack.castCriteriaApi(this.context);
-    }
 
 
     private void endDeleteStatement() {
@@ -81,8 +70,8 @@ abstract class SingleDelete<I extends Item, Q extends Item, WR, WA, OR, LR, LO, 
     }
 
 
-    static abstract class WithSingleDelete<I extends Item, Q extends Item, B extends CteBuilderSpec, WE, WR, WA, OR, LR, LO, LF>
-            extends SingleDelete<I, Q, WR, WA, OR, LR, LO, LF>
+    static abstract class WithSingleDelete<I extends Item, B extends CteBuilderSpec, WE, WR, WA, OR, LR, LO, LF>
+            extends SingleDelete<I, WR, WA, OR, LR, LO, LF>
             implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
 

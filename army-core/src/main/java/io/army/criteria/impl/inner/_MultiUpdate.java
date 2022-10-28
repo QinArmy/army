@@ -1,10 +1,6 @@
 package io.army.criteria.impl.inner;
 
-import java.util.List;
-
-public interface _MultiUpdate extends _Update, _MultiDml {
-
-    List<_TableBlock> tableBlockList();
+public interface _MultiUpdate extends _Update, _MultiDml, _Statement._JoinableStatement {
 
 
 }

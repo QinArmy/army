@@ -44,7 +44,7 @@
     * 如果支持重写默认 mapping ,会给新入开发团队的的开发者造成认知混乱,对于项目管理和每一位开发者来说都是不利的.
 
 
-10. 为什么 io.army.criteria.impl.JoinableUpdate 不能持有 CriteriaContext ?
+10. 为什么 io.army.criteria.impl.JoinableUpdate0 不能持有 CriteriaContext ?
     * NestedItems 不能持有 CriteriaContext,只能持有 List
 
 

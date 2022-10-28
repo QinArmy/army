@@ -14,12 +14,13 @@ import io.army.meta.TableMeta;
 import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.*;
 
 @SuppressWarnings("unchecked")
-abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS extends Item, JT, JS, TR, WR, WA>
-        extends MultiUpdate.WithMultiUpdate<I, Q, PostgreCtes, Object, FieldMeta<T>, SR, FT, FS, FS, JT, JS, JS, WR, WA, Object, Object, Object, Object>
+abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS, TR, WR, WA>
+        extends JoinableUpdate.WithMultiUpdate<I, PostgreCtes, Object, FieldMeta<T>, SR, FT, FS, FS, JT, JS, JS, WR, WA, Object, Object, Object, Object>
         implements PostgreUpdate, _PostgreUpdate
         , PostgreStatement._TableSampleClause<TR>
         , PostgreStatement._RepeatableClause<FS>
@@ -360,7 +361,6 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
     private static abstract class SimpleUpdate<I extends Item, Q extends Item, T>
             extends PostgreUpdates<
             I,
-            Q,
             T,
             PostgreUpdate._SingleFromSpec<I, Q, T>,
             PostgreUpdate._TableSampleJoinSpec<I, Q>,
@@ -506,6 +506,30 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
         }
 
         @Override
+        public final Q asReturningUpdate() {
+            final List<Selection> returningList = this.returningList;
+            if (!(returningList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.endUpdateStatement();
+            this.returningList = _CollectionUtils.unmodifiableList(returningList);
+            return this.onAsReturningUpdate();
+        }
+
+        @Override
+        final I onAsUpdate() {
+            if (this.returningList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.returningList = Collections.emptyList();
+            return this.onAsPostgreUpdate();
+        }
+
+        abstract Q onAsReturningUpdate();
+
+        abstract I onAsPostgreUpdate();
+
+        @Override
         final _TableSampleOnSpec<I, Q> createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
                 , TableMeta<?> table, String tableAlias) {
             if (modifier != null && modifier != SQLs.ONLY) {
@@ -564,7 +588,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
         }
 
         @Override
-        I onAsUpdate() {
+        I onAsPostgreUpdate() {
             return this.dmlFunction.apply(this);
         }
 
@@ -589,9 +613,8 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
             this.materializedOption = clause.materializedOption;
         }
 
-
         @Override
-        I onAsUpdate() {
+        I onAsPostgreUpdate() {
             final PostgreSupports.MaterializedOption option = this.materializedOption;
             return this.function.apply(option == null ? this : new PostgreSupports.PostgreSubStatement(option, this));
         }
@@ -626,7 +649,6 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
     private static final class BatchUpdate<I extends Item, Q extends Item, T>
             extends PostgreUpdates<
             I,
-            Q,
             T,
             PostgreUpdate._BatchSingleFromSpec<I, Q, T>,
             PostgreUpdate._BatchTableSampleJoinSpec<I, Q>,
@@ -640,6 +662,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
             , PostgreUpdate._BatchTableSampleJoinSpec<I, Q>
             , PostgreUpdate._BatchRepeatableJoinClause<I, Q>
             , PostgreUpdate._BatchSingleWhereAndSpec<I, Q>
+            , _DqlUpdateSpec<Q>
             , Update, ReturningUpdate, _BatchDml {
 
         private final Function<Update, I> dmlFunction;
@@ -759,6 +782,17 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
         }
 
         @Override
+        public Q asReturningUpdate() {
+            final List<Selection> returningList = this.returningList;
+            if (!(returningList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.endUpdateStatement();
+            this.returningList = _CollectionUtils.unmodifiableList(returningList);
+            return this.dqlFunction.apply(this);
+        }
+
+        @Override
         _BatchTableSampleOnSpec<I, Q> createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
                 , TableMeta<?> table, String tableAlias) {
             if (modifier != null && modifier != SQLs.ONLY) {
@@ -787,13 +821,11 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
 
         @Override
         I onAsUpdate() {
+            if (this.returningList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.returningList = Collections.emptyList();
             return this.dmlFunction.apply(this);
-        }
-
-
-        @Override
-        Q onAsReturningUpdate() {
-            return this.dqlFunction.apply(this);
         }
 
 

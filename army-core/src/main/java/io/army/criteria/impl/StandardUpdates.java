@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.criteria.impl.inner._ItemPair;
+import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
@@ -26,12 +27,12 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 
-abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA>
-        extends SingleUpdate<Update, Item, F, PS, SR, SD, WR, WA, Object, Object>
+abstract class StandardUpdates<I extends Item, F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA>
+        extends SingleUpdate<I, F, PS, SR, SD, WR, WA, Object, Object, Object, Object>
         implements StandardUpdate, Update {
 
-    static _SingleUpdateClause simpleSingle() {
-        return new SimpleSingleUpdateClause();
+    static <I extends Item> _SingleUpdateClause<I> simpleSingle(Function<Update, I> function) {
+        return new PrimarySimpleSingleUpdateClause<>(function);
     }
 
     static _DomainUpdateClause simpleDomain() {
@@ -52,19 +53,9 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
         super(context, updateTable, tableAlias);
     }
 
-    @Override
-    public final String toString() {
-        final String s;
-        if (this.isPrepared()) {
-            s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
-        } else {
-            s = super.toString();
-        }
-        return s;
-    }
 
     @Override
-    final Update onAsUpdate() {
+    final I onAsUpdate() {
         if (this instanceof SimpleDomainUpdate) {
             final List<_ItemPair> childItemList = ((SimpleDomainUpdate<F>) this).childItemPairList;
             if (childItemList == null) {
@@ -83,8 +74,10 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
                 && ((BatchSingleUpdate<F>) this).paramList == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return this;
+        return this.onAsStandardUpdate();
     }
+
+    abstract I onAsStandardUpdate();
 
 
     @Override
@@ -98,15 +91,21 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
         }
     }
 
+    @Override
+    final Dialect statementDialect() {
+        return MySQLDialect.MySQL57;
+    }
 
-    private static class SimpleSingleUpdate<F extends TableField> extends StandardUpdates<
+    private static abstract class SimpleSingleUpdate<I extends Item, F extends TableField> extends StandardUpdates<
+            I,
             F,
             ItemPairs<F>,
-            _WhereSpec<Update, F>,
-            _StandardWhereClause<Update>,
-            _DmlUpdateSpec<Update>,
-            _WhereAndSpec<Update>>
-            implements _WhereSpec<Update, F>, _WhereAndSpec<Update> {
+            _WhereSpec<I, F>,
+            _StandardWhereClause<I>,
+            _DmlUpdateSpec<I>,
+            _WhereAndSpec<I>>
+            implements _WhereSpec<I, F>, _WhereAndSpec<I> {
+
 
         private SimpleSingleUpdate(CriteriaContext context, TableMeta<?> table, String tableAlias) {
             super(context, table, tableAlias);
@@ -121,8 +120,27 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
 
     }//StandardSingleUpdate
 
+    private static final class PrimarySimpleSingleUpdate<I extends Item, F extends TableField>
+            extends SimpleSingleUpdate<I, F> {
 
-    private static final class SimpleDomainUpdate<F extends TableField> extends SimpleSingleUpdate<F>
+        private final Function<Update, I> function;
+
+        private PrimarySimpleSingleUpdate(CriteriaContext context, TableMeta<?> table
+                , String tableAlias, Function<Update, I> function) {
+            super(context, table, tableAlias);
+            this.function = function;
+        }
+
+        @Override
+        I onAsStandardUpdate() {
+            return this.function.apply(this);
+        }
+
+
+    }//PrimarySimpleSingleUpdate
+
+
+    private static final class SimpleDomainUpdate<F extends TableField> extends SimpleSingleUpdate<Update, F>
             implements _DomainUpdate {
 
         private List<_ItemPair> childItemPairList;
@@ -131,18 +149,30 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
             super(context, table, tableAlias);
         }
 
-
         @Override
-        void onAddChildItem(final SQLs.FieldItemPair pair) {
+        void onAddChildItemPair(SQLs.ArmyItemPair pair) {
             List<_ItemPair> childItemPairList = this.childItemPairList;
             if (childItemPairList == null) {
-                childItemPairList = new ArrayList<>();
-                this.childItemPairList = childItemPairList;
+                this.childItemPairList = childItemPairList = new ArrayList<>();
             } else if (!(childItemPairList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             childItemPairList.add(pair);
         }
+
+        @Override
+        Update onAsStandardUpdate() {
+            final List<_ItemPair> list = this.childItemPairList;
+            if (list == null) {
+                this.childItemPairList = Collections.emptyList();
+            } else if (list instanceof ArrayList) {
+                this.childItemPairList = _CollectionUtils.unmodifiableList(list);
+            } else {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return this;
+        }
+
 
         @Override
         public List<_ItemPair> childItemPairList() {
@@ -165,6 +195,7 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
      * @since 1.0
      */
     private static class BatchSingleUpdate<F extends TableField> extends StandardUpdates<
+            Update,
             F,
             BatchItemPairs<F>,
             _BatchWhereSpec<Update, F>,
@@ -197,17 +228,22 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
         }
 
         @Override
-        final BatchItemPairs<F> createItemPairBuilder(Consumer<ItemPair> consumer) {
-            return CriteriaSupports.batchItemPairs(consumer);
-        }
-
-        @Override
         public final List<?> paramList() {
             final List<?> list = this.paramList;
             if (list == null || list instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             return list;
+        }
+
+        @Override
+        final BatchItemPairs<F> createItemPairBuilder(Consumer<ItemPair> consumer) {
+            return CriteriaSupports.batchItemPairs(consumer);
+        }
+
+        @Override
+        Update onAsStandardUpdate() {
+            return this;
         }
 
 
@@ -224,15 +260,19 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
         }
 
         @Override
-        void onAddChildItem(final SQLs.FieldItemPair pair) {
+        void onAddChildItemPair(SQLs.ArmyItemPair pair) {
             List<_ItemPair> childItemPairList = this.childItemPairList;
             if (childItemPairList == null) {
-                childItemPairList = new ArrayList<>();
-                this.childItemPairList = childItemPairList;
+                this.childItemPairList = childItemPairList = new ArrayList<>();
             } else if (!(childItemPairList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             childItemPairList.add(pair);
+        }
+
+        @Override
+        Update onAsStandardUpdate() {
+            return this;
         }
 
         @Override
@@ -248,28 +288,32 @@ abstract class StandardUpdates<F extends TableField, PS extends Update._ItemPair
     }//BatchDomainUpdate
 
 
-    private static final class SimpleSingleUpdateClause implements _SingleUpdateClause {
+    private static final class PrimarySimpleSingleUpdateClause<I extends Item> implements _SingleUpdateClause<I> {
 
 
         private final CriteriaContext context;
 
-        private SimpleSingleUpdateClause() {
+        private final Function<Update, I> function;
+
+        private PrimarySimpleSingleUpdateClause(Function<Update, I> function) {
             this.context = CriteriaContexts.primarySingleDmlContext();
             ContextStack.push(this.context);
+            this.function = function;
         }
 
         @Override
-        public <T> _StandardSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias) {
-            return new SimpleSingleUpdate<>(this.context, table, tableAlias);
+        public <T> _StandardSetClause<I, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias) {
+            return new PrimarySimpleSingleUpdate<>(this.context, table, tableAlias, this.function);
         }
 
         @Override
-        public <P> _StandardSetClause<Update, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias) {
-            return new SimpleSingleUpdate<>(this.context, table, tableAlias);
+        public <P> _StandardSetClause<I, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias) {
+            return new PrimarySimpleSingleUpdate<>(this.context, table, tableAlias, this.function);
         }
 
 
-    }//SimpleSingleUpdateClause
+    }//PrimarySimpleSingleUpdateClause
+
 
     private static final class SimpleDomainUpdateClause implements _DomainUpdateClause {
 

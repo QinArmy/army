@@ -1,11 +1,13 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.CteBuilderSpec;
+import io.army.criteria.DialectStatement;
+import io.army.criteria.Item;
+import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._MultiDelete;
+import io.army.criteria.impl.inner._Delete;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._TableBlock;
-import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.util._Assert;
 
@@ -19,9 +21,10 @@ import java.util.function.Consumer;
  * This class is base class of multi-table delete implementation.
  * </p>
  */
-abstract class MultiDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
+abstract class JoinableDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
         extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, Object, Object, Object, Object>
-        implements _MultiDelete
+        implements _Delete
+        , _Statement._JoinableStatement
         , Statement._DmlDeleteSpec<I>
         , Statement {
 
@@ -31,7 +34,7 @@ abstract class MultiDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
     private List<_TableBlock> tableBlockList;
 
 
-    MultiDelete(CriteriaContext context) {
+    JoinableDelete(CriteriaContext context) {
         super(context);
         ContextStack.push(this.context);
     }
@@ -73,18 +76,6 @@ abstract class MultiDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
         return list;
     }
 
-    @Override
-    public final String toString() {
-        final String s;
-        if (this instanceof PrimaryStatement && this.isPrepared()) {
-            s = this.mockAsString(this.statementDialect(), Visible.ONLY_VISIBLE, true);
-        } else {
-            s = super.toString();
-        }
-        return s;
-    }
-
-    abstract Dialect statementDialect();
 
     abstract I onAsDelete();
 
@@ -106,15 +97,15 @@ abstract class MultiDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
     }
 
 
-    static abstract class WithMultiDelete<I extends Item, B extends CteBuilderSpec, WE, FT, FS, FC, JT, JS, JC, WR, WA>
-            extends MultiDelete<I, FT, FS, FC, JT, JS, JC, WR, WA> implements DialectStatement._DynamicWithClause<B, WE>
+    static abstract class WithJoinableDelete<I extends Item, B extends CteBuilderSpec, WE, FT, FS, FC, JT, JS, JC, WR, WA>
+            extends JoinableDelete<I, FT, FS, FC, JT, JS, JC, WR, WA> implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
 
         private boolean recursive;
 
         private List<_Cte> cteList;
 
-        WithMultiDelete(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
+        WithJoinableDelete(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
             super(context);
             if (withSpec != null) {
                 this.recursive = withSpec.isRecursive();

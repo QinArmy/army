@@ -1,11 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.Expression;
+import io.army.criteria.SortItem;
+import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Statement;
-import io.army.dialect.Dialect;
-import io.army.dialect.DialectParser;
-import io.army.dialect._MockDialects;
-import io.army.stmt.Stmt;
 import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
@@ -13,7 +11,8 @@ import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
-abstract class OrderByClause<OR> implements CriteriaContextSpec
+abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
+        implements CriteriaContextSpec
         , Statement._StaticOrderByClause<OR>
         , Statement._StaticOrderByNullsCommaClause<OR>
         , _Statement._OrderByListSpec
@@ -24,6 +23,7 @@ abstract class OrderByClause<OR> implements CriteriaContextSpec
     private List<ArmySortItem> orderByList;
 
     OrderByClause(CriteriaContext context) {
+        super(context);
         this.context = context;
     }
 
@@ -124,39 +124,6 @@ abstract class OrderByClause<OR> implements CriteriaContextSpec
         return (OR) this;
     }
 
-    @Override
-    public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-        final DialectParser parser;
-        parser = _MockDialects.from(dialect);
-        final Stmt stmt;
-        stmt = this.parseStatement(parser, visible);
-        return parser.printStmt(stmt, none);
-    }
-
-    @Override
-    public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-        return this.parseStatement(_MockDialects.from(dialect), visible);
-    }
-
-
-    private Stmt parseStatement(final DialectParser parser, final Visible visible) {
-        if (!(this instanceof PrimaryStatement)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        final Stmt stmt;
-        if (this instanceof Select) {
-            stmt = parser.select((Select) this, visible);
-        } else if (this instanceof Update) {
-            stmt = parser.update((Update) this, visible);
-        } else if (this instanceof Delete) {
-            stmt = parser.delete((Delete) this, visible);
-        } else if (this instanceof DialectStatement) {
-            stmt = parser.dialectStmt((DialectStatement) this, visible);
-        } else {
-            throw new IllegalStateException("unknown statement");
-        }
-        return stmt;
-    }
 
     @Override
     public final List<? extends SortItem> orderByList() {

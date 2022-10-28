@@ -63,5 +63,14 @@ public interface _Statement {
 
     }
 
+    interface _JoinableStatement extends _Statement {
+
+        /**
+         * @return a unmodifiable list
+         */
+        List<_TableBlock> tableBlockList();
+
+    }
+
 
 }

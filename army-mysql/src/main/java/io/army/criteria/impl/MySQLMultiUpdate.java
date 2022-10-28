@@ -27,7 +27,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiUpdate<I extends Item, WE, UT, PS extends Update._ItemPairBuilder, SR, FS, JT, JS, WR, WA>
-        extends MultiUpdate.WithMultiUpdate<I, Item, MySQLCteBuilder, WE, TableField, PS, SR, UT, FS, FS, JT, JS, JS, WR, WA, Object, Object>
+        extends JoinableUpdate.WithMultiUpdate<I, Item, MySQLCteBuilder, WE, TableField, PS, SR, UT, FS, FS, JT, JS, JS, WR, WA, Object, Object>
         implements Update, _MySQLMultiUpdate, MySQLUpdate
         , MySQLQuery._IndexHintForJoinClause<UT> {
 

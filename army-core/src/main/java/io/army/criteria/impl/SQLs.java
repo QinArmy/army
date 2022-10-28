@@ -48,8 +48,8 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    public static StandardUpdate._SingleUpdateClause singleUpdate() {
-        return StandardUpdates.simpleSingle();
+    public static StandardUpdate._SingleUpdateClause<Update> singleUpdate() {
+        return StandardUpdates.simpleSingle(SQLs::_identity);
     }
 
 
@@ -77,7 +77,7 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    public static StandardDelete._DeleteSpec<Delete> singleDelete() {
+    public static StandardDelete._StandardDeleteClause<Delete> singleDelete() {
         return StandardDeletes.singleDelete();
     }
 
@@ -86,7 +86,7 @@ public abstract class SQLs extends StandardSyntax {
      * Batch domain delete
      * </p>
      */
-    public static StandardDelete._BatchDeleteSpec<Delete> batchSingleDelete() {
+    public static StandardDelete._BatchDeleteClause<Delete> batchSingleDelete() {
         return StandardDeletes.batchSingleDelete();
     }
 

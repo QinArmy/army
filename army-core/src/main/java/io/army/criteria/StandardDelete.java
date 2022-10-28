@@ -10,7 +10,9 @@ public interface StandardDelete extends StandardStatement {
 
     }
 
-    interface _DeleteSpec<I extends Item> extends _DeleteFromClause<_WhereSpec<I>> {
+
+    interface _WhereAndSpec<I extends Item> extends _WhereAndClause<_WhereAndSpec<I>>
+            , _DmlDeleteSpec<I> {
 
     }
 
@@ -19,12 +21,13 @@ public interface StandardDelete extends StandardStatement {
 
     }
 
-    interface _WhereAndSpec<I extends Item> extends _WhereAndClause<_WhereAndSpec<I>>
-            , _DmlDeleteSpec<I> {
+
+    interface _StandardDeleteClause<I extends Item> extends _DeleteFromClause<_WhereSpec<I>> {
 
     }
 
-    interface _BatchDeleteSpec<I extends Item> extends _DeleteFromClause<_BatchWhereSpec<I>> {
+    interface _BatchWhereAndSpec<I extends Item> extends _WhereAndClause<_BatchWhereAndSpec<I>>
+            , _BatchParamClause<_DmlDeleteSpec<I>> {
 
     }
 
@@ -33,8 +36,8 @@ public interface StandardDelete extends StandardStatement {
 
     }
 
-    interface _BatchWhereAndSpec<I extends Item> extends _WhereAndClause<_BatchWhereAndSpec<I>>
-            , _BatchParamClause<_DmlDeleteSpec<I>> {
+
+    interface _BatchDeleteClause<I extends Item> extends _DeleteFromClause<_BatchWhereSpec<I>> {
 
     }
 

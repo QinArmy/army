@@ -27,7 +27,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends Item, JT, JS, WR, WA>
-        extends MultiDelete.WithMultiDelete<I, Item, MySQLCteBuilder, WE, FT, FS, FS, JT, JS, JS, WR, WA>
+        extends JoinableDelete.WithJoinableDelete<I, Item, MySQLCteBuilder, WE, FT, FS, FS, JT, JS, JS, WR, WA>
         implements MySQLDelete, _MySQLMultiDelete
         , MySQLDelete._MultiDeleteFromAliasClause<FU>
         , MySQLDelete._MultiDeleteHintClause<DH>

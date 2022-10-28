@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Dml;
+import io.army.criteria.impl.inner._DmlStatement;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.function.TeExpression;
 import io.army.function.TePredicate;
@@ -23,7 +23,7 @@ import java.util.function.*;
 @SuppressWarnings("unchecked")
 abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         extends JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
-        implements Statement, Statement._WhereClause<C, WR, WA>, Update._UpdateWhereAndClause<C, WA>, _Dml {
+        implements Statement, Statement._WhereClause<C, WR, WA>, Update._UpdateWhereAndClause<C, WA>, _DmlStatement {
 
 
     private List<_Predicate> predicateList = new ArrayList<>();

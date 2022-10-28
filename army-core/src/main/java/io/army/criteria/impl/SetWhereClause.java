@@ -38,12 +38,13 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
     /**
      * @param tableAlias for {@link SingleUpdate} non-null and  non-empty,for other non-null
      */
-    SetWhereClause(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
+    SetWhereClause(CriteriaContext context, @Nullable TableMeta<?> updateTable, @Nullable String tableAlias) {
         super(context);
+        assert updateTable != null;
+        assert tableAlias != null;
         this.updateTable = updateTable;
         this.tableAlias = tableAlias;
-        assert this.updateTable != null;
-        assert this.tableAlias != null;
+
     }
 
 
