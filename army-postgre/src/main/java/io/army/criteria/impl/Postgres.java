@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
+import io.army.criteria.postgre.PostgreDelete;
 import io.army.criteria.postgre.PostgreInsert;
 import io.army.criteria.postgre.PostgreQuery;
 import io.army.criteria.postgre.PostgreUpdate;
@@ -47,6 +48,14 @@ public abstract class Postgres extends PostgreFuncSyntax {
 
     public static PostgreUpdate._BatchSingleWithSpec<Update, ReturningUpdate> batchSingleUpdate() {
         return PostgreUpdates.batch(SQLs::_identity, SQLs::_identity);
+    }
+
+    public static PostgreDelete._SingleWithSpec<Delete, ReturningDelete> singleDelete() {
+        return PostgreDeletes.primarySingle(SQLs::_identity, SQLs::_identity);
+    }
+
+    public static PostgreDelete._BatchSingleWithSpec<Delete, ReturningDelete> batchSingleDelete() {
+        return PostgreDeletes.batch(SQLs::_identity, SQLs::_identity);
     }
 
 

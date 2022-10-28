@@ -291,6 +291,10 @@ abstract class MultiUpdate<I extends Item, Q extends Item, F extends DataField, 
         //no-op
     }
 
+    void onStatementEnd() {
+        //no-op
+    }
+
     final SR onAddItemPair(final ItemPair pair) {
         if (!(pair instanceof SQLs.ArmyItemPair)) {
             String m = String.format("unknown %s[%s]", ItemPair.class.getName(), _ClassUtils.safeClassName(pair));
@@ -321,6 +325,7 @@ abstract class MultiUpdate<I extends Item, Q extends Item, F extends DataField, 
             throw ContextStack.criteriaError(this.context, _Exceptions::dmlNoWhereClause);
         }
 
+        this.onStatementEnd();
         this.tableBlockList = context.endContext();
 
         ContextStack.pop(context);

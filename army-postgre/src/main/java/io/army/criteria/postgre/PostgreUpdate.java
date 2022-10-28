@@ -8,6 +8,14 @@ import io.army.criteria.impl.SQLs;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
+/**
+ * <p>
+ * This interface representing Postgre UPDATE syntax.
+ * </p>
+ *
+ * @see <a href="https://www.postgresql.org/docs/current/sql-update.html">Postgre UPDATE syntax</a>
+ * @since 1.0
+ */
 public interface PostgreUpdate extends PostgreStatement {
 
 
@@ -140,7 +148,6 @@ public interface PostgreUpdate extends PostgreStatement {
     }
 
     /*-------------------below batch syntax -------------------*/
-
 
 
     interface _BatchStaticReturningCommaSpec<Q extends Item>

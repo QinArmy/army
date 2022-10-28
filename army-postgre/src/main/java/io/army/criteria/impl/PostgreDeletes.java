@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.postgre._PostgreDelete;
 import io.army.criteria.postgre.*;
@@ -10,10 +11,20 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.*;
 
-abstract class PostgreDeletes<I extends Item, Q extends Item, WE, FT, FS extends Item, JT, JS, TR, WR, WA>
+/**
+ * <p>
+ * This class is the implementation of Postgre DELETE synatx.
+ * </p>
+ *
+ * @see PostgreDelete
+ * @since 1.0
+ */
+@SuppressWarnings("unchecked")
+abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS extends Item, JT, JS, TR, WR, WA>
         extends MultiDelete.WithMultiDelete<I, Q, PostgreCteBuilder, WE, FT, FS, FS, JT, JS, JS, WR, WA>
         implements PostgreDelete, _PostgreDelete
         , PostgreStatement._TableSampleClause<TR>
@@ -22,13 +33,36 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, FT, FS extends
         , PostgreStatement._JoinNestedClause<PostgreStatement._NestedLeftParenSpec<Statement._OnClause<FS>>>
         , PostgreStatement._CrossJoinNestedClause<PostgreStatement._NestedLeftParenSpec<FS>>
         , PostgreStatement._PostgreDynamicJoinClause<FS>
-        , PostgreStatement._PostgreDynamicCrossJoinClause<FS> {
+        , PostgreStatement._PostgreDynamicCrossJoinClause<FS>
+        , PostgreDelete._PostgreDeleteClause<DR> {
 
 
-    static <I extends Item> PostgreDelete._DynamicSubMaterializedSpec<I> dynamicCteDelete(CriteriaContext outerContext
-            , Function<SubStatement, I> function) {
-        throw new UnsupportedOperationException();
+    static <I extends Item, Q extends Item> _SingleWithSpec<I, Q> primarySingle(
+            Function<Delete, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
+        return new PrimarySimpleDelete<>(dmlFunction, dqlFunction);
     }
+
+    static <I extends Item, Q extends Item> _BatchSingleWithSpec<I, Q> batch(
+            Function<Delete, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
+        return new BatchDelete<>(dmlFunction, dqlFunction);
+    }
+
+
+    static <I extends Item> _DynamicSubMaterializedSpec<I> dynamicCteDelete(CriteriaContext outerContext
+            , Function<SubStatement, I> function) {
+        return new DynamicSubSimpleDelete<>(outerContext, function);
+    }
+
+    static <I extends Item> _StaticSubMaterializedSpec<I> staticCteDelete(CriteriaContext outerContext
+            , Function<SubStatement, I> function) {
+        return new StaticSubSimpleDelete<>(outerContext, function);
+    }
+
+    static <I extends Item> _SingleWithSpec<I, I> singleForMultiStmt(_WithClauseSpec withSpec
+            , Function<PrimaryStatement, I> function) {
+        return new PrimarySimpleDeleteForMultiStmt<>(withSpec, function);
+    }
+
 
     private SQLWords modifier;
 
@@ -42,6 +76,31 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, FT, FS extends
         super(withSpec, context);
     }
 
+    @Override
+    public final DR delete(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+        if (this.updateTable != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        assert wordAs == SQLs.AS;
+        this.modifier = null;
+        this.updateTable = table;
+        this.tableAlias = tableAlias;
+        return (DR) this;
+    }
+
+    @Override
+    public final DR delete(SQLs.WordOnly wordOnly, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+        if (this.updateTable != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        } else if (wordOnly != SQLs.ONLY) {
+            throw CriteriaUtils.dontSupportTabularModifier(this.context, wordOnly);
+        }
+        assert wordAs == SQLs.AS;
+        this.modifier = wordOnly;
+        this.updateTable = table;
+        this.tableAlias = tableAlias;
+        return (DR) this;
+    }
 
     @Override
     public final TR tableSample(Expression method) {
@@ -283,7 +342,6 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, FT, FS extends
         return (FS) this;
     }
 
-
     final _OnClause<FS> nestedJoinEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertStandardJoinType();
 
@@ -291,6 +349,12 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, FT, FS extends
         block = new OnClauseTableBlock<>(joinType, nestedItems, "", (FS) this);
         this.blockConsumer.accept(block);
         return block;
+    }
+
+    @Override
+    final void onEndStatement() {
+        this.noOnBlock = null;
+
     }
 
     @Override
@@ -312,11 +376,48 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, FT, FS extends
     }
 
 
+    private static final class SimpleComma<I extends Item, Q extends Item> implements _CteComma<I, Q> {
+
+        private final boolean recursive;
+
+        private final SimpleDelete<I, Q> statement;
+
+        private final Function<String, _StaticCteLeftParenSpec<_CteComma<I, Q>>> function;
+
+        private SimpleComma(boolean recursive, SimpleDelete<I, Q> statement) {
+            this.recursive = recursive;
+            this.statement = statement;
+            this.function = PostgreQueries.complexCte(statement.context, this);
+        }
+
+        @Override
+        public _StaticCteLeftParenSpec<_CteComma<I, Q>> comma(String name) {
+            return this.function.apply(name);
+        }
+
+        @Override
+        public _SingleUsingSpec<I, Q> delete(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+            return this.statement.endStaticWithClause(this.recursive)
+                    .delete(table, wordAs, tableAlias);
+        }
+
+        @Override
+        public _SingleUsingSpec<I, Q> delete(SQLs.WordOnly wordOnly, TableMeta<?> table, SQLs.WordAs wordAs
+                , String tableAlias) {
+            return this.statement.endStaticWithClause(this.recursive)
+                    .delete(wordOnly, table, wordAs, tableAlias);
+        }
+
+
+    }//SimpleComma
+
+
     private static abstract class SimpleDelete<I extends Item, Q extends Item>
             extends PostgreDeletes<
             I,
             Q,
             PostgreDelete._SingleDeleteClause<I, Q>,
+            PostgreDelete._SingleUsingSpec<I, Q>,
             PostgreDelete._TableSampleJoinSpec<I, Q>,
             PostgreDelete._SingleJoinSpec<I, Q>,
             PostgreDelete._TableSampleOnSpec<I, Q>,
@@ -331,122 +432,197 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, FT, FS extends
             , PostgreDelete._SingleWhereAndSpec<I, Q>
             , PostgreDelete._StaticReturningCommaSpec<Q> {
 
+        private List<Selection> returningList;
+
         private SimpleDelete(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
             super(withSpec, context);
         }
 
         @Override
         public final _StaticCteLeftParenSpec<_CteComma<I, Q>> with(String name) {
-            return null;
+            final boolean recursive = false;
+            this.context.onBeforeWithClause(recursive);
+            return new SimpleComma<>(recursive, this).function.apply(name);
         }
 
         @Override
         public final _StaticCteLeftParenSpec<_CteComma<I, Q>> withRecursive(String name) {
-            return null;
-        }
-
-        @Override
-        public final _SingleUsingSpec<I, Q> delete(TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
-            return null;
-        }
-
-        @Override
-        public final _SingleUsingSpec<I, Q> delete(StandardSyntax.WordOnly wordOnly, TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
-            return null;
+            final boolean recursive = true;
+            this.context.onBeforeWithClause(recursive);
+            return new SimpleComma<>(recursive, this).function.apply(name);
         }
 
         @Override
         public final _ReturningSpec<I, Q> whereCurrentOf(String cursorName) {
-            return null;
+            this.where(new PostgreCursorPredicate(cursorName));
+            return this;
         }
 
         @Override
         public final _DqlDeleteSpec<Q> returningAll() {
-            return null;
+            this.returningList = PostgreSupports.RETURNING_ALL;
+            return this;
         }
 
         @Override
         public final _DqlDeleteSpec<Q> returning(Consumer<ReturningBuilder> consumer) {
-            return null;
+            consumer.accept(CriteriaSupports.returningBuilder(this::onAddSelection));
+            if (this.returningList == null) {
+                throw CriteriaUtils.returningListIsEmpty(this.context);
+            }
+            return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> returning(Selection selection) {
-            return null;
+            this.onAddSelection(selection);
+            return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(Expression expression, StandardSyntax.WordAs wordAs, String alias) {
-            return null;
+        public final _StaticReturningCommaSpec<Q> returning(Expression expression, SQLs.WordAs wordAs, String alias) {
+            assert wordAs == SQLs.AS;
+            this.onAddSelection(Selections.forExp(expression, alias));
+            return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> returning(Supplier<Selection> supplier) {
-            return null;
+            this.onAddSelection(supplier.get());
+            return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2) {
-            return null;
+            this.onAddSelection(exp1)
+                    .add(exp2);
+            return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3) {
-            return null;
+        public final _StaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2
+                , NamedExpression exp3) {
+            final List<Selection> list;
+            list = this.onAddSelection(exp1);
+            list.add(exp2);
+            list.add(exp3);
+            return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4) {
-            return null;
+        public final _StaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2
+                , NamedExpression exp3, NamedExpression exp4) {
+            final List<Selection> list;
+            list = this.onAddSelection(exp1);
+            list.add(exp2);
+            list.add(exp3);
+            list.add(exp4);
+            return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> comma(Selection selection) {
-            return null;
+            this.onAddSelection(selection);
+            return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(Expression expression, StandardSyntax.WordAs wordAs, String alias) {
-            return null;
+        public final _StaticReturningCommaSpec<Q> comma(Expression expression, SQLs.WordAs wordAs, String alias) {
+            this.onAddSelection(Selections.forExp(expression, alias));
+            return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> comma(Supplier<Selection> supplier) {
-            return null;
+            this.onAddSelection(supplier.get());
+            return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2) {
-            return null;
+            this.onAddSelection(exp1)
+                    .add(exp2);
+            return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3) {
-            return null;
+        public final _StaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2
+                , NamedExpression exp3) {
+            final List<Selection> list;
+            list = this.onAddSelection(exp1);
+            list.add(exp2);
+            list.add(exp3);
+            return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4) {
-            return null;
+        public final _StaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2
+                , NamedExpression exp3, NamedExpression exp4) {
+            final List<Selection> list;
+            list = this.onAddSelection(exp1);
+            list.add(exp2);
+            list.add(exp3);
+            list.add(exp4);
+            return this;
         }
 
         @Override
-        final _TableSampleOnSpec<I, Q> createTableBlock(_JoinType joinType, Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
-            return null;
+        final _TableSampleOnSpec<I, Q> createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
+                , TableMeta<?> table, String tableAlias) {
+            if (modifier != null && modifier != SQLs.ONLY) {
+                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            }
+            return new SimpleOnTableBlock<>(joinType, modifier, table, tableAlias, this);
         }
 
         @Override
-        final _OnClause<_SingleJoinSpec<I, Q>> createItemBlock(_JoinType joinType, Query.TabularModifier modifier, TabularItem tableItem, String alias) {
-            return null;
+        final _OnClause<_SingleJoinSpec<I, Q>> createItemBlock(_JoinType joinType
+                , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
+            if (modifier != null && modifier != SQLs.LATERAL) {
+                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            }
+            return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
         }
 
         @Override
-        final _OnClause<_SingleJoinSpec<I, Q>> createCteBlock(_JoinType joinType, Query.TabularModifier modifier, TabularItem tableItem, String alias) {
-            return null;
+        final _OnClause<_SingleJoinSpec<I, Q>> createCteBlock(_JoinType joinType
+                , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
+            if (modifier != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
+        }
+
+        private List<Selection> onAddSelection(Selection selection) {
+            List<Selection> list = this.returningList;
+            if (list == null) {
+                this.returningList = list = new ArrayList<>();
+            } else if (!(list instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            list.add(selection);
+            return list;
         }
 
 
     }//SimpleDelete
+
+    private static final class SimpleOnTableBlock<I extends Item, Q extends Item>
+            extends PostgreSupports.PostgreOnTableBlock<
+            PostgreDelete._RepeatableOnClause<I, Q>,
+            Statement._OnClause<PostgreDelete._SingleJoinSpec<I, Q>>,
+            PostgreDelete._SingleJoinSpec<I, Q>>
+            implements PostgreDelete._TableSampleOnSpec<I, Q>
+            , PostgreDelete._RepeatableOnClause<I, Q> {
+
+        private SimpleOnTableBlock(_JoinType joinType, @Nullable SQLWords modifier
+                , TableMeta<?> tableItem, String alias
+                , PostgreDelete._SingleJoinSpec<I, Q> stmt) {
+            super(joinType, modifier, tableItem, alias, stmt);
+        }
+
+
+    }//SimpleOnTableBlock
 
     private static final class PrimarySimpleDelete<I extends Item, Q extends Item>
             extends SimpleDelete<I, Q>
@@ -456,9 +632,8 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, FT, FS extends
 
         private final Function<ReturningDelete, Q> dqlFunction;
 
-        private PrimarySimpleDelete(@Nullable _WithClauseSpec withSpec, CriteriaContext context
-                , Function<Delete, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
-            super(withSpec, context);
+        private PrimarySimpleDelete(Function<Delete, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
+            super(null, CriteriaContexts.joinableSingleDmlContext(null));
             this.dmlFunction = dmlFunction;
             this.dqlFunction = dqlFunction;
         }
@@ -476,6 +651,31 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, FT, FS extends
 
     }//PrimarySimpleDelete
 
+    private static final class PrimarySimpleDeleteForMultiStmt<I extends Item>
+            extends SimpleDelete<I, I>
+            implements Delete, ReturningDelete {
+
+        private final Function<PrimaryStatement, I> function;
+
+
+        private PrimarySimpleDeleteForMultiStmt(_WithClauseSpec withSpec, Function<PrimaryStatement, I> function) {
+            super(withSpec, CriteriaContexts.joinableSingleDmlContext(null));
+            this.function = function;
+        }
+
+        @Override
+        I onAsDelete() {
+            return this.function.apply(this);
+        }
+
+        @Override
+        I onAsReturningDelete() {
+            return this.function.apply(this);
+        }
+
+
+    }//PrimarySimpleDeleteForMultiStmt
+
     private static abstract class SubSimpleDelete<I extends Item, MR> extends SimpleDelete<I, I>
             implements SubDelete, SubReturningDelete, _CteMaterializedClause<MR> {
 
@@ -483,9 +683,8 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, FT, FS extends
 
         private PostgreSupports.MaterializedOption materializedOption;
 
-        private SubSimpleDelete(@Nullable _WithClauseSpec withSpec, CriteriaContext context
-                , Function<SubStatement, I> function) {
-            super(withSpec, context);
+        private SubSimpleDelete(CriteriaContext outerContext, Function<SubStatement, I> function) {
+            super(null, CriteriaContexts.joinableSingleDmlContext(outerContext));
             this.function = function;
         }
 
@@ -523,16 +722,370 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, FT, FS extends
         }
 
         @Override
-        I onAsDelete() {
-            return this.function.apply(this);
+        final I onAsDelete() {
+            final PostgreSupports.MaterializedOption option = this.materializedOption;
+            return this.function.apply(option == null ? this : new PostgreSupports.PostgreSubStatement(option, this));
         }
 
         @Override
-        I onAsReturningDelete() {
-            return this.function.apply(this);
+        final I onAsReturningDelete() {
+            final PostgreSupports.MaterializedOption option = this.materializedOption;
+            return this.function.apply(option == null ? this : new PostgreSupports.PostgreSubStatement(option, this));
         }
 
     }//SubSimpleDelete
+
+    private static final class StaticSubSimpleDelete<I extends Item>
+            extends SubSimpleDelete<I, _SingleDeleteClause<I, I>>
+            implements _StaticSubMaterializedSpec<I> {
+
+        private StaticSubSimpleDelete(CriteriaContext outerContext, Function<SubStatement, I> function) {
+            super(outerContext, function);
+        }
+
+
+    }//StaticSubSimpleDelete
+
+    /**
+     * @see #dynamicCteDelete(CriteriaContext, Function)
+     */
+    private static final class DynamicSubSimpleDelete<I extends Item>
+            extends SubSimpleDelete<I, _SingleMinWithSpec<I, I>>
+            implements _DynamicSubMaterializedSpec<I> {
+
+        private DynamicSubSimpleDelete(CriteriaContext outerContext, Function<SubStatement, I> function) {
+            super(outerContext, function);
+        }
+
+
+    }//StaticSubSimpleDelete
+
+
+    /*-------------------below batch delete class  -------------------*/
+
+    private static final class BatchComma<I extends Item, Q extends Item> implements _BatchCteComma<I, Q> {
+
+        private final boolean recursive;
+
+        private final BatchDelete<I, Q> statement;
+
+        private final Function<String, _StaticCteLeftParenSpec<_BatchCteComma<I, Q>>> function;
+
+        private BatchComma(boolean recursive, BatchDelete<I, Q> statement) {
+            this.recursive = recursive;
+            this.statement = statement;
+            this.function = PostgreQueries.complexCte(statement.context, this);
+        }
+
+        @Override
+        public _StaticCteLeftParenSpec<_BatchCteComma<I, Q>> comma(String name) {
+            return this.function.apply(name);
+        }
+
+        @Override
+        public _BatchSingleUsingSpec<I, Q> delete(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+            return this.statement.endStaticWithClause(this.recursive)
+                    .delete(table, wordAs, tableAlias);
+        }
+
+        @Override
+        public _BatchSingleUsingSpec<I, Q> delete(SQLs.WordOnly wordOnly, TableMeta<?> table, SQLs.WordAs wordAs
+                , String tableAlias) {
+            return this.statement.endStaticWithClause(this.recursive)
+                    .delete(wordOnly, table, wordAs, tableAlias);
+        }
+
+    }//BatchComma
+
+    private static final class BatchDelete<I extends Item, Q extends Item>
+            extends PostgreDeletes<
+            I,
+            Q,
+            PostgreDelete._BatchSingleDeleteClause<I, Q>,
+            PostgreDelete._BatchSingleUsingSpec<I, Q>,
+            PostgreDelete._BatchTableSampleJoinSpec<I, Q>,
+            PostgreDelete._BatchSingleJoinSpec<I, Q>,
+            PostgreDelete._BatchTableSampleOnSpec<I, Q>,
+            _OnClause<PostgreDelete._BatchSingleJoinSpec<I, Q>>,
+            PostgreDelete._BatchRepeatableJoinClause<I, Q>,
+            PostgreDelete._BatchReturningSpec<I, Q>,
+            PostgreDelete._BatchSingleWhereAndSpec<I, Q>>
+            implements PostgreDelete._BatchSingleWithSpec<I, Q>
+            , PostgreDelete._BatchSingleUsingSpec<I, Q>
+            , PostgreDelete._BatchTableSampleJoinSpec<I, Q>
+            , PostgreDelete._BatchRepeatableJoinClause<I, Q>
+            , PostgreDelete._BatchSingleWhereAndSpec<I, Q>
+            , Delete, ReturningDelete, _BatchDml {
+
+        private final Function<Delete, I> dmlFunction;
+
+        private final Function<ReturningDelete, Q> dqlFunction;
+
+        private List<Selection> returningList;
+
+        private List<?> paramList;
+
+        private BatchDelete(Function<Delete, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
+            super(null, CriteriaContexts.joinableSingleDmlContext(null));
+            this.dmlFunction = dmlFunction;
+            this.dqlFunction = dqlFunction;
+        }
+
+        @Override
+        public _StaticCteLeftParenSpec<_BatchCteComma<I, Q>> with(String name) {
+            final boolean recursive = false;
+            this.context.onBeforeWithClause(recursive);
+            return new BatchComma<>(recursive, this).function.apply(name);
+        }
+
+        @Override
+        public _StaticCteLeftParenSpec<_BatchCteComma<I, Q>> withRecursive(String name) {
+            final boolean recursive = true;
+            this.context.onBeforeWithClause(recursive);
+            return new BatchComma<>(recursive, this).function.apply(name);
+        }
+
+        @Override
+        public _BatchReturningSpec<I, Q> whereCurrentOf(String cursorName) {
+            this.where(new PostgreCursorPredicate(cursorName));
+            return this;
+        }
+
+        @Override
+        public _BatchParamClause<_DqlDeleteSpec<Q>> returningAll() {
+            this.returningList = PostgreSupports.RETURNING_ALL;
+            return new BatchParamClause<>(this);
+        }
+
+        @Override
+        public _BatchParamClause<_DqlDeleteSpec<Q>> returning(Consumer<ReturningBuilder> consumer) {
+            consumer.accept(CriteriaSupports.returningBuilder(this::onAddSelection));
+            if (this.returningList == null) {
+                throw CriteriaUtils.returningListIsEmpty(this.context);
+            }
+            return new BatchParamClause<>(this);
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<Q> returning(Selection selection) {
+            this.onAddSelection(selection);
+            return new BatchParamClause<>(this);
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<Q> returning(Expression expression, SQLs.WordAs wordAs, String alias) {
+            this.onAddSelection(Selections.forExp(expression, alias));
+            return new BatchParamClause<>(this);
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<Q> returning(Supplier<Selection> supplier) {
+            this.onAddSelection(supplier.get());
+            return new BatchParamClause<>(this);
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2) {
+            this.onAddSelection(exp1)
+                    .add(exp2);
+            return new BatchParamClause<>(this);
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2
+                , NamedExpression exp3) {
+            final List<Selection> list;
+            list = this.onAddSelection(exp1);
+            list.add(exp2);
+            list.add(exp3);
+            return new BatchParamClause<>(this);
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2
+                , NamedExpression exp3, NamedExpression exp4) {
+            final List<Selection> list;
+            list = this.onAddSelection(exp1);
+            list.add(exp2);
+            list.add(exp3);
+            list.add(exp4);
+            return new BatchParamClause<>(this);
+        }
+
+        @Override
+        public <P> _DmlDeleteSpec<I> paramList(List<P> paramList) {
+            if (this.paramList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.paramList = CriteriaUtils.paramList(this.context, paramList);
+            return this;
+        }
+
+        @Override
+        public <P> _DmlDeleteSpec<I> paramList(Supplier<List<P>> supplier) {
+            this.paramList = CriteriaUtils.paramList(this.context, supplier.get());
+            return this;
+        }
+
+        @Override
+        public _DmlDeleteSpec<I> paramList(Function<String, ?> function, String keyName) {
+            this.paramList = CriteriaUtils.paramList(this.context, (List<?>) function.apply(keyName));
+            return this;
+        }
+
+        @Override
+        public List<?> paramList() {
+            final List<?> list = this.paramList;
+            if (list == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return list;
+        }
+
+        @Override
+        _BatchTableSampleOnSpec<I, Q> createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
+                , TableMeta<?> table, String tableAlias) {
+            if (modifier != null && modifier != SQLs.ONLY) {
+                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            }
+            return new BatchOnTableBlock<>(joinType, modifier, table, tableAlias, this);
+        }
+
+        @Override
+        _OnClause<_BatchSingleJoinSpec<I, Q>> createItemBlock(_JoinType joinType
+                , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
+            if (modifier != null && modifier != SQLs.LATERAL) {
+                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            }
+            return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
+        }
+
+        @Override
+        _OnClause<_BatchSingleJoinSpec<I, Q>> createCteBlock(_JoinType joinType
+                , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
+            if (modifier != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
+        }
+
+        @Override
+        I onAsDelete() {
+            return this.dmlFunction.apply(this);
+        }
+
+
+        @Override
+        Q onAsReturningDelete() {
+            return this.dqlFunction.apply(this);
+        }
+
+        private List<Selection> onAddSelection(Selection selection) {
+            List<Selection> list = this.returningList;
+            if (list == null) {
+                list = new ArrayList<>();
+                this.returningList = list;
+            } else if (!(list instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            list.add(selection);
+            return list;
+        }
+
+
+    }//BatchDelete
+
+    private static final class BatchParamClause<Q extends Item> implements _BatchStaticReturningCommaSpec<Q> {
+
+        private final BatchDelete<?, Q> statement;
+
+        private BatchParamClause(BatchDelete<?, Q> statement) {
+            this.statement = statement;
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<Q> comma(Selection selection) {
+            this.statement.onAddSelection(selection);
+            return this;
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<Q> comma(Expression expression, SQLs.WordAs wordAs, String alias) {
+            this.statement.onAddSelection(Selections.forExp(expression, alias));
+            return this;
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<Q> comma(Supplier<Selection> supplier) {
+            this.statement.onAddSelection(supplier.get());
+            return this;
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2) {
+            this.statement.onAddSelection(exp1)
+                    .add(exp2);
+            return this;
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2
+                , NamedExpression exp3) {
+            final List<Selection> list;
+            list = this.statement.onAddSelection(exp1);
+            list.add(exp2);
+            list.add(exp3);
+            return this;
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3
+                , NamedExpression exp4) {
+            final List<Selection> list;
+            list = this.statement.onAddSelection(exp1);
+            list.add(exp2);
+            list.add(exp3);
+            list.add(exp4);
+            return this;
+        }
+
+        @Override
+        public <P> _DqlDeleteSpec<Q> paramList(List<P> paramList) {
+            this.statement.paramList(paramList);
+            return this.statement;
+        }
+
+        @Override
+        public <P> _DqlDeleteSpec<Q> paramList(Supplier<List<P>> supplier) {
+            this.statement.paramList(supplier.get());
+            return this.statement;
+        }
+
+        @Override
+        public _DqlDeleteSpec<Q> paramList(Function<String, ?> function, String keyName) {
+            this.statement.paramList((List<?>) function.apply(keyName));
+            return this.statement;
+        }
+
+
+    }//BatchParamClause
+
+    private static final class BatchOnTableBlock<I extends Item, Q extends Item>
+            extends PostgreSupports.PostgreOnTableBlock<
+            PostgreDelete._BatchRepeatableOnClause<I, Q>,
+            Statement._OnClause<PostgreDelete._BatchSingleJoinSpec<I, Q>>,
+            PostgreDelete._BatchSingleJoinSpec<I, Q>>
+            implements PostgreDelete._BatchTableSampleOnSpec<I, Q>
+            , PostgreDelete._BatchRepeatableOnClause<I, Q> {
+
+        private BatchOnTableBlock(_JoinType joinType, @Nullable SQLWords modifier
+                , TableMeta<?> tableItem, String alias
+                , PostgreDelete._BatchSingleJoinSpec<I, Q> stmt) {
+            super(joinType, modifier, tableItem, alias, stmt);
+        }
+
+
+    }//BatchOnTableBlock
 
 
 }

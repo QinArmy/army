@@ -129,7 +129,6 @@ abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, J
             if (withSpec != null) {
                 this.recursive = withSpec.isRecursive();
                 this.cteList = withSpec.cteList();
-                assert this.cteList != null;
             }
         }
 
@@ -185,12 +184,13 @@ abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, J
         }
 
 
-        final void endStaticWithClause(final boolean recursive) {
+        final WE endStaticWithClause(final boolean recursive) {
             if (this.cteList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(true);//static with syntax is required
+            return (WE) this;
         }
 
 

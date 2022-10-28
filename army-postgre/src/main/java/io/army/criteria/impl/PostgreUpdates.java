@@ -71,7 +71,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
     private PostgreSupports.PostgreNoOnTableBlock noOnBlock;
 
 
-    private PostgreUpdates(PostgreUpdateClause<I, Q, ?> clause) {
+    private PostgreUpdates(PostgreUpdateClause<?> clause) {
         super(clause, clause.context);
         this.modifier = clause.modifier;
         this.updateTable = clause.updateTable;
@@ -312,6 +312,24 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
         return PostgreDialect.POSTGRE15;
     }
 
+
+    @Override
+    final void onStatementEnd() {
+        final Object THIS = this;
+        this.noOnBlock = null;
+        if (this instanceof BatchUpdate && ((BatchUpdate<?, ?, ?>) THIS).paramList == null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+    }
+
+    @Override
+    final void onClear() {
+        if (this instanceof BatchUpdate) {
+            final Object THIS = this;
+            ((BatchUpdate<?, ?, ?>) THIS).paramList = null;
+        }
+    }
+
     final FS nestedNonCrossEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertNoneCrossType();
         final TableBlock.NoOnTableBlock block;
@@ -360,7 +378,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
 
         private List<Selection> returningList;
 
-        private SimpleUpdate(PostgreUpdateClause<I, Q, ?> clause) {
+        private SimpleUpdate(PostgreUpdateClause<?> clause) {
             super(clause);
 
         }
@@ -887,7 +905,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
     }//BatchOnTableBlock
 
 
-    private static abstract class PostgreUpdateClause<I extends Item, Q extends Item, WE>
+    private static abstract class PostgreUpdateClause<WE>
             extends CriteriaSupports.WithClause<PostgreCteBuilder, WE> {
         SQLWords modifier;
 
@@ -945,7 +963,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
 
 
     private static abstract class SimpleUpdateClause<I extends Item, Q extends Item>
-            extends PostgreUpdateClause<I, Q, PostgreUpdate._SingleUpdateClause<I, Q>>
+            extends PostgreUpdateClause<PostgreUpdate._SingleUpdateClause<I, Q>>
             implements PostgreUpdate._SingleWithSpec<I, Q> {
 
         private SimpleUpdateClause(CriteriaContext context) {
@@ -1137,7 +1155,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T, SR, FT, FS exte
 
 
     private static final class BatchUpdateClause<I extends Item, Q extends Item>
-            extends PostgreUpdateClause<I, Q, PostgreUpdate._BatchSingleUpdateClause<I, Q>>
+            extends PostgreUpdateClause<PostgreUpdate._BatchSingleUpdateClause<I, Q>>
             implements PostgreUpdate._BatchSingleWithSpec<I, Q> {
 
         private final Function<Update, I> dmlFunction;

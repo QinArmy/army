@@ -5,6 +5,14 @@ import io.army.criteria.Update;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.TableMeta;
 
+/**
+ * <p>
+ * This interface representing Postgre DELETE syntax.
+ * </p>
+ *
+ * @see <a href="https://www.postgresql.org/docs/current/sql-delete.html">Postgre DELETE syntax</a>
+ * @since 1.0
+ */
 public interface PostgreDelete extends PostgreStatement {
 
 
@@ -108,13 +116,19 @@ public interface PostgreDelete extends PostgreStatement {
 
 
     interface _CteComma<I extends Item, Q extends Item>
-            extends _StaticWithCommaClause<PostgreQuery._StaticCteLeftParenSpec<_CteComma<I, Q>>>
+            extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_CteComma<I, Q>>>
             , _SingleDeleteClause<I, Q> {
 
     }
 
     interface _SingleWithSpec<I extends Item, Q extends Item> extends _SingleMinWithSpec<I, Q>
             , _StaticWithClause<PostgreQuery._StaticCteLeftParenSpec<_CteComma<I, Q>>> {
+
+    }
+
+    interface _StaticSubMaterializedSpec<I extends Item>
+            extends _CteMaterializedClause<_SingleDeleteClause<I, I>>
+            , _SingleDeleteClause<I, I> {
 
     }
 
@@ -134,15 +148,15 @@ public interface PostgreDelete extends PostgreStatement {
 
 
     interface _BatchStaticReturningCommaSpec<Q extends Item>
-            extends _StaticReturningCommaClause<_StaticReturningCommaSpec<Q>>
-            , _DqlUpdateSpec<Q> {
+            extends _StaticReturningCommaClause<_BatchStaticReturningCommaSpec<Q>>
+            , _BatchParamClause<_DqlDeleteSpec<Q>> {
 
     }
 
     interface _BatchReturningSpec<I extends Item, Q extends Item>
             extends _StaticReturningClause<_BatchStaticReturningCommaSpec<Q>>
-            , _DynamicReturningClause<_DqlUpdateSpec<Q>>
-            , _DmlUpdateSpec<I> {
+            , _DynamicReturningClause<_BatchParamClause<_DqlDeleteSpec<Q>>>
+            , _BatchParamClause<_DmlDeleteSpec<I>> {
 
     }
 
@@ -200,9 +214,9 @@ public interface PostgreDelete extends PostgreStatement {
 
 
     interface _BatchSingleUsingSpec<I extends Item, Q extends Item>
-            extends _PostgreUsingClause<_TableSampleJoinSpec<I, Q>, _BatchSingleJoinSpec<I, Q>>
-            , _UsingNestedClause<PostgreQuery._NestedLeftParenSpec<_BatchSingleJoinSpec<I, Q>>>
-            , _SingleWhereClause<I, Q> {
+            extends _PostgreUsingClause<_BatchTableSampleJoinSpec<I, Q>, _BatchSingleJoinSpec<I, Q>>
+            , _UsingNestedClause<_NestedLeftParenSpec<_BatchSingleJoinSpec<I, Q>>>
+            , _BatchSingleWhereClause<I, Q> {
         //TODO add dialect function tabular
     }
 
