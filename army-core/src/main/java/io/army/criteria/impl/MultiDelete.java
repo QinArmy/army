@@ -19,11 +19,10 @@ import java.util.function.Consumer;
  * This class is base class of multi-table delete implementation.
  * </p>
  */
-abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
+abstract class MultiDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
         extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, Object, Object, Object, Object>
         implements _MultiDelete
         , Statement._DmlDeleteSpec<I>
-        , Statement._DqlDeleteSpec<Q>
         , Statement {
 
 
@@ -55,11 +54,6 @@ abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, J
         return this.onAsDelete();
     }
 
-    @Override
-    public final Q asReturningDelete() {
-        this.endDeleteStatement();
-        return this.onAsReturningDelete();
-    }
 
     @Override
     public final void clear() {
@@ -94,10 +88,6 @@ abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, J
 
     abstract I onAsDelete();
 
-    Q onAsReturningDelete() {
-        throw new UnsupportedOperationException();
-    }
-
     abstract void onClear();
 
     void onEndStatement() {
@@ -105,7 +95,7 @@ abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, J
     }
 
 
-    private void endDeleteStatement() {
+    final void endDeleteStatement() {
         _Assert.nonPrepared(this.prepared);
         this.endWhereClause();
         this.onEndStatement();
@@ -116,8 +106,8 @@ abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, J
     }
 
 
-    static abstract class WithMultiDelete<I extends Item, Q extends Item, B extends CteBuilderSpec, WE, FT, FS, FC, JT, JS, JC, WR, WA>
-            extends MultiDelete<I, Q, FT, FS, FC, JT, JS, JC, WR, WA> implements DialectStatement._DynamicWithClause<B, WE>
+    static abstract class WithMultiDelete<I extends Item, B extends CteBuilderSpec, WE, FT, FS, FC, JT, JS, JC, WR, WA>
+            extends MultiDelete<I, FT, FS, FC, JT, JS, JC, WR, WA> implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
 
         private boolean recursive;
@@ -184,6 +174,7 @@ abstract class MultiDelete<I extends Item, Q extends Item, FT, FS, FC, JT, JS, J
         }
 
 
+        @SuppressWarnings("unchecked")
         final WE endStaticWithClause(final boolean recursive) {
             if (this.cteList != null) {
                 throw ContextStack.castCriteriaApi(this.context);

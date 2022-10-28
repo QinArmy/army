@@ -1,7 +1,11 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.SQLs;
 import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
+
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -117,6 +121,11 @@ public interface PostgreMerge extends PostgreStatement, DmlStatement {
 
     interface _MergeUsingDataSourceClause<T, I extends Item> {
 
+        _MergeOnClause<T, I> using(TableMeta<?> table);
+
+        _MergeOnClause<T, I> using(TableMeta<?> table, SQLs.WordAs as, String alias);
+
+        _AsClause<_MergeOnClause<T, I>> using(Supplier<SubQuery> supplier);
 
     }
 

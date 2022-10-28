@@ -10,8 +10,10 @@ import io.army.dialect.postgre.PostgreDialect;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
+import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.*;
 
@@ -24,8 +26,8 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS extends Item, JT, JS, TR, WR, WA>
-        extends MultiDelete.WithMultiDelete<I, Q, PostgreCtes, WE, FT, FS, FS, JT, JS, JS, WR, WA>
+abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, JS, TR, WR, WA>
+        extends MultiDelete.WithMultiDelete<I, PostgreCtes, WE, FT, FS, FS, JT, JS, JS, WR, WA>
         implements PostgreDelete, _PostgreDelete
         , PostgreStatement._TableSampleClause<TR>
         , PostgreStatement._RepeatableClause<FS>
@@ -380,11 +382,11 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
 
         private final boolean recursive;
 
-        private final SimpleDelete<I, Q> statement;
+        private final SimpleDelete<I, Q, ?> statement;
 
         private final Function<String, _StaticCteLeftParenSpec<_CteComma<I, Q>>> function;
 
-        private SimpleComma(boolean recursive, SimpleDelete<I, Q> statement) {
+        private SimpleComma(boolean recursive, SimpleDelete<I, Q, ?> statement) {
             this.recursive = recursive;
             this.statement = statement;
             this.function = PostgreQueries.complexCte(statement.context, this);
@@ -412,10 +414,9 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
     }//SimpleComma
 
 
-    private static abstract class SimpleDelete<I extends Item, Q extends Item>
+    private static abstract class SimpleDelete<I extends Item, Q extends Item, S extends Statement>
             extends PostgreDeletes<
             I,
-            Q,
             PostgreDelete._SingleDeleteClause<I, Q>,
             PostgreDelete._SingleUsingSpec<I, Q>,
             PostgreDelete._TableSampleJoinSpec<I, Q>,
@@ -432,10 +433,13 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
             , PostgreDelete._SingleWhereAndSpec<I, Q>
             , PostgreDelete._StaticReturningCommaSpec<Q> {
 
+        final Function<S, I> dmlFunction;
+
         private List<Selection> returningList;
 
-        private SimpleDelete(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
+        private SimpleDelete(@Nullable _WithClauseSpec withSpec, CriteriaContext context, Function<S, I> dmlFunction) {
             super(withSpec, context);
+            this.dmlFunction = dmlFunction;
         }
 
         @Override
@@ -567,6 +571,28 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
         }
 
         @Override
+        public final List<Selection> returningList() {
+            final List<Selection> list = this.returningList;
+            if (list == null || list instanceof ArrayList) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return list;
+        }
+
+        @Override
+        public final Q asReturningDelete() {
+            final List<Selection> returningList = this.returningList;
+            if (!(returningList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.endDeleteStatement();
+            this.returningList = _CollectionUtils.unmodifiableList(returningList);
+            return this.onAsReturningDelete();
+        }
+
+        abstract Q onAsReturningDelete();
+
+        @Override
         final _TableSampleOnSpec<I, Q> createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
                 , TableMeta<?> table, String tableAlias) {
             if (modifier != null && modifier != SQLs.ONLY) {
@@ -591,6 +617,16 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
                 throw ContextStack.castCriteriaApi(this.context);
             }
             return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
+        }
+
+
+        @Override
+        final I onAsDelete() {
+            if (this.returningList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.returningList = Collections.emptyList();
+            return this.dmlFunction.apply((S) this);
         }
 
         private List<Selection> onAddSelection(Selection selection) {
@@ -625,7 +661,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
     }//SimpleOnTableBlock
 
     private static final class PrimarySimpleDelete<I extends Item, Q extends Item>
-            extends SimpleDelete<I, Q>
+            extends SimpleDelete<I, Q, Delete>
             implements Delete, ReturningDelete {
 
         private final Function<Delete, I> dmlFunction;
@@ -633,14 +669,9 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
         private final Function<ReturningDelete, Q> dqlFunction;
 
         private PrimarySimpleDelete(Function<Delete, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
-            super(null, CriteriaContexts.joinableSingleDmlContext(null));
+            super(null, CriteriaContexts.joinableSingleDmlContext(null), dmlFunction);
             this.dmlFunction = dmlFunction;
             this.dqlFunction = dqlFunction;
-        }
-
-        @Override
-        I onAsDelete() {
-            return this.dmlFunction.apply(this);
         }
 
         @Override
@@ -652,40 +683,31 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
     }//PrimarySimpleDelete
 
     private static final class PrimarySimpleDeleteForMultiStmt<I extends Item>
-            extends SimpleDelete<I, I>
+            extends SimpleDelete<I, I, PrimaryStatement>
             implements Delete, ReturningDelete {
-
-        private final Function<PrimaryStatement, I> function;
 
 
         private PrimarySimpleDeleteForMultiStmt(_WithClauseSpec withSpec, Function<PrimaryStatement, I> function) {
-            super(withSpec, CriteriaContexts.joinableSingleDmlContext(null));
-            this.function = function;
+            super(withSpec, CriteriaContexts.joinableSingleDmlContext(null), function);
         }
 
-        @Override
-        I onAsDelete() {
-            return this.function.apply(this);
-        }
 
         @Override
         I onAsReturningDelete() {
-            return this.function.apply(this);
+            return this.dmlFunction.apply(this);
         }
 
 
     }//PrimarySimpleDeleteForMultiStmt
 
-    private static abstract class SubSimpleDelete<I extends Item, MR> extends SimpleDelete<I, I>
+    private static abstract class SubSimpleDelete<I extends Item, MR>
+            extends SimpleDelete<I, I, SubStatement>
             implements SubDelete, SubReturningDelete, _CteMaterializedClause<MR> {
-
-        private final Function<SubStatement, I> function;
 
         private PostgreSupports.MaterializedOption materializedOption;
 
         private SubSimpleDelete(CriteriaContext outerContext, Function<SubStatement, I> function) {
-            super(null, CriteriaContexts.joinableSingleDmlContext(outerContext));
-            this.function = function;
+            super(null, CriteriaContexts.joinableSingleDmlContext(outerContext), function);
         }
 
 
@@ -721,17 +743,13 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
             return (MR) this;
         }
 
-        @Override
-        final I onAsDelete() {
-            final PostgreSupports.MaterializedOption option = this.materializedOption;
-            return this.function.apply(option == null ? this : new PostgreSupports.PostgreSubStatement(option, this));
-        }
 
         @Override
         final I onAsReturningDelete() {
             final PostgreSupports.MaterializedOption option = this.materializedOption;
-            return this.function.apply(option == null ? this : new PostgreSupports.PostgreSubStatement(option, this));
+            return this.dmlFunction.apply(option == null ? this : new PostgreSupports.PostgreSubStatement(option, this));
         }
+
 
     }//SubSimpleDelete
 
@@ -800,7 +818,6 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
     private static final class BatchDelete<I extends Item, Q extends Item>
             extends PostgreDeletes<
             I,
-            Q,
             PostgreDelete._BatchSingleDeleteClause<I, Q>,
             PostgreDelete._BatchSingleUsingSpec<I, Q>,
             PostgreDelete._BatchTableSampleJoinSpec<I, Q>,
@@ -815,6 +832,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
             , PostgreDelete._BatchTableSampleJoinSpec<I, Q>
             , PostgreDelete._BatchRepeatableJoinClause<I, Q>
             , PostgreDelete._BatchSingleWhereAndSpec<I, Q>
+            , _DqlDeleteSpec<Q>
             , Delete, ReturningDelete, _BatchDml {
 
         private final Function<Delete, I> dmlFunction;
@@ -933,6 +951,16 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
             return this;
         }
 
+
+        @Override
+        public List<Selection> returningList() {
+            final List<Selection> list = this.returningList;
+            if (list == null || list instanceof ArrayList) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return list;
+        }
+
         @Override
         public List<?> paramList() {
             final List<?> list = this.paramList;
@@ -940,6 +968,17 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
                 throw ContextStack.castCriteriaApi(this.context);
             }
             return list;
+        }
+
+        @Override
+        public Q asReturningDelete() {
+            final List<Selection> returningList = this.returningList;
+            if (!(returningList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.endDeleteStatement();
+            this.returningList = _CollectionUtils.unmodifiableList(returningList);
+            return this.dqlFunction.apply(this);
         }
 
         @Override
@@ -971,14 +1010,13 @@ abstract class PostgreDeletes<I extends Item, Q extends Item, WE, DR, FT, FS ext
 
         @Override
         I onAsDelete() {
+            if (this.returningList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.returningList = Collections.emptyList();
             return this.dmlFunction.apply(this);
         }
 
-
-        @Override
-        Q onAsReturningDelete() {
-            return this.dqlFunction.apply(this);
-        }
 
         private List<Selection> onAddSelection(Selection selection) {
             List<Selection> list = this.returningList;

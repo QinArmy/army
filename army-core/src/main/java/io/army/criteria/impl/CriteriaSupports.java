@@ -6,10 +6,14 @@ import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
+import io.army.dialect.Dialect;
+import io.army.dialect.DialectParser;
+import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
+import io.army.stmt.Stmt;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -175,6 +179,62 @@ abstract class CriteriaSupports {
         }
 
     }//WithClause
+
+    static abstract class StatementMockSupport implements Statement.StatementMockSpec, Statement {
+
+        final CriteriaContext context;
+
+        StatementMockSupport(CriteriaContext context) {
+            this.context = context;
+        }
+
+        @Override
+        public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
+            final DialectParser parser;
+            parser = _MockDialects.from(dialect);
+            final Stmt stmt;
+            stmt = this.parseStatement(parser, visible);
+            return parser.printStmt(stmt, none);
+        }
+
+        @Override
+        public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
+            return this.parseStatement(_MockDialects.from(dialect), visible);
+        }
+
+        @Override
+        public final String toString() {
+            final String s;
+            if (this instanceof PrimaryStatement && this.isPrepared()) {
+                s = this.mockAsString(this.statementDialect(), Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
+
+        abstract Dialect statementDialect();
+
+        private Stmt parseStatement(final DialectParser parser, final Visible visible) {
+            if (!(this instanceof PrimaryStatement)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            final Stmt stmt;
+            if (this instanceof Select) {
+                stmt = parser.select((Select) this, visible);
+            } else if (this instanceof Update) {
+                stmt = parser.update((Update) this, visible);
+            } else if (this instanceof Delete) {
+                stmt = parser.delete((Delete) this, visible);
+            } else if (this instanceof DialectStatement) {
+                stmt = parser.dialectStmt((DialectStatement) this, visible);
+            } else {
+                throw new IllegalStateException("unknown statement");
+            }
+            return stmt;
+        }
+
+    }//StatementMockSupport
 
     static final class RowConstructorImpl implements RowConstructor {
 
