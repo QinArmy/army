@@ -336,7 +336,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         public final String alias() {
             final String tableAlias = this.tableAlias;
             if (tableAlias == null) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return tableAlias;
         }
@@ -345,7 +345,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         public final List<String> partitionList() {
             final List<String> partitionList = this.partitionList;
             if (partitionList == null) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             return partitionList;
         }
@@ -355,7 +355,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         private Statement._AsClause<AR> partitionEnd(List<String> partitionList) {
             if (this.partitionList != null) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.partitionList = partitionList;
             return this;
@@ -363,105 +363,6 @@ abstract class MySQLSupports extends CriteriaSupports {
 
     }//PartitionAsClause
 
-//
-//    static final class MySQLDynamicBlock<C> extends DynamicBlock<C> implements MySQLQuery._IfUseIndexOnSpec<C> {
-//
-//        final ItemWord itemWord;
-//
-//        final List<String> partitionList;
-//
-//        private List<MySQLIndexHint> indexHintList;
-//
-//        private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndexClause;
-//
-//        private MySQLDynamicBlock(@Nullable C criteria, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
-//            super(criteria, tableItem, alias);
-//            this.itemWord = itemWord;
-//            this.partitionList = Collections.emptyList();
-//        }
-//
-//        private MySQLDynamicBlock(TableMeta<?> table, String alias, List<String> partitionList
-//                , CriteriaContext criteriaContext) {
-//            super(table, alias, criteriaContext);
-//            this.itemWord = null;
-//            this.partitionList = partitionList;
-//        }
-//
-//        @Override
-//        public MySQLQuery._IndexPurposeBySpec<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndex() {
-//            return this.getUseIndexClause().useIndex();
-//        }
-//
-//        @Override
-//        public MySQLQuery._IndexPurposeBySpec<C, MySQLQuery._IfUseIndexOnSpec<C>> ignoreIndex() {
-//            return this.getUseIndexClause().ignoreIndex();
-//        }
-//
-//        @Override
-//        public MySQLQuery._IndexPurposeBySpec<C, MySQLQuery._IfUseIndexOnSpec<C>> forceIndex() {
-//            return this.getUseIndexClause().forceIndex();
-//        }
-//
-//
-//        private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._IfUseIndexOnSpec<C>> getUseIndexClause() {
-//            MySQLQuery._QueryIndexHintClause<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndexClause = this.useIndexClause;
-//            if (useIndexClause == null) {
-//                useIndexClause = new IndexHintClause<>(this.criteriaContext, this::addIndexHint);
-//                this.useIndexClause = useIndexClause;
-//            }
-//            return useIndexClause;
-//        }
-//
-//        private MySQLQuery._IfUseIndexOnSpec<C> addIndexHint(final MySQLIndexHint indexHint) {
-//            List<MySQLIndexHint> indexHintList = this.indexHintList;
-//            if (indexHintList == null) {
-//                indexHintList = new ArrayList<>();
-//                this.indexHintList = indexHintList;
-//            } else if (!(indexHintList instanceof ArrayList)) {
-//                throw ContextStack.castCriteriaApi(this.criteriaContext);
-//            }
-//            indexHintList.add(indexHint);
-//            return this;
-//        }
-//
-//
-//    }//MySQLDynamicBlock
-
-
-    private static final class MySQLDynamicTableBlock extends TableBlock.DynamicTableBlock
-            implements _MySQLTableBlock {
-
-        private final ItemWord itemWord;
-
-        private final List<String> partitionList;
-
-        private final List<MySQLIndexHint> indexHintList;
-
-
-        private MySQLDynamicTableBlock(_JoinType joinType, MySQLDynamicBlock<?> block) {
-            super(joinType, block);
-            this.itemWord = block.itemWord;
-            this.partitionList = block.partitionList;
-            this.indexHintList = _CollectionUtils.safeList(block.indexHintList);
-        }
-
-        @Override
-        public SQLWords modifier() {
-            return this.itemWord;
-        }
-
-        @Override
-        public List<String> partitionList() {
-            return this.partitionList;
-        }
-
-        @Override
-        public List<? extends _IndexHint> indexHintList() {
-            return this.indexHintList;
-        }
-
-
-    }//MySQLDynamicTableBlock
 
 
     private static final class IndexHintClause<RR> extends CriteriaSupports.ParenStringConsumerClause<RR>

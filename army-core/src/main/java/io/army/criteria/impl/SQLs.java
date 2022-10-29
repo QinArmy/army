@@ -82,7 +82,7 @@ public abstract class SQLs extends StandardSyntax {
 
 
     public static StandardDelete._StandardDeleteClause<Delete> singleDelete() {
-        return StandardDeletes.singleDelete();
+        return StandardDeletes.singleDelete(SQLs::_identity);
     }
 
     /**
@@ -99,26 +99,13 @@ public abstract class SQLs extends StandardSyntax {
         return StandardQueries.primaryQuery(SQLs::_identity);
     }
 
-    public static StandardQuery._ParenQueryClause<Select> parenQuery() {
-        return StandardQueries.parenPrimaryQuery(SQLs::_identity);
-    }
-
-
     public static StandardQuery._StandardSelectClause<SubQuery> subQuery() {
         return StandardQueries.subQuery(ContextStack.peek(), SQLs::_identity);
-    }
-
-    public static StandardQuery._ParenQueryClause<SubQuery> parenSubQuery() {
-        return StandardQueries.parenSubQuery(ContextStack.peek(), SQLs::_identity);
     }
 
 
     public static StandardQuery._StandardSelectClause<Expression> scalarSubQuery() {
         return StandardQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
-    }
-
-    public static StandardQuery._ParenQueryClause<Expression> parenScalarSubQuery() {
-        return StandardQueries.parenSubQuery(ContextStack.peek(), ScalarExpression::from);
     }
 
 

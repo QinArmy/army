@@ -703,16 +703,21 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             this.function = function;
         }
 
+        private SimpleSelect(CriteriaContext context, Function<Select, I> function) {
+            super(null, context);
+            this.function = function;
+        }
+
         @Override
         public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final CriteriaContext bracketContext, selectContext;
+            final CriteriaContext bracketContext, queryContext;
             bracketContext = CriteriaContexts.bracketContext(this.context.endContextBeforeSelect());
 
-            final MySQLBracketSelect<I> bracket;
-            bracket = new MySQLBracketSelect<>(bracketContext, this.function);
+            final BracketSelect<I> bracket;
+            bracket = new BracketSelect<>(bracketContext, this.function);
 
-            selectContext = CriteriaContexts.primaryQuery(bracketContext);
-            return new SimpleSelect<>(null, selectContext, bracket::parenRowSetEnd);
+            queryContext = CriteriaContexts.primaryQuery(bracketContext);
+            return new SimpleSelect<>(null, queryContext, bracket::parenRowSetEnd);
         }
 
         @Override
@@ -741,14 +746,14 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         @Override
         public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final CriteriaContext bracketContext, subQueryContext;
+            final CriteriaContext bracketContext, queryContext;
             bracketContext = CriteriaContexts.bracketContext(this.context.endContextBeforeSelect());
 
-            final MySQLBracketSubQuery<I> bracket;
-            bracket = new MySQLBracketSubQuery<>(bracketContext, this.function);
+            final BracketSubQuery<I> bracket;
+            bracket = new BracketSubQuery<>(bracketContext, this.function);
 
-            subQueryContext = CriteriaContexts.subQueryContext(bracketContext);
-            return new SimpleSubQuery<>(subQueryContext, bracket::parenRowSetEnd);
+            queryContext = CriteriaContexts.subQueryContext(bracketContext);
+            return new SimpleSubQuery<>(queryContext, bracket::parenRowSetEnd);
         }
 
         @Override
@@ -968,8 +973,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             final CriteriaContext bracketContext, subQueryContext;
             bracketContext = CriteriaContexts.bracketContext(this.context);
 
-            final MySQLBracketSubQuery<_AsCteClause<I>> bracket;
-            bracket = new MySQLBracketSubQuery<>(bracketContext, this::queryEnd);
+            final BracketSubQuery<_AsCteClause<I>> bracket;
+            bracket = new BracketSubQuery<>(bracketContext, this::queryEnd);
 
             subQueryContext = CriteriaContexts.subQueryContext(bracketContext);
             return new SimpleSubQuery<>(subQueryContext, bracket::parenRowSetEnd);
@@ -1041,10 +1046,10 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     }//MySQLBracketQuery
 
-    private static final class MySQLBracketSelect<I extends Item> extends MySQLBracketQuery<I, Select>
+    private static final class BracketSelect<I extends Item> extends MySQLBracketQuery<I, Select>
             implements Select {
 
-        private MySQLBracketSelect(CriteriaContext context, Function<Select, I> function) {
+        private BracketSelect(CriteriaContext context, Function<Select, I> function) {
             super(context, function);
         }
 
@@ -1062,10 +1067,10 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }//MySQLBracketSelect
 
 
-    private static final class MySQLBracketSubQuery<I extends Item> extends MySQLBracketQuery<I, SubQuery>
+    private static final class BracketSubQuery<I extends Item> extends MySQLBracketQuery<I, SubQuery>
             implements SubQuery {
 
-        private MySQLBracketSubQuery(CriteriaContext context, Function<SubQuery, I> function) {
+        private BracketSubQuery(CriteriaContext context, Function<SubQuery, I> function) {
             super(context, function);
         }
 
@@ -1104,8 +1109,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             final CriteriaContext bracketContext, subQueryContext;
             bracketContext = CriteriaContexts.unionBracketContext(((CriteriaContextSpec) this.left).getContext());
 
-            final MySQLBracketSubQuery<I> bracket;
-            bracket = new MySQLBracketSubQuery<>(bracketContext, this::unionRight);
+            final BracketSubQuery<I> bracket;
+            bracket = new BracketSubQuery<>(bracketContext, this::unionRight);
 
             subQueryContext = CriteriaContexts.subQueryContext(bracketContext);
             return new SimpleSubQuery<>(subQueryContext, bracket::parenRowSetEnd);
@@ -1150,11 +1155,11 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             final CriteriaContext bracketContext, selectContext;
             bracketContext = CriteriaContexts.unionBracketContext(((CriteriaContextSpec) this.left).getContext());
 
-            final MySQLBracketSelect<I> bracket;
-            bracket = new MySQLBracketSelect<>(bracketContext, this::unionRight);
+            final BracketSelect<I> bracket;
+            bracket = new BracketSelect<>(bracketContext, this::unionRight);
 
             selectContext = CriteriaContexts.primaryQuery(bracketContext);
-            return new SimpleSelect<>(null, selectContext, bracket::parenRowSetEnd);
+            return new SimpleSelect<>(selectContext, bracket::parenRowSetEnd);
         }
 
         @Override
@@ -1163,7 +1168,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             leftContext = ((CriteriaContextSpec) this.left).getContext();
 
             context = CriteriaContexts.unionSelectContext(leftContext);
-            return new SimpleSelect<>(null, context, this::unionRight);
+            return new SimpleSelect<>(context, this::unionRight);
         }
 
         private I unionRight(final Select right) {

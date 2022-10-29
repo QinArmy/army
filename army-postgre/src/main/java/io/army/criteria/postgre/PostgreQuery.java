@@ -39,10 +39,6 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _FrameExclusionClause<R> {
-
-
-    }
 
 
     interface _FrameExclusionSpec<I extends Item> extends _RightParenClause<I> {
@@ -172,9 +168,9 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_UnionAndQuerySpec<I>>
-            , _QueryIntersectClause<_UnionAndQuerySpec<I>>
-            , _QueryExceptClause<_UnionAndQuerySpec<I>>
+    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_MinWithSpec<I>>
+            , _QueryIntersectClause<_MinWithSpec<I>>
+            , _QueryExceptClause<_MinWithSpec<I>>
             , _AsQueryClause<I> {
 
     }
@@ -321,11 +317,6 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _JoinFunctionClause<JF> {
-        //TODO add dialect function tabular
-    }
-
-
     interface _JoinSpec<I extends Item>
             extends _PostgreJoinClause<_TableSampleOnSpec<I>, _OnClause<_JoinSpec<I>>>
             , _PostgreCrossJoinClause<_TableSampleJoinSpec<I>, _JoinSpec<I>>
@@ -368,9 +359,13 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
+    interface _SelectSpec<I extends Item> extends _PostgreSelectClause<I>
+            , _LeftParenClause<_MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
-    interface _MinWithSpec<I extends Item> extends _PostgreDynamicWithClause<_PostgreSelectClause<I>>
-            , _PostgreSelectClause<I> {
+    }
+
+    interface _MinWithSpec<I extends Item> extends _PostgreDynamicWithClause<_SelectSpec<I>>
+            , _SelectSpec<I> {
 
     }
 
@@ -397,19 +392,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _UnionAndQuerySpec<I extends Item> extends _MinWithSpec<I>
-            , _LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
-    }
-
-    interface _ParenQueryClause<I extends Item>
-            extends _LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
-
-    }
-
-    interface _ParenQuerySpec<I extends Item> extends _ParenQueryClause<I>, _WithSpec<I> {
-
-    }
 
 
 }

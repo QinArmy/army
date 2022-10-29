@@ -24,7 +24,7 @@ import java.util.function.*;
 abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpleQueries<
         I,
         PostgreCtes,
-        PostgreQuery._PostgreSelectClause<I>,
+        PostgreQuery._SelectSpec<I>,
         PostgreSyntax.Modifier,
         PostgreQuery._FromSpec<I>,
         PostgreQuery._TableSampleJoinSpec<I>,
@@ -41,7 +41,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         PostgreQuery._OffsetSpec<I>,
         PostgreQuery._FetchSpec<I>,
         PostgreQuery._LockSpec<I>,
-        PostgreQuery._UnionAndQuerySpec<I>>
+        PostgreQuery._MinWithSpec<I>>
         implements PostgreQuery, _PostgreQuery
         , PostgreQuery._WithSpec<I>
         , PostgreQuery._FromSpec<I>
@@ -60,20 +60,10 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
 
-    static <I extends Item> _ParenQueryClause<I> parenQuery(@Nullable _WithClauseSpec withSpec
-            , Function<Select, I> function) {
-        return new ParenSelect<>(withSpec, function);
-    }
-
-
     static <I extends Item> _WithSpec<I> subQuery(CriteriaContext outerContext, Function<SubQuery, I> function) {
         return new SimpleSubQuery<>(outerContext, function);
     }
 
-    static <I extends Item> _ParenQuerySpec<I> parenSubQuery(CriteriaContext outerContext
-            , Function<SubQuery, I> function) {
-        return new ParenSubQuery<>(outerContext, function);
-    }
 
     static <I extends Item> Function<String, _StaticCteLeftParenSpec<I>> complexCte(CriteriaContext outerContext
             , I comma) {
@@ -707,6 +697,17 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
             this.function = function;
         }
 
+        @Override
+        public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final CriteriaContext bracketContext, queryContext;
+            bracketContext = CriteriaContexts.bracketContext(this.context.endContextBeforeSelect());
+
+            final BracketSelect<I> bracket;
+            bracket = new BracketSelect<>(bracketContext, this.function);
+
+            queryContext = CriteriaContexts.primaryQuery(bracketContext);
+            return new SimpleSelect<>(null, queryContext, bracket::parenRowSetEnd);
+        }
 
         @Override
         I onAsQuery() {
@@ -714,7 +715,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        _UnionAndQuerySpec<I> createQueryUnion(UnionType unionType) {
+        _MinWithSpec<I> createQueryUnion(UnionType unionType) {
+            UnionType.exceptType(this.context, unionType);
             return new UnionAndSelectClause<>(this, unionType, this.function);
         }
 
@@ -732,6 +734,17 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
             this.function = function;
         }
 
+        @Override
+        public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final CriteriaContext bracketContext, queryContext;
+            bracketContext = CriteriaContexts.bracketContext(this.context.endContextBeforeSelect());
+
+            final BracketSubQuery<I> bracket;
+            bracket = new BracketSubQuery<>(bracketContext, this.function);
+
+            queryContext = CriteriaContexts.subQueryContext(bracketContext);
+            return new SimpleSubQuery<>(queryContext, bracket::parenRowSetEnd);
+        }
 
         @Override
         I onAsQuery() {
@@ -739,7 +752,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        _UnionAndQuerySpec<I> createQueryUnion(UnionType unionType) {
+        _MinWithSpec<I> createQueryUnion(UnionType unionType) {
+            UnionType.exceptType(this.context, unionType);
             return new UnionAndSubQueryClause<>(this, unionType, this.function);
         }
 
@@ -756,7 +770,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
             PostgreQuery._UnionOffsetSpec<I>,
             PostgreQuery._UnionFetchSpec<I>,
             PostgreQuery._UnionLockSpec<I>,
-            PostgreQuery._UnionAndQuerySpec<I>,
+            PostgreQuery._MinWithSpec<I>,
             RowSet,
             Object> implements PostgreQuery._UnionOrderBySpec<I>
             , PostgreQuery._UnionLockOfTableSpec<I>
@@ -919,8 +933,9 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
             return this;
         }
 
+
         @Override
-        final Dialect queryDialect() {
+        final Dialect statementDialect() {
             return PostgreDialect.POSTGRE15;
         }
 
@@ -951,7 +966,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        PostgreQuery._UnionAndQuerySpec<I> createQueryUnion(final UnionType unionType) {
+        PostgreQuery._MinWithSpec<I> createQueryUnion(final UnionType unionType) {
             UnionType.exceptType(this.context, unionType);
             return new UnionAndSelectClause<>(this, unionType, this.function);
         }
@@ -976,7 +991,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        PostgreQuery._UnionAndQuerySpec<I> createQueryUnion(final UnionType unionType) {
+        PostgreQuery._MinWithSpec<I> createQueryUnion(final UnionType unionType) {
             UnionType.exceptType(this.context, unionType);
             return new UnionAndSubQueryClause<>(this, unionType, this.function);
         }
@@ -985,139 +1000,13 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }//BracketSubQuery
 
 
-    /**
-     * @see #parenQuery(_WithClauseSpec, Function)
-     */
-    private static final class ParenSelect<I extends Item>
-            extends WithSelectClauseDispatcher<
-            PostgreCtes,
-            _PostgreSelectClause<I>,
-            Postgres.Modifier,
-            _FromSpec<I>>
-            implements _ParenQuerySpec<I> {
-
-        private final _WithClauseSpec withSpec;
-
-        private final Function<Select, I> function;
-
-        private ParenSelect(@Nullable _WithClauseSpec withSpec, Function<Select, I> function) {
-            this.withSpec = withSpec;
-            this.function = function;
-        }
-
-        @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final BracketSelect<I> bracket;
-            bracket = new BracketSelect<>(CriteriaContexts.bracketContext(null), this.function);
-            return new UnionLeftParenSelectClause<>(bracket);
-        }
-
-        @Override
-        public _StaticCteLeftParenSpec<_CteComma<I>> with(String name) {
-            return this.createSelectClause().with(name);
-        }
-
-        @Override
-        public _StaticCteLeftParenSpec<_CteComma<I>> withRecursive(String name) {
-            return this.createSelectClause().withRecursive(name);
-        }
-
-        @Override
-        PostgreQueries<I> createSelectClause() {
-            return new SimpleSelect<>(this.withSpec, CriteriaContexts.primaryQuery(null), this.function);
-        }
-
-    }//ParenSelect
-
-    /**
-     * @see #parenSubQuery(CriteriaContext, Function)
-     */
-    private static final class ParenSubQuery<I extends Item>
-            extends WithSelectClauseDispatcher<
-            PostgreCtes,
-            _PostgreSelectClause<I>,
-            Postgres.Modifier,
-            _FromSpec<I>>
-            implements _ParenQuerySpec<I> {
-
-        private final CriteriaContext outerContext;
-
-        private final Function<SubQuery, I> function;
-
-
-        private ParenSubQuery(CriteriaContext outerContext, Function<SubQuery, I> function) {
-            this.outerContext = outerContext;
-            this.function = function;
-        }
-
-        @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final BracketSubQuery<I> bracket;
-            bracket = new BracketSubQuery<>(CriteriaContexts.bracketContext(this.outerContext), this.function);
-            return new UnionLeftParenSubQueryClause<>(bracket);
-        }
-
-        @Override
-        public _StaticCteLeftParenSpec<_CteComma<I>> with(String name) {
-            return this.createSelectClause().with(name);
-        }
-
-        @Override
-        public _StaticCteLeftParenSpec<_CteComma<I>> withRecursive(String name) {
-            return this.createSelectClause().withRecursive(name);
-        }
-
-        @Override
-        PostgreQueries<I> createSelectClause() {
-            return new SimpleSubQuery<>(CriteriaContexts.subQueryContext(this.outerContext), this.function);
-        }
-
-
-    }//ParenSubQuery
-
-
-    private static final class UnionLeftParenSelectClause<I extends Item>
-            extends WithSelectClauseDispatcher<
-            PostgreCtes,
-            PostgreQuery._PostgreSelectClause<_RightParenClause<_UnionOrderBySpec<I>>>,
-            Postgres.Modifier,
-            PostgreQuery._FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>>
-            implements PostgreQuery._UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> {
-
-        private final BracketSelect<I> bracket;
-
-        private UnionLeftParenSelectClause(BracketSelect<I> bracket) {
-            this.bracket = bracket;
-        }
-
-        @Override
-        public PostgreQuery._UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<_RightParenClause<_UnionOrderBySpec<I>>>>> leftParen() {
-            final CriteriaContext context;
-            context = CriteriaContexts.bracketContext(this.bracket.context);
-
-            final BracketSelect<_RightParenClause<_UnionOrderBySpec<I>>> newBracket;
-            newBracket = new BracketSelect<>(context, this.bracket::parenRowSetEnd);
-            return new UnionLeftParenSelectClause<>(newBracket);
-        }
-
-
-        @Override
-        PostgreQueries<_RightParenClause<_UnionOrderBySpec<I>>> createSelectClause() {
-            final CriteriaContext context;
-            context = CriteriaContexts.primaryQuery(this.bracket.context);
-            return new SimpleSelect<>(context, this.bracket::parenRowSetEnd);
-        }
-
-
-    }//UnionLeftParenSelectClause
-
     private static final class UnionAndSelectClause<I extends Item>
             extends WithSelectClauseDispatcher<
             PostgreCtes,
-            PostgreQuery._PostgreSelectClause<I>,
+            PostgreQuery._SelectSpec<I>,
             Postgres.Modifier,
             PostgreQuery._FromSpec<I>>
-            implements PostgreQuery._UnionAndQuerySpec<I> {
+            implements PostgreQuery._MinWithSpec<I> {
 
         private final Select left;
 
@@ -1131,15 +1020,17 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
             this.function = function;
         }
 
-        @Override
-        public PostgreQuery._UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final CriteriaContext leftContext, context;
-            leftContext = ((CriteriaContextSpec) this.left).getContext();
-            context = CriteriaContexts.unionBracketContext(leftContext);
 
-            final BracketSelect<I> select;
-            select = new BracketSelect<>(context, this::unionRight);
-            return new UnionLeftParenSelectClause<>(select);
+        @Override
+        public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final CriteriaContext bracketContext, queryContext;
+            bracketContext = CriteriaContexts.unionBracketContext(((CriteriaContextSpec) this.left).getContext());
+
+            final BracketSelect<I> bracket;
+            bracket = new BracketSelect<>(bracketContext, this::unionRight);
+
+            queryContext = CriteriaContexts.primaryQuery(bracketContext);
+            return new SimpleSelect<>(queryContext, bracket::parenRowSetEnd);
         }
 
         @Override
@@ -1159,40 +1050,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }//UnionSelectClause
 
 
-    private static final class UnionLeftParenSubQueryClause<I extends Item>
-            extends WithSelectClauseDispatcher<
-            PostgreCtes,
-            _PostgreSelectClause<_RightParenClause<_UnionOrderBySpec<I>>>,
-            Postgres.Modifier,
-            _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>>
-            implements _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> {
-        private final BracketSubQuery<I> outerBracket;
-
-        private UnionLeftParenSubQueryClause(BracketSubQuery<I> outerBracket) {
-            this.outerBracket = outerBracket;
-        }
-
-        @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<_RightParenClause<_UnionOrderBySpec<I>>>>> leftParen() {
-            final CriteriaContext context;
-            context = CriteriaContexts.bracketContext(this.outerBracket.context);
-
-            final BracketSubQuery<_RightParenClause<_UnionOrderBySpec<I>>> subQuery;
-            subQuery = new BracketSubQuery<>(context, this.outerBracket::parenRowSetEnd);
-            return new UnionLeftParenSubQueryClause<>(subQuery);
-        }
-
-        @Override
-        PostgreQueries<_RightParenClause<_UnionOrderBySpec<I>>> createSelectClause() {
-            final CriteriaContext context;
-            context = CriteriaContexts.subQueryContext(this.outerBracket.context);
-            return new SimpleSubQuery<>(context, this.outerBracket::parenRowSetEnd);
-        }
-
-
-    }//UnionLeftParenSubQueryClause
-
-
     /**
      * @see #createQueryUnion(UnionType)
      * @see #createQueryUnion(UnionType)
@@ -1200,10 +1057,10 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     private static final class UnionAndSubQueryClause<I extends Item>
             extends WithSelectClauseDispatcher<
             PostgreCtes,
-            _PostgreSelectClause<I>,
+            _SelectSpec<I>,
             Postgres.Modifier,
             _FromSpec<I>>
-            implements _UnionAndQuerySpec<I> {
+            implements _MinWithSpec<I> {
 
         private final SubQuery left;
 
@@ -1217,17 +1074,18 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
             this.function = function;
         }
 
+
         @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final CriteriaContext leftContext, context;
-            leftContext = ((CriteriaContextSpec) this.left).getContext();
-            context = CriteriaContexts.unionBracketContext(leftContext);
+        public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final CriteriaContext bracketContext, queryContext;
+            bracketContext = CriteriaContexts.unionBracketContext(((CriteriaContextSpec) this.left).getContext());
 
-            final BracketSubQuery<I> subQuery;
-            subQuery = new BracketSubQuery<>(context, this::unionRight);
-            return new UnionLeftParenSubQueryClause<>(subQuery);
+            final BracketSubQuery<I> bracket;
+            bracket = new BracketSubQuery<>(bracketContext, this::unionRight);
+
+            queryContext = CriteriaContexts.subQueryContext(bracketContext);
+            return new SimpleSubQuery<>(queryContext, bracket::parenRowSetEnd);
         }
-
 
         @Override
         PostgreQueries<I> createSelectClause() {
@@ -1276,10 +1134,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
 
     }//CteComma
-
-    private static final class CteComplexCommand<I extends Item> {
-
-    }
 
 
 }

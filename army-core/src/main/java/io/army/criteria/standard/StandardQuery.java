@@ -17,6 +17,28 @@ public interface StandardQuery extends Query, StandardStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
+     *          <li>UNION clause for standard syntax</li>
+     *          <li>method {@link _AsQueryClause#asQuery()}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
+     */
+    interface _UnionSpec<I extends Item> extends _AsQueryClause<I>
+            , _QueryUnionClause<_SelectSpec<I>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
      *          <li>LIMIT clause for standard syntax</li>
      *          <li>the composite {@link _UnionSpec}</li>
      *     </ul>
@@ -56,30 +78,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _UnionOrderBySpec<I extends Item> extends Statement._StaticOrderByClause<_UnionLimitSpec<I>>
-            , _UnionLimitQuerySpec<I> {
-
-    }
-
-
-    /**
-     * <p>
-     * This interface representing the composite of below:
-     *     <ul>
-     *          <li>UNION clause for standard syntax</li>
-     *          <li>method {@link _AsQueryClause#asQuery()}</li>
-     *     </ul>
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface _UnionSpec<I extends Item> extends _AsQueryClause<I>
-            , _QueryUnionClause<_UnionAndQuerySpec<I>> {
+            , _UnionLimitQuerySpec<I>
+            , _UnionSpec<I> {
 
     }
 
@@ -244,7 +244,6 @@ public interface StandardQuery extends Query, StandardStatement {
     }
 
 
-
     /**
      * <p>
      * This interface representing the composite of below:
@@ -312,17 +311,8 @@ public interface StandardQuery extends Query, StandardStatement {
 
     }
 
-    interface _UnionAndQuerySpec<I extends Item> extends _StandardSelectClause<I>
-            , _LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
-
-    }
-
-    interface _ParenQueryClause<I extends Item>
-            extends _LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
-
-    }
-
-    interface _ParenQuerySpec<I extends Item> extends _ParenQueryClause<I>, _StandardSelectClause<I> {
+    interface _SelectSpec<I extends Item> extends _StandardSelectClause<I>
+            , _LeftParenClause<_SelectSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 
