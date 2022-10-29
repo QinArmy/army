@@ -546,7 +546,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
             if (withSpec != null) {
                 this.recursive = withSpec.isRecursive();
                 this.cteList = withSpec.cteList();
-                assert this.cteList != null;
             }
         }
 

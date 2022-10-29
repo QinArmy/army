@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-public interface MySQLDelete extends DialectStatement {
+public interface MySQLDelete extends MySQLStatement {
 
     /**
      * <p>
@@ -163,7 +163,7 @@ public interface MySQLDelete extends DialectStatement {
      * @since 1.0
      */
     interface _SingleWithSpec<I extends Item>
-            extends _DynamicWithClause<MySQLCteBuilder, _SimpleSingleDeleteClause<I>>
+            extends _DynamicWithClause<MySQLCtes, _SimpleSingleDeleteClause<I>>
             , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>>>
             , _SimpleSingleDeleteClause<I> {
 
@@ -315,7 +315,7 @@ public interface MySQLDelete extends DialectStatement {
      * @since 1.0
      */
     interface _BatchSingleWithSpec<I extends Item>
-            extends _DynamicWithClause<MySQLCteBuilder, _BatchSingleDeleteClause<I>>
+            extends _DynamicWithClause<MySQLCtes, _BatchSingleDeleteClause<I>>
             , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
             , _BatchSingleDeleteClause<I> {
 
@@ -547,7 +547,7 @@ public interface MySQLDelete extends DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link MySQLQuery._MySQLDynamicWithCteClause}</li>
+     *          <li>{@link _MySQLDynamicWithClause}</li>
      *          <li>{@link _StaticWithClause}</li>
      *          <li>{@link _SimpleMultiDeleteClause}</li>
      *     </ul>
@@ -560,7 +560,7 @@ public interface MySQLDelete extends DialectStatement {
      *
      * @since 1.0
      */
-    interface _MultiWithSpec<I extends Item> extends MySQLQuery._MySQLDynamicWithCteClause<_SimpleMultiDeleteClause<I>>
+    interface _MultiWithSpec<I extends Item> extends _MySQLDynamicWithClause<_SimpleMultiDeleteClause<I>>
             , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>>>
             , _SimpleMultiDeleteClause<I> {
 
@@ -747,7 +747,7 @@ public interface MySQLDelete extends DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link MySQLQuery._MySQLDynamicWithCteClause}</li>
+     *          <li>{@link _MySQLDynamicWithClause}</li>
      *          <li>{@link _StaticWithClause}</li>
      *          <li>{@link _SimpleMultiDeleteClause}</li>
      *     </ul>
@@ -761,7 +761,7 @@ public interface MySQLDelete extends DialectStatement {
      * @since 1.0
      */
     interface _BatchMultiWithSpec<I extends Item>
-            extends MySQLQuery._MySQLDynamicWithCteClause<_BatchMultiDeleteClause<I>>
+            extends _MySQLDynamicWithClause<_BatchMultiDeleteClause<I>>
             , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>>>
             , _BatchMultiDeleteClause<I> {
 

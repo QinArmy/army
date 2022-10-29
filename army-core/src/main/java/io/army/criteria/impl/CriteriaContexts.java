@@ -80,6 +80,10 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
+    static CriteriaContext bracketContext(@Nullable _Statement._WithClauseSpec withSpec) {
+        throw new UnsupportedOperationException();
+    }
+
     static CriteriaContext subQueryContextFrom(final Query query) {
         final StatementContext leftContext;
         leftContext = (StatementContext) ((CriteriaContextSpec) query).getContext();
@@ -599,7 +603,13 @@ abstract class CriteriaContexts {
 
         @Override
         public _TableBlock lastBlock() {
-            String m = "current context don't support lastTableBlockWithoutOnClause()";
+            String m = "current context don't support lastBlock()";
+            throw ContextStack.criteriaError(this, m);
+        }
+
+        @Override
+        public CriteriaContext endContextBeforeSelect() {
+            String m = "current context don't support endContextBeforeSelect()";
             throw ContextStack.criteriaError(this, m);
         }
 

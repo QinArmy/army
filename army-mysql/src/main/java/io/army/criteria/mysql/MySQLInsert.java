@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 /**
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">INSERT Statement</a>
  */
-public interface MySQLInsert extends DialectStatement {
+public interface MySQLInsert extends MySQLStatement {
 
 
     interface _InsertClause<IR> extends Item {
@@ -72,7 +72,7 @@ public interface MySQLInsert extends DialectStatement {
     }
 
     interface _ComplexColumnDefaultSpec<I extends Item, T> extends _ValuesColumnDefaultSpec<I, T>
-            , _StaticSpaceClause<MySQLQuery._MySQLSelectClause<_OnDuplicateKeyUpdateSpec<I, FieldMeta<T>>>> {
+            , _StaticSpaceClause<MySQLQuery._SelectSpec<_OnDuplicateKeyUpdateSpec<I, FieldMeta<T>>>> {
 
     }
 

@@ -1,6 +1,9 @@
 package io.army.criteria.postgre;
 
-import io.army.criteria.*;
+import io.army.criteria.DialectStatement;
+import io.army.criteria.Expression;
+import io.army.criteria.Item;
+import io.army.criteria.Statement;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -148,14 +151,14 @@ public interface PostgreStatement extends DialectStatement {
     }
 
 
-    interface _PostgreNestedLeftParenClause<LT, LS> extends _LeftParenModifierClause<LT, LS>
+    interface _PostgreNestedLeftParenClause<LT, LS> extends _NestedLeftParenModifierClause<LT, LS>
             , _LeftParenCteClause<LS> {
 
     }
 
     interface _NestedLeftParenSpec<I extends Item>
             extends _PostgreNestedLeftParenClause<_NestedTableSampleJoinSpec<I>, _PostgreNestedJoinClause<I>>
-            , Query._LeftParenClause<_NestedLeftParenSpec<_PostgreNestedJoinClause<I>>> {
+            , _LeftParenClause<_NestedLeftParenSpec<_PostgreNestedJoinClause<I>>> {
         //TODO add nested function
     }
 

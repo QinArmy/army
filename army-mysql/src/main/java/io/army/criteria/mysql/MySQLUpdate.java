@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-public interface MySQLUpdate extends DialectStatement {
+public interface MySQLUpdate extends MySQLStatement {
 
 
     /**
@@ -60,7 +60,8 @@ public interface MySQLUpdate extends DialectStatement {
      *
      * @since 1.0
      */
-    interface _OrderBySpec<I extends Item> extends _StaticOrderByClause<_LimitSpec<I>>, _LimitSpec<I> {
+    interface _OrderBySpec<I extends Item> extends _StaticOrderByClause<_LimitSpec<I>>, _LimitSpec<I>
+            , _DynamicOrderByClause<SortItems, _LimitSpec<I>> {
 
     }
 
@@ -185,7 +186,7 @@ public interface MySQLUpdate extends DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link MySQLQuery._MySQLDynamicWithCteClause}</li>
+     *          <li>{@link _MySQLDynamicWithClause}</li>
      *          <li>method {@link _SingleUpdateClause}</li>
      *     </ul>
      * </p>
@@ -198,8 +199,8 @@ public interface MySQLUpdate extends DialectStatement {
      * @since 1.0
      */
     interface _SingleWithSpec<I extends Item>
-            extends MySQLQuery._MySQLDynamicWithCteClause<_SingleUpdateClause<I>>
-            , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>>>
+            extends _MySQLDynamicWithClause<_SingleUpdateClause<I>>
+            , _StaticWithClause<_StaticCteLeftParenSpec<_SingleComma<I>>>
             , _SingleUpdateClause<I> {
 
     }
@@ -376,7 +377,7 @@ public interface MySQLUpdate extends DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link DialectStatement._WithCteClause2}</li>
+     *          <li>{@link io.army.criteria.mysql.MySQLStatement._MySQLDynamicWithClause}</li>
      *          <li>method {@link _BatchSingleUpdateClause}</li>
      *     </ul>
      * </p>
@@ -389,7 +390,7 @@ public interface MySQLUpdate extends DialectStatement {
      * @since 1.0
      */
     interface _BatchSingleWithSpec<I extends Item>
-            extends MySQLQuery._MySQLDynamicWithCteClause<_BatchSingleUpdateClause<I>>
+            extends _MySQLDynamicWithClause<_BatchSingleUpdateClause<I>>
             , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
             , _BatchSingleUpdateClause<I> {
 
@@ -475,8 +476,8 @@ public interface MySQLUpdate extends DialectStatement {
      * @since 1.0
      */
     interface _MultiIndexHintOnSpec<I extends Item>
-            extends MySQLQuery._IndexHintForJoinClause<_MultiIndexHintOnSpec<I>>
-            , Statement._OnClause< _MultiJoinSpec<I>> {
+            extends _IndexHintForJoinClause<_MultiIndexHintOnSpec<I>>
+            , _OnClause<_MultiJoinSpec<I>> {
 
     }
 
@@ -493,7 +494,7 @@ public interface MySQLUpdate extends DialectStatement {
      * @since 1.0
      */
     interface _MultiPartitionOnClause<I extends Item>
-            extends MySQLQuery._PartitionAndAsClause< _MultiIndexHintOnSpec<I>> {
+            extends _PartitionAndAsClause<_MultiIndexHintOnSpec<I>> {
 
     }
 
@@ -512,13 +513,13 @@ public interface MySQLUpdate extends DialectStatement {
      * </p>
      */
     interface _MultiJoinSpec<I extends Item>
-            extends MySQLQuery._MySQLJoinClause<_MultiIndexHintOnSpec<I>, _OnClause<_MultiJoinSpec<I>>>
-            , MySQLQuery._MySQLCrossJoinClause<_MultiIndexHintJoinSpec<I>, _MultiJoinSpec<I>>
-            , MySQLQuery._MySQLJoinNestedClause<MySQLQuery._NestedLeftParenSpec<_OnClause<_MultiJoinSpec<I>>>>
-            , _CrossJoinNestedClause<MySQLQuery._NestedLeftParenSpec<_MultiJoinSpec<I>>>
-            , MySQLQuery._MySQLDynamicJoinClause<_MultiJoinSpec<I>>
-            , MySQLQuery._MySQLDynamicCrossJoinClause<_MultiJoinSpec<I>>
-            , MySQLQuery._MySQLDialectJoinClause<_MultiPartitionOnClause<I>>
+            extends _MySQLJoinClause<_MultiIndexHintOnSpec<I>, _OnClause<_MultiJoinSpec<I>>>
+            , _MySQLCrossJoinClause<_MultiIndexHintJoinSpec<I>, _MultiJoinSpec<I>>
+            , _MySQLJoinNestedClause<_NestedLeftParenSpec<_OnClause<_MultiJoinSpec<I>>>>
+            , _CrossJoinNestedClause<_NestedLeftParenSpec<_MultiJoinSpec<I>>>
+            , _MySQLDynamicJoinClause<_MultiJoinSpec<I>>
+            , _MySQLDynamicCrossJoinClause<_MultiJoinSpec<I>>
+            , _MySQLDialectJoinClause<_MultiPartitionOnClause<I>>
             , _DialectCrossJoinClause<_MultiPartitionJoinClause<I>>
             , _MultiSetClause<I> {
 
@@ -626,7 +627,7 @@ public interface MySQLUpdate extends DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link MySQLQuery._MySQLDynamicWithCteClause}</li>
+     *          <li>{@link _MySQLDynamicWithClause}</li>
      *          <li>{@link _StaticWithClause}</li>
      *          <li>{@link MultiUpdateClause}</li>
      *     </ul>
@@ -639,7 +640,7 @@ public interface MySQLUpdate extends DialectStatement {
      *
      * @since 1.0
      */
-    interface _MultiWithSpec<I extends Item> extends MySQLQuery._MySQLDynamicWithCteClause<MultiUpdateClause<I>>
+    interface _MultiWithSpec<I extends Item> extends _MySQLDynamicWithClause<MultiUpdateClause<I>>
             , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>>>
             , MultiUpdateClause<I> {
 
@@ -879,7 +880,7 @@ public interface MySQLUpdate extends DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link MySQLQuery._MySQLDynamicWithCteClause}</li>
+     *          <li>{@link _MySQLDynamicWithClause}</li>
      *          <li>{@link _StaticWithClause}</li>
      *          <li>{@link _BatchMultiUpdateClause}</li>
      *     </ul>
@@ -893,7 +894,7 @@ public interface MySQLUpdate extends DialectStatement {
      * @since 1.0
      */
     interface _BatchMultiWithSpec<I extends Item>
-            extends MySQLQuery._MySQLDynamicWithCteClause<_BatchMultiUpdateClause<I>>
+            extends _MySQLDynamicWithClause<_BatchMultiUpdateClause<I>>
             , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>>>
             , _BatchMultiUpdateClause<I> {
 

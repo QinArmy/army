@@ -81,12 +81,6 @@ public interface Query extends RowSet {
     }
 
 
-    interface _LeftParenClause<LR> {
-
-        LR leftParen();
-    }
-
-
     /*################################## blow select clause  interfaces ##################################*/
 
 

@@ -2,9 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.mysql.*;
-import io.army.meta.TableMeta;
-import io.army.util._Exceptions;
-import io.army.util._StringUtils;
 
 import java.util.Objects;
 
@@ -25,28 +22,17 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
     }
 
     public static MySQLQuery._WithCteSpec<Select> query() {
-        return MySQLQueries.primaryQuery();
+        return MySQLQueries.primaryQuery(SQLs::_identity);
     }
 
-    public static MySQLQuery._ParenQueryClause<Select> parenQuery() {
-        return MySQLQueries.primaryParenQuery();
-    }
 
     public static MySQLQuery._WithCteSpec<SubQuery> subQuery() {
         return MySQLQueries.subQuery(ContextStack.peek(), SQLs::_identity);
     }
 
-    public static MySQLQuery._ParenQueryClause<SubQuery> parenSubQuery() {
-        return MySQLQueries.parenSubQuery(ContextStack.peek(), SQLs::_identity);
-    }
-
 
     public static MySQLQuery._WithCteSpec<Expression> scalarSubQuery() {
         return MySQLQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
-    }
-
-    public static MySQLQuery._ParenQueryClause<Expression> parenScalarSubQuery() {
-        return MySQLQueries.parenSubQuery(ContextStack.peek(), ScalarExpression::from);
     }
 
 
@@ -115,77 +101,8 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
         return MySQLLoads.loadDataStmt(criteria);
     }
 
-    /**
-     * <p>
-     * create named {@link Window}.
-     * </p>
-     */
-    public static Window._SimpleAsClause<Void, Window> window(final String windowName) {
-        if (!_StringUtils.hasText(windowName)) {
-            throw _Exceptions.namedWindowNoText();
-        }
-        final CriteriaContext criteriaContext;
-        criteriaContext = ContextStack.peek();
-        if (criteriaContext.criteria() != null) {
-            String m = String.format("Current criteria object don't match,please use %s.%s"
-                    , SQLs.class.getName(), "window(C criteria,String windowName) method.");
-            throw new CriteriaException(m);
-        }
-        return WindowClause.standard(windowName, criteriaContext);
-    }
 
-    /**
-     * <p>
-     * create named {@link Window}.
-     * </p>
-     *
-     * @param criteria non-null criteria for dynamic named window.
-     */
-    public static <C> Window._SimpleAsClause<C, Window> window(C criteria, final String windowName) {
-        Objects.requireNonNull(criteria);
-        final CriteriaContext context;
-        context = ContextStack.peek();
-        if (criteria != context.criteria()) {
-            throw CriteriaUtils.criteriaNotMatch(context);
-        }
-        return WindowClause.standard(windowName, context);
-    }
 
-    public static MySQLQuery._MySQLNestedLeftParenClause<Void> nestedItems() {
-        return MySQLNestedItems.create(null);
-    }
-
-    public static <C> MySQLQuery._MySQLNestedLeftParenClause<C> nestedItems(C criteria) {
-        ContextStack.assertNonNull(criteria);
-        return MySQLNestedItems.create(criteria);
-    }
-
-    public static MySQLQuery._IfPartitionAsClause<Void> block(TableMeta<?> table) {
-        return MySQLSupports.block(null, table);
-    }
-
-    public static <C> MySQLQuery._IfPartitionAsClause<C> block(C criteria, TableMeta<?> table) {
-        ContextStack.assertNonNull(criteria);
-        return MySQLSupports.block(criteria, table);
-    }
-
-    public static MySQLQuery._IfUseIndexOnSpec<Void> block(TabularItem tableItem, String alias) {
-        return MySQLSupports.block(null, null, tableItem, alias);
-    }
-
-    public static <C> MySQLQuery._IfUseIndexOnSpec<C> block(C criteria, TabularItem tableItem, String alias) {
-        ContextStack.assertNonNull(criteria);
-        return MySQLSupports.block(criteria, null, tableItem, alias);
-    }
-
-    public static MySQLQuery._IfUseIndexOnSpec<Void> lateralBlock(SubQuery subQuery, String alias) {
-        return MySQLSupports.block(null, ItemWord.LATERAL, subQuery, alias);
-    }
-
-    public static <C> MySQLQuery._IfUseIndexOnSpec<C> lateralBlock(C criteria, SubQuery subQuery, String alias) {
-        ContextStack.assertNonNull(criteria);
-        return MySQLSupports.block(criteria, ItemWord.LATERAL, subQuery, alias);
-    }
 
 
 }

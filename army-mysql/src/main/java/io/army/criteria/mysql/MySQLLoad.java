@@ -1,6 +1,9 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.*;
+import io.army.criteria.Expression;
+import io.army.criteria.Insert;
+import io.army.criteria.PrimaryStatement;
+import io.army.criteria.Statement;
 import io.army.criteria.impl.MySQLSyntax;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
@@ -10,7 +13,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.*;
 
-public interface MySQLLoad extends DialectStatement, PrimaryStatement {
+public interface MySQLLoad extends MySQLStatement, PrimaryStatement {
 
 
     interface _LoadDataSpec {

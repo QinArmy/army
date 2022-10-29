@@ -3,7 +3,6 @@ package io.army.criteria.impl.inner.mysql;
 import io.army.criteria.SQLWords;
 import io.army.criteria.Window;
 import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.mysql.MySQL80Query;
 import io.army.lang.Nullable;
 
 import java.util.List;

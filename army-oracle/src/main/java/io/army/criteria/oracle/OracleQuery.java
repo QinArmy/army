@@ -215,7 +215,7 @@ public interface OracleQuery extends Query, OracleStatement {
 
 
     interface _UnionAndQuerySpec<I extends Item> extends _MinWithSpec<I>
-            , Query._LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+            , _LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 

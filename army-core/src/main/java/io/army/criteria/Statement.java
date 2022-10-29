@@ -127,6 +127,12 @@ public interface Statement extends Item {
         BR paramList(Function<String, ?> function, String keyName);
     }
 
+
+    interface _LeftParenClause<LR> {
+
+        LR leftParen();
+    }
+
     /**
      * <p>
      * This interface representing RIGHT BRACKET clause in join expression.
@@ -475,25 +481,19 @@ public interface Statement extends Item {
 
     }
 
-    interface _LeftParenModifierTabularClause<LT, LS> extends _NestedLeftParenClause<LT, LS> {
+    interface _NestedLeftParenModifierTabularClause<LT, LS> extends _NestedLeftParenClause<LT, LS> {
 
         <T extends TabularItem> Statement._AsClause<LS> leftParen(Query.TabularModifier modifier, Supplier<T> supplier);
 
     }
 
-    interface _LeftParenModifierClause<LT, LS> extends _LeftParenModifierTabularClause<LT, LS> {
+    interface _NestedLeftParenModifierClause<LT, LS> extends _NestedLeftParenModifierTabularClause<LT, LS> {
 
         LT leftParen(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
     }
 
 
-    interface _LeftParenCteClause<LC> {
-
-        LC leftParen(String cteName);
-
-        LC leftParen(String cteName, SQLs.WordAs wordAs, String alias);
-    }
 
 
     interface _NestedDialectLeftParenClause<LP> {
@@ -1227,4 +1227,5 @@ public interface Statement extends Item {
 
 
     }
+
 }

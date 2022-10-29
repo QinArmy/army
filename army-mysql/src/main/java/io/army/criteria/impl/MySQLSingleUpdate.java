@@ -5,9 +5,10 @@ import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
-import io.army.criteria.mysql.MySQLCteBuilder;
+import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
+import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
@@ -27,8 +28,8 @@ import java.util.function.Supplier;
  * This class is an implementation of {@link _MySQLSingleUpdate}.
  * </p>
  */
-abstract class MySQLSingleUpdate<I extends Item, T, UT, PS extends Update._ItemPairBuilder, SR, SD, WR, WA, OR, LR>
-        extends SingleUpdate<I, Item, FieldMeta<T>, PS, SR, SD, WR, WA, OR, LR, Object, Object>
+abstract class MySQLSingleUpdate<I extends Item, T, UT, SR, WR, WA, OR, LR>
+        extends SingleUpdate<I, FieldMeta<T>, SR, WR, WA, OR, LR, Object, Object>
         implements _MySQLSingleUpdate, MySQLUpdate, Update
         , MySQLQuery._IndexHintForOrderByClause<UT> {
 
@@ -60,6 +61,7 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, PS extends Update._ItemP
 
     private MySQLSingleUpdate(UpdateClause<I, ?> clause) {
         super(clause.context, clause.updateTable, clause.tableAlias);
+
         this.function = clause.function;
         this.recursive = clause.isRecursive();
         this.cteList = clause.cteList();
@@ -125,17 +127,6 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, PS extends Update._ItemP
 
 
     @Override
-    public final String toString() {
-        final String s;
-        if (this.isPrepared()) {
-            s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
-        } else {
-            s = super.toString();
-        }
-        return s;
-    }
-
-    @Override
     final I onAsUpdate() {
         this.hintClause = null;
         final List<MySQLIndexHint> indexHintList = this.indexHintList;
@@ -156,6 +147,11 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, PS extends Update._ItemP
         if (this instanceof BatchUpdateStatement) {
             ((BatchUpdateStatement<I, T>) this).paramList = null;
         }
+    }
+
+    @Override
+    final Dialect statementDialect() {
+        return MySQLDialect.MySQL80;
     }
 
     /**
@@ -191,9 +187,7 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, PS extends Update._ItemP
             I,
             T,
             MySQLUpdate._SingleIndexHintSpec<I, T>,
-            ItemPairs<FieldMeta<T>>,
             MySQLUpdate._SingleWhereSpec<I, T>,
-            MySQLUpdate._SingleWhereClause<I>,
             MySQLUpdate._OrderBySpec<I>,
             MySQLUpdate._SingleWhereAndSpec<I>,
             MySQLUpdate._LimitSpec<I>,
@@ -207,8 +201,9 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, PS extends Update._ItemP
         }
 
         @Override
-        ItemPairs<FieldMeta<T>> createItemPairBuilder(Consumer<ItemPair> consumer) {
-            return CriteriaSupports.itemPairs(consumer);
+        public _SingleWhereClause<I> set(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+            consumer.accept(CriteriaSupports.itemPairs(this::onAddItemPair));
+            return this;
         }
 
 
@@ -216,7 +211,7 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, PS extends Update._ItemP
 
 
     private static abstract class UpdateClause<I extends Item, WE>
-            extends CriteriaSupports.WithClause<MySQLCteBuilder, WE> {
+            extends CriteriaSupports.WithClause<MySQLCtes, WE> {
 
         private final Function<Update, I> function;
 
@@ -237,7 +232,7 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, PS extends Update._ItemP
         }
 
         @Override
-        final MySQLCteBuilder createCteBuilder(boolean recursive) {
+        final MySQLCtes createCteBuilder(boolean recursive) {
             return MySQLSupports.mySQLCteBuilder(recursive, this.context);
         }
 
@@ -513,9 +508,7 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, PS extends Update._ItemP
             I,
             T,
             MySQLUpdate._BatchSingleIndexHintSpec<I, T>,
-            BatchItemPairs<FieldMeta<T>>,
             MySQLUpdate._BatchSingleWhereSpec<I, T>,
-            MySQLUpdate._BatchSingleWhereClause<I>,
             MySQLUpdate._BatchOrderBySpec<I>,
             MySQLUpdate._BatchSingleWhereAndSpec<I>,
             MySQLUpdate._BatchLimitSpec<I>,
@@ -532,6 +525,11 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, PS extends Update._ItemP
             super(clause);
         }
 
+        @Override
+        public _BatchSingleWhereClause<I> set(Consumer<BatchItemPairs<FieldMeta<T>>> consumer) {
+            consumer.accept(CriteriaSupports.batchItemPairs(this::onAddItemPair));
+            return this;
+        }
 
         @Override
         public <P> _DmlUpdateSpec<I> paramList(List<P> paramList) {
@@ -559,12 +557,6 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, PS extends Update._ItemP
             }
             return list;
         }
-
-        @Override
-        BatchItemPairs<FieldMeta<T>> createItemPairBuilder(Consumer<ItemPair> consumer) {
-            return CriteriaSupports.batchItemPairs(consumer);
-        }
-
 
     }//BatchUpdate
 

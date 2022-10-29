@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.util._Assert;
 import io.army.util._ClassUtils;
@@ -262,21 +261,7 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
     }
 
 
-    @Override
-    public final String toString() {
-        final String s;
-        if (this instanceof PrimaryStatement && this.isPrepared()) {
-            s = this.mockAsString(this.statementDialect(), Visible.ONLY_VISIBLE, true);
-        } else {
-            s = super.toString();
-        }
-        return s;
-    }
-
     abstract I onAsUpdate();
-
-
-    abstract Dialect statementDialect();
 
     void onClear() {
         //no-op

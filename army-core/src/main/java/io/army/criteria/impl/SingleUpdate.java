@@ -3,15 +3,14 @@ package io.army.criteria.impl;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
 import io.army.criteria.TableField;
-import io.army.criteria.Update;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._Update;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
 
 
-abstract class SingleUpdate<I extends Item, F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA, OR, LR, LO, LF>
-        extends SetWhereClause<F, PS, SR, SD, WR, WA, OR, LR, LO, LF>
+abstract class SingleUpdate<I extends Item, F extends TableField, SR, WR, WA, OR, LR, LO, LF>
+        extends SetWhereClause<F, SR, WR, WA, OR, LR, LO, LF>
         implements Statement
         , Statement._DmlUpdateSpec<I>
         , _Update, _SingleUpdate {

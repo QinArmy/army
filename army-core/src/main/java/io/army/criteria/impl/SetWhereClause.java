@@ -14,6 +14,7 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -21,10 +22,9 @@ import java.util.function.Supplier;
 
 
 @SuppressWarnings("unchecked")
-abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA, OR, LR, LO, LF>
+abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
         extends WhereClause<WR, WA, OR, LR, LO, LF>
         implements Update._StaticBatchSetClause<F, SR>
-        , Update._DynamicSetClause<PS, SD>
         , Update._StaticRowSetClause<F, SR>
         , _Statement._ItemPairList
         , _Statement._TableMetaSpec {
@@ -38,20 +38,13 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
     /**
      * @param tableAlias for {@link SingleUpdate} non-null and  non-empty,for other non-null
      */
-    SetWhereClause(CriteriaContext context, @Nullable TableMeta<?> updateTable, @Nullable String tableAlias) {
+    SetWhereClause(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
         super(context);
-        assert updateTable != null;
-        assert tableAlias != null;
+        Objects.requireNonNull(updateTable);
+        Objects.requireNonNull(tableAlias);
         this.updateTable = updateTable;
         this.tableAlias = tableAlias;
 
-    }
-
-
-    @Override
-    public final SD set(Consumer<PS> consumer) {
-        consumer.accept(this.createItemPairBuilder(this::onAddItemPair));
-        return (SD) this;
     }
 
     @Override
@@ -238,8 +231,6 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
         return itemPairList;
     }
 
-    abstract PS createItemPairBuilder(Consumer<ItemPair> consumer);
-
     void onAddChildItemPair(SQLs.ArmyItemPair pair) {
         throw new UnsupportedOperationException();
     }
@@ -259,7 +250,7 @@ abstract class SetWhereClause<F extends TableField, PS extends Update._ItemPairB
     }
 
 
-    private SR onAddItemPair(final ItemPair pair) {
+    final SR onAddItemPair(final ItemPair pair) {
         final List<_ItemPair> itemPairList = this.itemPairList;
         if (!(itemPairList instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);

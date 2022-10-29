@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.*;
+import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
@@ -31,9 +32,9 @@ import java.util.function.Function;
  */
 abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQueries<
         I,
-        MySQLCteBuilder,
-        MySQLQuery._MySQLSelectClause<I>,
-        MySQLSyntax.Modifier,
+        MySQLCtes,
+        MySQLQuery._SelectSpec<I>,
+        MySQLs.Modifier,
         MySQLQuery._FromSpec<I>,
         MySQLQuery._IndexHintJoinSpec<I>,
         MySQLQuery._JoinSpec<I>,
@@ -47,7 +48,9 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         MySQLQuery._WindowSpec<I>,
         MySQLQuery._OrderByWithRollupSpec<I>,
         MySQLQuery._LockOptionSpec<I>,
-        MySQLQuery._UnionAndQuerySpec<I>>
+        Object,
+        Object,
+        MySQLQuery._MinWithSpec<I>>
         implements _MySQLQuery, MySQLQuery
         , MySQLQuery._WithCteSpec<I>
         , MySQLQuery._FromSpec<I>
@@ -60,23 +63,14 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         , MySQLQuery._LockOfTableSpec<I>
         , OrderByClause.OrderByEventListener {
 
-    static MySQLQuery._WithCteSpec<Select> primaryQuery() {
-        return new SimpleSelect<>(CriteriaContexts.primaryQuery(null), SQLs::_identity);
-    }
-
-    static MySQLQuery._ParenQueryClause<Select> primaryParenQuery() {
-        return new ParenSelect();
+    static <I extends Item> MySQLQuery._WithCteSpec<I> primaryQuery(Function<Select, I> function) {
+        return new SimpleSelect<>(null, CriteriaContexts.primaryQuery(null), function);
     }
 
 
     static <I extends Item> MySQLQuery._WithCteSpec<I> subQuery(CriteriaContext outerContext
             , Function<SubQuery, I> function) {
         return new SimpleSubQuery<>(outerContext, function);
-    }
-
-    static <I extends Item> MySQLQuery._ParenQueryClause<I> parenSubQuery(CriteriaContext outerContext
-            , Function<SubQuery, I> function) {
-        return new ParenSubQuery<>(outerContext, function);
     }
 
     static <I extends Item> Function<String, MySQLQuery._StaticCteLeftParenSpec<I>> complexCte(CriteriaContext context
@@ -103,8 +97,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     private List<String> intoVarList;
 
-    MySQLQueries(CriteriaContext context) {
-        super(context);
+    MySQLQueries(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
+        super(withSpec, context);
     }
 
 
@@ -126,6 +120,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         return new MySQLCteComma<>(this, recursive)
                 .complexCommand.nextCte(name);
     }
+
 
     @Override
     public final _PartitionJoinSpec<I> from(TableMeta<?> table) {
@@ -294,7 +289,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
 
     @Override
-    public final _OrderBySpec<I> window(Consumer<MySQLWindowBuilder> consumer) {
+    public final _OrderBySpec<I> window(Consumer<MySQLWindows> consumer) {
         consumer.accept(new MySQLWindowBuilderImpl(this));
         if (this.windowList == null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::windowListIsEmpty);
@@ -303,7 +298,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     @Override
-    public final _OrderBySpec<I> ifWindow(Consumer<MySQLWindowBuilder> consumer) {
+    public final _OrderBySpec<I> ifWindow(Consumer<MySQLWindows> consumer) {
         consumer.accept(new MySQLWindowBuilderImpl(this));
         return this;
     }
@@ -548,7 +543,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     @Override
-    final MySQLCteBuilder createCteBuilder(boolean recursive) {
+    final MySQLCtes createCteBuilder(boolean recursive) {
         return MySQLSupports.mySQLCteBuilder(recursive, this.context);
     }
 
@@ -631,10 +626,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         return new OnClauseTableBlock.OnItemTableBlock<>(joinType, null, tableItem, alias, this);
     }
 
-
+    @Override
+    final Dialect statementDialect() {
+        return MySQLDialect.MySQL80;
+    }
 
     /*################################## blow private method ##################################*/
-
 
 
     /**
@@ -700,21 +697,22 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         private final Function<Select, I> function;
 
-        private SimpleSelect(CriteriaContext context, Function<Select, I> function) {
-            super(context);
+        private SimpleSelect(@Nullable _WithClauseSpec multiStmtWithSpec, CriteriaContext context
+                , Function<Select, I> function) {
+            super(multiStmtWithSpec, context);
             this.function = function;
         }
 
-
         @Override
-        public String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
+        public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final CriteriaContext bracketContext, selectContext;
+            bracketContext = CriteriaContexts.bracketContext(this.context.endContextBeforeSelect());
+
+            final MySQLBracketSelect<I> bracket;
+            bracket = new MySQLBracketSelect<>(bracketContext, this.function);
+
+            selectContext = CriteriaContexts.primaryQuery(bracketContext);
+            return new SimpleSelect<>(null, selectContext, bracket::parenRowSetEnd);
         }
 
         @Override
@@ -723,7 +721,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        _UnionAndQuerySpec<I> createQueryUnion(UnionType unionType) {
+        _MinWithSpec<I> createQueryUnion(UnionType unionType) {
             UnionType.standardUnionType(this.context, unionType);
             return new UnionAndSelectClause<>(this, unionType, this.function);
         }
@@ -737,8 +735,20 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         private final Function<SubQuery, I> function;
 
         private SimpleSubQuery(CriteriaContext context, Function<SubQuery, I> function) {
-            super(context);
+            super(null, context);
             this.function = function;
+        }
+
+        @Override
+        public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final CriteriaContext bracketContext, subQueryContext;
+            bracketContext = CriteriaContexts.bracketContext(this.context.endContextBeforeSelect());
+
+            final MySQLBracketSubQuery<I> bracket;
+            bracket = new MySQLBracketSubQuery<>(bracketContext, this.function);
+
+            subQueryContext = CriteriaContexts.subQueryContext(bracketContext);
+            return new SimpleSubQuery<>(subQueryContext, bracket::parenRowSetEnd);
         }
 
         @Override
@@ -747,10 +757,11 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        _UnionAndQuerySpec<I> createQueryUnion(final UnionType unionType) {
+        _MinWithSpec<I> createQueryUnion(final UnionType unionType) {
             UnionType.standardUnionType(this.context, unionType);
             return new UnionAndSubQueryClause<>(this, unionType, this.function);
         }
+
     }//SimpleSubQuery
 
 
@@ -760,7 +771,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         LOCK_IN_SHARE_MODE(_Constant.SPACE_LOCK_IN_SHARE_MODE),
         FOR_SHARE(_Constant.SPACE_FOR_SHARE);
 
-        final String spaceWords;
+        private final String spaceWords;
 
         MySQLLockMode(String spaceWords) {
             this.spaceWords = spaceWords;
@@ -788,7 +799,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      * @see #window(Consumer)
      * @see #ifWindow(Consumer)
      */
-    private static final class MySQLWindowBuilderImpl implements MySQLWindowBuilder {
+    private static final class MySQLWindowBuilderImpl implements MySQLWindows {
 
         private final MySQLQueries<?> stmt;
 
@@ -797,14 +808,15 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        public Window._SimpleAsClause<MySQLWindowBuilder> comma(final String windowName) {
+        public Window._SimpleAsClause<MySQLWindows> window(final String windowName) {
             if (!_StringUtils.hasText(windowName)) {
                 throw ContextStack.criteriaError(this.stmt.context, _Exceptions::namedWindowNoText);
             }
             return WindowClause.namedWindow(windowName, this.stmt.context, this::windowClauseEnd);
         }
 
-        private MySQLWindowBuilder windowClauseEnd(final _Window window) {
+
+        private MySQLWindows windowClauseEnd(final _Window window) {
             this.stmt.onAddWindow(window);
             return this;
         }
@@ -830,7 +842,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>> block;
             block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
 
-            stmt.context.onAddBlock(block);
+            stmt.blockConsumer.accept(block);
             stmt.noOnBlock = block;// update noOnBlock
             return stmt;
         }
@@ -879,7 +891,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }//PartitionOnClause
 
     private static final class MySQLCteComma<I extends Item>
-            extends SimpleQueries.SelectClauseDispatcher<MySQLSyntax.Modifier, MySQLQuery._FromSpec<I>>
+            extends WithSelectClauseDispatcher<MySQLCtes, _SelectSpec<I>, MySQLs.Modifier, _FromSpec<I>>
             implements MySQLQuery._CteComma<I> {
 
         private final boolean recursive;
@@ -900,7 +912,14 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        _DynamicHintModifierSelectClause<MySQLSyntax.Modifier, _FromSpec<I>> createSelectClause() {
+        public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final MySQLQueries<I> statement = this.statement;
+            statement.endStaticWithClause(this.recursive);
+            return statement.leftParen();
+        }
+
+        @Override
+        MySQLQueries<I> createSelectClause() {
             final MySQLQueries<I> statement = this.statement;
             statement.endStaticWithClause(this.recursive);
             return statement;
@@ -917,7 +936,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             _StaticCteAsClause<I>>
             implements MySQLQuery._StaticCteLeftParenSpec<I>
             , _RightParenClause<_StaticCteAsClause<I>>
-            , _MySQLSelectClause<_AsCteClause<I>>
+            , _SelectSpec<_AsCteClause<I>>
             , _AsCteClause<I> {
 
         private final I cteComma;
@@ -932,7 +951,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        public _MySQLSelectClause<_AsCteClause<I>> as() {
+        public _SelectSpec<_AsCteClause<I>> as() {
             if (this.cteName == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -945,8 +964,20 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<_AsCteClause<I>>> createSelectClause() {
-            return MySQLQueries.subQuery(this.context, this::queryEnd);
+        public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<_AsCteClause<I>>>> leftParen() {
+            final CriteriaContext bracketContext, subQueryContext;
+            bracketContext = CriteriaContexts.bracketContext(this.context);
+
+            final MySQLBracketSubQuery<_AsCteClause<I>> bracket;
+            bracket = new MySQLBracketSubQuery<>(bracketContext, this::queryEnd);
+
+            subQueryContext = CriteriaContexts.subQueryContext(bracketContext);
+            return new SimpleSubQuery<>(subQueryContext, bracket::parenRowSetEnd);
+        }
+
+        @Override
+        MySQLQueries<_AsCteClause<I>> createSelectClause() {
+            return new SimpleSubQuery<>(this.context, this::queryEnd);
         }
 
         _StaticCteAsClause<I> columnAliasClauseEnd(final List<String> list) {
@@ -977,85 +1008,44 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }//StaticComplexCommand
 
 
-    /**
-     * @see #primaryParenQuery()
-     */
-    private static final class ParenSelect implements MySQLQuery._ParenQueryClause<Select> {
-
-        private ParenSelect() {
-        }
-
-        @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<Select>>> leftParen() {
-            final MySQLBracketSelect<Select> bracket;
-            bracket = new MySQLBracketSelect<>(CriteriaContexts.bracketContext(null), SQLs::_identity);
-            return new UnionLeftParenSelectClause<>(bracket);
-        }
-
-    }//ParenSelect
-
-    /**
-     * @see #parenSubQuery(CriteriaContext, Function)
-     */
-    private static final class ParenSubQuery<I extends Item>
-            extends SelectClauseDispatcher<MySQLs.Modifier, MySQLQuery._FromSpec<I>>
-            implements MySQLQuery._ParenQuerySpec<I> {
-
-        private final CriteriaContext outerContext;
-
-        private final Function<SubQuery, I> function;
-
-
-        private ParenSubQuery(CriteriaContext outerContext, Function<SubQuery, I> function) {
-            this.outerContext = outerContext;
-            this.function = function;
-        }
-
-        @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final MySQLBracketSubQuery<I> bracket;
-            bracket = new MySQLBracketSubQuery<>(CriteriaContexts.bracketContext(this.outerContext), this.function);
-            return new UnionLeftParenSubQueryClause<>(bracket);
-        }
-
-        @Override
-        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<I>> createSelectClause() {
-            return new SimpleSubQuery<>(CriteriaContexts.subQueryContext(this.outerContext), this.function);
-        }
-
-
-    }//ParenSubQuery
-
-
-    private static final class MySQLBracketSelect<I extends Item>
+    private static abstract class MySQLBracketQuery<I extends Item, Q extends Query>
             extends BracketRowSet<
             I,
-            Select,
-            MySQLQuery._UnionOrderBySpec<I>,
-            MySQLQuery._UnionLimitSpec<I>,
+            Q,
+            _UnionOrderBySpec<I>,
+            _UnionLimitSpec<I>,
             _AsQueryClause<I>,
-            MySQLQuery._UnionAndQuerySpec<I>,
+            Object,
+            Object,
+            _MinWithSpec<I>,
             RowSet,
-            Void> implements MySQLQuery._UnionOrderBySpec<I>
-            , Statement._RightParenClause<MySQLQuery._UnionOrderBySpec<I>>
-            , Select {
+            Object> implements _UnionOrderBySpec<I> {
 
-        private final Function<Select, I> function;
+        final Function<Q, I> function;
 
-        private MySQLBracketSelect(CriteriaContext context, Function<Select, I> function) {
+        private MySQLBracketQuery(CriteriaContext context, Function<Q, I> function) {
             super(context);
             this.function = function;
         }
 
         @Override
-        public String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
+        final Dialect statementDialect() {
+            return MySQLDialect.MySQL80;
+        }
+
+        @Override
+        final Object createRowSetUnion(UnionType unionType, RowSet right) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+
+    }//MySQLBracketQuery
+
+    private static final class MySQLBracketSelect<I extends Item> extends MySQLBracketQuery<I, Select>
+            implements Select {
+
+        private MySQLBracketSelect(CriteriaContext context, Function<Select, I> function) {
+            super(context, function);
         }
 
         @Override
@@ -1064,32 +1054,19 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        _UnionAndQuerySpec<I> createQueryUnion(final UnionType unionType) {
-            UnionType.standardUnionType(this.context, unionType);
+        _MinWithSpec<I> createQueryUnion(UnionType unionType) {
             return new UnionAndSelectClause<>(this, unionType, this.function);
         }
+
 
     }//MySQLBracketSelect
 
 
-    private static final class MySQLBracketSubQuery<I extends Item>
-            extends BracketRowSet<
-            I,
-            SubQuery,
-            MySQLQuery._UnionOrderBySpec<I>,
-            MySQLQuery._UnionLimitSpec<I>,
-            _AsQueryClause<I>,
-            MySQLQuery._UnionAndQuerySpec<I>,
-            RowSet,
-            Void> implements MySQLQuery._UnionOrderBySpec<I>
-            , Statement._RightParenClause<MySQLQuery._UnionOrderBySpec<I>>
-            , SubQuery {
-
-        private final Function<SubQuery, I> function;
+    private static final class MySQLBracketSubQuery<I extends Item> extends MySQLBracketQuery<I, SubQuery>
+            implements SubQuery {
 
         private MySQLBracketSubQuery(CriteriaContext context, Function<SubQuery, I> function) {
-            super(context);
-            this.function = function;
+            super(context, function);
         }
 
         @Override
@@ -1098,47 +1075,17 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        _UnionAndQuerySpec<I> createQueryUnion(final UnionType unionType) {
-            UnionType.standardUnionType(this.context, unionType);
+        _MinWithSpec<I> createQueryUnion(UnionType unionType) {
             return new UnionAndSubQueryClause<>(this, unionType, this.function);
         }
+
 
     }//MySQLBracketSubQuery
 
 
-    private static final class UnionLeftParenSubQueryClause<I extends Item>
-            extends SelectClauseDispatcher<MySQLs.Modifier, MySQLQuery._FromSpec<_RightParenClause<MySQLQuery._UnionOrderBySpec<I>>>>
-            implements MySQLQuery._UnionAndQuerySpec<_RightParenClause<MySQLQuery._UnionOrderBySpec<I>>> {
-
-        private final MySQLBracketSubQuery<I> bracket;
-
-        private UnionLeftParenSubQueryClause(MySQLBracketSubQuery<I> bracket) {
-            this.bracket = bracket;
-        }
-
-        @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<_RightParenClause<_UnionOrderBySpec<I>>>>> leftParen() {
-            final CriteriaContext context;
-            context = CriteriaContexts.bracketContext(this.bracket.context);
-
-            final MySQLBracketSubQuery<_RightParenClause<_UnionOrderBySpec<I>>> newBracket;
-            newBracket = new MySQLBracketSubQuery<>(context, this.bracket::parenRowSetEnd);
-            return new UnionLeftParenSubQueryClause<>(newBracket);
-        }
-
-        @Override
-        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>> createSelectClause() {
-            final CriteriaContext context;
-            context = CriteriaContexts.primaryQuery(this.bracket.context);
-            return new SimpleSubQuery<>(context, this.bracket::parenRowSetEnd);
-        }
-
-
-    }//UnionLeftParenSubQueryClause
-
     private static final class UnionAndSubQueryClause<I extends Item>
-            extends SelectClauseDispatcher<MySQLs.Modifier, MySQLQuery._FromSpec<I>>
-            implements MySQLQuery._UnionAndQuerySpec<I> {
+            extends WithSelectClauseDispatcher<MySQLCtes, _SelectSpec<I>, MySQLs.Modifier, _FromSpec<I>>
+            implements MySQLQuery._MinWithSpec<I> {
 
         private final SubQuery left;
 
@@ -1152,20 +1099,20 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             this.function = function;
         }
 
-
         @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final CriteriaContext leftContext, context;
-            leftContext = ((CriteriaContextSpec) this.left).getContext();
-            context = CriteriaContexts.unionBracketContext(leftContext);
+        public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final CriteriaContext bracketContext, subQueryContext;
+            bracketContext = CriteriaContexts.unionBracketContext(((CriteriaContextSpec) this.left).getContext());
 
             final MySQLBracketSubQuery<I> bracket;
-            bracket = new MySQLBracketSubQuery<>(context, this::unionRight);
-            return new UnionLeftParenSubQueryClause<>(bracket);
+            bracket = new MySQLBracketSubQuery<>(bracketContext, this::unionRight);
+
+            subQueryContext = CriteriaContexts.subQueryContext(bracketContext);
+            return new SimpleSubQuery<>(subQueryContext, bracket::parenRowSetEnd);
         }
 
         @Override
-        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<I>> createSelectClause() {
+        MySQLQueries<I> createSelectClause() {
             final CriteriaContext leftContext, context;
             leftContext = ((CriteriaContextSpec) this.left).getContext();
 
@@ -1181,39 +1128,9 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }//UnionAndSubQueryClause
 
 
-    private static final class UnionLeftParenSelectClause<I extends Item>
-            extends SelectClauseDispatcher<MySQLs.Modifier, MySQLQuery._FromSpec<_RightParenClause<MySQLQuery._UnionOrderBySpec<I>>>>
-            implements MySQLQuery._UnionAndQuerySpec<_RightParenClause<MySQLQuery._UnionOrderBySpec<I>>> {
-
-        private final MySQLBracketSelect<I> bracket;
-
-        private UnionLeftParenSelectClause(MySQLBracketSelect<I> bracket) {
-            this.bracket = bracket;
-        }
-
-        @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<_RightParenClause<_UnionOrderBySpec<I>>>>> leftParen() {
-            final CriteriaContext context;
-            context = CriteriaContexts.bracketContext(this.bracket.context);
-
-            final MySQLBracketSelect<_RightParenClause<_UnionOrderBySpec<I>>> newBracket;
-            newBracket = new MySQLBracketSelect<>(context, this.bracket::parenRowSetEnd);
-            return new UnionLeftParenSelectClause<>(newBracket);
-        }
-
-        @Override
-        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<_RightParenClause<_UnionOrderBySpec<I>>>> createSelectClause() {
-            final CriteriaContext context;
-            context = CriteriaContexts.primaryQuery(this.bracket.context);
-            return new SimpleSelect<>(context, this.bracket::parenRowSetEnd);
-        }
-
-
-    }//UnionLeftParenSelectClause
-
     private static final class UnionAndSelectClause<I extends Item>
-            extends SelectClauseDispatcher<MySQLs.Modifier, MySQLQuery._FromSpec<I>>
-            implements MySQLQuery._UnionAndQuerySpec<I> {
+            extends WithSelectClauseDispatcher<MySQLCtes, _SelectSpec<I>, MySQLs.Modifier, _FromSpec<I>>
+            implements _MinWithSpec<I> {
 
         private final Select left;
 
@@ -1229,23 +1146,24 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
 
         @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final CriteriaContext leftContext, context;
-            leftContext = ((CriteriaContextSpec) this.left).getContext();
-            context = CriteriaContexts.unionBracketContext(leftContext);
+        public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final CriteriaContext bracketContext, selectContext;
+            bracketContext = CriteriaContexts.unionBracketContext(((CriteriaContextSpec) this.left).getContext());
 
             final MySQLBracketSelect<I> bracket;
-            bracket = new MySQLBracketSelect<>(context, this::unionRight);
-            return new UnionLeftParenSelectClause<>(bracket);
+            bracket = new MySQLBracketSelect<>(bracketContext, this::unionRight);
+
+            selectContext = CriteriaContexts.primaryQuery(bracketContext);
+            return new SimpleSelect<>(null, selectContext, bracket::parenRowSetEnd);
         }
 
         @Override
-        _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<I>> createSelectClause() {
+        MySQLQueries<I> createSelectClause() {
             final CriteriaContext leftContext, context;
             leftContext = ((CriteriaContextSpec) this.left).getContext();
 
             context = CriteriaContexts.unionSelectContext(leftContext);
-            return new SimpleSelect<>(context, this::unionRight);
+            return new SimpleSelect<>(null, context, this::unionRight);
         }
 
         private I unionRight(final Select right) {

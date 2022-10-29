@@ -398,7 +398,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
     interface _UnionAndQuerySpec<I extends Item> extends _MinWithSpec<I>
-            , Query._LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+            , _LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 

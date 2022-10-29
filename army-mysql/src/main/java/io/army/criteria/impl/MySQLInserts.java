@@ -426,7 +426,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLQuery._MySQLSelectClause<MySQLInsert._OnDuplicateKeyUpdateSpec<I, FieldMeta<T>>> space() {
+        public MySQLQuery._SelectSpec<MySQLInsert._OnDuplicateKeyUpdateSpec<I, FieldMeta<T>>> space() {
             return MySQLQueries.subQuery(this.context, this::staticSpaceQueryEnd);
         }
 

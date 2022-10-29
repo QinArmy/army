@@ -84,7 +84,6 @@ abstract class SingleDelete<I extends Item, WR, WA, OR, LR, LO, LF>
             if (withSpec != null) {
                 this.recursive = withSpec.isRecursive();
                 this.cteList = withSpec.cteList();
-                assert this.cteList != null;
             }
         }
 

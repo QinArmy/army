@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLMultiDelete;
 import io.army.criteria.mysql.*;
+import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -27,7 +28,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends Item, JT, JS, WR, WA>
-        extends JoinableDelete.WithJoinableDelete<I, Item, MySQLCteBuilder, WE, FT, FS, FS, JT, JS, JS, WR, WA>
+        extends JoinableDelete.WithJoinableDelete<I, MySQLCtes, WE, FT, FS, FS, JT, JS, JS, WR, WA>
         implements MySQLDelete, _MySQLMultiDelete
         , MySQLDelete._MultiDeleteFromAliasClause<FU>
         , MySQLDelete._MultiDeleteHintClause<DH>
@@ -61,8 +62,8 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
 
     MySQLSupports.MySQLNoOnBlock<FT> noOnBlock;
 
-    private MySQLMultiDelete(Function<Delete, I> function) {
-        super(CriteriaContexts.primaryMultiDmlContext());
+    private MySQLMultiDelete(@Nullable _WithClauseSpec withSpec, Function<Delete, I> function) {
+        super(withSpec, CriteriaContexts.primaryMultiDmlContext());
         this.function = function;
     }
 
@@ -105,65 +106,6 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
         return (DT) this;
     }
 
-
-    @Override
-    public final FT from(TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
-        final _TableBlock block;
-        block = this.createNoOnTableBlock(_JoinType.NONE, null, table, tableAlias);
-        this.blockConsumer.accept(block);
-        return (FT) this;
-    }
-
-    @Override
-    public final <T extends TabularItem> _AsClause<FS> from(Supplier<T> supplier) {
-        final TabularItem tabularItem;
-        tabularItem = supplier.get();
-        if (tabularItem == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        final _AsClause<FS> asClause;
-        asClause = alias -> {
-            this.blockConsumer.accept(new TableBlock.NoOnTableBlock(_JoinType.NONE, tabularItem, alias));
-            return (FS) this;
-        };
-        return asClause;
-    }
-
-    @Override
-    public final <T extends TabularItem> _AsClause<FS> from(Query.TabularModifier modifier, Supplier<T> supplier) {
-        if (modifier != SQLs.LATERAL) {
-            throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
-        }
-        final TabularItem tabularItem;
-        tabularItem = supplier.get();
-        if (tabularItem == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        final _AsClause<FS> asClause;
-        asClause = alias -> {
-            final TableBlock.NoOnModifierTableBlock block;
-            block = new TableBlock.NoOnModifierTableBlock(_JoinType.NONE, modifier, tabularItem, alias);
-            this.blockConsumer.accept(block);
-            return (FS) this;
-        };
-        return asClause;
-    }
-
-
-    @Override
-    public final FS from(String cteName) {
-        this.blockConsumer.accept(new TableBlock.NoOnTableBlock(_JoinType.NONE, this.context.refCte(cteName), ""));
-        return (FS) this;
-    }
-
-    @Override
-    public final FS from(String cteName, StandardSyntax.WordAs wordAs, String alias) {
-        assert wordAs == SQLs.AS;
-        final TableBlock.NoOnTableBlock block;
-        block = new TableBlock.NoOnTableBlock(_JoinType.NONE, this.context.refCte(cteName), alias);
-        this.blockConsumer.accept(block);
-        return (FS) this;
-    }
 
     @Override
     public final MySQLQuery._NestedLeftParenSpec<FS> from() {
@@ -217,17 +159,6 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
         return this.getHintClause().forceIndex();
     }
 
-    @Override
-    public final String toString() {
-        final String s;
-        if (this.isPrepared()) {
-            s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
-        } else {
-            s = super.toString();
-        }
-        return s;
-    }
-
 
     @Override
     public final List<Hint> hintList() {
@@ -278,7 +209,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
     }
 
     @Override
-    final MySQLCteBuilder createCteBuilder(boolean recursive) {
+    final MySQLCtes createCteBuilder(boolean recursive) {
         return MySQLSupports.mySQLCteBuilder(recursive, this.context);
     }
 
@@ -358,6 +289,10 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
         return block;
     }
 
+    @Override
+    final Dialect statementDialect() {
+        return MySQLDialect.MySQL80;
+    }
 
     /**
      * @see #useIndex()
@@ -452,7 +387,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
             , MySQLDelete._MultiWhereAndSpec<I> {
 
         private SimpleMultiDelete(Function<Delete, I> function) {
-            super(function);
+            super(null, function);
         }
 
         @Override
@@ -472,37 +407,6 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
         @Override
         public _MultiPartitionJoinClause<I> from(TableMeta<?> table) {
             return new SimplePartitionJoinClause<>(this, _JoinType.NONE, table);
-        }
-
-        @Override
-        public _MultiIndexHintJoinSpec<I> using(TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
-            this.usingSyntax = true;
-            return this.from(table, wordAs, tableAlias);
-        }
-
-        @Override
-        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> using(Supplier<T> supplier) {
-            this.usingSyntax = true;
-            return this.from(supplier);
-        }
-
-        @Override
-        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> using(Query.TabularModifier modifier
-                , Supplier<T> supplier) {
-            this.usingSyntax = true;
-            return this.from(modifier, supplier);
-        }
-
-        @Override
-        public _MultiJoinSpec<I> using(String cteName) {
-            this.usingSyntax = true;
-            return this.from(cteName);
-        }
-
-        @Override
-        public _MultiJoinSpec<I> using(String cteName, StandardSyntax.WordAs wordAs, String alias) {
-            this.usingSyntax = true;
-            return this.from(cteName, wordAs, alias);
         }
 
         @Override
@@ -726,7 +630,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
         private List<?> paramList;
 
         private BatchMultiDelete(Function<Delete, I> function) {
-            super(function);
+            super(null, function);
         }
 
         @Override
@@ -746,38 +650,6 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
         @Override
         public _BatchMultiPartitionJoinClause<I> from(TableMeta<?> table) {
             return new BatchPartitionJoinClause<>(this, _JoinType.NONE, table);
-        }
-
-        @Override
-        public _BatchMultiIndexHintJoinSpec<I> using(TableMeta<?> table, StandardSyntax.WordAs wordAs
-                , String tableAlias) {
-            this.usingSyntax = true;
-            return this.from(table, wordAs, tableAlias);
-        }
-
-        @Override
-        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> using(Supplier<T> supplier) {
-            this.usingSyntax = true;
-            return this.from(supplier);
-        }
-
-        @Override
-        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> using(Query.TabularModifier modifier
-                , Supplier<T> supplier) {
-            this.usingSyntax = true;
-            return this.from(modifier, supplier);
-        }
-
-        @Override
-        public _BatchMultiJoinSpec<I> using(String cteName) {
-            this.usingSyntax = true;
-            return this.from(cteName);
-        }
-
-        @Override
-        public _BatchMultiJoinSpec<I> using(String cteName, StandardSyntax.WordAs wordAs, String alias) {
-            this.usingSyntax = true;
-            return this.from(cteName, wordAs, alias);
         }
 
         @Override

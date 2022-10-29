@@ -28,8 +28,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 
-abstract class StandardUpdates<I extends Item, F extends TableField, PS extends Update._ItemPairBuilder, SR, SD, WR, WA>
-        extends SingleUpdate<I, F, PS, SR, SD, WR, WA, Object, Object, Object, Object>
+abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
+        extends SingleUpdate<I, F, SR, WR, WA, Object, Object, Object, Object>
         implements StandardUpdate, Update {
 
     static <I extends Item> _SingleUpdateClause<I> simpleSingle(Function<Update, I> function) {
@@ -100,9 +100,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, PS extends 
     private static abstract class SimpleSingleUpdate<I extends Item, F extends TableField> extends StandardUpdates<
             I,
             F,
-            ItemPairs<F>,
             _WhereSpec<I, F>,
-            _StandardWhereClause<I>,
             _DmlUpdateSpec<I>,
             _WhereAndSpec<I>>
             implements _WhereSpec<I, F>, _WhereAndSpec<I> {
@@ -112,10 +110,10 @@ abstract class StandardUpdates<I extends Item, F extends TableField, PS extends 
             super(context, table, tableAlias);
         }
 
-
         @Override
-        final ItemPairs<F> createItemPairBuilder(Consumer<ItemPair> consumer) {
-            return CriteriaSupports.itemPairs(consumer);
+        public _StandardWhereClause<I> set(Consumer<ItemPairs<F>> consumer) {
+            consumer.accept(CriteriaSupports.itemPairs(this::onAddItemPair));
+            return this;
         }
 
 
@@ -198,12 +196,16 @@ abstract class StandardUpdates<I extends Item, F extends TableField, PS extends 
     private static class BatchSingleUpdate<F extends TableField> extends StandardUpdates<
             Update,
             F,
-            BatchItemPairs<F>,
             _BatchWhereSpec<Update, F>,
-            _BatchWhereClause<Update>,
             _BatchParamClause<_DmlUpdateSpec<Update>>,
             _BatchWhereAndSpec<Update>>
             implements _BatchWhereSpec<Update, F>, _BatchWhereAndSpec<Update>, _BatchDml {
+
+        @Override
+        public _BatchWhereClause<Update> set(Consumer<BatchItemPairs<F>> consumer) {
+            consumer.accept(CriteriaSupports.batchItemPairs(this::onAddItemPair));
+            return this;
+        }
 
         private List<?> paramList;
 
@@ -235,11 +237,6 @@ abstract class StandardUpdates<I extends Item, F extends TableField, PS extends 
                 throw ContextStack.castCriteriaApi(this.context);
             }
             return list;
-        }
-
-        @Override
-        final BatchItemPairs<F> createItemPairBuilder(Consumer<ItemPair> consumer) {
-            return CriteriaSupports.batchItemPairs(consumer);
         }
 
         @Override

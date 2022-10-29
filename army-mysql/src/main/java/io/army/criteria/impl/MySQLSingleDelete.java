@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
-import io.army.criteria.mysql.MySQLCteBuilder;
+import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.dialect.mysql.MySQLDialect;
@@ -29,7 +29,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
-        extends SingleDelete.WithSingleDelete<I, Item, MySQLCteBuilder, WE, WR, WA, OR, LR, Object, Object>
+        extends SingleDelete.WithSingleDelete<I, Item, MySQLCtes, WE, WR, WA, OR, LR, Object, Object>
         implements MySQLDelete, _MySQLSingleDelete, Delete
         , MySQLDelete._SingleDeleteClause<DT>
         , MySQLQuery._PartitionClause<PR>
@@ -183,7 +183,7 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
     }
 
     @Override
-    final MySQLCteBuilder createCteBuilder(boolean recursive) {
+    final MySQLCtes createCteBuilder(boolean recursive) {
         return MySQLSupports.mySQLCteBuilder(recursive, this.context);
     }
 

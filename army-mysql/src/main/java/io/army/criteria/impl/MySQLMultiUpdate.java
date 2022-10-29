@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLMultiUpdate;
 import io.army.criteria.mysql.*;
+import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -26,14 +27,14 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLMultiUpdate<I extends Item, WE, UT, PS extends Update._ItemPairBuilder, SR, FS, JT, JS, WR, WA>
-        extends JoinableUpdate.WithMultiUpdate<I, Item, MySQLCteBuilder, WE, TableField, PS, SR, UT, FS, FS, JT, JS, JS, WR, WA, Object, Object>
+abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT, JS, WR, WA>
+        extends JoinableUpdate.WithMultiUpdate<I, MySQLCtes, WE, TableField, SR, FT, FS, FS, JT, JS, JS, WR, WA, Object, Object, Object, Object>
         implements Update, _MySQLMultiUpdate, MySQLUpdate
-        , MySQLQuery._IndexHintForJoinClause<UT> {
+        , MySQLStatement._IndexHintForJoinClause<FT> {
 
 
     static <I extends Item> _MultiWithSpec<I> simple(Function<Update, I> function) {
-        return new SimpleUpdateStatement<>(function);
+        return new SimpleUpdateStatement<>(null, function);
     }
 
     static <I extends Item> _BatchMultiWithSpec<I> batch(Function<Update, I> function) {
@@ -46,39 +47,30 @@ abstract class MySQLMultiUpdate<I extends Item, WE, UT, PS extends Update._ItemP
 
     List<MySQLSyntax.Modifier> modifierList;
 
-    MySQLSupports.MySQLNoOnBlock<UT> noOnBlock;
+    MySQLSupports.MySQLNoOnBlock<FT> noOnBlock;
 
-    private MySQLMultiUpdate(Function<Update, I> function) {
-        super(CriteriaContexts.primaryMultiDmlContext());
+
+    private MySQLMultiUpdate(@Nullable _WithClauseSpec withSpec, Function<Update, I> function) {
+        super(withSpec, CriteriaContexts.primaryMultiDmlContext());
         this.function = function;
     }
 
 
     @Override
-    public final MySQLQuery._IndexForJoinSpec<UT> useIndex() {
+    public final MySQLQuery._IndexForJoinSpec<FT> useIndex() {
         return this.getHintClause().useIndex();
     }
 
     @Override
-    public final MySQLQuery._IndexForJoinSpec<UT> ignoreIndex() {
+    public final MySQLQuery._IndexForJoinSpec<FT> ignoreIndex() {
         return this.getHintClause().ignoreIndex();
     }
 
     @Override
-    public final MySQLQuery._IndexForJoinSpec<UT> forceIndex() {
+    public final MySQLQuery._IndexForJoinSpec<FT> forceIndex() {
         return this.getHintClause().forceIndex();
     }
 
-    @Override
-    public final String toString() {
-        final String s;
-        if (this.isPrepared()) {
-            s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
-        } else {
-            s = super.toString();
-        }
-        return s;
-    }
 
     @Override
     public final List<Hint> hintList() {
@@ -124,12 +116,17 @@ abstract class MySQLMultiUpdate<I extends Item, WE, UT, PS extends Update._ItemP
     }
 
     @Override
+    final Dialect statementDialect() {
+        return MySQLDialect.MySQL80;
+    }
+
+    @Override
     final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
         if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        final MySQLSupports.MySQLNoOnBlock<UT> block;
-        block = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, (UT) this);
+        final MySQLSupports.MySQLNoOnBlock<FT> block;
+        block = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, (FT) this);
         this.noOnBlock = block;
         return block;
     }
@@ -143,7 +140,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, UT, PS extends Update._ItemP
     }
 
     @Override
-    final MySQLCteBuilder createCteBuilder(boolean recursive) {
+    final MySQLCtes createCteBuilder(boolean recursive) {
         return MySQLSupports.mySQLCteBuilder(recursive, this.context);
     }
 
@@ -171,8 +168,8 @@ abstract class MySQLMultiUpdate<I extends Item, WE, UT, PS extends Update._ItemP
      * @see #ignoreIndex()
      * @see #forceIndex()
      */
-    private MySQLQuery._IndexHintForJoinClause<UT> getHintClause() {
-        final MySQLSupports.MySQLNoOnBlock<UT> noOnBlock = this.noOnBlock;
+    private MySQLQuery._IndexHintForJoinClause<FT> getHintClause() {
+        final MySQLSupports.MySQLNoOnBlock<FT> noOnBlock = this.noOnBlock;
         if (noOnBlock != this.context.lastBlock()) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -298,7 +295,6 @@ abstract class MySQLMultiUpdate<I extends Item, WE, UT, PS extends Update._ItemP
             I,
             MySQLUpdate.MultiUpdateClause<I>,
             MySQLUpdate._MultiIndexHintJoinSpec<I>,
-            ItemPairs<TableField>,
             MySQLUpdate._MultiWhereSpec<I>,
             MySQLUpdate._MultiJoinSpec<I>,
             MySQLUpdate._MultiIndexHintOnSpec<I>,
@@ -311,8 +307,14 @@ abstract class MySQLMultiUpdate<I extends Item, WE, UT, PS extends Update._ItemP
             , MySQLUpdate._MultiWhereAndSpec<I> {
 
 
-        private SimpleUpdateStatement(Function<Update, I> function) {
-            super(function);
+        private SimpleUpdateStatement(@Nullable _WithClauseSpec withSpec, Function<Update, I> function) {
+            super(withSpec, function);
+        }
+
+        @Override
+        public _MultiWhereSpec<I> set(Consumer<ItemPairs<TableField>> consumer) {
+            consumer.accept(CriteriaSupports.itemPairs(this::onAddItemPair));
+            return this;
         }
 
         @Override
@@ -617,10 +619,6 @@ abstract class MySQLMultiUpdate<I extends Item, WE, UT, PS extends Update._ItemP
             return new OnClauseTableBlock.OnItemTableBlock<>(joinType, null, tableItem, alias, this);
         }
 
-        @Override
-        ItemPairs<TableField> createItemPairBuilder(Consumer<ItemPair> consumer) {
-            return CriteriaSupports.itemPairs(consumer);
-        }
 
 
     }// SimpleMultiUpdate
@@ -741,7 +739,6 @@ abstract class MySQLMultiUpdate<I extends Item, WE, UT, PS extends Update._ItemP
             I,
             MySQLUpdate._BatchMultiUpdateClause<I>,
             MySQLUpdate._BatchMultiIndexHintJoinSpec<I>,
-            BatchItemPairs<TableField>,
             MySQLUpdate._BatchMultiWhereSpec<I>,
             MySQLUpdate._BatchMultiJoinSpec<I>,
             MySQLUpdate._BatchMultiIndexHintOnSpec<I>,
@@ -759,7 +756,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, UT, PS extends Update._ItemP
 
 
         private BatchUpdateStatement(Function<Update, I> function) {
-            super(function);
+            super(null, function);
         }
 
         @Override
@@ -1039,6 +1036,12 @@ abstract class MySQLMultiUpdate<I extends Item, WE, UT, PS extends Update._ItemP
         }
 
         @Override
+        public _BatchMultiWhereSpec<I> set(Consumer<BatchItemPairs<TableField>> consumer) {
+            consumer.accept(CriteriaSupports.batchItemPairs(this::onAddItemPair));
+            return this;
+        }
+
+        @Override
         public <P> _DmlUpdateSpec<I> paramList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
@@ -1093,10 +1096,6 @@ abstract class MySQLMultiUpdate<I extends Item, WE, UT, PS extends Update._ItemP
             return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
         }
 
-        @Override
-        BatchItemPairs<TableField> createItemPairBuilder(Consumer<ItemPair> consumer) {
-            return CriteriaSupports.batchItemPairs(consumer);
-        }
 
 
     }// BatchUpdateStatement

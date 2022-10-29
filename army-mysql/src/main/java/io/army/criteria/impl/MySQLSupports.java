@@ -4,10 +4,9 @@ package io.army.criteria.impl;
 import io.army.criteria.SQLWords;
 import io.army.criteria.Statement;
 import io.army.criteria.TabularItem;
-import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
-import io.army.criteria.mysql.MySQLCteBuilder;
+import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -32,29 +31,17 @@ abstract class MySQLSupports extends CriteriaSupports {
         return new IndexHintClause<>(context, function);
     }
 
-    static _TableBlock createDynamicBlock(final _JoinType joinType, final DynamicBlock<?> block) {
-        final _TableBlock tableBlock;
-        if (block instanceof DynamicBlock.StandardDynamicBlock) {
-            tableBlock = CriteriaUtils.createStandardDynamicBlock(joinType, block);
-        } else if (block instanceof MySQLSupports.MySQLDynamicBlock) {
-            tableBlock = new MySQLDynamicTableBlock(joinType, (MySQLSupports.MySQLDynamicBlock<?>) block);
-        } else {
-            throw ContextStack.castCriteriaApi(block.criteriaContext);
-        }
-        return tableBlock;
-    }
 
-
-    static MySQLCteBuilder mySQLCteBuilder(boolean recursive, CriteriaContext context) {
+    static MySQLCtes mySQLCteBuilder(boolean recursive, CriteriaContext context) {
         return new MySQLCteBuilderImpl(recursive, context);
     }
 
 
     private static final class MySQLCteBuilderImpl
             extends ParenStringConsumerClause<MySQLQuery._DynamicCteAsClause>
-            implements MySQLCteBuilder
+            implements MySQLCtes
             , MySQLQuery._DynamicCteLeftParenSpec
-            , Statement._AsCteClause<MySQLCteBuilder> {
+            , Statement._AsCteClause<MySQLCtes> {
 
         private final boolean recursive;
 
@@ -89,7 +76,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
         @Override
-        public MySQLQuery._MinWithCteSpec<Statement._AsCteClause<MySQLCteBuilder>> as() {
+        public MySQLQuery._MinWithSpec<Statement._AsCteClause<MySQLCtes>> as() {
             final String cteName = this.cteName;
             if (cteName == null) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -110,7 +97,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
         @Override
-        public MySQLCteBuilder asCte() {
+        public MySQLCtes asCte() {
             return this;
         }
 

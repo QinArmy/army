@@ -1,7 +1,6 @@
 package io.army.criteria.standard;
 
 import io.army.criteria.Item;
-import io.army.criteria.Query;
 import io.army.criteria.Statement;
 
 /**
@@ -42,7 +41,7 @@ public interface StandardStatement extends Statement {
 
     interface _NestedLeftParenSpec<I extends Item>
             extends _NestedLeftParenClause<_StandardNestedJoinClause<I>, _StandardNestedJoinClause<I>>
-            , Query._LeftParenClause<_NestedLeftParenSpec<_StandardNestedJoinClause<I>>> {
+            , _LeftParenClause<_NestedLeftParenSpec<_StandardNestedJoinClause<I>>> {
 
     }
 

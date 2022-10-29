@@ -108,7 +108,7 @@ public interface PostgreValues extends PostgreStatement, RowSet.DqlValues {
 
 
     interface _UnionAndQuerySpec<I extends Item> extends _WithSpec<I>
-            , Query._LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+            , _LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 

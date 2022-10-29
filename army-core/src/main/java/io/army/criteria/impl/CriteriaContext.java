@@ -86,6 +86,11 @@ interface CriteriaContext {
 
     List<_TableBlock> endContext();
 
+    /**
+     * @return this
+     */
+    CriteriaContext endContextBeforeSelect();
+
 
     @Deprecated
     interface CteConsumer {
