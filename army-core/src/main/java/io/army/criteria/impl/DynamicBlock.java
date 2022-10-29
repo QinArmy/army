@@ -15,6 +15,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+@Deprecated
 abstract class DynamicBlock<C> implements JoinItemBlock<C>, ItemBlock<C>, Statement._OnClause<C, JoinItemBlock<C>> {
 
     static <C> StandardQuery._IfOnClause<C> standard(@Nullable C criteria, TabularItem tableItem, String alias) {
@@ -130,16 +131,6 @@ abstract class DynamicBlock<C> implements JoinItemBlock<C>, ItemBlock<C>, Statem
         this.predicateList = _CollectionUtils.unmodifiableList(predicateList);
         return this;
     }
-
-
-    static final class StandardDynamicBlock<C> extends DynamicBlock<C> implements StandardQuery._IfOnClause<C> {
-
-        private StandardDynamicBlock(@Nullable C criteria, TabularItem tableItem, String alias) {
-            super(criteria, tableItem, alias);
-        }
-
-
-    }//StandardIfOnClause
 
 
 }
