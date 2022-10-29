@@ -3,14 +3,20 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._StandardQuery;
 import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.standard.StandardCrosses;
+import io.army.criteria.standard.StandardJoins;
+import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.Dialect;
+import io.army.dialect._Constant;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.util._StringUtils;
 
 import java.util.List;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * <p>
@@ -39,18 +45,18 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         Object,
         StandardQuery._UnionAndQuerySpec<I>> // SP
 
-        implements StandardQuery, StandardQuery._SelectSpec<I>, StandardQuery._FromSpec<I>
+        implements StandardQuery, StandardQuery._StandardSelectClause<I>, StandardQuery._FromSpec<I>
         , StandardQuery._JoinSpec<I>, StandardQuery._WhereAndSpec<I>, StandardQuery._HavingSpec<I>
         , _StandardQuery {
 
 
-    static SimpleSelect<Select> primaryQuery() {
+    static <I extends Item> SimpleSelect<I> primaryQuery(Function<Select, I> function) {
         // primary no outer context
-        return new SimpleSelect<>(CriteriaContexts.primaryQuery(null), SQLs::_identity);
+        return new SimpleSelect<>(CriteriaContexts.primaryQuery(null), function);
     }
 
-    static StandardQuery._ParenQueryClause<Select> parenPrimaryQuery() {
-        return new ParenSelect();
+    static <I extends Item> StandardQuery._ParenQueryClause<I> parenPrimaryQuery(Function<Select, I> function) {
+        return new ParenSelect<>(function);
     }
 
 
@@ -65,41 +71,100 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
 
-    private LockMode0 lockMode;
+    private StandardLockMode lockMode;
 
 
     private StandardQueries(CriteriaContext context) {
         super(context);
-
     }
 
     @Override
-    public final _AsQueryClause<I> lock(@Nullable LockMode0 lockMode) {
-        if (lockMode == null) {
-            throw ContextStack.nullPointer(this.context);
+    public final _NestedLeftParenSpec<_JoinSpec<I>> from() {
+        return StandardNestedJoins.nestedItem(this.context, _JoinType.NONE, this::nestedNonCrossEnd);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> leftJoin() {
+        return StandardNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::nestedJoinEnd);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> join() {
+        return StandardNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::nestedJoinEnd);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> rightJoin() {
+        return StandardNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::nestedJoinEnd);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> fullJoin() {
+        return StandardNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::nestedJoinEnd);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_JoinSpec<I>> crossJoin() {
+        return StandardNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::nestedNonCrossEnd);
+    }
+
+    @Override
+    public final _JoinSpec<I> ifLeftJoin(Consumer<StandardJoins> consumer) {
+        consumer.accept(StandardDynamicJoins.joinBuilder(this.context, _JoinType.LEFT_JOIN, this.blockConsumer));
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> ifJoin(Consumer<StandardJoins> consumer) {
+        consumer.accept(StandardDynamicJoins.joinBuilder(this.context, _JoinType.JOIN, this.blockConsumer));
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> ifRightJoin(Consumer<StandardJoins> consumer) {
+        consumer.accept(StandardDynamicJoins.joinBuilder(this.context, _JoinType.RIGHT_JOIN, this.blockConsumer));
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> ifFullJoin(Consumer<StandardJoins> consumer) {
+        consumer.accept(StandardDynamicJoins.joinBuilder(this.context, _JoinType.FULL_JOIN, this.blockConsumer));
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> ifCrossJoin(Consumer<StandardCrosses> consumer) {
+        consumer.accept(StandardDynamicJoins.crossBuilder(this.context, this.blockConsumer));
+        return this;
+    }
+
+    @Override
+    public final _AsQueryClause<I> forUpdate() {
+        this.lockMode = StandardLockMode.FOR_UPDATE;
+        return this;
+    }
+
+    @Override
+    public final _AsQueryClause<I> ifForUpdate(BooleanSupplier predicate) {
+        if (predicate.getAsBoolean()) {
+            this.lockMode = StandardLockMode.FOR_UPDATE;
+        } else {
+            this.lockMode = null;
         }
-        this.lockMode = lockMode;
         return this;
     }
 
     @Override
-    public final _AsQueryClause<I> ifLock(Supplier<LockMode0> supplier) {
-        this.lockMode = supplier.get();
-        return this;
-    }
-
-
-    @Override
-    public final LockMode0 lockMode() {
+    public final SQLWords lockMode() {
         return this.lockMode;
     }
-
 
     @Override
     final List<Hint> asHintList(@Nullable List<Hint> hints) {
         //standard statement don't hints
         throw ContextStack.castCriteriaApi(this.context);
     }
+
 
     @Override
     final List<StandardSyntax.Modifier> asModifierList(final @Nullable List<StandardSyntax.Modifier> modifiers) {
@@ -164,13 +229,68 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         this.lockMode = null;
     }
 
+
     @Override
-    final Dialect queryDialect() {
+    final Dialect statementDialect() {
         return MySQLDialect.MySQL57;
     }
 
+    /**
+     * @see #from()
+     * @see #crossJoin()
+     */
+    private _JoinSpec<I> nestedNonCrossEnd(final _JoinType joinType, final NestedItems nestedItems) {
+        joinType.assertNoneCrossType();
+        final TableBlock.NoOnTableBlock block;
+        block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
+        this.blockConsumer.accept(block);
+        return this;
+    }
+
+    /**
+     * @see #leftJoin()
+     * @see #join()
+     * @see #rightJoin()
+     * @see #fullJoin()
+     */
+    private _OnClause<_JoinSpec<I>> nestedJoinEnd(final _JoinType joinType, final NestedItems nestedItems) {
+        joinType.assertStandardJoinType();
+
+        final OnClauseTableBlock<_JoinSpec<I>> block;
+        block = new OnClauseTableBlock<>(joinType, nestedItems, "", this);
+        this.blockConsumer.accept(block);
+        return block;
+    }
+
+
 
     /*################################## blow private inter class method ##################################*/
+
+    private enum StandardLockMode implements SQLWords {
+
+        FOR_UPDATE(_Constant.SPACE_FOR_UPDATE);
+
+        private final String spaceWords;
+
+        StandardLockMode(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(StandardLockMode.class.getSimpleName())
+                    .append(this.name())
+                    .toString();
+        }
+
+    }//StandardLockMode
 
 
     static class SimpleSelect<Q extends Item> extends StandardQueries<Q>
@@ -255,7 +375,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        final Dialect queryDialect() {
+        final Dialect statementDialect() {
             return MySQLDialect.MySQL57;
         }
 
@@ -315,18 +435,28 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     /**
-     * @see #parenPrimaryQuery()
+     * @see #parenPrimaryQuery(Function)
      */
-    private static final class ParenSelect implements StandardQuery._ParenQueryClause<Select> {
+    private static final class ParenSelect<I extends Item>
+            extends SelectClauseDispatcher<SQLs.Modifier, _FromSpec<I>>
+            implements StandardQuery._ParenQuerySpec<I> {
 
-        private ParenSelect() {
+        private final Function<Select, I> function;
+
+        private ParenSelect(Function<Select, I> function) {
+            this.function = function;
         }
 
         @Override
-        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<Select>>> leftParen() {
-            final StandardBracketSelect<Select> bracket;
-            bracket = new StandardBracketSelect<>(CriteriaContexts.bracketContext(null), SQLs::_identity);
+        public _UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final StandardBracketSelect<I> bracket;
+            bracket = new StandardBracketSelect<>(CriteriaContexts.bracketContext(null), this.function);
             return new UnionLeftParenSelectClause<>(bracket);
+        }
+
+        @Override
+        StandardQueries<I> createSelectClause() {
+            return new SimpleSelect<>(CriteriaContexts.primaryQuery(null), this.function);
         }
 
     }//ParenSelect

@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.standard.StandardInsert;
+import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.util._Exceptions;
 
@@ -17,7 +19,7 @@ abstract class StandardUnionQueries<C, Q extends Query> extends UnionRowSet<
         StandardQuery._UnionOrderBySpec<C, Q>, //UR
         StandardQuery._UnionLimitSpec<C, Q>,//OR
         StandardQuery._UnionSpec<C, Q>,//LR
-        StandardQuery._SelectSpec<C, Q>>// SP
+        StandardQuery._StandardSelectClause<C, Q>>// SP
         implements StandardQuery._UnionOrderBySpec<C, Q>, StandardQuery {
 
     static <C, Q extends Query> _UnionOrderBySpec<C, Q> bracketQuery(final RowSet query) {
@@ -151,7 +153,7 @@ abstract class StandardUnionQueries<C, Q extends Query> extends UnionRowSet<
     }
 
     @Override
-    final _SelectSpec<C, Q> asUnionAndRowSet(UnionType unionType) {
+    final _StandardSelectClause<C, Q> asUnionAndRowSet(UnionType unionType) {
         return StandardQueries.unionAndQuery(this.asQuery(), unionType);
     }
 

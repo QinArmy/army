@@ -499,7 +499,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
     @Override
-    final Dialect queryDialect() {
+    final Dialect statementDialect() {
         return PostgreDialect.POSTGRE15;
     }
 

@@ -1,5 +1,6 @@
-package io.army.criteria;
+package io.army.criteria.standard;
 
+import io.army.criteria.Item;
 import io.army.meta.TableMeta;
 
 public interface StandardDelete extends StandardStatement {

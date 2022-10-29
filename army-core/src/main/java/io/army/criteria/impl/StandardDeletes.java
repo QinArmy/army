@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
 import io.army.criteria.Item;
-import io.army.criteria.StandardDelete;
 import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.standard.StandardDelete;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;

@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.StandardQuery;
 import io.army.criteria.TabularItem;
 import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.standard.StandardQuery;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 

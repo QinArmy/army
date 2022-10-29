@@ -6,6 +6,10 @@ import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.standard.StandardDelete;
+import io.army.criteria.standard.StandardInsert;
+import io.army.criteria.standard.StandardQuery;
+import io.army.criteria.standard.StandardUpdate;
 import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
@@ -87,20 +91,20 @@ public abstract class SQLs extends StandardSyntax {
      * </p>
      */
     public static StandardDelete._BatchDeleteClause<Delete> batchSingleDelete() {
-        return StandardDeletes.batchSingleDelete();
+        return StandardDeletes.batchSingleDelete(SQLs::_identity);
     }
 
 
-    public static StandardQuery._SelectSpec<Select> query() {
-        return StandardQueries.primaryQuery();
+    public static StandardQuery._StandardSelectClause<Select> query() {
+        return StandardQueries.primaryQuery(SQLs::_identity);
     }
 
     public static StandardQuery._ParenQueryClause<Select> parenQuery() {
-        return StandardQueries.parenPrimaryQuery();
+        return StandardQueries.parenPrimaryQuery(SQLs::_identity);
     }
 
 
-    public static StandardQuery._SelectSpec<SubQuery> subQuery() {
+    public static StandardQuery._StandardSelectClause<SubQuery> subQuery() {
         return StandardQueries.subQuery(ContextStack.peek(), SQLs::_identity);
     }
 
@@ -109,7 +113,7 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    public static StandardQuery._SelectSpec<Expression> scalarSubQuery() {
+    public static StandardQuery._StandardSelectClause<Expression> scalarSubQuery() {
         return StandardQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
     }
 

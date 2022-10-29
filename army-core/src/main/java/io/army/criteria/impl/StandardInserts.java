@@ -3,6 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.standard.StandardInsert;
+import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.*;
 import io.army.util._CollectionUtils;
@@ -175,7 +177,7 @@ abstract class StandardInserts extends InsertSupport {
 
 
         @Override
-        public StandardQuery._SelectSpec<Statement._DmlInsertClause<I>> space() {
+        public StandardQuery._StandardSelectClause<Statement._DmlInsertClause<I>> space() {
             return StandardQueries.subQuery(this.context, this::staticInsertQueryEnd);
         }
 

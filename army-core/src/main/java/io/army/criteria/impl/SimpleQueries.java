@@ -406,18 +406,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     }
 
     @Override
-    public final String toString() {
-        final String s;
-        if (this instanceof PrimaryStatement && this.isPrepared()) {
-            s = this.mockAsString(this.queryDialect(), Visible.ONLY_VISIBLE, true);
-        } else {
-            s = super.toString();
-        }
-        return s;
-    }
-
-
-    @Override
     public final Selection selection(final String derivedAlias) {
         if (!(this instanceof SubQuery)) {
             throw ContextStack.castCriteriaApi(this.context);
@@ -425,7 +413,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         return this.context.selection(derivedAlias);
     }
 
-    abstract Dialect queryDialect();
 
     abstract void onEndQuery();
 

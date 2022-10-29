@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner._DialectTableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._TableItemGroup;
+import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -527,6 +528,20 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
             this.joinType = joinTyp;
         }
 
+        @Override
+        public final void prepared() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+        @Override
+        final Dialect statementDialect() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
 
     }//DynamicJoinClause
 
@@ -697,6 +712,22 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
                 this.onPredicateList = list;
             }
             return list;
+        }
+
+        @Override
+        public final void prepared() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+
+        @Override
+        final Dialect statementDialect() {
+            throw ContextStack.castCriteriaApi(this.context);
         }
 
 

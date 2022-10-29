@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.util._Assert;
@@ -231,16 +230,6 @@ abstract class BracketRowSet<I extends Item, Q extends RowSet, RR, OR, LR, LO, L
         return prepared != null && prepared;
     }
 
-    @Override
-    public final String toString() {
-        final String s;
-        if (this instanceof PrimaryStatement && this.isPrepared()) {
-            s = this.mockAsString(this.queryDialect(), Visible.ONLY_VISIBLE, true);
-        } else {
-            s = super.toString();
-        }
-        return s;
-    }
 
 
     final Statement._RightParenClause<RR> parenRowSetEnd(final Q parenRowSet) {
@@ -256,7 +245,6 @@ abstract class BracketRowSet<I extends Item, Q extends RowSet, RR, OR, LR, LO, L
         //no-op
     }
 
-    abstract Dialect queryDialect();
 
     abstract I onAsQuery();
 

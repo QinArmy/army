@@ -1,15 +1,16 @@
-package io.army.criteria;
+package io.army.criteria.standard;
 
+import io.army.criteria.Item;
+import io.army.criteria.Query;
+import io.army.criteria.Statement;
 import io.army.criteria.impl.SQLs;
-
-import java.util.function.Supplier;
 
 /**
  * This interface representing standard SELECT syntax.
  *
  * @since 1.0
  */
-public interface StandardQuery extends Query, Statement {
+public interface StandardQuery extends Query, StandardStatement {
 
 
     /**
@@ -100,11 +101,8 @@ public interface StandardQuery extends Query, Statement {
      * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _LockSpec<I extends Item> extends _AsQueryClause<I> {
+    interface _LockSpec<I extends Item> extends _LockForUpdateClause<_AsQueryClause<I>>, _AsQueryClause<I> {
 
-        _AsQueryClause<I> lock(LockMode0 lockMode);
-
-        _AsQueryClause<I> ifLock(Supplier<LockMode0> supplier);
 
     }
 
@@ -246,10 +244,6 @@ public interface StandardQuery extends Query, Statement {
     }
 
 
-    interface _StandardJoinClause<FS, JS>
-            extends Statement._JoinClause<JS, JS>, Statement._CrossJoinClause<FS, FS> {
-
-    }
 
     /**
      * <p>
@@ -269,7 +263,8 @@ public interface StandardQuery extends Query, Statement {
      * @since 1.0
      */
     interface _JoinSpec<I extends Item>
-            extends _StandardJoinClause<_JoinSpec<I>, Statement._OnClause<_JoinSpec<I>>>, _WhereSpec<I> {
+            extends _StandardJoinClause<_JoinSpec<I>, _OnClause<_JoinSpec<I>>>
+            , _WhereSpec<I> {
 
     }
 
@@ -292,6 +287,7 @@ public interface StandardQuery extends Query, Statement {
      * @since 1.0
      */
     interface _FromSpec<I extends Item> extends Statement._FromClause<_JoinSpec<I>, _JoinSpec<I>>
+            , _FromNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>
             , _UnionSpec<I> {
 
     }
@@ -310,13 +306,13 @@ public interface StandardQuery extends Query, Statement {
      * @param <I> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _SelectSpec<I extends Item>
+    interface _StandardSelectClause<I extends Item>
             extends _DynamicModifierSelectClause<SQLs.Modifier, _FromSpec<I>>
             , Item {
 
     }
 
-    interface _UnionAndQuerySpec<I extends Item> extends _SelectSpec<I>
+    interface _UnionAndQuerySpec<I extends Item> extends _StandardSelectClause<I>
             , _LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
@@ -326,7 +322,7 @@ public interface StandardQuery extends Query, Statement {
 
     }
 
-    interface _ParenQuerySpec<I extends Item> extends _ParenQueryClause<I>, _SelectSpec<I> {
+    interface _ParenQuerySpec<I extends Item> extends _ParenQueryClause<I>, _StandardSelectClause<I> {
 
     }
 
