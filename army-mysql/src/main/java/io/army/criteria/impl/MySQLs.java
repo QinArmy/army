@@ -92,17 +92,9 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
     }
 
 
-    public static MySQLLoad._LoadDataClause<Void> loadDataStmt() {
-        return MySQLLoads.loadDataStmt(null);
+    public static MySQLLoadData._LoadDataClause<SQLCommand> loadDataCommand() {
+        return MySQLLoads.loadDataCommand(SQLs::_identity);
     }
-
-    public static <C> MySQLLoad._LoadDataClause<C> loadDataStmt(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLLoads.loadDataStmt(criteria);
-    }
-
-
-
 
 
 }

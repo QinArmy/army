@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
+import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
@@ -9,6 +10,7 @@ import io.army.mapping._MappingFactory;
 import io.army.meta.ChildTableMeta;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -586,6 +588,14 @@ abstract class CriteriaUtils {
             }
         }
         return count;
+    }
+
+    static String sqlWordsToString(Enum<?> type) {
+        return _StringUtils.builder()
+                .append(type.getClass().getSimpleName())
+                .append(_Constant.POINT)
+                .append(type.name())
+                .toString();
     }
 
 

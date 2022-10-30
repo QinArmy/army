@@ -312,10 +312,7 @@ public interface PostgreStatement extends DialectStatement {
     }
 
 
-    interface _AsCommandClause<I extends Item> extends Item {
 
-        I asCommand();
-    }
 
 
 }

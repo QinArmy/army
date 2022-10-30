@@ -9,17 +9,16 @@ import java.util.function.Supplier;
 
 public interface PairConsumer<T> {
 
-
     PairConsumer<T> accept(FieldMeta<T> field, Expression value);
 
-    PairConsumer<T> accept(FieldMeta<T> field, Supplier<? extends Expression> supplier);
+    PairConsumer<T> accept(FieldMeta<T> field, Supplier<Expression> supplier);
 
-    PairConsumer<T> accept(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function);
+    PairConsumer<T> accept(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-    <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value);
+    <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, @Nullable E value);
 
-    <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier);
+    <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, Supplier<E> supplier);
 
-    PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+    PairConsumer<T> accept(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator, Function<String, ?> function, String keyName);
 
 }

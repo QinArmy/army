@@ -1,15 +1,13 @@
 package io.army.criteria.impl.inner.mysql;
 
 import io.army.criteria.SQLWords;
-import io.army.criteria.impl.MySQLSyntax;
+import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
-import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
-import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.nio.file.Path;
@@ -18,7 +16,7 @@ import java.util.List;
 public interface _MySQLLoadData extends _Statement, _DialectStatement {
 
 
-    List<MySQLSyntax._MySQLModifier> modifierList();
+    List<MySQLs.Modifier> modifierList();
 
     Path fileName();
 
@@ -33,7 +31,7 @@ public interface _MySQLLoadData extends _Statement, _DialectStatement {
     Boolean fieldsKeyWord();
 
     @Nullable
-    String charsetName();
+    Object charset();
 
     @Nullable
     String columnTerminatedBy();
@@ -63,19 +61,9 @@ public interface _MySQLLoadData extends _Statement, _DialectStatement {
 
 
 
-    interface _SingleLoadData extends _MySQLLoadData{
-
-        SingleTableMeta<?> table();
-
-    }
-
-
     interface _ChildLoadData extends _MySQLLoadData{
 
-        ChildTableMeta<?> table();
-
-
-        _SingleLoadData parentLoadData();
+        _MySQLLoadData parentLoadData();
 
     }
 

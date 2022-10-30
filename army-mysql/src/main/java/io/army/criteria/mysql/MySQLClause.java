@@ -22,7 +22,7 @@ public interface MySQLClause {
     }
 
     interface _GroupConcatOrderBySpec extends Expression
-            , Statement._StaticOrderByClause<Void, _GroupConcatSeparatorClause>
+            , Statement._StaticOrderByClause<_GroupConcatSeparatorClause>
             , _GroupConcatSeparatorClause {
 
     }

@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.mysql.MySQLDqlValues;
-import io.army.criteria.mysql.MySQLLoad;
+import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.Database;
 import io.army.util._ClassUtils;
@@ -107,7 +107,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
         }
     }
 
-    public static void assertMySQLLoad(final MySQLLoad load) {
+    public static void assertMySQLLoad(final MySQLLoadData load) {
         if (!(load instanceof MySQLLoads.MySQLLoadDataStatement)) {
             throw instanceNotMatch(load, MySQLLoads.MySQLLoadDataStatement.class);
         }

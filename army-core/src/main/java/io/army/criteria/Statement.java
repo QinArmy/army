@@ -1228,4 +1228,9 @@ public interface Statement extends Item {
 
     }
 
+    interface _AsCommandClause<I extends Item> extends Item {
+
+        I asCommand();
+    }
+
 }

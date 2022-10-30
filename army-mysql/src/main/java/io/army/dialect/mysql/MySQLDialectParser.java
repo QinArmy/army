@@ -9,7 +9,7 @@ import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLDqlValues;
-import io.army.criteria.mysql.MySQLLoad;
+import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
@@ -164,9 +164,9 @@ final class MySQLDialectParser extends MySQLParser {
             }
             _MySQLConsultant.assertValues((MySQLDqlValues) statement);
             stmt = this.values((Values) statement, visible);
-        } else if (statement instanceof MySQLLoad) {
-            _MySQLConsultant.assertMySQLLoad((MySQLLoad) statement);
-            stmt = this.loadData((MySQLLoad) statement, visible);
+        } else if (statement instanceof MySQLLoadData) {
+            _MySQLConsultant.assertMySQLLoad((MySQLLoadData) statement);
+            stmt = this.loadData((MySQLLoadData) statement, visible);
         } else {
             throw _Exceptions.dontSupportDialectStatement(statement, this.dialect);
         }
@@ -1032,7 +1032,7 @@ final class MySQLDialectParser extends MySQLParser {
     /**
      * @see #dialectStmt(DialectStatement, Visible)
      */
-    private Stmt loadData(final MySQLLoad loadData, final Visible visible) {
+    private Stmt loadData(final MySQLLoadData loadData, final Visible visible) {
         final Stmt stmt;
         if (loadData instanceof _MySQLLoadData._ChildLoadData) {
             final _MySQLLoadData._SingleLoadData parentLoad;
@@ -1049,7 +1049,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     /**
-     * @see #loadData(MySQLLoad, Visible)
+     * @see #loadData(MySQLLoadData, Visible)
      */
     private SimpleStmt simpleLoadData(final _MySQLLoadData loadData, final Visible visible) {
         final TableMeta<?> insertTable;
@@ -1082,7 +1082,7 @@ final class MySQLDialectParser extends MySQLParser {
         this.partitionClause(loadData.partitionList(), sqlBuilder);
         //7. CHARACTER SET
         final String charsetName;
-        charsetName = loadData.charsetName();
+        charsetName = loadData.charset();
         if (charsetName != null) {
             if (!Pattern.compile("[\\w\\d_]+").matcher(charsetName).matches()) {
                 String m = String.format("charset_name[%s] error.", charsetName);

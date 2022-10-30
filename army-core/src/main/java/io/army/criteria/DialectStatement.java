@@ -1,10 +1,8 @@
 package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
-import io.army.criteria.impl.inner._Cte;
 import io.army.meta.TableMeta;
 
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -55,57 +53,6 @@ public interface DialectStatement extends Statement {
     }
 
 
-    /**
-     * <p>
-     * This interface representing WITH clause(Common Table Expressions).
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C>  criteria object java type
-     * @param <WE> next clause java type
-     */
-    @Deprecated
-    interface _WithCteClause2<C, SS extends SubStatement, WE> {
-
-        WE with(String cteName, Supplier<? extends SS> supplier);
-
-        WE with(String cteName, Function<C, ? extends SS> function);
-
-        WE with(Consumer<Consumer<_Cte>> consumer);
-
-        WE with(BiConsumer<C, Consumer<_Cte>> consumer);
-
-        WE ifWith(Consumer<Consumer<_Cte>> consumer);
-
-        WE ifWith(BiConsumer<C, Consumer<_Cte>> consumer);
-
-        WE withRecursive(String cteName, Supplier<? extends SS> supplier);
-
-        WE withRecursive(String cteName, Function<C, ? extends SS> function);
-
-        WE withRecursive(Consumer<Consumer<_Cte>> consumer);
-
-        WE withRecursive(BiConsumer<C, Consumer<_Cte>> consumer);
-
-        WE ifWithRecursive(Consumer<Consumer<_Cte>> consumer);
-
-        WE ifWithRecursive(BiConsumer<C, Consumer<_Cte>> consumer);
-
-
-    }
-
-
-    interface _FromLateralClause<C, FS> {
-
-        <T extends TabularItem> FS fromLateral(Supplier<T> supplier, String alias);
-
-        <T extends TabularItem> FS fromLateral(Function<C, T> function, String alias);
-
-    }
 
     interface _WhereCurrentOfClause<R> {
 
@@ -194,9 +141,9 @@ public interface DialectStatement extends Statement {
 
     interface _IfStraightJoinClause<C, FJ> {
 
-        <B extends JoinItemBlock<C>> FJ ifStraightJoin(Supplier<B> supplier);
+        <B> FJ ifStraightJoin(Supplier<B> supplier);
 
-        <B extends JoinItemBlock<C>> FJ ifStraightJoin(Function<C, B> function);
+        <B> FJ ifStraightJoin(Function<C, B> function);
 
     }
 

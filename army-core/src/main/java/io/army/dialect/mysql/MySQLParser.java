@@ -1,6 +1,5 @@
 package io.army.dialect.mysql;
 
-import io.army.criteria.LockMode0;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchDml;

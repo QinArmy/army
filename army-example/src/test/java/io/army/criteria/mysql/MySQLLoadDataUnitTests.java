@@ -24,8 +24,8 @@ public class MySQLLoadDataUnitTests {
         tempFile = Files.createTempFile("mySQLLoadData", ".temp");
 
         try {
-            MySQLLoad stmt;
-            stmt = MySQLs.loadDataStmt()
+            MySQLLoadData stmt;
+            stmt = MySQLs.loadDataCommand()
                     .loadData(Collections.singletonList(MySQLSyntax._MySQLModifier.LOCAL))
                     .infile(tempFile)
                     .ignore()
@@ -61,7 +61,7 @@ public class MySQLLoadDataUnitTests {
     }
 
 
-    private static void printStmt(final MySQLLoad load) {
+    private static void printStmt(final MySQLLoadData load) {
         String sql;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             sql = load.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
