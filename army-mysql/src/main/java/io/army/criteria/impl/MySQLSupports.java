@@ -327,7 +327,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
         @Override
-        public final ItemWord itemWord() {
+        public final SQLWords itemWord() {
             //null,currently,MySQL table don't support LATERAL
             return null;
         }

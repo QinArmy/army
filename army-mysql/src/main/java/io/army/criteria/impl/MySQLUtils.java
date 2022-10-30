@@ -1,8 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
-import io.army.criteria.SubQuery;
-import io.army.criteria.TabularItem;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.lang.Nullable;
 
@@ -17,15 +15,6 @@ abstract class MySQLUtils extends CriteriaUtils {
     }
 
 
-    static void assertItemWord(CriteriaContext criteriaContext, @Nullable ItemWord itemWord, TabularItem tableItem) {
-        if (itemWord == ItemWord.LATERAL && !(tableItem instanceof SubQuery)) {
-            String m = "MySQL LATERAL support only %s" + SubQuery.class.getName();
-            throw ContextStack.criteriaError(criteriaContext, m);
-        } else if (itemWord != null) {
-            throw ContextStack.castCriteriaApi(criteriaContext);
-        }
-
-    }
 
     @Deprecated
     static List<String> asStringList(final @Nullable List<String> partitionList, Supplier<CriteriaException> supplier) {

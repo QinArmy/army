@@ -73,23 +73,11 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
     }
 
     @Override
-    public final OR comma(Expression exp) {
-        this.onAddOrderBy(exp);
-        return (OR) this;
-    }
-
-    @Override
     public final OR comma(Expression exp, Statement.AscDesc ascDesc) {
         this.onAddOrderBy(SortItems.create(exp, ascDesc));
         return (OR) this;
     }
 
-    @Override
-    public final OR comma(Expression exp1, Expression exp2) {
-        this.onAddOrderBy(exp1)
-                .add((ArmySortItem) exp2);
-        return (OR) this;
-    }
 
     @Override
     public final OR comma(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2) {

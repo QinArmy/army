@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Window;
+import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -516,6 +517,12 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
     }
 
     @Override
+    public final boolean isPrepared() {
+        final Boolean prepared = this.prepared;
+        return prepared != null && prepared;
+    }
+
+    @Override
     public final void clear() {
         this.refWindowName = null;
         this.partitionByList = null;
@@ -652,6 +659,11 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
                 throw _Exceptions.unexpectedEnum(bound);
         }
         sqlBuilder.append(bound.keyWords);
+    }
+
+    @Override
+    final Dialect statementDialect() {
+        throw ContextStack.castCriteriaApi(this.context);
     }
 
 

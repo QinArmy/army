@@ -672,11 +672,8 @@ public interface Statement extends Item {
 
     interface _StaticOrderByCommaClause<OR> {
 
-        OR comma(Expression exp);
 
         OR comma(Expression exp, AscDesc ascDesc);
-
-        OR comma(Expression exp1, Expression exp2);
 
         OR comma(Expression exp1, AscDesc ascDesc1, Expression exp2);
 
@@ -1232,5 +1229,6 @@ public interface Statement extends Item {
 
         I asCommand();
     }
+
 
 }

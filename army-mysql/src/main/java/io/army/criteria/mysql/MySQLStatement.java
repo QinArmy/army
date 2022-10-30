@@ -264,7 +264,7 @@ public interface MySQLStatement extends DialectStatement {
 
     interface _MultiStmtSemicolonSpec extends _MultiStmtSpec {
 
-        MySQLQuery._PrimaryComplexCommand semicolon();
+        void semicolon();
 
     }
 

@@ -13,7 +13,7 @@ import io.army.meta.TypeMeta;
 import java.util.function.*;
 
 @SuppressWarnings("unchecked")
-class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
+abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
         implements Statement._LimitClause<LR>
         , Statement._QueryOffsetClause<LO>
         , Statement._FetchPercentClause<LF>

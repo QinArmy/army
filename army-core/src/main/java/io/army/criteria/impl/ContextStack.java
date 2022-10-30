@@ -32,30 +32,6 @@ abstract class ContextStack {
     private static final ThreadLocal<Stack> HOLDER = new ThreadLocal<>();
 
 
-    @Deprecated
-    static void setContextStack(CriteriaContext rootContext) {
-        HOLDER.set(new ContextStack(rootContext));
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("setContextStack {},hash:{}", rootContext.getClass().getName()
-                    , System.identityHashCode(rootContext));
-        }
-    }
-
-    @Deprecated
-    static void clearContextStack(final CriteriaContext rootContext) {
-        final Stack stack = HOLDER.get();
-        if (stack == null) {
-            throw noContextStack();
-        }
-        stack.clear(rootContext);
-        HOLDER.remove();
-        rootContext.contextEnd();
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("clearContextStack {},hash:{}", rootContext.getClass().getName()
-                    , System.identityHashCode(rootContext));
-        }
-
-    }
 
     static CriteriaContext peek() {
         final Stack stack = HOLDER.get();
@@ -87,7 +63,7 @@ abstract class ContextStack {
         final Stack stack;
         if (outerContext == null) {
             //reset
-            HOLDER.set(new ContextStack(context));
+            HOLDER.set(new ArmyContextStack(context));
             if (LOG.isTraceEnabled()) {
                 LOG.trace("reset stack for primary context {},hash:{}", context.getClass().getName()
                         , System.identityHashCode(context));
@@ -240,11 +216,11 @@ abstract class ContextStack {
         void clearOnError();
     }
 
-    private static final class ContextStack implements Stack {
+    private static final class ArmyContextStack implements Stack {
 
         private final LinkedList<CriteriaContext> list;
 
-        private ContextStack(final CriteriaContext rootContext) {
+        private ArmyContextStack(final CriteriaContext rootContext) {
             Objects.requireNonNull(rootContext);
             final LinkedList<CriteriaContext> list = new LinkedList<>();
             list.addLast(rootContext);

@@ -65,7 +65,7 @@ abstract class SingleUpdate<I extends Item, F extends TableField, SR, WR, WA, OR
     final void endUpdateStatement() {
         _Assert.nonPrepared(this.prepared);
         this.endUpdateSetClause();
-        this.endWhereClause()
+        this.endWhereClause();
         this.endOrderByClause();
         ContextStack.pop(this.context);
         this.prepared = Boolean.TRUE;

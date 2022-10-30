@@ -636,6 +636,7 @@ abstract class MySQLLoads {
         }
 
 
+        @SuppressWarnings("unchecked")
         @Override
         public final I asCommand() {
             _Assert.nonPrepared(this.prepared);
@@ -742,6 +743,7 @@ abstract class MySQLLoads {
 
         private SimpleLoadDataStatement(PartitionClause<?, ?> clause) {
             super(clause);
+            assert this.targetTable instanceof SingleTableMeta;
         }
 
     }//SimpleLoadDataStatement
@@ -755,6 +757,7 @@ abstract class MySQLLoads {
         private ChildLoadDataStatement(ParentLoadDataStatement<?, ?> parentStatement
                 , PartitionClause<?, ?> childClause) {
             super(childClause);
+            assert this.targetTable instanceof ChildTableMeta;
             this.parentStatement = parentStatement;
         }
 
@@ -774,6 +777,7 @@ abstract class MySQLLoads {
 
         private ParentLoadDataStatement(PartitionClause<?, ?> clause, Function<SQLCommand, I> function) {
             super(clause);
+            assert this.targetTable instanceof ParentTableMeta;
             this.function = function;
         }
 

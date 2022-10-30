@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
 import io.army.dialect.Dialect;
@@ -236,106 +235,6 @@ abstract class CriteriaSupports {
 
     }//StatementMockSupport
 
-    static final class RowConstructorImpl implements RowConstructor {
-
-        final CriteriaContext criteriaContext;
-
-        private List<List<_Expression>> rowList;
-
-        private List<_Expression> columnList;
-
-        RowConstructorImpl(CriteriaContext criteriaContext) {
-            this.criteriaContext = criteriaContext;
-        }
-
-        @Override
-        public RowConstructor add(final Object value) {
-            return this.addColumn(CriteriaUtils.constantLiteral(this.criteriaContext, value));
-        }
-
-
-        @Override
-        public RowConstructor row() {
-            final List<_Expression> columnList = this.columnList;
-            List<List<_Expression>> rowList = this.rowList;
-
-            final int firstColumnSize;
-            if (columnList == null) {
-                if (rowList != null) {
-                    throw ContextStack.castCriteriaApi(this.criteriaContext);
-                }
-                firstColumnSize = 0;
-            } else if (columnList.size() == 0) {
-                String m = "You don't add any column.";
-                throw ContextStack.criteriaError(this.criteriaContext, m);
-            } else if (rowList == null) {
-                rowList = new ArrayList<>();
-                this.rowList = rowList;
-                firstColumnSize = 0;
-            } else if (!(rowList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
-            } else if (columnList.size() != (firstColumnSize = rowList.get(0).size())) {
-                throw _Exceptions.valuesColumnSizeNotMatch(firstColumnSize, rowList.size(), columnList.size());
-            }
-
-            if (columnList != null) {
-                rowList.add(_CollectionUtils.unmodifiableList(columnList));
-            }
-
-            if (firstColumnSize == 0) {
-                this.columnList = new ArrayList<>();
-            } else {
-                this.columnList = new ArrayList<>(firstColumnSize);
-            }
-            return this;
-        }
-
-        List<List<_Expression>> endConstructor() {
-            final List<_Expression> columnList = this.columnList;
-            List<List<_Expression>> rowList = this.rowList;
-
-            if (columnList == null) {
-                String m = "You don't add any row.";
-                if (rowList == null) {
-                    throw ContextStack.criteriaError(this.criteriaContext, m);
-                } else {
-                    throw ContextStack.castCriteriaApi(this.criteriaContext);
-                }
-            } else if (!(columnList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
-            }
-
-            if (rowList == null) {
-                rowList = Collections.singletonList(_CollectionUtils.unmodifiableList(columnList));
-                this.rowList = rowList;
-            } else if (rowList instanceof ArrayList) {
-                rowList.add(_CollectionUtils.unmodifiableList(columnList));
-                rowList = _CollectionUtils.unmodifiableList(rowList);
-                this.rowList = rowList;
-            } else {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            this.columnList = null;
-            return rowList;
-        }
-
-        private RowConstructor addColumn(final @Nullable Expression value) {
-            final List<_Expression> columnList = this.columnList;
-            if (columnList == null) {
-                String m = "Not found any row,please use row() method create new row.";
-                throw ContextStack.criteriaError(this.criteriaContext, m);
-            }
-            if (value instanceof ParamExpression) {
-                throw ContextStack.criteriaError(criteriaContext, _Exceptions::valuesStatementDontSupportParam);
-            }
-            if (!(value instanceof ArmyExpression)) {
-                throw ContextStack.nonArmyExp(this.criteriaContext);
-            }
-            columnList.add((ArmyExpression) value);
-            return this;
-        }
-
-    }//RowConstructorImpl
 
 
     static class ParenStringConsumerClause<RR>

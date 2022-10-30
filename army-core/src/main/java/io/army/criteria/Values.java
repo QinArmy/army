@@ -32,9 +32,9 @@ public interface Values extends DqlStatement, DialectStatement, RowSet.DqlValues
 
         Statement._RightParenClause<RR> comma(Expression exp1, Expression exp2);
 
-        Statement._RightParenClause<RR> comma(Expression exp1, Expression exp2, Expression value3);
+        Statement._RightParenClause<RR> comma(Expression exp1, Expression exp2, Expression exp3);
 
-        _StaticValueRowCommaQuadraSpec<RR> comma(Expression exp1, Expression exp2, Expression value3, Expression exp4);
+        _StaticValueRowCommaQuadraSpec<RR> comma(Expression exp1, Expression exp2, Expression exp3, Expression exp4);
 
         Statement._RightParenClause<RR> comma(Function<Object, Expression> valueOperator, Object value);
 
@@ -51,13 +51,17 @@ public interface Values extends DqlStatement, DialectStatement, RowSet.DqlValues
 
         Statement._RightParenClause<RR> leftParen(Expression exp);
 
-        _StaticValueRowCommaDualSpec<RR> leftParen(Expression exp, Expression exp2);
+        _StaticValueRowCommaDualSpec<RR> leftParen(Expression exp1, Expression exp2);
 
-        _StaticValueRowCommaQuadraSpec<RR> leftParen(Expression exp1, Expression exp2, Expression value3, Expression exp4);
+        Statement._RightParenClause<RR> leftParen(Expression exp1, Expression exp2, Expression exp3);
+
+        _StaticValueRowCommaQuadraSpec<RR> leftParen(Expression exp1, Expression exp2, Expression exp3, Expression exp4);
 
         Statement._RightParenClause<RR> leftParen(Function<Object, Expression> valueOperator, Object value);
 
         _StaticValueRowCommaDualSpec<RR> leftParen(Function<Object, Expression> valueOperator, Object value1, Object value2);
+
+        Statement._RightParenClause<RR> leftParen(Function<Object, Expression> valueOperator, Object value1, Object value2, Object value3);
 
         _StaticValueRowCommaQuadraSpec<RR> leftParen(Function<Object, Expression> valueOperator, Object value1, Object value2, Object value3, Object value4);
 

@@ -242,9 +242,9 @@ public interface MySQLLoadData extends MySQLStatement, SQLCommand {
 
     interface _LoadDataClause<I extends Item> {
 
-        _LocalInfileClause<> loadData(MySQLs.Modifier local);
+        _LocalInfileClause<I> loadData(MySQLs.Modifier local);
 
-        _LocalInfileClause<> loadData(List<MySQLs.Modifier> modifierList);
+        _LocalInfileClause<I> loadData(List<MySQLs.Modifier> modifierList);
 
     }
 

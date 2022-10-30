@@ -1,7 +1,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._PartRowSet;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.mapping.LongType;
@@ -557,15 +560,6 @@ abstract class CriteriaUtils {
 
         }
         return mySqlHintList;
-    }
-
-
-    static _TableBlock createStandardDynamicBlock(final _JoinType joinType, final DynamicBlock<?> block) {
-        if (!(block instanceof DynamicBlock.StandardDynamicBlock)) {
-            String m = "not standard dynamic block";
-            throw ContextStack.criteriaError(block.criteriaContext, m);
-        }
-        return new TableBlock.DynamicTableBlock(joinType, block);
     }
 
 

@@ -501,9 +501,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
     final JC onAddCteItem(_JoinType joinType, @Nullable Query.TabularModifier modifier
             , @Nullable String cteName, String alias) {
-        if (!(modifier == null || modifier instanceof ItemWord)) {
-            throw errorTabularModifier(modifier);
-        } else if (cteName == null) {
+        if (cteName == null) {
             throw ContextStack.nullPointer(this.context);
         }
         final JC block;
@@ -512,11 +510,6 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         return block;
     }
 
-
-    private CriteriaException errorTabularModifier(@Nullable Query.TabularModifier modifier) {
-        String m = String.format("error %s instance %s.", Query.TabularModifier.class.getName(), modifier);
-        return ContextStack.criteriaError(this.context, m);
-    }
 
     static abstract class DynamicJoinClause<FT, FS, FC, JT, JS, JC>
             extends JoinableClause<FT, FS, FC, JT, JS, JC, Object, Object, Object, Object, Object, Object> {

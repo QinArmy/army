@@ -13,9 +13,11 @@ public interface RowConstructor {
 
     RowConstructor add(Expression exp);
 
-    RowConstructor add(Expression exp, Expression exp2);
+    RowConstructor add(Expression exp1, Expression exp2);
 
-    RowConstructor add(Expression exp, Expression exp2, Expression exp3);
+    RowConstructor add(Expression exp1, Expression exp2, Expression exp3);
+
+    RowConstructor add(Expression exp1, Expression exp2, Expression exp3, Expression exp4);
 
     RowConstructor add(Function<Object, Expression> valueOperator, Object value);
 
