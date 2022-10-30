@@ -152,7 +152,7 @@ public interface Insert extends DmlStatement, DmlInsert {
 
     interface _DynamicValuesClause<T, VR> {
 
-        VR values(Consumer<PairsConstructor<T>> consumer);
+        VR values(Consumer<ValuesConstructor<T>> consumer);
 
     }
 
@@ -242,6 +242,8 @@ public interface Insert extends DmlStatement, DmlInsert {
     interface _DynamicAssignmentSetClause<T, SD> {
 
         SD set(Consumer<Assignments<T>> consumer);
+
+        SD ifSet(Consumer<Assignments<T>> consumer);
     }
 
 

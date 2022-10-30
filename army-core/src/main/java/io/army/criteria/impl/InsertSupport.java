@@ -12,7 +12,6 @@ import io.army.modelgen._MetaBridge;
 import io.army.stmt.Stmt;
 import io.army.struct.CodeEnum;
 import io.army.util._Assert;
-import io.army.util._ClassUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -805,80 +804,6 @@ abstract class InsertSupport {
     }//CommonExpClause
 
 
-    @Deprecated
-    static abstract class DomainValueClause<P, CR, DR, VR>
-            extends ColumnDefaultClause<P, CR, DR> implements Insert._DomainValueClause<P, VR>
-            , _Insert._DomainInsert {
-
-
-        DomainValueClause(InsertOptions options, TableMeta<P> table) {
-            super(options, table);
-        }
-
-        @Override
-        public final <T extends P> VR value(@Nullable T domain) {
-            if (domain == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            this.endColumnDefaultClause();
-            return this.domainValuesEnd(Collections.singletonList(domain));
-        }
-
-        @Override
-        public final <T extends P> VR value(Supplier<T> supplier) {
-            return this.value(supplier.get());
-        }
-
-
-        @Override
-        public final <T extends P> VR values(final @Nullable List<T> domainList) {
-            if (domainList == null || domainList.size() == 0) {
-                throw domainListIsEmpty();
-            }
-            this.endColumnDefaultClause();
-            return this.domainValuesEnd(domainList);
-        }
-
-        @Override
-        public final <T extends P> VR values(Supplier<List<T>> supplier) {
-            return this.values(supplier.get());
-        }
-
-
-        @Override
-        public final List<?> domainList() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void clear() {
-            super.clear();
-        }
-
-        VR valuesEnd() {
-            throw new UnsupportedOperationException();
-        }
-
-        VR domainValuesEnd(List<?> domainList) {
-            throw new UnsupportedOperationException();
-        }
-
-        private CriteriaException domainListIsEmpty() {
-            return ContextStack.criteriaError(this.context, "domainList must non-empty");
-        }
-
-
-    }//DomainValueClause
-
-    static abstract class DomainValueShortClause<C, P, DR, VR> extends DomainValueClause<P, DR, DR, VR> {
-
-        DomainValueShortClause(InsertOptions options, TableMeta<P> table) {
-            super(options, table);
-        }
-
-    }//DomainValueShortClause
-
-
     @SuppressWarnings("unchecked")
     static abstract class ComplexInsertValuesClause<T, CR, DR, VR> extends ColumnDefaultClause<T, CR, DR>
             implements Insert._DomainValueClause<T, VR>
@@ -920,7 +845,6 @@ abstract class InsertSupport {
 
         /**
          * @see #domainListForNonParent()
-         * @see #domainListForChild(ComplexInsertValuesClause)
          */
         @Override
         public final <TS extends T> VR values(final @Nullable List<TS> domainList) {
@@ -942,17 +866,17 @@ abstract class InsertSupport {
 
 
         @Override
-        public final VR values(final Consumer<PairsConstructor<T>> consumer) {
+        public final VR values(final Consumer<ValuesConstructor<T>> consumer) {
             if (this.insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.endColumnDefaultClause();
-
-            final DynamicPairsConstructor<T> constructor;
-            constructor = new DynamicPairsConstructor<>(this.context, this::validateField);
-            consumer.accept(constructor);
-            this.rowPairList = constructor.endPairConsumer();
             this.insertMode = InsertMode.VALUES;
+
+            final PairsConstructorImpl<T> constructor;
+            constructor = new PairsConstructorImpl<>(this.context, this::validateField);
+            consumer.accept(constructor);
+            this.rowPairList = constructor.endPairConstructor();
             return (VR) this;
         }
 
@@ -1053,190 +977,28 @@ abstract class InsertSupport {
     }//ComplexInsertValuesClause
 
 
-    private static final class AssignmentsImpl<T> implements Assignments<T> {
-
-        private final CriteriaContext context;
-
-        private final BiConsumer<FieldMeta<?>, ArmyExpression> fieldValidator;
-
-        private List<_Pair<FieldMeta<?>, _Expression>> pairList;
-
-        private Map<FieldMeta<?>, _Expression> assignmentMap;
-
-        private AssignmentsImpl(CriteriaContext context, BiConsumer<FieldMeta<?>, ArmyExpression> fieldValidator) {
-            this.context = context;
-            this.fieldValidator = fieldValidator;
-        }
-
-        @Override
-        public Assignments<T> set(final FieldMeta<T> field, final @Nullable Expression value) {
-            List<_Pair<FieldMeta<?>, _Expression>> pairList = this.pairList;
-            Map<FieldMeta<?>, _Expression> assignmentMap = this.assignmentMap;
-            if (pairList == null) {
-                pairList = new ArrayList<>();
-                this.pairList = pairList;
-                assignmentMap = new HashMap<>();
-                this.assignmentMap = assignmentMap;
-            } else if (!(pairList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            if (value == null) {
-                throw ContextStack.nullPointer(this.context);
-            } else if (!(value instanceof ArmyExpression)) {
-                throw ContextStack.nonArmyExp(this.context);
-            }
-            this.fieldValidator.accept(field, (ArmyExpression) value);
-            assert assignmentMap != null;
-            if (assignmentMap.putIfAbsent(field, (ArmyExpression) value) != null) {
-                throw duplicationValuePair(this.context, field);
-            }
-            pairList.add(_Pair.create(field, (ArmyExpression) value));
-            return this;
-        }
-
-        @Override
-        public Assignments<T> set(FieldMeta<T> field, Supplier<Expression> supplier) {
-            return this.set(field, supplier.get());
-        }
-
-        @Override
-        public Assignments<T> set(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function) {
-            return this.set(field, function.apply(field));
-        }
-
-        @Override
-        public <E> Assignments<T> set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
-                , @Nullable E value) {
-            return this.set(field, valueOperator.apply(field, value));
-        }
-
-        @Override
-        public <E> Assignments<T> set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
-                , Supplier<E> supplier) {
-            return this.set(field, valueOperator.apply(field, supplier.get()));
-        }
-
-        @Override
-        public Assignments<T> set(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator
-                , Function<String, ?> function, String keyName) {
-            return this.set(field, valueOperator.apply(field, function.apply(keyName)));
-        }
-
-        @Override
-        public Assignments<T> ifSet(FieldMeta<T> field, Supplier<Expression> supplier) {
-            final Expression expression;
-            expression = supplier.get();
-            if (expression != null) {
-                this.set(field, expression);
-            }
-            return this;
-        }
-
-        @Override
-        public Assignments<T> ifSet(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function) {
-            final Expression expression;
-            expression = function.apply(field);
-            if (expression != null) {
-                this.set(field, expression);
-            }
-            return this;
-        }
-
-        @Override
-        public <E> Assignments<T> ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
-                , @Nullable E value) {
-            if (value != null) {
-                this.set(field, valueOperator.apply(field, value));
-            }
-            return this;
-        }
-
-        @Override
-        public <E> Assignments<T> ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
-                , Supplier<E> supplier) {
-            final E value;
-            value = supplier.get();
-            if (value != null) {
-                this.set(field, valueOperator.apply(field, value));
-            }
-            return this;
-        }
-
-        @Override
-        public Assignments<T> ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator
-                , Function<String, ?> function, String keyName) {
-            final Object value;
-            value = function.apply(keyName);
-            if (value != null) {
-                this.set(field, valueOperator.apply(field, value));
-            }
-            return this;
-        }
-
-        private List<_Pair<FieldMeta<?>, _Expression>> endAssignmentClause() {
-            List<_Pair<FieldMeta<?>, _Expression>> pairList = this.pairList;
-            Map<FieldMeta<?>, _Expression> fieldMap = this.assignmentMap;
-            if (pairList == null) {
-                pairList = Collections.emptyList();
-                this.pairList = pairList;
-                fieldMap = Collections.emptyMap();
-                this.assignmentMap = fieldMap;
-            } else if (pairList instanceof ArrayList) {
-                pairList = _CollectionUtils.unmodifiableList(pairList);
-                this.pairList = pairList;
-                fieldMap = Collections.unmodifiableMap(fieldMap);
-                this.assignmentMap = fieldMap;
-            } else {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return pairList;
-        }
-
-    }//AssignmentsImpl
-
     @SuppressWarnings("unchecked")
-    static abstract class ComplexInsertValuesAssignmentClause<T, CR, DR, VR, SR>
-            extends ComplexInsertValuesClause<T, CR, DR, VR>
-            implements Insert._StaticAssignmentSetClause<T, SR>
-            , Insert._DynamicAssignmentSetClause<T, VR>
-            , _Insert._AssignmentInsert {
+    private static abstract class DynamicAssignmentSetClause<T, SR>
+            implements Insert._StaticAssignmentSetClause<T, SR> {
 
-        private List<_Pair<FieldMeta<?>, _Expression>> assignmentPairList;
+        final CriteriaContext context;
 
-        private Map<FieldMeta<?>, _Expression> assignmentMap;
+        private final BiConsumer<FieldMeta<T>, Expression> consumer;
 
-        ComplexInsertValuesAssignmentClause(InsertOptions options, TableMeta<T> table) {
-            super(options, table);
+        private DynamicAssignmentSetClause(CriteriaContext context
+                , BiConsumer<FieldMeta<T>, Expression> consumer) {
+            this.context = context;
+            this.consumer = consumer;
+        }
+
+        private DynamicAssignmentSetClause(CriteriaContext context) {
+            this.context = context;
+            this.consumer = this::onAddPair;
         }
 
         @Override
         public final SR set(final FieldMeta<T> field, final @Nullable Expression value) {
-            List<_Pair<FieldMeta<?>, _Expression>> pairList = this.assignmentPairList;
-            Map<FieldMeta<?>, _Expression> assignmentMap = this.assignmentMap;
-            if (pairList == null) {
-                if (((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode != null) {
-                    throw ContextStack.castCriteriaApi(this.context);
-                }
-                ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode = InsertMode.ASSIGNMENT;
-                pairList = new ArrayList<>();
-                this.assignmentPairList = pairList;
-                assignmentMap = new HashMap<>();
-                this.assignmentMap = assignmentMap;
-            } else if (!(pairList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            if (value == null) {
-                throw ContextStack.nullPointer(this.context);
-            } else if (!(value instanceof ArmyExpression)) {
-                throw ContextStack.nonArmyExp(this.context);
-            } else {
-                this.validateField(field, (ArmyExpression) value);
-            }
-            assert assignmentMap != null;
-            if (assignmentMap.putIfAbsent(field, (ArmyExpression) value) != null) {
-                throw duplicationValuePair(this.context, field);
-            }
-            pairList.add(_Pair.create(field, (ArmyExpression) value));
+            this.consumer.accept(field, value);
             return (SR) this;
         }
 
@@ -1319,17 +1081,254 @@ abstract class InsertSupport {
             return (SR) this;
         }
 
+        void onAddPair(FieldMeta<T> field, @Nullable Expression value) {
+            throw new UnsupportedOperationException();
+        }
+
+
+    }//DynamicAssignmentSetClause
+
+    private static final class AssignmentsImpl<T> extends DynamicAssignmentSetClause<T, Assignments<T>>
+            implements Assignments<T> {
+
+        private AssignmentsImpl(CriteriaContext context, BiConsumer<FieldMeta<T>, Expression> consumer) {
+            super(context, consumer);
+        }
+
+    }//AssignmentsImpl
+
+
+    private static final class PairsConstructorImpl<T> extends DynamicAssignmentSetClause<T, ValuesConstructor<T>>
+            implements ValuesConstructor<T> {
+
+        private final BiConsumer<FieldMeta<T>, ArmyExpression> validator;
+
+        private Map<FieldMeta<?>, _Expression> pairMap;
+
+        private List<Map<FieldMeta<?>, _Expression>> pairMapList;
+
+
+        private PairsConstructorImpl(CriteriaContext context, BiConsumer<FieldMeta<T>, ArmyExpression> validator) {
+            super(context);
+            this.validator = validator;
+        }
+
+        @Override
+        public ValuesConstructor<T> row() {
+            final Map<FieldMeta<?>, _Expression> pairMap = this.pairMap;
+
+            if (pairMap != null) {
+                List<Map<FieldMeta<?>, _Expression>> pairMapList = this.pairMapList;
+                if (pairMapList == null) {
+                    pairMapList = new ArrayList<>();
+                    this.pairMapList = pairMapList;
+                } else if (!(pairMapList instanceof ArrayList)) {
+                    throw ContextStack.castCriteriaApi(this.context);
+                }
+                pairMapList.add(Collections.unmodifiableMap(pairMap));
+            }
+            this.pairMap = new HashMap<>();
+            return this;
+        }
+
+
+        @Override
+        void onAddPair(FieldMeta<T> field, @Nullable Expression value) {
+            final Map<FieldMeta<?>, _Expression> pairMap = this.pairMap;
+            if (pairMap == null) {
+                throw notFoundAnyRow();
+            } else if (!(pairMap instanceof HashMap)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            } else if (value == null) {
+                throw ContextStack.nullPointer(this.context);
+            } else if (!(value instanceof ArmyExpression)) {
+                throw ContextStack.nonArmyExp(this.context);
+            }
+
+            this.validator.accept(field, (ArmyExpression) value);
+
+            if (pairMap.putIfAbsent(field, (ArmyExpression) value) != null) {
+                throw duplicationValuePair(this.context, field);
+            }
+        }
+
+        private List<Map<FieldMeta<?>, _Expression>> endPairConstructor() {
+            Map<FieldMeta<?>, _Expression> pairMap = this.pairMap;
+            if (pairMap == null) {
+                throw notFoundAnyRow();
+            } else if (!(pairMap instanceof HashMap)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            pairMap = Collections.unmodifiableMap(pairMap);
+
+            List<Map<FieldMeta<?>, _Expression>> pairMapList = this.pairMapList;
+            if (pairMapList == null) {
+                pairMapList = Collections.singletonList(pairMap);
+                this.pairMapList = pairMapList;
+            } else if (pairMapList instanceof ArrayList) {
+                pairMapList.add(pairMap);
+                pairMapList = Collections.unmodifiableList(pairMapList);
+                this.pairMapList = pairMapList;
+            } else {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.pairMap = pairMap;
+            return pairMapList;
+        }
+
+        private CriteriaException notFoundAnyRow() {
+            return ContextStack.criteriaError(this.context, "Not found any row,You don't invoke row() method.");
+        }
+
+
+    }//PairsConstructorImpl
+
+
+    @SuppressWarnings("unchecked")
+    static abstract class ComplexInsertValuesAssignmentClause<T, CR, DR, VR, SR>
+            extends ComplexInsertValuesClause<T, CR, DR, VR>
+            implements Insert._StaticAssignmentSetClause<T, SR>
+            , Insert._DynamicAssignmentSetClause<T, VR>
+            , _Insert._AssignmentInsert {
+
+        private List<_Pair<FieldMeta<?>, _Expression>> assignmentPairList;
+
+        private Map<FieldMeta<?>, _Expression> assignmentMap;
+
+        ComplexInsertValuesAssignmentClause(InsertOptions options, TableMeta<T> table) {
+            super(options, table);
+        }
+
+        @Override
+        public final SR set(final FieldMeta<T> field, final @Nullable Expression value) {
+            List<_Pair<FieldMeta<?>, _Expression>> pairList = this.assignmentPairList;
+            Map<FieldMeta<?>, _Expression> assignmentMap = this.assignmentMap;
+            if (pairList == null) {
+                if (((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode != null) {
+                    throw ContextStack.castCriteriaApi(this.context);
+                }
+                ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode = InsertMode.ASSIGNMENT;
+                pairList = new ArrayList<>();
+                this.assignmentPairList = pairList;
+                assignmentMap = new HashMap<>();
+                this.assignmentMap = assignmentMap;
+            } else if (!(pairList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            if (value == null) {
+                throw ContextStack.nullPointer(this.context);
+            } else if (!(value instanceof ArmyExpression)) {
+                throw ContextStack.nonArmyExp(this.context);
+            } else {
+                this.validateField(field, (ArmyExpression) value);
+            }
+            assert assignmentMap != null;
+            if (assignmentMap.putIfAbsent(field, (ArmyExpression) value) != null) {
+                throw duplicationValuePair(this.context, field);
+            }
+            pairList.add(_Pair.create(field, (ArmyExpression) value));
+            return (SR) this;
+        }
+
+
+        @Override
+        public final SR set(FieldMeta<T> field, Supplier<Expression> supplier) {
+            return this.set(field, supplier.get());
+        }
+
+        @Override
+        public final SR set(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function) {
+            return this.set(field, function.apply(field));
+        }
+
+        @Override
+        public final <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
+                , @Nullable E value) {
+            return this.set(field, valueOperator.apply(field, value));
+        }
+
+        @Override
+        public final <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
+                , Supplier<E> supplier) {
+            return this.set(field, valueOperator.apply(field, supplier.get()));
+        }
+
+        @Override
+        public final SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator
+                , Function<String, ?> function, String keyName) {
+            return this.set(field, valueOperator.apply(field, function.apply(keyName)));
+        }
+
+        @Override
+        public final SR ifSet(FieldMeta<T> field, Supplier<Expression> supplier) {
+            final Expression expression;
+            expression = supplier.get();
+            if (expression != null) {
+                this.set(field, expression);
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final SR ifSet(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function) {
+            final Expression expression;
+            expression = function.apply(field);
+            if (expression != null) {
+                this.set(field, expression);
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final <E> SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
+                , @Nullable E value) {
+            if (value != null) {
+                this.set(field, valueOperator.apply(field, value));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final <E> SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
+                , Supplier<E> supplier) {
+            final E value;
+            value = supplier.get();
+            if (value != null) {
+                this.set(field, valueOperator.apply(field, value));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator
+                , Function<String, ?> function, String keyName) {
+            final Object value;
+            value = function.apply(keyName);
+            if (value != null) {
+                this.set(field, valueOperator.apply(field, value));
+            }
+            return (SR) this;
+        }
+
         @Override
         public final VR set(Consumer<Assignments<T>> consumer) {
+            this.ifSet(consumer);
+            final List<_Pair<FieldMeta<?>, _Expression>> list = this.assignmentPairList;
+            if (list == null || list.size() == 0) {
+                throw ContextStack.criteriaError(this.context, "You don't assignment any value.");
+            }
+            return (VR) this;
+        }
+
+        @Override
+        public final VR ifSet(Consumer<Assignments<T>> consumer) {
             if (this.assignmentPairList != null || ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode = InsertMode.ASSIGNMENT;
-            final AssignmentsImpl<T> assignments;
-            assignments = new AssignmentsImpl<>(this.context, this::validateField);
-            consumer.accept(assignments);
-            this.assignmentPairList = assignments.endAssignmentClause();
-            this.assignmentMap = assignments.assignmentMap;
+            consumer.accept(new AssignmentsImpl<>(this.context, this::set));
+
+            this.endStaticAssignmentClauseIfNeed();
             return (VR) this;
         }
 
@@ -1530,175 +1529,9 @@ abstract class InsertSupport {
 
     }//StaticValueColumnClause
 
-    @Deprecated
-    static abstract class DynamicValueInsertValueClauseShort<T, RR, VR>
-            extends ColumnDefaultClause<T, RR, RR>
-            implements Insert._DynamicValuesClause<T, VR>
-            , PairsConstructor<T>, ValueSyntaxOptions {
 
-        public DynamicValueInsertValueClauseShort(ValueSyntaxOptions options, TableMeta<T> table) {
-            super(options, table);
-        }
-
-        @Override
-        public VR values(Consumer<PairsConstructor<T>> consumer) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, Expression value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
-            return null;
-        }
-
-        @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
-            return null;
-        }
-
-        @Override
-        public <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, E value) {
-            return null;
-        }
-
-        @Override
-        public <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
-            return null;
-        }
-
-        @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
-            return null;
-        }
-
-        @Override
-        public PairConsumer<T> row() {
-            throw new UnsupportedOperationException();
-        }
-
-        abstract VR valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowList);
-    }
-
-
-    static final class DynamicPairsConstructor<T> implements PairsConstructor<T> {
-        final CriteriaContext context;
-
-        private final BiConsumer<FieldMeta<T>, ArmyExpression> validator;
-
-        private List<Map<FieldMeta<?>, _Expression>> rowPairList;
-
-        private Map<FieldMeta<?>, _Expression> rowMap;
-
-        DynamicPairsConstructor(CriteriaContext context, BiConsumer<FieldMeta<T>, ArmyExpression> validator) {
-            this.context = context;
-            this.validator = validator;
-        }
-
-
-        @Override
-        public PairConsumer<T> row() {
-            final Map<FieldMeta<?>, _Expression> currentPairMap = this.rowMap;
-            if (currentPairMap instanceof HashMap) {
-                List<Map<FieldMeta<?>, _Expression>> valuePairList = this.rowPairList;
-                if (valuePairList == null) {
-                    valuePairList = new ArrayList<>();
-                    this.rowPairList = valuePairList;
-                } else if (!(valuePairList instanceof ArrayList)) {
-                    throw ContextStack.castCriteriaApi(this.context);
-                }
-                valuePairList.add(Collections.unmodifiableMap(currentPairMap));
-            } else if (currentPairMap != null || this.rowPairList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.rowMap = new HashMap<>();
-            return this;
-        }
-
-        @Override
-        public PairConsumer<T> accept(final FieldMeta<T> field, final @Nullable Expression value) {
-            final Map<FieldMeta<?>, _Expression> currentRowMap = this.rowMap;
-            if (currentRowMap == null) {
-                String m = String.format("Not found any row,please use %s.row() method create row."
-                        , PairsConstructor.class.getName());
-                throw ContextStack.criteriaError(this.context, m);
-            } else if (!(currentRowMap instanceof HashMap)) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            if (!(value instanceof ArmyExpression)) {
-                throw ContextStack.nonArmyExp(this.context);
-            }
-            this.validator.accept(field, (ArmyExpression) value);
-
-            if (currentRowMap.putIfAbsent(field, (ArmyExpression) value) != null) {
-                throw duplicationValuePair(this.context, field);
-            }
-            return this;
-        }
-
-        @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
-            return this.accept(field, supplier.get());
-        }
-
-        @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
-            return this.accept(field, function.apply(field));
-        }
-
-        @Override
-        public <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value) {
-            return this.accept(field, operator.apply(field, value));
-        }
-
-        @Override
-        public <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
-            return this.accept(field, operator.apply(field, supplier.get()));
-        }
-
-        @Override
-        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
-            return this.accept(field, operator.apply(field, function.apply(keyName)));
-        }
-
-
-        List<Map<FieldMeta<?>, _Expression>> endPairConsumer() {
-            Map<FieldMeta<?>, _Expression> valuePairMap = this.rowMap;
-            if (valuePairMap == null) {
-                String m = "Values insert must have one row at least";
-                throw ContextStack.criteriaError(this.context, m);
-            }
-            if (valuePairMap.size() == 0) {
-                valuePairMap = Collections.emptyMap();
-            } else {
-                valuePairMap = Collections.unmodifiableMap(valuePairMap);
-            }
-            List<Map<FieldMeta<?>, _Expression>> valuePairList = this.rowPairList;
-            if (valuePairList == null) {
-                valuePairList = Collections.singletonList(valuePairMap);
-            } else if (valuePairList instanceof ArrayList) {
-                valuePairList.add(valuePairMap);
-                valuePairList = Collections.unmodifiableList(valuePairList);
-            } else {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.rowMap = null;
-            this.rowPairList = null;
-            return valuePairList;
-        }
-
-
-    }//DynamicPairsConstructor
-
-    @SuppressWarnings("unchecked")
-    static abstract class AssignmentSetClause<T, SR>
-            implements Insert._StaticAssignmentSetClause<T, SR>
-            , ColumnListClause, _Insert._AssignmentStatementSpec
-            , PairConsumer<T> {
-        final CriteriaContext context;
+    static abstract class AssignmentSetClause<T, SR> extends DynamicAssignmentSetClause<T, SR>
+            implements ColumnListClause, _Insert._AssignmentStatementSpec {
 
         final TableMeta<T> insertTable;
 
@@ -1706,146 +1539,8 @@ abstract class InsertSupport {
         private List<_Pair<FieldMeta<?>, _Expression>> itemPairList;
 
         AssignmentSetClause(CriteriaContext context, TableMeta<T> insertTable) {
-            this.context = context;
+            super(context);
             this.insertTable = insertTable;
-        }
-
-        @Override
-        public final SR set(final FieldMeta<T> field, final @Nullable Expression value) {
-            if (value == null) {
-                throw ContextStack.nullPointer(this.context);
-            } else if (!(value instanceof ArmyExpression)) {
-                throw ContextStack.nonArmyExp(this.context);
-            }
-            this.validateField(field, (ArmyExpression) value);
-            Map<FieldMeta<?>, _Expression> fieldPairMap = this.fieldPairMap;
-            List<_Pair<FieldMeta<?>, _Expression>> itemPairList = this.itemPairList;
-            if (fieldPairMap == null) {
-                this.fieldPairMap = fieldPairMap = new HashMap<>();
-                this.itemPairList = itemPairList = new ArrayList<>();
-            } else if (!(fieldPairMap instanceof HashMap)) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            if (fieldPairMap.putIfAbsent(field, (ArmyExpression) value) != null) {
-                throw duplicationValuePair(this.context, field);
-            }
-            assert itemPairList != null;
-            itemPairList.add(_Pair.create(field, (ArmyExpression) value));
-            return (SR) this;
-        }
-
-        @Override
-        public final SR set(FieldMeta<T> field, Supplier<Expression> supplier) {
-            return this.set(field, supplier.get());
-        }
-
-        @Override
-        public final SR set(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function) {
-            return this.set(field, function.apply(field));
-        }
-
-        @Override
-        public final <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
-                , @Nullable E value) {
-            return this.set(field, valueOperator.apply(field, value));
-        }
-
-        @Override
-        public final <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
-                , Supplier<E> supplier) {
-            return this.set(field, valueOperator.apply(field, supplier.get()));
-        }
-
-        @Override
-        public final SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator
-                , Function<String, ?> function, String keyName) {
-            return this.set(field, valueOperator.apply(field, function.apply(keyName)));
-        }
-
-        @Override
-        public final SR ifSet(FieldMeta<T> field, Supplier<Expression> supplier) {
-            final Expression expression;
-            if ((expression = supplier.get()) != null) {
-                this.set(field, expression);
-            }
-            return (SR) this;
-        }
-
-        @Override
-        public final SR ifSet(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function) {
-            final Expression expression;
-            if ((expression = function.apply(field)) != null) {
-                this.set(field, expression);
-            }
-            return (SR) this;
-        }
-
-        @Override
-        public final <E> SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
-                , @Nullable E value) {
-            if (value != null) {
-                this.set(field, valueOperator.apply(field, value));
-            }
-            return (SR) this;
-        }
-
-        @Override
-        public final <E> SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
-                , Supplier<E> supplier) {
-            final E value;
-            if ((value = supplier.get()) != null) {
-                this.set(field, valueOperator.apply(field, value));
-            }
-            return (SR) this;
-        }
-
-        @Override
-        public final SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator
-                , Function<String, ?> function, String keyName) {
-            final Object value;
-            if ((value = function.apply(keyName)) != null) {
-                this.set(field, valueOperator.apply(field, value));
-            }
-            return (SR) this;
-        }
-
-        @Override
-        public final PairConsumer<T> accept(FieldMeta<T> field, Expression value) {
-            this.set(field, value);
-            return this;
-        }
-
-        @Override
-        public final PairConsumer<T> accept(FieldMeta<T> field, Supplier<Expression> supplier) {
-            this.set(field, supplier.get());
-            return this;
-        }
-
-        @Override
-        public final PairConsumer<T> accept(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function) {
-            this.set(field, function.apply(field));
-            return this;
-        }
-
-        @Override
-        public final <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator
-                , @Nullable E value) {
-            this.set(field, operator.apply(field, value));
-            return this;
-        }
-
-        @Override
-        public final <E> PairConsumer<T> accept(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator
-                , Supplier<E> supplier) {
-            this.set(field, operator.apply(field, supplier.get()));
-            return this;
-        }
-
-        @Override
-        public final PairConsumer<T> accept(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator
-                , Function<String, ?> function, String keyName) {
-            this.set(field, operator.apply(field, function.apply(keyName)));
-            return this;
         }
 
         @Override
@@ -1881,6 +1576,29 @@ abstract class InsertSupport {
         }
 
 
+        final void onAddPair(final FieldMeta<T> field, final @Nullable Expression value) {
+            if (value == null) {
+                throw ContextStack.nullPointer(this.context);
+            } else if (!(value instanceof ArmyExpression)) {
+                throw ContextStack.nonArmyExp(this.context);
+            }
+            this.validateField(field, (ArmyExpression) value);
+            Map<FieldMeta<?>, _Expression> fieldPairMap = this.fieldPairMap;
+            List<_Pair<FieldMeta<?>, _Expression>> itemPairList = this.itemPairList;
+            if (fieldPairMap == null) {
+                this.fieldPairMap = fieldPairMap = new HashMap<>();
+                this.itemPairList = itemPairList = new ArrayList<>();
+            } else if (!(fieldPairMap instanceof HashMap)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            if (fieldPairMap.putIfAbsent(field, (ArmyExpression) value) != null) {
+                throw duplicationValuePair(this.context, field);
+            }
+            assert itemPairList != null;
+            itemPairList.add(_Pair.create(field, (ArmyExpression) value));
+        }
+
+
         final void endAssignmentSetClause() {
             List<_Pair<FieldMeta<?>, _Expression>> itemPairList = this.itemPairList;
             Map<FieldMeta<?>, _Expression> fieldMap = this.fieldPairMap;
@@ -1904,56 +1622,10 @@ abstract class InsertSupport {
             this.fieldPairMap = fieldMap;
 
             assert fieldMap.size() == itemPairList.size();
-
-
         }
-
 
 
     }//AssignmentSetClause
-
-    @Deprecated
-
-    static abstract class AssignmentInsertClause<T, SR>
-            extends AssignmentSetClause<T, SR>
-            implements Insert._StaticAssignmentSetClause<T, SR>, _Insert._AssignmentInsert {
-
-        final boolean migration;
-
-        final LiteralMode literalMode;
-
-        AssignmentInsertClause(InsertOptions options, TableMeta<T> table) {
-            super(options.getContext(), table);
-
-            this.migration = options.isMigration();
-            this.literalMode = options.literalMode();
-        }
-
-
-        @Override
-        public final TableMeta<?> table() {
-            return this.insertTable;
-        }
-
-        @Override
-        public final boolean isMigration() {
-            return this.migration;
-        }
-
-        @Override
-        public final LiteralMode literalMode() {
-            return this.literalMode;
-        }
-
-
-        @Override
-        public void clear() {
-            //no-op
-        }
-
-
-    }//AssignmentInsertClause
-
 
 
     private static abstract class AbstractInsertStatement<I extends DmlInsert, Q extends DqlInsert>
@@ -2046,11 +1718,7 @@ abstract class InsertSupport {
             insertStatementGuard(this);
 
             //finally clear context
-            if (this instanceof SubStatement) {
-                ContextStack.pop(this.context);
-            } else {
-                ContextStack.clearContextStack(this.context);
-            }
+            ContextStack.pop(this.context);
             this.prepared = Boolean.TRUE;
         }
 
@@ -2281,16 +1949,6 @@ abstract class InsertSupport {
     }//QueryInsertStatement
 
 
-    static abstract class QuerySyntaxReturningInsertStatement<Q extends DqlInsert>
-            extends AbstractQuerySyntaxInsertStatement<DmlInsert, Q>
-            implements DqlInsert {
-
-        QuerySyntaxReturningInsertStatement(_QueryInsert clause) {
-            super(clause);
-        }
-
-    }//QuerySyntaxReturningInsertStatement
-
 
     static void checkField(final CriteriaContext context, final TableMeta<?> table
             , final boolean migration, final FieldMeta<?> field) {
@@ -2323,23 +1981,8 @@ abstract class InsertSupport {
         return ContextStack.criteriaError(criteriaContext, m);
     }
 
-
-    private static CriteriaException nonDomainInstance(CriteriaContext criteriaContext, @Nullable Object domain
-            , TableMeta<?> table) {
-        String m;
-        m = String.format("%s isn't %s instance.", _ClassUtils.safeClassName(domain), table.javaType().getName());
-        return ContextStack.criteriaError(criteriaContext, m);
-    }
-
     private static CriteriaException childIdIsManaged(CriteriaContext criteriaContext, ChildTableMeta<?> table) {
         return ContextStack.criteriaError(criteriaContext, _Exceptions::childIdIsManagedByArmy, table);
-    }
-
-    static CriteriaException childAndParentRowsNotMatch(CriteriaContext criteriaContext
-            , ChildTableMeta<?> table, int parent, int child) {
-        Supplier<CriteriaException> supplier;
-        supplier = () -> _Exceptions.childAndParentRowsNotMatch(table, parent, child);
-        return ContextStack.criteriaError(criteriaContext, supplier);
     }
 
 
