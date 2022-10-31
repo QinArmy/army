@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.mysql.MySQLDqlValues;
 import io.army.criteria.mysql.MySQLQuery;
+import io.army.criteria.mysql.MySQLValues;
 import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
@@ -16,14 +16,14 @@ import io.army.util._Exceptions;
 abstract class MySQLUnionValues<C, U extends RowSet.DqlValues> extends UnionRowSet<
         C,
         U,
-        MySQLDqlValues._UnionOrderBySpec<C, U>,
-        MySQLDqlValues._UnionLimitSpec<C, U>,
-        MySQLDqlValues._UnionSpec<C, U>,
-        Void> implements MySQLDqlValues, MySQLDqlValues._UnionOrderBySpec<C, U> {
+        MySQLValues._UnionOrderBySpec<C, U>,
+        MySQLValues._UnionLimitSpec<C, U>,
+        MySQLValues._UnionSpec<C, U>,
+        Void> implements MySQLValues, MySQLValues._UnionOrderBySpec<C, U> {
 
 
-    static <C, U extends RowSet.DqlValues> MySQLDqlValues._UnionOrderBySpec<C, U> bracket(final RowSet left) {
-        final MySQLDqlValues._UnionOrderBySpec<C, ?> spec;
+    static <C, U extends RowSet.DqlValues> MySQLValues._UnionOrderBySpec<C, U> bracket(final RowSet left) {
+        final MySQLValues._UnionOrderBySpec<C, ?> spec;
         if (left instanceof Values) {
             spec = new BracketValues<>((Values) left, CriteriaContexts.bracketContext(left));
         } else if (left instanceof SubValues) {
@@ -31,10 +31,10 @@ abstract class MySQLUnionValues<C, U extends RowSet.DqlValues> extends UnionRowS
         } else {
             throw _Exceptions.unknownRowSetType(left);
         }
-        return (MySQLDqlValues._UnionOrderBySpec<C, U>) spec;
+        return (MySQLValues._UnionOrderBySpec<C, U>) spec;
     }
 
-    static <C, U extends RowSet.DqlValues> MySQLDqlValues._UnionOrderBySpec<C, U> union(final U left
+    static <C, U extends RowSet.DqlValues> MySQLValues._UnionOrderBySpec<C, U> union(final U left
             , final UnionType unionType, final RowSet right) {
         switch (unionType) {
             case UNION:
@@ -48,7 +48,7 @@ abstract class MySQLUnionValues<C, U extends RowSet.DqlValues> extends UnionRowS
         CriteriaUtils.assertTypeMatch(left, right, MySQLUnionValues::unionRightItem);
         CriteriaUtils.assertSelectionSize(left, right);
 
-        final MySQLDqlValues._UnionOrderBySpec<C, ?> spec;
+        final MySQLValues._UnionOrderBySpec<C, ?> spec;
         if (left instanceof Values) {
             spec = new UnionValues<>((Values) left, unionType, right, CriteriaContexts.unionContext(left, right));
         } else if (left instanceof SubValues) {
@@ -56,11 +56,11 @@ abstract class MySQLUnionValues<C, U extends RowSet.DqlValues> extends UnionRowS
         } else {
             throw _Exceptions.unknownRowSetType(left);
         }
-        return (MySQLDqlValues._UnionOrderBySpec<C, U>) spec;
+        return (MySQLValues._UnionOrderBySpec<C, U>) spec;
     }
 
-    static <C, U extends RowSet.DqlValues> MySQLDqlValues._UnionOrderBySpec<C, U> noActionValues(final RowSet rowSet) {
-        final MySQLDqlValues._UnionOrderBySpec<C, ?> spec;
+    static <C, U extends RowSet.DqlValues> MySQLValues._UnionOrderBySpec<C, U> noActionValues(final RowSet rowSet) {
+        final MySQLValues._UnionOrderBySpec<C, ?> spec;
         if (rowSet instanceof Values) {
             spec = new NoActionValues<>((Values) rowSet, CriteriaContexts.noActionContext(rowSet));
         } else if (rowSet instanceof SubValues) {
@@ -68,21 +68,21 @@ abstract class MySQLUnionValues<C, U extends RowSet.DqlValues> extends UnionRowS
         } else {
             throw _Exceptions.unknownRowSetType(rowSet);
         }
-        return (MySQLDqlValues._UnionOrderBySpec<C, U>) spec;
+        return (MySQLValues._UnionOrderBySpec<C, U>) spec;
     }
 
     @Nullable
     private static String unionRightItem(final RowSet right) {
         final String message;
         if (right instanceof Select || right instanceof Values) {
-            if (right instanceof MySQLQuery || right instanceof StandardQuery || right instanceof MySQLDqlValues) {
+            if (right instanceof MySQLQuery || right instanceof StandardQuery || right instanceof MySQLValues) {
                 message = null;
             } else {
                 message = String.format("union right item isn't MySQL %s or %s."
                         , Select.class.getName(), Values.class.getName());
             }
         } else if (right instanceof SubQuery || right instanceof SubValues) {
-            if (right instanceof MySQLQuery || right instanceof StandardQuery || right instanceof MySQLDqlValues) {
+            if (right instanceof MySQLQuery || right instanceof StandardQuery || right instanceof MySQLValues) {
                 message = null;
             } else {
                 message = String.format("union right item isn't MySQL %s or %s."
@@ -105,17 +105,17 @@ abstract class MySQLUnionValues<C, U extends RowSet.DqlValues> extends UnionRowS
     }
 
     @Override
-    final MySQLDqlValues._UnionOrderBySpec<C, U> createBracketQuery(RowSet rowSet) {
+    final MySQLValues._UnionOrderBySpec<C, U> createBracketQuery(RowSet rowSet) {
         return bracket(rowSet);
     }
 
     @Override
-    final MySQLDqlValues._UnionOrderBySpec<C, U> getNoActionUnionRowSet(RowSet rowSet) {
+    final MySQLValues._UnionOrderBySpec<C, U> getNoActionUnionRowSet(RowSet rowSet) {
         return noActionValues(rowSet);
     }
 
     @Override
-    final MySQLDqlValues._UnionOrderBySpec<C, U> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+    final MySQLValues._UnionOrderBySpec<C, U> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
         return union((U) left, unionType, right);
     }
 

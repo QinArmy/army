@@ -43,17 +43,17 @@ abstract class ContextStack {
     }
 
 
-    static void pop(final CriteriaContext subContext) {
+    static CriteriaContext pop(final CriteriaContext context) {
         final Stack stack = HOLDER.get();
         if (stack == null) {
             throw noContextStack();
         }
-        stack.pop(subContext);
-        subContext.contextEnd();
+        stack.pop(context);
+        context.contextEndEvent();
         if (LOG.isTraceEnabled()) {
-            LOG.trace("pop {},hash:{}", subContext.getClass().getName(), System.identityHashCode(subContext));
+            LOG.trace("pop {},hash:{}", context.getClass().getName(), System.identityHashCode(context));
         }
-
+        return context;
     }
 
     static void push(final CriteriaContext context) {

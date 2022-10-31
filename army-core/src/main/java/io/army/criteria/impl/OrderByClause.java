@@ -1,10 +1,14 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
-import io.army.criteria.SortItem;
-import io.army.criteria.Statement;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner._UnionRowSet;
+import io.army.dialect.Dialect;
+import io.army.dialect.DialectParser;
+import io.army.dialect._MockDialects;
+import io.army.stmt.Stmt;
 import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -156,6 +160,123 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         void onOrderByEvent();
 
     }
+
+
+    static abstract class UnionRowSet
+            implements _UnionRowSet, Statement, CriteriaContextSpec
+            , Statement.StatementMockSpec {
+
+        final RowSet left;
+
+        private final UnionType unionType;
+
+        private final RowSet right;
+
+        UnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+            this.left = left;
+            this.unionType = unionType;
+            this.right = right;
+        }
+
+        @Override
+        public final CriteriaContext getContext() {
+            return ((CriteriaContextSpec) this.left).getContext();
+        }
+
+        @Override
+        public final RowSet leftRowSet() {
+            return this.left;
+        }
+
+        @Override
+        public final SQLWords unionType() {
+            return this.unionType;
+        }
+
+        @Override
+        public final RowSet rightRowSet() {
+            return this.right;
+        }
+
+        @Override
+        public final void prepared() {
+            //no-op
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            return true;
+        }
+
+        @Override
+        public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
+            final DialectParser parser;
+            parser = _MockDialects.from(dialect);
+            final Stmt stmt;
+            stmt = this.parseStatement(parser, visible);
+            return parser.printStmt(stmt, none);
+        }
+
+        @Override
+        public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
+            return this.parseStatement(_MockDialects.from(dialect), visible);
+        }
+
+        @Override
+        public final String toString() {
+            final String s;
+            if (this instanceof PrimaryStatement && this.isPrepared()) {
+                s = this.mockAsString(this.statementDialect(), Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
+
+        abstract Dialect statementDialect();
+
+        private Stmt parseStatement(final DialectParser parser, final Visible visible) {
+            if (!(this instanceof PrimaryStatement)) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            final Stmt stmt;
+            if (this instanceof Select) {
+                stmt = parser.select((Select) this, visible);
+            } else if (this instanceof DialectStatement) {
+                stmt = parser.dialectStmt((DialectStatement) this, visible);
+            } else {
+                throw new IllegalStateException("unknown statement");
+            }
+            return stmt;
+        }
+
+
+    }//UnionRowSet
+
+    static abstract class UnionSubRowSet extends UnionRowSet
+            implements DerivedTable {
+
+        UnionSubRowSet(RowSet left, UnionType unionType, RowSet right) {
+            super(left, unionType, right);
+        }
+
+        @Override
+        public final List<? extends SelectItem> selectItemList() {
+            return ((DerivedTable) this.left).selectItemList();
+        }
+
+        @Override
+        public final Selection selection(String derivedAlias) {
+            return ((DerivedTable) this.left).selection(derivedAlias);
+        }
+
+        @Override
+        final Dialect statementDialect() {
+            throw _Exceptions.castCriteriaApi();
+        }
+
+
+    }//UnionSubRowSet
 
 
 }

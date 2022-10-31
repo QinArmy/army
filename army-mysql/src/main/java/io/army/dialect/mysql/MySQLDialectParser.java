@@ -8,9 +8,9 @@ import io.army.criteria.impl._MySQLConsultant;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql.*;
-import io.army.criteria.mysql.MySQLDqlValues;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
+import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.StringType;
@@ -87,11 +87,11 @@ final class MySQLDialectParser extends MySQLParser {
     protected void assertDialectRowSet(final RowSet rowSet) {
         if (rowSet instanceof Query) {
             _MySQLConsultant.assertQuery((Query) rowSet);
-        } else if (rowSet instanceof MySQLDqlValues) {
+        } else if (rowSet instanceof MySQLValues) {
             if (!this.asOf80) {
                 throw _Exceptions.unknownStatement(rowSet, this.dialect);
             }
-            _MySQLConsultant.assertValues((MySQLDqlValues) rowSet);
+            _MySQLConsultant.assertValues((MySQLValues) rowSet);
         } else {
             throw _Exceptions.unknownStatement(rowSet, this.dialect);
         }
@@ -158,11 +158,11 @@ final class MySQLDialectParser extends MySQLParser {
         if (statement instanceof MySQLReplace) {
             _MySQLConsultant.assertReplace((MySQLReplace) statement);
             stmt = this.parseInsert((_Insert) statement, visible);
-        } else if (statement instanceof Values && statement instanceof MySQLDqlValues) {
+        } else if (statement instanceof Values && statement instanceof MySQLValues) {
             if (!this.asOf80) {
                 throw _Exceptions.unknownStatement(statement, this.dialect);
             }
-            _MySQLConsultant.assertValues((MySQLDqlValues) statement);
+            _MySQLConsultant.assertValues((MySQLValues) statement);
             stmt = this.values((Values) statement, visible);
         } else if (statement instanceof MySQLLoadData) {
             _MySQLConsultant.assertMySQLLoad((MySQLLoadData) statement);
@@ -770,8 +770,8 @@ final class MySQLDialectParser extends MySQLParser {
                 } else if (!"".equals(alias)) {
                     throw _Exceptions.tableItemAliasNoText(tableItem);
                 }
-            } else if (tableItem instanceof SubValues && tableItem instanceof MySQLDqlValues) {
-                this.valuesStmt((MySQLDqlValues) tableItem, context);
+            } else if (tableItem instanceof SubValues && tableItem instanceof MySQLValues) {
+                this.valuesStmt((MySQLValues) tableItem, context);
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
             } else {

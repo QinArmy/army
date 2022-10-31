@@ -214,9 +214,9 @@ public abstract class _AbstractDialectParser implements ArmyParser {
 
         //3. parse select
         final StmtContext context;
-        if (select instanceof _UnionRowSet) {
+        if (select instanceof _UnionRowSet0) {
             context = UnionSelectContext.create(select, this, visible);
-            this.standardUnionQuery((_UnionRowSet) select, context);
+            this.standardUnionQuery((_UnionRowSet0) select, context);
         } else {
             context = SimpleSelectContext.create(select, this, visible);
             if (select instanceof StandardQuery) {
@@ -349,10 +349,10 @@ public abstract class _AbstractDialectParser implements ArmyParser {
             throw _Exceptions.queryInsertDontSupportLateralSubQuery();
         }
         //here no outer paren
-        if (subQuery instanceof _UnionRowSet) {
+        if (subQuery instanceof _UnionRowSet0) {
             final _UnionQueryContext context;
             context = UnionSubQueryContext.create(outerContext);
-            this.standardUnionQuery((_UnionRowSet) subQuery, context);
+            this.standardUnionQuery((_UnionRowSet0) subQuery, context);
         } else {
             outerContext.sqlBuilder().append(_Constant.SPACE);
             final SimpleSubQueryContext context;
@@ -529,9 +529,9 @@ public abstract class _AbstractDialectParser implements ArmyParser {
 
     protected final SimpleStmt values(final Values values, final Visible visible) {
         final StmtContext context;
-        if (values instanceof _UnionRowSet) {
-            context = UnionValuesContext.create((_UnionRowSet) values, this, visible);
-            this.standardUnionQuery((_UnionRowSet) values, context);
+        if (values instanceof _UnionRowSet0) {
+            context = UnionValuesContext.create((_UnionRowSet0) values, this, visible);
+            this.standardUnionQuery((_UnionRowSet0) values, context);
         } else {
             context = ValuesContext.create((_Values) values, this, visible);
             this.dialectSimpleValues((_ValuesContext) context, (_Values) values);
@@ -581,7 +581,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
     /**
      * @see #selectStmt(Select, _SqlContext)
      */
-    protected final void standardUnionQuery(final _UnionRowSet query, final _SqlContext context) {
+    protected final void standardUnionQuery(final _UnionRowSet0 query, final _SqlContext context) {
 
         query.appendSql(context);
 
@@ -1204,8 +1204,8 @@ public abstract class _AbstractDialectParser implements ArmyParser {
         if (outerParen) {
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
         }
-        if (values instanceof _UnionRowSet) {
-            this.standardUnionQuery((_UnionRowSet) values, UnionValuesContext.create(original));
+        if (values instanceof _UnionRowSet0) {
+            this.standardUnionQuery((_UnionRowSet0) values, UnionValuesContext.create(original));
         } else {
             sqlBuilder.append(_Constant.SPACE);
             this.dialectSimpleValues(ValuesContext.create(original), (_Values) values);
@@ -1453,14 +1453,14 @@ public abstract class _AbstractDialectParser implements ArmyParser {
             throw new CriteriaException(m);
         }
         //4. parse select
-        if (select instanceof _UnionRowSet) {
+        if (select instanceof _UnionRowSet0) {
             final _UnionQueryContext context;
             if (original instanceof _UnionQueryContext) {
                 context = (_UnionQueryContext) original;
             } else {
                 context = UnionSelectContext.create(select, (_SelectContext) original);
             }
-            this.standardUnionQuery((_UnionRowSet) select, context);
+            this.standardUnionQuery((_UnionRowSet0) select, context);
         } else {
             final StringBuilder builder = original.sqlBuilder();
             if (builder.length() > 0) {
@@ -1492,7 +1492,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
         if (outerParen) {
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);// append space left bracket before select key word
         }
-        if (subQuery instanceof _UnionRowSet) {
+        if (subQuery instanceof _UnionRowSet0) {
             final _UnionQueryContext context;
             if (outerContext instanceof _SubQueryContext && outerContext instanceof _UnionQueryContext) {
                 context = (_UnionQueryContext) outerContext;
@@ -1501,7 +1501,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
             } else {
                 context = UnionSubQueryContext.create(outerContext);
             }
-            this.standardUnionQuery((_UnionRowSet) subQuery, context);
+            this.standardUnionQuery((_UnionRowSet0) subQuery, context);
         } else {
             sqlBuilder.append(_Constant.SPACE); //append space before parse sub query
             final SimpleSubQueryContext context;

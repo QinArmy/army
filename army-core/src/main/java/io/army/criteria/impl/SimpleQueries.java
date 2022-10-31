@@ -2,9 +2,10 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.*;
+import io.army.dialect.Dialect;
+import io.army.dialect._Constant;
+import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.stmt.Stmt;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
@@ -240,64 +241,64 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     @Override
     public final SP union() {
-        return this.createQueryUnion(UnionType.UNION);
+        return this.onUnion(UnionType.UNION);
     }
 
     @Override
     public final SP unionAll() {
-        return this.createQueryUnion(UnionType.UNION_ALL);
+        return this.onUnion(UnionType.UNION_ALL);
     }
 
     @Override
     public final SP unionDistinct() {
-        return this.createQueryUnion(UnionType.UNION_DISTINCT);
+        return this.onUnion(UnionType.UNION_DISTINCT);
     }
 
     @Override
     public final SP intersect() {
-        return this.createQueryUnion(UnionType.INTERSECT);
+        return this.onUnion(UnionType.INTERSECT);
     }
 
 
     @Override
     public final SP intersectAll() {
-        return this.createQueryUnion(UnionType.INTERSECT_ALL);
+        return this.onUnion(UnionType.INTERSECT_ALL);
     }
 
     @Override
     public final SP intersectDistinct() {
-        return this.createQueryUnion(UnionType.INTERSECT_DISTINCT);
+        return this.onUnion(UnionType.INTERSECT_DISTINCT);
     }
 
     @Override
     public final SP except() {
-        return this.createQueryUnion(UnionType.EXCEPT);
+        return this.onUnion(UnionType.EXCEPT);
     }
 
 
     @Override
     public final SP exceptAll() {
-        return this.createQueryUnion(UnionType.EXCEPT_ALL);
+        return this.onUnion(UnionType.EXCEPT_ALL);
     }
 
     @Override
     public final SP exceptDistinct() {
-        return this.createQueryUnion(UnionType.EXCEPT_DISTINCT);
+        return this.onUnion(UnionType.EXCEPT_DISTINCT);
     }
 
     @Override
     public final SP minus() {
-        return this.createQueryUnion(UnionType.MINUS);
+        return this.onUnion(UnionType.MINUS);
     }
 
     @Override
     public final SP minusAll() {
-        return this.createQueryUnion(UnionType.MINUS_ALL);
+        return this.onUnion(UnionType.MINUS_ALL);
     }
 
     @Override
     public final SP minusDistinct() {
-        return this.createQueryUnion(UnionType.MINUS_DISTINCT);
+        return this.onUnion(UnionType.MINUS_DISTINCT);
     }
 
     /*################################## blow _Query method ##################################*/
@@ -413,6 +414,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         return this.context.selection(derivedAlias);
     }
 
+    abstract SP createQueryUnion(UnionType unionType);
 
     abstract void onEndQuery();
 
@@ -423,6 +425,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     abstract List<W> asModifierList(@Nullable List<W> modifiers);
 
     abstract List<Hint> asHintList(@Nullable List<Hint> hints);
+
+
+    private SP onUnion(UnionType unionType) {
+        this.endQueryStatement();
+        return this.createQueryUnion(unionType);
+    }
 
 
     private void endQueryStatement() {
@@ -528,7 +536,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     }
 
-    abstract SP createQueryUnion(UnionType unionType);
+
 
 
     static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
@@ -695,8 +703,131 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     }//SelectClauseDispatcher
 
+
+    static abstract class WithBuilderSelectClauseDispatcher<B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR>
+            extends SelectClauseDispatcher<W, SR>
+            implements DialectStatement._DynamicWithClause<B, WE>
+            , _WithClauseSpec {
+
+        final CriteriaContext outerContext;
+
+        private CriteriaContext withClauseContext;
+
+        private boolean recursive;
+
+        private List<_Cte> cteList;
+
+
+        WithBuilderSelectClauseDispatcher(@Nullable CriteriaContext outerContext) {
+            this.outerContext = outerContext;
+        }
+
+
+        @Override
+        public final WE with(Consumer<B> consumer) {
+            final B builder;
+            builder = this.innerCreateCteBuilder(false);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, true);
+        }
+
+
+        @Override
+        public final WE withRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.innerCreateCteBuilder(true);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, true);
+        }
+
+
+        @Override
+        public final WE ifWith(Consumer<B> consumer) {
+            final B builder;
+            builder = this.innerCreateCteBuilder(false);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, false);
+        }
+
+
+        @Override
+        public final WE ifWithRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.innerCreateCteBuilder(true);
+            consumer.accept(builder);
+            return this.endDynamicWithClause(builder, false);
+        }
+
+        @Override
+        public final boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public final List<_Cte> cteList() {
+            List<_Cte> cteList = this.cteList;
+            if (cteList == null) {
+                cteList = Collections.emptyList();
+                this.cteList = cteList;
+            }
+            return cteList;
+        }
+
+        abstract B createCteBuilder(boolean recursive, CriteriaContext withClauseContext);
+
+        abstract _DynamicHintModifierSelectClause<W, SR> onSelectClause(@Nullable _WithClauseSpec spec);
+
+
+        @Override
+        final _DynamicHintModifierSelectClause<W, SR> createSelectClause() {
+            return this.onSelectClause(this.cteList == null ? null : this);
+        }
+
+        @Nullable
+        final _WithClauseSpec getWithClause() {
+            return this.cteList == null ? null : this;
+        }
+
+        final void resetWithClause() {
+            if (this.withClauseContext != null) {
+                throw new IllegalStateException("withClauseContext non-null");
+            }
+            this.cteList = null;
+            this.recursive = false;
+        }
+
+        @SuppressWarnings("unchecked")
+        private WE endDynamicWithClause(final B builder, final boolean required) {
+            final CriteriaContext withClauseContext = this.withClauseContext;
+            assert withClauseContext != null;
+            if (this.cteList != null) {
+                throw ContextStack.castCriteriaApi(withClauseContext);
+            }
+            this.recursive = builder.isRecursive();
+            this.cteList = withClauseContext.endWithClause(builder.isRecursive(), required);
+            ContextStack.pop(withClauseContext);
+            withClauseContext.endContext();
+            this.withClauseContext = null;
+            return (WE) this;
+        }
+
+        private B innerCreateCteBuilder(boolean recursive) {
+            CriteriaContext withClauseContext = this.withClauseContext;
+            if (withClauseContext != null) {
+                throw ContextStack.castCriteriaApi(withClauseContext);
+            }
+            withClauseContext = CriteriaContexts.withClauseContext(this.outerContext);
+            ContextStack.push(withClauseContext);
+            this.withClauseContext = withClauseContext;
+            return this.createCteBuilder(recursive, withClauseContext);
+        }
+
+
+    }//WithBuilderSelectClauseDispatcher
+
     static abstract class WithSelectClauseDispatcher<B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR>
-            extends SelectClauseDispatcher<W, SR> implements Query._WithSelectDispatcher<B, WE, W, SR> {
+            extends SelectClauseDispatcher<W, SR>
+            implements Query._WithSelectDispatcher<B, WE, W, SR> {
 
         @Override
         public final WE with(Consumer<B> consumer) {
@@ -789,100 +920,29 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     }//ComplexSelectCommand
 
 
+    static final class UnionSubQuery extends UnionSubRowSet implements SubQuery {
 
-    private static abstract class UnionQuery implements _UnionQuery, Statement, CriteriaContextSpec {
-
-        final RowSet left;
-
-        private final UnionType unionType;
-
-        private final RowSet right;
-
-        UnionQuery(RowSet left, UnionType unionType, RowSet right) {
-            this.left = left;
-            this.unionType = unionType;
-            this.right = right;
-        }
-
-        @Override
-        public final CriteriaContext getContext() {
-            return ((CriteriaContextSpec) this.left).getContext();
-        }
-
-        @Override
-        public final RowSet leftRowSet() {
-            return this.left;
-        }
-
-        @Override
-        public final SQLWords unionType() {
-            return this.unionType;
-        }
-
-        @Override
-        public final RowSet rightRowSet() {
-            return this.right;
-        }
-
-        @Override
-        public final void prepared() {
-            //no-op
-        }
-
-        @Override
-        public final boolean isPrepared() {
-            return true;
-        }
-
-    }//UnionQuery
-
-    static final class UnionSubQuery extends UnionQuery implements SubQuery {
-
-        UnionSubQuery(SubQuery left, UnionType unionType, RowSet right) {
+        UnionSubQuery(RowSet left, UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
 
-        @Override
-        public List<? extends SelectItem> selectItemList() {
-            return ((_PartRowSet) this.left).selectItemList();
-        }
-
-
-        @Override
-        public Selection selection(String derivedAlias) {
-            return ((SubQuery) this.left).selection(derivedAlias);
-        }
 
     }//UnionSubQuery
 
-     static final class UnionSelect extends UnionQuery implements Select {
+    static final class UnionSelect extends UnionRowSet implements Select {
 
-         private final Dialect dialect;
+        private final Dialect dialect;
 
-         UnionSelect(Dialect dialect, RowSet left, UnionType unionType, RowSet right) {
-             super(left, unionType, right);
-             this.dialect = dialect;
-         }
-
-         @Override
-         public String mockAsString(Dialect dialect, Visible visible, boolean none) {
-            final DialectParser parser;
-            parser = _MockDialects.from(dialect);
-            final Stmt stmt;
-            stmt = parser.select(this, visible);
-            return parser.printStmt(stmt, none);
+        UnionSelect(Dialect dialect, RowSet left, UnionType unionType, RowSet right) {
+            super(left, unionType, right);
+            this.dialect = dialect;
         }
+
 
         @Override
-        public Stmt mockAsStmt(Dialect dialect, Visible visible) {
-            return _MockDialects.from(dialect).select(this, visible);
+        Dialect statementDialect() {
+            return this.dialect;
         }
-
-        @Override
-        public String toString() {
-            return this.mockAsString(this.dialect, Visible.ONLY_VISIBLE, true);
-        }
-
 
     }//UnionSelect
 

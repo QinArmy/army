@@ -36,7 +36,13 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
+    @Deprecated
     static CriteriaContext primaryQuery(@Nullable CriteriaContext outerContext) {
+        return new SimpleQueryContext(outerContext);
+    }
+
+    static CriteriaContext primaryQuery(@Nullable _Statement._WithClauseSpec spec
+            , @Nullable CriteriaContext outerContext) {
         return new SimpleQueryContext(outerContext);
     }
 
@@ -76,11 +82,28 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
+    @Deprecated
     static CriteriaContext bracketContext(@Nullable final CriteriaContext outerContext) {
         throw new UnsupportedOperationException();
     }
 
+    static CriteriaContext bracketContext(@Nullable _Statement._WithClauseSpec withSpec
+            , @Nullable final CriteriaContext outerContext) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Deprecated
+    static CriteriaContext withClauseContext(final @Nullable CriteriaContext outerContext) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Deprecated
     static CriteriaContext bracketContext(@Nullable _Statement._WithClauseSpec withSpec) {
+        throw new UnsupportedOperationException();
+    }
+
+    static CriteriaContext bracketContext(@Nullable CriteriaContext outerContext
+            , @Nullable _Statement._WithClauseSpec withSpec) {
         throw new UnsupportedOperationException();
     }
 
@@ -153,11 +176,12 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext primaryValuesContext() {
+    static CriteriaContext primaryValuesContext(@Nullable _Statement._WithClauseSpec spec
+            , @Nullable CriteriaContext outerContext) {
         return new ValuesContext(null);
     }
 
-    static CriteriaContext subValuesContext() {
+    static CriteriaContext subValuesContext(@Nullable _Statement._WithClauseSpec spec, CriteriaContext outerContext) {
         return new ValuesContext(ContextStack.peek());
     }
 
@@ -332,7 +356,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void contextEnd() {
+        public final void contextEndEvent() {
             final List<Runnable> endListenerList = this.endListenerList;
             if (endListenerList != null) {
                 for (Runnable listener : endListenerList) {
@@ -454,6 +478,11 @@ abstract class CriteriaContexts {
             }
             withContext.cteList = cteList;
             return cteList;
+        }
+
+        @Override
+        public List<_Cte> endWithClause(boolean recursive, boolean required) {
+            throw new UnsupportedOperationException();
         }
 
         @Override

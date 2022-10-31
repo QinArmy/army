@@ -966,7 +966,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        PostgreQuery._MinWithSpec<I> createQueryUnion(final UnionType unionType) {
+        PostgreQuery._MinWithSpec<I> createUnionRowSet(final UnionType unionType) {
             UnionType.exceptType(this.context, unionType);
             return new UnionAndSelectClause<>(this, unionType, this.function);
         }
@@ -991,7 +991,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        PostgreQuery._MinWithSpec<I> createQueryUnion(final UnionType unionType) {
+        PostgreQuery._MinWithSpec<I> createUnionRowSet(final UnionType unionType) {
             UnionType.exceptType(this.context, unionType);
             return new UnionAndSubQueryClause<>(this, unionType, this.function);
         }

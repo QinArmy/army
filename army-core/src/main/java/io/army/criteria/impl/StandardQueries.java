@@ -413,7 +413,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createQueryUnion(final UnionType unionType) {
+        _SelectSpec<I> createUnionRowSet(final UnionType unionType) {
             UnionType.standardUnionType(this.context, unionType);
             return new UnionAndSelectClause<>(this, unionType, this.function);
         }
@@ -439,7 +439,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createQueryUnion(final UnionType unionType) {
+        _SelectSpec<I> createUnionRowSet(final UnionType unionType) {
             UnionType.standardUnionType(this.context, unionType);
             return new UnionAndSubQueryClause<>(this, unionType, this.function);
         }
@@ -494,7 +494,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
     /**
      * @see SimpleSubQuery#createQueryUnion(UnionType)
-     * @see StandardBracketSubQuery#createQueryUnion(UnionType)
+     * @see StandardBracketSubQuery#createUnionRowSet(UnionType)
      */
     private static final class UnionAndSubQueryClause<I extends Item>
             extends SelectClauseDispatcher<SQLs.Modifier, _FromSpec<I>>

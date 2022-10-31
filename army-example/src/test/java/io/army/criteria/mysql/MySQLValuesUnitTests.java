@@ -22,7 +22,7 @@ public class MySQLValuesUnitTests {
     @Test
     public void simpleValues() {
         Values stmt;
-        stmt = this.createSimpleValues(MySQLs::valuesStmt)
+        stmt = this.createSimpleValues(MySQLs::primaryValues)
                 .asValues();
         printStmt(stmt);
 
@@ -31,9 +31,9 @@ public class MySQLValuesUnitTests {
     @Test
     public void unionValues() {
         Values stmt;
-        stmt = this.createSimpleValues(MySQLs::valuesStmt)
+        stmt = this.createSimpleValues(MySQLs::primaryValues)
                 .bracket()
-                .union(() -> this.createSimpleValues(MySQLs::valuesStmt)
+                .union(() -> this.createSimpleValues(MySQLs::primaryValues)
                         .bracket()
                         .asValues())
                 .bracket()
@@ -86,7 +86,7 @@ public class MySQLValuesUnitTests {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      */
-    private <V extends RowSet.DqlValues> MySQLDqlValues._UnionSpec<Void, V> createSimpleValues(Supplier<MySQLDqlValues._ValuesStmtValuesClause<Void, V>> supplier) {
+    private <V extends RowSet.DqlValues> MySQLValues._UnionSpec<Void, V> createSimpleValues(Supplier<MySQLValues._ValuesStmtValuesClause<Void, V>> supplier) {
         return supplier.get()
                 .values()
 

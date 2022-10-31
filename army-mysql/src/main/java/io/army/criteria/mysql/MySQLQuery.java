@@ -236,6 +236,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
+
     interface _CteComma<I extends Item>
             extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_CteComma<I>>>
             , _SelectSpec<I> {

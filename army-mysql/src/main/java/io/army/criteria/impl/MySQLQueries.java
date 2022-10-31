@@ -63,12 +63,13 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         , MySQLQuery._LockOfTableSpec<I>
         , OrderByClause.OrderByEventListener {
 
-    static <I extends Item> MySQLQuery._WithCteSpec<I> primaryQuery(Function<Select, I> function) {
-        return new SimpleSelect<>(null, CriteriaContexts.primaryQuery(null), function);
+    static <I extends Item> MySQLQueries<I> primaryQuery(@Nullable _WithClauseSpec spec
+            , @Nullable CriteriaContext outerContext, Function<Select, I> function) {
+        return new SimpleSelect<>(spec, outerContext, function);
     }
 
 
-    static <I extends Item> MySQLQuery._WithCteSpec<I> subQuery(CriteriaContext outerContext
+    static <I extends Item> MySQLQueries<I> subQuery(@Nullable _WithClauseSpec spec, CriteriaContext outerContext
             , Function<SubQuery, I> function) {
         return new SimpleSubQuery<>(outerContext, function);
     }
@@ -697,9 +698,9 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         private final Function<Select, I> function;
 
-        private SimpleSelect(@Nullable _WithClauseSpec multiStmtWithSpec, CriteriaContext context
+        private SimpleSelect(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext
                 , Function<Select, I> function) {
-            super(multiStmtWithSpec, context);
+            super(spec, CriteriaContexts.primaryQuery(spec, outerContext));
             this.function = function;
         }
 
@@ -741,6 +742,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         private SimpleSubQuery(CriteriaContext context, Function<SubQuery, I> function) {
             super(null, context);
+            this.function = function;
+        }
+
+        private SimpleSubQuery(@Nullable _WithClauseSpec withSpec, CriteriaContext context
+                , Function<SubQuery, I> function) {
+            super(withSpec, context);
             this.function = function;
         }
 
@@ -1059,7 +1066,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        _MinWithSpec<I> createQueryUnion(UnionType unionType) {
+        _MinWithSpec<I> createUnionRowSet(UnionType unionType) {
             return new UnionAndSelectClause<>(this, unionType, this.function);
         }
 
@@ -1080,7 +1087,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        _MinWithSpec<I> createQueryUnion(UnionType unionType) {
+        _MinWithSpec<I> createUnionRowSet(UnionType unionType) {
             return new UnionAndSubQueryClause<>(this, unionType, this.function);
         }
 

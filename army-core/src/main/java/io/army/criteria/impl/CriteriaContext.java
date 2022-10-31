@@ -26,7 +26,13 @@ interface CriteriaContext {
     /**
      * @return a unmodified list
      */
+    @Deprecated
     List<_Cte> endWithClause(boolean required);
+
+    /**
+     * @return a unmodified list
+     */
+    List<_Cte> endWithClause(boolean recursive, boolean required);
 
     CteItem refCte(String cteName);
 
@@ -38,7 +44,7 @@ interface CriteriaContext {
 
     Selection selection(String alias);
 
-    void contextEnd();
+    void contextEndEvent();
 
     void addEndEventListener(Runnable listener);
 

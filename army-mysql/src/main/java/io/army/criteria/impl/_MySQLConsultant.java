@@ -2,9 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-import io.army.criteria.mysql.MySQLDqlValues;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
+import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.Database;
 import io.army.util._ClassUtils;
 
@@ -87,7 +87,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     }
 
     public static void assertQuery(final Query rowSet) {
-        if (rowSet instanceof _UnionRowSet) {
+        if (rowSet instanceof _UnionRowSet0) {
             if (!(rowSet instanceof MySQL80UnionQuery)) {
                 throw instanceNotMatch(rowSet, MySQL80UnionQuery.class);
             }
@@ -97,8 +97,8 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
 
     }
 
-    public static void assertValues(final MySQLDqlValues values) {
-        if (values instanceof _UnionRowSet) {
+    public static void assertValues(final MySQLValues values) {
+        if (values instanceof _UnionRowSet0) {
             if (!(values instanceof MySQLUnionValues)) {
                 throw instanceNotMatch(values, MySQLUnionValues.class);
             }
@@ -131,7 +131,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
         }
         final SubStatement subStatement;
         subStatement = cte.subStatement();
-        if (subStatement instanceof _UnionRowSet) {
+        if (subStatement instanceof _UnionRowSet0) {
             if (!(subStatement instanceof MySQL80UnionQuery || subStatement instanceof StandardUnionQueries)) {
                 throw new CriteriaException("Illegal sub query");
             }

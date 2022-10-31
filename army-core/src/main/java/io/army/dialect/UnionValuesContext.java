@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.criteria.Selection;
 import io.army.criteria.Values;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._UnionRowSet;
+import io.army.criteria.impl.inner._UnionRowSet0;
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
@@ -15,7 +15,7 @@ import java.util.List;
 final class UnionValuesContext extends StatementContext implements _ValuesContext, _UnionQueryContext {
 
 
-    static UnionValuesContext create(_UnionRowSet stmt, ArmyParser dialect, Visible visible) {
+    static UnionValuesContext create(_UnionRowSet0 stmt, ArmyParser dialect, Visible visible) {
         assert stmt instanceof Values;
         return new UnionValuesContext(stmt, dialect, visible);
     }
@@ -29,7 +29,7 @@ final class UnionValuesContext extends StatementContext implements _ValuesContex
     private final List<Selection> selectionList;
     private final _SqlContext outerContext;
 
-    private UnionValuesContext(_UnionRowSet stmt, ArmyParser dialect, Visible visible) {
+    private UnionValuesContext(_UnionRowSet0 stmt, ArmyParser dialect, Visible visible) {
         super(dialect, visible);
         this.outerContext = null;
         this.selectionList = _DialectUtils.flatSelectItem(stmt.selectItemList());

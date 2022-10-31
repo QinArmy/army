@@ -3,27 +3,33 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Values;
+import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 
-abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF> extends LimitRowOrderByClause<OR, LR, LO, LF>
+abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends LimitRowOrderByClause<OR, LR, LO, LF>
         implements Values._StaticValueLeftParenClause<RR>
         , Values._StaticValueRowCommaDualSpec<RR>
         , Values._StaticValueRowCommaQuadraSpec<RR>
-        , _Values, Statement._AsValuesClause<I> {
+        , _Values, Statement._AsValuesClause<I>
+        , Query._QueryUnionClause<SP>
+        , Query._QueryExceptClause<SP>
+        , Query._QueryIntersectClause<SP>
+        , Query._QueryMinusClause<SP>
+        , TabularItem.DerivedTableSpec {
 
     private List<_Expression> columnList;
 
     private List<List<_Expression>> rowList = new ArrayList<>();
 
     private List<Selection> selectionList;
+
+    private Map<String, Selection> selectionMap;
 
     private Boolean prepared;
 
@@ -248,6 +254,33 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF> extends LimitRow
     }
 
     @Override
+    public final Selection selection(String derivedAlias) {
+        Map<String, Selection> selectionMap = this.selectionMap;
+        if (selectionMap == null) {
+            final List<Selection> list = this.selectionList;
+            if (list == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            final int selectionSize = list.size();
+            if (selectionSize == 1) {
+                final Selection selection;
+                selection = list.get(0);
+                selectionMap = Collections.singletonMap(selection.alias(), selection);
+            } else {
+                selectionMap = new HashMap<>((int) (selectionSize / 0.75F));
+                for (Selection selection : list) {
+                    selectionMap.put(selection.alias(), selection);
+                }
+                selectionMap = Collections.unmodifiableMap(selectionMap);
+            }
+            assert selectionMap.size() == list.size();
+            this.selectionMap = selectionMap;
+        }
+
+        return selectionMap.get(derivedAlias);
+    }
+
+    @Override
     public final List<? extends SelectItem> selectItemList() {
         final List<Selection> list = this.selectionList;
         if (list == null) {
@@ -258,22 +291,81 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF> extends LimitRow
 
     @Override
     public final I asValues() {
-        _Assert.nonPrepared(this.prepared);
-        final List<List<_Expression>> rowList = this.rowList;
-        if (this.columnList != null
-                || this.selectionList != null
-                || !(rowList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        this.rowList = _CollectionUtils.unmodifiableList(rowList);
-        this.endOrderByClause();
-        this.prepared = Boolean.TRUE;
+        this.endValuesStatement();
         return this.onAsValues();
+    }
+
+    @Override
+    public final SP union() {
+        return this.onUnion(UnionType.UNION);
+    }
+
+    @Override
+    public final SP unionAll() {
+        return this.onUnion(UnionType.UNION_ALL);
+    }
+
+    @Override
+    public final SP unionDistinct() {
+        return this.onUnion(UnionType.UNION_DISTINCT);
+    }
+
+    @Override
+    public final SP except() {
+        return this.onUnion(UnionType.EXCEPT);
+    }
+
+    @Override
+    public final SP exceptAll() {
+        return this.onUnion(UnionType.EXCEPT_ALL);
+    }
+
+    @Override
+    public final SP exceptDistinct() {
+        return this.onUnion(UnionType.EXCEPT_DISTINCT);
+    }
+
+    @Override
+    public final SP intersect() {
+        return this.onUnion(UnionType.INTERSECT);
+    }
+
+    @Override
+    public final SP intersectAll() {
+        return this.onUnion(UnionType.INTERSECT_ALL);
+    }
+
+    @Override
+    public final SP intersectDistinct() {
+        return this.onUnion(UnionType.INTERSECT_DISTINCT);
+    }
+
+    @Override
+    public final SP minus() {
+        return this.onUnion(UnionType.MINUS);
+    }
+
+    @Override
+    public final SP minusAll() {
+        return this.onUnion(UnionType.MINUS_ALL);
+    }
+
+    @Override
+    public final SP minusDistinct() {
+        return this.onUnion(UnionType.MINUS_DISTINCT);
     }
 
     abstract String columnAlias(int columnIndex);
 
     abstract I onAsValues();
+
+    abstract SP createUnionValues(UnionType unionType);
+
+
+    private SP onUnion(UnionType unionType) {
+        this.endValuesStatement();
+        return this.createUnionValues(unionType);
+    }
 
 
     private List<_Expression> onAddColumn(final @Nullable Expression expression) {
@@ -292,12 +384,25 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF> extends LimitRow
         return list;
     }
 
+    private void endValuesStatement() {
+        _Assert.nonPrepared(this.prepared);
+        final List<List<_Expression>> rowList = this.rowList;
+        if (this.columnList != null
+                || this.selectionList != null
+                || !(rowList instanceof ArrayList)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        this.rowList = _CollectionUtils.unmodifiableList(rowList);
+        this.endOrderByClause();
+        this.prepared = Boolean.TRUE;
+    }
+
 
     static final class RowConstructorImpl implements RowConstructor {
 
-        private final SimpleValues<?, ?, ?, ?, ?, ?> clause;
+        private final SimpleValues<?, ?, ?, ?, ?, ?, ?> clause;
 
-        RowConstructorImpl(SimpleValues<?, ?, ?, ?, ?, ?> clause) {
+        RowConstructorImpl(SimpleValues<?, ?, ?, ?, ?, ?, ?> clause) {
             this.clause = clause;
         }
 
@@ -359,5 +464,30 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF> extends LimitRow
 
 
     }//RowConstructorImpl
+
+    static final class UnionSubValues extends UnionSubRowSet implements SubValues {
+
+        UnionSubValues(RowSet left, UnionType unionType, RowSet right) {
+            super(left, unionType, right);
+        }
+
+
+    }//UnionSubValues
+
+    static final class UnionValues extends UnionRowSet implements Values {
+
+        private final Dialect dialect;
+
+        UnionValues(Dialect dialect, RowSet left, UnionType unionType, RowSet right) {
+            super(left, unionType, right);
+            this.dialect = dialect;
+        }
+
+        @Override
+        Dialect statementDialect() {
+            return this.dialect;
+        }
+
+    }//UnionSelect
 
 }

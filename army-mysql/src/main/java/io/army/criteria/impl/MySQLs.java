@@ -3,8 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.mysql.*;
 
-import java.util.Objects;
-
 public abstract class MySQLs extends MySQLFuncSyntax2 {
 
     /**
@@ -22,36 +20,27 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
     }
 
     public static MySQLQuery._WithCteSpec<Select> query() {
-        return MySQLQueries.primaryQuery(SQLs::_identity);
+        return MySQLQueries.primaryQuery(null, null, SQLs::_identity);
     }
 
 
     public static MySQLQuery._WithCteSpec<SubQuery> subQuery() {
-        return MySQLQueries.subQuery(ContextStack.peek(), SQLs::_identity);
+        return MySQLQueries.subQuery(null, ContextStack.peek(), SQLs::_identity);
     }
 
 
     public static MySQLQuery._WithCteSpec<Expression> scalarSubQuery() {
-        return MySQLQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
+        return MySQLQueries.subQuery(null, ContextStack.peek(), ScalarExpression::from);
     }
 
 
-    public static MySQLDqlValues._ValuesStmtValuesClause<Void, Values> valuesStmt() {
-        return MySQLSimpleValues.primaryValues(null);
+    public static MySQLValues._ValueSpec<Values> primaryValues() {
+        return MySQLSimpleValues.primaryValues(null, SQLs::_identity);
     }
 
-    public static <C> MySQLDqlValues._ValuesStmtValuesClause<C, Values> valuesStmt(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLSimpleValues.primaryValues(criteria);
-    }
 
-    public static MySQLDqlValues._ValuesStmtValuesClause<Void, SubValues> subValues() {
-        return MySQLSimpleValues.subValues(null);
-    }
-
-    public static <C> MySQLDqlValues._ValuesStmtValuesClause<C, SubValues> subValues(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLSimpleValues.subValues(criteria);
+    public static MySQLValues._ValueSpec<SubValues> subValues() {
+        return MySQLSimpleValues.subValues(ContextStack.peek(), SQLs::_identity);
     }
 
 

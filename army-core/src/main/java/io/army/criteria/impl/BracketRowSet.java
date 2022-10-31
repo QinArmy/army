@@ -9,19 +9,14 @@ import io.army.util._Assert;
 import io.army.util._Exceptions;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class BracketRowSet<I extends Item, Q extends RowSet, RR, OR, LR, LO, LF, SP, S extends RowSet, UR>
+abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         extends LimitRowOrderByClause<OR, LR, LO, LF> implements _PartRowSet
         , Query._QueryUnionClause<SP>
         , Query._QueryIntersectClause<SP>
         , Query._QueryExceptClause<SP>
         , Query._QueryMinusClause<SP>
-        , Query._RowSetUnionClause<S, UR>
-        , Query._RowSetIntersectClause<S, UR>
-        , Query._RowSetExceptClause<S, UR>
-        , Query._RowSetMinusClause<S, UR>
         , TabularItem.DerivedTableSpec
         , Query._AsQueryClause<I>, Statement._RightParenClause<RR>
         , Statement, _SelfDescribed {
@@ -103,66 +98,6 @@ abstract class BracketRowSet<I extends Item, Q extends RowSet, RR, OR, LR, LO, L
     }
 
     @Override
-    public final UR union(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.UNION, supplier);
-    }
-
-    @Override
-    public final UR unionAll(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.UNION_ALL, supplier);
-    }
-
-    @Override
-    public final UR unionDistinct(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.UNION_DISTINCT, supplier);
-    }
-
-    @Override
-    public final UR intersect(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.INTERSECT, supplier);
-    }
-
-    @Override
-    public final UR intersectAll(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.INTERSECT_ALL, supplier);
-    }
-
-    @Override
-    public final UR intersectDistinct(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.INTERSECT_DISTINCT, supplier);
-    }
-
-    @Override
-    public final UR except(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.EXCEPT, supplier);
-    }
-
-    @Override
-    public final UR exceptAll(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.EXCEPT_ALL, supplier);
-    }
-
-    @Override
-    public final UR exceptDistinct(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.EXCEPT_DISTINCT, supplier);
-    }
-
-    @Override
-    public final UR minus(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.MINUS, supplier);
-    }
-
-    @Override
-    public final UR minusAll(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.MINUS_ALL, supplier);
-    }
-
-    @Override
-    public final UR minusDistinct(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.MINUS_DISTINCT, supplier);
-    }
-
-    @Override
     public final I asQuery() {
         this.endQueryStatement();
         return this.onAsQuery();
@@ -231,8 +166,7 @@ abstract class BracketRowSet<I extends Item, Q extends RowSet, RR, OR, LR, LO, L
     }
 
 
-
-    final Statement._RightParenClause<RR> parenRowSetEnd(final Q parenRowSet) {
+    final Statement._RightParenClause<RR> parenRowSetEnd(final RowSet parenRowSet) {
         if (this.rowSet != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -249,28 +183,13 @@ abstract class BracketRowSet<I extends Item, Q extends RowSet, RR, OR, LR, LO, L
     abstract I onAsQuery();
 
 
-    abstract SP createQueryUnion(UnionType unionType);
-
-    UR createRowSetUnion(UnionType unionType, S right) {
-        throw new UnsupportedOperationException();
-    }
+    abstract SP createUnionRowSet(UnionType unionType);
 
 
     private SP unionQuery(final UnionType unionType) {
         this.endQueryStatement();
-        return this.createQueryUnion(unionType);
+        return this.createUnionRowSet(unionType);
     }
-
-    private UR unionRowSet(final UnionType unionType, Supplier<S> supplier) {
-        this.endQueryStatement();
-        final S rowSet;
-        rowSet = supplier.get();
-        if (rowSet == null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return this.createRowSetUnion(unionType, rowSet);
-    }
-
 
     private void endQueryStatement() {
         _Assert.nonPrepared(this.prepared);
