@@ -1,8 +1,7 @@
 package io.army.criteria;
 
-public enum NullHandleMode {
+public enum NullMode {
 
     INSERT_DEFAULT,
     INSERT_NULL
-    //,IGNORE;
 }

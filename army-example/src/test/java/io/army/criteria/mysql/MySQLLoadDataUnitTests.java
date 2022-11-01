@@ -1,8 +1,9 @@
 package io.army.criteria.mysql;
 
+import io.army.criteria.SQLCommand;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.MySQLSyntax;
 import io.army.criteria.impl.MySQLs;
+import io.army.criteria.impl.SQLs;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import org.slf4j.Logger;
@@ -11,7 +12,6 @@ import org.testng.annotations.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 
 public class MySQLLoadDataUnitTests {
 
@@ -24,9 +24,9 @@ public class MySQLLoadDataUnitTests {
         tempFile = Files.createTempFile("mySQLLoadData", ".temp");
 
         try {
-            MySQLLoadData stmt;
+            final SQLCommand stmt;
             stmt = MySQLs.loadDataCommand()
-                    .loadData(Collections.singletonList(MySQLSyntax._MySQLModifier.LOCAL))
+                    .loadData(MySQLs.LOCAL)
                     .infile(tempFile)
                     .ignore()
                     .intoTable(ChinaRegion_.T)
@@ -50,8 +50,8 @@ public class MySQLLoadDataUnitTests {
                     .leftParen(ChinaRegion_.name)
                     .rightParen()
 
-                    .set(ChinaRegion_.visible, true)
-                    .asLoadData();
+                    .set(ChinaRegion_.visible, SQLs::literal, true)
+                    .asCommand();
 
             printStmt(stmt);
         } finally {
@@ -61,7 +61,7 @@ public class MySQLLoadDataUnitTests {
     }
 
 
-    private static void printStmt(final MySQLLoadData load) {
+    private static void printStmt(final SQLCommand load) {
         String sql;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             sql = load.mockAsString(dialect, Visible.ONLY_VISIBLE, true);

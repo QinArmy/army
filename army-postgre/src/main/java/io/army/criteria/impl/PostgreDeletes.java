@@ -364,10 +364,6 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
 
     }
 
-    @Override
-    public final List<_Pair<String, TableMeta<?>>> deleteTableList() {
-        throw ContextStack.castCriteriaApi(this.context);
-    }
 
     private PostgreSupports.PostgreNoOnTableBlock getNoOnBlock() {
         final PostgreSupports.PostgreNoOnTableBlock block = this.noOnBlock;

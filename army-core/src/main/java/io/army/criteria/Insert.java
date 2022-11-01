@@ -84,7 +84,7 @@ public interface Insert extends DmlStatement, DmlInsert {
      */
     interface _NullOptionClause<OR> {
 
-        OR nullHandle(NullHandleMode mode);
+        OR nullMode(NullMode mode);
     }
 
 

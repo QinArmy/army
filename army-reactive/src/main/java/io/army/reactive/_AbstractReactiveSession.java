@@ -94,11 +94,11 @@ public abstract class _AbstractReactiveSession implements ReactiveSession {
 
     @Override
     public final <T> Mono<Void> save(T domain) {
-        return this.save(domain, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
+        return this.save(domain, NullMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <T> Mono<Void> save(T domain, NullHandleMode mode) {
+    public final <T> Mono<Void> save(T domain, NullMode mode) {
         return this.save(domain, mode, Visible.ONLY_VISIBLE);
     }
 
@@ -135,11 +135,11 @@ public abstract class _AbstractReactiveSession implements ReactiveSession {
 
     @Override
     public final <T> Mono<Void> batchSave(List<T> domainList) {
-        return this.batchSave(domainList, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
+        return this.batchSave(domainList, NullMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <T> Mono<Void> batchSave(List<T> domainList, NullHandleMode mode) {
+    public final <T> Mono<Void> batchSave(List<T> domainList, NullMode mode) {
         return this.batchSave(domainList, mode, Visible.ONLY_VISIBLE);
     }
 

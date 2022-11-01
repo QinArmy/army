@@ -54,7 +54,7 @@ abstract class InsertSupport {
     interface ValueSyntaxOptions extends InsertOptions {
 
         @Nullable
-        NullHandleMode nullHandle();
+        NullMode nullHandle();
 
     }
 
@@ -96,7 +96,7 @@ abstract class InsertSupport {
 
         private boolean migration;
 
-        private LiteralMode literalMode;
+        private LiteralMode literalMode = LiteralMode.DEFAULT;
 
         InsertOptionsImpl(CriteriaContext criteriaContext) {
             this.context = criteriaContext;
@@ -111,7 +111,10 @@ abstract class InsertSupport {
 
         @SuppressWarnings("unchecked")
         @Override
-        public final PR literalMode(LiteralMode mode) {
+        public final PR literalMode(final @Nullable LiteralMode mode) {
+            if (mode == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
             this.literalMode = mode;
             return (PR) this;
         }
@@ -129,7 +132,8 @@ abstract class InsertSupport {
         @Override
         public final LiteralMode literalMode() {
             final LiteralMode mode = this.literalMode;
-            return mode == null ? LiteralMode.DEFAULT : mode;
+            assert mode != null;
+            return mode;
         }
 
 
@@ -139,7 +143,7 @@ abstract class InsertSupport {
             implements ValueSyntaxOptions, Insert._NullOptionClause<NR> {
 
 
-        private NullHandleMode nullHandleMode;
+        private NullMode nullMode = NullMode.INSERT_DEFAULT;
 
         NonQueryInsertOptionsImpl(CriteriaContext context) {
             super(context);
@@ -147,14 +151,19 @@ abstract class InsertSupport {
 
         @SuppressWarnings("unchecked")
         @Override
-        public final NR nullHandle(NullHandleMode mode) {
-            this.nullHandleMode = mode;
+        public final NR nullMode(final @Nullable NullMode mode) {
+            if (mode == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            this.nullMode = mode;
             return (NR) this;
         }
 
         @Override
-        public final NullHandleMode nullHandle() {
-            return this.nullHandleMode;
+        public final NullMode nullHandle() {
+            final NullMode mode = this.nullMode;
+            assert mode != null;
+            return mode;
         }
 
     }//NonQueryInsertOptionsImpl
@@ -264,7 +273,7 @@ abstract class InsertSupport {
 
         private final boolean migration;
 
-        private final NullHandleMode nullHandleMode;
+        private final NullMode nullHandleMode;
 
         private final LiteralMode literalMode;
 
@@ -283,7 +292,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final NullHandleMode nullHandle() {
+        public final NullMode nullHandle() {
             return this.nullHandleMode;
         }
 
@@ -368,7 +377,7 @@ abstract class InsertSupport {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.recursive = recursive;
-            this.cteList = this.context.endWithClause(true);//static with syntax is required
+            this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
             return (WE) this;
         }
 
@@ -381,8 +390,10 @@ abstract class InsertSupport {
             if (this.cteList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            this.recursive = builder.isRecursive();
-            this.cteList = this.context.endWithClause(required);
+            final boolean recursive;
+            recursive = builder.isRecursive();
+            this.recursive = recursive;
+            this.cteList = this.context.endWithClause(recursive, required);
             return (WE) this;
         }
 
@@ -393,7 +404,7 @@ abstract class InsertSupport {
 
         final CriteriaContext context;
 
-        private final NullHandleMode nullHandleMode;
+        private final NullMode nullHandleMode;
 
         private final boolean migration;
 
@@ -412,7 +423,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final NullHandleMode nullHandle() {
+        public final NullMode nullHandle() {
             return this.nullHandleMode;
         }
 
@@ -686,7 +697,7 @@ abstract class InsertSupport {
 
         final LiteralMode literalMode;
 
-        final NullHandleMode nullHandleMode;
+        final NullMode nullHandleMode;
 
         private Map<FieldMeta<?>, _Expression> commonExpMap;
 
@@ -780,7 +791,7 @@ abstract class InsertSupport {
 
 
         @Override
-        public final NullHandleMode nullHandle() {
+        public final NullMode nullHandle() {
             return this.nullHandleMode;
         }
 
@@ -1754,7 +1765,7 @@ abstract class InsertSupport {
 
         private final boolean migration;
 
-        private final NullHandleMode nullHandleMode;
+        private final NullMode nullHandleMode;
 
         private final LiteralMode literalMode;
 
@@ -1783,7 +1794,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final NullHandleMode nullHandle() {
+        public final NullMode nullHandle() {
             return this.nullHandleMode;
         }
 
@@ -1850,9 +1861,9 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final NullHandleMode nullHandle() {
+        public final NullMode nullHandle() {
             //assignment don't support this
-            return NullHandleMode.INSERT_DEFAULT;
+            return NullMode.INSERT_DEFAULT;
         }
 
         @Override
@@ -1915,9 +1926,9 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final NullHandleMode nullHandle() {
+        public final NullMode nullHandle() {
             //always INSERT_DEFAULT,query insert don't support this
-            return NullHandleMode.INSERT_DEFAULT;
+            return NullMode.INSERT_DEFAULT;
         }
 
         @Override
@@ -1947,7 +1958,6 @@ abstract class InsertSupport {
 
 
     }//QueryInsertStatement
-
 
 
     static void checkField(final CriteriaContext context, final TableMeta<?> table

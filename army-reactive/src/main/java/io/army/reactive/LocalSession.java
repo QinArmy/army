@@ -106,7 +106,7 @@ final class LocalSession extends _AbstractReactiveSession implements Session {
     }
 
     @Override
-    public <T> Mono<Void> save(T domain, NullHandleMode mode, Visible visible) {
+    public <T> Mono<Void> save(T domain, NullMode mode, Visible visible) {
         return null;
     }
 
@@ -131,7 +131,7 @@ final class LocalSession extends _AbstractReactiveSession implements Session {
     }
 
     @Override
-    public <T> Mono<Void> batchSave(List<T> domainList, NullHandleMode mode, Visible visible) {
+    public <T> Mono<Void> batchSave(List<T> domainList, NullMode mode, Visible visible) {
         return null;
     }
 

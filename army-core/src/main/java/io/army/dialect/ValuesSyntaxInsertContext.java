@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
 import io.army.criteria.LiteralMode;
-import io.army.criteria.NullHandleMode;
+import io.army.criteria.NullMode;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
@@ -23,11 +23,11 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
     final boolean migration;
 
-    final NullHandleMode nullHandleMode;
+    final NullMode nullMode;
 
     final LiteralMode literalMode;
 
-    final boolean duplicateKeyClause;
+    final boolean conflictClause;
 
     private final List<FieldMeta<?>> fieldList;
 
@@ -63,10 +63,11 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
             nonChildStmt = domainStmt;
         }
         this.migration = nonChildStmt.isMigration();
-        final NullHandleMode handleMode = nonChildStmt.nullHandle();
-        this.nullHandleMode = handleMode == null ? NullHandleMode.INSERT_DEFAULT : handleMode;
+        this.nullMode = nonChildStmt.nullHandle();
         this.literalMode = nonChildStmt.literalMode();
-        this.duplicateKeyClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec;
+        this.conflictClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) nonChildStmt).hasConflictAction();
+
         this.insertTable = nonChildStmt.table();
         assert this.insertTable instanceof SingleTableMeta;
 
@@ -87,7 +88,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         } else if (dialect.supportInsertReturning()) {
             //TODO
             throw new UnsupportedOperationException();
-        } else if (this.duplicateKeyClause) {
+        } else if (this.conflictClause) {
             if (nonChildStmt != domainStmt) {
                 //the implementations of io.army.criteria.Insert no bug,never here
                 throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) domainStmt.table());
@@ -115,16 +116,16 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         assert stmt instanceof _Insert._ChildInsert;
 
         this.migration = stmt.isMigration();
-        final NullHandleMode handleMode = stmt.nullHandle();
-        this.nullHandleMode = handleMode == null ? NullHandleMode.INSERT_DEFAULT : handleMode;
+        this.nullMode = stmt.nullHandle();
         this.literalMode = stmt.literalMode();
 
-        this.duplicateKeyClause = stmt instanceof _Insert._SupportConflictClauseSpec;
+        this.conflictClause = stmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) stmt).hasConflictAction();
         this.insertTable = stmt.table();
 
         assert this.insertTable instanceof ChildTableMeta
                 && this.migration == parentContext.migration
-                && this.nullHandleMode == parentContext.nullHandleMode
+                && this.nullMode == parentContext.nullMode
                 && this.literalMode == parentContext.literalMode
                 && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta();
 
@@ -207,7 +208,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
     @Override
     public final void appendField(final FieldMeta<?> field) {
-        if (!(this.valuesClauseEnd && this.duplicateKeyClause && field.tableMeta() == this.insertTable)) {
+        if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {
             throw _Exceptions.unknownColumn(field);
         }
         final StringBuilder sqlBuilder = this.sqlBuilder

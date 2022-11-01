@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
 import io.army.criteria.LiteralMode;
-import io.army.criteria.NullHandleMode;
+import io.army.criteria.NullMode;
 import io.army.criteria.SqlValueParam;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
@@ -113,7 +113,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         final Map<FieldMeta<?>, _Expression> defaultValueMap;
 
         final boolean migration = this.migration;
-        final NullHandleMode nullHandleMode = this.nullHandleMode;
+        final NullMode nullHandleMode = this.nullMode;
         final LiteralMode literalMode = this.literalMode;
         final boolean mockEnv = dialect.isMockEnv();
 
@@ -245,9 +245,9 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
                         throw _Exceptions.nonNullField(field);
                     }
                     this.appendInsertValue(literalMode, field, null);
-                } else if (nullHandleMode == NullHandleMode.INSERT_DEFAULT) {
+                } else if (nullHandleMode == NullMode.INSERT_DEFAULT) {
                     sqlBuilder.append(_Constant.SPACE_DEFAULT);
-                } else if (nullHandleMode != NullHandleMode.INSERT_NULL) {
+                } else if (nullHandleMode != NullMode.INSERT_NULL) {
                     //no bug,never here
                     throw _Exceptions.unexpectedEnum(nullHandleMode);
                 } else if (!field.nullable()) {

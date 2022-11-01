@@ -725,39 +725,6 @@ abstract class SQLFunctions {
 
     }//MultiArgVoidFunction
 
-    private static final class MultiArgVoidFunction extends OperationPredicate implements FunctionSpec {
-
-        private final String name;
-
-        private final List<? extends Expression> argList;
-
-        private MultiArgVoidFunction(String name, List<? extends Expression> argList) {
-            this.name = name;
-            this.argList = argList;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name)
-                    .append(_Constant.LEFT_PAREN);
-
-            final List<? extends Expression> argList = this.argList;
-            final int size = argList.size();
-            for (int i = 0; i < size; i++) {
-                if (i > 0) {
-                    sqlBuilder.append(_Constant.COMMA);
-                }
-                ((ArmyExpression) argList.get(i)).appendSql(context);
-            }
-
-            sqlBuilder.append(_Constant.RIGHT_PAREN);
-        }
-
-
-    }//MultiArgFunction
 
 
     private static final class ComplexFuncPredicate extends OperationPredicate implements FunctionSpec {

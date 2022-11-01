@@ -57,7 +57,7 @@ public abstract class _SQLConsultant {
     }
 
     public static void assertStandardNestedItems(@Nullable NestedItems nestedItems) {
-        if (!(nestedItems instanceof StandardNestedItems)) {
+        if (!(nestedItems instanceof StandardNestedJoins)) {
             throw illegalNestedItems(nestedItems, null);
         }
     }

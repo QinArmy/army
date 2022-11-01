@@ -1,7 +1,7 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.LiteralMode;
-import io.army.criteria.NullHandleMode;
+import io.army.criteria.NullMode;
 import io.army.criteria.SelectItem;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl._Pair;
@@ -89,8 +89,8 @@ public interface _Insert extends _Statement {
 
     interface _ValuesSyntaxInsert extends _ColumnListInsert, _InsertOption {
 
-        @Nullable
-        NullHandleMode nullHandle();
+
+        NullMode nullHandle();
 
 
         Map<FieldMeta<?>, _Expression> defaultValueMap();

@@ -216,7 +216,7 @@ final class SyncLocalSession extends _AbstractSyncSession implements LocalSessio
     @SuppressWarnings("unchecked")
     @Override
     public <T> void save(final T domain, final boolean preferLiteral
-            , final NullHandleMode mode, final Visible visible) {
+            , final NullMode mode, final Visible visible) {
         final TableMeta<T> table;
         table = (TableMeta<T>) this.sessionFactory.getTable(domain.getClass());
         if (table == null) {
@@ -265,7 +265,7 @@ final class SyncLocalSession extends _AbstractSyncSession implements LocalSessio
     @SuppressWarnings("unchecked")
     @Override
     public <T> void batchSave(final List<T> domainList, final boolean preferLiteral
-            , final NullHandleMode mode, final Visible visible) {
+            , final NullMode mode, final Visible visible) {
         final Class<T> domainClass;
         domainClass = (Class<T>) domainList.get(0).getClass();
         final TableMeta<T> table;

@@ -1183,9 +1183,9 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        public PostgreInsert._StaticSubPreferLiteralSpec<_AsCteClause<I>> nullHandle(NullHandleMode mode) {
+        public PostgreInsert._StaticSubPreferLiteralSpec<_AsCteClause<I>> nullMode(NullMode mode) {
             return PostgreInserts.staticSubInsert(this.context, this::subStatementEnd)
-                    .nullHandle(mode);
+                    .nullMode(mode);
         }
 
         @Override

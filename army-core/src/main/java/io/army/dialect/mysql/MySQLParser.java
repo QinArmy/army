@@ -1,11 +1,14 @@
 package io.army.dialect.mysql;
 
+import io.army.criteria.SQLWords;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect.*;
+import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -357,17 +360,18 @@ abstract class MySQLParser extends _AbstractDialectParser {
     }
 
     @Override
-    protected final void standardLimitClause(final long offset, final long rowCount, _SqlContext context) {
-        if (offset >= 0L && rowCount >= 0L) {
-            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE)
-                    .append(offset)
-                    .append(_Constant.SPACE_COMMA_SPACE)
-                    .append(rowCount);
-        } else if (rowCount >= 0L) {
-            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE)
-                    .append(rowCount);
-        } else if (offset >= 0L) {
-            throw _Exceptions.standardLimitClauseError(offset, rowCount);
+    protected final void standardLimitClause(final @Nullable _Expression offset, final @Nullable _Expression rowCount
+            , _SqlContext context) {
+
+        if (offset != null && rowCount != null) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE);
+            offset.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+            rowCount.appendSql(context);
+        } else if (rowCount != null) {
+            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE);
+            rowCount.appendSql(context);
         }
 
     }
@@ -393,7 +397,7 @@ abstract class MySQLParser extends _AbstractDialectParser {
         this.multiTableChildSetClause(update, context);
 
         //4. where clause
-        this.dmlWhereClause(update.predicateList(), context);
+        this.dmlWhereClause(update.wherePredicateList(), context);
 
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) update.table();
         final ParentTableMeta<?> parentTable = childTable.parentMeta();
@@ -444,7 +448,7 @@ abstract class MySQLParser extends _AbstractDialectParser {
         this.appendChildJoinParent(context, childTable);
 
         //3. where clause
-        this.dmlWhereClause(delete.predicateList(), context);
+        this.dmlWhereClause(delete.wherePredicateList(), context);
 
         //3.1 append discriminator for child
         this.discriminator(childTable, safeParentTableAlias, context);
@@ -463,28 +467,13 @@ abstract class MySQLParser extends _AbstractDialectParser {
     }
 
     @Override
-    protected final void standardLockClause(final LockMode0 lockMode, final _SqlContext context) {
-        switch (lockMode) {
-            case READ: {
-                if (this.asOf80) {
-                    context.sqlBuilder()
-                            .append(_Constant.SPACE)
-                            .append(_Constant.SPACE_FOR_SHARE);
-                } else {
-                    context.sqlBuilder()
-                            .append(_Constant.SPACE)
-                            .append(_Constant.SPACE_LOCK_IN_SHARE_MODE);
-                }
-            }
-            break;
-            case WRITE:
-                context.sqlBuilder()
-                        .append(_Constant.SPACE)
-                        .append(_Constant.SPACE_FOR_UPDATE);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(lockMode);
+    protected final void standardLockClause(final SQLWords lockMode, final _SqlContext context) {
+        if (!_Constant.SPACE_FOR_UPDATE.equals(lockMode.render())) {
+            throw _Exceptions.castCriteriaApi();
         }
+        context.sqlBuilder()
+                .append(_Constant.SPACE)
+                .append(_Constant.SPACE_FOR_UPDATE);
     }
 
     @Override

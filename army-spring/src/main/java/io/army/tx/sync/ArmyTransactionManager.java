@@ -426,7 +426,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         @Override
-        public <T> void save(T domain, boolean preferLiteral, NullHandleMode mode, Visible visible) {
+        public <T> void save(T domain, boolean preferLiteral, NullMode mode, Visible visible) {
             this.session.save(domain, preferLiteral, mode, visible);
         }
 
@@ -448,7 +448,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         @Override
-        public <T> void batchSave(List<T> domainList, boolean preferLiteral, NullHandleMode mode, Visible visible) {
+        public <T> void batchSave(List<T> domainList, boolean preferLiteral, NullMode mode, Visible visible) {
             this.session.batchSave(domainList, preferLiteral, mode, visible);
         }
 

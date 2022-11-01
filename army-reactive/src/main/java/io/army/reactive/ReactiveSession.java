@@ -96,9 +96,9 @@ public interface ReactiveSession extends GenericSession {
 
     <T> Mono<Void> save(T domain);
 
-    <T> Mono<Void> save(T domain, NullHandleMode mode);
+    <T> Mono<Void> save(T domain, NullMode mode);
 
-    <T> Mono<Void> save(T domain, NullHandleMode mode, Visible visible);
+    <T> Mono<Void> save(T domain, NullMode mode, Visible visible);
 
     Mono<Long> update(DmlStatement dml);
 
@@ -124,9 +124,9 @@ public interface ReactiveSession extends GenericSession {
 
     <T> Mono<Void> batchSave(List<T> domainList);
 
-    <T> Mono<Void> batchSave(List<T> domainList, NullHandleMode mode);
+    <T> Mono<Void> batchSave(List<T> domainList, NullMode mode);
 
-    <T> Mono<Void> batchSave(List<T> domainList, NullHandleMode mode, Visible visible);
+    <T> Mono<Void> batchSave(List<T> domainList, NullMode mode, Visible visible);
 
     Flux<Long> batchUpdate(NarrowDmlStatement dml);
 

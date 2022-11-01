@@ -1,6 +1,6 @@
 package io.army.example.common;
 
-import io.army.criteria.NullHandleMode;
+import io.army.criteria.NullMode;
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.ChildTableMeta;
@@ -20,13 +20,13 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
     @Override
     public <T extends Domain> void save(final T domain) {
         this.sessionContext.currentSession()
-                .save(domain, NullHandleMode.INSERT_DEFAULT);
+                .save(domain, NullMode.INSERT_DEFAULT);
     }
 
     @Override
     public <T extends Domain> void batchSave(List<T> domainList) {
         this.sessionContext.currentSession()
-                .batchSave(domainList, NullHandleMode.INSERT_DEFAULT);
+                .batchSave(domainList, NullMode.INSERT_DEFAULT);
     }
 
     @Override

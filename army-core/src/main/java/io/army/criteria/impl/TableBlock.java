@@ -117,23 +117,6 @@ abstract class TableBlock implements _TableBlock {
     }//DialectNoOnTableBlock
 
 
-    static class DynamicTableBlock extends TableBlock {
-
-        private final List<_Predicate> predicateList;
-
-        DynamicTableBlock(_JoinType joinType, DynamicBlock<?> block) {
-            super(joinType, block.tableItem, block.alias);
-            this.predicateList = block.onClause();
-        }
-
-        @Override
-        public final List<_Predicate> onClauseList() {
-            return this.predicateList;
-        }
-
-
-    }//DynamicTableBlock
-
 
     interface BlockParams {
 

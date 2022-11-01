@@ -7,6 +7,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl.inner.*;
+import io.army.criteria.standard.StandardInsert;
 import io.army.criteria.standard.StandardQuery;
 import io.army.criteria.standard.StandardStatement;
 import io.army.lang.Nullable;
@@ -91,7 +92,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
     @Override
     public final Stmt insert(final Insert insert, final Visible visible) {
         insert.prepared();
-        if (insert instanceof StandardStatement) {
+        if (insert instanceof StandardInsert) {
             //validate implementation class
             _SQLConsultant.assertStandardInsert(insert);
         } else {
@@ -592,7 +593,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
         this.standardLimitClause(query.offset(), query.rowCount(), context);
     }
 
-    protected void standardLockClause(LockMode0 lockMode, _SqlContext context) {
+    protected void standardLockClause(SQLWords lockMode, _SqlContext context) {
         throw new UnsupportedOperationException();
     }
 
@@ -696,7 +697,11 @@ public abstract class _AbstractDialectParser implements ArmyParser {
     protected final void multiTableChildSetClause(final _SingleUpdate stmt, final _MultiUpdateContext context) {
         final List<_ItemPair> itemPairList, childItemPairList;
         itemPairList = stmt.itemPairList();
-        childItemPairList = stmt.childItemPairList();
+        if (stmt instanceof _DomainUpdate) {
+            childItemPairList = ((_DomainUpdate) stmt).childItemPairList();
+        } else {
+            childItemPairList = Collections.emptyList();
+        }
 
         final int itemSize, childSize;
         itemSize = itemPairList.size();
@@ -1032,7 +1037,8 @@ public abstract class _AbstractDialectParser implements ArmyParser {
 
     }
 
-    protected abstract void standardLimitClause(final long offset, final long rowCount, final _SqlContext context);
+    protected abstract void standardLimitClause(@Nullable _Expression offset, @Nullable _Expression rowCount
+            , _SqlContext context);
 
     protected final void discriminator(final TableMeta<?> table, final @Nullable String safeTableAlias
             , final _SqlContext context) {
@@ -1291,7 +1297,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
      * @see #parseInsert(_Insert, Visible)
      */
     private Stmt handleDomainInsert(final _Insert._DomainInsert insert, final Visible visible) {
-        final boolean standardStmt = insert instanceof StandardStatement;
+        final boolean standardStmt = insert instanceof StandardInsert;
         final Stmt stmt;
         if (insert instanceof _Insert._ChildDomainInsert) {
             final _Insert._ChildDomainInsert childStmt = (_Insert._ChildDomainInsert) insert;
@@ -1529,8 +1535,8 @@ public abstract class _AbstractDialectParser implements ArmyParser {
                 break;
             case 1: {
                 final SQLWords modifier = modifierList.get(0);
-                if (!(modifier instanceof SQLs.AllWord)) {
-                    String m = String.format("Standard query api support only %s", SQLs.AllWord.class.getName());
+                if (!(modifier instanceof SQLs.WordAll)) {
+                    String m = String.format("Standard query api support only %s", SQLs.WordAll.class.getName());
                     throw new CriteriaException(m);
                 }
                 builder.append(_Constant.SPACE)
@@ -1538,7 +1544,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
             }
             break;
             default:
-                String m = String.format("Standard query api support only %s", SQLs.AllWord.class.getName());
+                String m = String.format("Standard query api support only %s", SQLs.WordAll.class.getName());
                 throw new CriteriaException(m);
         }
 
@@ -1549,9 +1555,10 @@ public abstract class _AbstractDialectParser implements ArmyParser {
      * @see #handleDomainInsert(_Insert._DomainInsert, Visible)
      */
     private void standardValueSyntaxInsert(final _ValueInsertContext context) {
-        final StringBuilder sqlBuilder = context.sqlBuilder();
+        final StringBuilder sqlBuilder;
         //1. INSERT INTO keywords
-        sqlBuilder.append(_Constant.INSERT_INTO_SPACE);
+        sqlBuilder = context.sqlBuilder()
+                .append(_Constant.INSERT_INTO_SPACE);
         //2. table name
         this.safeObjectName(context.insertTable(), sqlBuilder);
         //3. table column list
@@ -1716,14 +1723,18 @@ public abstract class _AbstractDialectParser implements ArmyParser {
         this.standardLimitClause(query.offset(), query.rowCount(), context);
 
         //8. lock clause
-        final LockMode0 lock = query.lockMode();
+        final SQLWords lock = query.lockMode();
         if (lock != null) {
             this.standardLockClause(lock, context);
         }
 
     }
 
-
+    /**
+     * @see #handleDomainInsert(_Insert._DomainInsert, Visible)
+     * @see #handleValueInsert(_Insert._ValuesInsert, Visible)
+     * @see #handleAssignmentInsert(_Insert._AssignmentInsert, Visible)
+     */
     private void checkParentStmt(_Insert parentStmt, ChildTableMeta<?> childTable) {
         if (parentStmt instanceof _Insert._SupportConflictClauseSpec
                 && parentStmt.table().id().generatorType() == GeneratorType.POST

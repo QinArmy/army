@@ -1,14 +1,15 @@
 package io.army.dialect.postgre;
 
+import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.DialectEnv;
 import io.army.dialect._AbstractDialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.meta.DatabaseObject;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.tx.Isolation;
-import io.army.util._Exceptions;
 
 import java.util.List;
 import java.util.Set;
@@ -85,17 +86,17 @@ abstract class PostgreParser extends _AbstractDialectParser {
     }
 
     @Override
-    protected final void standardLimitClause(final long offset, final long rowCount, final _SqlContext context) {
-        if (offset >= 0L && rowCount >= 0L) {
-            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE)
-                    .append(rowCount)
-                    .append(_Constant.SPACE_OFFSET_SPACE)
-                    .append(offset);
-        } else if (rowCount >= 0L) {
-            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE)
-                    .append(rowCount);
-        } else if (offset >= 0L) {
-            throw _Exceptions.standardLimitClauseError(offset, rowCount);
+    protected final void standardLimitClause(final @Nullable _Expression offset, final @Nullable _Expression rowCount
+            , _SqlContext context) {
+        if (offset != null && rowCount != null) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE);
+            rowCount.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_OFFSET_SPACE);
+            offset.appendSql(context);
+        } else if (rowCount != null) {
+            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE);
+            rowCount.appendSql(context);
         }
     }
 

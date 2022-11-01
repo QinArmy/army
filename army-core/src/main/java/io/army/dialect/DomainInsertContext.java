@@ -6,7 +6,7 @@ import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.LiteralMode;
-import io.army.criteria.NullHandleMode;
+import io.army.criteria.NullMode;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
@@ -90,7 +90,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         final LiteralMode literalMode = this.literalMode;
         final boolean migration = this.migration;
         final boolean mockEnv = dialect.isMockEnv();
-        final NullHandleMode nullHandleMode = this.nullHandleMode;
+        final NullMode nullMode = this.nullMode;
 
         final FieldValueGenerator generator;
         final DomainWrapper wrapper = this.wrapper;
@@ -145,8 +145,6 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
 
             delayIdParam = null;//clear
-            assert outputValueSize == 0 || outputValueSize == outputColumnSize;
-            outputValueSize = -1;//reset
             for (int fieldIndex = 0, actualFieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
                 field = fieldList.get(fieldIndex);
                 if (!migration && !field.insertable()) {
@@ -163,16 +161,13 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
                     sqlBuilder.append(spaceDiscriminator);
                 } else if ((value = accessor.get(currentDomain, field.fieldName())) != null) {
                     this.appendInsertValue(literalMode, field, value);
-                } else if (field instanceof PrimaryFieldMeta
-                        && insertTable instanceof ChildTableMeta) {//child id must be managed by army
+                } else if (field instanceof PrimaryFieldMeta && insertTable instanceof ChildTableMeta) {//child id must be managed by army
                     if (field.generatorType() == GeneratorType.POST) {
                         assert delayIdParam == null;
                         delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, currentDomain, accessor);
                         this.appendParam(delayIdParam);
-                    } else if (!mockEnv) {
-                        //no bug,never here,here generatorType == GeneratorType.PRECEDE
-                        throw new IllegalStateException(String.format("no generate value for %s", field));
                     } else {
+                        assert mockEnv; // must assert
                         this.appendInsertValue(literalMode, field, null);
                     }
                 } else if ((expression = defaultValueMap.get(field)) != null) {
@@ -183,10 +178,10 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
                         throw _Exceptions.nonNullField(field);
                     }
                     this.appendInsertValue(literalMode, field, null);
-                } else if (nullHandleMode == NullHandleMode.INSERT_DEFAULT) {
+                } else if (nullMode == NullMode.INSERT_DEFAULT) {
                     sqlBuilder.append(_Constant.SPACE_DEFAULT);
-                } else if (nullHandleMode != NullHandleMode.INSERT_NULL) {
-                    throw _Exceptions.unexpectedEnum(nullHandleMode);
+                } else if (nullMode != NullMode.INSERT_NULL) {
+                    throw _Exceptions.unexpectedEnum(nullMode);
                 } else if (!field.nullable()) {
                     throw _Exceptions.nonNullField(field);
                 } else {
@@ -195,6 +190,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
             }//inner for
 
+            assert outputValueSize == outputColumnSize; //assert value size and column size match.
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
         }//outer for
