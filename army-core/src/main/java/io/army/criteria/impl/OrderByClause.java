@@ -44,7 +44,7 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
     @Override
     public final OR orderBy(Expression exp, Statement.AscDesc ascDesc) {
-        this.onAddOrderBy(SortItems.create(exp, ascDesc));
+        this.onAddOrderBy(ArmySortItems.create(exp, ascDesc));
         return (OR) this;
     }
 
@@ -57,7 +57,7 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
     @Override
     public final OR orderBy(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2) {
-        this.onAddOrderBy(SortItems.create(exp1, ascDesc1))
+        this.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
                 .add((ArmySortItem) exp2);
         return (OR) this;
     }
@@ -65,27 +65,27 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
     @Override
     public final OR orderBy(Expression exp1, Expression exp2, Statement.AscDesc ascDesc2) {
         this.onAddOrderBy(exp1)
-                .add(SortItems.create(exp2, ascDesc2));
+                .add(ArmySortItems.create(exp2, ascDesc2));
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2, Statement.AscDesc ascDesc2) {
-        this.onAddOrderBy(SortItems.create(exp1, ascDesc1))
-                .add(SortItems.create(exp2, ascDesc2));
+        this.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
+                .add(ArmySortItems.create(exp2, ascDesc2));
         return (OR) this;
     }
 
     @Override
     public final OR comma(Expression exp, Statement.AscDesc ascDesc) {
-        this.onAddOrderBy(SortItems.create(exp, ascDesc));
+        this.onAddOrderBy(ArmySortItems.create(exp, ascDesc));
         return (OR) this;
     }
 
 
     @Override
     public final OR comma(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2) {
-        this.onAddOrderBy(SortItems.create(exp1, ascDesc1))
+        this.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
                 .add((ArmySortItem) exp2);
         return (OR) this;
     }
@@ -93,26 +93,26 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
     @Override
     public final OR comma(Expression exp1, Expression exp2, Statement.AscDesc ascDesc2) {
         this.onAddOrderBy(exp1)
-                .add(SortItems.create(exp2, ascDesc2));
+                .add(ArmySortItems.create(exp2, ascDesc2));
         return (OR) this;
     }
 
     @Override
     public final OR comma(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2, Statement.AscDesc ascDesc2) {
-        this.onAddOrderBy(SortItems.create(exp1, ascDesc1))
-                .add(SortItems.create(exp2, ascDesc2));
+        this.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
+                .add(ArmySortItems.create(exp2, ascDesc2));
         return (OR) this;
     }
 
     @Override
     public final OR comma(Expression exp, Statement.NullsFirstLast nullOption) {
-        this.onAddOrderBy(SortItems.create(exp, nullOption));
+        this.onAddOrderBy(ArmySortItems.create(exp, nullOption));
         return (OR) this;
     }
 
     @Override
     public final OR comma(Expression exp, Statement.AscDesc ascDesc, Statement.NullsFirstLast nullOption) {
-        this.onAddOrderBy(SortItems.create(exp, ascDesc, nullOption));
+        this.onAddOrderBy(ArmySortItems.create(exp, ascDesc, nullOption));
         return (OR) this;
     }
 
@@ -138,6 +138,11 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
     }
 
 
+    final boolean hasOrderByClause() {
+        return this.orderByList != null;
+    }
+
+
     final void clearOrderByList() {
         this.orderByList = null;
     }
@@ -160,6 +165,58 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         void onOrderByEvent();
 
     }
+
+
+    static final class OrderBySortItems implements SortItems {
+
+        private final OrderByClause<?> clause;
+
+        OrderBySortItems(OrderByClause<?> clause) {
+            this.clause = clause;
+        }
+
+        @Override
+        public SortItems sortItem(Expression exp) {
+            this.clause.onAddOrderBy(exp);
+            return this;
+        }
+
+        @Override
+        public SortItems sortItem(Expression exp, AscDesc ascDesc) {
+            this.clause.onAddOrderBy(ArmySortItems.create(exp, ascDesc));
+            return this;
+        }
+
+        @Override
+        public SortItems sortItem(Expression exp1, Expression exp2) {
+            this.clause.onAddOrderBy(exp1)
+                    .add((ArmySortItem) exp2);
+            return this;
+        }
+
+        @Override
+        public SortItems sortItem(Expression exp1, AscDesc ascDesc1, Expression exp2) {
+            this.clause.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
+                    .add((ArmySortItem) exp2);
+            return this;
+        }
+
+        @Override
+        public SortItems sortItem(Expression exp1, Expression exp2, AscDesc ascDesc2) {
+            this.clause.onAddOrderBy(exp1)
+                    .add(ArmySortItems.create(exp2, ascDesc2));
+            return this;
+        }
+
+        @Override
+        public SortItems sortItem(Expression exp1, AscDesc ascDesc1, Expression exp2, AscDesc ascDesc2) {
+            this.clause.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
+                    .add(ArmySortItems.create(exp2, ascDesc2));
+            return this;
+        }
+
+
+    }//OrderBySortItems
 
 
     static abstract class UnionRowSet

@@ -15,6 +15,8 @@ interface CriteriaContext {
     @Nullable
     CriteriaContext getOuterContext();
 
+    CriteriaContext getNonNullOuterContext();
+
     CteConsumer onBeforeWithClause(boolean recursive);
 
     void onStartCte(String name);

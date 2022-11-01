@@ -2,10 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
-import io.army.criteria.postgre.PostgreDelete;
-import io.army.criteria.postgre.PostgreInsert;
-import io.army.criteria.postgre.PostgreQuery;
-import io.army.criteria.postgre.PostgreUpdate;
+import io.army.criteria.postgre.*;
 
 /**
  * <p>
@@ -29,17 +26,17 @@ public abstract class Postgres extends PostgreFuncSyntax {
     }
 
     public static PostgreQuery._WithSpec<Select> query() {
-        return PostgreQueries.primaryQuery(null, SQLs::_identity);
+        return PostgreQueries.primaryQuery(null, null, SQLs::_identity);
     }
 
 
     public static PostgreQuery._WithSpec<SubQuery> subQuery() {
-        return PostgreQueries.subQuery(ContextStack.peek(), SQLs::_identity);
+        return PostgreQueries.subQuery(null, ContextStack.peek(), SQLs::_identity);
     }
 
 
     public static PostgreQuery._WithSpec<Expression> scalarSubQuery() {
-        return PostgreQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
+        return PostgreQueries.subQuery(null, ContextStack.peek(), ScalarExpression::from);
     }
 
     public static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> singleUpdate() {
@@ -56,6 +53,14 @@ public abstract class Postgres extends PostgreFuncSyntax {
 
     public static PostgreDelete._BatchSingleWithSpec<Delete, ReturningDelete> batchSingleDelete() {
         return PostgreDeletes.batch(SQLs::_identity, SQLs::_identity);
+    }
+
+    public static PostgreValues._WithSpec<Values> primaryValues() {
+        return PostgreSimpleValues.primaryValues(null, null, SQLs::_identity);
+    }
+
+    public static PostgreValues._WithSpec<SubValues> subValues() {
+        return PostgreSimpleValues.subValues(null, ContextStack.peek(), SQLs::_identity);
     }
 
 

@@ -67,7 +67,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_MinWithSpec<I>>, _AsQueryClause<I> {
+    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_QueryWithComplexSpec<I>>, _AsQueryClause<I> {
 
     }
 
@@ -255,6 +255,18 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     interface _WithCteSpec<I extends Item> extends _MinWithSpec<I>
             , _StaticWithClause<_StaticCteLeftParenSpec<_CteComma<I>>> {
+
+    }
+
+
+    interface _QueryComplexSpec<I extends Item> extends _MySQLSelectClause<I>
+            , MySQLValues._MySQLValuesClause<I>
+            , _LeftParenClause<_QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+
+    }
+
+    interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>
+            , _MySQLDynamicWithClause<_QueryComplexSpec<I>> {
 
     }
 

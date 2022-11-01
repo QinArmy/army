@@ -5,13 +5,13 @@ import io.army.criteria.Statement;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 
-class SortItems implements ArmySortItem {
+class ArmySortItems implements ArmySortItem {
 
     static ArmySortItem create(final Expression exp, final Statement.AscDesc ascDesc) {
         if (!(ascDesc instanceof SQLs.KeyWordAscDesc)) {
             throw CriteriaUtils.unknownWords(ascDesc);
         }
-        return new SortItems((ArmyExpression) exp, (SQLs.KeyWordAscDesc) ascDesc);
+        return new ArmySortItems((ArmyExpression) exp, (SQLs.KeyWordAscDesc) ascDesc);
     }
 
     static ArmySortItem create(final Expression exp, final Statement.NullsFirstLast nullOption) {
@@ -40,7 +40,7 @@ class SortItems implements ArmySortItem {
 
     private final StandardSyntax.KeyWordAscDesc aseWord;
 
-    private SortItems(ArmyExpression sortItem, @Nullable StandardSyntax.KeyWordAscDesc aseWord) {
+    private ArmySortItems(ArmyExpression sortItem, @Nullable StandardSyntax.KeyWordAscDesc aseWord) {
         this.sortItem = sortItem;
         this.aseWord = aseWord;
     }
@@ -79,7 +79,7 @@ class SortItems implements ArmySortItem {
     }
 
 
-    private static final class SortItemWithNullsOption extends SortItems {
+    private static final class SortItemWithNullsOption extends ArmySortItems {
 
         private final SQLs.KeyWordsNullsFirstLast nullOption;
 

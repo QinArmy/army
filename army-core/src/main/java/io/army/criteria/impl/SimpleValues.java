@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Values;
 import io.army.dialect.Dialect;
@@ -9,6 +10,7 @@ import io.army.util._Assert;
 import io.army.util._CollectionUtils;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 
@@ -386,9 +388,13 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
 
     private void endValuesStatement() {
         _Assert.nonPrepared(this.prepared);
+
+        if (this.columnList != null) {
+            //here,dynamic values
+            this.rightParen();
+        }
         final List<List<_Expression>> rowList = this.rowList;
-        if (this.columnList != null
-                || this.selectionList != null
+        if (this.selectionList == null
                 || !(rowList instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -396,6 +402,96 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
         this.endOrderByClause();
         this.prepared = Boolean.TRUE;
     }
+
+
+    static abstract class WithSimpleValues<I extends Item, B extends CteBuilderSpec, WE, RR, OR, LR, LO, LF, SP>
+            extends SimpleValues<I, RR, OR, LR, LO, LF, SP>
+            implements DialectStatement._DynamicWithClause<B, WE>
+            , _WithClauseSpec {
+
+        private boolean recursive;
+
+        private List<_Cte> cteList;
+
+        WithSimpleValues(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
+            super(context);
+            if (withSpec != null) {
+                this.recursive = withSpec.isRecursive();
+                this.cteList = withSpec.cteList();
+            }
+        }
+
+
+        @Override
+        public final WE with(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(builder);
+            return this.endWithClause(builder, true);
+        }
+
+        @Override
+        public final WE withRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(builder);
+            return this.endWithClause(builder, true);
+        }
+
+        @Override
+        public final WE ifWith(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(builder);
+            return this.endWithClause(builder, false);
+        }
+
+        @Override
+        public final WE ifWithRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(builder);
+            return this.endWithClause(builder, false);
+        }
+
+
+        @Override
+        public final boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public final List<_Cte> cteList() {
+            final List<_Cte> list = this.cteList;
+            if (list == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return list;
+        }
+
+
+        abstract B createCteBuilder(boolean recursive);
+
+
+        final WE endStaticWithClause(final boolean recursive) {
+            if (this.cteList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.recursive = recursive;
+            this.cteList = this.context.endWithClause(recursive, true);
+            return (WE) this;
+        }
+
+        private WE endWithClause(final B builder, final boolean required) {
+            final boolean recursive;
+            recursive = builder.isRecursive();
+            this.recursive = recursive;
+            this.cteList = this.context.endWithClause(recursive, required);
+            return (WE) this;
+        }
+
+
+    }//WithSimpleValues
 
 
     static final class RowConstructorImpl implements RowConstructor {

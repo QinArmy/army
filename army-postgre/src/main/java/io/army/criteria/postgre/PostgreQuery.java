@@ -392,7 +392,16 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
+    interface _QueryComplexSpec<I extends Item> extends _PostgreSelectClause<I>
+            , PostgreValues._PostgreValuesClause<I>
+            , _LeftParenClause<_QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
+    }
+
+    interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>
+            , _PostgreDynamicWithClause<_QueryComplexSpec<I>> {
+
+    }
 
 
 }

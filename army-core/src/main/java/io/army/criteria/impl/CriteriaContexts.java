@@ -71,6 +71,11 @@ abstract class CriteriaContexts {
         return context;
     }
 
+    static CriteriaContext subQueryContext(@Nullable _Statement._WithClauseSpec withSpec
+            , final CriteriaContext outerContext) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * @see #subQueryContext(CriteriaContext)
      */
@@ -342,6 +347,13 @@ abstract class CriteriaContexts {
         @Override
         public final CriteriaContext getOuterContext() {
             return this.outerContext;
+        }
+
+        @Override
+        public final CriteriaContext getNonNullOuterContext() {
+            final CriteriaContext outerContext = this.outerContext;
+            assert outerContext != null;
+            return outerContext;
         }
 
         @Override

@@ -13,14 +13,23 @@ public interface PostgreValues extends PostgreStatement, RowSet.DqlValues {
     }
 
 
-    interface _UnionSpec<I extends Item> extends Query._QueryUnionClause<_UnionAndQuerySpec<I>>
-            , Query._QueryIntersectClause<_UnionAndQuerySpec<I>>
-            , Query._QueryExceptClause<_UnionAndQuerySpec<I>> {
+    interface _UnionSpec<I extends Item> extends Query._QueryUnionClause<_QueryWithComplexSpec<I>>
+            , Query._QueryIntersectClause<_QueryWithComplexSpec<I>>
+            , Query._QueryExceptClause<_QueryWithComplexSpec<I>> {
+
+    }
+
+    interface _UnionFetchSpec<I extends Item> extends _QueryFetchClause<_AsValuesClause<I>>, _AsValuesClause<I> {
+
+    }
+
+    interface _UnionOffsetSpec<I extends Item> extends _QueryOffsetClause<_UnionFetchSpec<I>>, _UnionFetchSpec<I> {
 
     }
 
 
-    interface _UnionLimitSpec<I extends Item> extends _AsValuesClause<I> {
+    interface _UnionLimitSpec<I extends Item> extends _RowCountLimitAllClause<_UnionOffsetSpec<I>>
+            , _UnionOffsetSpec<I> {
 
     }
 
@@ -61,26 +70,31 @@ public interface PostgreValues extends PostgreStatement, RowSet.DqlValues {
     }
 
 
-    interface _PostgreStaticRowLeftParenClause<I extends Item>
-            extends Values._StaticValueLeftParenClause<_StaticRowLeftParenSpec<I>> {
+    interface _PostgreValuesLeftParenClause<I extends Item>
+            extends Values._StaticValueLeftParenClause<_ValuesLeftParenSpec<I>> {
 
     }
 
-    interface _StaticRowLeftParenSpec<I extends Item> extends _PostgreStaticRowLeftParenClause<I>
+    interface _ValuesLeftParenSpec<I extends Item> extends _PostgreValuesLeftParenClause<I>
             , _OrderBySpec<I> {
 
     }
 
 
     interface _PostgreValuesClause<I extends Item>
-            extends Values._StaticValuesClause<_PostgreStaticRowLeftParenClause<I>>
+            extends Values._StaticValuesClause<_PostgreValuesLeftParenClause<I>>
             , Values._DynamicValuesClause<_OrderBySpec<I>> {
 
     }
 
+    interface ValuesSpec<I extends Item> extends _PostgreValuesClause<I>
+            , _LeftParenClause<ValuesSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
-    interface _MinWithSpec<I extends Item> extends _PostgreDynamicWithClause<_PostgreValuesClause<I>>
-            , _PostgreValuesClause<I> {
+    }
+
+
+    interface _MinWithSpec<I extends Item> extends _PostgreDynamicWithClause<ValuesSpec<I>>
+            , ValuesSpec<I> {
 
     }
 
@@ -107,8 +121,14 @@ public interface PostgreValues extends PostgreStatement, RowSet.DqlValues {
     }
 
 
-    interface _UnionAndQuerySpec<I extends Item> extends _WithSpec<I>
-            , _LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+    interface _QueryComplexSpec<I extends Item> extends PostgreQuery._PostgreSelectClause<I>
+            , _PostgreValuesClause<I>
+            , _LeftParenClause<_QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+
+    }
+
+    interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>
+            , _PostgreDynamicWithClause<_QueryComplexSpec<I>> {
 
     }
 

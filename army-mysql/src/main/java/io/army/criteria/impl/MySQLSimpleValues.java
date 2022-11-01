@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SortItems;
 import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLQuery;
@@ -8,6 +7,7 @@ import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
+import io.army.util._Exceptions;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -57,12 +57,17 @@ abstract class MySQLSimpleValues<I extends Item>
 
     @Override
     public final _LimitSpec<I> orderBy(Consumer<SortItems> consumer) {
-        return null;
+        consumer.accept(new OrderBySortItems(this));
+        if (!this.hasOrderByClause()) {
+            throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
+        }
+        return this;
     }
 
     @Override
     public final _LimitSpec<I> ifOrderBy(Consumer<SortItems> consumer) {
-        return null;
+        consumer.accept(new OrderBySortItems(this));
+        return this;
     }
 
 
@@ -100,6 +105,8 @@ abstract class MySQLSimpleValues<I extends Item>
 
         @Override
         _ValueWithComplexSpec<I> createUnionValues(final UnionType unionType) {
+            UnionType.standardUnionType(this.context, unionType);
+
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionValues(MySQLDialect.MySQL80, this, unionType, rowSet));
             return new ComplexValues<>(this.context.getOuterContext(), unionFunc);
@@ -138,6 +145,8 @@ abstract class MySQLSimpleValues<I extends Item>
 
         @Override
         _ValueWithComplexSpec<I> createUnionValues(final UnionType unionType) {
+            UnionType.standardUnionType(this.context, unionType);
+
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSubValues(this, unionType, rowSet));
             final CriteriaContext outerContext;
@@ -165,7 +174,8 @@ abstract class MySQLSimpleValues<I extends Item>
             Object,
             Object,
             MySQLValues._ValueWithComplexSpec<I>>
-            implements MySQLValues._UnionOrderBySpec<I> {
+            implements MySQLValues._UnionOrderBySpec<I>
+            , MySQLValues {
 
         private MySQLBracketValues(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext) {
             super(CriteriaContexts.bracketContext(spec, outerContext));
@@ -173,12 +183,17 @@ abstract class MySQLSimpleValues<I extends Item>
 
         @Override
         public final _UnionLimitSpec<I> orderBy(Consumer<SortItems> consumer) {
-            return null;
+            consumer.accept(new OrderBySortItems(this));
+            if (!this.hasOrderByClause()) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
+            }
+            return this;
         }
 
         @Override
         public final _UnionLimitSpec<I> ifOrderBy(Consumer<SortItems> consumer) {
-            return null;
+            consumer.accept(new OrderBySortItems(this));
+            return this;
         }
 
         @Override
@@ -212,6 +227,8 @@ abstract class MySQLSimpleValues<I extends Item>
 
         @Override
         _ValueWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
+            UnionType.standardUnionType(this.context, unionType);
+
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionValues(MySQLDialect.MySQL80, this, unionType, rowSet));
             return new ComplexValues<>(this.context.getOuterContext(), unionFunc);
@@ -237,6 +254,8 @@ abstract class MySQLSimpleValues<I extends Item>
 
         @Override
         _ValueWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
+            UnionType.standardUnionType(this.context, unionType);
+
             final CriteriaContext outerContext;
             outerContext = this.context.getOuterContext();
             assert outerContext != null;

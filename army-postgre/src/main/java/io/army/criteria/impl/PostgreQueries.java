@@ -54,14 +54,15 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         , PostgreQuery._LockOfTableSpec<I> {
 
 
-    static <I extends Item> PostgreQuery._WithSpec<I> primaryQuery(@Nullable _WithClauseSpec withSpec
-            , Function<Select, I> function) {
-        return new SimpleSelect<>(withSpec, CriteriaContexts.primaryQuery(null), function);
+    static <I extends Item> PostgreQueries<I> primaryQuery(@Nullable _WithClauseSpec withSpec
+            , @Nullable CriteriaContext outerContext, Function<Select, I> function) {
+        return new SimpleSelect<>(withSpec, outerContext, function);
     }
 
 
-    static <I extends Item> _WithSpec<I> subQuery(CriteriaContext outerContext, Function<SubQuery, I> function) {
-        return new SimpleSubQuery<>(outerContext, function);
+    static <I extends Item> PostgreQueries<I> subQuery(@Nullable _WithClauseSpec withSpec
+            , CriteriaContext outerContext, Function<SubQuery, I> function) {
+        return new SimpleSubQuery<>(withSpec, outerContext, function);
     }
 
 
@@ -687,8 +688,9 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
         private final Function<Select, I> function;
 
-        private SimpleSelect(@Nullable _WithClauseSpec withSpec, CriteriaContext context, Function<Select, I> function) {
-            super(withSpec, context);
+        private SimpleSelect(@Nullable _WithClauseSpec withSpec, @Nullable CriteriaContext outerContext
+                , Function<Select, I> function) {
+            super(withSpec, CriteriaContexts.primaryQuery(withSpec, outerContext));
             this.function = function;
         }
 
@@ -729,8 +731,9 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
         private final Function<SubQuery, I> function;
 
-        private SimpleSubQuery(CriteriaContext context, Function<SubQuery, I> function) {
-            super(null, context);
+        private SimpleSubQuery(@Nullable _WithClauseSpec withSpec, CriteriaContext outerContext
+                , Function<SubQuery, I> function) {
+            super(withSpec, CriteriaContexts.subQueryContext(withSpec, outerContext));
             this.function = function;
         }
 
