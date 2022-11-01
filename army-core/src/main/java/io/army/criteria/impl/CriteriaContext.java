@@ -31,6 +31,8 @@ interface CriteriaContext {
     @Deprecated
     List<_Cte> endWithClause(boolean required);
 
+    boolean isWithRecursive();
+
     /**
      * @return a unmodified list
      */

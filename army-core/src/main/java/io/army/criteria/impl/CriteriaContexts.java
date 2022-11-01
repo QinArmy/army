@@ -462,6 +462,13 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public final boolean isWithRecursive() {
+            final WithClauseContext withContext = this.withClauseContext;
+            assert withContext != null;
+            return withContext.recursive;
+        }
+
+        @Override
         public final List<_Cte> endWithClause(final boolean required) {
             final WithClauseContext withContext = this.withClauseContext;
             assert withContext != null;

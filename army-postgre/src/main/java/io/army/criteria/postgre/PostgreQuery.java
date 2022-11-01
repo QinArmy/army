@@ -168,36 +168,19 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_MinWithSpec<I>>
-            , _QueryIntersectClause<_MinWithSpec<I>>
-            , _QueryExceptClause<_MinWithSpec<I>>
+    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_QueryWithComplexSpec<I>>
+            , _QueryIntersectClause<_QueryWithComplexSpec<I>>
+            , _QueryExceptClause<_QueryWithComplexSpec<I>>
             , _AsQueryClause<I> {
 
     }
 
 
-    interface _UnionLockWaitOptionSpec<I extends Item> extends _MinLockWaitOptionClause<_UnionLockSpec<I>>
-            , _UnionLockSpec<I> {
-
+    interface _UnionFetchSpec<I extends Item> extends _QueryFetchClause<_AsQueryClause<I>>, _AsQueryClause<I> {
 
     }
 
-    interface _UnionLockOfTableSpec<I extends Item> extends _LockOfTableClause<_UnionLockWaitOptionSpec<I>>
-            , _UnionLockWaitOptionSpec<I> {
-
-
-    }
-
-
-    interface _UnionLockSpec<I extends Item> extends _PostgreLockClause<_UnionLockOfTableSpec<I>>, _AsQueryClause<I> {
-
-    }
-
-    interface _UnionFetchSpec<I extends Item> extends _QueryFetchClause<_UnionLockSpec<I>>, _UnionLockSpec<I> {
-
-    }
-
-    interface _UnionOffsetSpec<I extends Item> extends _QueryOffsetClause<_UnionFetchSpec<I>>, _UnionLockSpec<I> {
+    interface _UnionOffsetSpec<I extends Item> extends _QueryOffsetClause<_UnionFetchSpec<I>>, _UnionFetchSpec<I> {
 
 
     }
@@ -380,6 +363,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
             , _StaticWithClause<_StaticCteLeftParenSpec<_CteComma<I>>> {
 
     }
+
 
     interface _DynamicSubMaterializedSpec<I extends Item>
             extends _CteMaterializedClause<_MinWithSpec<I>>

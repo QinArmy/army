@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.postgre._PostgreQuery;
 import io.army.criteria.postgre.*;
@@ -41,7 +42,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         PostgreQuery._OffsetSpec<I>,
         PostgreQuery._FetchSpec<I>,
         PostgreQuery._LockSpec<I>,
-        PostgreQuery._MinWithSpec<I>>
+        PostgreQuery._QueryWithComplexSpec<I>>
         implements PostgreQuery, _PostgreQuery
         , PostgreQuery._WithSpec<I>
         , PostgreQuery._FromSpec<I>
@@ -66,15 +67,13 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
 
-    static <I extends Item> Function<String, _StaticCteLeftParenSpec<I>> complexCte(CriteriaContext outerContext
-            , I comma) {
-        throw new UnsupportedOperationException();
-
+    static <I extends Item> Function<String, _StaticCteLeftParenSpec<I>> complexCte(CriteriaContext context, I comma) {
+        return new PostgreCteComplexCommand<>(context, comma)::nextCte;
     }
 
     static <I extends Item> PostgreQuery._DynamicSubMaterializedSpec<I> dynamicCteQuery(CriteriaContext outerContext
             , Function<SubStatement, I> function) {
-        throw new UnsupportedOperationException();
+        return new DynamicCteSimpleSubQuery<>(outerContext, function);
     }
 
     private PostgreSupports.PostgreNoOnTableBlock noOnBlock;
@@ -673,11 +672,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(PostgreLockMode.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return CriteriaUtils.sqlWordsToString(this);
         }
 
     }//PostgreLockMode
@@ -686,29 +681,20 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     private static final class SimpleSelect<I extends Item> extends PostgreQueries<I>
             implements Select {
 
-        private final Function<Select, I> function;
+        private final Function<? super Select, I> function;
 
         private SimpleSelect(@Nullable _WithClauseSpec withSpec, @Nullable CriteriaContext outerContext
-                , Function<Select, I> function) {
+                , Function<? super Select, I> function) {
             super(withSpec, CriteriaContexts.primaryQuery(withSpec, outerContext));
             this.function = function;
         }
 
-        private SimpleSelect(CriteriaContext context, Function<Select, I> function) {
-            super(null, context);
-            this.function = function;
-        }
 
         @Override
         public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final CriteriaContext bracketContext, queryContext;
-            bracketContext = CriteriaContexts.bracketContext(this.context.endContextBeforeSelect());
-
             final BracketSelect<I> bracket;
-            bracket = new BracketSelect<>(bracketContext, this.function);
-
-            queryContext = CriteriaContexts.primaryQuery(bracketContext);
-            return new SimpleSelect<>(null, queryContext, bracket::parenRowSetEnd);
+            bracket = new BracketSelect<>(null, this.context, this::bracketEnd);
+            return new SimpleSelect<>(null, bracket.context, bracket::parenRowSetEnd);
         }
 
         @Override
@@ -717,223 +703,170 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        _MinWithSpec<I> createQueryUnion(UnionType unionType) {
+        _QueryWithComplexSpec<I> createQueryUnion(UnionType unionType) {
+            final Function<RowSet, I> unionFunc;
+            unionFunc = right -> this.function.apply(new UnionSelect(PostgreDialect.POSTGRE15, this, unionType, right));
             UnionType.exceptType(this.context, unionType);
-            return new UnionAndSelectClause<>(this, unionType, this.function);
+            return new ComplexSelect<>(this.context.getOuterContext(), unionFunc);
+        }
+
+        private I bracketEnd(Select query) {
+            ContextStack.pop(this.context)
+                    .endContextBeforeSelect();
+            return this.function.apply(query);
         }
 
 
     }//SimpleSelect
 
 
-    private static final class SimpleSubQuery<I extends Item> extends PostgreQueries<I>
+    private static abstract class PostgreSimpleSubQuery<I extends Item> extends PostgreQueries<I>
             implements SubQuery {
 
-        private final Function<SubQuery, I> function;
+
+        private PostgreSimpleSubQuery(@Nullable _WithClauseSpec withSpec, CriteriaContext outerContext) {
+            super(withSpec, CriteriaContexts.subQueryContext(withSpec, outerContext));
+        }
+
+        @Override
+        public final _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final BracketSubQuery<I> bracket;
+            bracket = new BracketSubQuery<>(null, this.context, this::bracketEnd);
+            return new SimpleSubQuery<>(null, bracket.context, bracket::parenRowSetEnd);
+        }
+
+        @Override
+        final _QueryWithComplexSpec<I> createQueryUnion(final UnionType unionType) {
+            UnionType.exceptType(this.context, unionType);
+            final Function<RowSet, I> unionFunc;
+            unionFunc = right -> this.unionRightEnd(unionType, right);
+            return new ComplexSubQuery<>(this.context.getNonNullOuterContext(), unionFunc);
+        }
+
+        abstract I bracketEnd(SubQuery query);
+
+        abstract I unionRightEnd(UnionType unionType, RowSet right);
+
+
+    }//PostgreSimpleSubQuery
+
+
+    private static class SimpleSubQuery<I extends Item> extends PostgreSimpleSubQuery<I> {
+
+        private final Function<? super SubQuery, I> function;
 
         private SimpleSubQuery(@Nullable _WithClauseSpec withSpec, CriteriaContext outerContext
-                , Function<SubQuery, I> function) {
-            super(withSpec, CriteriaContexts.subQueryContext(withSpec, outerContext));
+                , Function<? super SubQuery, I> function) {
+            super(withSpec, outerContext);
             this.function = function;
         }
 
         @Override
-        public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final CriteriaContext bracketContext, queryContext;
-            bracketContext = CriteriaContexts.bracketContext(this.context.endContextBeforeSelect());
-
-            final BracketSubQuery<I> bracket;
-            bracket = new BracketSubQuery<>(bracketContext, this.function);
-
-            queryContext = CriteriaContexts.subQueryContext(bracketContext);
-            return new SimpleSubQuery<>(queryContext, bracket::parenRowSetEnd);
-        }
-
-        @Override
-        I onAsQuery() {
+        final I onAsQuery() {
             return this.function.apply(this);
         }
 
+
         @Override
-        _MinWithSpec<I> createQueryUnion(UnionType unionType) {
-            UnionType.exceptType(this.context, unionType);
-            return new UnionAndSubQueryClause<>(this, unionType, this.function);
+        I unionRightEnd(UnionType unionType, RowSet right) {
+            return this.function.apply(new UnionSubQuery(this, unionType, right));
         }
 
+        I bracketEnd(SubQuery query) {
+            ContextStack.pop(this.context)
+                    .endContextBeforeSelect();
+            return this.function.apply(query);
+        }
 
     }//SimpleSubQuery
 
 
-    private static abstract class PostgreBracketQueries<I extends Item, Q extends Query>
+    private static final class DynamicCteSimpleSubQuery<I extends Item> extends PostgreSimpleSubQuery<I>
+            implements _DynamicSubMaterializedSpec<I> {
+
+        private final Function<SubStatement, I> function;
+
+        private PostgreSupports.MaterializedOption materializedOption;
+
+        private DynamicCteSimpleSubQuery(CriteriaContext outerContext, Function<SubStatement, I> function) {
+            super(null, outerContext);
+            this.function = function;
+        }
+
+        @Override
+        public _MinWithSpec<I> materialized() {
+            this.materializedOption = PostgreSupports.MaterializedOption.MATERIALIZED;
+            return this;
+        }
+
+        @Override
+        public _MinWithSpec<I> notMaterialized() {
+            this.materializedOption = PostgreSupports.MaterializedOption.NOT_MATERIALIZED;
+            return this;
+        }
+
+        @Override
+        public _MinWithSpec<I> ifMaterialized(BooleanSupplier predicate) {
+            if (predicate.getAsBoolean()) {
+                this.materializedOption = PostgreSupports.MaterializedOption.MATERIALIZED;
+            } else {
+                this.materializedOption = null;
+            }
+            return this;
+        }
+
+        @Override
+        public _MinWithSpec<I> ifNotMaterialized(BooleanSupplier predicate) {
+            if (predicate.getAsBoolean()) {
+                this.materializedOption = PostgreSupports.MaterializedOption.NOT_MATERIALIZED;
+            } else {
+                this.materializedOption = null;
+            }
+            return this;
+        }
+
+        @Override
+        I onAsQuery() {
+            return this.function.apply(this.createResultStmt(this));
+        }
+
+        @Override
+        I bracketEnd(final SubQuery query) {
+            ContextStack.pop(this.context)
+                    .endContextBeforeSelect();
+            return this.function.apply(this.createResultStmt(query));
+        }
+
+        @Override
+        I unionRightEnd(UnionType unionType, RowSet right) {
+            final SubQuery query;
+            query = new UnionSubQuery(this, unionType, right);
+            return this.function.apply(this.createResultStmt(query));
+        }
+
+        private SubStatement createResultStmt(final SubQuery query) {
+            final PostgreSupports.MaterializedOption option = this.materializedOption;
+            return option == null ? query : new PostgreSupports.PostgreSubStatement(option, query);
+        }
+
+    }//DynamicCteSimpleSubQuery
+
+
+    private static abstract class PostgreBracketQueries<I extends Item>
             extends BracketRowSet<
             I,
-            Q,
             PostgreQuery._UnionOrderBySpec<I>,
             PostgreQuery._UnionLimitSpec<I>,
             PostgreQuery._UnionOffsetSpec<I>,
             PostgreQuery._UnionFetchSpec<I>,
-            PostgreQuery._UnionLockSpec<I>,
-            PostgreQuery._MinWithSpec<I>,
-            RowSet,
-            Object> implements PostgreQuery._UnionOrderBySpec<I>
-            , PostgreQuery._UnionLockOfTableSpec<I>
-            , Statement._RightParenClause<PostgreQuery._UnionOrderBySpec<I>> {
+            Query._AsQueryClause<I>,
+            PostgreQuery._QueryWithComplexSpec<I>>
+            implements PostgreQuery._UnionOrderBySpec<I>
+            , PostgreQuery._UnionOffsetSpec<I>
+            , PostgreQuery._UnionFetchSpec<I> {
 
-        private PostgreLockMode lockMode;
-
-        private List<TableMeta<?>> ofTaleList;
-
-        private LockWaitOption lockWaitOption;
-
-        private PostgreBracketQueries(CriteriaContext context) {
-            super(context);
-        }
-
-        @Override
-        public final _UnionLockOfTableSpec<I> forUpdate() {
-            this.lockMode = PostgreLockMode.FOR_UPDATE;
-            return this;
-        }
-
-        @Override
-        public final _UnionLockOfTableSpec<I> ifForUpdate(BooleanSupplier predicate) {
-            if (predicate.getAsBoolean()) {
-                this.lockMode = PostgreLockMode.FOR_UPDATE;
-            } else {
-                this.lockMode = null;
-            }
-            return this;
-        }
-
-        @Override
-        public final _UnionLockOfTableSpec<I> forShare() {
-            this.lockMode = PostgreLockMode.FOR_SHARE;
-            return this;
-        }
-
-        @Override
-        public final _UnionLockOfTableSpec<I> ifForShare(BooleanSupplier predicate) {
-            if (predicate.getAsBoolean()) {
-                this.lockMode = PostgreLockMode.FOR_SHARE;
-            } else {
-                this.lockMode = null;
-            }
-            return this;
-        }
-
-        @Override
-        public final _UnionLockOfTableSpec<I> forNoKeyUpdate() {
-            this.lockMode = PostgreLockMode.FOR_NO_KEY_UPDATE;
-            return this;
-        }
-
-        @Override
-        public final _UnionLockOfTableSpec<I> forKeyShare() {
-            this.lockMode = PostgreLockMode.FOR_KEY_SHARE;
-            return this;
-        }
-
-        @Override
-        public final _UnionLockOfTableSpec<I> ifForNoKeyUpdate(BooleanSupplier predicate) {
-            if (predicate.getAsBoolean()) {
-                this.lockMode = PostgreLockMode.FOR_NO_KEY_UPDATE;
-            } else {
-                this.lockMode = null;
-            }
-            return this;
-        }
-
-        @Override
-        public final _UnionLockOfTableSpec<I> ifForKeyShare(BooleanSupplier predicate) {
-            if (predicate.getAsBoolean()) {
-                this.lockMode = PostgreLockMode.FOR_KEY_SHARE;
-            } else {
-                this.lockMode = null;
-            }
-            return this;
-        }
-
-        @Override
-        public final _UnionLockWaitOptionSpec<I> of(TableMeta<?> table) {
-            if (this.lockMode != null) {
-                this.ofTaleList = Collections.singletonList(table);
-            }
-            return this;
-        }
-
-        @Override
-        public final _UnionLockWaitOptionSpec<I> of(TableMeta<?> table1, TableMeta<?> table2) {
-            if (this.lockMode != null) {
-                this.ofTaleList = ArrayUtils.asUnmodifiableList(table1, table2);
-            }
-            return this;
-        }
-
-        @Override
-        public final _UnionLockWaitOptionSpec<I> of(TableMeta<?> table1, TableMeta<?> table2, TableMeta<?> table3) {
-            if (this.lockMode != null) {
-                this.ofTaleList = ArrayUtils.asUnmodifiableList(table1, table2, table3);
-            }
-            return this;
-        }
-
-        @Override
-        public final _UnionLockWaitOptionSpec<I> of(Consumer<Consumer<TableMeta<?>>> consumer) {
-            if (this.lockMode != null) {
-                final List<TableMeta<?>> list = new ArrayList<>();
-                consumer.accept(list::add);
-                if (list.size() == 0) {
-                    throw CriteriaUtils.ofTableListIsEmpty(this.context);
-                }
-                this.ofTaleList = _CollectionUtils.asUnmodifiableList(list);
-            }
-            return this;
-        }
-
-        @Override
-        public final _UnionLockWaitOptionSpec<I> ifOf(Consumer<Consumer<TableMeta<?>>> consumer) {
-            if (this.lockMode != null) {
-                final List<TableMeta<?>> list = new ArrayList<>();
-                consumer.accept(list::add);
-                if (list.size() > 0) {
-                    this.ofTaleList = _CollectionUtils.asUnmodifiableList(list);
-                } else {
-                    this.ofTaleList = null;
-                }
-            }
-            return this;
-        }
-
-        @Override
-        public final _UnionLockSpec<I> noWait() {
-            this.lockWaitOption = this.lockMode == null ? null : LockWaitOption.NOWAIT;
-            return this;
-        }
-
-        @Override
-        public final _UnionLockSpec<I> skipLocked() {
-            this.lockWaitOption = this.lockMode == null ? null : LockWaitOption.SKIP_LOCKED;
-            return this;
-        }
-
-        @Override
-        public final _UnionLockSpec<I> ifNoWait(BooleanSupplier predicate) {
-            if (this.lockMode != null && predicate.getAsBoolean()) {
-                this.lockWaitOption = LockWaitOption.NOWAIT;
-            } else {
-                this.lockWaitOption = null;
-            }
-            return this;
-        }
-
-        @Override
-        public final _UnionLockSpec<I> ifSkipLocked(BooleanSupplier predicate) {
-            if (this.lockMode != null && predicate.getAsBoolean()) {
-                this.lockWaitOption = LockWaitOption.SKIP_LOCKED;
-            } else {
-                this.lockWaitOption = null;
-            }
-            return this;
+        private PostgreBracketQueries(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext) {
+            super(CriteriaContexts.bracketContext(spec, outerContext));
         }
 
 
@@ -942,24 +875,18 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
             return PostgreDialect.POSTGRE15;
         }
 
-        @Override
-        final Object createRowSetUnion(UnionType unionType, RowSet right) {
-            //standard query don't support union VALUES statement
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-
 
     }//PostgreBracketQueries
 
 
-    private static final class BracketSelect<I extends Item>
-            extends PostgreBracketQueries<I, Select>
+    private static final class BracketSelect<I extends Item> extends PostgreBracketQueries<I>
             implements Select {
 
-        private final Function<Select, I> function;
+        private final Function<? super Select, I> function;
 
-        private BracketSelect(CriteriaContext context, Function<Select, I> function) {
-            super(context);
+        private BracketSelect(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext
+                , Function<? super Select, I> function) {
+            super(spec, outerContext);
             this.function = function;
         }
 
@@ -969,22 +896,24 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        PostgreQuery._MinWithSpec<I> createUnionRowSet(final UnionType unionType) {
+        PostgreQuery._QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
             UnionType.exceptType(this.context, unionType);
-            return new UnionAndSelectClause<>(this, unionType, this.function);
+            final Function<RowSet, I> unionFunc;
+            unionFunc = right -> this.function.apply(new UnionSelect(PostgreDialect.POSTGRE15, this, unionType, right));
+            return new ComplexSelect<>(this.context.getOuterContext(), unionFunc);
         }
 
 
     }//BracketSelect
 
-    private static final class BracketSubQuery<I extends Item>
-            extends PostgreBracketQueries<I, SubQuery>
+    private static final class BracketSubQuery<I extends Item> extends PostgreBracketQueries<I>
             implements SubQuery {
 
-        private final Function<SubQuery, I> function;
+        private final Function<? super SubQuery, I> function;
 
-        private BracketSubQuery(CriteriaContext context, Function<SubQuery, I> function) {
-            super(context);
+        private BracketSubQuery(@Nullable _WithClauseSpec spec, CriteriaContext outerContext
+                , Function<? super SubQuery, I> function) {
+            super(spec, outerContext);
             this.function = function;
         }
 
@@ -994,115 +923,124 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        PostgreQuery._MinWithSpec<I> createUnionRowSet(final UnionType unionType) {
+        PostgreQuery._QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
             UnionType.exceptType(this.context, unionType);
-            return new UnionAndSubQueryClause<>(this, unionType, this.function);
+            final Function<RowSet, I> unionFunc;
+            unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
+            return new ComplexSubQuery<>(this.context.getNonNullOuterContext(), unionFunc);
         }
 
 
     }//BracketSubQuery
 
 
-    private static final class UnionAndSelectClause<I extends Item>
-            extends WithSelectClauseDispatcher<
+    private static abstract class PostgreComplexQuery<I extends Item> extends WithBuilderSelectClauseDispatcher<
             PostgreCtes,
-            PostgreQuery._SelectSpec<I>,
+            PostgreQuery._QueryComplexSpec<I>,
             Postgres.Modifier,
             PostgreQuery._FromSpec<I>>
-            implements PostgreQuery._MinWithSpec<I> {
+            implements PostgreQuery._QueryWithComplexSpec<I> {
 
-        private final Select left;
+        final Function<RowSet, I> function;
 
-        private final UnionType unionType;
-
-        private final Function<Select, I> function;
-
-        private UnionAndSelectClause(Select left, UnionType unionType, Function<Select, I> function) {
-            this.left = left;
-            this.unionType = unionType;
+        private PostgreComplexQuery(@Nullable CriteriaContext outerContext, Function<RowSet, I> function) {
+            super(outerContext);
             this.function = function;
         }
 
+        @Override
+        final PostgreCtes createCteBuilder(boolean recursive, CriteriaContext withClauseContext) {
+            return PostgreSupports.postgreCteBuilder(recursive, withClauseContext);
+        }
+
+
+    }//PostgreComplexQuery
+
+
+    private static final class ComplexSelect<I extends Item> extends PostgreComplexQuery<I> {
+
+        public ComplexSelect(@Nullable CriteriaContext outerContext, Function<RowSet, I> function) {
+            super(outerContext, function);
+        }
+
 
         @Override
-        public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final CriteriaContext bracketContext, queryContext;
-            bracketContext = CriteriaContexts.unionBracketContext(((CriteriaContextSpec) this.left).getContext());
-
+        public _QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
             final BracketSelect<I> bracket;
-            bracket = new BracketSelect<>(bracketContext, this::unionRight);
-
-            queryContext = CriteriaContexts.primaryQuery(bracketContext);
-            return new SimpleSelect<>(queryContext, bracket::parenRowSetEnd);
+            bracket = new BracketSelect<>(this.getWithClause(), this.outerContext, this.function);
+            return new ComplexSelect<>(bracket.context, bracket::parenRowSetEnd);
         }
 
         @Override
-        PostgreQueries<I> createSelectClause() {
-            final CriteriaContext leftContext, context;
-            leftContext = ((CriteriaContextSpec) this.left).getContext();
-
-            context = CriteriaContexts.unionSelectContext(leftContext);
-            return new SimpleSelect<>(context, this::unionRight);
+        public PostgreValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
+            return PostgreSimpleValues.primaryValues(this.getWithClause(), this.outerContext, this::valuesEnd)
+                    .values(consumer);
         }
 
-        private I unionRight(final Select right) {
-            return this.function.apply(new UnionSelect(PostgreDialect.POSTGRE15, this.left, this.unionType, right));
+        @Override
+        public PostgreValues._PostgreValuesLeftParenClause<I> values() {
+            return PostgreSimpleValues.primaryValues(this.getWithClause(), this.outerContext, this::valuesEnd)
+                    .values();
         }
 
+        @Override
+        PostgreQueries<I> onSelectClause(@Nullable _WithClauseSpec spec) {
+            return new SimpleSelect<>(spec, this.outerContext, this.function);
+        }
 
-    }//UnionSelectClause
+        private I valuesEnd(Values values) {
+            return this.function.apply(values);
+        }
+
+    }//ComplexSelect
 
 
     /**
      * @see #createQueryUnion(UnionType)
      * @see #createQueryUnion(UnionType)
      */
-    private static final class UnionAndSubQueryClause<I extends Item>
-            extends WithSelectClauseDispatcher<
-            PostgreCtes,
-            _SelectSpec<I>,
-            Postgres.Modifier,
-            _FromSpec<I>>
-            implements _MinWithSpec<I> {
+    private static final class ComplexSubQuery<I extends Item> extends PostgreComplexQuery<I> {
 
-        private final SubQuery left;
-
-        private final UnionType unionType;
-
-        private final Function<SubQuery, I> function;
-
-        private UnionAndSubQueryClause(SubQuery left, UnionType unionType, Function<SubQuery, I> function) {
-            this.left = left;
-            this.unionType = unionType;
-            this.function = function;
+        public ComplexSubQuery(CriteriaContext outerContext, Function<RowSet, I> function) {
+            super(outerContext, function);
         }
 
 
         @Override
-        public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final CriteriaContext bracketContext, queryContext;
-            bracketContext = CriteriaContexts.unionBracketContext(((CriteriaContextSpec) this.left).getContext());
-
+        public _QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final CriteriaContext outerContext = this.outerContext;
+            assert outerContext != null;
             final BracketSubQuery<I> bracket;
-            bracket = new BracketSubQuery<>(bracketContext, this::unionRight);
-
-            queryContext = CriteriaContexts.subQueryContext(bracketContext);
-            return new SimpleSubQuery<>(queryContext, bracket::parenRowSetEnd);
+            bracket = new BracketSubQuery<>(this.getWithClause(), outerContext, this.function);
+            return new ComplexSubQuery<>(bracket.context, bracket::parenRowSetEnd);
         }
 
         @Override
-        PostgreQueries<I> createSelectClause() {
-            final CriteriaContext leftContext, context;
-            leftContext = ((CriteriaContextSpec) this.left).getContext();
-
-            context = CriteriaContexts.unionSubQueryContext(leftContext);
-            return new SimpleSubQuery<>(context, this::unionRight);
+        public PostgreValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
+            final CriteriaContext outerContext = this.outerContext;
+            assert outerContext != null;
+            return PostgreSimpleValues.subValues(this.getWithClause(), outerContext, this::valuesEnd)
+                    .values(consumer);
         }
 
-        private I unionRight(final SubQuery right) {
-            return this.function.apply(new UnionSubQuery(this.left, this.unionType, right));
+        @Override
+        public PostgreValues._PostgreValuesLeftParenClause<I> values() {
+            final CriteriaContext outerContext = this.outerContext;
+            assert outerContext != null;
+            return PostgreSimpleValues.subValues(this.getWithClause(), outerContext, this::valuesEnd)
+                    .values();
         }
 
+        @Override
+        PostgreQueries<I> onSelectClause(@Nullable _WithClauseSpec spec) {
+            final CriteriaContext outerContext = this.outerContext;
+            assert outerContext != null;
+            return new SimpleSubQuery<>(spec, outerContext, this.function);
+        }
+
+        private I valuesEnd(SubValues values) {
+            return this.function.apply(values);
+        }
 
     }//UnionAndSubQueryClause
 
@@ -1115,7 +1053,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
         private final PostgreQueries<I> clause;
 
-        private final Function<String, PostgreStatement._StaticCteLeftParenSpec<PostgreQuery._CteComma<I>>> function;
+        private final Function<String, _StaticCteLeftParenSpec<_CteComma<I>>> function;
 
 
         private CteComma(boolean recursive, PostgreQueries<I> clause) {
@@ -1130,13 +1068,294 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        _DynamicHintModifierSelectClause<PostgreSyntax.Modifier, _FromSpec<I>> createSelectClause() {
+        PostgreQueries<I> createSelectClause() {
             this.clause.endStaticWithClause(this.recursive);
             return this.clause;
         }
 
 
     }//CteComma
+
+
+    private static final class PostgreCteComplexCommand<I extends Item>
+            extends SimpleQueries.SelectClauseDispatcher<
+            Postgres.Modifier,
+            _FromSpec<_CteSearchSpec<I>>>
+            implements _StaticCteMaterializedSpec<I>
+            , _StaticCteLeftParenSpec<I>
+            , _AsCteClause<I> {
+
+        private final boolean recursive;
+
+        private final CriteriaContext context;
+
+        private final I item;
+
+        private String currentCteName;
+
+        private List<String> columnAliasList;
+
+        private PostgreSupports.MaterializedOption materializedOption;
+
+        private Statement._LeftParenStringQuadraOptionalSpec<_StaticCteAsClause<I>> columnAliasClause;
+
+        private PostgreCteComplexCommand(CriteriaContext context, I item) {
+            this.recursive = context.isWithRecursive();
+            this.context = context;
+            this.item = item;
+        }
+
+
+        @Override
+        public _RightParenClause<_StaticCteAsClause<I>> leftParen(String string) {
+            return this.getColumnAliasClause()
+                    .leftParen(string);
+        }
+
+        @Override
+        public _CommaStringDualSpec<_StaticCteAsClause<I>> leftParen(String string1, String string2) {
+            return this.getColumnAliasClause()
+                    .leftParen(string1, string2);
+        }
+
+        @Override
+        public _RightParenClause<_StaticCteAsClause<I>> leftParen(Consumer<Consumer<String>> consumer) {
+            return this.getColumnAliasClause()
+                    .leftParen(consumer);
+        }
+
+        @Override
+        public _CommaStringQuadraSpec<_StaticCteAsClause<I>> leftParen(String string1, String string2, String string3
+                , String string4) {
+            return this.getColumnAliasClause()
+                    .leftParen(string1, string2, string3, string4);
+        }
+
+
+        @Override
+        public _StaticCteMaterializedSpec<I> as() {
+            return this;
+        }
+
+
+        @Override
+        public _StaticCteComplexCommandSpec<I> materialized() {
+            this.materializedOption = PostgreSupports.MaterializedOption.MATERIALIZED;
+            return this;
+        }
+
+        @Override
+        public _StaticCteComplexCommandSpec<I> notMaterialized() {
+            this.materializedOption = PostgreSupports.MaterializedOption.NOT_MATERIALIZED;
+            return this;
+        }
+
+        @Override
+        public _StaticCteComplexCommandSpec<I> ifMaterialized(BooleanSupplier predicate) {
+            if (predicate.getAsBoolean()) {
+                this.materializedOption = PostgreSupports.MaterializedOption.MATERIALIZED;
+            } else {
+                this.materializedOption = null;
+            }
+            return this;
+        }
+
+        @Override
+        public _StaticCteComplexCommandSpec<I> ifNotMaterialized(BooleanSupplier predicate) {
+            if (predicate.getAsBoolean()) {
+                this.materializedOption = PostgreSupports.MaterializedOption.NOT_MATERIALIZED;
+            } else {
+                this.materializedOption = null;
+            }
+            return this;
+        }
+
+        @Override
+        public PostgreInsert._ComplexInsertIntoClause<_AsCteClause<I>, _AsCteClause<I>> literalMode(LiteralMode mode) {
+            return PostgreInserts.staticSubInsert(this.context, this::subStatementEnd)
+                    .literalMode(mode);
+        }
+
+        @Override
+        public PostgreInsert._StaticSubNullOptionSpec<_AsCteClause<I>> migration(boolean migration) {
+            return PostgreInserts.staticSubInsert(this.context, this::subStatementEnd)
+                    .migration(migration);
+        }
+
+        @Override
+        public PostgreInsert._StaticSubPreferLiteralSpec<_AsCteClause<I>> nullHandle(NullHandleMode mode) {
+            return PostgreInserts.staticSubInsert(this.context, this::subStatementEnd)
+                    .nullHandle(mode);
+        }
+
+        @Override
+        public <T> PostgreInsert._TableAliasSpec<T, _AsCteClause<I>, _AsCteClause<I>> insertInto(TableMeta<T> table) {
+            return PostgreInserts.staticSubInsert(this.context, this::subStatementEnd)
+                    .insertInto(table);
+        }
+
+        @Override
+        public <T> PostgreUpdate._SingleSetClause<_AsCteClause<I>, _AsCteClause<I>, T> update(TableMeta<T> table
+                , SQLs.WordAs wordAs, String tableAlias) {
+            return PostgreUpdates.staticCteUpdate(this.context, this::subStatementEnd)
+                    .update(table, wordAs, tableAlias);
+        }
+
+        @Override
+        public <T> PostgreUpdate._SingleSetClause<_AsCteClause<I>, _AsCteClause<I>, T> update(SQLs.WordOnly wordOnly
+                , TableMeta<T> table, SQLs.WordAs wordAs, String tableAlias) {
+            return PostgreUpdates.staticCteUpdate(this.context, this::subStatementEnd)
+                    .update(wordOnly, table, wordAs, tableAlias);
+        }
+
+        @Override
+        public PostgreDelete._SingleUsingSpec<_AsCteClause<I>, _AsCteClause<I>> delete(TableMeta<?> table
+                , SQLs.WordAs wordAs, String tableAlias) {
+            return PostgreDeletes.staticCteDelete(this.context, this::subStatementEnd)
+                    .delete(table, wordAs, tableAlias);
+        }
+
+        @Override
+        public PostgreDelete._SingleUsingSpec<_AsCteClause<I>, _AsCteClause<I>> delete(SQLs.WordOnly wordOnly
+                , TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+            return PostgreDeletes.staticCteDelete(this.context, this::subStatementEnd)
+                    .delete(wordOnly, table, wordAs, tableAlias);
+        }
+
+        @Override
+        public PostgreValues._OrderBySpec<_AsCteClause<I>> values(Consumer<RowConstructor> consumer) {
+            return PostgreSimpleValues.subValues(null, this.context, this::subStatementEnd)
+                    .values(consumer);
+        }
+
+        @Override
+        public PostgreValues._PostgreValuesLeftParenClause<_AsCteClause<I>> values() {
+            return PostgreSimpleValues.subValues(null, this.context, this::subStatementEnd)
+                    .values();
+        }
+
+        @Override
+        public _StaticCteSelectSpec<_RightParenClause<_UnionOrderBySpec<_CteSearchSpec<I>>>> leftParen() {
+            final BracketSubQuery<_CteSearchSpec<I>> bracket;
+            bracket = new BracketSubQuery<>(null, this.context, this::queryEnd);
+            return new StaticCteSelectSpec<>(bracket.context, bracket::parenRowSetEnd);
+        }
+
+        @Override
+        public I asCte() {
+            return this.item;
+        }
+
+        @Override
+        PostgreQueries<_CteSearchSpec<I>> createSelectClause() {
+            return new SimpleSubQuery<>(null, this.context, this::queryEnd);
+        }
+
+
+        private _StaticCteLeftParenSpec<I> nextCte(final @Nullable String name) {
+            if (this.currentCteName != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            } else if (name == null) {
+                throw ContextStack.nullPointer(this.context);
+            } else if (!_StringUtils.hasText(name)) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::cteNameNotText);
+            }
+            this.context.onStartCte(name);
+            this.currentCteName = name;
+            this.columnAliasList = null;
+            this.materializedOption = null;
+            return this;
+        }
+
+
+        private _CteSearchSpec<I> queryEnd(final SubQuery query) {
+            final _CteSearchSpec<I> clause;
+            if (this.recursive && query instanceof _UnionRowSet) {
+                clause = new PostgreSupports.PostgreCteSearchClause<>(this.context, query, this::cteSubStatement);
+            } else {
+                clause = new PostgreSupports.NonOperationPostgreCteSearchClause<>(this.context, this.currentCteName
+                        , query, this::cteSubStatement);
+            }
+            return clause;
+        }
+
+        private _AsCteClause<I> subStatementEnd(final SubStatement subStatement) {
+            this.cteSubStatement(subStatement);
+            return this;
+        }
+
+        /**
+         * @see #queryEnd(SubQuery)
+         */
+        private I cteSubStatement(final SubStatement subStatement) {
+            final PostgreSupports.MaterializedOption option = this.materializedOption;
+            final SubStatement cteStatement;
+            if (option == null) {
+                cteStatement = subStatement;
+            } else {
+                cteStatement = new PostgreSupports.PostgreSubStatement(option, subStatement);
+            }
+            CriteriaUtils.createAndAddCte(this.context, this.currentCteName, this.columnAliasList, cteStatement);
+            //clear for next cte
+            this.currentCteName = null;
+            this.columnAliasList = null;
+            this.materializedOption = null;
+            return this.item;
+        }
+
+        private Statement._LeftParenStringQuadraOptionalSpec<_StaticCteAsClause<I>> getColumnAliasClause() {
+            Statement._LeftParenStringQuadraOptionalSpec<_StaticCteAsClause<I>> columnAliasClause;
+            columnAliasClause = this.columnAliasClause;
+            if (columnAliasClause == null) {
+                columnAliasClause = CriteriaSupports.stringQuadra(this.context, this::columnAliasClauseEnd);
+                this.columnAliasClause = columnAliasClause;
+            }
+            return columnAliasClause;
+        }
+
+        private _StaticCteAsClause<I> columnAliasClauseEnd(final List<String> list) {
+            if (this.columnAliasList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.columnAliasList = list;
+            return this;
+        }
+
+
+    }//PostgreCteComplexCommand
+
+
+    private static final class StaticCteSelectSpec<I extends Item> extends SimpleQueries.SelectClauseDispatcher<
+            Postgres.Modifier,
+            _FromSpec<I>> implements _StaticCteSelectSpec<I> {
+
+        private final CriteriaContext context;
+
+        private final Function<SubQuery, I> function;
+
+        /**
+         * @see PostgreCteComplexCommand#leftParen()
+         * @see #leftParen()
+         */
+        private StaticCteSelectSpec(CriteriaContext context, Function<SubQuery, I> function) {
+            this.context = context;
+            this.function = function;
+        }
+
+        @Override
+        public _StaticCteSelectSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            final BracketSubQuery<I> bracket;
+            bracket = new BracketSubQuery<>(null, this.context, this.function);
+            return new StaticCteSelectSpec<>(bracket.context, bracket::parenRowSetEnd);
+        }
+
+        @Override
+        PostgreQueries<I> createSelectClause() {
+            return new SimpleSubQuery<>(null, this.context, this.function);
+        }
+
+
+    }//StaticCteSelectSpec
 
 
 }

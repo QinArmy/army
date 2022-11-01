@@ -65,10 +65,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(MaterializedOption.class.getSimpleName())
-                    .append(this.name())
-                    .toString();
+            return CriteriaUtils.sqlWordsToString(this);
         }
 
 
@@ -452,7 +449,93 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//CteSearchOption
 
 
-    private static final class PostgreCteSearchClause<I extends Item>
+    static final class NonOperationPostgreCteSearchClause<I extends Item>
+            implements PostgreStatement._CteSearchSpec<I> {
+
+        private final CriteriaContext context;
+
+        private final String cteName;
+
+        private final SubStatement subStatement;
+
+        private final Function<SubStatement, I> function;
+
+        NonOperationPostgreCteSearchClause(CriteriaContext context, String cteName
+                , SubStatement subStatement, Function<SubStatement, I> function) {
+            this.context = context;
+            this.cteName = cteName;
+            this.subStatement = subStatement;
+            this.function = function;
+        }
+
+        @Override
+        public PostgreStatement._SearchFirstByClause<I> searchBreadth() {
+            throw error("SEARCH");
+        }
+
+        @Override
+        public PostgreStatement._SearchFirstByClause<I> searchDepth() {
+            throw error("SEARCH");
+        }
+
+        @Override
+        public PostgreStatement._SearchFirstByClause<I> searchBreadth(BooleanSupplier predicate) {
+            throw error("SEARCH");
+        }
+
+        @Override
+        public PostgreStatement._SearchFirstByClause<I> searchDepth(BooleanSupplier predicate) {
+            throw error("SEARCH");
+        }
+
+        @Override
+        public PostgreStatement._SetCycleMarkColumnClause<I> cycle(String columnName) {
+            throw error("CYCLE");
+        }
+
+        @Override
+        public PostgreStatement._SetCycleMarkColumnClause<I> cycle(String columnName1, String columnName2) {
+            throw error("CYCLE");
+        }
+
+        @Override
+        public PostgreStatement._SetCycleMarkColumnClause<I> cycle(String columnName1, String columnName2
+                , String columnName3) {
+            throw error("CYCLE");
+        }
+
+        @Override
+        public PostgreStatement._SetCycleMarkColumnClause<I> cycle(String columnName1, String columnName2
+                , String columnName3, String columnName4) {
+            throw error("CYCLE");
+        }
+
+        @Override
+        public PostgreStatement._SetCycleMarkColumnClause<I> cycle(Consumer<Consumer<String>> consumer) {
+            throw error("CYCLE");
+        }
+
+        @Override
+        public PostgreStatement._SetCycleMarkColumnClause<I> ifCycle(Consumer<Consumer<String>> consumer) {
+            throw error("CYCLE");
+        }
+
+        @Override
+        public I asCte() {
+            return this.function.apply(this.subStatement);
+        }
+
+        private CriteriaException error(String clause) {
+            String m = String.format("%s support only recursive query,but cte[%s] isn't recursive."
+                    , clause, this.cteName);
+            return ContextStack.criteriaError(this.context, m);
+        }
+
+
+    }//NonOperationPostgreCteSearchClause
+
+
+    static final class PostgreCteSearchClause<I extends Item>
             implements PostgreStatement._CteSearchSpec<I>
             , _PostgreCteStatement._SearchOptionClauseSpec
             , PostgreStatement._SearchFirstByClause<I>
@@ -483,7 +566,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private String cyclePathColumnName;
 
-        private PostgreCteSearchClause(CriteriaContext context, SubStatement subStmt
+        PostgreCteSearchClause(CriteriaContext context, SubStatement subStmt
                 , Function<SubStatement, I> function) {
             this.context = context;
             this.subStmt = subStmt;

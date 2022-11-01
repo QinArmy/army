@@ -278,6 +278,13 @@ public interface PostgreStatement extends DialectStatement {
 
     }
 
+
+    interface _StaticCteSelectSpec<I extends Item>
+            extends PostgreQuery._PostgreSelectClause<I>
+            , _LeftParenClause<_StaticCteSelectSpec<_RightParenClause<PostgreQuery._UnionOrderBySpec<I>>>> {
+
+    }
+
     /**
      * <p>
      * static sub-statement syntax forbid the WITH clause ,because it destroy the Readability of code.
@@ -286,10 +293,11 @@ public interface PostgreStatement extends DialectStatement {
      * @since 1.0
      */
     interface _StaticCteComplexCommandSpec<I extends Item>
-            extends PostgreQuery._PostgreSelectClause<_CteSearchSpec<I>>
+            extends _StaticCteSelectSpec<_CteSearchSpec<I>>
             , PostgreInsert._StaticSubOptionSpec<_AsCteClause<I>>
             , PostgreUpdate._SingleUpdateClause<_AsCteClause<I>, _AsCteClause<I>>
-            , PostgreDelete._SingleDeleteClause<_AsCteClause<I>, _AsCteClause<I>> {
+            , PostgreDelete._SingleDeleteClause<_AsCteClause<I>, _AsCteClause<I>>
+            , PostgreValues._PostgreValuesClause<_AsCteClause<I>> {
 
     }
 
