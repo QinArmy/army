@@ -5,6 +5,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
+import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
@@ -284,6 +285,31 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
         }
         return (SR) this;
     }
+
+
+    static abstract class SetWhereClauseClause<F extends TableField, SR, WR, WA>
+            extends SetWhereClause<F, SR, WR, WA, Object, Object, Object, Object> {
+
+        SetWhereClauseClause(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
+            super(context, updateTable, tableAlias);
+        }
+
+        @Override
+        public final void prepared() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+        @Override
+        final Dialect statementDialect() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+    }//SetWhereClauseClause
 
 
 }

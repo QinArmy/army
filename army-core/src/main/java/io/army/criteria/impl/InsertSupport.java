@@ -451,11 +451,20 @@ abstract class InsertSupport {
 
         final TableMeta<T> insertTable;
 
+        final String tableAlias;
+
         private List<FieldMeta<?>> fieldList;
 
         private Map<FieldMeta<?>, Boolean> fieldMap;
 
-        ColumnsClause(CriteriaContext context, boolean migration, @Nullable TableMeta<T> table) {
+        private InsertMode insertMode;
+
+        private ColumnsClause(CriteriaContext context, boolean migration, @Nullable TableMeta<T> table) {
+            this(context, migration, table, null);
+        }
+
+        private ColumnsClause(CriteriaContext context, boolean migration, @Nullable TableMeta<T> table
+                , @Nullable String tableAlias) {
             if (table == null) {
                 //validate for insertInto method
                 throw ContextStack.nullPointer(context);
@@ -463,6 +472,7 @@ abstract class InsertSupport {
             this.context = context;
             this.migration = migration;
             this.insertTable = table;
+            this.tableAlias = null;
         }
 
         @Override
@@ -490,24 +500,17 @@ abstract class InsertSupport {
 
         @Override
         public final Statement._RightParenClause<RR> comma(FieldMeta<T> field) {
-            checkField(this.context, this.insertTable, this.migration, field);
-            if (!this.migration && _MetaBridge.VISIBLE.equals(field.fieldName())) {
-                String m = String.format("%s is managed by army for column list clause,in non-migration mode."
-                        , _MetaBridge.VISIBLE);
-                throw ContextStack.criteriaError(this.context, m);
-            }
-
             Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-            List<FieldMeta<?>> fieldList;
+            List<FieldMeta<?>> fieldList = this.fieldList;
             if (fieldMap == null) {
-                fieldMap = this.createAndInitializingFieldMap(); // create map and add the fields that is managed by army.
+                fieldMap = new HashMap<>();
                 this.fieldMap = fieldMap;
-                fieldList = this.fieldList;
-                assert fieldList != null && fieldList.size() == fieldMap.size();
-            } else {
-                fieldList = this.fieldList;
+                fieldList = new ArrayList<>();
+                this.fieldList = fieldList;
+            } else if (!(fieldMap instanceof HashMap)) {
+                throw ContextStack.castCriteriaApi(this.context);
             }
-
+            assert fieldList != null;
             if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
                 String m = String.format("%s duplication", field);
                 throw ContextStack.criteriaError(this.context, m);
@@ -528,31 +531,11 @@ abstract class InsertSupport {
         public final RR rightParen() {
             final List<FieldMeta<?>> fieldList = this.fieldList;
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-
-            if (fieldList == null) {
-                this.fieldList = Collections.emptyList();
-                assert fieldMap == null;
-            } else if (!(fieldList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.context);
-            } else {
-                if (this.migration) {
-                    validateMigrationColumnList(this.context, this.insertTable, fieldMap);
-                    assert !(this.insertTable instanceof ChildTableMeta) || fieldMap.containsKey(this.insertTable.id());
-                }
-                if (fieldList.size() == 1) {
-                    this.fieldList = Collections.singletonList(fieldList.get(0));
-                } else {
-                    this.fieldList = Collections.unmodifiableList(fieldList);
-                }
-            }
-
-            if (fieldMap == null) {
-                this.fieldMap = Collections.emptyMap();
-            } else if (fieldMap instanceof HashMap) {
-                this.fieldMap = Collections.unmodifiableMap(fieldMap);
-            } else {
+            if (!(fieldList instanceof ArrayList && fieldMap instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
+            this.fieldList = Collections.unmodifiableList(fieldList);
+            this.fieldMap = Collections.unmodifiableMap(fieldMap);
             return (RR) this;
         }
 
@@ -560,6 +543,11 @@ abstract class InsertSupport {
         @Override
         public final TableMeta<?> table() {
             return this.insertTable;
+        }
+
+        @Override
+        public final String tableAlias() {
+            return this.tableAlias;
         }
 
         @Override
@@ -604,12 +592,6 @@ abstract class InsertSupport {
             this.fieldMap = null;
         }
 
-        @Deprecated
-        RR columnListEnd() {
-            throw new UnsupportedOperationException();
-        }
-
-
         @Override
         public final void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
@@ -620,6 +602,103 @@ abstract class InsertSupport {
             }
             if (value != null && !field.nullable() && value.isNullValue()) {
                 throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
+            }
+
+        }
+
+        final void endColumnListClause(final InsertMode mode) {
+            final InsertMode currentMode = this.insertMode;
+            if (currentMode != null) {
+                // default value clause or static values clause
+                assert currentMode == InsertMode.VALUES && (mode == InsertMode.DOMAIN || mode == InsertMode.VALUES);
+                return;
+            }
+            this.insertMode = mode;
+            if (this.fieldList == null) {
+                this.fieldList = Collections.emptyList();
+                this.fieldMap = Collections.emptyMap();
+            } else if (!(this.migration || mode == InsertMode.QUERY)) {
+                this.mergeColumnList();
+            } else if (this.insertTable instanceof SingleTableMeta) {
+                this.validateSingleTableColumnList();
+            } else {
+                this.validateChildTableColumnList();
+            }
+
+        }
+
+        private void mergeColumnList() {
+            final Map<FieldMeta<?>, Boolean> customFieldMap = this.fieldMap;
+            final List<FieldMeta<?>> customFieldList = this.fieldList;
+            assert this.insertMode != null
+                    && customFieldMap != null
+                    && customFieldList != null
+                    && !(customFieldMap instanceof HashMap || customFieldList instanceof ArrayList);
+            this.fieldMap = null;
+            this.fieldList = null;
+
+            final Map<FieldMeta<?>, Boolean> mergeFieldMap;
+            final List<FieldMeta<?>> mergeFieldList;
+            mergeFieldMap = this.createAndInitializingFieldMap();
+            mergeFieldList = this.fieldList;
+            assert mergeFieldList instanceof ArrayList;
+
+            for (FieldMeta<?> field : customFieldList) {
+                if (mergeFieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                    String m = String.format("%s is managed by army", field);
+                    throw ContextStack.criteriaError(this.context, m);
+                }
+                mergeFieldList.add(field);
+            }
+            this.fieldList = Collections.unmodifiableList(mergeFieldList);
+            this.fieldMap = Collections.unmodifiableMap(mergeFieldMap);
+        }
+
+        private void validateSingleTableColumnList() {
+            final Map<FieldMeta<?>, Boolean> customFieldMap = this.fieldMap;
+            final TableMeta<?> insertTable = this.insertTable;
+            assert insertTable instanceof SingleTableMeta && customFieldMap != null;
+
+            FieldMeta<?> field;
+            for (String reservedField : _MetaBridge.RESERVED_FIELDS) {
+                field = insertTable.tryGetField(reservedField);
+                if (field != null && !customFieldMap.containsKey(field)) {
+                    throw migrationMotFoundRequiredField(field);
+                }
+            }
+
+            if (insertTable instanceof ParentTableMeta) {
+                field = insertTable.discriminator();
+                if (!customFieldMap.containsKey(field)) {
+                    throw migrationMotFoundRequiredField(field);
+                }
+            }
+
+            for (FieldMeta<?> f : insertTable.fieldChain()) {
+                if (!f.nullable() && !customFieldMap.containsKey(f)) {
+                    throw migrationMotFoundRequiredField(f);
+                }
+            }
+
+        }
+
+        private void validateChildTableColumnList() {
+            final Map<FieldMeta<?>, Boolean> customFieldMap = this.fieldMap;
+            final List<FieldMeta<?>> customFieldList = this.fieldList;
+            final InsertMode mode = this.insertMode;
+            final TableMeta<?> insertTable = this.insertTable;
+            assert insertTable instanceof ChildTableMeta && mode != null
+                    && customFieldMap != null && customFieldList != null;
+
+            if (customFieldList.get(0) != insertTable.id()) {
+                String m = String.format("%s migration mode first field must be %s", insertTable, insertTable.id());
+                throw ContextStack.criteriaError(this.context, m);
+            }
+
+            for (FieldMeta<?> field : this.insertTable.fieldChain()) {
+                if (!field.nullable() && !customFieldMap.containsKey(field)) {
+                    throw migrationMotFoundRequiredField(field);
+                }
             }
 
         }
@@ -646,7 +725,7 @@ abstract class InsertSupport {
                 for (FieldMeta<?> field : insertTable.fieldChain()) {
                     if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
                         //no bug,never here
-                        throw new IllegalStateException("fieldChain error");
+                        throw new MetaException("fieldChain error");
                     }
                     fieldList.add(field);
                 }
@@ -687,11 +766,16 @@ abstract class InsertSupport {
             return fieldMap;
         }
 
+        private CriteriaException migrationMotFoundRequiredField(FieldMeta<?> field) {
+            String m = String.format("migration mode required %s", field);
+            return ContextStack.criteriaError(this.context, m);
+        }
+
     }//ColumnsClause
 
 
     @SuppressWarnings("unchecked")
-    static abstract class ColumnDefaultClause<T, LR, DR> extends ColumnsClause<T, LR>
+    private static abstract class ColumnDefaultClause<T, LR, DR> extends ColumnsClause<T, LR>
             implements Insert._ColumnDefaultClause<T, DR>, _Insert._ValuesSyntaxInsert {
 
 
@@ -701,8 +785,12 @@ abstract class InsertSupport {
 
         private Map<FieldMeta<?>, _Expression> commonExpMap;
 
-        ColumnDefaultClause(InsertOptions options, TableMeta<T> table) {
-            super(options.getContext(), options.isMigration(), table);
+        private ColumnDefaultClause(InsertOptions options, TableMeta<T> table) {
+            this(options, table, null);
+        }
+
+        private ColumnDefaultClause(InsertOptions options, TableMeta<T> table, @Nullable String tableAlias) {
+            super(options.getContext(), options.isMigration(), table, tableAlias);
             if (options instanceof ValueSyntaxOptions) {
                 this.nullHandleMode = ((ValueSyntaxOptions) options).nullHandle();
             } else {
@@ -729,6 +817,7 @@ abstract class InsertSupport {
             if (commonExpMap == null) {
                 commonExpMap = new HashMap<>();
                 this.commonExpMap = commonExpMap;
+                this.endColumnListClause(InsertMode.VALUES);
             } else if (!(commonExpMap instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -831,7 +920,11 @@ abstract class InsertSupport {
         private SubQuery subQuery;
 
         ComplexInsertValuesClause(InsertOptions options, TableMeta<T> table) {
-            super(options, table);
+            this(options, table, null);
+        }
+
+        ComplexInsertValuesClause(InsertOptions options, TableMeta<T> table, @Nullable String tableAlias) {
+            super(options, table, tableAlias);
         }
 
 
@@ -842,6 +935,7 @@ abstract class InsertSupport {
             } else if (this.insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
+            this.endColumnListClause(InsertMode.DOMAIN);
             this.endColumnDefaultClause();
             this.domainList = Collections.singletonList(domain);
             this.insertMode = InsertMode.DOMAIN;
@@ -864,6 +958,7 @@ abstract class InsertSupport {
             } else if (this.insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
+            this.endColumnListClause(InsertMode.DOMAIN);
             this.endColumnDefaultClause();
             this.domainList = domainList;//just store
             this.insertMode = InsertMode.DOMAIN;
@@ -881,6 +976,7 @@ abstract class InsertSupport {
             if (this.insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
+            this.endColumnListClause(InsertMode.VALUES);
             this.endColumnDefaultClause();
             this.insertMode = InsertMode.VALUES;
 
@@ -899,6 +995,7 @@ abstract class InsertSupport {
             if (this.insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
+            this.endColumnListClause(InsertMode.VALUES);
             this.endColumnDefaultClause();
 
             this.rowPairList = rowPairList;
@@ -910,6 +1007,7 @@ abstract class InsertSupport {
             if (this.insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
+            this.endColumnListClause(InsertMode.QUERY);
             this.endColumnDefaultClause();
 
             this.subQuery = subQuery;
@@ -1207,7 +1305,11 @@ abstract class InsertSupport {
         private Map<FieldMeta<?>, _Expression> assignmentMap;
 
         ComplexInsertValuesAssignmentClause(InsertOptions options, TableMeta<T> table) {
-            super(options, table);
+            this(options, table, null);
+        }
+
+        ComplexInsertValuesAssignmentClause(InsertOptions options, TableMeta<T> table, @Nullable String tableAlias) {
+            super(options, table, tableAlias);
         }
 
         @Override
@@ -1219,6 +1321,7 @@ abstract class InsertSupport {
                     throw ContextStack.castCriteriaApi(this.context);
                 }
                 ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode = InsertMode.ASSIGNMENT;
+                this.endColumnListClause(InsertMode.ASSIGNMENT);
                 pairList = new ArrayList<>();
                 this.assignmentPairList = pairList;
                 assignmentMap = new HashMap<>();
@@ -1650,11 +1753,14 @@ abstract class InsertSupport {
 
         final TableMeta<?> insertTable;
 
+        final String tableAlias;
+
         private Boolean prepared;
 
         AbstractInsertStatement(_Insert clause) {
             this.context = ((CriteriaContextSpec) clause).getContext();
             this.insertTable = clause.table();
+            this.tableAlias = clause.tableAlias();
         }
 
         @Override
@@ -1677,6 +1783,11 @@ abstract class InsertSupport {
         @Override
         public final TableMeta<?> table() {
             return this.insertTable;
+        }
+
+        @Override
+        public final String tableAlias() {
+            return this.tableAlias;
         }
 
         @Override

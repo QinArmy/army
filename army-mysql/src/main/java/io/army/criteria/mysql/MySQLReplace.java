@@ -40,7 +40,7 @@ public interface MySQLReplace extends ReplaceInsert, DmlInsert {
     }
 
     interface _ComplexColumnDefaultSpec<I extends Item, T> extends _ValueColumnDefaultSpec<I, T>
-            , _StaticSpaceClause<MySQLQuery._WithCteSpec<_DmlInsertClause<I>>> {
+            , _StaticSpaceClause<MySQLQuery._WithSpec<_DmlInsertClause<I>>> {
 
     }
 

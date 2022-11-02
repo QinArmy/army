@@ -1,10 +1,6 @@
 package io.army.dialect;
 
-import io.army.criteria.DataField;
+public interface _SetClauseContext extends _SqlContext, _SqlContext._SetClauseContextSpec {
 
-public interface _SetClauseContext extends _SqlContext {
-
-
-    void appendSetLeftItem(DataField dataField);
 
 }

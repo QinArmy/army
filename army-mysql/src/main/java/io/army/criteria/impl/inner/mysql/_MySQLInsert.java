@@ -1,7 +1,7 @@
 package io.army.criteria.impl.inner.mysql;
 
 import io.army.criteria.Hint;
-import io.army.criteria.SQLWords;
+import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
@@ -14,7 +14,7 @@ public interface _MySQLInsert extends _Insert, _Insert._ConflictActionClauseSpec
 
     List<Hint> hintList();
 
-    List<? extends SQLWords> modifierList();
+    List<MySQLs.Modifier> modifierList();
 
     List<String> partitionList();
 

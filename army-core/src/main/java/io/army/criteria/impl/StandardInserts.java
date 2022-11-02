@@ -172,6 +172,7 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         public StandardInsert._StandardValueStaticLeftParenClause<T, I> values() {
+            this.endColumnListClause(InsertMode.VALUES);
             return new StandardStaticValuesClause<>(this);
         }
 

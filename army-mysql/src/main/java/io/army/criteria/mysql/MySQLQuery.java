@@ -253,7 +253,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _WithCteSpec<I extends Item> extends _MinWithSpec<I>
+    interface _WithSpec<I extends Item> extends _MinWithSpec<I>
             , _StaticWithClause<_StaticCteLeftParenSpec<_CteComma<I>>> {
 
     }

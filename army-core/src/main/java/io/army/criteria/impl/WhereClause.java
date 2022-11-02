@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Statement;
+import io.army.dialect.Dialect;
 import io.army.function.TeExpression;
 import io.army.function.TePredicate;
 import io.army.lang.Nullable;
@@ -486,6 +487,30 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
         }
         return list;
     }
+
+
+    static abstract class WhereClauseClause<WR, WA> extends WhereClause<WR, WA, Object, Object, Object, Object> {
+
+        WhereClauseClause(CriteriaContext context) {
+            super(context);
+        }
+
+        @Override
+        public final void prepared() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+        @Override
+        final Dialect statementDialect() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+    }//WhereClauseClause
 
 
 }

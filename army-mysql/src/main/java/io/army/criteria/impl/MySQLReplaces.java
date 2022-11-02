@@ -230,7 +230,7 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public MySQLQuery._WithCteSpec<Statement._DmlInsertClause<I>> space() {
+        public MySQLQuery._WithSpec<Statement._DmlInsertClause<I>> space() {
             return MySQLQueries.subQuery(this.context, this::staticSpaceQueryEnd);
         }
 

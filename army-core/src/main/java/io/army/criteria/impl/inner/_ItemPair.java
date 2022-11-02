@@ -12,7 +12,7 @@ public interface _ItemPair extends ItemPair {
     void appendItemPair(_SetClauseContext context);
 
 
-    interface _FieldItemPair {
+    interface _FieldItemPair extends _ItemPair {
 
         DataField field();
 
@@ -20,7 +20,7 @@ public interface _ItemPair extends ItemPair {
 
     }
 
-    interface _RowItemPair {
+    interface _RowItemPair extends _ItemPair {
 
         List<? extends DataField> rowFieldList();
 

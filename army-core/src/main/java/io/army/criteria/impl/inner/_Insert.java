@@ -17,8 +17,16 @@ public interface _Insert extends _Statement {
 
     TableMeta<?> table();
 
+    @Nullable
+    default String tableAlias() {
+        throw new UnsupportedOperationException();
+    }
+
 
     interface _ConflictActionClauseSpec {
+
+        @Nullable
+        String rowAlias();
 
         List<_ItemPair> updateSetClauseList();
 

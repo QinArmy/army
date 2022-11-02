@@ -1,8 +1,7 @@
 package io.army.dialect.mysql;
 
-import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
-import io.army.criteria.impl.MySQLSyntax;
+import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._MySQLConsultant;
 import io.army.criteria.impl._Pair;
@@ -109,6 +108,7 @@ final class MySQLDialectParser extends MySQLParser {
         //3. values clause
         context.appendValueList();
 
+        final _MySQLInsert insert = (_MySQLInsert) stmt;
         if (stmt instanceof _MySQLInsert._InsertWithDuplicateKey) {
             //4. on duplicate key update clause
             this.appendInsertDuplicateKeyClause(context, (_MySQLInsert._InsertWithDuplicateKey) stmt);
@@ -494,94 +494,80 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     private void insertModifiers(StringBuilder sqlBuilder, _MySQLInsert stmt) {
-        for (MySQLSyntax._MySQLModifier modifier : stmt.modifierList()) {
-            switch (modifier) {
-                case LOW_PRIORITY:
-                case HIGH_PRIORITY:
-                case IGNORE:
-                    sqlBuilder.append(_Constant.SPACE)
-                            .append(modifier.render());
-                    break;
-                case DELAYED: {
-                    if (stmt instanceof _MySQLInsert._MySQLQueryInsert) {
-                        throw new CriteriaException(String.format("%s QUERY INSERT don't support %s"
-                                , this.dialect, modifier));
-                    }
-                    sqlBuilder.append(_Constant.SPACE)
-                            .append(modifier.render());
-                }
-                break;
-                default:
-                    throw new CriteriaException(String.format("%s INSERT don't support %s"
+        for (MySQLs.Modifier modifier : stmt.modifierList()) {
+            if (modifier == MySQLs.LOW_PRIORITY
+                    || modifier == MySQLs.HIGH_PRIORITY
+                    || modifier == MySQLs.IGNORE) {
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(modifier.render());
+            } else if (modifier == MySQLs.DELAYED) {
+                if (stmt instanceof _MySQLInsert._MySQLQueryInsert) {
+                    throw new CriteriaException(String.format("%s QUERY INSERT don't support %s"
                             , this.dialect, modifier));
-            }
-        }
-    }
-
-    private void replaceModifiers(List<MySQLSyntax._MySQLModifier> modifierList, StringBuilder sqlBuilder) {
-        assert modifierList.size() == 1;
-        final MySQLSyntax._MySQLModifier modifier = modifierList.get(0);
-        switch (modifier) {
-            case LOW_PRIORITY:
-            case DELAYED:
-                sqlBuilder.append(modifier.render());
-                break;
-            default:
-                throw new CriteriaException(String.format("%s REPLACE don't support %s"
+                }
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(modifier.render());
+            } else {
+                throw new CriteriaException(String.format("%s INSERT don't support %s"
                         , this.dialect, modifier));
+            }
+        }
+
+    }
+
+    private void replaceModifiers(List<MySQLs.Modifier> modifierList, StringBuilder sqlBuilder) {
+        assert modifierList.size() == 1;
+        final MySQLs.Modifier modifier = modifierList.get(0);
+        if (modifier == MySQLs.LOW_PRIORITY
+                || modifier == MySQLs.DELAYED) {
+            sqlBuilder.append(modifier.render());
+        } else {
+            throw new CriteriaException(String.format("%s REPLACE don't support %s"
+                    , this.dialect, modifier));
         }
     }
 
-    private void updateModifiers(List<MySQLSyntax._MySQLModifier> modifierList, StringBuilder builder) {
-        for (MySQLSyntax._MySQLModifier modifier : modifierList) {
-            switch (modifier) {
-                case LOW_PRIORITY:
-                case IGNORE:
-                    builder.append(modifier.render());
-                    break;
-                default:
-                    throw new CriteriaException(String.format("%s UPDATE don't support %s", this.dialect, modifier));
-
+    private void updateModifiers(List<MySQLs.Modifier> modifierList, StringBuilder builder) {
+        for (MySQLs.Modifier modifier : modifierList) {
+            if (modifier == MySQLs.LOW_PRIORITY
+                    || modifier == MySQLs.IGNORE) {
+                builder.append(modifier.render());
+            } else {
+                throw new CriteriaException(String.format("%s UPDATE don't support %s", this.dialect, modifier));
             }
         }
     }
 
 
-    private void deleteModifiers(List<MySQLSyntax._MySQLModifier> modifierList, StringBuilder builder) {
-        for (MySQLSyntax._MySQLModifier modifier : modifierList) {
-            switch (modifier) {
-                case LOW_PRIORITY:
-                case QUICK:
-                case IGNORE:
-                    builder.append(_Constant.SPACE)
-                            .append(modifier.render());
-                    break;
-                default:
-                    throw new CriteriaException(String.format("%s DELETE don't support %s", this.dialect, modifier));
-
+    private void deleteModifiers(List<MySQLs.Modifier> modifierList, StringBuilder builder) {
+        for (MySQLs.Modifier modifier : modifierList) {
+            if (modifier == MySQLs.LOW_PRIORITY
+                    || modifier == MySQLs.QUICK
+                    || modifier == MySQLs.IGNORE) {
+                builder.append(modifier.render());
+            } else {
+                throw new CriteriaException(String.format("%s DELETE don't support %s", this.dialect, modifier));
             }
         }
     }
 
     private void selectModifiers(List<? extends SQLWords> modifierList, StringBuilder builder) {
-        for (SQLWords modifier : modifierList) {
-            switch ((MySQLSyntax._MySQLModifier) modifier) {
-                case ALL:
-                case DISTINCT:
-                case DISTINCTROW:
-                case HIGH_PRIORITY:
-                case STRAIGHT_JOIN:
-                case SQL_SMALL_RESULT:
-                case SQL_BIG_RESULT:
-                case SQL_BUFFER_RESULT:
-                case SQL_NO_CACHE:
-                case SQL_CALC_FOUND_ROWS:
-                    builder.append(_Constant.SPACE)
-                            .append(modifier.render());
-                    break;
-                default:
-                    throw new CriteriaException(String.format("%s SELECT don't support %s", this.dialect, modifier));
-
+        MySQLs.Modifier modifier;
+        for (SQLWords words : modifierList) {
+            modifier = (MySQLs.Modifier) words;
+            if (modifier == MySQLs.ALL
+                    || modifier == MySQLs.DISTINCT
+                    || modifier == MySQLs.DISTINCTROW
+                    || modifier == MySQLs.HIGH_PRIORITY
+                    || modifier == MySQLs.STRAIGHT_JOIN
+                    || modifier == MySQLs.SQL_SMALL_RESULT
+                    || modifier == MySQLs.SQL_BIG_RESULT
+                    || modifier == MySQLs.SQL_BUFFER_RESULT
+                    || modifier == MySQLs.SQL_NO_CACHE
+                    || modifier == MySQLs.SQL_CALC_FOUND_ROWS) {
+                builder.append(modifier.render());
+            } else {
+                throw new CriteriaException(String.format("%s SELECT don't support %s", this.dialect, modifier));
             }
         }
     }
@@ -589,17 +575,14 @@ final class MySQLDialectParser extends MySQLParser {
     /**
      * @see #simpleLoadData(_MySQLLoadData, Visible)
      */
-    private void loadDataModifier(final List<MySQLSyntax._MySQLModifier> modifierList, final StringBuilder sqlBuilder) {
-        for (MySQLSyntax._MySQLModifier modifier : modifierList) {
-            switch (modifier) {
-                case LOW_PRIORITY:
-                case CONCURRENT:
-                case LOCAL:
-                    sqlBuilder.append(_Constant.SPACE)
-                            .append(modifier.render());
-                    break;
-                default:
-                    throw new CriteriaException(String.format("%s LOAD DATA don't support %s", this.dialect, modifier));
+    private void loadDataModifier(final List<MySQLs.Modifier> modifierList, final StringBuilder sqlBuilder) {
+        for (MySQLs.Modifier modifier : modifierList) {
+            if (modifier == MySQLs.LOW_PRIORITY
+                    || modifier == MySQLs.CONCURRENT
+                    || modifier == MySQLs.LOCAL) {
+                sqlBuilder.append(modifier.render());
+            } else {
+                throw new CriteriaException(String.format("%s LOAD DATA don't support %s", this.dialect, modifier));
             }
         }
 
@@ -645,8 +628,7 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #assignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
      * @see #queryInsert(_QueryInsertContext, _Insert._QueryInsert)
      */
-    private void appendInsertDuplicateKeyClause(final _InsertContext context
-            , final _MySQLInsert._InsertWithDuplicateKey clause) {
+    private void appendInsertDuplicateKeyClause(final _InsertContext context, final _MySQLInsert clause) {
         //1. on duplicate key update keywords
         final StringBuilder sqlBuilder = context.sqlBuilder()
                 .append(SPACE_ON_DUPLICATE_KEY_UPDATE);
@@ -654,36 +636,29 @@ final class MySQLDialectParser extends MySQLParser {
         final TableMeta<?> insertTable;
         insertTable = context.insertTable();
 
-        final List<_Pair<FieldMeta<?>, _Expression>> pairList;
-        pairList = clause.duplicatePairList();
-        final int pairSize = pairList.size();
+        final List<_ItemPair> updateSetList;
+        updateSetList = clause.updateSetClauseList();
+        final int pairSize = updateSetList.size();
         assert pairSize > 0;
 
-        _Pair<FieldMeta<?>, _Expression> pair;
-        FieldMeta<?> field;
-
+        TableField tableField;
+        _ItemPair._FieldItemPair pair;
+        _Expression value;
         for (int i = 0; i < pairSize; i++) {
-            pair = pairList.get(i);
-            field = pair.first;
-            if (field.tableMeta() != insertTable) {
-                throw _Exceptions.unknownColumn(field);
-            }
-            if (field.updateMode() != UpdateMode.UPDATABLE) {
-                throw _Exceptions.nonUpdatableField(field);
-            }
-            switch (field.fieldName()) {
+            pair = (_ItemPair._FieldItemPair) updateSetList.get(i);
+            tableField = (TableField) pair.field();
+
+            switch (tableField.fieldName()) {
                 case _MetaBridge.UPDATE_TIME:
                 case _MetaBridge.VERSION:
-                    throw _Exceptions.armyManageField(field);
+                    throw _Exceptions.armyManageField(tableField);
             }
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
             } else {
                 sqlBuilder.append(_Constant.SPACE);
             }
-            this.safeObjectName(pair.first, sqlBuilder)
-                    .append(_Constant.SPACE_EQUAL);
-            pair.second.appendSql(context);
+
         }
 
         if (insertTable instanceof SingleTableMeta) {
@@ -815,7 +790,8 @@ final class MySQLDialectParser extends MySQLParser {
      * @return a unmodified map
      * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
      */
-    private Map<String, ParentTableMeta<?>> tableAliasList(final List<_Pair<String, TableMeta<?>>> deleteTablePairList
+    private Map<String, ParentTableMeta<?>> tableAliasList(
+            final List<_Pair<String, TableMeta<?>>> deleteTablePairList
             , final _MultiDeleteContext context) {
 
         final int aliasSize = deleteTablePairList.size();
@@ -938,7 +914,8 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
 
-    private void mySqlWithClauseAndSpace(final boolean recursive, final List<_Cte> cteList, final _SqlContext context) {
+    private void mySqlWithClauseAndSpace(final boolean recursive, final List<_Cte> cteList,
+                                         final _SqlContext context) {
         if (cteList.size() == 0) {
             return;
         }
@@ -1197,7 +1174,8 @@ final class MySQLDialectParser extends MySQLParser {
     /**
      * @see #simpleLoadData(_MySQLLoadData, Visible)
      */
-    private void loadDataColumnOrVarListClause(final List<_Expression> columnOrVarList, final _OtherDmlContext context) {
+    private void loadDataColumnOrVarListClause(final List<_Expression> columnOrVarList,
+                                               final _OtherDmlContext context) {
         final int columnOrVarSize;
         if ((columnOrVarSize = columnOrVarList.size()) > 0) {
             final StringBuilder sqlBuilder = context.sqlBuilder();

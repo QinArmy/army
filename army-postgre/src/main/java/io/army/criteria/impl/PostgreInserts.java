@@ -693,17 +693,11 @@ abstract class PostgreInserts extends InsertSupport {
 
 
     private static final class ConflictDoUpdateActionClause<T, I extends Item, Q extends Item>
-            extends SetWhereClause<
+            extends SetWhereClause.SetWhereClauseClause<
             FieldMeta<T>,
-            RowPairs<FieldMeta<T>>,
             PostgreInsert._DoUpdateWhereSpec<T, I, Q>,
-            PostgreInsert._DoUpdateWhereClause<I, Q>,
             PostgreInsert._ReturningSpec<I, Q>,
-            PostgreInsert._DoUpdateWhereAndSpec<I, Q>,
-            Object,
-            Object,
-            Object,
-            Object>
+            PostgreInsert._DoUpdateWhereAndSpec<I, Q>>
             implements PostgreInsert._DoUpdateWhereSpec<T, I, Q>
             , PostgreInsert._DoUpdateWhereAndSpec<I, Q> {
 
@@ -712,6 +706,12 @@ abstract class PostgreInserts extends InsertSupport {
         private ConflictDoUpdateActionClause(OnConflictClause<T, I, Q> clause) {
             super(clause.valuesClause.context, clause.valuesClause.insertTable, clause.safeTableAlias);
             this.onConflictClause = clause;
+        }
+
+        @Override
+        public PostgreInsert._DoUpdateWhereClause<I, Q> set(Consumer<RowPairs<FieldMeta<T>>> consumer) {
+            consumer.accept(CriteriaSupports.rowPairs(this::onAddItemPair));
+            return this;
         }
 
         @Override
@@ -772,23 +772,14 @@ abstract class PostgreInserts extends InsertSupport {
                     .asInsert();
         }
 
-        @Override
-        RowPairs<FieldMeta<T>> createItemPairBuilder(Consumer<ItemPair> consumer) {
-            return CriteriaSupports.rowPairs(consumer);
-        }
-
 
     }//ConflictDoUpdateActionClause
 
 
     private static final class OnConflictClause<T, I extends Item, Q extends Item>
-            extends WhereClause<
+            extends WhereClause.WhereClauseClause<
             PostgreInsert._ConflictActionClause<T, I, Q>,
-            PostgreInsert._ConflictTargetWhereAndSpec<T, I, Q>,
-            Object,
-            Object,
-            Object,
-            Object>
+            PostgreInsert._ConflictTargetWhereAndSpec<T, I, Q>>
             implements PostgreInsert._ConflictTargetOptionSpec<T, I, Q>
             , PostgreInsert._ConflictTargetWhereSpec<T, I, Q>
             , PostgreInsert._ConflictTargetWhereAndSpec<T, I, Q> {
@@ -1032,6 +1023,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         @Override
         public PostgreInsert._ValuesLeftParenClause<T, I, Q> values() {
+            this.endColumnListClause(InsertMode.VALUES);
             return new StaticValuesLeftParenClause<>(this);
         }
 

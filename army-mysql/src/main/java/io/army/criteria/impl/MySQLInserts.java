@@ -228,15 +228,9 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     private static final class StaticOnDuplicateKeyClause<I extends Item, F extends TableField>
-            extends SetWhereClause<
+            extends SetWhereClause.SetWhereClauseClause<
             F,
-            ItemPairs<F>,
             MySQLInsert._StaticOnDuplicateKeySetSpec<I, F>,
-            Object,
-            Object,
-            Object,
-            Object,
-            Object,
             Object,
             Object> implements MySQLInsert._StaticOnDuplicateKeySetSpec<I, F> {
 
@@ -252,16 +246,13 @@ abstract class MySQLInserts extends InsertSupport {
             this.clause = clause;
         }
 
+
         @Override
         public I asInsert() {
             return this.clause.onDuplicateKeyClauseEnd(this.endUpdateSetClause())
                     .asInsert();
         }
 
-        @Override
-        ItemPairs<F> createItemPairBuilder(Consumer<ItemPair> consumer) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
 
 
     }//StaticOnDuplicateKeyClause
@@ -422,12 +413,13 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public MySQLInsert._MySQLStaticValuesLeftParenClause<I, T> values() {
+            this.endColumnListClause(InsertMode.VALUES);
             return new MySQLStaticValuesClause<>(this);
         }
 
         @Override
-        public MySQLQuery._SelectSpec<MySQLInsert._OnDuplicateKeyUpdateSpec<I, FieldMeta<T>>> space() {
-            return MySQLQueries.subQuery(this.context, this::staticSpaceQueryEnd);
+        public MySQLQuery._WithSpec<MySQLInsert._OnAsRowAliasSpec<I, T>> space() {
+            return MySQLQueries.subQuery(null, this.context, this::staticSpaceQueryEnd);
         }
 
         @Override
@@ -533,7 +525,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final List<? extends SQLWords> modifierList() {
+        public final List<MySQLs.Modifier> modifierList() {
             return this.modifierList;
         }
 
@@ -750,7 +742,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Hint> hintList;
 
-        private final List<? extends SQLWords> modifierList;
+        private final List<MySQLs.Modifier> modifierList;
 
         private final List<String> partitionList;
 
@@ -775,7 +767,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final List<? extends SQLWords> modifierList() {
+        public final List<MySQLs.Modifier> modifierList() {
             return this.modifierList;
         }
 
@@ -875,7 +867,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Hint> hintList;
 
-        private final List<? extends SQLWords> modifierList;
+        private final List<MySQLs.Modifier> modifierList;
 
         private final List<String> partitionList;
 
@@ -900,7 +892,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final List<? extends SQLWords> modifierList() {
+        public final List<MySQLs.Modifier> modifierList() {
             return this.modifierList;
         }
 

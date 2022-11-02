@@ -1,254 +1,57 @@
 package io.army.dialect;
 
-import io.army.annotation.GeneratorType;
-import io.army.criteria.LiteralMode;
 import io.army.criteria.NullMode;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
-import io.army.meta.*;
+import io.army.meta.FieldMeta;
+import io.army.meta.PrimaryFieldMeta;
+import io.army.meta.SingleTableMeta;
+import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt._InsertStmtParams;
-import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-abstract class ValuesSyntaxInsertContext extends StatementContext implements _ValueInsertContext, _InsertStmtParams {
+abstract class ValuesSyntaxInsertContext extends InsertContext implements _ValueInsertContext {
 
-
-    final TableMeta<?> insertTable;
-
-    final boolean migration;
 
     final NullMode nullMode;
 
-    final LiteralMode literalMode;
-
-    final boolean conflictClause;
-
-    private final List<FieldMeta<?>> fieldList;
-
-    /**
-     * {@link #insertTable} instanceof {@link  SingleTableMeta} and  dialect support returning clause nad generated key.
-     */
-    final PrimaryFieldMeta<?> returnId;
-
-    /**
-     * @see #returnId
-     */
-    final String idSelectionAlias;
-
-    private boolean columnListClauseEnd;
-
-    private boolean valuesClauseEnd;
-
-    private int outputColumnSize;
-
-
-    /**
-     * <p>
-     * For {@link  io.army.meta.SingleTableMeta}
-     * </p>
-     */
-    ValuesSyntaxInsertContext(ArmyParser dialect, final _Insert._ValuesSyntaxInsert domainStmt, Visible visible) {
-        super(dialect, true, visible);
-
-        final _Insert._ValuesSyntaxInsert nonChildStmt;
-        if (domainStmt instanceof _Insert._ChildInsert) {
-            nonChildStmt = (_Insert._ValuesSyntaxInsert) ((_Insert._ChildInsert) domainStmt).parentStmt();
+    ValuesSyntaxInsertContext(ArmyParser parser, _Insert._ValuesSyntaxInsert stmt, Visible visible) {
+        super(parser, stmt, visible);
+        if (stmt instanceof _Insert._ChildInsert) {
+            this.nullMode = ((_Insert._ValuesSyntaxInsert) ((_Insert._ChildInsert) stmt).parentStmt()).nullHandle();
         } else {
-            nonChildStmt = domainStmt;
+            this.nullMode = stmt.nullHandle();
         }
-        this.migration = nonChildStmt.isMigration();
-        this.nullMode = nonChildStmt.nullHandle();
-        this.literalMode = nonChildStmt.literalMode();
-        this.conflictClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) nonChildStmt).hasConflictAction();
+    }
 
-        this.insertTable = nonChildStmt.table();
-        assert this.insertTable instanceof SingleTableMeta;
-
-        final List<FieldMeta<?>> fieldList = nonChildStmt.fieldList();
-        final int fieldSize = fieldList.size();
-        assert nonChildStmt.fieldMap().size() == fieldSize;
-
-        if (fieldSize == 0) {
-            this.fieldList = castFieldList(this.insertTable);
+    ValuesSyntaxInsertContext(StatementContext outerContext, _Insert._ValuesSyntaxInsert stmt) {
+        super(outerContext, stmt);
+        if (stmt instanceof _Insert._ChildInsert) {
+            this.nullMode = ((_Insert._ValuesSyntaxInsert) ((_Insert._ChildInsert) stmt).parentStmt()).nullHandle();
         } else {
-            this.fieldList = fieldList;// because have validated by the implementation of Insert
+            this.nullMode = stmt.nullHandle();
         }
-
-        final PrimaryFieldMeta<?> idField = this.insertTable.id();
-        if (this.migration || idField.generatorType() != GeneratorType.POST) {
-            this.returnId = null;
-            this.idSelectionAlias = null;
-        } else if (dialect.supportInsertReturning()) {
-            //TODO
-            throw new UnsupportedOperationException();
-        } else if (this.conflictClause) {
-            if (nonChildStmt != domainStmt) {
-                //the implementations of io.army.criteria.Insert no bug,never here
-                throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) domainStmt.table());
-            }
-            this.returnId = null;
-            this.idSelectionAlias = null;
-        } else {
-            this.returnId = idField;
-            this.idSelectionAlias = idField.fieldName();
-        }
-
-
     }
 
 
-    /**
-     * <p>
-     * For {@link  io.army.meta.ChildTableMeta}
-     * </p>
-     */
-    ValuesSyntaxInsertContext(ValuesSyntaxInsertContext parentContext, _Insert._ValuesSyntaxInsert stmt
-            , ArmyParser dialect, Visible visible) {
-        super(dialect, true, visible);
-
-        assert stmt instanceof _Insert._ChildInsert;
-
-        this.migration = stmt.isMigration();
-        this.nullMode = stmt.nullHandle();
-        this.literalMode = stmt.literalMode();
-
-        this.conflictClause = stmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) stmt).hasConflictAction();
-        this.insertTable = stmt.table();
-
-        assert this.insertTable instanceof ChildTableMeta
-                && this.migration == parentContext.migration
-                && this.nullMode == parentContext.nullMode
-                && this.literalMode == parentContext.literalMode
-                && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta();
-
-        final List<FieldMeta<?>> fieldList = stmt.fieldList();
-        final int fieldSize = fieldList.size();
-        assert stmt.fieldMap().size() == fieldSize;
-        if (fieldSize == 0) {
-            this.fieldList = castFieldList(this.insertTable);
-        } else {
-            assert fieldList.get(0) == this.insertTable.id();
-            this.fieldList = fieldList;// because have validated by the implementation of Insert
-        }
-        this.returnId = null;
-        this.idSelectionAlias = null;
-
+    ValuesSyntaxInsertContext(_Insert._ChildInsert stmt, ValuesSyntaxInsertContext parentContext) {
+        super(parentContext.parser, stmt, parentContext.visible);
+        this.nullMode = ((_Insert._ValuesSyntaxInsert) stmt).nullHandle();
+        assert this.nullMode == parentContext.nullMode;
     }
 
-    @Override
-    public final TableMeta<?> insertTable() {
-        return this.insertTable;
+    ValuesSyntaxInsertContext(_Insert._ChildInsert stmt, ValuesSyntaxInsertContext parentContext
+            , StatementContext outerContext) {
+        super(stmt, parentContext, outerContext);
+        this.nullMode = ((_Insert._ValuesSyntaxInsert) stmt).nullHandle();
+        assert this.nullMode == parentContext.nullMode;
     }
 
-    @Override
-    public final LiteralMode literalMode() {
-        return this.literalMode;
-    }
-
-    @Override
-    public final void appendFieldList() {
-        assert !this.columnListClauseEnd;
-
-        final ArmyParser parser = this.parser;
-        final StringBuilder sqlBuilder = this.sqlBuilder
-                .append(_Constant.SPACE_LEFT_PAREN);
-
-        final boolean migration = this.migration;
-        final List<FieldMeta<?>> fieldList = this.fieldList;
-        final int fieldSize = fieldList.size();
-        FieldMeta<?> field;
-        int outputColumnSize = 0;
-        for (int i = 0, actualIndex = 0; i < fieldSize; i++) {
-            field = fieldList.get(i);
-            if (!migration && !field.insertable()) {
-                // fieldList have be checked,fieldList possibly is io.army.meta.TableMeta.fieldList()
-                continue;
-            }
-            if (actualIndex > 0) {
-                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-            } else {
-                sqlBuilder.append(_Constant.SPACE);
-            }
-            parser.safeObjectName(field, sqlBuilder);
-            actualIndex++;
-            outputColumnSize = actualIndex;
-        }
-
-        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
-        assert outputColumnSize > 0;
-        this.outputColumnSize = outputColumnSize;
-        this.columnListClauseEnd = true;
-    }
-
-    @Override
-    public final void appendValueList() {
-        assert this.columnListClauseEnd && !this.valuesClauseEnd;
-
-        final int outputColumnSize, outValueSize;
-        outputColumnSize = this.outputColumnSize;
-        outValueSize = this.doAppendValuesList(outputColumnSize, this.fieldList);
-        assert outValueSize == outputColumnSize;
-
-        this.valuesClauseEnd = true;
-    }
-
-    @Override
-    public final void appendField(String tableAlias, FieldMeta<?> field) {
-        throw _Exceptions.unknownColumn(tableAlias, field);
-    }
-
-    @Override
-    public final void appendField(final FieldMeta<?> field) {
-        if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {
-            throw _Exceptions.unknownColumn(field);
-        }
-        final StringBuilder sqlBuilder = this.sqlBuilder
-                .append(_Constant.SPACE);
-        this.parser.safeObjectName(field, sqlBuilder);
-
-    }
-
-    @Override
-    public final void appendReturnIdIfNeed() {
-        final PrimaryFieldMeta<?> returnId = this.returnId;
-        if (returnId == null) {
-            return;
-        }
-        final StringBuilder sqlBuilder;
-        sqlBuilder = this.sqlBuilder
-                .append(_Constant.SPACE_RETURNING)
-                .append(_Constant.SPACE);
-
-        final ArmyParser dialect = this.parser;
-        //TODO for dialect table alias
-        dialect.safeObjectName(returnId, sqlBuilder)
-                .append(_Constant.SPACE_AS_SPACE);
-
-        dialect.identifier(this.idSelectionAlias, sqlBuilder);
-    }
-
-    @Override
-    public final PrimaryFieldMeta<?> idField() {
-        final PrimaryFieldMeta<?> field = this.returnId;
-        assert field != null;
-        return field;
-    }
-
-    @Override
-    public final String idReturnAlias() {
-        final String alias = this.idSelectionAlias;
-        assert alias != null;
-        return alias;
-    }
 
     @Override
     public final List<Selection> selectionList() {
@@ -257,27 +60,10 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     }
 
 
-    /**
-     * @return output values size
-     */
-    abstract int doAppendValuesList(int outputColumnSize, List<FieldMeta<?>> fieldList);
-
-    final boolean isValuesClauseEnd() {
-        return this.valuesClauseEnd;
-    }
-
-
     static boolean isManageVisible(TableMeta<?> insertTable, Map<FieldMeta<?>, _Expression> defaultValueMap) {
         return insertTable instanceof SingleTableMeta
                 && insertTable.containField(_MetaBridge.VISIBLE)
                 && !defaultValueMap.containsKey(insertTable.getField(_MetaBridge.VISIBLE));
-    }
-
-    @SuppressWarnings("unchecked")
-    private static List<FieldMeta<?>> castFieldList(final TableMeta<?> table) {
-        final List<?> list;
-        list = table.fieldList();
-        return (List<FieldMeta<?>>) list;
     }
 
 

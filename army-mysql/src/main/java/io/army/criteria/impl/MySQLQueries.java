@@ -52,7 +52,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         Object,
         MySQLQuery._QueryWithComplexSpec<I>>
         implements _MySQLQuery, MySQLQuery
-        , MySQLQuery._WithCteSpec<I>
+        , MySQLQuery._WithSpec<I>
         , MySQLQuery._FromSpec<I>
         , MySQLQuery._IndexHintJoinSpec<I>
         , MySQLQuery._WhereAndSpec<I>

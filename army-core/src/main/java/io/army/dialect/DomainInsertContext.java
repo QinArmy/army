@@ -103,7 +103,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         if (domainTable instanceof ChildTableMeta) {
             spaceDiscriminator = _Constant.SPACE + Integer.toString(domainTable.discriminatorValue().code());
         } else {
-            spaceDiscriminator = " 0";
+            spaceDiscriminator = _Constant.SPACE_ZERO;
         }
         if (insertTable instanceof ChildTableMeta) {
             assert insertTable == domainTable;

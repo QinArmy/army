@@ -40,6 +40,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
         this.parser = parser;
         this.visible = visible;
         this.sqlBuilder = new StringBuilder(128);
+
         this.paramConsumer = new ParamConsumer(null);
     }
 
@@ -48,18 +49,17 @@ abstract class StatementContext implements StmtContext, _StmtParams {
      * This Constructor is invoked the implementation of {@link  _ValueInsertContext}.
      * </p>
      */
-    protected StatementContext(ArmyParser dialect, boolean nonQueryInsert, Visible visible) {
+    protected StatementContext(ArmyParser dialect, boolean queryInsert, Visible visible) {
         if (!(this instanceof _InsertContext) || this instanceof _QueryInsertContext) {
             throw new IllegalStateException();
         }
-
         this.parser = dialect;
         this.visible = visible;
         this.sqlBuilder = new StringBuilder(128);
-        if (nonQueryInsert) {
-            this.paramConsumer = new ParamConsumer(this::currentRowNamedValue);
-        } else {
+        if (queryInsert) {
             this.paramConsumer = new ParamConsumer(null);
+        } else {
+            this.paramConsumer = new ParamConsumer(this::currentRowNamedValue);
         }
     }
 

@@ -1340,11 +1340,12 @@ public abstract class _AbstractDialectParser implements ArmyParser {
      */
 
     private Stmt handleValueInsert(final _Insert._ValuesInsert insert, final Visible visible) {
-        final boolean standardStmt = insert instanceof StandardStatement;
+        final boolean standardStmt = insert instanceof StandardInsert;
         final Stmt stmt;
         if (insert instanceof _Insert._ChildValuesInsert) {
             final _Insert._ChildValuesInsert childStmt = (_Insert._ChildValuesInsert) insert;
             final _Insert._ValuesInsert parentStmt = childStmt.parentStmt();
+            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.table());
 
             final ValuesInsertContext parentContext;
             parentContext = ValuesInsertContext.forParent(childStmt, this, visible);
@@ -1383,6 +1384,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
         if (insert instanceof _Insert._ChildAssignmentInsert) {
             final _Insert._ChildAssignmentInsert childStmt = (_Insert._ChildAssignmentInsert) insert;
             final _Insert._AssignmentInsert parentStmt = childStmt.parentStmt();
+            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.table());
 
             final AssignmentInsertContext parentContext;
             parentContext = AssignmentInsertContext.forParent(childStmt, this, visible);
@@ -1406,7 +1408,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
      * @see #parseInsert(_Insert, Visible)
      */
     private Stmt handleQueryInsert(final _Insert._QueryInsert insert, final Visible visible) {
-        final boolean standardStmt = insert instanceof StandardStatement;
+        final boolean standardStmt = insert instanceof StandardInsert;
         final Stmt stmt;
         if (insert instanceof _Insert._ChildQueryInsert) {
             final _Insert._ChildQueryInsert childStmt = (_Insert._ChildQueryInsert) insert;

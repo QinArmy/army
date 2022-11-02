@@ -19,17 +19,17 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
         return MySQLReplaces.primaryReplace();
     }
 
-    public static MySQLQuery._WithCteSpec<Select> query() {
+    public static MySQLQuery._WithSpec<Select> query() {
         return MySQLQueries.primaryQuery(null, null, SQLs::_identity);
     }
 
 
-    public static MySQLQuery._WithCteSpec<SubQuery> subQuery() {
+    public static MySQLQuery._WithSpec<SubQuery> subQuery() {
         return MySQLQueries.subQuery(null, ContextStack.peek(), SQLs::_identity);
     }
 
 
-    public static MySQLQuery._WithCteSpec<Expression> scalarSubQuery() {
+    public static MySQLQuery._WithSpec<Expression> scalarSubQuery() {
         return MySQLQueries.subQuery(null, ContextStack.peek(), ScalarExpression::from);
     }
 
