@@ -37,11 +37,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
     private final ParamConsumer paramConsumer;
 
     protected StatementContext(ArmyParser parser, Visible visible) {
-        this.parser = parser;
-        this.visible = visible;
-        this.sqlBuilder = new StringBuilder(128);
-
-        this.paramConsumer = new ParamConsumer(null);
+        this(parser, false, visible);
     }
 
     /**
@@ -50,25 +46,26 @@ abstract class StatementContext implements StmtContext, _StmtParams {
      * </p>
      */
     protected StatementContext(ArmyParser dialect, boolean queryInsert, Visible visible) {
-        if (!(this instanceof _InsertContext) || this instanceof _QueryInsertContext) {
-            throw new IllegalStateException();
-        }
-        this.parser = dialect;
-        this.visible = visible;
-        this.sqlBuilder = new StringBuilder(128);
-        if (queryInsert) {
-            this.paramConsumer = new ParamConsumer(null);
-        } else {
-            this.paramConsumer = new ParamConsumer(this::currentRowNamedValue);
-        }
+        this(null, dialect, visible);
     }
 
     protected StatementContext(StatementContext outerContext) {
-        this.parser = outerContext.parser;
-        this.visible = outerContext.visible;
-        this.sqlBuilder = outerContext.sqlBuilder;
-        this.paramConsumer = outerContext.paramConsumer;
+        this(outerContext, outerContext.parser, outerContext.visible);
+    }
 
+    protected StatementContext(@Nullable StatementContext outerContext
+            , ArmyParser parser, Visible visible) {
+        if (outerContext == null) {
+            this.parser = parser;
+            this.visible = visible;
+            this.sqlBuilder = new StringBuilder(128);
+            this.paramConsumer = new ParamConsumer(this::currentRowNamedValue);
+        } else {
+            this.parser = outerContext.parser;
+            this.visible = outerContext.visible;
+            this.sqlBuilder = outerContext.sqlBuilder;
+            this.paramConsumer = outerContext.paramConsumer;
+        }
     }
 
 

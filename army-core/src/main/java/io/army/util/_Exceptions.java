@@ -124,6 +124,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException dontSupportModifier(SQLWords modifier, Dialect dialect) {
+        String m = String.format("%s don't support modifier[%s]", dialect, modifier);
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException valuesStatementDontSupportParam() {
         String m = "VALUES statement don't support parameter expression.";
         return new CriteriaException(m);
@@ -243,6 +248,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException multiStmtDontSupportPostParent(ChildTableMeta<?> childTable) {
+        String m = String.format("multi-statement don't support %s with post parent", childTable);
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException dontSupportDialectStatement(DialectStatement statement, Dialect dialect) {
         String m = String.format("%s don't dialect statement[%s]", dialect, _ClassUtils.safeClassName(statement));
         return new CriteriaException(m);
@@ -309,10 +319,6 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("select list must not empty");
     }
 
-    public static CriteriaException ScalarSubQuerySelectionError() {
-        String m = String.format("%s selection size must equals one.", ScalarSubQuery.class.getName());
-        return new CriteriaException(m);
-    }
 
     public static CriteriaException castCriteriaApi() {
         return new CriteriaException("You couldn't cast criteria api instance");

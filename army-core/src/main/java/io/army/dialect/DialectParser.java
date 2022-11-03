@@ -32,7 +32,7 @@ public interface DialectParser {
 
     void rowSet(RowSet rowSet, _SqlContext original);
 
-   default Stmt dialectStmt(DialectStatement statement,Visible visible){
+   default Stmt dialectStatement(DialectStatement statement, Visible visible) {
        throw new UnsupportedOperationException();
    }
 

@@ -1019,15 +1019,15 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }//StaticComplexCommand
 
 
-    private static abstract class MySQLBracketQuery<I extends Item>
-            extends BracketRowSet<
-            I,
-            _UnionOrderBySpec<I>,
-            _UnionLimitSpec<I>,
-            _AsQueryClause<I>,
-            Object,
-            Object,
-            _QueryWithComplexSpec<I>> implements _UnionOrderBySpec<I> {
+     static abstract class MySQLBracketQuery<I extends Item>
+             extends BracketRowSet<
+             I,
+             _UnionOrderBySpec<I>,
+             _UnionLimitSpec<I>,
+             _AsQueryClause<I>,
+             Object,
+             Object,
+             _QueryWithComplexSpec<I>> implements _UnionOrderBySpec<I> {
 
 
         private MySQLBracketQuery(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext) {

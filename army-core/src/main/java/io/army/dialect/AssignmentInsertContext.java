@@ -20,49 +20,34 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-final class AssignmentInsertContext extends StatementContext
+final class AssignmentInsertContext extends InsertContext
         implements _AssignmentInsertContext, _InsertStmtParams._AssignmentParams {
 
-    static AssignmentInsertContext forSingle(_Insert._AssignmentInsert stmt, ArmyParser dialect, Visible visible) {
-        assert !(stmt instanceof _Insert._ChildAssignmentInsert);
-        return new AssignmentInsertContext(stmt, dialect, visible);
-    }
-
-    static AssignmentInsertContext forParent(_Insert._ChildAssignmentInsert stmt, ArmyParser dialect, Visible visible) {
-        return new AssignmentInsertContext(stmt, dialect, visible);
-    }
-
-    static AssignmentInsertContext forChild(AssignmentInsertContext parentContext, _Insert._ChildAssignmentInsert stmt
+    static AssignmentInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._AssignmentInsert stmt
             , ArmyParser dialect, Visible visible) {
-        return new AssignmentInsertContext(parentContext, stmt, dialect, visible);
+        assert !(stmt instanceof _Insert._ChildAssignmentInsert);
+        return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
-    private final TableMeta<?> insertTable;
+    static AssignmentInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildAssignmentInsert stmt
+            , ArmyParser dialect, Visible visible) {
+        assert outerContext == null || outerContext instanceof LiteralMultiStmtContext;
+        if (outerContext != null && stmt.parentStmt().table().id().generatorType() == GeneratorType.POST) {
+            throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) stmt.table());
+        }
+        return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, visible);
+    }
 
-    private final boolean migration;
+    static AssignmentInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildAssignmentInsert stmt
+            , AssignmentInsertContext parentContext) {
+        return new AssignmentInsertContext((StatementContext) outerContext, stmt, parentContext);
+    }
 
-    private final LiteralMode literalMode;
-
-    private final boolean duplicateKeyClause;
 
     private final List<_Pair<FieldMeta<?>, _Expression>> pairList;
 
-    /**
-     * the list of the fields that is managed by army
-     */
-    private final List<FieldMeta<?>> fieldList;
 
     private final AssignmentWrapper rowWrapper;
-
-
-    private final PrimaryFieldMeta<?> returnId;
-
-    /**
-     * @see #returnId
-     */
-    private final String idSelectionAlias;
-
-    private boolean assignmentClauseEnd;
 
 
     /**
@@ -70,55 +55,17 @@ final class AssignmentInsertContext extends StatementContext
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      *
-     * @see #forSingle(_Insert._AssignmentInsert, ArmyParser, Visible)
-     * @see #forParent(_Insert._ChildAssignmentInsert, ArmyParser, Visible)
+     * @see #forSingle(_SqlContext, _Insert._AssignmentInsert, ArmyParser, Visible)
+     * @see #forParent(_SqlContext, _Insert._ChildAssignmentInsert, ArmyParser, Visible)
      */
-    private AssignmentInsertContext(_Insert._AssignmentInsert domainStmt, ArmyParser dialect, Visible visible) {
-        super(dialect, true, visible);
+    private AssignmentInsertContext(@Nullable StatementContext outerContext, _Insert._AssignmentInsert domainStmt
+            , ArmyParser dialect, Visible visible) {
+        super(outerContext, domainStmt, dialect, visible);
 
-        final TableMeta<?> domainTable = domainStmt.table();
-
-        final _Insert._AssignmentInsert nonChildStmt;
         if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
-            nonChildStmt = ((_Insert._ChildAssignmentInsert) domainStmt).parentStmt();
-            this.insertTable = nonChildStmt.table();
+            this.pairList = ((_Insert._ChildAssignmentInsert) domainStmt).parentStmt().assignmentPairList();
         } else {
-            nonChildStmt = domainStmt;
-            this.insertTable = domainTable;
-        }
-        assert this.insertTable instanceof SingleTableMeta;
-
-        this.migration = nonChildStmt.isMigration();
-        this.literalMode = nonChildStmt.literalMode();
-        this.duplicateKeyClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec;
-        this.pairList = nonChildStmt.assignmentPairList();
-
-        final Map<FieldMeta<?>, _Expression> pairMap;
-        pairMap = nonChildStmt.assignmentMap();
-        assert pairMap.size() == this.pairList.size();
-
-        if (this.migration) {
-            this.fieldList = Collections.emptyList();
-        } else {
-            this.fieldList = createNonChildFieldList((SingleTableMeta<?>) this.insertTable, pairMap::containsKey);
-        }
-
-        final PrimaryFieldMeta<?> idField = this.insertTable.id();
-        if (this.migration || domainTable instanceof SingleTableMeta || idField.generatorType() != GeneratorType.POST) {
-            this.returnId = null;
-            this.idSelectionAlias = null;
-        } else if (dialect.supportInsertReturning()) {
-            //TODO
-            throw new UnsupportedOperationException();
-        } else if (this.duplicateKeyClause) {
-            if (domainTable instanceof ChildTableMeta) {
-                throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) domainTable);
-            }
-            this.returnId = null;
-            this.idSelectionAlias = null;
-        } else {
-            this.returnId = idField;
-            this.idSelectionAlias = idField.fieldName();
+            this.pairList = domainStmt.assignmentPairList();
         }
 
         this.rowWrapper = new AssignmentWrapper(this, domainStmt);
@@ -131,31 +78,14 @@ final class AssignmentInsertContext extends StatementContext
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      *
-     * @see #forChild(AssignmentInsertContext, _Insert._ChildAssignmentInsert, ArmyParser, Visible)
+     * @see #forChild(_SqlContext, _Insert._ChildAssignmentInsert, AssignmentInsertContext)
      */
-    private AssignmentInsertContext(AssignmentInsertContext parentContext, _Insert._ChildAssignmentInsert stmt
-            , ArmyParser dialect, Visible visible) {
-        super(dialect, true, visible);
-
-        this.insertTable = stmt.table();
-        this.migration = stmt.isMigration();
-        this.literalMode = stmt.literalMode();
-        this.duplicateKeyClause = stmt instanceof _Insert._SupportConflictClauseSpec;
-
-        assert this.insertTable instanceof ChildTableMeta
-                && this.migration == parentContext.migration
-                && this.literalMode == parentContext.literalMode
-                && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta();
+    private AssignmentInsertContext(@Nullable StatementContext outerContext, _Insert._ChildAssignmentInsert stmt
+            , AssignmentInsertContext parentContext) {
+        super(outerContext, stmt, parentContext);
 
         this.pairList = stmt.assignmentPairList();
-
-        if (this.migration) {
-            this.fieldList = Collections.emptyList();
-        } else {
-            this.fieldList = createChildFieldList((ChildTableMeta<?>) this.insertTable);
-        }
-        this.returnId = null;
-        this.idSelectionAlias = null;
+        ;
         this.rowWrapper = parentContext.rowWrapper;
         assert this.rowWrapper.domainTable == this.insertTable;
         assert this.pairList.size() == this.rowWrapper.childPairMap.size();
@@ -164,18 +94,7 @@ final class AssignmentInsertContext extends StatementContext
 
 
     @Override
-    public TableMeta<?> insertTable() {
-        return this.insertTable;
-    }
-
-    @Override
-    public LiteralMode literalMode() {
-        return this.literalMode;
-    }
-
-    @Override
-    public void appendAssignmentClause() {
-        assert !this.assignmentClauseEnd;
+    void doAppendAssignments() {
 
         final ArmyParser dialect = this.parser;
 
@@ -237,23 +156,6 @@ final class AssignmentInsertContext extends StatementContext
             pair.second.appendSql(this);
         }
 
-        this.assignmentClauseEnd = true;
-    }
-
-
-    @Override
-    public void appendField(String tableAlias, FieldMeta<?> field) {
-        throw _Exceptions.unknownColumn(tableAlias, field);
-    }
-
-    @Override
-    public void appendField(final FieldMeta<?> field) {
-        if (field.tableMeta() != this.insertTable) {
-            throw _Exceptions.unknownColumn(field);
-        }
-        final StringBuilder sqlBuilder = this.sqlBuilder
-                .append(_Constant.SPACE);
-        this.parser.safeObjectName(field, sqlBuilder);
     }
 
 
@@ -270,24 +172,9 @@ final class AssignmentInsertContext extends StatementContext
 
 
     @Override
-    public PrimaryFieldMeta<?> idField() {
-        final PrimaryFieldMeta<?> field = this.returnId;
-        assert field != null;
-        return field;
-    }
-
-    @Override
-    public String idReturnAlias() {
-        final String alias = this.idSelectionAlias;
-        assert alias != null;
-        return alias;
-    }
-
-
-    @Override
     public Function<Object, Object> function() {
         final DelayIdParam delayIdParam = this.rowWrapper.delayIdParam;
-        assert delayIdParam != null && this.assignmentClauseEnd && this.insertTable instanceof ParentTableMeta;
+        assert delayIdParam != null && isValuesClauseEnd() && this.insertTable instanceof ParentTableMeta;
         this.rowWrapper.delayIdParam = null;
         return delayIdParam::parentPostId;
     }

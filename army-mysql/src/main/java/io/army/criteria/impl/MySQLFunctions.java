@@ -667,7 +667,7 @@ abstract class MySQLFunctions extends SQLFunctions {
             } else if (statement instanceof Delete) {
                 stmt = context.parser().delete((Delete) statement, this.visible);
             } else if (statement instanceof DialectStatement) {
-                stmt = context.parser().dialectStmt((DialectStatement) statement, this.visible);
+                stmt = context.parser().dialectStatement((DialectStatement) statement, this.visible);
             } else {
                 //no bug,never here
                 throw new IllegalArgumentException();

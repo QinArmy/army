@@ -4,6 +4,7 @@ import io.army.criteria.SelectItem;
 import io.army.criteria.Selection;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Query;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.TypeMeta;
 
@@ -36,7 +37,14 @@ final class ScalarExpression extends OperationExpression {
 
     @Override
     public void appendSql(final _SqlContext context) {
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder()
+                .append(_Constant.SPACE_LEFT_PAREN);
+
         context.parser().rowSet(this.subQuery, context);
+
+        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
     }
 
 

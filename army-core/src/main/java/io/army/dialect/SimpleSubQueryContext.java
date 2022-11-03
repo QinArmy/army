@@ -9,7 +9,15 @@ import io.army.util._Exceptions;
 final class SimpleSubQueryContext extends MultiTableContext implements _SimpleQueryContext, _SubQueryContext {
 
 
+    @Deprecated
     static SimpleSubQueryContext create(SubQuery subQuery, _SqlContext outerContext) {
+        final TableContext tableContext;
+        tableContext = TableContext.forQuery(((_Query) subQuery).tableBlockList()
+                , (ArmyParser) outerContext.parser(), outerContext.visible());
+        return new SimpleSubQueryContext(tableContext, outerContext);
+    }
+
+    static SimpleSubQueryContext create(_SqlContext outerContext, SubQuery subQuery) {
         final TableContext tableContext;
         tableContext = TableContext.forQuery(((_Query) subQuery).tableBlockList()
                 , (ArmyParser) outerContext.parser(), outerContext.visible());

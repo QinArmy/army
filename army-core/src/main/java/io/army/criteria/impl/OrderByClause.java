@@ -300,7 +300,7 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
             if (this instanceof Select) {
                 stmt = parser.select((Select) this, visible);
             } else if (this instanceof DialectStatement) {
-                stmt = parser.dialectStmt((DialectStatement) this, visible);
+                stmt = parser.dialectStatement((DialectStatement) this, visible);
             } else {
                 throw new IllegalStateException("unknown statement");
             }

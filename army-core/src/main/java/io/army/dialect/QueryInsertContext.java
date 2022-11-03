@@ -1,59 +1,51 @@
 package io.army.dialect;
 
-import io.army.criteria.LiteralMode;
 import io.army.criteria.Selection;
 import io.army.criteria.SubQuery;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Insert;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
-import io.army.util._Exceptions;
 
 import java.util.List;
 
-final class QueryInsertContext extends StatementContext implements _QueryInsertContext {
+final class QueryInsertContext extends InsertContext implements _QueryInsertContext {
 
-    static QueryInsertContext forSingle(_Insert._QueryInsert stmt, ArmyParser dialect, Visible visible) {
-        return new QueryInsertContext(dialect, stmt, visible);
-    }
-
-    static QueryInsertContext forParent(_Insert._ChildQueryInsert domainStmt, ArmyParser dialect, Visible visible) {
-        return new QueryInsertContext(dialect, domainStmt, visible);
-    }
-
-    static QueryInsertContext forChild(QueryInsertContext parentContext, _Insert._ChildQueryInsert domainStmt
+    static QueryInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._QueryInsert stmt
             , ArmyParser dialect, Visible visible) {
-        return new QueryInsertContext(parentContext, domainStmt, dialect, visible);
+        return new QueryInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
+    static QueryInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildQueryInsert domainStmt
+            , ArmyParser dialect, Visible visible) {
+        return new QueryInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
+    }
 
-    private final TableMeta<?> insertTable;
+    static QueryInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildQueryInsert domainStmt
+            , QueryInsertContext parentContext) {
+        return new QueryInsertContext((StatementContext) outerContext, domainStmt, parentContext);
+    }
 
-    private final List<FieldMeta<?>> fieldList;
 
     private final SubQuery subQuery;
 
-    private final List<Selection> selectionList;
+    private final List<Selection> querySelectionList;
 
-    private final boolean duplicateKeyClause;
-
-    private boolean columnListClauseEnd;
-
-    private boolean queryClauseEnd;
 
     /**
      * <p>
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      *
-     * @see #forSingle(_Insert._QueryInsert, ArmyParser, Visible)
-     * @see #forParent(_Insert._ChildQueryInsert, ArmyParser, Visible)
+     * @see #forSingle(_SqlContext, _Insert._QueryInsert, ArmyParser, Visible)
+     * @see #forParent(_SqlContext, _Insert._ChildQueryInsert, ArmyParser, Visible)
      */
-    private QueryInsertContext(ArmyParser dialect, _Insert._QueryInsert domainStmt, Visible visible) {
-        super(dialect, visible);
+    private QueryInsertContext(@Nullable StatementContext outerContext, _Insert._QueryInsert domainStmt
+            , ArmyParser parser, Visible visible) {
+        super(outerContext, domainStmt, parser, visible);
 
         final _Insert._QueryInsert nonChildStmt;
         if (domainStmt instanceof _Insert._ChildQueryInsert) {
@@ -62,14 +54,10 @@ final class QueryInsertContext extends StatementContext implements _QueryInsertC
             nonChildStmt = domainStmt;
 
         }
-        this.insertTable = nonChildStmt.table();
-        this.fieldList = nonChildStmt.fieldList();// because have validated by the implementation of Insert
         this.subQuery = nonChildStmt.subQuery();
-        this.selectionList = _DialectUtils.flatSelectItem(this.subQuery.selectItemList());
+        this.querySelectionList = _DialectUtils.flatSelectItem(this.subQuery.selectItemList());
 
-        this.duplicateKeyClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec;
-
-        assert this.fieldList.size() == this.selectionList.size();
+        assert this.fieldList.size() == this.querySelectionList.size();
 
     }
 
@@ -78,93 +66,41 @@ final class QueryInsertContext extends StatementContext implements _QueryInsertC
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      *
-     * @see #forChild(QueryInsertContext, _Insert._ChildQueryInsert, ArmyParser, Visible)
+     * @see #forChild(_SqlContext, _Insert._ChildQueryInsert, QueryInsertContext)
      */
-    private QueryInsertContext(QueryInsertContext parentContext, _Insert._ChildQueryInsert domainStmt
-            , ArmyParser dialect, Visible visible) {
-        super(dialect, visible);
+    private QueryInsertContext(@Nullable StatementContext outerContext, _Insert._ChildQueryInsert domainStmt
+            , QueryInsertContext parentContext) {
+        super(outerContext, domainStmt, parentContext);
 
-        this.insertTable = domainStmt.table();
-        this.fieldList = domainStmt.fieldList();// because have validated by the implementation of Insert
         this.subQuery = domainStmt.subQuery();
-        this.selectionList = _DialectUtils.flatSelectItem(this.subQuery.selectItemList());
-
-        this.duplicateKeyClause = domainStmt instanceof _Insert._SupportConflictClauseSpec;
+        this.querySelectionList = _DialectUtils.flatSelectItem(this.subQuery.selectItemList());
 
         assert this.insertTable instanceof ChildTableMeta
                 && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta()
                 && this.fieldList != parentContext.fieldList
                 && this.subQuery != parentContext.subQuery;
 
-        assert this.fieldList.size() == this.selectionList.size();
+        assert this.fieldList.size() == this.querySelectionList.size();
     }
 
 
     @Override
-    public TableMeta<?> insertTable() {
-        return this.insertTable;
-    }
+    int doAppendSubQuery(final int outputColumnSize, final List<FieldMeta<?>> fieldList) {
 
-    @Override
-    public LiteralMode literalMode() {
-        // query insert don't prefer literal,always DEFAULT
-        return LiteralMode.DEFAULT;
-    }
+        final List<Selection> querySelectionList;
+        querySelectionList = this.querySelectionList;
+        final int selectionSize;
+        selectionSize = querySelectionList.size();
 
-    @Override
-    public void appendField(String tableAlias, FieldMeta<?> field) {
-        throw _Exceptions.unknownColumn(tableAlias, field);
-    }
-
-    @Override
-    public void appendField(final FieldMeta<?> field) {
-        if (!(this.queryClauseEnd && this.duplicateKeyClause && field.tableMeta() == this.insertTable)) {
-            throw _Exceptions.unknownColumn(field);
-        }
-
-        final StringBuilder sqlBuilder = this.sqlBuilder
-                .append(_Constant.SPACE);
-        this.parser.safeObjectName(field, sqlBuilder);
-    }
-
-    @Override
-    public void appendFieldList() {
-        assert !this.columnListClauseEnd;
-
-        final ArmyParser parser = this.parser;
-        final StringBuilder sqlBuilder = this.sqlBuilder
-                .append(_Constant.SPACE_LEFT_PAREN);
-
-        final List<FieldMeta<?>> fieldList = this.fieldList;
-        final int fieldSize = fieldList.size();
-
-        for (int i = 0; i < fieldSize; i++) {
-            if (i > 0) {
-                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-            } else {
-                sqlBuilder.append(_Constant.SPACE);
-            }
-
-            parser.safeObjectName(fieldList.get(i), sqlBuilder);
-        }
-
-        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-        this.columnListClauseEnd = true;
-    }
-
-    @Override
-    public void appendSubQuery() {
-        assert this.columnListClauseEnd && !this.queryClauseEnd;
-
+        assert outputColumnSize == selectionSize;
         this.parser.subQueryOfQueryInsert(this, this.subQuery);
-
-        this.queryClauseEnd = true;
-
+        return selectionSize;
     }
+
 
     @Override
     public List<Selection> selectionList() {
-        return this.selectionList;
+        return this.querySelectionList;
     }
 
     @Override

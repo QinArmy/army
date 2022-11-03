@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.LiteralMode;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
 public interface _InsertContext extends StmtContext {
@@ -8,6 +9,9 @@ public interface _InsertContext extends StmtContext {
     TableMeta<?> insertTable();
 
     LiteralMode literalMode();
+
+    @Nullable
+    String safeRowAlias();
 
 
     interface _ColumnListSpec {

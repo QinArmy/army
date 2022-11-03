@@ -380,15 +380,15 @@ abstract class MySQLParser extends _AbstractDialectParser {
      * @see #update(Update, Visible)
      */
     @Override
-    protected final Stmt standardChildUpdate(final _SingleUpdate update, final Visible visible) {
+    protected final Stmt standardChildUpdate(final @Nullable _SqlContext outerContext, final _SingleUpdate update
+            , final Visible visible) {
 
         final _MultiUpdateContext context;
-        context = this.createMultiUpdateContext(update, visible);
+        context = this.createMultiUpdateContext(outerContext, update, visible);
 
-        final StringBuilder sqlBuilder = context.sqlBuilder();
 
         // 1. UPDATE clause
-        sqlBuilder.append(_Constant.UPDATE);
+        context.sqlBuilder().append(_Constant.UPDATE);
 
         //2. child join parent
         this.appendChildJoinParent(context, (ChildTableMeta<?>) update.table());

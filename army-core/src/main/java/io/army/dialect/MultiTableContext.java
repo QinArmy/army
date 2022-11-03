@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.TabularItem;
 import io.army.criteria.Visible;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.stmt.DmlStmtParams;
@@ -21,14 +22,15 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
     Map<String, String> aliasToSafeAlias;
 
 
-    MultiTableContext(TableContext tableContext, ArmyParser dialect, Visible visible) {
-        super(dialect, visible);
+    MultiTableContext(@Nullable StatementContext outerContext, TableContext tableContext
+            , ArmyParser dialect, Visible visible) {
+        super(outerContext, dialect, visible);
         this.aliasToTable = tableContext.aliasToTable;
         this.tableToSafeAlias = tableContext.tableToSafeAlias;
 
     }
 
-    MultiTableContext(TableContext tableContext, StatementContext outerContext) {
+    MultiTableContext(StatementContext outerContext, TableContext tableContext) {
         super(outerContext);
         this.aliasToTable = tableContext.aliasToTable;
         this.tableToSafeAlias = tableContext.tableToSafeAlias;

@@ -6,6 +6,7 @@ import io.army.criteria.impl.inner._MultiUpdate;
 import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._Update;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -21,16 +22,18 @@ import java.util.Map;
 
 final class MultiUpdateContext extends MultiTableContext implements _MultiUpdateContext, DmlStmtParams {
 
-    static MultiUpdateContext create(_MultiUpdate statement, ArmyParser dialect, Visible visible) {
+    static MultiUpdateContext create(@Nullable _SqlContext outerContext, _MultiUpdate statement, ArmyParser dialect
+            , Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forUpdate(statement, dialect, visible);
-        return new MultiUpdateContext(statement, tableContext, dialect, visible);
+        return new MultiUpdateContext(((StatementContext) outerContext, statement, tableContext, dialect, visible);
     }
 
-    static MultiUpdateContext forChild(_SingleUpdate stmt, ArmyParser dialect, Visible visible) {
+    static MultiUpdateContext forChild(@Nullable _SqlContext outerContext, _SingleUpdate stmt, ArmyParser dialect
+            , Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forChild((ChildTableMeta<?>) stmt.table(), stmt.tableAlias(), dialect);
-        return new MultiUpdateContext(stmt, tableContext, dialect, visible);
+        return new MultiUpdateContext((StatementContext) outerContext, stmt, tableContext, dialect, visible);
     }
 
 
@@ -43,10 +46,11 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
     private List<DataField> conditionFieldList;
 
 
-    private MultiUpdateContext(_Update stmt, TableContext tableContext, ArmyParser dialect, Visible visible) {
-        super(tableContext, dialect, visible);
+    private MultiUpdateContext(@Nullable StatementContext outerContext, _Update stmt, TableContext tableContext
+            , ArmyParser dialect, Visible visible) {
+        super(outerContext, tableContext, dialect, visible);
         this.childAliasToParentAlias = tableContext.childAliasToParentAlias;
-        this.hasVersion = _DialectUtils.hasOptimistic(stmt.predicateList());
+        this.hasVersion = _DialectUtils.hasOptimistic(stmt.wherePredicateList());
         this.supportQueryUpdate = dialect.supportQueryUpdate();
     }
 

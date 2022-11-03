@@ -153,7 +153,7 @@ public class MySQLReplaceUnitTests {
         for (MySQLDialect dialect : MySQLDialect.values()) {
 
             parser = _MockDialects.from(dialect);
-            stmt = parser.dialectStmt(insert, Visible.ONLY_VISIBLE);
+            stmt = parser.dialectStatement(insert, Visible.ONLY_VISIBLE);
             sql = parser.printStmt(stmt, true);
             LOG.debug("{}:\n{}", dialect.name(), sql);
 

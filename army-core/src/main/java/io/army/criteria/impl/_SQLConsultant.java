@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
@@ -75,6 +76,10 @@ public abstract class _SQLConsultant {
                 , _ClassUtils.safeClassName(nestedItem)
                 , database == null ? "standard" : database);
         throw new CriteriaException(m);
+    }
+
+    static CriteriaException illegalCteImpl(_Cte cte) {
+        return new CriteriaException(String.format("Illegal Cte %s", cte));
     }
 
 

@@ -1851,7 +1851,7 @@ abstract class InsertSupport {
             } else if (this instanceof ReplaceInsert
                     || this instanceof MergeInsert
                     || this instanceof ReturningInsert) {
-                stmt = parser.dialectStmt((DialectStatement) this, visible);
+                stmt = parser.dialectStatement((DialectStatement) this, visible);
             } else {
                 //non-primary insert
                 throw ContextStack.castCriteriaApi(this.context);

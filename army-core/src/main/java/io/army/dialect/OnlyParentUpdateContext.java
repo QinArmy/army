@@ -3,6 +3,7 @@ package io.army.dialect;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
@@ -21,8 +22,9 @@ import java.util.List;
 final class OnlyParentUpdateContext extends StatementContext implements DmlContext, _SingleUpdateContext
         , DmlStmtParams {
 
-    static OnlyParentUpdateContext create(_SingleUpdate update, ArmyParser dialect, Visible visible) {
-        return new OnlyParentUpdateContext(update, dialect, visible);
+    static OnlyParentUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate update, ArmyParser dialect
+            , Visible visible) {
+        return new OnlyParentUpdateContext((StatementContext) outerContext, update, dialect, visible);
     }
 
     private final ChildTableMeta<?> table;
@@ -38,13 +40,14 @@ final class OnlyParentUpdateContext extends StatementContext implements DmlConte
     private List<TableField> conditionFieldList;
 
 
-    private OnlyParentUpdateContext(_SingleUpdate update, ArmyParser dialect, Visible visible) {
-        super(dialect, visible);
+    private OnlyParentUpdateContext(@Nullable StatementContext outerContext, _SingleUpdate update, ArmyParser dialect
+            , Visible visible) {
+        super(outerContext, dialect, visible);
 
         this.table = ((ChildTableMeta<?>) update.table());
         this.tableAlias = update.tableAlias();
         this.safeTableAlias = dialect.identifier(this.tableAlias);
-        this.hasVersion = _DialectUtils.hasOptimistic(update.predicateList());
+        this.hasVersion = _DialectUtils.hasOptimistic(update.wherePredicateList());
 
         this.selectionList = Collections.emptyList();
 

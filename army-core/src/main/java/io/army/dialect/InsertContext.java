@@ -1,8 +1,7 @@
 package io.army.dialect;
 
-import io.army.criteria.DataField;
-import io.army.criteria.LiteralMode;
-import io.army.criteria.Visible;
+import io.army.annotation.GeneratorType;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -50,29 +49,32 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
     private int outputColumnSize;
 
+
     /**
      * <p>
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      */
-    InsertContext(ArmyParser parser, final _Insert stmt, Visible visible) {
-        super(parser, stmt instanceof _Insert._QueryInsert, visible);
+    InsertContext(@Nullable StatementContext outerContext, final _Insert domainStmt
+            , ArmyParser parser, Visible visible) {
+        super(outerContext, parser, visible);
 
         final _Insert nonChildStmt;
-        if (stmt instanceof _Insert._ChildInsert) {
-            nonChildStmt = ((_Insert._ChildInsert) stmt).parentStmt();
+        if (domainStmt instanceof _Insert._ChildInsert) {
+            nonChildStmt = ((_Insert._ChildInsert) domainStmt).parentStmt();
             this.insertTable = nonChildStmt.table();
-            this.domainTable = stmt.table();
+            this.domainTable = domainStmt.table();
         } else {
-            nonChildStmt = stmt;
+            nonChildStmt = domainStmt;
             this.insertTable = nonChildStmt.table();
             this.domainTable = this.insertTable;
         }
         assert this.insertTable instanceof SingleTableMeta;
 
         if (nonChildStmt instanceof _Insert._InsertOption) {
-            this.literalMode = ((_Insert._InsertOption) nonChildStmt).literalMode();
-            this.migration = ((_Insert._InsertOption) nonChildStmt).isMigration();
+            final _Insert._InsertOption option = (_Insert._InsertOption) nonChildStmt;
+            this.literalMode = option.literalMode();
+            this.migration = nonChildStmt instanceof _Insert._QueryInsert || option.isMigration();
         } else {
             this.migration = nonChildStmt instanceof _Insert._QueryInsert;
             this.literalMode = LiteralMode.DEFAULT;
@@ -101,60 +103,24 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         this.conflictClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec
                 && ((_Insert._SupportConflictClauseSpec) nonChildStmt).hasConflictAction();
 
-
-    }
-
-    /**
-     * <p>
-     * For {@link  io.army.meta.SingleTableMeta}
-     * </p>
-     */
-    InsertContext(StatementContext outerContext, final _Insert stmt) {
-        super(outerContext);
-
-        final _Insert nonChildStmt;
-        if (stmt instanceof _Insert._ChildInsert) {
-            nonChildStmt = ((_Insert._ChildInsert) stmt).parentStmt();
-            this.insertTable = nonChildStmt.table();
-            this.domainTable = stmt.table();
+        final PrimaryFieldMeta<?> idField = this.insertTable.id();
+        if (this.migration || idField.generatorType() != GeneratorType.POST) {
+            this.returnId = null;
+            this.idSelectionAlias = null;
+        } else if (this.parser.supportInsertReturning()) {
+            //TODO
+            throw new UnsupportedOperationException();
+        } else if (this.conflictClause) {
+            if (nonChildStmt != domainStmt) {
+                //the implementations of io.army.criteria.Insert no bug,never here
+                throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) domainStmt.table());
+            }
+            this.returnId = null;
+            this.idSelectionAlias = null;
         } else {
-            nonChildStmt = stmt;
-            this.insertTable = nonChildStmt.table();
-            this.domainTable = this.insertTable;
+            this.returnId = idField;
+            this.idSelectionAlias = idField.fieldName();
         }
-        assert this.insertTable instanceof SingleTableMeta;
-
-        if (nonChildStmt instanceof _Insert._InsertOption) {
-            this.literalMode = ((_Insert._InsertOption) nonChildStmt).literalMode();
-            this.migration = ((_Insert._InsertOption) nonChildStmt).isMigration();
-        } else {
-            this.migration = nonChildStmt instanceof _Insert._QueryInsert;
-            this.literalMode = LiteralMode.DEFAULT;
-        }
-
-        if (nonChildStmt instanceof _Insert._ConflictActionClauseSpec) {
-            this.rowAlias = ((_Insert._ConflictActionClauseSpec) nonChildStmt).rowAlias();
-            this.safeRowAlias = this.rowAlias == null ? null : parser.identifier(this.rowAlias);
-        } else {
-            this.safeRowAlias = this.rowAlias = null;
-        }
-        final List<FieldMeta<?>> fieldList;
-        if (nonChildStmt instanceof _Insert._ColumnListInsert) {
-            fieldList = ((_Insert._ColumnListInsert) nonChildStmt).fieldList();
-        } else {
-            fieldList = null;
-        }
-        if (fieldList != null && fieldList.size() > 0) {
-            this.fieldList = fieldList;
-        } else if (nonChildStmt instanceof _Insert._AssignmentInsert) {
-            this.fieldList = null;
-        } else {
-            assert !(nonChildStmt instanceof _Insert._QueryInsert);
-            this.fieldList = castFieldList(this.insertTable);
-        }
-        this.conflictClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) nonChildStmt).hasConflictAction();
-
 
     }
 
@@ -164,66 +130,16 @@ abstract class InsertContext extends StatementContext implements _InsertContext
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      */
-    InsertContext(final _Insert._ChildInsert stmt, final InsertContext parentContext) {
-        super(parentContext.parser, stmt instanceof _Insert._QueryInsert, parentContext.visible);
+    InsertContext(final @Nullable StatementContext outerContext, final _Insert._ChildInsert stmt
+            , final InsertContext parentContext) {
+        super(outerContext, parentContext.parser, parentContext.visible);
         this.insertTable = stmt.table();
         this.domainTable = this.insertTable;
 
         if (stmt instanceof _Insert._InsertOption) {
-            this.literalMode = ((_Insert._InsertOption) stmt).literalMode();
-            this.migration = ((_Insert._InsertOption) stmt).isMigration();
-        } else {
-            this.migration = stmt instanceof _Insert._QueryInsert;
-            this.literalMode = LiteralMode.DEFAULT;
-        }
-
-        assert this.insertTable instanceof ChildTableMeta
-                && this.domainTable == parentContext.domainTable
-                && this.migration == parentContext.migration
-                && this.literalMode == parentContext.literalMode
-                && ((ChildTableMeta<?>) this.insertTable).parentMeta() == parentContext.insertTable;
-
-
-        if (stmt instanceof _Insert._ConflictActionClauseSpec) {
-            this.rowAlias = ((_Insert._ConflictActionClauseSpec) stmt).rowAlias();
-            this.safeRowAlias = this.rowAlias == null ? null : this.parser.identifier(this.rowAlias);
-        } else {
-            this.safeRowAlias = this.rowAlias = null;
-        }
-        final List<FieldMeta<?>> fieldList;
-        if (stmt instanceof _Insert._ColumnListInsert) {
-            fieldList = ((_Insert._ColumnListInsert) stmt).fieldList();
-        } else {
-            fieldList = null;
-        }
-        if (fieldList != null && fieldList.size() > 0) {
-            this.fieldList = fieldList;
-        } else if (stmt instanceof _Insert._AssignmentInsert) {
-            this.fieldList = null;
-        } else {
-            assert !(stmt instanceof _Insert._QueryInsert);
-            this.fieldList = castFieldList(this.insertTable);
-        }
-        this.conflictClause = stmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) stmt).hasConflictAction();
-
-
-    }
-
-    /**
-     * <p>
-     * For {@link  io.army.meta.ChildTableMeta}
-     * </p>
-     */
-    InsertContext(final _Insert._ChildInsert stmt, final InsertContext parentContext
-            , final StatementContext outerContext) {
-        super(outerContext);
-        this.insertTable = stmt.table();
-        this.domainTable = this.insertTable;
-
-        if (stmt instanceof _Insert._InsertOption) {
-            this.literalMode = ((_Insert._InsertOption) stmt).literalMode();
-            this.migration = ((_Insert._InsertOption) stmt).isMigration();
+            final _Insert._InsertOption option = (_Insert._InsertOption) stmt;
+            this.literalMode = option.literalMode();
+            this.migration = stmt instanceof _Insert._QueryInsert || option.isMigration();
         } else {
             this.migration = stmt instanceof _Insert._QueryInsert;
             this.literalMode = LiteralMode.DEFAULT;
@@ -256,6 +172,9 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         }
         this.conflictClause = stmt instanceof _Insert._SupportConflictClauseSpec
                 && ((_Insert._SupportConflictClauseSpec) stmt).hasConflictAction();
+
+        this.returnId = null;
+        this.idSelectionAlias = null;
 
 
     }
@@ -282,6 +201,26 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
     @Override
     public void appendSetLeftItem(final DataField dataField) {
+        if (!(dataField instanceof TableField)) {
+            String m = String.format("Insert statement conflict clause don't support %s", dataField);
+            throw new CriteriaException(m);
+        } else if (((TableField) dataField).tableMeta() != this.insertTable) {
+            throw _Exceptions.unknownColumn(dataField);
+        }
+
+        final StringBuilder sqlBuilder;
+        sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
+        if (dataField instanceof QualifiedField) {
+            final String rowAlias = this.rowAlias;
+            if (rowAlias == null || !rowAlias.equals(((QualifiedField<?>) dataField).tableAlias())) {
+                throw _Exceptions.unknownColumn(dataField);
+            }
+            sqlBuilder.append(this.safeRowAlias)
+                    .append(_Constant.POINT);
+            this.parser.safeObjectName(((QualifiedField<?>) dataField).fieldMeta(), sqlBuilder);
+        } else {
+            this.parser.safeObjectName((FieldMeta<?>) dataField, sqlBuilder);
+        }
 
     }
 
@@ -370,6 +309,12 @@ abstract class InsertContext extends StatementContext implements _InsertContext
                 .append(_Constant.SPACE_AS_SPACE);
 
         dialect.identifier(this.idSelectionAlias, sqlBuilder);
+    }
+
+
+    @Override
+    public List<Selection> selectionList() {
+        return super.selectionList();
     }
 
     @Override

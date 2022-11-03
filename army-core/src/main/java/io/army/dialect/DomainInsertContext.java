@@ -31,18 +31,24 @@ import java.util.Map;
  */
 final class DomainInsertContext extends ValuesSyntaxInsertContext implements _InsertStmtParams._DomainParams {
 
-    static DomainInsertContext forSingle(_Insert._DomainInsert insert, ArmyParser dialect, Visible visible) {
-        return new DomainInsertContext(dialect, insert, visible);
-    }
-
-    static DomainInsertContext forParent(_Insert._ChildDomainInsert domainStmt, ArmyParser dialect, Visible visible) {
-        return new DomainInsertContext(dialect, domainStmt, visible);
-    }
-
-
-    static DomainInsertContext forChild(DomainInsertContext parentContext, _Insert._ChildDomainInsert insert
+    static DomainInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._DomainInsert insert
             , ArmyParser dialect, Visible visible) {
-        return new DomainInsertContext(parentContext, insert, dialect, visible);
+        return new DomainInsertContext((StatementContext) outerContext, insert, dialect, visible);
+    }
+
+
+    static DomainInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildDomainInsert domainStmt
+            , ArmyParser dialect, Visible visible) {
+        assert outerContext == null || outerContext instanceof LiteralMultiStmtContext;
+        if (outerContext != null && domainStmt.parentStmt().table().id().generatorType() == GeneratorType.POST) {
+            throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) domainStmt.table());
+        }
+        return new DomainInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
+    }
+
+    static DomainInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildDomainInsert insert
+            , DomainInsertContext parentContext) {
+        return new DomainInsertContext((StatementContext) outerContext, insert, parentContext);
     }
 
     private final DomainWrapper wrapper;
@@ -53,19 +59,21 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
     /**
      * create for {@link  SingleTableMeta}
      */
-    private DomainInsertContext(ArmyParser dialect, _Insert._DomainInsert domainStmt, Visible visible) {
-        super(dialect, domainStmt, visible);
+    private DomainInsertContext(@Nullable StatementContext outerContext, _Insert._DomainInsert domainStmt
+            , ArmyParser dialect, Visible visible) {
+        super(outerContext, domainStmt, dialect, visible);
 
         this.domainList = domainStmt.domainList();
         this.wrapper = new DomainWrapper(this, domainStmt);
     }
 
+
     /**
      * create for {@link  ChildTableMeta}
      */
-    private DomainInsertContext(DomainInsertContext parentContext, _Insert._ChildDomainInsert stmt
-            , ArmyParser dialect, Visible visible) {
-        super(parentContext, stmt, dialect, visible);
+    private DomainInsertContext(@Nullable StatementContext outerContext, _Insert._ChildDomainInsert stmt
+            , DomainInsertContext parentContext) {
+        super(outerContext, stmt, parentContext);
 
         this.domainList = stmt.domainList();
         assert this.domainList == parentContext.domainList;//must check for criteria api implementation

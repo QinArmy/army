@@ -23,18 +23,24 @@ import java.util.function.Function;
 final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _InsertStmtParams._ValueParams {
 
 
-    static ValuesInsertContext forSingle(_Insert._ValuesInsert stmt, ArmyParser dialect, Visible visible) {
-        _DialectUtils.checkDefaultValueMap(stmt);
-        return new ValuesInsertContext(stmt, dialect, visible);
-    }
-
-    static ValuesInsertContext forParent(_Insert._ChildValuesInsert domainStmt, ArmyParser dialect, Visible visible) {
-        return new ValuesInsertContext(domainStmt, dialect, visible);
-    }
-
-    static ValuesInsertContext forChild(ValuesInsertContext parentContext, _Insert._ChildValuesInsert insert
+    static ValuesInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._ValuesInsert stmt
             , ArmyParser dialect, Visible visible) {
-        return new ValuesInsertContext(parentContext, insert, dialect, visible);
+        _DialectUtils.checkDefaultValueMap(stmt);
+        return new ValuesInsertContext((StatementContext) outerContext, stmt, dialect, visible);
+    }
+
+    static ValuesInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildValuesInsert domainStmt
+            , ArmyParser dialect, Visible visible) {
+        assert outerContext == null || outerContext instanceof LiteralMultiStmtContext;
+        if (outerContext != null && domainStmt.parentStmt().table().id().generatorType() == GeneratorType.POST) {
+            throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) domainStmt.table());
+        }
+        return new ValuesInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
+    }
+
+    static ValuesInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildValuesInsert insert
+            , ValuesInsertContext parentContext) {
+        return new ValuesInsertContext((StatementContext) outerContext, insert, parentContext);
     }
 
 
@@ -51,11 +57,12 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      *
-     * @see #forSingle(_Insert._ValuesInsert, ArmyParser, Visible)
-     * @see #forParent(_Insert._ChildValuesInsert, ArmyParser, Visible)
+     * @see #forSingle(_SqlContext, _Insert._ValuesInsert, ArmyParser, Visible)
+     * @see #forParent(_SqlContext, _Insert._ChildValuesInsert, ArmyParser, Visible)
      */
-    private ValuesInsertContext(_Insert._ValuesInsert domainStmt, ArmyParser dialect, Visible visible) {
-        super(dialect, domainStmt, visible);
+    private ValuesInsertContext(@Nullable StatementContext outerContext, _Insert._ValuesInsert domainStmt
+            , ArmyParser parser, Visible visible) {
+        super(outerContext, domainStmt, parser, visible);
 
         if (domainStmt instanceof _Insert._ChildValuesInsert) {
             this.rowList = ((_Insert._ChildValuesInsert) domainStmt).parentStmt().rowPairList();
@@ -83,11 +90,11 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      *
-     * @see #forChild(ValuesInsertContext, _Insert._ChildValuesInsert, ArmyParser, Visible)
+     * @see #forChild(_SqlContext, _Insert._ChildValuesInsert, ValuesInsertContext)
      */
-    private ValuesInsertContext(ValuesInsertContext parentContext, _Insert._ChildValuesInsert stmt
-            , ArmyParser dialect, Visible visible) {
-        super(parentContext, stmt, dialect, visible);
+    private ValuesInsertContext(@Nullable StatementContext outerContext, _Insert._ChildValuesInsert stmt
+            , ValuesInsertContext parentContext) {
+        super(outerContext, stmt, parentContext);
 
         this.rowList = stmt.rowPairList();
         assert this.rowList.size() == parentContext.rowList.size();

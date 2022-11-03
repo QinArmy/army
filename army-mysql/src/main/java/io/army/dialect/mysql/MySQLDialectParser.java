@@ -99,71 +99,65 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     @Override
-    protected void valueSyntaxInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert stmt) {
+    protected void valueSyntaxInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert insert) {
         assert context.parser() == this;
+
+        final _MySQLInsert stmt = (_MySQLInsert) insert;
+
         //1. append insert common part
-        this.appendInsertCommonPart(context, (_MySQLInsert) stmt);
+        this.appendInsertCommonPart(context, stmt);
         //2. column list
         context.appendFieldList();
         //3. values clause
         context.appendValueList();
-
-        final _MySQLInsert insert = (_MySQLInsert) stmt;
-        if (stmt instanceof _MySQLInsert._InsertWithDuplicateKey) {
-            //4. on duplicate key update clause
-            this.appendInsertDuplicateKeyClause(context, (_MySQLInsert._InsertWithDuplicateKey) stmt);
-        }
-
+        //4. on duplicate key update clause
+        this.appendMySqlConflictClause(context, stmt);
     }
 
 
     @Override
-    protected void assignmentInsert(final _AssignmentInsertContext context, final _Insert._AssignmentInsert stmt) {
+    protected void assignmentInsert(final _AssignmentInsertContext context, final _Insert._AssignmentInsert insert) {
         assert context.parser() == this;
+        final _MySQLInsert stmt = (_MySQLInsert) insert;
         //1. append insert common part
-        this.appendInsertCommonPart(context, (_MySQLInsert) stmt);
+        this.appendInsertCommonPart(context, stmt);
         //2. append assignment clause
         context.appendAssignmentClause();
-
-        if (stmt instanceof _MySQLInsert._InsertWithDuplicateKey) {
-            //3. on duplicate key update clause
-            this.appendInsertDuplicateKeyClause(context, (_MySQLInsert._InsertWithDuplicateKey) stmt);
-        }
+        //3. on duplicate key update clause
+        this.appendMySqlConflictClause(context, stmt);
 
     }
 
 
     @Override
-    protected void queryInsert(final _QueryInsertContext context, final _Insert._QueryInsert stmt) {
+    protected void queryInsert(final _QueryInsertContext context, final _Insert._QueryInsert insert) {
         assert context.parser() == this;
-        final _MySQLInsert._MySQLQueryInsert insert = (_MySQLInsert._MySQLQueryInsert) stmt;
+        final _MySQLInsert stmt = (_MySQLInsert) insert;
         //1. append insert common part
-        this.appendInsertCommonPart(context, insert);
+        this.appendInsertCommonPart(context, stmt);
         //2. column list
         context.appendFieldList();
         //3. sub query
         context.appendSubQuery();
 
-        if (stmt instanceof _MySQLInsert._InsertWithDuplicateKey) {
-            //4. on duplicate key update clause
-            this.appendInsertDuplicateKeyClause(context, (_MySQLInsert._InsertWithDuplicateKey) stmt);
-        }
+        //4. on duplicate key update clause
+        this.appendMySqlConflictClause(context, stmt);
 
     }
 
     @Override
-    public Stmt dialectStmt(final DialectStatement statement, final Visible visible) {
+    public Stmt dialectStatement(final DialectStatement statement, final Visible visible) {
         statement.prepared();
         final Stmt stmt;
         if (statement instanceof MySQLReplace) {
             _MySQLConsultant.assertReplace((MySQLReplace) statement);
-            stmt = this.parseInsert((_Insert) statement, visible);
+            stmt = this.parseInsert(null, (_Insert) statement, visible);
         } else if (statement instanceof Values && statement instanceof MySQLValues) {
             if (!this.asOf80) {
                 throw _Exceptions.unknownStatement(statement, this.dialect);
             }
             _MySQLConsultant.assertValues((MySQLValues) statement);
-            stmt = this.values((Values) statement, visible);
+            stmt = this.parseValues((Values) statement, visible);
         } else if (statement instanceof MySQLLoadData) {
             _MySQLConsultant.assertMySQLLoad((MySQLLoadData) statement);
             stmt = this.loadData((MySQLLoadData) statement, visible);
@@ -176,14 +170,16 @@ final class MySQLDialectParser extends MySQLParser {
 
     @Override
     protected void dialectSimpleQuery(final _Query query, final _SimpleQueryContext context) {
-        if (context.parser() != this) {
-            throw illegalDialect();
-        }
+        assert context.parser() == this;
         final _MySQL80Query stmt = (_MySQL80Query) query;
-        final StringBuilder sqlBuilder = context.sqlBuilder();
 
         //1. WITH clause
-        this.mySqlWithClauseAndSpace(stmt.isRecursive(), stmt.cteList(), context);
+        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+        if (sqlBuilder.length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
         //2. SELECT key word
         sqlBuilder.append(_Constant.SELECT);
         //3. hint comment block
@@ -260,8 +256,12 @@ final class MySQLDialectParser extends MySQLParser {
     @Override
     protected void dialectSimpleValues(final _ValuesContext context, final _Values values) {
         assert context.parser() == this;
+        final StringBuilder sqlBuilder;
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
         //1. VALUES keyword
-        context.sqlBuilder().append(_Constant.VALUES);
+        sqlBuilder.append(_Constant.VALUES);
         //2. row_constructor_list
         this.valuesClauseOfValues(context, _Constant.SPACE_ROW, values.rowList());
         //3. ORDER BY clause
@@ -276,14 +276,16 @@ final class MySQLDialectParser extends MySQLParser {
      */
     @Override
     protected void dialectSingleUpdate(final _SingleUpdate update, final _SingleUpdateContext context) {
+        assert context.parser() == this;
         final _MySQLSingleUpdate stmt = (_MySQLSingleUpdate) update;
-        if (context.parser() != this) {
-            throw illegalDialect();
-        }
-        final StringBuilder sqlBuilder = context.sqlBuilder();
         //1. WITH clause
-        this.mySqlWithClauseAndSpace(stmt.isRecursive(), stmt.cteList(), context);
+        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
 
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+        if (sqlBuilder.length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
         //2. UPDATE key word
         sqlBuilder.append(_Constant.UPDATE);
 
@@ -293,19 +295,21 @@ final class MySQLDialectParser extends MySQLParser {
         this.updateModifiers(stmt.modifierList(), sqlBuilder);
 
         //5. table name
-        final TableMeta<?> table = context.table();
-        final SingleTableMeta<?> singleTable;
-        if (table instanceof ChildTableMeta) {
-            singleTable = ((ChildTableMeta<?>) table).parentMeta();
+        final TableMeta<?> domainTable;
+        domainTable = context.table();
+        final SingleTableMeta<?> updateTable;
+        if (domainTable instanceof ChildTableMeta) {
+            updateTable = ((ChildTableMeta<?>) domainTable).parentMeta();
         } else {
-            singleTable = (SingleTableMeta<?>) table;
+            updateTable = (SingleTableMeta<?>) domainTable;
         }
-        final String safeTableAlias = context.safeTableAlias();
-        sqlBuilder.append(_Constant.SPACE);
-        this.safeObjectName(table, sqlBuilder);
 
+        this.safeObjectName(domainTable, sqlBuilder.append(_Constant.SPACE));
         //6. partition
         this.partitionClause(stmt.partitionList(), sqlBuilder);
+
+        final String safeTableAlias;
+        safeTableAlias = context.safeTableAlias();
         //7. table alias
         sqlBuilder.append(_Constant.SPACE_AS_SPACE).append(safeTableAlias);
 
@@ -314,40 +318,36 @@ final class MySQLDialectParser extends MySQLParser {
         //9. set clause
         this.singleTableSetClause(stmt, context);
         //10. where clause
-        this.dmlWhereClause(stmt.predicateList(), context);
+        this.dmlWhereClause(stmt.wherePredicateList(), context);
         //10.1 discriminator
-        if (singleTable instanceof ParentTableMeta) {
-            this.discriminator(table, safeTableAlias, context);
+        if (updateTable instanceof ParentTableMeta) {
+            this.discriminator(domainTable, safeTableAlias, context);
         }
         //10.2 append condition update fields
         context.appendConditionFields();
 
         //10.3 append visible
-        if (singleTable.containField(_MetaBridge.VISIBLE)) {
-            this.visiblePredicate(singleTable, safeTableAlias, context, false);
+        if (updateTable.containField(_MetaBridge.VISIBLE)) {
+            this.visiblePredicate(updateTable, safeTableAlias, context, false);
         }
         //11. order by clause
         this.orderByClause(stmt.orderByList(), context);
         //12. limit clause
-        final long rowCount;
-        rowCount = stmt.rowCount();
-        if (rowCount >= 0) {
-            sqlBuilder.append(_Constant.SPACE_LIMIT_SPACE)
-                    .append(rowCount);
-        }
+        this.standardLimitClause(null, stmt.rowCount(), context);
+
     }
 
     @Override
     protected void dialectMultiUpdate(final _MultiUpdate update, final _MultiUpdateContext context) {
-        if (context.parser() != this) {
-            throw illegalDialect();
-        }
+        assert context.parser() == this;
         final _MySQLMultiUpdate stmt = (_MySQLMultiUpdate) update;
-
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
         //1. WITH clause
-        this.mySqlWithClauseAndSpace(stmt.isRecursive(), stmt.cteList(), context);
-
-        final StringBuilder sqlBuilder = context.sqlBuilder();
+        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        if (sqlBuilder.length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
         //2. UPDATE key word
         sqlBuilder.append(_Constant.UPDATE);
 
@@ -360,7 +360,7 @@ final class MySQLDialectParser extends MySQLParser {
         //6. set clause
         this.multiTableSetClause(stmt, context);
         //7. where clause
-        this.dmlWhereClause(stmt.predicateList(), context);
+        this.dmlWhereClause(stmt.wherePredicateList(), context);
         //7.2 append condition update fields
         context.appendConditionFields();
         //7.3 append visible
@@ -371,15 +371,16 @@ final class MySQLDialectParser extends MySQLParser {
 
     @Override
     protected void dialectSingleDelete(final _SingleDelete delete, final _SingleDeleteContext context) {
-        if (context.parser() != this) {
-            throw illegalDialect();
-        }
+        assert context.parser() == this;
         final _MySQLSingleDelete stmt = (_MySQLSingleDelete) delete;
-        final StringBuilder sqlBuilder = context.sqlBuilder();
 
         //1. WITH clause
-        this.mySqlWithClauseAndSpace(stmt.isRecursive(), stmt.cteList(), context);
-
+        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+        if (sqlBuilder.length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
         //2. DELETE key word
         sqlBuilder.append(_Constant.DELETE);
 
@@ -388,7 +389,12 @@ final class MySQLDialectParser extends MySQLParser {
         //4. modifier
         this.deleteModifiers(stmt.modifierList(), sqlBuilder);
 
-        final SingleTableMeta<?> table = stmt.table();
+        final SingleTableMeta<?> deleteTable;
+        deleteTable = stmt.table();
+
+        //5. FROM clause
+        sqlBuilder.append(_Constant.SPACE_FROM_SPACE);
+        this.safeObjectName(deleteTable, sqlBuilder);
 
         final String safeTableAlias;
         if (this.asOf80) {
@@ -396,11 +402,6 @@ final class MySQLDialectParser extends MySQLParser {
         } else {
             safeTableAlias = null;
         }
-
-        //5. FROM clause
-        sqlBuilder.append(_Constant.SPACE_FROM_SPACE);
-        this.safeObjectName(table, sqlBuilder);
-
         if (safeTableAlias != null) {
             sqlBuilder.append(_Constant.SPACE_AS_SPACE)
                     .append(safeTableAlias);
@@ -410,39 +411,34 @@ final class MySQLDialectParser extends MySQLParser {
         this.partitionClause(stmt.partitionList(), sqlBuilder);
 
         //7. where clause
-        this.dmlWhereClause(stmt.predicateList(), context);
+        this.dmlWhereClause(stmt.wherePredicateList(), context);
 
         //7.1 append discriminator
-        if (table instanceof ParentTableMeta) {
-            this.discriminator(table, safeTableAlias, context);
+        if (deleteTable instanceof ParentTableMeta) {
+            this.discriminator(deleteTable, safeTableAlias, context);
         }
         //7.2 append visible
-        if (table.containField(_MetaBridge.VISIBLE)) {
-            this.visiblePredicate(table, safeTableAlias, context, false);
+        if (deleteTable.containField(_MetaBridge.VISIBLE)) {
+            this.visiblePredicate(deleteTable, safeTableAlias, context, false);
         }
         //8. order by clause
         this.orderByClause(stmt.orderByList(), context);
         //9. limit clause
-        final long rowCount;
-        rowCount = stmt.rowCount();
-        if (rowCount >= 0L) {
-            sqlBuilder.append(_Constant.SPACE_LIMIT_SPACE)
-                    .append(rowCount);
-        }
+        this.standardLimitClause(null, stmt.rowCount(), context);
 
     }
 
     @Override
     protected void dialectMultiDelete(final _MultiDelete delete, final _MultiDeleteContext context) {
-        if (context.parser() != this) {
-            throw illegalDialect();
-        }
+        assert context.parser() == this;
         final _MySQLMultiDelete stmt = (_MySQLMultiDelete) delete;
-
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
         //1. WITH clause
-        this.mySqlWithClauseAndSpace(stmt.isRecursive(), stmt.cteList(), context);
-
-        final StringBuilder sqlBuilder = context.sqlBuilder();
+        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        if (sqlBuilder.length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
         //2. DELETE key word
         sqlBuilder.append(_Constant.DELETE);
 
@@ -451,13 +447,13 @@ final class MySQLDialectParser extends MySQLParser {
         //4. modifier
         this.deleteModifiers(stmt.modifierList(), sqlBuilder);
         //5. delete table clause
-        final boolean usingSyntax = stmt.isUsingSyntax();
+        final boolean usingSyntax;
+        usingSyntax = stmt.isUsingSyntax();
         if (usingSyntax) {
             sqlBuilder.append(_Constant.SPACE_FROM);
         }
         final Map<String, ParentTableMeta<?>> aliasToLonelyParent;
         aliasToLonelyParent = this.tableAliasList(stmt.deleteTableList(), context);
-
         if (usingSyntax) {
             sqlBuilder.append(_Constant.SPACE_USING);
         } else {
@@ -466,7 +462,7 @@ final class MySQLDialectParser extends MySQLParser {
         //6. table_references (and partition ,index hint)
         this.mysqlTableReferences(stmt.tableBlockList(), context, false);
         //7. where clause
-        this.dmlWhereClause(stmt.predicateList(), context);
+        this.dmlWhereClause(stmt.wherePredicateList(), context);
 
         //7.1 append lonely parent discriminator
         for (Map.Entry<String, ParentTableMeta<?>> e : aliasToLonelyParent.entrySet()) {
@@ -479,7 +475,14 @@ final class MySQLDialectParser extends MySQLParser {
 
     /*-----------------------below private method-----------------------*/
 
-
+    /**
+     * @see #appendInsertCommonPart(_InsertContext, _MySQLInsert)
+     * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
+     * @see #dialectSingleDelete(_SingleDelete, _SingleDeleteContext)
+     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     * @see #dialectSimpleQuery(_Query, _SimpleQueryContext)
+     */
     private void hintClause(List<Hint> hintList, final StringBuilder sqlBuilder, final _SqlContext context) {
         if (hintList.size() == 0) {
             return;
@@ -515,6 +518,9 @@ final class MySQLDialectParser extends MySQLParser {
 
     }
 
+    /**
+     * @see #appendInsertCommonPart(_InsertContext, _MySQLInsert)
+     */
     private void replaceModifiers(List<MySQLs.Modifier> modifierList, StringBuilder sqlBuilder) {
         assert modifierList.size() == 1;
         final MySQLs.Modifier modifier = modifierList.get(0);
@@ -527,27 +533,35 @@ final class MySQLDialectParser extends MySQLParser {
         }
     }
 
+    /**
+     * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     */
     private void updateModifiers(List<MySQLs.Modifier> modifierList, StringBuilder builder) {
         for (MySQLs.Modifier modifier : modifierList) {
             if (modifier == MySQLs.LOW_PRIORITY
                     || modifier == MySQLs.IGNORE) {
                 builder.append(modifier.render());
-            } else {
-                throw new CriteriaException(String.format("%s UPDATE don't support %s", this.dialect, modifier));
+                continue;
             }
+            throw new CriteriaException(String.format("%s UPDATE don't support %s", this.dialect, modifier));
         }
     }
 
 
+    /**
+     * @see #dialectSingleDelete(_SingleDelete, _SingleDeleteContext)
+     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     */
     private void deleteModifiers(List<MySQLs.Modifier> modifierList, StringBuilder builder) {
         for (MySQLs.Modifier modifier : modifierList) {
             if (modifier == MySQLs.LOW_PRIORITY
                     || modifier == MySQLs.QUICK
                     || modifier == MySQLs.IGNORE) {
                 builder.append(modifier.render());
-            } else {
-                throw new CriteriaException(String.format("%s DELETE don't support %s", this.dialect, modifier));
+                continue;
             }
+            throw new CriteriaException(String.format("%s DELETE don't support %s", this.dialect, modifier));
         }
     }
 
@@ -595,8 +609,11 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #queryInsert(_QueryInsertContext, _Insert._QueryInsert)
      */
     private void appendInsertCommonPart(final _InsertContext context, final _MySQLInsert stmt) {
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+        if (sqlBuilder.length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
         //1. INSERT/REPLACE keywords
         if (stmt instanceof MySQLReplace) {
             sqlBuilder.append("REPLACE");
@@ -624,64 +641,20 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     /**
-     * @see #valueSyntaxInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
-     * @see #assignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
-     * @see #queryInsert(_QueryInsertContext, _Insert._QueryInsert)
+     * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
+     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     * @see #dialectSimpleQuery(_Query, _SimpleQueryContext)
      */
-    private void appendInsertDuplicateKeyClause(final _InsertContext context, final _MySQLInsert clause) {
-        //1. on duplicate key update keywords
-        final StringBuilder sqlBuilder = context.sqlBuilder()
-                .append(SPACE_ON_DUPLICATE_KEY_UPDATE);
-        //2. on duplicate key update clause
-        final TableMeta<?> insertTable;
-        insertTable = context.insertTable();
-
-        final List<_ItemPair> updateSetList;
-        updateSetList = clause.updateSetClauseList();
-        final int pairSize = updateSetList.size();
-        assert pairSize > 0;
-
-        TableField tableField;
-        _ItemPair._FieldItemPair pair;
-        _Expression value;
-        for (int i = 0; i < pairSize; i++) {
-            pair = (_ItemPair._FieldItemPair) updateSetList.get(i);
-            tableField = (TableField) pair.field();
-
-            switch (tableField.fieldName()) {
-                case _MetaBridge.UPDATE_TIME:
-                case _MetaBridge.VERSION:
-                    throw _Exceptions.armyManageField(tableField);
-            }
-            if (i > 0) {
-                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-            } else {
-                sqlBuilder.append(_Constant.SPACE);
-            }
-
-        }
-
-        if (insertTable instanceof SingleTableMeta) {
-            this.appendUpdateTimeAndVersion((SingleTableMeta<?>) insertTable, null, context);
-        }
-
-
-    }
-
-
     private void mysqlTableReferences(final List<_TableBlock> blockList, final _MultiTableContext context
             , final boolean nested) {
         final int blockSize = blockList.size();
-        if (blockSize == 0) {
-            throw _Exceptions.tableBlockListIsEmpty(nested);
-        }
-
-        final StringBuilder sqlBuilder = context.sqlBuilder();
+        assert blockSize > 0;
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
 
         if (nested) {
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
         }
-
         final boolean asOf80 = this.asOf80;
 
         _TableBlock block;
@@ -690,42 +663,43 @@ final class MySQLDialectParser extends MySQLParser {
         String alias;
         _JoinType joinType;
         List<_Predicate> predicateList;
+        SQLWords modifier;
         for (int i = 0; i < blockSize; i++) {
             block = blockList.get(i);
             joinType = block.jointType();
             if (i > 0) {
-                if (joinType == _JoinType.NONE) {
-                    throw _Exceptions.dontSupportJoinType(joinType, this.dialect);
-                }
+                assert joinType != _JoinType.NONE;
                 sqlBuilder.append(joinType.render());
-            } else if (joinType != _JoinType.NONE) {
-                throw _Exceptions.unexpectedEnum(joinType);
+            } else {
+                assert joinType == _JoinType.NONE;
             }
             tableItem = block.tableItem();
             alias = block.alias();
 
             if (tableItem instanceof TableMeta) {
-                sqlBuilder.append(_Constant.SPACE);//space prior to  table name
                 table = (TableMeta<?>) tableItem;
+                sqlBuilder.append(_Constant.SPACE);
                 this.safeObjectName(table, sqlBuilder);
                 if (block instanceof _MySQLTableBlock) {
                     this.partitionClause(((_MySQLTableBlock) block).partitionList(), sqlBuilder);
                 }
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE)
-                        .append(context.safeTableAlias(table, block.alias()));
+                        .append(context.safeTableAlias(table, alias));
                 if (block instanceof _MySQLTableBlock) {
                     this.indexHintClause(((_MySQLTableBlock) block).indexHintList(), sqlBuilder);
                 }
             } else if (tableItem instanceof SubQuery) {
-                if (tableItem instanceof _LateralSubQuery) {
-                    if (asOf80) {
-                        throw _Exceptions.dontSupportLateralItem(tableItem, alias, this.dialect);
+                if (block instanceof _DialectTableBlock
+                        && (modifier = ((_DialectTableBlock) block).modifier()) != null) {
+                    if (!asOf80) {
+                        throw _Exceptions.dontSupportModifier(modifier, this.dialect);
                     }
-                    this.lateralSubQuery(joinType, (SubQuery) tableItem, context);
-                } else {
-                    this.subQueryStmt((SubQuery) tableItem, context);
+                    sqlBuilder.append(modifier.render());
                 }
-                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+                this.parseQuery((SubQuery) tableItem, context);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
+                        .append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
             } else if (tableItem instanceof NestedItems) {
                 _MySQLConsultant.assertNestedItems((NestedItems) tableItem);
@@ -746,8 +720,10 @@ final class MySQLDialectParser extends MySQLParser {
                     throw _Exceptions.tableItemAliasNoText(tableItem);
                 }
             } else if (tableItem instanceof SubValues && tableItem instanceof MySQLValues) {
-                this.valuesStmt((MySQLValues) tableItem, context);
-                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+                this.parseValues((_Values) tableItem, context);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
+                        .append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
             } else {
                 throw _Exceptions.dontSupportTableItem(tableItem, alias, this.dialect);
@@ -760,18 +736,16 @@ final class MySQLDialectParser extends MySQLParser {
                 case FULL_JOIN:
                 case STRAIGHT_JOIN: {
                     predicateList = block.onClauseList();
-                    if (!nested || predicateList.size() > 0) {
+                    if (predicateList.size() > 0) {
                         this.onClause(predicateList, context);
+                    } else {
+                        assert nested;
                     }
                 }
                 break;
                 case NONE:
-                case CROSS_JOIN: {
-                    if (block.onClauseList().size() > 0) {
-                        throw _Exceptions.joinTypeNoOnClause(joinType);
-                    }
-                }
-                break;
+                case CROSS_JOIN:
+                    break;
                 default:
                     throw _Exceptions.unexpectedEnum(joinType);
             }
@@ -790,8 +764,7 @@ final class MySQLDialectParser extends MySQLParser {
      * @return a unmodified map
      * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
      */
-    private Map<String, ParentTableMeta<?>> tableAliasList(
-            final List<_Pair<String, TableMeta<?>>> deleteTablePairList
+    private Map<String, ParentTableMeta<?>> tableAliasList(final List<_Pair<String, TableMeta<?>>> deleteTablePairList
             , final _MultiDeleteContext context) {
 
         final int aliasSize = deleteTablePairList.size();
@@ -863,6 +836,16 @@ final class MySQLDialectParser extends MySQLParser {
         return aliasToLonelyParent;
     }
 
+    /**
+     * @see #valueSyntaxInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
+     * @see #assignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
+     * @see #queryInsert(_QueryInsertContext, _Insert._QueryInsert)
+     * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
+     * @see #dialectSingleDelete(_SingleDelete, _SingleDeleteContext)
+     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     * @see #dialectSimpleQuery(_Query, _SimpleQueryContext)
+     */
     private void partitionClause(final List<String> partitionList, final StringBuilder sqlBuilder) {
         final int partitionSize = partitionList.size();
         if (partitionSize == 0) {
@@ -878,6 +861,12 @@ final class MySQLDialectParser extends MySQLParser {
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
+    /**
+     * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
+     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     * @see #dialectSimpleQuery(_Query, _SimpleQueryContext)
+     */
     private void indexHintClause(List<? extends _IndexHint> indexHintList, final StringBuilder sqlBuilder) {
         if (indexHintList.size() == 0) {
             return;
@@ -914,15 +903,14 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
 
-    private void mySqlWithClauseAndSpace(final boolean recursive, final List<_Cte> cteList,
-                                         final _SqlContext context) {
+    private void mySqlWithClause(final boolean recursive, final List<_Cte> cteList, final _SqlContext context) {
         if (cteList.size() == 0) {
             return;
         }
         if (!this.asOf80) {
             throw _Exceptions.dontSupportWithClause(this.dialect);
         }
-        this.withSubQueryAndSpace(recursive, cteList, context, _MySQLConsultant::assertMySQLCte);
+        this.withSubQuery(recursive, cteList, context, _MySQLConsultant::assertMySQLCte);
 
     }
 
@@ -1007,7 +995,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     /**
-     * @see #dialectStmt(DialectStatement, Visible)
+     * @see #dialectStatement(DialectStatement, Visible)
      */
     private Stmt loadData(final MySQLLoadData loadData, final Visible visible) {
         final Stmt stmt;
@@ -1215,6 +1203,26 @@ final class MySQLDialectParser extends MySQLParser {
 
             }
 
+        }
+
+    }
+
+    /**
+     * @see #valueSyntaxInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
+     * @see #assignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
+     * @see #queryInsert(_QueryInsertContext, _Insert._QueryInsert)
+     */
+    private void appendMySqlConflictClause(final _InsertContext context, final _MySQLInsert stmt) {
+        final List<_ItemPair> itemPairList;
+        itemPairList = stmt.updateSetClauseList();
+        if (itemPairList.size() > 0) {
+            final String safeRowAlias;
+            if (!(stmt instanceof _Insert._QueryInsert) && (safeRowAlias = context.safeRowAlias()) != null) {
+                context.sqlBuilder()
+                        .append(_Constant.SPACE_AS_SPACE)
+                        .append(safeRowAlias);
+            }
+            this.appendInsertConflictSetClause(context, SPACE_ON_DUPLICATE_KEY_UPDATE, itemPairList);
         }
 
     }

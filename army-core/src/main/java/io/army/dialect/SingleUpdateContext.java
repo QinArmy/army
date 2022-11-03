@@ -6,6 +6,7 @@ import io.army.criteria.QualifiedField;
 import io.army.criteria.TableField;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.modelgen._MetaBridge;
@@ -17,12 +18,9 @@ import java.util.List;
 
 final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdateContext, DmlStmtParams {
 
-    static SingleUpdateContext create(_SingleUpdate stmt, ArmyParser dialect, Visible visible) {
+    static SingleUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate stmt
+            , ArmyParser dialect, Visible visible) {
         return new SingleUpdateContext(stmt, dialect, visible);
-    }
-
-    static SingleUpdateContext create(_SingleUpdate stmt, StatementContext outerContext) {
-        return new SingleUpdateContext(stmt, outerContext);
     }
 
 

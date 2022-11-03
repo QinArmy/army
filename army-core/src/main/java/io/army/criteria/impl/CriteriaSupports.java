@@ -226,7 +226,7 @@ abstract class CriteriaSupports {
             } else if (this instanceof Delete) {
                 stmt = parser.delete((Delete) this, visible);
             } else if (this instanceof DialectStatement) {
-                stmt = parser.dialectStmt((DialectStatement) this, visible);
+                stmt = parser.dialectStatement((DialectStatement) this, visible);
             } else {
                 throw new IllegalStateException("unknown statement");
             }

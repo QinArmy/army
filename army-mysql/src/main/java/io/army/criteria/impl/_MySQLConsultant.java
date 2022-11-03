@@ -126,22 +126,22 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     }
 
     public static void assertMySQLCte(final _Cte cte) {
-        if (!(cte instanceof SQLs.CteImpl || cte instanceof CriteriaContexts.RefCte)) {
-            throw new CriteriaException("Illegal Cte");
+        if (!(cte instanceof SQLs.CteImpl)) {
+            throw illegalCteImpl(cte);
         }
         final SubStatement subStatement;
         subStatement = cte.subStatement();
-        if (subStatement instanceof _UnionRowSet0) {
-            if (!(subStatement instanceof MySQL80UnionQuery || subStatement instanceof StandardUnionQueries)) {
-                throw new CriteriaException("Illegal sub query");
-            }
-        } else if (!(subStatement instanceof MySQL80SimpleQuery || subStatement instanceof StandardQueries)) {
-            throw new CriteriaException("Illegal sub query");
+        if (!(subStatement instanceof MySQLQueries
+                || subStatement instanceof MySQLQueries.MySQLBracketQuery
+                || subStatement instanceof SimpleQueries.UnionSubQuery)) {
+            throw illegalCteImpl(cte);
         }
+
     }
 
+
     public static void assertNestedItems(final NestedItems nestedItems) {
-        if (!(nestedItems instanceof MySQLNestedItems || nestedItems instanceof StandardNestedItems)) {
+        if (!(nestedItems instanceof MySQLNestedJoins)) {
             throw illegalNestedItems(nestedItems, Database.MySQL);
         }
 
