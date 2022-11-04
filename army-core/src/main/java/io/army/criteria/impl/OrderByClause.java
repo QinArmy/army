@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._RowSet;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.dialect.Dialect;
@@ -266,6 +267,16 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         }
 
         @Override
+        public final int selectionSize() {
+            return ((_RowSet) this.left).selectionSize();
+        }
+
+        @Override
+        public final List<? extends SelectItem> selectItemList() {
+            return ((_RowSet) this.left).selectItemList();
+        }
+
+        @Override
         public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
             final DialectParser parser;
             parser = _MockDialects.from(dialect);
@@ -317,10 +328,6 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
             super(left, unionType, right);
         }
 
-        @Override
-        public final List<? extends SelectItem> selectItemList() {
-            return ((DerivedTable) this.left).selectItemList();
-        }
 
         @Override
         public final Selection selection(String derivedAlias) {

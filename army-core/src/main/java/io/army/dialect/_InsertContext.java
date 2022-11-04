@@ -3,8 +3,9 @@ package io.army.dialect;
 import io.army.criteria.LiteralMode;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.stmt.SimpleStmt;
 
-public interface _InsertContext extends StmtContext {
+public interface _InsertContext extends DmlContext {
 
     TableMeta<?> insertTable();
 
@@ -13,6 +14,11 @@ public interface _InsertContext extends StmtContext {
     @Nullable
     String safeRowAlias();
 
+    @Override
+    _InsertContext parentContext();
+
+    @Override
+    SimpleStmt build();
 
     interface _ColumnListSpec {
 

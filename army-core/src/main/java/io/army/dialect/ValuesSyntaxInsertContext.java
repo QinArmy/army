@@ -23,9 +23,8 @@ abstract class ValuesSyntaxInsertContext extends InsertContext implements _Value
     }
 
 
-    ValuesSyntaxInsertContext(@Nullable StatementContext outerContext, _Insert._ChildInsert stmt
-            , ValuesSyntaxInsertContext parentContext) {
-        super(outerContext, stmt, parentContext.parser, parentContext.visible);
+    ValuesSyntaxInsertContext(_Insert._ChildInsert stmt, ValuesSyntaxInsertContext parentContext) {
+        super(null, stmt, parentContext.parser, parentContext.visible);
         this.nullMode = ((_Insert._ValuesSyntaxInsert) stmt).nullHandle();
         assert this.nullMode == parentContext.nullMode;
     }

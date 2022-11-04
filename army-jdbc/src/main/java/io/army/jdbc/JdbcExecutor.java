@@ -367,7 +367,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         final long startTime = System.currentTimeMillis();
 
         final long insertRows;
-        insertRows = this.executeInsert(stmt.parentStmt(), timeout);
+        insertRows = this.executeInsert(stmt.firstStmt(), timeout);
         final int restSeconds;
         if (timeout > 0) {
             final long restMills = (timeout * 1000L) - (System.currentTimeMillis() - startTime);
@@ -385,7 +385,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         }
         try {
             final long childRows;
-            childRows = this.executeInsert(stmt.childStmt(), restSeconds);
+            childRows = this.executeInsert(stmt.secondStmt(), restSeconds);
 
             if (childRows != insertRows) {
                 throw parentChildRowsNotMatch(insertRows, childRows);

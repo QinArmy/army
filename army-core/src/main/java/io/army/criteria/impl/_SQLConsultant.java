@@ -27,14 +27,14 @@ public abstract class _SQLConsultant {
 
     public static void assertStandardUpdate(Update update) {
         if (!(update instanceof StandardUpdates)) {
-            throw instanceNotMatch(update, StandardUpdates.class);
+            throw nonArmyStatement(update);
         }
 
     }
 
     public static void assertStandardDelete(Delete delete) {
         if (!(delete instanceof StandardDeletes)) {
-            throw instanceNotMatch(delete, StandardDeletes.class);
+            throw nonArmyStatement(delete);
         }
     }
 
@@ -80,6 +80,11 @@ public abstract class _SQLConsultant {
 
     static CriteriaException illegalCteImpl(_Cte cte) {
         return new CriteriaException(String.format("Illegal Cte %s", cte));
+    }
+
+    static CriteriaException nonArmyStatement(Statement statement) {
+        String m = String.format("%s isn't army implementation", _ClassUtils.safeClassName(statement));
+        return new CriteriaException(m);
     }
 
 

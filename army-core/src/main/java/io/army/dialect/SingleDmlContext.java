@@ -1,23 +1,28 @@
 package io.army.dialect;
 
+import io.army.bean.ObjectAccessorFactory;
+import io.army.bean.ReadAccessor;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
+import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._SingleDml;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.BatchStmt;
 import io.army.stmt.DmlStmtParams;
-import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
-import java.util.Collections;
 import java.util.List;
 
-abstract class SingleDmlContext extends StatementContext implements DmlContext, _SingleTableContext, DmlStmtParams {
+abstract class SingleDmlContext extends StatementContext implements DmlContext.MultiStmtBatch
+        , _SingleTableContext, DmlStmtParams {
+
+    private final SingleDmlContext parentContext;
 
     final TableMeta<?> table;
 
@@ -33,10 +38,16 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
 
     private final List<Selection> selectionList;
 
+    private final List<?> paramList;
 
-    SingleDmlContext(_SingleDml dml, ArmyParser dialect, Visible visible) {
-        super(dialect, visible);
+    private final ReadAccessor accessor;
 
+    private int paramIndex;
+
+
+    SingleDmlContext(@Nullable StatementContext outerContext, _SingleDml dml, ArmyParser dialect, Visible visible) {
+        super(outerContext, dialect, visible);
+        this.parentContext = null;
         this.table = dml.table();
         this.tableAlias = dml.tableAlias();
         this.safeTableAlias = dialect.identifier(this.tableAlias);
@@ -46,15 +57,29 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
         } else {
             this.safeParentAlias = null;
         }
-        this.hasVersion = _DialectUtils.hasOptimistic(dml.predicateList());
+        this.hasVersion = _DialectUtils.hasOptimistic(dml.wherePredicateList());
         this.supportAlias = !(this instanceof DeleteContext) || dialect.singleDeleteHasTableAlias();
-        this.selectionList = Collections.emptyList();
+        this.selectionList = null;
+
+        if (dml instanceof _BatchDml) {
+            this.paramList = ((_BatchDml) dml).paramList();
+            if (outerContext instanceof _MultiStatementContext) {
+                this.accessor = ObjectAccessorFactory.readOnlyFromInstance(this.paramList.get(0));
+                this.paramIndex = 0;
+            } else {
+                this.accessor = null;
+            }
+        } else {
+            this.paramList = null;
+            this.accessor = null;
+        }
 
     }
 
 
-    SingleDmlContext(_SingleDml dml, StatementContext outerContext) {
-        super(outerContext);
+    SingleDmlContext(_SingleDml dml, SingleDmlContext parentContext) {
+        super(null, parentContext.parser, parentContext.visible);
+        this.parentContext = parentContext;
 
         this.table = dml.table();
         this.tableAlias = dml.tableAlias();
@@ -65,14 +90,26 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
         } else {
             this.safeParentAlias = null;
         }
-        this.hasVersion = _DialectUtils.hasOptimistic(dml.predicateList());
+        this.hasVersion = _DialectUtils.hasOptimistic(dml.wherePredicateList());
         this.supportAlias = !(this instanceof DeleteContext) || parser.singleDeleteHasTableAlias();
-        this.selectionList = Collections.emptyList();
+        this.selectionList = null;
+
+        if (dml instanceof _BatchDml) {
+            this.paramList = ((_BatchDml) dml).paramList();
+        } else {
+            this.paramList = null;
+        }
+        this.accessor = null;
     }
 
     @Override
     public final TableMeta<?> table() {
         return this.table;
+    }
+
+    @Override
+    public final DmlContext parentContext() {
+        return this.parentContext;
     }
 
     @Override
@@ -119,20 +156,41 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
 
 
     @Override
-    public final SimpleStmt build() {
-        if (this.hasNamedParam()) {
-            throw _Exceptions.namedParamInNonBatch();
+    public final void nextElement() {
+        final List<?> paramList = this.paramList;
+        if (paramList == null) {
+            throw _Exceptions.independentDmlDontSupportNamedValue();
         }
-        return Stmts.dml(this);
+        final int paramSize, paramIndex;
+        paramSize = paramList.size();
+        paramIndex = this.paramIndex;
+        assert paramIndex >= 0 && paramIndex < (paramSize - 1);
+        this.paramIndex++;
     }
 
     @Override
-    public final BatchStmt build(List<?> paramList) {
-        if (!this.hasNamedParam()) {
-            throw _Exceptions.noNamedParamInBatch();
-        }
-        return Stmts.batchDml(this, paramList);
+    public final int currentIndex() {
+        return this.paramIndex;
     }
+
+    @Override
+    public final Stmt build() {
+        if (this.accessor != null) {
+            //now,multi-multi statement
+            throw new UnsupportedOperationException();
+        }
+        final List<?> paramList = this.paramList;
+        final Stmt stmt;
+        if (paramList != null) {
+            stmt = Stmts.batchDml(this, paramList);
+        } else if (this.hasNamedParam()) {
+            throw _Exceptions.namedParamInNonBatch();
+        } else {
+            stmt = Stmts.dml(this);
+        }
+        return stmt;
+    }
+
 
     @Override
     public final boolean hasVersion() {
@@ -142,6 +200,21 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
     @Override
     public final List<Selection> selectionList() {
         return this.selectionList;
+    }
+
+
+    @Override
+    final Object currentRowNamedValue(String name) {
+        final List<?> paramList = this.paramList;
+        final ReadAccessor accessor = this.accessor;
+        if (paramList == null || accessor == null) {
+            throw _Exceptions.independentDmlDontSupportNamedValue();
+        }
+        final int paramSize, paramIndex;
+        paramSize = paramList.size();
+        paramIndex = this.paramIndex;
+        assert paramIndex >= 0 && paramIndex < paramSize;
+        return accessor.get(paramList.get(paramIndex), name);
     }
 
     final void parentColumnFromSubQuery(final FieldMeta<?> parentField) {

@@ -26,7 +26,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
             , Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forUpdate(statement, dialect, visible);
-        return new MultiUpdateContext(((StatementContext) outerContext, statement, tableContext, dialect, visible);
+        return new MultiUpdateContext((StatementContext) outerContext, statement, tableContext, dialect, visible);
     }
 
     static MultiUpdateContext forChild(@Nullable _SqlContext outerContext, _SingleUpdate stmt, ArmyParser dialect
@@ -241,6 +241,11 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         return Stmts.batchDml(this, paramList);
     }
 
+    @Override
+    public DmlContext parentContext() {
+        //multi-table update always null
+        return null;
+    }
 
     @Override
     public boolean hasVersion() {

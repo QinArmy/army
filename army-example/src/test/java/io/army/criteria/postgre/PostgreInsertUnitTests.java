@@ -115,7 +115,7 @@ public class PostgreInsertUnitTests {
                 assert stmt instanceof PairStmt;
                 parentStmt = ((_Insert._ChildInsert) insert).parentStmt();
                 assert parentStmt.table().id().generatorType() != GeneratorType.POST
-                        || ((PairStmt) stmt).parentStmt() instanceof GeneratedKeyStmt;
+                        || ((PairStmt) stmt).firstStmt() instanceof GeneratedKeyStmt;
             }
         }
 

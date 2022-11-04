@@ -7,7 +7,8 @@ import io.army.meta.FieldMeta;
  * This interface representing dialect single table update syntax context.
  * </p>
  */
-public interface _SingleUpdateContext extends UpdateContext, _SingleTableContext, _SetClauseContext {
+public interface _SingleUpdateContext extends _UpdateContext, _SingleTableContext, _SetClauseContext {
+
 
     void appendParentField(FieldMeta<?> parentField);
 

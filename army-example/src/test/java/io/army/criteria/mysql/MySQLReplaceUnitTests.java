@@ -160,7 +160,7 @@ public class MySQLReplaceUnitTests {
 
             if (insert instanceof _Insert._ChildInsert && !(insert instanceof _Insert._QueryInsert)) {
                 assert stmt instanceof PairStmt;
-                assert !(((PairStmt) stmt).parentStmt() instanceof GeneratedKeyStmt);
+                assert !(((PairStmt) stmt).firstStmt() instanceof GeneratedKeyStmt);
             }
 
         }

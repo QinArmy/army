@@ -165,17 +165,17 @@ abstract class MySQLSimpleValues<I extends Item>
     }//SimpleSubValueValues
 
 
-    private static abstract class MySQLBracketValues<I extends Item>
-            extends BracketRowSet<
-            I,
-            MySQLValues._UnionOrderBySpec<I>,
-            MySQLValues._UnionOrderByCommaSpec<I>,
-            _AsValuesClause<I>,
-            Object,
-            Object,
-            MySQLValues._ValueWithComplexSpec<I>>
-            implements MySQLValues._UnionOrderBySpec<I>
-            , MySQLValues {
+     static abstract class MySQLBracketValues<I extends Item>
+             extends BracketRowSet<
+             I,
+             MySQLValues._UnionOrderBySpec<I>,
+             MySQLValues._UnionOrderByCommaSpec<I>,
+             _AsValuesClause<I>,
+             Object,
+             Object,
+             MySQLValues._ValueWithComplexSpec<I>>
+             implements MySQLValues._UnionOrderBySpec<I>
+             , MySQLValues {
 
         private MySQLBracketValues(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext) {
             super(CriteriaContexts.bracketContext(spec, outerContext));

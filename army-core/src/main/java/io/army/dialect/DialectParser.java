@@ -30,11 +30,12 @@ public interface DialectParser {
 
     SimpleStmt select(Select select, Visible visible);
 
-    void rowSet(RowSet rowSet, _SqlContext original);
 
-   default Stmt dialectStatement(DialectStatement statement, Visible visible) {
-       throw new UnsupportedOperationException();
-   }
+    void scalarSubQuery(SubQuery query, _SqlContext original);
+
+    default Stmt dialectStatement(DialectStatement statement, Visible visible) {
+        throw new UnsupportedOperationException();
+    }
 
     List<String> startTransaction(Isolation isolation, boolean readonly);
 

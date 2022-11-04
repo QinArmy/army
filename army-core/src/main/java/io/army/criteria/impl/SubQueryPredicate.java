@@ -106,7 +106,7 @@ final class SubQueryPredicate extends OperationPredicate {
         if (queryOperator != null) {
             sqlBuilder.append(this.queryOperator.rendered());
         }
-        context.parser().rowSet(this.subQuery, context);
+        context.parser().scalarSubQuery(this.subQuery, context);
     }
 
     @Override

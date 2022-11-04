@@ -5,6 +5,7 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Delete;
 import io.army.criteria.impl.inner._MultiDelete;
 import io.army.criteria.impl.inner._SingleDelete;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.DmlStmtParams;
@@ -17,17 +18,19 @@ import java.util.Map;
 
 final class MultiDeleteContext extends MultiTableContext implements _MultiDeleteContext, DmlStmtParams {
 
-    static MultiDeleteContext create(_MultiDelete stmt, ArmyParser dialect, Visible visible) {
+    static MultiDeleteContext create(@Nullable _SqlContext outerContext, _MultiDelete stmt, ArmyParser dialect
+            , Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forDelete(stmt, dialect, visible);
 
-        return new MultiDeleteContext(stmt, tableContext, dialect, visible);
+        return new MultiDeleteContext((StatementContext) outerContext, stmt, tableContext, dialect, visible);
     }
 
-    static MultiDeleteContext forChild(_SingleDelete stmt, ArmyParser dialect, Visible visible) {
+    static MultiDeleteContext forChild(@Nullable _SqlContext outerContext, _SingleDelete stmt, ArmyParser dialect
+            , Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forChild((ChildTableMeta<?>) stmt.table(), stmt.tableAlias(), dialect);
-        return new MultiDeleteContext(stmt, tableContext, dialect, visible);
+        return new MultiDeleteContext((StatementContext) outerContext, stmt, tableContext, dialect, visible);
     }
 
 
@@ -35,10 +38,11 @@ final class MultiDeleteContext extends MultiTableContext implements _MultiDelete
     private final boolean hasVersion;
 
 
-    private MultiDeleteContext(_Delete delete, TableContext tableContext, ArmyParser dialect, Visible visible) {
-        super(tableContext, dialect, visible);
+    private MultiDeleteContext(@Nullable StatementContext outerContext, _Delete delete, TableContext tableContext
+            , ArmyParser dialect, Visible visible) {
+        super(outerContext, tableContext, dialect, visible);
         this.childAliasToParentAlias = tableContext.childAliasToParentAlias;
-        this.hasVersion = _DialectUtils.hasOptimistic(delete.predicateList());
+        this.hasVersion = _DialectUtils.hasOptimistic(delete.wherePredicateList());
     }
 
 
@@ -56,6 +60,13 @@ final class MultiDeleteContext extends MultiTableContext implements _MultiDelete
             }
         }
         return parentAlias;
+    }
+
+
+    @Override
+    public DmlContext parentContext() {
+        //multi-delete always null
+        return null;
     }
 
     @Override

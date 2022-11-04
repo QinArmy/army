@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 abstract class MySQLParser extends _AbstractDialectParser {
 
@@ -379,9 +380,10 @@ abstract class MySQLParser extends _AbstractDialectParser {
     /**
      * @see #update(Update, Visible)
      */
+    @Nullable
     @Override
-    protected final Stmt standardChildUpdate(final @Nullable _SqlContext outerContext, final _SingleUpdate update
-            , final Visible visible) {
+    protected final <T> T standardChildUpdate(final @Nullable _SqlContext outerContext, final _SingleUpdate update
+            , final Visible visible, final Function<_UpdateContext, T> function) {
 
         final _MultiUpdateContext context;
         context = this.createMultiUpdateContext(outerContext, update, visible);
@@ -413,19 +415,15 @@ abstract class MySQLParser extends _AbstractDialectParser {
         if (parentTable.containField(_MetaBridge.VISIBLE)) {
             this.visiblePredicate(parentTable, safeParentTableAlias, context, false);
         }
-        final Stmt stmt;
-        if (update instanceof _BatchDml) {
-            stmt = context.build(((_BatchDml) update).paramList());
-        } else {
-            stmt = context.build();
-        }
-        return stmt;
+        return function.apply(context);
     }
 
+    @Nullable
     @Override
-    protected final Stmt standardChildDelete(final _SingleDelete delete, final Visible visible) {
+    protected final Stmt standardChildDelete(final @Nullable _SqlContext outerContext, final _SingleDelete delete
+            , final Visible visible) {
         final _MultiDeleteContext context;
-        context = this.createMultiDeleteContext(delete, visible);
+        context = this.createMultiDeleteContext(outerContext, delete, visible);
 
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) delete.table();
         final ParentTableMeta<?> parentTable = childTable.parentMeta();
@@ -458,7 +456,9 @@ abstract class MySQLParser extends _AbstractDialectParser {
             this.visiblePredicate(parentTable, safeParentTableAlias, context, false);
         }
         final Stmt stmt;
-        if (delete instanceof _BatchDml) {
+        if (outerContext != null) {
+            stmt = null;
+        } else if (delete instanceof _BatchDml) {
             stmt = context.build(((_BatchDml) delete).paramList());
         } else {
             stmt = context.build();

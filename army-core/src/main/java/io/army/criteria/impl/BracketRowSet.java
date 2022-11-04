@@ -141,7 +141,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder()
                 .append(_Constant.SPACE_LEFT_PAREN);
-        context.parser().rowSet(rowSet, context);
+        context.parser().scalarSubQuery(rowSet, context);
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 

@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-interface _ParenRowSetContext extends _SqlContext {
+public interface _ParenRowSetContext extends _SqlContext {
 
 
 }

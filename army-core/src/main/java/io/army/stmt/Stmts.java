@@ -8,6 +8,7 @@ import io.army.lang.Nullable;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,8 +54,12 @@ public abstract class Stmts {
         return new QueryStmt(params);
     }
 
-    public static PairStmt pair(io.army.stmt.SimpleStmt parent, io.army.stmt.SimpleStmt child) {
-        return new PairStmtImpl(parent, child);
+    public static PairStmt pair(SimpleStmt first, SimpleStmt second) {
+        return new PairStmtImpl(first, second);
+    }
+
+    public static PairBatchStmt pairBatch(BatchStmt first, BatchStmt second) {
+        return new PairBatchStmtImpl(first, second);
     }
 
     public static BatchStmt batchDml(final DmlStmtParams params, final List<?> paramWrapperList) {
@@ -148,35 +153,84 @@ public abstract class Stmts {
 
     private static final class PairStmtImpl implements PairStmt {
 
-        private final io.army.stmt.SimpleStmt parent;
+        private final SimpleStmt first;
 
-        private final io.army.stmt.SimpleStmt child;
+        private final SimpleStmt second;
 
-        private PairStmtImpl(io.army.stmt.SimpleStmt parent, io.army.stmt.SimpleStmt child) {
-            this.parent = parent;
-            this.child = child;
+        private PairStmtImpl(SimpleStmt first, SimpleStmt second) {
+            this.first = first;
+            this.second = second;
         }
 
         @Override
-        public io.army.stmt.SimpleStmt parentStmt() {
-            return this.parent;
+        public SimpleStmt firstStmt() {
+            return this.first;
         }
 
         @Override
-        public io.army.stmt.SimpleStmt childStmt() {
-            return this.child;
+        public SimpleStmt secondStmt() {
+            return this.second;
         }
 
         @Override
         public String printSql(final Function<String, String> function) {
-            return String.format("%s\n%s", function.apply(this.parent.sql()), function.apply(this.child.sql()));
+            return _StringUtils.builder()
+                    .append(function.apply(this.first.sql()))
+                    .append('\n')
+                    .append(function.apply(this.second.sql()))
+                    .toString();
         }
 
         @Override
         public String toString() {
-            return String.format("parent sql:\n%s\n%s", this.parent.sql(), this.child.sql());
+            return String.format("first sql:\n%s\n%s", this.first.sql(), this.second.sql());
         }
     }
+
+
+    private static final class PairBatchStmtImpl implements PairBatchStmt {
+
+        private final BatchStmt first;
+
+        private final BatchStmt second;
+
+        private PairBatchStmtImpl(BatchStmt first, BatchStmt second) {
+            this.first = first;
+            this.second = second;
+        }
+
+        @Override
+        public BatchStmt firstStmt() {
+            return this.first;
+        }
+
+        @Override
+        public BatchStmt secondStmt() {
+            return this.second;
+        }
+
+        @Override
+        public String printSql(Function<String, String> function) {
+            return _StringUtils.builder()
+                    .append("batch pair first:\n")
+                    .append(function.apply(this.first.sql()))
+                    .append("\nbatch pair second:\n")
+                    .append(function.apply(this.second.sql()))
+                    .toString();
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append("batch pair first:\n")
+                    .append(this.first.sql())
+                    .append("\nbatch pair second:\n")
+                    .append(this.second.sql())
+                    .toString();
+        }
+
+
+    }//PairBatchStmtImpl
 
 
     private static final class SimpleDmlStmt implements SimpleStmt {

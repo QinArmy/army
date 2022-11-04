@@ -46,9 +46,8 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         return new DomainInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
     }
 
-    static DomainInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildDomainInsert insert
-            , DomainInsertContext parentContext) {
-        return new DomainInsertContext((StatementContext) outerContext, insert, parentContext);
+    static DomainInsertContext forChild(_Insert._ChildDomainInsert insert, DomainInsertContext parentContext) {
+        return new DomainInsertContext(insert, parentContext);
     }
 
     private final DomainWrapper wrapper;
@@ -71,9 +70,8 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
     /**
      * create for {@link  ChildTableMeta}
      */
-    private DomainInsertContext(@Nullable StatementContext outerContext, _Insert._ChildDomainInsert stmt
-            , DomainInsertContext parentContext) {
-        super(outerContext, stmt, parentContext);
+    private DomainInsertContext(_Insert._ChildDomainInsert stmt, DomainInsertContext parentContext) {
+        super(stmt, parentContext);
 
         this.domainList = stmt.domainList();
         assert this.domainList == parentContext.domainList;//must check for criteria api implementation

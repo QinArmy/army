@@ -20,18 +20,15 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
 
     static SingleUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate stmt
             , ArmyParser dialect, Visible visible) {
-        return new SingleUpdateContext(stmt, dialect, visible);
+        return new SingleUpdateContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
 
     private List<TableField> conditionFieldList;
 
-    private SingleUpdateContext(_SingleUpdate stmt, ArmyParser dialect, Visible visible) {
-        super(stmt, dialect, visible);
-    }
-
-    private SingleUpdateContext(_SingleUpdate stmt, StatementContext outerContext) {
-        super(stmt, outerContext);
+    private SingleUpdateContext(@Nullable StatementContext outerContext, _SingleUpdate stmt, ArmyParser dialect
+            , Visible visible) {
+        super(outerContext, stmt, dialect, visible);
     }
 
 

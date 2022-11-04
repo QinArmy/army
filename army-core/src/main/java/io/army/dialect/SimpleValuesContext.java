@@ -5,6 +5,7 @@ import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Values;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
@@ -12,21 +13,22 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 
-final class ValuesContext extends StatementContext implements _ValuesContext {
+final class SimpleValuesContext extends StatementContext implements _ValuesContext {
 
-    static ValuesContext create(_Values stmt, ArmyParser dialect, Visible visible) {
-        return new ValuesContext(stmt, dialect, visible);
+    static SimpleValuesContext create(@Nullable _SqlContext outerContext, _Values stmt, ArmyParser dialect
+            , Visible visible) {
+        return new SimpleValuesContext(stmt, dialect, visible);
     }
 
-    static ValuesContext create(_SqlContext outerContext) {
-        return new ValuesContext(outerContext);
+    static SimpleValuesContext create(_SqlContext outerContext) {
+        return new SimpleValuesContext(outerContext);
     }
 
 
     private final List<Selection> selectionList;
 
     @SuppressWarnings("unchecked")
-    private ValuesContext(_Values stmt, ArmyParser dialect, Visible visible) {
+    private SimpleValuesContext(_Values stmt, ArmyParser dialect, Visible visible) {
         super(dialect, visible);
 
         final List<? extends SelectItem> selectItemList;
@@ -41,7 +43,7 @@ final class ValuesContext extends StatementContext implements _ValuesContext {
 
     }
 
-    private ValuesContext(_SqlContext outerContext) {
+    private SimpleValuesContext(_SqlContext outerContext) {
         super((StatementContext) outerContext);
         this.selectionList = null;
     }

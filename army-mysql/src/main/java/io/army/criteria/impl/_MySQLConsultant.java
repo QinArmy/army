@@ -1,10 +1,12 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._SingleDelete;
+import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
-import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.Database;
 import io.army.util._ClassUtils;
 
@@ -44,22 +46,22 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     public static void assertReplace(final MySQLReplace replace) {
         if (replace instanceof _Insert._DomainInsert) {
             if (!(replace instanceof MySQLReplaces.DomainReplaceStatement)) {
-                throw instanceNotMatch(replace, MySQLReplaces.DomainReplaceStatement.class);
+                throw nonArmyStatement(replace);
             }
         } else if (replace instanceof _Insert._ValuesInsert) {
-            if (!(replace instanceof MySQLReplaces.ValuesReplaceStatement)) {
-                throw instanceNotMatch(replace, MySQLReplaces.ValuesReplaceStatement.class);
+            if (!(replace instanceof MySQLReplaces.ValueReplaceStatement)) {
+                throw nonArmyStatement(replace);
             }
         } else if (replace instanceof _Insert._AssignmentInsert) {
-            if (!(replace instanceof MySQLReplaces.AssignmentsReplaceStatement)) {
-                throw instanceNotMatch(replace, MySQLReplaces.AssignmentsReplaceStatement.class);
+            if (!(replace instanceof MySQLReplaces.PrimaryAssignmentReplaceStatement)) {
+                throw nonArmyStatement(replace);
             }
         } else if (replace instanceof _Insert._QueryInsert) {
-            if (!(replace instanceof MySQLReplaces.QueryReplaceStatement)) {
-                throw instanceNotMatch(replace, MySQLReplaces.QueryReplaceStatement.class);
+            if (!(replace instanceof MySQLReplaces.PrimaryQueryReplaceStatement)) {
+                throw nonArmyStatement(replace);
             }
         } else {
-            throw new CriteriaException("Not MySQL dialect replace statement.");
+            throw nonArmyStatement(replace);
         }
 
     }
@@ -86,30 +88,29 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
         }
     }
 
-    public static void assertQuery(final Query rowSet) {
-        if (rowSet instanceof _UnionRowSet0) {
-            if (!(rowSet instanceof MySQL80UnionQuery)) {
-                throw instanceNotMatch(rowSet, MySQL80UnionQuery.class);
-            }
-        } else if (!(rowSet instanceof MySQL80SimpleQuery)) {
-            throw instanceNotMatch(rowSet, MySQL80SimpleQuery.class);
+    public static void assertQuery(final Query query) {
+        if (!(query instanceof MySQLQueries
+                || query instanceof MySQLQueries.MySQLBracketQuery
+                || query instanceof SimpleQueries.UnionSelect
+                || query instanceof SimpleQueries.UnionSubQuery)) {
+            throw nonArmyStatement(query);
         }
 
     }
 
-    public static void assertValues(final MySQLValues values) {
-        if (values instanceof _UnionRowSet0) {
-            if (!(values instanceof MySQLUnionValues)) {
-                throw instanceNotMatch(values, MySQLUnionValues.class);
-            }
-        } else if (!(values instanceof MySQLSimpleValues)) {
-            throw instanceNotMatch(values, MySQLSimpleValues.class);
+
+    public static void assertValues(final RowSet.DqlValues values) {
+        if (!(values instanceof MySQLSimpleValues
+                || values instanceof MySQLSimpleValues.MySQLBracketValues
+                || values instanceof SimpleValues.UnionValues
+                || values instanceof SimpleValues.UnionSubValues)) {
+            throw nonArmyStatement(values);
         }
     }
 
     public static void assertMySQLLoad(final MySQLLoadData load) {
         if (!(load instanceof MySQLLoads.MySQLLoadDataStatement)) {
-            throw instanceNotMatch(load, MySQLLoads.MySQLLoadDataStatement.class);
+            throw nonArmyStatement(load);
         }
     }
 

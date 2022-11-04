@@ -38,9 +38,9 @@ final class AssignmentInsertContext extends InsertContext
         return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
-    static AssignmentInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildAssignmentInsert stmt
+    static AssignmentInsertContext forChild(_Insert._ChildAssignmentInsert stmt
             , AssignmentInsertContext parentContext) {
-        return new AssignmentInsertContext((StatementContext) outerContext, stmt, parentContext);
+        return new AssignmentInsertContext(stmt, parentContext);
     }
 
 
@@ -78,11 +78,11 @@ final class AssignmentInsertContext extends InsertContext
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      *
-     * @see #forChild(_SqlContext, _Insert._ChildAssignmentInsert, AssignmentInsertContext)
+     * @see #forChild(_Insert._ChildAssignmentInsert, AssignmentInsertContext)
      */
-    private AssignmentInsertContext(@Nullable StatementContext outerContext, _Insert._ChildAssignmentInsert stmt
+    private AssignmentInsertContext(_Insert._ChildAssignmentInsert stmt
             , AssignmentInsertContext parentContext) {
-        super(outerContext, stmt, parentContext);
+        super(stmt, parentContext);
 
         this.pairList = stmt.assignmentPairList();
         ;

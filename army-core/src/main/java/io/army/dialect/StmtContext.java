@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.SQLParam;
-import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
 
 /**
  * <p>
@@ -22,6 +22,6 @@ interface StmtContext extends _SqlContext {
     boolean hasParam();
 
 
-    SimpleStmt build();
+    Stmt build();
 
 }

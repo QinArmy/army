@@ -253,6 +253,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException multiStmtDontSupportParam() {
+        return new CriteriaException("multi-statement don't support parameter placeholder.");
+    }
+
     public static CriteriaException dontSupportDialectStatement(DialectStatement statement, Dialect dialect) {
         String m = String.format("%s don't dialect statement[%s]", dialect, _ClassUtils.safeClassName(statement));
         return new CriteriaException(m);
@@ -560,6 +564,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException independentDmlDontSupportNamedValue() {
+        String m = "Only the batch update(delete) in multi-statement context support named parameter(literal).";
+        return new CriteriaException(m);
+    }
 
     public static CriteriaException singleUpdateChildField(TableField field, Dialect dialect) {
         String m;

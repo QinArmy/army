@@ -5,6 +5,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.stmt.BatchStmt;
 import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
@@ -16,6 +17,8 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         , _InsertContext._AssignmentsSpec
         , _InsertContext._QuerySyntaxSpec
         , _InsertStmtParams {
+
+    private InsertContext parentContext;
 
     final TableMeta<?> domainTable;
 
@@ -58,7 +61,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
     InsertContext(@Nullable StatementContext outerContext, final _Insert domainStmt
             , ArmyParser parser, Visible visible) {
         super(outerContext, parser, visible);
-
+        this.parentContext = null;
         final _Insert nonChildStmt;
         if (domainStmt instanceof _Insert._ChildInsert) {
             nonChildStmt = ((_Insert._ChildInsert) domainStmt).parentStmt();
@@ -130,9 +133,9 @@ abstract class InsertContext extends StatementContext implements _InsertContext
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      */
-    InsertContext(final @Nullable StatementContext outerContext, final _Insert._ChildInsert stmt
-            , final InsertContext parentContext) {
-        super(outerContext, parentContext.parser, parentContext.visible);
+    InsertContext(final _Insert._ChildInsert stmt, final InsertContext parentContext) {
+        super(null, parentContext.parser, parentContext.visible);
+        this.parentContext = parentContext;
         this.insertTable = stmt.table();
         this.domainTable = this.insertTable;
 
@@ -180,8 +183,23 @@ abstract class InsertContext extends StatementContext implements _InsertContext
     }
 
     @Override
+    public final _InsertContext parentContext() {
+        return this.parentContext;
+    }
+
+    @Override
+    public final BatchStmt build(List<?> paramList) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public final TableMeta<?> insertTable() {
         return this.insertTable;
+    }
+
+    @Override
+    public final String safeRowAlias() {
+        return this.safeRowAlias;
     }
 
     @Override

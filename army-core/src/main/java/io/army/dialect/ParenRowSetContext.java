@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.Visible;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
@@ -8,8 +9,8 @@ import io.army.util._Exceptions;
 
 final class ParenRowSetContext extends StatementContext implements _ParenRowSetContext {
 
-    static ParenRowSetContext create(ArmyParser parser, Visible visible) {
-        return new ParenRowSetContext(parser, visible);
+    static ParenRowSetContext create(@Nullable _SqlContext outerContext, ArmyParser parser, Visible visible) {
+        return new ParenRowSetContext((StatementContext) outerContext, parser, visible);
     }
 
 
@@ -20,8 +21,8 @@ final class ParenRowSetContext extends StatementContext implements _ParenRowSetC
     private final StatementContext outerContext;
 
 
-    ParenRowSetContext(ArmyParser parser, Visible visible) {
-        super(null, parser, visible);
+    ParenRowSetContext(StatementContext outerContext, ArmyParser parser, Visible visible) {
+        super(outerContext, parser, visible);
         this.outerContext = null;
     }
 

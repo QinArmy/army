@@ -4,9 +4,10 @@ import io.army.criteria.SelectItem;
 import io.army.criteria.Selection;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Query;
-import io.army.dialect._Constant;
+import io.army.criteria.impl.inner._RowSet;
 import io.army.dialect._SqlContext;
 import io.army.meta.TypeMeta;
+import io.army.util._Exceptions;
 
 import java.util.List;
 
@@ -14,13 +15,13 @@ final class ScalarExpression extends OperationExpression {
 
     static ScalarExpression from(final SubQuery subQuery) {
         final List<? extends SelectItem> selectItemList;
-        selectItemList = ((_Query) subQuery).selectItemList();
+        selectItemList = ((_RowSet) subQuery).selectItemList();
         if (!(selectItemList.size() == 1 && selectItemList.get(0) instanceof Selection)) {
-            String m = String.format("Scalar sub query must only one %s .", Selection.class.getName());
-            throw ContextStack.criteriaError(ContextStack.peek(), m);
+            throw ContextStack.criteriaError(ContextStack.peek(), _Exceptions::nonScalarSubQuery, subQuery);
         }
         return new ScalarExpression(subQuery);
     }
+
 
 
     private final SubQuery subQuery;
@@ -37,14 +38,7 @@ final class ScalarExpression extends OperationExpression {
 
     @Override
     public void appendSql(final _SqlContext context) {
-        final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder()
-                .append(_Constant.SPACE_LEFT_PAREN);
-
-        context.parser().rowSet(this.subQuery, context);
-
-        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
+        context.parser().scalarSubQuery(this.subQuery, context);
     }
 
 

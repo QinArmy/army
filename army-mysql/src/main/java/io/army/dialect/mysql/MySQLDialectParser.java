@@ -7,6 +7,7 @@ import io.army.criteria.impl._MySQLConsultant;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql.*;
+import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLValues;
@@ -25,6 +26,7 @@ import io.army.util._StringUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
@@ -90,7 +92,7 @@ final class MySQLDialectParser extends MySQLParser {
             if (!this.asOf80) {
                 throw _Exceptions.unknownStatement(rowSet, this.dialect);
             }
-            _MySQLConsultant.assertValues((MySQLValues) rowSet);
+            _MySQLConsultant.assertValues((RowSet.DqlValues) rowSet);
         } else {
             throw _Exceptions.unknownStatement(rowSet, this.dialect);
         }
@@ -145,22 +147,27 @@ final class MySQLDialectParser extends MySQLParser {
 
     }
 
+    @Nullable
     @Override
-    public Stmt dialectStatement(final DialectStatement statement, final Visible visible) {
+    protected Stmt parseDialectStatement(final @Nullable _SqlContext outerContext, final DialectStatement statement
+            , final Visible visible) {
         statement.prepared();
         final Stmt stmt;
         if (statement instanceof MySQLReplace) {
+            assert outerContext == null;
             _MySQLConsultant.assertReplace((MySQLReplace) statement);
             stmt = this.parseInsert(null, (_Insert) statement, visible);
+            assert stmt != null;
         } else if (statement instanceof Values && statement instanceof MySQLValues) {
             if (!this.asOf80) {
                 throw _Exceptions.unknownStatement(statement, this.dialect);
             }
-            _MySQLConsultant.assertValues((MySQLValues) statement);
-            stmt = this.parseValues((Values) statement, visible);
+            _MySQLConsultant.assertValues((Values) statement);
+            stmt = this.values(outerContext, (Values) statement, visible);
         } else if (statement instanceof MySQLLoadData) {
+            assert outerContext == null;
             _MySQLConsultant.assertMySQLLoad((MySQLLoadData) statement);
-            stmt = this.loadData((MySQLLoadData) statement, visible);
+            stmt = this.loadData((_MySQLLoadData) statement, visible);
         } else {
             throw _Exceptions.dontSupportDialectStatement(statement, this.dialect);
         }
@@ -254,6 +261,12 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     @Override
+    protected void dialectParensQuery(final _ParensRowSet query, final _ParenRowSetContext context) {
+        this.orderByClause(query.orderByList(), context);
+        this.standardLimitClause(query.offset(), query.rowCount(), context);
+    }
+
+    @Override
     protected void dialectSimpleValues(final _ValuesContext context, final _Values values) {
         assert context.parser() == this;
         final StringBuilder sqlBuilder;
@@ -271,19 +284,25 @@ final class MySQLDialectParser extends MySQLParser {
 
     }
 
+    @Override
+    protected void dialectParensRowSet(final _ParensRowSet values, final _ParenRowSetContext context) {
+        this.orderByClause(values.orderByList(), context);
+        this.standardLimitClause(values.offset(), values.rowCount(), context);
+    }
+
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/update.html">Single-table syntax</a>
      */
     @Override
-    protected void dialectSingleUpdate(final _SingleUpdate update, final _SingleUpdateContext context) {
+    protected <T> T parseSingleUpdate(final _SingleUpdate update, final _SingleUpdateContext context
+            , final Function<_UpdateContext, T> function) {
         assert context.parser() == this;
         final _MySQLSingleUpdate stmt = (_MySQLSingleUpdate) update;
         //1. WITH clause
         this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
 
         final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder();
-        if (sqlBuilder.length() > 0) {
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
             sqlBuilder.append(_Constant.SPACE);
         }
         //2. UPDATE key word
@@ -335,10 +354,12 @@ final class MySQLDialectParser extends MySQLParser {
         //12. limit clause
         this.standardLimitClause(null, stmt.rowCount(), context);
 
+        return function.apply(context);
     }
 
     @Override
-    protected void dialectMultiUpdate(final _MultiUpdate update, final _MultiUpdateContext context) {
+    protected <T> T parseMultiUpdate(final _MultiUpdate update, final _MultiUpdateContext context
+            , final Function<_UpdateContext, T> function) {
         assert context.parser() == this;
         final _MySQLMultiUpdate stmt = (_MySQLMultiUpdate) update;
         final StringBuilder sqlBuilder;
@@ -365,7 +386,7 @@ final class MySQLDialectParser extends MySQLParser {
         context.appendConditionFields();
         //7.3 append visible
         this.multiTableVisible(stmt.tableBlockList(), context, false);
-
+        return function.apply(context);
     }
 
 
@@ -610,8 +631,7 @@ final class MySQLDialectParser extends MySQLParser {
      */
     private void appendInsertCommonPart(final _InsertContext context, final _MySQLInsert stmt) {
         final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder();
-        if (sqlBuilder.length() > 0) {
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
             sqlBuilder.append(_Constant.SPACE);
         }
         //1. INSERT/REPLACE keywords
@@ -997,35 +1017,37 @@ final class MySQLDialectParser extends MySQLParser {
     /**
      * @see #dialectStatement(DialectStatement, Visible)
      */
-    private Stmt loadData(final MySQLLoadData loadData, final Visible visible) {
+    private Stmt loadData(final _MySQLLoadData loadData, final Visible visible) {
         final Stmt stmt;
         if (loadData instanceof _MySQLLoadData._ChildLoadData) {
-            final _MySQLLoadData._SingleLoadData parentLoad;
+            final _MySQLLoadData parentLoad;
             parentLoad = ((_MySQLLoadData._ChildLoadData) loadData).parentLoadData();
-            final SimpleStmt parentStmt, childStmt;
 
+            final SimpleStmt parentStmt, childStmt;
             parentStmt = this.simpleLoadData(parentLoad, visible);
-            childStmt = this.simpleLoadData((_MySQLLoadData._ChildLoadData) loadData, visible);
+            childStmt = this.simpleLoadData(loadData, visible);
             stmt = Stmts.pair(parentStmt, childStmt);
         } else {
-            stmt = this.simpleLoadData((_MySQLLoadData) loadData, visible);
+            stmt = this.simpleLoadData(loadData, visible);
         }
         return stmt;
     }
 
     /**
-     * @see #loadData(MySQLLoadData, Visible)
+     * @see #loadData(_MySQLLoadData, Visible)
      */
     private SimpleStmt simpleLoadData(final _MySQLLoadData loadData, final Visible visible) {
         final TableMeta<?> insertTable;
         insertTable = loadData.table();
-
         final _OtherDmlContext context;
         context = this.createOtherDmlContext(insertTable::isField, visible);
 
         //1. LOAD DATA keywords
-        final StringBuilder sqlBuilder = context.sqlBuilder()
-                .append("LOAD DATA");
+        final StringBuilder sqlBuilder;
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+        sqlBuilder.append("LOAD DATA");
         //2. modifiers
         this.loadDataModifier(loadData.modifierList(), sqlBuilder);
 
@@ -1046,16 +1068,19 @@ final class MySQLDialectParser extends MySQLParser {
         //6. PARTITION clause
         this.partitionClause(loadData.partitionList(), sqlBuilder);
         //7. CHARACTER SET
-        final String charsetName;
-        charsetName = loadData.charset();
-        if (charsetName != null) {
-            if (!Pattern.compile("[\\w\\d_]+").matcher(charsetName).matches()) {
-                String m = String.format("charset_name[%s] error.", charsetName);
+        final Object charset;
+        if ((charset = loadData.charset()) != null) {
+            sqlBuilder.append(" CHARACTER SET '");
+            if (charset instanceof MySQLCharset) {
+                sqlBuilder.append(((MySQLCharset) charset).render());
+            } else if (charset instanceof String
+                    && !Pattern.compile("[a-zA-Z][\\w_]*").matcher((String) charset).matches()) {
+                sqlBuilder.append((String) charset);
+            } else {
+                String m = String.format("charset_name[%s] error.", charset);
                 throw new CriteriaException(m);
             }
-            sqlBuilder.append(" CHARACTER SET '")
-                    .append(charsetName)
-                    .append(_Constant.QUOTE);
+            sqlBuilder.append(_Constant.QUOTE);
         }
 
         //8. FIELDS | COLUMNS clause
@@ -1084,6 +1109,9 @@ final class MySQLDialectParser extends MySQLParser {
         //12. SET column pair clause
         this.loadDataSetColumnPairClause(loadData.columItemPairList(), context);
 
+        if (context.hasParam()) {
+            throw new CriteriaException("MySQL LOAD DATA statement don't parameter placeholder.");
+        }
         return context.build();
     }
 

@@ -38,9 +38,8 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         return new ValuesInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
     }
 
-    static ValuesInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildValuesInsert insert
-            , ValuesInsertContext parentContext) {
-        return new ValuesInsertContext((StatementContext) outerContext, insert, parentContext);
+    static ValuesInsertContext forChild(_Insert._ChildValuesInsert insert, ValuesInsertContext parentContext) {
+        return new ValuesInsertContext(insert, parentContext);
     }
 
 
@@ -90,11 +89,10 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      *
-     * @see #forChild(_SqlContext, _Insert._ChildValuesInsert, ValuesInsertContext)
+     * @see #forChild(_Insert._ChildValuesInsert, ValuesInsertContext)
      */
-    private ValuesInsertContext(@Nullable StatementContext outerContext, _Insert._ChildValuesInsert stmt
-            , ValuesInsertContext parentContext) {
-        super(outerContext, stmt, parentContext);
+    private ValuesInsertContext(_Insert._ChildValuesInsert stmt, ValuesInsertContext parentContext) {
+        super(stmt, parentContext);
 
         this.rowList = stmt.rowPairList();
         assert this.rowList.size() == parentContext.rowList.size();

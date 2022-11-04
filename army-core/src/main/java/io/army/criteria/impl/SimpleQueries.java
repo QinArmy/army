@@ -370,7 +370,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         if (!(this instanceof SubQuery)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        context.parser().rowSet(this, context);
+        context.parser().scalarSubQuery(this, context);
     }
 
     @Override

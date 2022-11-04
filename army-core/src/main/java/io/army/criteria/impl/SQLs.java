@@ -1260,7 +1260,7 @@ public abstract class SQLs extends StandardSyntax {
             sqlBuilder.append(_Constant.SPACE_EQUAL);
 
             //5. append sub query
-            context.parser().rowSet((SubQuery) this.right, context);
+            context.parser().scalarSubQuery((SubQuery) this.right, context);
 
         }
 
