@@ -55,7 +55,7 @@ final class OnlyParentUpdateContext extends StatementContext implements DmlConte
 
 
     @Override
-    public ChildTableMeta<?> table() {
+    public ChildTableMeta<?> targetTable() {
         return this.table;
     }
 

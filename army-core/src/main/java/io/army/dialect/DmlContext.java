@@ -24,8 +24,15 @@ interface DmlContext extends StmtContext {
     @Nullable
     DmlContext parentContext();
 
+    @Deprecated
     default BatchStmt build(List<?> paramList) {
         throw new UnsupportedOperationException();
+    }
+
+
+    interface ConditionFieldsSpec {
+
+        void appendConditionFields();
     }
 
 

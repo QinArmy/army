@@ -4,7 +4,9 @@ import io.army.meta.TableMeta;
 
 interface _SingleTableContext extends StmtContext {
 
-    TableMeta<?> table();
+    TableMeta<?> targetTable();
+
+    TableMeta<?> domainTable();
 
     String tableAlias();
 

@@ -26,7 +26,6 @@ import io.army.util._StringUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
@@ -294,8 +293,7 @@ final class MySQLDialectParser extends MySQLParser {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/update.html">Single-table syntax</a>
      */
     @Override
-    protected <T> T parseSingleUpdate(final _SingleUpdate update, final _SingleUpdateContext context
-            , final Function<_UpdateContext, T> function) {
+    protected void parseSingleUpdate(final _SingleUpdate update, final _SingleUpdateContext context) {
         assert context.parser() == this;
         final _MySQLSingleUpdate stmt = (_MySQLSingleUpdate) update;
         //1. WITH clause
@@ -315,7 +313,7 @@ final class MySQLDialectParser extends MySQLParser {
 
         //5. table name
         final TableMeta<?> domainTable;
-        domainTable = context.table();
+        domainTable = context.targetTable();
         final SingleTableMeta<?> updateTable;
         if (domainTable instanceof ChildTableMeta) {
             updateTable = ((ChildTableMeta<?>) domainTable).parentMeta();
@@ -354,12 +352,10 @@ final class MySQLDialectParser extends MySQLParser {
         //12. limit clause
         this.standardLimitClause(null, stmt.rowCount(), context);
 
-        return function.apply(context);
     }
 
     @Override
-    protected <T> T parseMultiUpdate(final _MultiUpdate update, final _MultiUpdateContext context
-            , final Function<_UpdateContext, T> function) {
+    protected void parseMultiUpdate(final _MultiUpdate update, final _MultiUpdateContext context) {
         assert context.parser() == this;
         final _MySQLMultiUpdate stmt = (_MySQLMultiUpdate) update;
         final StringBuilder sqlBuilder;
@@ -386,7 +382,7 @@ final class MySQLDialectParser extends MySQLParser {
         context.appendConditionFields();
         //7.3 append visible
         this.multiTableVisible(stmt.tableBlockList(), context, false);
-        return function.apply(context);
+
     }
 
 
