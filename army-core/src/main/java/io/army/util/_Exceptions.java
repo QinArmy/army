@@ -574,6 +574,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+
     public static CriteriaException singleUpdateChildField(TableField field, Dialect dialect) {
         String m;
         m = String.format("%s single table update syntax don't support update child table field %s", dialect, field);

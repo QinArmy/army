@@ -11,7 +11,10 @@ import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.mapping.MappingType;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.DatabaseObject;
+import io.army.meta.ParentTableMeta;
+import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
@@ -106,18 +109,6 @@ abstract class MySQLParser extends _ArmyDialectParser {
         return false;
     }
 
-    @Override
-    public final boolean supportZone() {
-        // MySQL don't support zone.
-        return false;
-    }
-
-    @Override
-    public final boolean supportOnlyDefault() {
-        // MySQL support DEFAULT() function.
-        return true;
-    }
-
 
     @Override
     public final boolean tableAliasAfterAs() {
@@ -126,20 +117,10 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     @Override
-    public final boolean singleDeleteHasTableAlias() {
-        return this.asOf80;
-    }
-
-    @Override
     public final boolean hasRowKeywords() {
         return false;
     }
 
-    @Override
-    public final boolean supportRowLeftItem() {
-        //MySQL SET clause left item don't support ROW
-        return false;
-    }
 
     @Override
     public boolean supportSavePoint() {
@@ -471,37 +452,77 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 .append(_Constant.SPACE_FOR_UPDATE);
     }
 
+    /*################################## blow properties template method ##################################*/
+
     @Override
-    protected final Set<String> createKeyWordSet(final ServerMeta meta) {
+    protected final Set<String> createKeyWordSet(final Dialect dialect) {
         final Set<String> keyWordSet;
-        switch (meta.major()) {
-            case 5:
+        switch ((MySQLDialect) dialect) {
+            case MySQL55:
+            case MySQL56:
+            case MySQL57:
                 keyWordSet = MySQLDialectUtils.create57KeywordsSet();
                 break;
-            case 8:
+            case MySQL80:
                 keyWordSet = MySQLDialectUtils.create80KeywordsSet();
                 break;
             default:
-                throw new IllegalArgumentException(String.format("unsupported MySQL version[%s]", meta.version()));
+                throw _Exceptions.unexpectedEnum((Enum<?>) dialect);
         }
         return keyWordSet;
     }
 
     @Override
-    protected final _ChildUpdateMode childUpdateMode() {
+    protected final boolean isSupportDmlReturning(final Dialect dialect) {
+        // MySQL don't support RETURNING clause like Postgre SQL.
+        return false;
+    }
+
+    @Override
+    protected final boolean isSupportZone(final Dialect dialect) {
+        // MySQL don't support zone.
+        return false;
+    }
+
+    @Override
+    protected final boolean isTableAliasAfterAs(final Dialect dialect) {
+        // MySQL don't support AS key word before table alias.
+        return true;
+    }
+
+    @Override
+    protected final boolean isSupportOnlyDefault(final Dialect dialect) {
+        // MySQL support DEFAULT() function.
+        return true;
+    }
+
+    @Override
+    protected final _ChildUpdateMode childUpdateMode(final Dialect dialect) {
         return _ChildUpdateMode.MULTI_TABLE;
     }
 
     @Override
-    protected final boolean isSupportSingleUpdateAlias() {
+    protected final boolean isSupportSingleUpdateAlias(final Dialect dialect) {
         //MySQL always support single update alias;
         return true;
     }
 
     @Override
-    protected final boolean isSupportSingleDeleteAlias() {
-        //as of 8.x MySQL support single delete alias
-        return this.dialect.version() >= MySQLDialect.MySQL80.version();
+    protected final boolean isSupportSingleDeleteAlias(final Dialect dialect) {
+        //as of 8.0 MySQL support single delete alias
+        return dialect.version() >= MySQLDialect.MySQL80.version();
+    }
+
+    @Override
+    protected final boolean isSupportUpdateRow(final Dialect dialect) {
+        //MySQL don't support update row
+        return false;
+    }
+
+    @Override
+    protected final boolean isSupportUpdateDerivedField(final Dialect dialect) {
+        //MySQL don't support update derive field
+        return false;
     }
 
     /*################################## blow private method ##################################*/

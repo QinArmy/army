@@ -65,7 +65,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected void assertDialectInsert(final _Insert insert) {
+    protected void assertInsert(final _Insert insert) {
         if (insert instanceof MySQLReplace) {
             _MySQLConsultant.assertReplace((MySQLReplace) insert);
         } else {
@@ -74,17 +74,17 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected void assertDialectUpdate(Update update) {
+    protected void assertUpdate(Update update) {
         _MySQLConsultant.assertUpdate(update);
     }
 
     @Override
-    protected void assertDialectDelete(Delete delete) {
+    protected void assertDelete(Delete delete) {
         _MySQLConsultant.assertDelete(delete);
     }
 
     @Override
-    protected void assertDialectRowSet(final RowSet rowSet) {
+    protected void assertRowSet(final RowSet rowSet) {
         if (rowSet instanceof Query) {
             _MySQLConsultant.assertQuery((Query) rowSet);
         } else if (rowSet instanceof MySQLValues) {
@@ -100,7 +100,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     @Override
-    protected void valueSyntaxInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert insert) {
+    protected void parseValuesInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert insert) {
         assert context.parser() == this;
 
         final _MySQLInsert stmt = (_MySQLInsert) insert;
@@ -117,7 +117,8 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     @Override
-    protected void assignmentInsert(final _AssignmentInsertContext context, final _Insert._AssignmentInsert insert) {
+    protected void parseAssignmentInsert(final _AssignmentInsertContext context
+            , final _Insert._AssignmentInsert insert) {
         assert context.parser() == this;
         final _MySQLInsert stmt = (_MySQLInsert) insert;
         //1. append insert common part
@@ -131,7 +132,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     @Override
-    protected void queryInsert(final _QueryInsertContext context, final _Insert._QueryInsert insert) {
+    protected void parseQueryInsert(final _QueryInsertContext context, final _Insert._QueryInsert insert) {
         assert context.parser() == this;
         final _MySQLInsert stmt = (_MySQLInsert) insert;
         //1. append insert common part
@@ -148,14 +149,14 @@ final class MySQLDialectParser extends MySQLParser {
 
     @Nullable
     @Override
-    protected Stmt parseDialectStatement(final @Nullable _SqlContext outerContext, final DialectStatement statement
+    protected Stmt handleDialectStatement(final @Nullable _SqlContext outerContext, final DialectStatement statement
             , final Visible visible) {
         statement.prepared();
         final Stmt stmt;
         if (statement instanceof MySQLReplace) {
             assert outerContext == null;
             _MySQLConsultant.assertReplace((MySQLReplace) statement);
-            stmt = this.parseInsert(null, (_Insert) statement, visible);
+            stmt = this.handleInsert(null, (_Insert) statement, visible);
             assert stmt != null;
         } else if (statement instanceof Values && statement instanceof MySQLValues) {
             if (!this.asOf80) {
@@ -175,7 +176,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     @Override
-    protected void dialectSimpleQuery(final _Query query, final _SimpleQueryContext context) {
+    protected void parseQuery(final _Query query, final _SimpleQueryContext context) {
         assert context.parser() == this;
         final _MySQL80Query stmt = (_MySQL80Query) query;
 
@@ -284,7 +285,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected void dialectParensRowSet(final _ParensRowSet values, final _ParenRowSetContext context) {
+    protected void parseParensRowSet(final _ParensRowSet values, final _ParenRowSetContext context) {
         this.orderByClause(values.orderByList(), context);
         this.standardLimitClause(values.offset(), values.rowCount(), context);
     }
@@ -498,7 +499,7 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
      * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
-     * @see #dialectSimpleQuery(_Query, _SimpleQueryContext)
+     * @see #parseQuery(_Query, _SimpleQueryContext)
      */
     private void hintClause(List<Hint> hintList, final StringBuilder sqlBuilder, final _SqlContext context) {
         if (hintList.size() == 0) {
@@ -621,9 +622,9 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     /**
-     * @see #valueSyntaxInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
-     * @see #assignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
-     * @see #queryInsert(_QueryInsertContext, _Insert._QueryInsert)
+     * @see #parseValuesInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
+     * @see #parseAssignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
+     * @see #parseQueryInsert(_QueryInsertContext, _Insert._QueryInsert)
      */
     private void appendInsertCommonPart(final _InsertContext context, final _MySQLInsert stmt) {
         final StringBuilder sqlBuilder;
@@ -659,7 +660,7 @@ final class MySQLDialectParser extends MySQLParser {
     /**
      * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
-     * @see #dialectSimpleQuery(_Query, _SimpleQueryContext)
+     * @see #parseQuery(_Query, _SimpleQueryContext)
      */
     private void mysqlTableReferences(final List<_TableBlock> blockList, final _MultiTableContext context
             , final boolean nested) {
@@ -713,7 +714,7 @@ final class MySQLDialectParser extends MySQLParser {
                     sqlBuilder.append(modifier.render());
                 }
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
-                this.parseQuery((SubQuery) tableItem, context);
+                this.handleQuery((SubQuery) tableItem, context);
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
                         .append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
@@ -737,7 +738,7 @@ final class MySQLDialectParser extends MySQLParser {
                 }
             } else if (tableItem instanceof SubValues && tableItem instanceof MySQLValues) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
-                this.parseValues((_Values) tableItem, context);
+                this.handleDqlValues((_Values) tableItem, context);
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
                         .append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
@@ -853,14 +854,14 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     /**
-     * @see #valueSyntaxInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
-     * @see #assignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
-     * @see #queryInsert(_QueryInsertContext, _Insert._QueryInsert)
+     * @see #parseValuesInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
+     * @see #parseAssignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
+     * @see #parseQueryInsert(_QueryInsertContext, _Insert._QueryInsert)
      * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
      * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
      * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
-     * @see #dialectSimpleQuery(_Query, _SimpleQueryContext)
+     * @see #parseQuery(_Query, _SimpleQueryContext)
      */
     private void partitionClause(final List<String> partitionList, final StringBuilder sqlBuilder) {
         final int partitionSize = partitionList.size();
@@ -881,7 +882,7 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
      * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
-     * @see #dialectSimpleQuery(_Query, _SimpleQueryContext)
+     * @see #parseQuery(_Query, _SimpleQueryContext)
      */
     private void indexHintClause(List<? extends _IndexHint> indexHintList, final StringBuilder sqlBuilder) {
         if (indexHintList.size() == 0) {
@@ -1232,9 +1233,9 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     /**
-     * @see #valueSyntaxInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
-     * @see #assignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
-     * @see #queryInsert(_QueryInsertContext, _Insert._QueryInsert)
+     * @see #parseValuesInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
+     * @see #parseAssignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
+     * @see #parseQueryInsert(_QueryInsertContext, _Insert._QueryInsert)
      */
     private void appendMySqlConflictClause(final _InsertContext context, final _MySQLInsert stmt) {
         final List<_ItemPair> itemPairList;

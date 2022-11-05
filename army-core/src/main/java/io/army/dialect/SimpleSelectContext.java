@@ -4,13 +4,15 @@ import io.army.criteria.Select;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Query;
+import io.army.lang.Nullable;
 
 import java.util.List;
 
 final class SimpleSelectContext extends MultiTableContext implements _SimpleQueryContext, _SelectContext {
 
 
-    static SimpleSelectContext create(Select select, ArmyParser0 dialect, Visible visible) {
+    static SimpleSelectContext create(@Nullable _SqlContext outerContext, Select select, ArmyParser dialect
+            , Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forQuery(((_Query) select).tableBlockList(), dialect, visible);
         return new SimpleSelectContext(select, tableContext, dialect, visible);

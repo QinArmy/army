@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.criteria.DataField;
 import io.army.lang.Nullable;
 import io.army.stmt.BatchStmt;
 
@@ -19,7 +20,7 @@ import java.util.List;
  *
  * @since 1.0
  */
-interface DmlContext extends StmtContext {
+interface DmlContext extends _PrimaryContext {
 
     @Nullable
     DmlContext parentContext();
@@ -36,19 +37,10 @@ interface DmlContext extends StmtContext {
     }
 
 
-    interface MultiStmtBatch extends DmlContext {
+    interface _SetClauseContextSpec {
 
-        /**
-         * <p>
-         * when multi-statement ,invoke the next element of batch
-         * </p>
-         *
-         * @throws UnsupportedOperationException non-batch and not multi-statement
-         */
-        void nextElement();
-
-        int currentIndex();
-
+        void appendSetLeftItem(DataField dataField);
     }
+
 
 }

@@ -4,21 +4,23 @@ import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.stmt.BatchStmt;
+import io.army.stmt.SingleParam;
 import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
 import java.util.List;
 
 abstract class InsertContext extends StatementContext implements _InsertContext
-        , _SqlContext._SetClauseContextSpec
+        , DmlContext._SetClauseContextSpec
         , _InsertContext._ValueSyntaxSpec
         , _InsertContext._AssignmentsSpec
         , _InsertContext._QuerySyntaxSpec
         , _InsertStmtParams {
 
-    private InsertContext parentContext;
+    private final InsertContext parentContext;
 
     final TableMeta<?> domainTable;
 
@@ -59,7 +61,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
      * </p>
      */
     InsertContext(@Nullable StatementContext outerContext, final _Insert domainStmt
-            , ArmyParser0 parser, Visible visible) {
+            , ArmyParser parser, Visible visible) {
         super(outerContext, parser, visible);
         this.parentContext = null;
         final _Insert nonChildStmt;
@@ -133,8 +135,9 @@ abstract class InsertContext extends StatementContext implements _InsertContext
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      */
-    InsertContext(final _Insert._ChildInsert stmt, final InsertContext parentContext) {
-        super(null, parentContext.parser, parentContext.visible);
+    InsertContext(@Nullable StatementContext outerContext, final _Insert._ChildInsert stmt
+            , final InsertContext parentContext) {
+        super(outerContext, parentContext.parser, parentContext.visible);
         this.parentContext = parentContext;
         this.insertTable = stmt.table();
         this.domainTable = this.insertTable;
@@ -370,6 +373,36 @@ abstract class InsertContext extends StatementContext implements _InsertContext
     final boolean isValuesClauseEnd() {
         return this.valuesClauseEnd;
     }
+
+    final void appendInsertValue(final LiteralMode mode, final FieldMeta<?> field, final @Nullable Object value) {
+        switch (mode) {
+            case DEFAULT:
+                this.appendParam(SingleParam.build(field, value));
+                break;
+            case PREFERENCE: {
+                if (!(field.mappingType() instanceof _ArmyNoInjectionMapping)) {//TODO field codec
+                    this.appendParam(SingleParam.build(field, value));
+                } else if (value == null) {
+                    this.sqlBuilder.append(_Constant.SPACE_NULL);
+                } else {
+                    this.parser.literal(field, value, this.sqlBuilder.append(_Constant.SPACE));
+                }
+            }
+            break;
+            case LITERAL: {
+                if (value == null) {
+                    this.sqlBuilder.append(_Constant.SPACE_NULL);
+                } else {
+                    this.parser.literal(field, value, this.sqlBuilder.append(_Constant.SPACE));
+                }
+            }
+            break;
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+
+    }
+
 
     private void appendFieldForConflict(@Nullable String tableAlias, FieldMeta<?> field) {
         if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {

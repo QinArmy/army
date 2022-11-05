@@ -15,12 +15,12 @@ import java.util.List;
 final class QueryInsertContext extends InsertContext implements _QueryInsertContext {
 
     static QueryInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._QueryInsert stmt
-            , ArmyParser0 dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         return new QueryInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
     static QueryInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildQueryInsert domainStmt
-            , ArmyParser0 dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         return new QueryInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
     }
 
@@ -40,11 +40,11 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      *
-     * @see #forSingle(_SqlContext, _Insert._QueryInsert, ArmyParser0, Visible)
-     * @see #forParent(_SqlContext, _Insert._ChildQueryInsert, ArmyParser0, Visible)
+     * @see #forSingle(_SqlContext, _Insert._QueryInsert, ArmyParser, Visible)
+     * @see #forParent(_SqlContext, _Insert._ChildQueryInsert, ArmyParser, Visible)
      */
     private QueryInsertContext(@Nullable StatementContext outerContext, _Insert._QueryInsert domainStmt
-            , ArmyParser0 parser, Visible visible) {
+            , ArmyParser parser, Visible visible) {
         super(outerContext, domainStmt, parser, visible);
 
         final _Insert._QueryInsert nonChildStmt;
@@ -93,7 +93,7 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
         selectionSize = querySelectionList.size();
 
         assert outputColumnSize == selectionSize;
-        this.parser.subQueryOfQueryInsert(this, this.subQuery);
+        this.parser.handleQuery(this.subQuery, this);
         return selectionSize;
     }
 

@@ -12,6 +12,6 @@ package io.army.dialect;
  * @see _LateralSubQueryContext
  * @since 1.0
  */
-public interface _SimpleQueryContext extends StmtContext, _MultiTableContext {
+public interface _SimpleQueryContext extends _PrimaryContext, _MultiTableContext {
 
 }

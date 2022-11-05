@@ -14,7 +14,7 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 
-abstract class DmlStmtContext extends StatementContext implements DmlContext.MultiStmtBatch, DmlStmtParams {
+abstract class DmlStmtContext extends StatementContext implements NarrowDmlContext, DmlStmtParams {
 
 
     final boolean versionPredicate;
@@ -27,9 +27,11 @@ abstract class DmlStmtContext extends StatementContext implements DmlContext.Mul
 
     private int paramIndex;
 
+    private boolean existsNamedValued;
+
 
     DmlStmtContext(@Nullable StatementContext outerContext, _DmlStatement stmt
-            , ArmyParser0 parser, Visible visible) {
+            , ArmyParser parser, Visible visible) {
         super(outerContext, parser, visible);
 
         this.versionPredicate = _DialectUtils.hasOptimistic(stmt.wherePredicateList());
@@ -70,6 +72,19 @@ abstract class DmlStmtContext extends StatementContext implements DmlContext.Mul
     }
 
     @Override
+    public final boolean hasNamedValue() {
+        return this.existsNamedValued;
+    }
+
+    @Override
+    public final boolean isBatchEnd() {
+        final List<?> paramList = this.paramList;
+        return paramList == null
+                || this.accessor == null
+                || this.paramIndex == (paramList.size() - 1);
+    }
+
+    @Override
     public final Stmt build() {
         if (this.accessor != null) {
             //now,multi-multi statement
@@ -104,7 +119,7 @@ abstract class DmlStmtContext extends StatementContext implements DmlContext.Mul
 
 
     @Override
-    final Object currentRowNamedValue(String name) {
+    final Object currentRowNamedValue(final String name) {
         final List<?> paramList = this.paramList;
         final ReadAccessor accessor = this.accessor;
         if (paramList == null || accessor == null) {
@@ -114,6 +129,9 @@ abstract class DmlStmtContext extends StatementContext implements DmlContext.Mul
         paramSize = paramList.size();
         paramIndex = this.paramIndex;
         assert paramIndex >= 0 && paramIndex < paramSize;
+        if (!this.existsNamedValued) {
+            this.existsNamedValued = true;
+        }
         return accessor.get(paramList.get(paramIndex), name);
     }
 

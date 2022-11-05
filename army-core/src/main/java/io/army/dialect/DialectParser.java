@@ -30,6 +30,8 @@ public interface DialectParser {
 
     SimpleStmt select(Select select, Visible visible);
 
+    SimpleStmt values(Values values, Visible visible);
+
 
     void scalarSubQuery(SubQuery query, _SqlContext original);
 

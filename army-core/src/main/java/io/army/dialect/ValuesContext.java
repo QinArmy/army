@@ -1,0 +1,64 @@
+package io.army.dialect;
+
+import io.army.criteria.RowSet;
+import io.army.criteria.Selection;
+import io.army.criteria.Values;
+import io.army.criteria.Visible;
+import io.army.criteria.impl.inner._RowSet;
+import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmts;
+import io.army.util._Exceptions;
+
+import java.util.List;
+
+final class ValuesContext extends StatementContext implements _ValuesContext {
+
+    static ValuesContext create(@Nullable _SqlContext outerContext, RowSet.DqlValues stmt, ArmyParser dialect
+            , Visible visible) {
+        return new ValuesContext((StatementContext) outerContext, stmt, dialect, visible);
+    }
+
+
+    private final List<Selection> selectionList;
+
+    private ValuesContext(@Nullable StatementContext outerContext, RowSet.DqlValues stmt, ArmyParser dialect
+            , Visible visible) {
+        super(outerContext, dialect, visible);
+        if (outerContext == null && stmt instanceof Values) {
+            this.selectionList = _DialectUtils.flatSelectItem(((_RowSet) stmt).selectItemList());
+        } else {
+            this.selectionList = null;
+        }
+    }
+
+
+    @Override
+    public void appendField(String tableAlias, FieldMeta<?> field) {
+        throw _Exceptions.unknownColumn(tableAlias, field);
+    }
+
+    @Override
+    public void appendField(FieldMeta<?> field) {
+        throw _Exceptions.unknownColumn(field);
+    }
+
+
+    @Override
+    public SimpleStmt build() {
+        if (this.selectionList == null) {
+            //no bug,never here
+            throw nonTopContext();
+        }
+        return Stmts.queryStmt(this);
+    }
+
+
+    @Override
+    public List<Selection> selectionList() {
+        return this.selectionList;
+    }
+
+
+}

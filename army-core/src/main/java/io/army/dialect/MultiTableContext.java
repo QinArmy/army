@@ -13,7 +13,7 @@ import io.army.util._Exceptions;
 import java.util.HashMap;
 import java.util.Map;
 
-abstract class MultiTableContext extends StatementContext implements _MultiTableContext, StmtContext {
+abstract class MultiTableContext extends StatementContext implements _MultiTableContext, _PrimaryContext {
 
     final Map<String, TabularItem> aliasToTable;
 

@@ -1,6 +1,9 @@
 package io.army.dialect;
 
-import io.army.criteria.*;
+import io.army.criteria.NamedLiteral;
+import io.army.criteria.QualifiedField;
+import io.army.criteria.SQLParam;
+import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 
@@ -69,10 +72,5 @@ public interface _SqlContext {
 
     Visible visible();
 
-
-    interface _SetClauseContextSpec {
-
-        void appendSetLeftItem(DataField dataField);
-    }
 
 }

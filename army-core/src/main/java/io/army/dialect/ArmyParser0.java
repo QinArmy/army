@@ -1,6 +1,5 @@
 package io.army.dialect;
 
-import io.army.criteria.SubQuery;
 import io.army.mapping.MappingEnv;
 import io.army.meta.DatabaseObject;
 import io.army.meta.TypeMeta;
@@ -12,32 +11,23 @@ import io.army.meta.TypeMeta;
 interface ArmyParser0 extends DialectParser {
 
 
-    boolean singleDeleteHasTableAlias();
-
-    boolean hasRowKeywords();
-
-    default boolean supportRowLeftItem() {
-        return false;
+    @Deprecated
+    default boolean singleDeleteHasTableAlias() {
+        throw new UnsupportedOperationException();
     }
 
-    default boolean supportQueryUpdate() {
-        return false;
+    @Deprecated
+    default boolean hasRowKeywords() {
+        throw new UnsupportedOperationException();
     }
 
 
-    boolean supportMultiUpdate();
+    @Deprecated
+    default boolean supportMultiUpdate() {
+        throw new UnsupportedOperationException();
+    }
 
-
-    boolean supportZone();
-
-    boolean supportOnlyDefault();
-
-
-    boolean tableAliasAfterAs();
-
-
-    boolean supportInsertReturning();
-
+    @Deprecated
     boolean isMockEnv();
 
     FieldValueGenerator getGenerator();
@@ -58,8 +48,5 @@ interface ArmyParser0 extends DialectParser {
 
 
     MappingEnv mappingEnv();
-
-    void subQueryOfQueryInsert(_QueryInsertContext outerContext, SubQuery subQuery);
-
 
 }

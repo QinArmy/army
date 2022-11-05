@@ -3,8 +3,6 @@ package io.army.dialect;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.mapping.StringType;
-import io.army.mapping._ArmyNoInjectionMapping;
-import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.stmt.MultiParam;
 import io.army.stmt.SingleParam;
@@ -24,7 +22,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-abstract class StatementContext implements StmtContext, _StmtParams {
+abstract class StatementContext implements _PrimaryContext, _StmtParams {
 
     static final String SPACE_PLACEHOLDER = " ?";
 
@@ -162,7 +160,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
             throw _Exceptions.namedParamNotMatch((SqlValueParam.NamedMultiValue) namedLiteral, value);
         } else if (((Collection<?>) value).size() == ((SqlValueParam.NamedMultiValue) namedLiteral).valueSize()) {
 
-            final ArmyParser0 parser = this.parser;
+            final ArmyParser parser = this.parser;
             final TypeMeta paramMeta = namedLiteral.typeMeta();
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             int i = 0;
@@ -214,39 +212,11 @@ abstract class StatementContext implements StmtContext, _StmtParams {
         return this.paramConsumer.hasNamedParam;
     }
 
-    final void appendInsertValue(final LiteralMode mode, final FieldMeta<?> field, final @Nullable Object value) {
-        switch (mode) {
-            case DEFAULT:
-                this.appendParam(SingleParam.build(field, value));
-                break;
-            case PREFERENCE: {
-                if (!(field.mappingType() instanceof _ArmyNoInjectionMapping)) {//TODO field codec
-                    this.appendParam(SingleParam.build(field, value));
-                } else if (value == null) {
-                    this.sqlBuilder.append(_Constant.SPACE_NULL);
-                } else {
-                    this.parser.literal(field, value, this.sqlBuilder.append(_Constant.SPACE));
-                }
-            }
-            break;
-            case LITERAL: {
-                if (value == null) {
-                    this.sqlBuilder.append(_Constant.SPACE_NULL);
-                } else {
-                    this.parser.literal(field, value, this.sqlBuilder.append(_Constant.SPACE));
-                }
-            }
-            break;
-            default:
-                throw _Exceptions.unexpectedEnum(mode);
-        }
-
-    }
-
 
     @Nullable
     Object currentRowNamedValue(String name) {
-        throw new UnsupportedOperationException();
+        String m = String.format("context[%s] don't support named value.", this.getClass().getName());
+        throw new CriteriaException(m);
     }
 
 

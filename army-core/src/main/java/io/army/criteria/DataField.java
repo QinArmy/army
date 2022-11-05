@@ -10,6 +10,7 @@ import java.util.function.BiFunction;
  *     <ul>
  *         <li>{@link TableField}</li>
  *         <li>{@link DerivedField}</li>
+ *         <li>{@link DerivedField}</li>
  *     </ul>
  * </p>
  *

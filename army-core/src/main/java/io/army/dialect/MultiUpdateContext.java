@@ -156,7 +156,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         switch (updateMode) {
             case ONLY_NULL:
             case ONLY_DEFAULT: {
-                if (updateMode == UpdateMode.ONLY_DEFAULT && !this.parser.supportOnlyDefault()) {
+                if (updateMode == UpdateMode.ONLY_DEFAULT && !this.parser.isSupportOnlyDefault()) {
                     throw _Exceptions.dontSupportOnlyDefault(this.parser.dialectMode());
                 }
                 List<DataField> conditionFieldList = this.conditionFieldList;

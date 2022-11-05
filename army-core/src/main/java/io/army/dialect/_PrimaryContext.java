@@ -11,7 +11,7 @@ import io.army.stmt.Stmt;
  *
  * @since 1.0
  */
-interface StmtContext extends _SqlContext {
+public interface _PrimaryContext extends _SqlContext {
 
     /**
      * for appending updateTime field in set clause.

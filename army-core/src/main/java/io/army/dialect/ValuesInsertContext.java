@@ -114,13 +114,13 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         final int rowSize = rowValuesList.size();
         final int fieldSize = fieldList.size();
 
-        final ArmyParser0 dialect = this.parser;
+        final ArmyParser parser = this.parser;
         final Map<FieldMeta<?>, _Expression> defaultValueMap;
 
         final boolean migration = this.migration;
         final NullMode nullHandleMode = this.nullMode;
         final LiteralMode literalMode = this.literalMode;
-        final boolean mockEnv = dialect.isMockEnv();
+        final boolean mockEnv = parser.mockEnv;
 
         final FieldValueGenerator generator;
         final ValuesRowWrapper rowWrapper = this.rowWrapper;
@@ -150,7 +150,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         } else {
             final FieldMeta<?> visibleField = insertTable.tryGetField(_MetaBridge.VISIBLE);
             manageVisible = visibleField != null && !rowWrapper.nonChildDefaultMap.containsKey(visibleField);
-            generator = dialect.getGenerator();
+            generator = parser.getGenerator();
             generatedValuesList = this.tempGeneratedValuesList;
             if (generatedValuesList == null) {
                 assert migration;

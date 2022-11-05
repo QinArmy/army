@@ -13,7 +13,7 @@ import io.army.stmt.SimpleStmt;
  *
  * @since 1.0
  */
-interface PrimaryQueryContext extends StmtContext {
+interface PrimaryQueryContext extends _PrimaryContext {
 
     @Override
     SimpleStmt build();

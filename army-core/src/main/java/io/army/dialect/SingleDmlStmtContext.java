@@ -26,7 +26,7 @@ import io.army.util._Exceptions;
  * </p>
  */
 abstract class SingleDmlStmtContext extends DmlStmtContext implements _SingleTableContext
-        , _SqlContext._SetClauseContextSpec {
+        , DmlContext._SetClauseContextSpec {
 
 
     final TableMeta<?> domainTable;
@@ -130,7 +130,7 @@ abstract class SingleDmlStmtContext extends DmlStmtContext implements _SingleTab
         switch (updateMode) {
             case ONLY_NULL:
             case ONLY_DEFAULT: {
-                if (updateMode == UpdateMode.ONLY_DEFAULT && !this.parser.supportOnlyDefault()) {
+                if (updateMode == UpdateMode.ONLY_DEFAULT && !this.parser.isSupportOnlyDefault()) {
                     throw _Exceptions.dontSupportOnlyDefault(this.parser.dialectMode());
                 }
                 this.onAddConditionField(field);

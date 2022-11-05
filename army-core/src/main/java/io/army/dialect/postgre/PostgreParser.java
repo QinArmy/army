@@ -27,7 +27,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
-    public boolean supportOnlyDefault() {
+    public boolean isSupportOnlyDefault() {
         return false;
     }
 
@@ -59,11 +59,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
         return PostgreDdl.create(this);
     }
 
-
-    @Override
-    public boolean supportRowLeftItem() {
-        return super.supportRowLeftItem();
-    }
 
     @Override
     public boolean supportQueryUpdate() {
@@ -115,10 +110,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
         return false;
     }
 
-    @Override
-    public boolean singleDeleteHasTableAlias() {
-        return false;
-    }
 
     @Override
     public boolean hasRowKeywords() {

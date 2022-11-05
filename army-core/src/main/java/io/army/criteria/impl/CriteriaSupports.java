@@ -225,6 +225,8 @@ abstract class CriteriaSupports {
                 stmt = parser.update((Update) this, visible);
             } else if (this instanceof Delete) {
                 stmt = parser.delete((Delete) this, visible);
+            } else if (this instanceof Values) {
+                stmt = parser.values((Values) this, visible);
             } else if (this instanceof DialectStatement) {
                 stmt = parser.dialectStatement((DialectStatement) this, visible);
             } else {
