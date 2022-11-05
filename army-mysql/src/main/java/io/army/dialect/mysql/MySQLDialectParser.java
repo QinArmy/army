@@ -387,7 +387,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     @Override
-    protected void dialectSingleDelete(final _SingleDelete delete, final _SingleDeleteContext context) {
+    protected void parseSingleDelete(final _SingleDelete delete, final _SingleDeleteContext context) {
         assert context.parser() == this;
         final _MySQLSingleDelete stmt = (_MySQLSingleDelete) delete;
 
@@ -446,7 +446,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected void dialectMultiDelete(final _MultiDelete delete, final _MultiDeleteContext context) {
+    protected void parseMultiDelete(final _MultiDelete delete, final _MultiDeleteContext context) {
         assert context.parser() == this;
         final _MySQLMultiDelete stmt = (_MySQLMultiDelete) delete;
         final StringBuilder sqlBuilder;
@@ -496,8 +496,8 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #appendInsertCommonPart(_InsertContext, _MySQLInsert)
      * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
      * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
-     * @see #dialectSingleDelete(_SingleDelete, _SingleDeleteContext)
-     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
+     * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      * @see #dialectSimpleQuery(_Query, _SimpleQueryContext)
      */
     private void hintClause(List<Hint> hintList, final StringBuilder sqlBuilder, final _SqlContext context) {
@@ -552,7 +552,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     /**
      * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
-     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      */
     private void updateModifiers(List<MySQLs.Modifier> modifierList, StringBuilder builder) {
         for (MySQLs.Modifier modifier : modifierList) {
@@ -567,8 +567,8 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     /**
-     * @see #dialectSingleDelete(_SingleDelete, _SingleDeleteContext)
-     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
+     * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      */
     private void deleteModifiers(List<MySQLs.Modifier> modifierList, StringBuilder builder) {
         for (MySQLs.Modifier modifier : modifierList) {
@@ -658,7 +658,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     /**
      * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
-     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      * @see #dialectSimpleQuery(_Query, _SimpleQueryContext)
      */
     private void mysqlTableReferences(final List<_TableBlock> blockList, final _MultiTableContext context
@@ -778,7 +778,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     /**
      * @return a unmodified map
-     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      */
     private Map<String, ParentTableMeta<?>> tableAliasList(final List<_Pair<String, TableMeta<?>>> deleteTablePairList
             , final _MultiDeleteContext context) {
@@ -858,8 +858,8 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #queryInsert(_QueryInsertContext, _Insert._QueryInsert)
      * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
      * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
-     * @see #dialectSingleDelete(_SingleDelete, _SingleDeleteContext)
-     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
+     * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      * @see #dialectSimpleQuery(_Query, _SimpleQueryContext)
      */
     private void partitionClause(final List<String> partitionList, final StringBuilder sqlBuilder) {
@@ -880,7 +880,7 @@ final class MySQLDialectParser extends MySQLParser {
     /**
      * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
      * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
-     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      * @see #dialectSimpleQuery(_Query, _SimpleQueryContext)
      */
     private void indexHintClause(List<? extends _IndexHint> indexHintList, final StringBuilder sqlBuilder) {

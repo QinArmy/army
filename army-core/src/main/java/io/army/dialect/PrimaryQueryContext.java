@@ -1,5 +1,7 @@
 package io.army.dialect;
 
+import io.army.stmt.SimpleStmt;
+
 /**
  * <p>
  * Package interface, this interface is base interface of below:
@@ -11,7 +13,10 @@ package io.army.dialect;
  *
  * @since 1.0
  */
-interface PrimaryQueryContext extends _SqlContext {
+interface PrimaryQueryContext extends StmtContext {
+
+    @Override
+    SimpleStmt build();
 
 
 }

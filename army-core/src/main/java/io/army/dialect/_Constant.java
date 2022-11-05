@@ -24,6 +24,8 @@ public interface _Constant {
 
     String UPDATE = "UPDATE";
 
+    String UPDATE_SPACE = "UPDATE ";
+
     String DELETE = "DELETE";
 
     String DELETE_FROM_SPACE = "DELETE FROM ";
@@ -115,6 +117,8 @@ public interface _Constant {
     String SPACE_COMMA = " ,";
 
     String SPACE_SEPARATOR = " SEPARATOR";
+
+    String SPACE_SEMICOLON = " ;";
 
     String SPACE_COMMA_SPACE = " , ";
 

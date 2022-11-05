@@ -7,9 +7,9 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl.inner.*;
+import io.army.criteria.standard.StandardDelete;
 import io.army.criteria.standard.StandardInsert;
 import io.army.criteria.standard.StandardQuery;
-import io.army.criteria.standard.StandardStatement;
 import io.army.criteria.standard.StandardUpdate;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
@@ -27,6 +27,7 @@ import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -127,76 +128,35 @@ abstract class ArmyParser implements ArmyParser0 {
     public final Stmt update(final Update update, final Visible visible) {
         final Stmt stmt;
         stmt = this.handleUpdate(null, update, visible, this::createUpdateStmt);
-        assert !(update instanceof _BatchDml) || stmt instanceof BatchStmt;
+        if (!(update instanceof _SingleUpdate._ChildUpdate)) {
+            assert !(update instanceof _BatchDml) || stmt instanceof BatchStmt;
+        } else if (update instanceof _BatchDml) {
+            assert stmt instanceof PairBatchStmt;
+        } else {
+            assert stmt instanceof PairStmt;
+        }
         return stmt;
     }
 
 
     @Override
     public final Stmt delete(final Delete delete, final Visible visible) {
-        delete.prepared();
         final Stmt stmt;
-        if (delete instanceof StandardStatement) {
-            _SQLConsultant.assertStandardDelete(delete);
-            final _SingleDelete s = (_SingleDelete) delete;
-            if (s.table() instanceof ChildTableMeta) {
-                stmt = this.standardChildDelete(null, s, visible);
-            } else {
-                stmt = this.standardSingleDelete(false, s, visible, StmtContext::build);
-            }
-            assert stmt != null && (!(delete instanceof _BatchDml) || stmt instanceof BatchStmt);
-        } else if (delete instanceof _SingleDelete) {
-            this.assertDialectDelete(delete);
-            final _SingleDeleteContext context;
-            context = SingleDeleteContext.create(null, (_SingleDelete) delete, this, visible);
-            this.dialectSingleDelete((_SingleDelete) delete, context);
-            if (delete instanceof _BatchDml) {
-                stmt = context.build(((_BatchDml) delete).paramList());
-            } else {
-                stmt = context.build();
-            }
-        } else if (delete instanceof _MultiDelete) {
-            this.assertDialectDelete(delete);
-            final _MultiDeleteContext context;
-            context = MultiDeleteContext.create((_MultiDelete) delete, this, visible);
-            this.dialectMultiDelete((_MultiDelete) delete, context);
-            if (delete instanceof _BatchDml) {
-                stmt = context.build(((_BatchDml) delete).paramList());
-            } else {
-                stmt = context.build();
-            }
+        stmt = this.handleDelete(null, delete, visible, this::createDeleteStmt);
+        if (!(delete instanceof _SingleDelete._ChildDelete)) {
+            assert !(delete instanceof _BatchDml) || stmt instanceof BatchStmt;
+        } else if (delete instanceof _BatchDml) {
+            assert stmt instanceof PairBatchStmt;
         } else {
-            throw _Exceptions.unknownStatement(delete, this.dialect);
+            assert stmt instanceof PairStmt;
         }
         return stmt;
     }
 
     @Override
     public final SimpleStmt select(final Select select, final Visible visible) {
-        //1. assert prepared
-        select.prepared();
-
-        //2. assert select implementation class.
-        if (select instanceof StandardQuery) {
-            _SQLConsultant.assertStandardQuery(select);
-        } else {
-            this.assertDialectRowSet(select);
-        }
-
-        //3. parse select
-        final StmtContext context;
-        if (select instanceof _UnionRowSet0) {
-            context = UnionSelectContext.create(select, this, visible);
-            this.standardParensQuery((_UnionRowSet0) select, context);
-        } else {
-            context = SimpleSelectContext.create(select, this, visible);
-            if (select instanceof StandardQuery) {
-                this.standardSimpleQuery((_StandardQuery) select, (_SimpleQueryContext) context);
-            } else {
-                this.dialectSimpleQuery((_Query) select, (_SimpleQueryContext) context);
-            }
-        }
-        return context.build();
+        return this.handleSelect(null, select, visible)
+                .build();
     }
 
     @Override
@@ -439,17 +399,20 @@ abstract class ArmyParser implements ArmyParser0 {
     }
 
     /**
-     * @see #update(Update, Visible)
+     * @see #handleDelete(_SqlContext, Delete, Visible, Function)
      */
     protected void parseMultiUpdate(_MultiUpdate update, _MultiUpdateContext context) {
         throw standardParserDontSupportDialect();
     }
 
-    protected void dialectMultiDelete(final _MultiDelete delete, _MultiDeleteContext context) {
+    /**
+     * @see #handleDelete(_SqlContext, Delete, Visible, Function)
+     */
+    protected void parseMultiDelete(final _MultiDelete delete, _MultiDeleteContext context) {
         throw standardParserDontSupportDialect();
     }
 
-    protected void dialectSingleDelete(_SingleDelete delete, _SingleDeleteContext context) {
+    protected void parseSingleDelete(_SingleDelete delete, _SingleDeleteContext context) {
         throw standardParserDontSupportDialect();
     }
 
@@ -465,14 +428,17 @@ abstract class ArmyParser implements ArmyParser0 {
 
 
     /**
-     * @see #update(Update, Visible)
+     * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, Visible)
      */
     protected void parseDomainChildUpdate(_SingleUpdate update, _UpdateContext context) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @see #handleDomainDelete(_SqlContext, _DomainDelete, Visible)
+     */
     @Nullable
-    protected Stmt standardChildDelete(@Nullable _SqlContext outerContext, _SingleDelete delete, Visible visible) {
+    protected void parseDomainChildDelete(_SingleDelete delete, _DeleteContext context) {
         throw new UnsupportedOperationException();
     }
 
@@ -823,7 +789,7 @@ abstract class ArmyParser implements ArmyParser0 {
 
     /**
      * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
-     * @see #parseDomainChildWithId(_DomainUpdate, DomainUpdateContext)
+     * @see #parseDomainChildUpdateWithId(_DomainUpdate, DomainUpdateContext)
      * @see #parseStandardSingleUpdate(_SingleUpdate, _SingleUpdateContext)
      */
     protected final void singleTableSetClause(final List<_ItemPair> itemPairList, final _SingleUpdateContext context) {
@@ -842,7 +808,13 @@ abstract class ArmyParser implements ArmyParser0 {
         }
         final TableMeta<?> targetTable = context.targetTable();
         if (targetTable instanceof SingleTableMeta) {
-            this.appendUpdateTimeAndVersion((SingleTableMeta<?>) targetTable, context.safeTableAlias(), context, false);
+            final String safeTableAlias;
+            if (this.supportSingleUpdateAlias) {
+                safeTableAlias = context.safeTableAlias();
+            } else {
+                safeTableAlias = null;
+            }
+            this.appendUpdateTimeAndVersion((SingleTableMeta<?>) targetTable, safeTableAlias, context, false);
         }
     }
 
@@ -1183,6 +1155,10 @@ abstract class ArmyParser implements ArmyParser0 {
     protected abstract void standardLimitClause(@Nullable _Expression offset, @Nullable _Expression rowCount
             , _SqlContext context);
 
+    /**
+     * @see #parseDomainParentDeleteWithId(_Predicate, DomainDeleteContext)
+     * @see #parseDomainParentUpdateWithId(_DomainUpdate, _Predicate, DomainUpdateContext)
+     */
     protected final void discriminator(final TableMeta<?> table, final @Nullable String safeTableAlias
             , final _SqlContext context) {
         final FieldMeta<?> field;
@@ -1193,14 +1169,14 @@ abstract class ArmyParser implements ArmyParser0 {
         } else {
             throw new IllegalArgumentException("table error");
         }
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-        sqlBuilder.append(_Constant.SPACE_AND_SPACE);
-        if (safeTableAlias != null) {
-            sqlBuilder.append(safeTableAlias);
-        } else if (table instanceof SingleTableMeta && context instanceof _SingleDeleteContext) {
-            this.safeObjectName(table, sqlBuilder);
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder()
+                .append(_Constant.SPACE_AND_SPACE);
+
+        if (safeTableAlias == null) {
+            this.safeObjectName(field.tableMeta(), sqlBuilder);
         } else {
-            throw new IllegalArgumentException();
+            sqlBuilder.append(safeTableAlias);
         }
         sqlBuilder.append(_Constant.POINT);
 
@@ -1218,19 +1194,7 @@ abstract class ArmyParser implements ArmyParser0 {
 
         final FieldMeta<?> field = table.getField(_MetaBridge.VISIBLE);
         final Boolean visibleValue;
-        switch (context.visible()) {
-            case ONLY_VISIBLE:
-                visibleValue = Boolean.TRUE;
-                break;
-            case ONLY_NON_VISIBLE:
-                visibleValue = Boolean.FALSE;
-                break;
-            case BOTH:
-                visibleValue = null;
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(context.visible());
-        }
+        visibleValue = context.visible().value;
         if (visibleValue != null) {
             final StringBuilder sqlBuilder = context.sqlBuilder();
             if (firstPredicate) {
@@ -1370,14 +1334,13 @@ abstract class ArmyParser implements ArmyParser0 {
 
 
     /**
-     * @see #singleTableSetClause(_SingleUpdate, _SingleUpdateContext)
+     * @see #singleTableSetClause(List, _SingleUpdateContext)
      * @see #multiTableSetClause(_MultiUpdate, _MultiUpdateContext)
-     * @see #parseDomainChildWithId(_DomainUpdate, DomainUpdateContext)
+     * @see #parseDomainParentUpdateWithId(_DomainUpdate, _Predicate, DomainUpdateContext)
      */
     protected final void appendUpdateTimeAndVersion(final SingleTableMeta<?> table
             , final @Nullable String safeTableAlias, final StmtContext context, final boolean firstItem) {
 
-        final StringBuilder sqlBuilder = context.sqlBuilder();
         FieldMeta<?> field;
         field = table.getField(_MetaBridge.UPDATE_TIME);
 
@@ -1393,45 +1356,49 @@ abstract class ArmyParser implements ArmyParser0 {
             // FieldMeta no bug,never here
             throw _Exceptions.dontSupportJavaType(field, javaType);
         }
-        final boolean supportTableAlias;
-        supportTableAlias = safeTableAlias != null && this.setClauseTableAlias();
 
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
         if (firstItem) {
             sqlBuilder.append(_Constant.SPACE_SET_SPACE);
         } else {
             sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
         }
-        if (supportTableAlias) {
-            sqlBuilder.append(safeTableAlias)
-                    .append(_Constant.POINT);
+
+        final String actualTableAlias;
+        if (safeTableAlias == null) {
+            actualTableAlias = this.safeObjectName(table);
+        } else {
+            actualTableAlias = safeTableAlias;
+
         }
+        sqlBuilder.append(actualTableAlias)
+                .append(_Constant.POINT);
+
         this.safeObjectName(field, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL);
 
         if (context instanceof _InsertContext) {
-            ((StatementContext) context)
-                    .appendInsertValue(((_InsertContext) context).literalMode(), field, updateTimeValue);
+            final StatementContext insertContext = (StatementContext) context;
+            insertContext.appendInsertValue(((_InsertContext) context).literalMode(), field, updateTimeValue);
         } else if (context.hasParam()) {
             context.appendParam(SingleParam.build(field, updateTimeValue));
         } else {
-            this.literal(field, updateTimeValue, sqlBuilder.append(_Constant.SPACE));
+            sqlBuilder.append(_Constant.SPACE);
+            this.literal(field, updateTimeValue, sqlBuilder);
         }
 
         if ((field = table.tryGetField(_MetaBridge.VERSION)) != null) {
-            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-            if (supportTableAlias) {
-                sqlBuilder.append(safeTableAlias)
-                        .append(_Constant.POINT);
-            }
-            final String versionColumnName = this.safeObjectName(field);
-            sqlBuilder.append(versionColumnName)
-                    .append(_Constant.SPACE_EQUAL_SPACE);
-
-            if (supportTableAlias) {
-                sqlBuilder.append(safeTableAlias)
-                        .append(_Constant.POINT);
-            }
-            sqlBuilder.append(versionColumnName)
+            final String versionColumnName;
+            versionColumnName = this.safeObjectName(field);
+            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE)
+                    .append(actualTableAlias)
+                    .append(_Constant.POINT)
+                    .append(versionColumnName)
+                    .append(_Constant.SPACE_EQUAL_SPACE)
+                    .append(actualTableAlias)
+                    .append(_Constant.POINT)
+                    .append(versionColumnName)
                     .append(" + 1");
 
         }
@@ -1459,21 +1426,21 @@ abstract class ArmyParser implements ArmyParser0 {
             parentContext = DomainInsertContext.forParent(outerContext, childStmt, this, visible);
 
             if (standardStmt) {
-                this.standardValueSyntaxInsert(parentContext);
+                this.parseStandardValueSyntaxInsert(parentContext);
             } else {
                 this.valueSyntaxInsert(parentContext, parentStmt);
             }
 
             context = DomainInsertContext.forChild(childStmt, parentContext);
             if (standardStmt) {
-                this.standardValueSyntaxInsert(context);
+                this.parseStandardValueSyntaxInsert(context);
             } else {
                 this.valueSyntaxInsert(context, childStmt);
             }
         } else {
             context = DomainInsertContext.forSingle(outerContext, insert, this, visible);
             if (standardStmt) {
-                this.standardValueSyntaxInsert(context);
+                this.parseStandardValueSyntaxInsert(context);
             } else {
                 this.valueSyntaxInsert(context, insert);
             }
@@ -1498,21 +1465,21 @@ abstract class ArmyParser implements ArmyParser0 {
             final ValuesInsertContext parentContext;
             parentContext = ValuesInsertContext.forParent(outerContext, childStmt, this, visible);
             if (standardStmt) {
-                this.standardValueSyntaxInsert(parentContext);
+                this.parseStandardValueSyntaxInsert(parentContext);
             } else {
                 this.valueSyntaxInsert(parentContext, parentStmt);
             }
 
             context = ValuesInsertContext.forChild(childStmt, parentContext);
             if (standardStmt) {
-                this.standardValueSyntaxInsert(context);
+                this.parseStandardValueSyntaxInsert(context);
             } else {
                 this.valueSyntaxInsert(context, childStmt);
             }
         } else {
             context = ValuesInsertContext.forSingle(outerContext, insert, this, visible);
             if (standardStmt) {
-                this.standardValueSyntaxInsert(context);
+                this.parseStandardValueSyntaxInsert(context);
             } else {
                 this.valueSyntaxInsert(context, insert);
             }
@@ -1560,26 +1527,44 @@ abstract class ArmyParser implements ArmyParser0 {
             final QueryInsertContext parentContext;
             parentContext = QueryInsertContext.forParent(outerContext, childStmt, this, visible);
             if (standardStmt) {
-                this.standardQueryInsert(parentContext);
+                this.parseStandardQueryInsert(parentContext);
             } else {
                 this.queryInsert(parentContext, childStmt.parentStmt());
             }
 
             context = QueryInsertContext.forChild(outerContext, childStmt, parentContext);
             if (standardStmt) {
-                this.standardQueryInsert(context);
+                this.parseStandardQueryInsert(context);
             } else {
                 this.queryInsert(context, childStmt);
             }
         } else {
             context = QueryInsertContext.forSingle(outerContext, insert, this, visible);
             if (standardStmt) {
-                this.standardQueryInsert(context);
+                this.parseStandardQueryInsert(context);
             } else {
                 this.queryInsert(context, insert);
             }
         }
         return function.apply(context);
+    }
+
+
+    /**
+     * @see #select(Select, Visible)
+     */
+    private _SelectContext handleSelect(final @Nullable _SqlContext outerContext, final Select stmt
+            , final Visible visible) {
+        final _SelectContext context;
+        if (stmt instanceof _Query) {
+
+        } else if (stmt instanceof _UnionRowSet) {
+
+        } else {
+            assert stmt instanceof _ParensRowSet;
+
+        }
+        return null;
     }
 
 
@@ -1594,6 +1579,9 @@ abstract class ArmyParser implements ArmyParser0 {
             assertDialectUpdate(stmt);
             context = MultiUpdateContext.create(outerContext, (_MultiUpdate) stmt, this, visible);
             parseMultiUpdate((_MultiUpdate) stmt, (MultiUpdateContext) context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch((_MultiUpdate) stmt, (MultiUpdateContext) context, this::parseMultiUpdate);
+            }
         } else if (!(stmt instanceof _SingleUpdate)) {
             throw _Exceptions.unknownStatement(stmt, this.dialect);
         } else if (stmt instanceof _DomainUpdate) {
@@ -1602,7 +1590,10 @@ abstract class ArmyParser implements ArmyParser0 {
         } else if (stmt instanceof StandardUpdate) {
             _SQLConsultant.assertStandardUpdate(stmt);
             context = SingleUpdateContext.create(outerContext, (_SingleUpdate) stmt, this, visible);
-            this.parseStandardSingleUpdate((_SingleUpdate) stmt, (SingleUpdateContext) context);
+            this.parseStandardSingleUpdate((_SingleUpdate) stmt, (_SingleUpdateContext) context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch((_SingleUpdate) stmt, (_SingleUpdateContext) context, this::parseStandardSingleUpdate);
+            }
         } else if (stmt instanceof _SingleUpdate._ChildUpdate) {
             assert outerContext == null; // now don't support outer context and multi-statement
             assertDialectUpdate(stmt);
@@ -1620,11 +1611,17 @@ abstract class ArmyParser implements ArmyParser0 {
         } else if (stmt instanceof _Statement._JoinableStatement) {
             assertDialectUpdate(stmt);
             context = SingleJoinableUpdateContext.create(outerContext, (_SingleUpdate) stmt, this, visible);
-            this.parseSingleUpdate((_SingleUpdate) stmt, (SingleJoinableUpdateContext) context);
+            this.parseSingleUpdate((_SingleUpdate) stmt, (_SingleUpdateContext) context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch((_SingleUpdate) stmt, (_SingleUpdateContext) context, this::parseSingleUpdate);
+            }
         } else {
             assertDialectUpdate(stmt);
             context = SingleUpdateContext.create(outerContext, (_SingleUpdate) stmt, this, visible);
-            this.parseSingleUpdate((_SingleUpdate) stmt, (SingleUpdateContext) context);
+            this.parseSingleUpdate((_SingleUpdate) stmt, (_SingleUpdateContext) context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch((_SingleUpdate) stmt, (_SingleUpdateContext) context, this::parseSingleUpdate);
+            }
         }
         return function.apply(context);
     }
@@ -1641,20 +1638,33 @@ abstract class ArmyParser implements ArmyParser0 {
                 || (mode == _ChildUpdateMode.WITH_ID && stmt.childItemPairList().size() == 0)) {
             context = DomainUpdateContext.create(outerContext, stmt, this, visible);
             this.parseStandardSingleUpdate(stmt, (_SingleUpdateContext) context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch(stmt, (_SingleUpdateContext) context, this::parseStandardSingleUpdate);
+            }
         } else if (mode == _ChildUpdateMode.MULTI_TABLE) {
             context = MultiUpdateContext.forChild(outerContext, stmt, this, visible);
             this.parseDomainChildUpdate(stmt, context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch(stmt, context, this::parseDomainChildUpdate);
+            }
         } else if (mode == _ChildUpdateMode.CTE) {
             context = SingleJoinableUpdateContext.create(outerContext, stmt, this, visible);
             this.parseDomainChildUpdate(stmt, context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch(stmt, context, this::parseDomainChildUpdate);
+            }
         } else if (mode == _ChildUpdateMode.WITH_ID) {
+            assert outerContext == null; //now don't support multi statement.
             final DomainUpdateContext parentContext;
-            parentContext = DomainUpdateContext.create(outerContext, stmt, this, visible);
+            parentContext = DomainUpdateContext.create(null, stmt, this, visible);
             context = DomainUpdateContext.forChild(stmt, parentContext);
             assert parentContext.domainTable == ((DomainUpdateContext) context).domainTable;
             assert parentContext.targetTable instanceof ParentTableMeta;
             assert ((DomainUpdateContext) context).targetTable == parentContext.domainTable;
-            this.parseDomainChildWithId(stmt, (DomainUpdateContext) context);
+
+            final _Predicate idPredicate;
+            idPredicate = this.parseDomainChildUpdateWithId(stmt, (DomainUpdateContext) context);
+            this.parseDomainParentUpdateWithId(stmt, idPredicate, parentContext);
         } else {
             throw _Exceptions.unexpectedEnum(mode);
         }
@@ -1663,18 +1673,17 @@ abstract class ArmyParser implements ArmyParser0 {
 
     /**
      * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, Visible)
+     * @see #parseDomainParentUpdateWithId(_DomainUpdate, _Predicate, DomainUpdateContext)
      * @see _ChildUpdateMode#WITH_ID
      */
-    private void parseDomainChildWithId(final _DomainUpdate stmt, final DomainUpdateContext childContext) {
-        assert this.childUpdateMode == _ChildUpdateMode.WITH_ID;
-        final DomainUpdateContext parentContext = childContext.parentContext;
-        assert parentContext != null;
-        final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) parentContext.targetTable;
+    private _Predicate parseDomainChildUpdateWithId(final _DomainUpdate stmt, final DomainUpdateContext context) {
+        assert this.childUpdateMode == _ChildUpdateMode.WITH_ID
+                && context.parentContext != null;
 
         //1. append child common
-        this.appendDomainUpdateCommon(childContext);
+        this.appendDomainUpdateCommon(context);
         //2. append child SET clause
-        this.singleTableSetClause(stmt.childItemPairList(), childContext);
+        this.singleTableSetClause(stmt.childItemPairList(), context);
         //3. append child WHERE clause
         final List<_Predicate> whereList;
         whereList = stmt.wherePredicateList();
@@ -1684,45 +1693,70 @@ abstract class ArmyParser implements ArmyParser0 {
         if (!firstPredicate.isIdPredicate()) {
             throw _Exceptions.notFondIdPredicate(this.dialect);
         }
-        this.dmlWhereClause(whereList, childContext);
+        this.dmlWhereClause(whereList, context);
         //3.1 append parent condition field
-        parentContext.appendConditionFields();
+        context.appendConditionFields();
+
         //3.2 append parent visible
         final FieldMeta<?> visibleField;
         final Boolean visibleValue;
-        if ((visibleValue = childContext.visible.value) != null
-                && (visibleField = parentTable.tryGetField(_MetaBridge.VISIBLE)) != null) {
-            final StringBuilder childBuilder = childContext.sqlBuilder;
-            childBuilder.append(_Constant.SPACE_AND);
-            childContext.parentColumnFromSubQuery(visibleField);
-            childBuilder.append(_Constant.SPACE_EQUAL_SPACE);
-            this.literal(visibleField.mappingType(), visibleValue, childBuilder);
-        }
+        final ParentTableMeta<?> parentTable;
+        parentTable = ((ChildTableMeta<?>) context.targetTable).parentMeta();
 
-        //below parent part
+        if ((visibleValue = context.visible.value) != null
+                && (visibleField = parentTable.tryGetField(_MetaBridge.VISIBLE)) != null) {
+            final StringBuilder sqlBuilder = context.sqlBuilder;
+            sqlBuilder.append(_Constant.SPACE_AND);
+            context.parentColumnFromSubQuery(visibleField);
+            sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE);
+            this.literal(visibleField.mappingType(), visibleValue, sqlBuilder);
+        }
+        return firstPredicate;
+    }
+
+    /**
+     * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, Visible)
+     * @see #parseDomainChildUpdateWithId(_DomainUpdate, DomainUpdateContext)
+     * @see _ChildUpdateMode#WITH_ID
+     */
+    private void parseDomainParentUpdateWithId(final _DomainUpdate stmt, final _Predicate idPredicate
+            , final DomainUpdateContext context) {
+
+        assert idPredicate.isIdPredicate()
+                && context.parentContext == null
+                && context.domainTable instanceof ChildTableMeta;
+
+        final ParentTableMeta<?> parentTable;
+        parentTable = (ParentTableMeta<?>) context.targetTable;
         //1. append parent common
-        this.appendDomainUpdateCommon(parentContext);
+        this.appendDomainUpdateCommon(context);
         //2. append parent SET clause
         final List<_ItemPair> parentItemList;
         parentItemList = stmt.itemPairList();
 
-        if (parentItemList.size() > 0) {
-            this.singleTableSetClause(parentItemList, parentContext);
+        final String safeTableAlias;
+        if (this.supportSingleUpdateAlias) {
+            safeTableAlias = context.safeTableAlias;
         } else {
-            this.appendUpdateTimeAndVersion(parentTable, parentContext.safeTableAlias, parentContext, true);
+            safeTableAlias = null;
+        }
+        if (parentItemList.size() > 0) {
+            this.singleTableSetClause(parentItemList, context);
+        } else {
+            this.appendUpdateTimeAndVersion(parentTable, safeTableAlias, context, true);
         }
         //3. append parent WHERE clause
-        this.dmlWhereClause(Collections.singletonList(firstPredicate), parentContext);
+        this.dmlWhereClause(Collections.singletonList(idPredicate), context);
         //3.1 append parent condition field
-        parentContext.appendConditionFields();
+        context.appendConditionFields();
         //3.2 append discriminator
-        this.discriminator(parentContext.domainTable, parentContext.safeTableAlias, parentContext);
-
+        this.discriminator(context.domainTable, safeTableAlias, context);
     }
 
 
     /**
-     * @see #parseDomainChildWithId(_DomainUpdate, DomainUpdateContext)
+     * @see #parseDomainChildUpdateWithId(_DomainUpdate, DomainUpdateContext)
+     * @see #parseDomainParentUpdateWithId(_DomainUpdate, _Predicate, DomainUpdateContext)
      */
     private void appendDomainUpdateCommon(final DomainUpdateContext context) {
         //1. append  space if need
@@ -1731,8 +1765,7 @@ abstract class ArmyParser implements ArmyParser0 {
             sqlBuilder.append(_Constant.SPACE);
         }
         // 2. append  table UPDATE key word
-        sqlBuilder.append(_Constant.UPDATE);
-        sqlBuilder.append(_Constant.SPACE);
+        sqlBuilder.append(_Constant.UPDATE_SPACE);
         this.safeObjectName(context.targetTable, sqlBuilder);
 
         //3. append table alias
@@ -1745,6 +1778,198 @@ abstract class ArmyParser implements ArmyParser0 {
             sqlBuilder.append(context.safeTableAlias);
         }
 
+    }
+
+    /**
+     * @see #delete(Delete, Visible)
+     */
+    private <T> T handleDelete(final @Nullable _SqlContext outerContext, final Delete stmt
+            , final Visible visible, final Function<_DeleteContext, T> function) {
+        stmt.prepared();
+        final _DeleteContext context;
+        if (stmt instanceof _MultiDelete) {
+            assertDialectDelete(stmt);
+            context = MultiDeleteContext.create(outerContext, (_MultiDelete) stmt, this, visible);
+            this.parseMultiDelete((_MultiDelete) stmt, (_MultiDeleteContext) context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch((_MultiDelete) stmt, (_MultiDeleteContext) context, this::parseMultiDelete);
+            }
+        } else if (!(stmt instanceof _SingleDelete)) {
+            throw _Exceptions.unknownStatement(stmt, this.dialect);
+        } else if (stmt instanceof _DomainDelete) {
+            _SQLConsultant.assertStandardDelete(stmt);
+            context = this.handleDomainDelete(outerContext, (_DomainDelete) stmt, visible);
+        } else if (stmt instanceof StandardDelete) {
+            _SQLConsultant.assertStandardDelete(stmt);
+            context = SingleDeleteContext.create(outerContext, (_SingleDelete) stmt, this, visible);
+            this.parseStandardSingleDelete((_SingleDelete) stmt, (_SingleDeleteContext) context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch((_SingleDelete) stmt, (_SingleDeleteContext) context, this::parseStandardSingleDelete);
+            }
+        } else if (stmt instanceof _SingleDelete._ChildDelete) {
+            assert outerContext == null; // now don't support outer context and multi-statement
+            assertDialectDelete(stmt);
+            final _SingleDelete._ChildDelete childStmt = (_SingleDelete._ChildDelete) stmt;
+            if (stmt instanceof _Statement._JoinableStatement) {
+                final SingleJoinableDeleteContext parentContext;
+                parentContext = SingleJoinableDeleteContext.forParent(childStmt, this, visible);
+                context = SingleJoinableDeleteContext.forChild(childStmt, parentContext);
+            } else {
+                final SingleDeleteContext parentContext;
+                parentContext = SingleDeleteContext.forParent(childStmt, this, visible);
+                context = SingleDeleteContext.forChild(childStmt, parentContext);
+            }
+            this.parseSingleDelete((_SingleDelete) stmt, (_SingleDeleteContext) context);
+        } else if (stmt instanceof _Statement._JoinableStatement) {
+            assertDialectDelete(stmt);
+            context = SingleJoinableDeleteContext.create(outerContext, (_SingleDelete) stmt, this, visible);
+            this.parseSingleDelete((_SingleDelete) stmt, (_SingleDeleteContext) context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch((_SingleDelete) stmt, (_SingleDeleteContext) context, this::parseSingleDelete);
+            }
+        } else {
+            assertDialectDelete(stmt);
+            context = SingleDeleteContext.create(outerContext, (_SingleDelete) stmt, this, visible);
+            this.parseSingleDelete((_SingleDelete) stmt, (_SingleDeleteContext) context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch((_SingleDelete) stmt, (_SingleDeleteContext) context, this::parseSingleDelete);
+            }
+        }
+        return function.apply(context);
+    }
+
+    /**
+     * @see #handleDelete(_SqlContext, Delete, Visible, Function)
+     */
+    private _DeleteContext handleDomainDelete(final @Nullable _SqlContext outerContext, final _DomainDelete stmt
+            , final Visible visible) {
+        final _DeleteContext context;
+        final _ChildUpdateMode mode = this.childUpdateMode;
+        if (!(stmt.table() instanceof ChildTableMeta)) {
+            context = DomainDeleteContext.create(outerContext, stmt, this, visible);
+            this.parseStandardSingleDelete(stmt, (_SingleDeleteContext) context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch(stmt, (_SingleDeleteContext) context, this::parseStandardSingleDelete);
+            }
+        } else if (mode == _ChildUpdateMode.MULTI_TABLE) {
+            context = MultiDeleteContext.forChild(outerContext, stmt, this, visible);
+            this.parseDomainChildDelete(stmt, context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch(stmt, context, this::parseDomainChildDelete);
+            }
+        } else if (mode == _ChildUpdateMode.CTE) {
+            context = SingleJoinableDeleteContext.create(outerContext, stmt, this, visible);
+            this.parseDomainChildDelete(stmt, context);
+            if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
+                multiStmtBatch(stmt, context, this::parseDomainChildDelete);
+            }
+        } else if (mode == _ChildUpdateMode.WITH_ID) {
+            assert outerContext == null; //now don't support multi statement.
+            final DomainDeleteContext parentContext;
+            parentContext = DomainDeleteContext.create(null, stmt, this, visible);
+            context = DomainDeleteContext.forChild(stmt, parentContext);
+            assert parentContext.domainTable == ((DomainDeleteContext) context).domainTable;
+            assert parentContext.targetTable instanceof ParentTableMeta;
+            assert ((DomainDeleteContext) context).targetTable == parentContext.domainTable;
+
+            final _Predicate idPredicate;
+            idPredicate = this.parseDomainChildDeleteWithId(stmt, (DomainDeleteContext) context);
+            this.parseDomainParentDeleteWithId(idPredicate, parentContext);
+        } else {
+            throw _Exceptions.unexpectedEnum(mode);
+        }
+        return context;
+    }
+
+    /**
+     * @see #handleDomainDelete(_SqlContext, _DomainDelete, Visible)
+     */
+    private _Predicate parseDomainChildDeleteWithId(final _DomainDelete stmt, final DomainDeleteContext childContext) {
+        assert this.childUpdateMode == _ChildUpdateMode.WITH_ID;
+        assert childContext.parentContext != null;
+        final ParentTableMeta<?> parentTable;
+        parentTable = ((ChildTableMeta<?>) childContext.domainTable).parentMeta();
+
+        //1. append child space if need
+        final StringBuilder childBuilder;
+        if ((childBuilder = childContext.sqlBuilder).length() > 0) {
+            childBuilder.append(_Constant.SPACE);
+        }
+        // 2. append child table DELETE FROM key word
+        childBuilder.append(_Constant.DELETE_FROM_SPACE);
+        this.safeObjectName(childContext.targetTable, childBuilder);
+        //3. append table alias
+        if (this.supportSingleDeleteAlias) {
+            if (this.singleDmlAliasAfterAs) {
+                childBuilder.append(_Constant.SPACE_AS_SPACE);
+            } else {
+                childBuilder.append(_Constant.SPACE);
+            }
+            childBuilder.append(childContext.safeTableAlias);
+        }
+        //4. append child WHERE clause
+        final List<_Predicate> whereList;
+        whereList = stmt.wherePredicateList();
+        //check first predicate
+        final _Predicate firstPredicate;
+        if (!(firstPredicate = whereList.get(0)).isIdPredicate()) {
+            throw _Exceptions.notFondIdPredicate(this.dialect);
+        }
+        this.dmlWhereClause(whereList, childContext);
+        //4.2 append parent visible
+        final FieldMeta<?> visibleField;
+        final Boolean visibleValue;
+        if ((visibleValue = childContext.visible.value) != null
+                && (visibleField = parentTable.tryGetField(_MetaBridge.VISIBLE)) != null) {
+            childBuilder.append(_Constant.SPACE_AND);
+            childContext.parentColumnFromSubQuery(visibleField);
+            childBuilder.append(_Constant.SPACE_EQUAL_SPACE);
+            this.literal(visibleField.mappingType(), visibleValue, childBuilder);
+        }
+
+        return firstPredicate;
+
+    }
+
+    /**
+     * @see #handleDomainDelete(_SqlContext, _DomainDelete, Visible)
+     */
+    private void parseDomainParentDeleteWithId(final _Predicate idPredicate, final DomainDeleteContext context) {
+        assert idPredicate.isIdPredicate()
+                && context.parentContext == null
+                && context.targetTable instanceof ParentTableMeta
+                && context.domainTable instanceof ChildTableMeta;
+
+        //1. append parent space if need
+        final StringBuilder sqlBuilder;
+        if ((sqlBuilder = context.sqlBuilder).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+        // 2. append parent table DELETE FROM key word
+        sqlBuilder.append(_Constant.DELETE_FROM_SPACE);
+        this.safeObjectName(context.targetTable, sqlBuilder);
+        //3. append parent table alias
+
+        final String safeTableAlias;
+        if (this.supportSingleDeleteAlias) {
+            safeTableAlias = context.safeTableAlias;
+        } else {
+            safeTableAlias = null;
+        }
+        if (safeTableAlias != null) {
+            if (this.singleDmlAliasAfterAs) {
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+            } else {
+                sqlBuilder.append(_Constant.SPACE);
+            }
+            sqlBuilder.append(safeTableAlias);
+        }
+
+        //4. append parent WHERE clause
+        this.dmlWhereClause(Collections.singletonList(idPredicate), context);
+
+        //4.1 append discriminator
+        this.discriminator(context.domainTable, safeTableAlias, context);
     }
 
 
@@ -1774,10 +1999,10 @@ abstract class ArmyParser implements ArmyParser0 {
 
 
     /**
-     * @see #handleDomainInsert(_SqlContext, _Insert._DomainInsert, Visible)
-     * @see #handleValueInsert(_SqlContext, _Insert._ValuesInsert, Visible)
+     * @see #handleDomainInsert(_SqlContext, _Insert._DomainInsert, Visible, Function)
+     * @see #handleValueInsert(_SqlContext, _Insert._ValuesInsert, Visible, Function)
      */
-    private void standardValueSyntaxInsert(final _ValueInsertContext context) {
+    private void parseStandardValueSyntaxInsert(final _ValueInsertContext context) {
         final StringBuilder sqlBuilder;
         //1. INSERT INTO keywords
         sqlBuilder = context.sqlBuilder()
@@ -1792,9 +2017,9 @@ abstract class ArmyParser implements ArmyParser0 {
 
 
     /**
-     * @see #handleQueryInsert(_Insert._QueryInsert, Visible)
+     * @see #handleQueryInsert(_SqlContext, _Insert._QueryInsert, Visible, Function)
      */
-    private void standardQueryInsert(final _QueryInsertContext context) {
+    private void parseStandardQueryInsert(final _QueryInsertContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         //1. INSERT INTO keywords
         sqlBuilder.append(_Constant.INSERT_INTO_SPACE);
@@ -1808,122 +2033,87 @@ abstract class ArmyParser implements ArmyParser0 {
 
 
     /**
-     * @see #delete(Delete, Visible)
+     * @see #handleDelete(_SqlContext, Delete, Visible, Function)
+     * @see #handleDomainDelete(_SqlContext, _DomainDelete, Visible)
      */
-    private <T> T standardSingleDelete(final @Nullable _SqlContext outerContext, final _SingleDelete stmt
-            , final Visible visible, final Function<_DeleteContext, T> function) {
+    private void parseStandardSingleDelete(final _SingleDelete stmt, final _SingleDeleteContext context) {
+        assert stmt instanceof StandardUpdate;
 
-        final SingleDeleteContext context;
-        context = SingleDeleteContext.create(outerContext, stmt, this, visible);
-        this.parseStandardSingleDelete(stmt, context);
+        final SingleTableMeta<?> targetTable;
+        targetTable = (SingleTableMeta<?>) context.targetTable();
 
-        final T result;
-        if (!(outerContext instanceof _MultiStatementContext)) {
-            result = function.apply(context);
-        } else if (context.hasParam()) {
-            throw _Exceptions.multiStmtDontSupportParam();
-        } else if (stmt instanceof _BatchDml) {
-            final int paramSize;
-            paramSize = ((_BatchDml) stmt).paramList().size();
-            for (int i = 1; i < paramSize; i++) {// from 1 , not 0
-                context.nextElement();
-                this.parseStandardSingleDelete(stmt, context);
-            }
-            assert context.currentIndex() == (paramSize - 1);
-            result = function.apply(context);
-        } else {
-            result = function.apply(context);
+        final StringBuilder sqlBuilder;
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
         }
-        return result;
-    }
-
-
-    /**
-     * @see #standardSingleDelete(_SqlContext, _SingleDelete, Visible, Function)
-     */
-    private void parseStandardSingleDelete(final _SingleDelete stmt, final SingleDeleteContext context) {
-        final SingleTableMeta<?> table = (SingleTableMeta<?>) context.table;
-
-        final StringBuilder sqlBuilder = context.sqlBuilder;
 
         //1. DELETE key words
         sqlBuilder.append(_Constant.DELETE_FROM_SPACE);
+        this.safeObjectName(targetTable, sqlBuilder);
 
         //2. table name
-        this.safeObjectName(table, sqlBuilder);
-
         final String safeTableAlias;
-        if (context.supportAlias) {
-            safeTableAlias = context.safeTableAlias;
-            sqlBuilder.append(_Constant.SPACE_AS_SPACE)
-                    .append(safeTableAlias);
+        if (this.supportSingleUpdateAlias) {
+            if (this.singleDmlAliasAfterAs) {
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+            } else {
+                sqlBuilder.append(_Constant.SPACE);
+            }
+            safeTableAlias = context.safeTableAlias();
+            sqlBuilder.append(safeTableAlias);
         } else {
             safeTableAlias = null;
         }
         //3. WHERE clause
         this.dmlWhereClause(stmt.wherePredicateList(), context);
         //3.1 append discriminator
-        if (table instanceof ParentTableMeta) {
-            this.discriminator(table, safeTableAlias, context);
+        if (targetTable instanceof ParentTableMeta) {
+            this.discriminator(targetTable, safeTableAlias, context);
         }
         //3.2 append visible
-        if (table.containField(_MetaBridge.VISIBLE)) {
-            this.visiblePredicate(table, safeTableAlias, context, false);
+        if (targetTable.containField(_MetaBridge.VISIBLE)) {
+            this.visiblePredicate(targetTable, safeTableAlias, context, false);
         }
     }
 
 
     /**
-     * @see #update(Update, Visible)
-     */
-    private <T> T standardSingleTableUpdate(final @Nullable _SqlContext outerContext, final _SingleUpdate stmt
-            , final Visible visible, final Function<_UpdateContext, T> function) {
-
-        final SingleUpdateContext context;
-        context = SingleUpdateContext.create(outerContext, stmt, this, visible);
-
-        this.parseStandardSingleUpdate(stmt, context);
-
-        final T result;
-        if (outerContext instanceof _MultiStatementContext) {
-            result = this.multiStmtBatchDml(stmt, context, function, this::parseStandardSingleUpdate);
-        } else {
-            result = function.apply(context);
-        }
-        return result;
-    }
-
-
-    /**
-     * @see #standardSingleTableUpdate(_SqlContext, _SingleUpdate, Visible, Function)
+     * @see #handleUpdate(_SqlContext, Update, Visible, Function)
+     * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, Visible)
      */
     private void parseStandardSingleUpdate(final _SingleUpdate stmt, final _SingleUpdateContext context) {
-        assert stmt instanceof StandardUpdate && !(stmt instanceof _DomainUpdate);
+        assert stmt instanceof StandardUpdate;
+        assert !(stmt instanceof _DomainUpdate) || ((_DomainUpdate) stmt).childItemPairList().size() == 0;
 
-        final TableMeta<?> domainTable;
-             =context.targetTable();
+        final SingleTableMeta<?> targetTable;
+        targetTable = (SingleTableMeta<?>) context.targetTable();
 
-        final StringBuilder sqlBuilder = context.sqlBuilder;
-        // 1. UPDATE clause
-        sqlBuilder.append(_Constant.UPDATE)
-                .append(_Constant.SPACE);
-
-        if (updateTable instanceof ChildTableMeta) {
-            this.safeObjectName(((ChildTableMeta<?>) updateTable).parentMeta(), sqlBuilder);
-        } else {
-            this.safeObjectName(updateTable, sqlBuilder);
-        }
-
-        //1.2 updateTable alias
-        if (this.tableAliasAfterAs()) {
-            sqlBuilder.append(_Constant.SPACE_AS_SPACE);
-        } else {
+        final StringBuilder sqlBuilder;
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
             sqlBuilder.append(_Constant.SPACE);
         }
-        sqlBuilder.append(context.safeTableAlias);
+        // 1. UPDATE clause
+        sqlBuilder.append(_Constant.UPDATE_SPACE);
+        this.safeObjectName(targetTable, sqlBuilder);
+
+        //1.2 updateTable alias
+        final String safeTableAlias;
+        if (this.supportSingleUpdateAlias) {
+            safeTableAlias = context.safeTableAlias();
+        } else {
+            safeTableAlias = null;
+        }
+        if (safeTableAlias != null) {
+            if (this.singleDmlAliasAfterAs) {
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+            } else {
+                sqlBuilder.append(_Constant.SPACE);
+            }
+            sqlBuilder.append(safeTableAlias);
+        }
 
         //2. set clause
-        this.singleTableSetClause(stmt, context);
+        this.singleTableSetClause(stmt.itemPairList(), context);
         //3. where clause
         this.dmlWhereClause(stmt.wherePredicateList(), context);
 
@@ -1931,19 +2121,18 @@ abstract class ArmyParser implements ArmyParser0 {
         context.appendConditionFields();
 
         //3.2 append discriminator predicate
-        if (updateTable instanceof ParentTableMeta) {
-            this.discriminator(updateTable, context.safeTableAlias, context);
-        }
+        this.discriminator(context.domainTable(), safeTableAlias, context);
 
         //3.3 append visible
-        if (updateTable.containField(_MetaBridge.VISIBLE)) {
-            this.visiblePredicate(updateTable, context.safeTableAlias, context, false);
+        if (targetTable.containField(_MetaBridge.VISIBLE)) {
+            this.visiblePredicate(targetTable, safeTableAlias, context, false);
         }
+
     }
 
 
     /**
-     * @see #parseSelectStmt(Select, _SqlContext)
+     * @see #handleSelect(_SqlContext, Select, Visible)
      * @see #parseSubQuery(SubQuery, _SqlContext)
      */
     private void standardSimpleQuery(final _StandardQuery query, final _SimpleQueryContext context) {
@@ -2014,12 +2203,9 @@ abstract class ArmyParser implements ArmyParser0 {
      * @see #update(Update, Visible)
      */
     private Stmt createUpdateStmt(final _UpdateContext context) {
-        assert context instanceof _SingleUpdateContext;
-
         final _UpdateContext parentContext;
-
         final Stmt stmt;
-        if ((parentContext = context.parentContext()) == null) {
+        if (context instanceof _MultiUpdateContext || (parentContext = context.parentContext()) == null) {
             stmt = context.build();
         } else {
             assert parentContext instanceof _SingleUpdateContext;
@@ -2037,6 +2223,30 @@ abstract class ArmyParser implements ArmyParser0 {
         return stmt;
     }
 
+    /**
+     * @see #delete(Delete, Visible)
+     */
+    private Stmt createDeleteStmt(final _DeleteContext context) {
+        final _DeleteContext parentContext;
+        final Stmt stmt;
+        if (context instanceof _MultiDeleteContext || (parentContext = context.parentContext()) == null) {
+            stmt = context.build();
+        } else {
+            assert parentContext instanceof _SingleDeleteContext;
+            final Stmt parentStmt, childStmt;
+            parentStmt = parentContext.build();
+            childStmt = context.build();
+            if (childStmt instanceof BatchStmt) {
+                assert parentStmt instanceof BatchStmt;
+                stmt = Stmts.pairBatch((BatchStmt) childStmt, (BatchStmt) parentStmt);
+            } else {
+                assert parentStmt instanceof SimpleStmt && childStmt instanceof SimpleStmt;
+                stmt = Stmts.pair((SimpleStmt) childStmt, (SimpleStmt) parentStmt);
+            }
+        }
+        return stmt;
+    }
+
 
     private CriteriaException standardParserDontSupportDialect() {
         return new CriteriaException(String.format("standard parser[%s] don't support dialect api", this.dialect));
@@ -2044,12 +2254,33 @@ abstract class ArmyParser implements ArmyParser0 {
 
 
     private static String nonBeautifySql(String sql) {
+        //no-op
         return sql;
     }
 
 
-    protected static IllegalArgumentException illegalDialect() {
-        return new IllegalArgumentException("dialect instance error");
+    /**
+     * @see #handleUpdate(_SqlContext, Update, Visible, Function)
+     * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, Visible)
+     * @see #handleDelete(_SqlContext, Delete, Visible, Function)
+     * @see #handleDomainDelete(_SqlContext, _DomainDelete, Visible)
+     */
+    private static <S extends _Statement, C extends DmlContext.MultiStmtBatch> void multiStmtBatch(
+            final S stmt, final C context, final BiConsumer<S, C> parserMethod) {
+        if (context.hasParam()) {
+            throw _Exceptions.multiStmtDontSupportParam();
+        }
+        assert stmt instanceof _BatchDml;
+        final int paramSize;
+        paramSize = ((_BatchDml) stmt).paramList().size();
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+        for (int i = 1; i < paramSize; i++) { // from 1 ,not 0
+            context.nextElement();
+            sqlBuilder.append(_Constant.SPACE_SEMICOLON);
+            parserMethod.accept(stmt, context);
+        }
+        assert context.currentIndex() == (paramSize - 1);
     }
 
 
