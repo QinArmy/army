@@ -2,7 +2,7 @@ package io.army.dialect.postgre;
 
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.DialectEnv;
-import io.army.dialect._AbstractDialectParser;
+import io.army.dialect._ArmyDialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -14,7 +14,7 @@ import io.army.tx.Isolation;
 import java.util.List;
 import java.util.Set;
 
-abstract class PostgreParser extends _AbstractDialectParser {
+abstract class PostgreParser extends _ArmyDialectParser {
 
     PostgreParser(DialectEnv environment, PostgreDialect dialect) {
         super(environment, dialect);

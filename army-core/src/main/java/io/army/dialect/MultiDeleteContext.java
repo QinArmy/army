@@ -18,7 +18,7 @@ import java.util.Map;
 
 final class MultiDeleteContext extends MultiTableContext implements _MultiDeleteContext, DmlStmtParams {
 
-    static MultiDeleteContext create(@Nullable _SqlContext outerContext, _MultiDelete stmt, ArmyParser dialect
+    static MultiDeleteContext create(@Nullable _SqlContext outerContext, _MultiDelete stmt, ArmyParser0 dialect
             , Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forDelete(stmt, dialect, visible);
@@ -26,7 +26,7 @@ final class MultiDeleteContext extends MultiTableContext implements _MultiDelete
         return new MultiDeleteContext((StatementContext) outerContext, stmt, tableContext, dialect, visible);
     }
 
-    static MultiDeleteContext forChild(@Nullable _SqlContext outerContext, _SingleDelete stmt, ArmyParser dialect
+    static MultiDeleteContext forChild(@Nullable _SqlContext outerContext, _SingleDelete stmt, ArmyParser0 dialect
             , Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forChild((ChildTableMeta<?>) stmt.table(), stmt.tableAlias(), dialect);
@@ -39,7 +39,7 @@ final class MultiDeleteContext extends MultiTableContext implements _MultiDelete
 
 
     private MultiDeleteContext(@Nullable StatementContext outerContext, _Delete delete, TableContext tableContext
-            , ArmyParser dialect, Visible visible) {
+            , ArmyParser0 dialect, Visible visible) {
         super(outerContext, tableContext, dialect, visible);
         this.childAliasToParentAlias = tableContext.childAliasToParentAlias;
         this.hasVersion = _DialectUtils.hasOptimistic(delete.wherePredicateList());

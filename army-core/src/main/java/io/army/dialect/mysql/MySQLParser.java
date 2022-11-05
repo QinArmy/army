@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-abstract class MySQLParser extends _AbstractDialectParser {
+abstract class MySQLParser extends _ArmyDialectParser {
 
     static MySQLParser standard(DialectEnv environment, MySQLDialect dialect) {
         return new Standard(environment, dialect);

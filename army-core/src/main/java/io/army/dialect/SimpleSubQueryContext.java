@@ -13,14 +13,14 @@ final class SimpleSubQueryContext extends MultiTableContext implements _SimpleQu
     static SimpleSubQueryContext create(SubQuery subQuery, _SqlContext outerContext) {
         final TableContext tableContext;
         tableContext = TableContext.forQuery(((_Query) subQuery).tableBlockList()
-                , (ArmyParser) outerContext.parser(), outerContext.visible());
+                , (ArmyParser0) outerContext.parser(), outerContext.visible());
         return new SimpleSubQueryContext(tableContext, outerContext);
     }
 
     static SimpleSubQueryContext create(_SqlContext outerContext, SubQuery subQuery) {
         final TableContext tableContext;
         tableContext = TableContext.forQuery(((_Query) subQuery).tableBlockList()
-                , (ArmyParser) outerContext.parser(), outerContext.visible());
+                , (ArmyParser0) outerContext.parser(), outerContext.visible());
         return new SimpleSubQueryContext(tableContext, outerContext);
     }
 

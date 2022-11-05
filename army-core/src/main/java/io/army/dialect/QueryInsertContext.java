@@ -15,12 +15,12 @@ import java.util.List;
 final class QueryInsertContext extends InsertContext implements _QueryInsertContext {
 
     static QueryInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._QueryInsert stmt
-            , ArmyParser dialect, Visible visible) {
+            , ArmyParser0 dialect, Visible visible) {
         return new QueryInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
     static QueryInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildQueryInsert domainStmt
-            , ArmyParser dialect, Visible visible) {
+            , ArmyParser0 dialect, Visible visible) {
         return new QueryInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
     }
 
@@ -40,11 +40,11 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      *
-     * @see #forSingle(_SqlContext, _Insert._QueryInsert, ArmyParser, Visible)
-     * @see #forParent(_SqlContext, _Insert._ChildQueryInsert, ArmyParser, Visible)
+     * @see #forSingle(_SqlContext, _Insert._QueryInsert, ArmyParser0, Visible)
+     * @see #forParent(_SqlContext, _Insert._ChildQueryInsert, ArmyParser0, Visible)
      */
     private QueryInsertContext(@Nullable StatementContext outerContext, _Insert._QueryInsert domainStmt
-            , ArmyParser parser, Visible visible) {
+            , ArmyParser0 parser, Visible visible) {
         super(outerContext, domainStmt, parser, visible);
 
         final _Insert._QueryInsert nonChildStmt;

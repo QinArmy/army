@@ -10,14 +10,14 @@ import java.util.function.Predicate;
 
 final class OtherDmlContext extends StatementContext implements _OtherDmlContext {
 
-    static OtherDmlContext create(ArmyParser parser, Predicate<FieldMeta<?>> predicate, Visible visible) {
+    static OtherDmlContext create(ArmyParser0 parser, Predicate<FieldMeta<?>> predicate, Visible visible) {
         return new OtherDmlContext(parser, predicate, visible);
     }
 
     private final Predicate<FieldMeta<?>> predicate;
 
 
-    private OtherDmlContext(ArmyParser parser, Predicate<FieldMeta<?>> predicate, Visible visible) {
+    private OtherDmlContext(ArmyParser0 parser, Predicate<FieldMeta<?>> predicate, Visible visible) {
         super(parser, visible);
         this.predicate = predicate;
     }

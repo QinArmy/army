@@ -15,7 +15,7 @@ import java.util.List;
 final class UnionValuesContext extends StatementContext implements _ValuesContext, _UnionQueryContext {
 
 
-    static UnionValuesContext create(_UnionRowSet0 stmt, ArmyParser dialect, Visible visible) {
+    static UnionValuesContext create(_UnionRowSet0 stmt, ArmyParser0 dialect, Visible visible) {
         assert stmt instanceof Values;
         return new UnionValuesContext(stmt, dialect, visible);
     }
@@ -29,7 +29,7 @@ final class UnionValuesContext extends StatementContext implements _ValuesContex
     private final List<Selection> selectionList;
     private final _SqlContext outerContext;
 
-    private UnionValuesContext(_UnionRowSet0 stmt, ArmyParser dialect, Visible visible) {
+    private UnionValuesContext(_UnionRowSet0 stmt, ArmyParser0 dialect, Visible visible) {
         super(dialect, visible);
         this.outerContext = null;
         this.selectionList = _DialectUtils.flatSelectItem(stmt.selectItemList());

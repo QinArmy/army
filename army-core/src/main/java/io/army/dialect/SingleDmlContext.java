@@ -9,7 +9,7 @@ import io.army.util._Exceptions;
 abstract class SingleDmlContext extends SingleDmlStmtContext {
 
 
-    SingleDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser, Visible visible) {
+    SingleDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser0 parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
     }
 

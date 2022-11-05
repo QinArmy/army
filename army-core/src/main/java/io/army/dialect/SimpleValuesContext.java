@@ -15,7 +15,7 @@ import java.util.List;
 
 final class SimpleValuesContext extends StatementContext implements _ValuesContext {
 
-    static SimpleValuesContext create(@Nullable _SqlContext outerContext, _Values stmt, ArmyParser dialect
+    static SimpleValuesContext create(@Nullable _SqlContext outerContext, _Values stmt, ArmyParser0 dialect
             , Visible visible) {
         return new SimpleValuesContext(stmt, dialect, visible);
     }
@@ -28,7 +28,7 @@ final class SimpleValuesContext extends StatementContext implements _ValuesConte
     private final List<Selection> selectionList;
 
     @SuppressWarnings("unchecked")
-    private SimpleValuesContext(_Values stmt, ArmyParser dialect, Visible visible) {
+    private SimpleValuesContext(_Values stmt, ArmyParser0 dialect, Visible visible) {
         super(dialect, visible);
 
         final List<? extends SelectItem> selectItemList;

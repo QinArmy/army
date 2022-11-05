@@ -24,13 +24,13 @@ final class AssignmentInsertContext extends InsertContext
         implements _AssignmentInsertContext, _InsertStmtParams._AssignmentParams {
 
     static AssignmentInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._AssignmentInsert stmt
-            , ArmyParser dialect, Visible visible) {
+            , ArmyParser0 dialect, Visible visible) {
         assert !(stmt instanceof _Insert._ChildAssignmentInsert);
         return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
     static AssignmentInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildAssignmentInsert stmt
-            , ArmyParser dialect, Visible visible) {
+            , ArmyParser0 dialect, Visible visible) {
         assert outerContext == null || outerContext instanceof LiteralMultiStmtContext;
         if (outerContext != null && stmt.parentStmt().table().id().generatorType() == GeneratorType.POST) {
             throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) stmt.table());
@@ -55,11 +55,11 @@ final class AssignmentInsertContext extends InsertContext
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      *
-     * @see #forSingle(_SqlContext, _Insert._AssignmentInsert, ArmyParser, Visible)
-     * @see #forParent(_SqlContext, _Insert._ChildAssignmentInsert, ArmyParser, Visible)
+     * @see #forSingle(_SqlContext, _Insert._AssignmentInsert, ArmyParser0, Visible)
+     * @see #forParent(_SqlContext, _Insert._ChildAssignmentInsert, ArmyParser0, Visible)
      */
     private AssignmentInsertContext(@Nullable StatementContext outerContext, _Insert._AssignmentInsert domainStmt
-            , ArmyParser dialect, Visible visible) {
+            , ArmyParser0 dialect, Visible visible) {
         super(outerContext, domainStmt, dialect, visible);
 
         if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
@@ -96,7 +96,7 @@ final class AssignmentInsertContext extends InsertContext
     @Override
     void doAppendAssignments() {
 
-        final ArmyParser dialect = this.parser;
+        final ArmyParser0 dialect = this.parser;
 
         final TableMeta<?> insertTable = this.insertTable;
 
@@ -182,7 +182,7 @@ final class AssignmentInsertContext extends InsertContext
     private void appendArmyManageFields() {
         assert !this.migration;
 
-        final ArmyParser dialect = this.parser;
+        final ArmyParser0 dialect = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder;
 
         final Map<FieldMeta<?>, Object> generatedMap = this.rowWrapper.generatedMap;

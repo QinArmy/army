@@ -7,7 +7,7 @@ import io.army.stmt.SimpleStmt;
 final class LiteralMultiStmtContext extends StatementContext {
 
 
-    LiteralMultiStmtContext(ArmyParser parser, Visible visible) {
+    LiteralMultiStmtContext(ArmyParser0 parser, Visible visible) {
         super(null, parser, visible);
     }
 

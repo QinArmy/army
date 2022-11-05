@@ -59,7 +59,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
      * </p>
      */
     InsertContext(@Nullable StatementContext outerContext, final _Insert domainStmt
-            , ArmyParser parser, Visible visible) {
+            , ArmyParser0 parser, Visible visible) {
         super(outerContext, parser, visible);
         this.parentContext = null;
         final _Insert nonChildStmt;
@@ -248,7 +248,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
         final List<FieldMeta<?>> fieldList = this.fieldList;
         assert fieldList != null; //when assignment insert, fieldList is null.
-        final ArmyParser parser = this.parser;
+        final ArmyParser0 parser = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_LEFT_PAREN);
 
@@ -321,7 +321,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
                 .append(_Constant.SPACE_RETURNING)
                 .append(_Constant.SPACE);
 
-        final ArmyParser dialect = this.parser;
+        final ArmyParser0 dialect = this.parser;
         //TODO for dialect table alias
         dialect.safeObjectName(returnId, sqlBuilder)
                 .append(_Constant.SPACE_AS_SPACE);

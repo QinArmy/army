@@ -24,13 +24,13 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
 
 
     static ValuesInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._ValuesInsert stmt
-            , ArmyParser dialect, Visible visible) {
+            , ArmyParser0 dialect, Visible visible) {
         _DialectUtils.checkDefaultValueMap(stmt);
         return new ValuesInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
     static ValuesInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildValuesInsert domainStmt
-            , ArmyParser dialect, Visible visible) {
+            , ArmyParser0 dialect, Visible visible) {
         assert outerContext == null || outerContext instanceof LiteralMultiStmtContext;
         if (outerContext != null && domainStmt.parentStmt().table().id().generatorType() == GeneratorType.POST) {
             throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) domainStmt.table());
@@ -56,11 +56,11 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      *
-     * @see #forSingle(_SqlContext, _Insert._ValuesInsert, ArmyParser, Visible)
-     * @see #forParent(_SqlContext, _Insert._ChildValuesInsert, ArmyParser, Visible)
+     * @see #forSingle(_SqlContext, _Insert._ValuesInsert, ArmyParser0, Visible)
+     * @see #forParent(_SqlContext, _Insert._ChildValuesInsert, ArmyParser0, Visible)
      */
     private ValuesInsertContext(@Nullable StatementContext outerContext, _Insert._ValuesInsert domainStmt
-            , ArmyParser parser, Visible visible) {
+            , ArmyParser0 parser, Visible visible) {
         super(outerContext, domainStmt, parser, visible);
 
         if (domainStmt instanceof _Insert._ChildValuesInsert) {
@@ -114,7 +114,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         final int rowSize = rowValuesList.size();
         final int fieldSize = fieldList.size();
 
-        final ArmyParser dialect = this.parser;
+        final ArmyParser0 dialect = this.parser;
         final Map<FieldMeta<?>, _Expression> defaultValueMap;
 
         final boolean migration = this.migration;

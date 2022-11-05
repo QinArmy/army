@@ -7,7 +7,7 @@ import io.army.lang.Nullable;
 final class DomainUpdate extends DomainDmlStmtContext implements _SingleUpdateContext {
 
 
-    private DomainUpdate(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser, Visible visible) {
+    private DomainUpdate(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser0 parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
     }
 

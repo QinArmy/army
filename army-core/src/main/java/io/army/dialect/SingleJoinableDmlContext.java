@@ -9,7 +9,7 @@ abstract class SingleJoinableDmlContext extends SingleDmlStmtContext {
 
 
     SingleJoinableDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt
-            , ArmyParser parser, Visible visible) {
+            , ArmyParser0 parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
     }
 

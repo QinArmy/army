@@ -13,7 +13,7 @@ import java.util.List;
 
 final class UnionSelectContext extends StatementContext implements _UnionQueryContext, _SelectContext {
 
-    static UnionSelectContext create(Select select, ArmyParser dialect, Visible visible) {
+    static UnionSelectContext create(Select select, ArmyParser0 dialect, Visible visible) {
         return new UnionSelectContext(select, dialect, visible);
     }
 
@@ -26,7 +26,7 @@ final class UnionSelectContext extends StatementContext implements _UnionQueryCo
 
     private final _SelectContext outerContext;
 
-    private UnionSelectContext(Select select, ArmyParser dialect, Visible visible) {
+    private UnionSelectContext(Select select, ArmyParser0 dialect, Visible visible) {
         super(dialect, visible);
         this.outerContext = null;
         this.selectionList = _DialectUtils.flatSelectItem(((_PartRowSet) select).selectItemList());

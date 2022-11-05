@@ -22,7 +22,7 @@ import java.util.List;
 final class OnlyParentUpdateContext extends StatementContext implements DmlContext, _SingleUpdateContext
         , DmlStmtParams {
 
-    static OnlyParentUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate update, ArmyParser dialect
+    static OnlyParentUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate update, ArmyParser0 dialect
             , Visible visible) {
         return new OnlyParentUpdateContext((StatementContext) outerContext, update, dialect, visible);
     }
@@ -40,7 +40,7 @@ final class OnlyParentUpdateContext extends StatementContext implements DmlConte
     private List<TableField> conditionFieldList;
 
 
-    private OnlyParentUpdateContext(@Nullable StatementContext outerContext, _SingleUpdate update, ArmyParser dialect
+    private OnlyParentUpdateContext(@Nullable StatementContext outerContext, _SingleUpdate update, ArmyParser0 dialect
             , Visible visible) {
         super(outerContext, dialect, visible);
 

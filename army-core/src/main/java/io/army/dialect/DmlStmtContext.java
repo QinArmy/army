@@ -29,7 +29,7 @@ abstract class DmlStmtContext extends StatementContext implements DmlContext.Mul
 
 
     DmlStmtContext(@Nullable StatementContext outerContext, _DmlStatement stmt
-            , ArmyParser parser, Visible visible) {
+            , ArmyParser0 parser, Visible visible) {
         super(outerContext, parser, visible);
 
         this.versionPredicate = _DialectUtils.hasOptimistic(stmt.wherePredicateList());

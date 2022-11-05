@@ -37,7 +37,7 @@ public abstract class _DialectFactory {
      * </p>
      */
     @SuppressWarnings("unchecked")
-    protected static <T extends _AbstractDialectParser> T invokeFactoryMethod(Class<T> dialectType, String className
+    protected static <T extends ArmyParser> T invokeFactoryMethod(Class<T> dialectType, String className
             , DialectEnv environment) {
         final Class<?> clazz;
         try {

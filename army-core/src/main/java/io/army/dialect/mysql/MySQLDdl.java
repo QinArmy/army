@@ -1,6 +1,6 @@
 package io.army.dialect.mysql;
 
-import io.army.dialect._AbstractDialectParser;
+import io.army.dialect.ArmyParser;
 import io.army.dialect._Constant;
 import io.army.dialect._DdlDialect;
 import io.army.meta.FieldMeta;
@@ -20,11 +20,11 @@ import java.util.Set;
 
 final class MySQLDdl extends _DdlDialect {
 
-    static MySQLDdl create(_AbstractDialectParser dialect) {
+    static MySQLDdl create(ArmyParser dialect) {
         return new MySQLDdl(dialect);
     }
 
-    MySQLDdl(_AbstractDialectParser dialect) {
+    MySQLDdl(ArmyParser dialect) {
         super(dialect);
     }
 
@@ -45,7 +45,7 @@ final class MySQLDdl extends _DdlDialect {
         }
         final StringBuilder builder = new StringBuilder(128)
                 .append("ALTER TABLE ");
-        final _AbstractDialectParser dialect = this.dialect;
+        final ArmyParser dialect = this.dialect;
         TableMeta<?> table = null;
         FieldMeta<?> field;
         _FieldResult result;
@@ -106,7 +106,7 @@ final class MySQLDdl extends _DdlDialect {
         final StringBuilder builder = new StringBuilder(128)
                 .append("ALTER TABLE ");
 
-        final _AbstractDialectParser dialect = this.dialect;
+        final ArmyParser dialect = this.dialect;
 
         dialect.identifier(table.tableName(), builder)
                 .append("\n\t");
@@ -185,7 +185,7 @@ final class MySQLDdl extends _DdlDialect {
         }
         final StringBuilder builder = new StringBuilder(128)
                 .append("ALTER TABLE ");
-        final _AbstractDialectParser dialect = this.dialect;
+        final ArmyParser dialect = this.dialect;
         dialect.identifier(table.tableName(), builder)
                 .append("\n\t");
         for (int i = 0; i < indexNameSize; i++) {

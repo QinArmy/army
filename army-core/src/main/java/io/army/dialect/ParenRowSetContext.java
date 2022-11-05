@@ -9,7 +9,7 @@ import io.army.util._Exceptions;
 
 final class ParenRowSetContext extends StatementContext implements _ParenRowSetContext {
 
-    static ParenRowSetContext create(@Nullable _SqlContext outerContext, ArmyParser parser, Visible visible) {
+    static ParenRowSetContext create(@Nullable _SqlContext outerContext, ArmyParser0 parser, Visible visible) {
         return new ParenRowSetContext((StatementContext) outerContext, parser, visible);
     }
 
@@ -21,7 +21,7 @@ final class ParenRowSetContext extends StatementContext implements _ParenRowSetC
     private final StatementContext outerContext;
 
 
-    ParenRowSetContext(StatementContext outerContext, ArmyParser parser, Visible visible) {
+    ParenRowSetContext(StatementContext outerContext, ArmyParser0 parser, Visible visible) {
         super(outerContext, parser, visible);
         this.outerContext = null;
     }

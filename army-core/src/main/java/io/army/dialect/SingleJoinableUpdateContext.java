@@ -9,7 +9,7 @@ class SingleJoinableUpdateContext extends SingleJoinableDmlContext implements _S
 
 
     static SingleJoinableUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate stmt
-            , ArmyParser parser, Visible visible) {
+            , ArmyParser0 parser, Visible visible) {
         return new SingleJoinableUpdateContext((StatementContext) outerContext, stmt, parser, visible);
     }
 
@@ -20,7 +20,7 @@ class SingleJoinableUpdateContext extends SingleJoinableDmlContext implements _S
 
 
     private SingleJoinableUpdateContext(@Nullable StatementContext outerContext, _SingleDml stmt
-            , ArmyParser parser, Visible visible) {
+            , ArmyParser0 parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
     }
 

@@ -32,13 +32,13 @@ import java.util.Map;
 final class DomainInsertContext extends ValuesSyntaxInsertContext implements _InsertStmtParams._DomainParams {
 
     static DomainInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._DomainInsert insert
-            , ArmyParser dialect, Visible visible) {
+            , ArmyParser0 dialect, Visible visible) {
         return new DomainInsertContext((StatementContext) outerContext, insert, dialect, visible);
     }
 
 
     static DomainInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildDomainInsert domainStmt
-            , ArmyParser dialect, Visible visible) {
+            , ArmyParser0 dialect, Visible visible) {
         assert outerContext == null || outerContext instanceof LiteralMultiStmtContext;
         if (outerContext != null && domainStmt.parentStmt().table().id().generatorType() == GeneratorType.POST) {
             throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) domainStmt.table());
@@ -59,7 +59,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
      * create for {@link  SingleTableMeta}
      */
     private DomainInsertContext(@Nullable StatementContext outerContext, _Insert._DomainInsert domainStmt
-            , ArmyParser dialect, Visible visible) {
+            , ArmyParser0 dialect, Visible visible) {
         super(outerContext, domainStmt, dialect, visible);
 
         this.domainList = domainStmt.domainList();
@@ -90,7 +90,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         final int fieldSize = fieldList.size();
 
 
-        final ArmyParser dialect = this.parser;
+        final ArmyParser0 dialect = this.parser;
         final Map<FieldMeta<?>, _Expression> defaultValueMap;
 
         final LiteralMode literalMode = this.literalMode;

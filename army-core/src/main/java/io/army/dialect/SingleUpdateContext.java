@@ -11,7 +11,7 @@ import java.util.List;
 final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdateContext {
 
     static SingleUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate stmt
-            , ArmyParser dialect, Visible visible) {
+            , ArmyParser0 dialect, Visible visible) {
         return new SingleUpdateContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
@@ -24,7 +24,7 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
 
     private List<TableField> conditionFieldList;
 
-    private SingleUpdateContext(@Nullable StatementContext outerContext, _SingleUpdate stmt, ArmyParser dialect
+    private SingleUpdateContext(@Nullable StatementContext outerContext, _SingleUpdate stmt, ArmyParser0 dialect
             , Visible visible) {
         super(outerContext, stmt, dialect, visible);
         this.parentContext = null;

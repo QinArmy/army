@@ -179,7 +179,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         if (conditionFieldList == null || conditionFieldList.size() == 0) {
             return;
         }
-        final ArmyParser dialect = this.parser;
+        final ArmyParser0 dialect = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder;
         String safeTableAlias, objectName;
         UpdateMode updateMode;

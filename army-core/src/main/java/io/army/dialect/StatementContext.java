@@ -162,7 +162,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
             throw _Exceptions.namedParamNotMatch((SqlValueParam.NamedMultiValue) namedLiteral, value);
         } else if (((Collection<?>) value).size() == ((SqlValueParam.NamedMultiValue) namedLiteral).valueSize()) {
 
-            final ArmyParser parser = this.parser;
+            final ArmyParser0 parser = this.parser;
             final TypeMeta paramMeta = namedLiteral.typeMeta();
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             int i = 0;
