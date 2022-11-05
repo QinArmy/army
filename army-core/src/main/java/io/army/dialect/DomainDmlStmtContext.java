@@ -16,7 +16,7 @@ abstract class DomainDmlStmtContext extends SingleDmlStmtContext implements _Sin
     private final String safeParentAlias;
 
     DomainDmlStmtContext(@Nullable StatementContext outerContext, _SingleDml stmt
-            , ArmyParser0 parser, Visible visible) {
+            , ArmyParser parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
         if (this.domainTable instanceof ChildTableMeta) {
             this.safeParentAlias = parser.identifier(_DialectUtils.parentAlias(this.tableAlias));
@@ -26,6 +26,10 @@ abstract class DomainDmlStmtContext extends SingleDmlStmtContext implements _Sin
 
     }
 
+    DomainDmlStmtContext(_SingleDml stmt, DomainDmlStmtContext parentContext) {
+        super(stmt, parentContext);
+        this.safeParentAlias = null;//TODO
+    }
 
     @Override
     public final void appendField(final String tableAlias, final FieldMeta<?> field) {

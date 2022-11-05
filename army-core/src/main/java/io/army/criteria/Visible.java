@@ -8,10 +8,10 @@ public enum Visible {
     ONLY_NON_VISIBLE(Boolean.FALSE),
     BOTH(null);
 
-    public final Boolean visible;
+    public final Boolean value;
 
-    Visible(@Nullable Boolean visible) {
-        this.visible = visible;
+    Visible(@Nullable Boolean value) {
+        this.value = value;
     }
 
     public static Visible resolve(@Nullable Boolean visible) {

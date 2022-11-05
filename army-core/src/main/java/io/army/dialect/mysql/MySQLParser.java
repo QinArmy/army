@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 abstract class MySQLParser extends _ArmyDialectParser {
 
@@ -382,12 +381,9 @@ abstract class MySQLParser extends _ArmyDialectParser {
      */
     @Nullable
     @Override
-    protected final <T> T standardChildUpdate(final @Nullable _SqlContext outerContext, final _SingleUpdate update
-            , final Visible visible, final Function<_UpdateContext, T> function) {
-
-        final _MultiUpdateContext context;
-        context = this.createMultiUpdateContext(outerContext, update, visible);
-
+    protected final void parseDomainChildUpdate(final _SingleUpdate update, final _UpdateContext ctx) {
+        assert ctx instanceof _MultiUpdateContext;
+        final _MultiUpdateContext context = (_MultiUpdateContext) ctx;
 
         // 1. UPDATE clause
         context.sqlBuilder().append(_Constant.UPDATE);
@@ -415,7 +411,6 @@ abstract class MySQLParser extends _ArmyDialectParser {
         if (parentTable.containField(_MetaBridge.VISIBLE)) {
             this.visiblePredicate(parentTable, safeParentTableAlias, context, false);
         }
-        return function.apply(context);
     }
 
     @Nullable
@@ -490,6 +485,23 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 throw new IllegalArgumentException(String.format("unsupported MySQL version[%s]", meta.version()));
         }
         return keyWordSet;
+    }
+
+    @Override
+    protected final _ChildUpdateMode childUpdateMode() {
+        return _ChildUpdateMode.MULTI_TABLE;
+    }
+
+    @Override
+    protected final boolean isSupportSingleUpdateAlias() {
+        //MySQL always support single update alias;
+        return true;
+    }
+
+    @Override
+    protected final boolean isSupportSingleDeleteAlias() {
+        //as of 8.x MySQL support single delete alias
+        return this.dialect.version() >= MySQLDialect.MySQL80.version();
     }
 
     /*################################## blow private method ##################################*/

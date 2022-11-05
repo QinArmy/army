@@ -40,7 +40,7 @@ abstract class SingleDmlStmtContext extends DmlStmtContext implements _SingleTab
     final boolean supportAlias;
 
 
-    SingleDmlStmtContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser0 parser
+    SingleDmlStmtContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser
             , Visible visible) {
         super(outerContext, stmt, parser, visible);
 

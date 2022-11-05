@@ -333,7 +333,7 @@ final class MySQLDialectParser extends MySQLParser {
         //8. index hint
         this.indexHintClause(stmt.indexHintList(), sqlBuilder);
         //9. set clause
-        this.singleTableSetClause(stmt, context);
+        this.singleTableSetClause(stmt.itemPairList(), context);
         //10. where clause
         this.dmlWhereClause(stmt.wherePredicateList(), context);
         //10.1 discriminator

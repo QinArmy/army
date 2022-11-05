@@ -11,11 +11,15 @@ import java.util.List;
 final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdateContext {
 
     static SingleUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate stmt
-            , ArmyParser0 dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         return new SingleUpdateContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
-    static SingleUpdateContext forChild(_SingleUpdate stmt, SingleUpdateContext parentContext) {
+    static SingleUpdateContext forParent(_SingleUpdate._ChildUpdate stmt, ArmyParser dialect, Visible visible) {
+        return new SingleUpdateContext(null, stmt, dialect, visible);
+    }
+
+    static SingleUpdateContext forChild(_SingleUpdate._ChildUpdate stmt, SingleUpdateContext parentContext) {
         return new SingleUpdateContext(stmt, parentContext);
     }
 

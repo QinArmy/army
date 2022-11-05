@@ -8,6 +8,7 @@ import io.army.meta.TypeMeta;
 /**
  * package interface
  */
+@Deprecated
 interface ArmyParser0 extends DialectParser {
 
 

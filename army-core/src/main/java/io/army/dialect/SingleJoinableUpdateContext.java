@@ -9,18 +9,25 @@ class SingleJoinableUpdateContext extends SingleJoinableDmlContext implements _S
 
 
     static SingleJoinableUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate stmt
-            , ArmyParser0 parser, Visible visible) {
+            , ArmyParser parser, Visible visible) {
         return new SingleJoinableUpdateContext((StatementContext) outerContext, stmt, parser, visible);
     }
 
 
-    static SingleJoinableUpdateContext forChild(_SingleUpdate stmt, SingleJoinableUpdateContext parentContext) {
+    static SingleJoinableUpdateContext forParent(_SingleUpdate._ChildUpdate stmt, ArmyParser parser
+            , Visible visible) {
+        return new SingleJoinableUpdateContext(null, stmt, parser, visible);
+    }
+
+
+    static SingleJoinableUpdateContext forChild(_SingleUpdate._ChildUpdate stmt
+            , SingleJoinableUpdateContext parentContext) {
         return new SingleJoinableUpdateContext(stmt, parentContext);
     }
 
 
     private SingleJoinableUpdateContext(@Nullable StatementContext outerContext, _SingleDml stmt
-            , ArmyParser0 parser, Visible visible) {
+            , ArmyParser parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
     }
 

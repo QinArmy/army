@@ -5,10 +5,7 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.function.TePredicate;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
-import io.army.meta.TypeMeta;
+import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
@@ -312,6 +309,29 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
         }
         return match;
     }
+
+    @Override
+    public final boolean isIdPredicate() {
+        final DualPredicate predicate;
+        final boolean match;
+        if (!(this instanceof DualPredicate)) {
+            match = false;
+        } else if (!((predicate = (DualPredicate) this).left instanceof PrimaryFieldMeta)) {
+            match = false;
+        } else if (predicate.operator == DualOperator.EQUAL) {
+            match = predicate.right instanceof SqlValueParam.SingleValue
+                    && (predicate.right instanceof ParamExpression
+                    || predicate.right instanceof LiteralExpression);
+        } else if (predicate.operator == DualOperator.IN) {
+            match = predicate.right instanceof MultiValueExpression
+                    && (predicate.right instanceof ParamExpression
+                    || predicate.right instanceof LiteralExpression);
+        } else {
+            match = false;
+        }
+        return match;
+    }
+
 
     @Override
     public final TableField findParentId(final ChildTableMeta<?> child, final String alias) {

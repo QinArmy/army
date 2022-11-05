@@ -257,6 +257,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("multi-statement don't support parameter placeholder.");
     }
 
+    public static CriteriaException notFondIdPredicate(Dialect dialect) {
+        String m = String.format("%s update child table must specified id", dialect);
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException dontSupportDialectStatement(DialectStatement statement, Dialect dialect) {
         String m = String.format("%s don't dialect statement[%s]", dialect, _ClassUtils.safeClassName(statement));
         return new CriteriaException(m);

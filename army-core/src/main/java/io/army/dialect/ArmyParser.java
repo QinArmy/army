@@ -62,21 +62,32 @@ abstract class ArmyParser implements ArmyParser0 {
     protected final boolean identifierCaseSensitivity;
 
     protected final Dialect dialect;
+
+    final boolean supportSingleUpdateAlias;
+
+    final boolean supportSingleDeleteAlias;
+
+    final boolean singleDmlAliasAfterAs;
+
+    final _ChildUpdateMode childUpdateMode;
     private final FieldValueGenerator generator;
 
     ArmyParser(final DialectEnv dialectEnv, final Dialect dialect) {
-        assert this.getClass().getPackage().getName().startsWith("io.army.dialect");
         assert dialect instanceof Enum;
-
+        this.dialect = dialect; // first
         this.dialectEnv = dialectEnv;
         this.mappingEnv = dialectEnv.mappingEnv();
         this.serverMeta = this.mappingEnv.serverMeta();
-        this.dialect = dialect;
+
 
         assert dialect.database() == this.serverMeta.database();
 
         this.identifierQuote = identifierQuote();
         this.identifierCaseSensitivity = this.isIdentifierCaseSensitivity();
+        this.childUpdateMode = this.childUpdateMode();
+        this.singleDmlAliasAfterAs = this.tableAliasAfterAs();
+        this.supportSingleUpdateAlias = this.isSupportSingleUpdateAlias();
+        this.supportSingleDeleteAlias = this.isSupportSingleDeleteAlias();
 
         this.keyWordSet = Collections.unmodifiableSet(this.createKeyWordSet(this.serverMeta));
         if (dialectEnv instanceof _MockDialects) {
@@ -85,6 +96,9 @@ abstract class ArmyParser implements ArmyParser0 {
             this.generator = FieldValuesGenerators.create(this.mappingEnv::zoneId, dialectEnv.fieldGeneratorMap());
         }
     }
+
+
+
 
     /*################################## blow DML batchInsert method ##################################*/
 
@@ -111,58 +125,8 @@ abstract class ArmyParser implements ArmyParser0 {
 
     @Override
     public final Stmt update(final Update update, final Visible visible) {
-        update.prepared();
         final Stmt stmt;
-
-        if (update instanceof _MultiUpdate) {
-            assertDialectUpdate(update);
-            final _MultiUpdateContext context;
-            context = MultiUpdateContext.create(null, (_MultiUpdate) update, this, visible);
-            parseMultiUpdate((_MultiUpdate) update, context);
-            stmt = context.build();
-        } else if (!(update instanceof _SingleUpdate)) {
-            throw _Exceptions.unknownStatement(update, this.dialect);
-        } else if (update instanceof _DomainUpdate) {
-            final _DomainUpdate domainUpdate = (_DomainUpdate) update;
-            if (!(domainUpdate.table() instanceof ChildTableMeta)) {
-
-            } else if (domainUpdate.childItemPairList().size() == 0) {
-
-            } else {
-
-            }
-        } else if (update instanceof _Statement._JoinableStatement) {
-
-
-        } else if (!(update instanceof StandardUpdate)) {
-            final SingleUpdateContext context;
-            context = SingleUpdateContext.create(null, (_SingleUpdate) update, this, visible);
-            this.parseSingleUpdate((_SingleUpdate) update, context);
-            stmt = context.build();
-        } else if (!(update instanceof _DomainUpdate)) {
-            final _SingleUpdate singleUpdate = (_SingleUpdate) update;
-            final _SingleUpdateContext context;
-            if (singleUpdate.table() instanceof ChildTableMeta) {
-                final _SingleUpdateContext context;
-            } else {
-                context = SingleUpdateContext.create(null, (_SingleUpdate) update, this, visible);
-                this.parseStandardSingleUpdate((_SingleUpdate) update, context);
-            }
-            stmt = context.build();
-        } else if ((singleUpdate = (_SingleUpdate) update).table() instanceof ChildTableMeta) {
-            // assert implementation class is legal
-            assertDialectUpdate(update);
-            final _SingleUpdate singleUpdate = (_SingleUpdate) update;
-            final _SingleUpdateContext context;
-            if (singleUpdate.table() instanceof ChildTableMeta) {
-                context = SingleUpdateContext.create(null, singleUpdate, this, visible);
-            } else {
-                context = OnlyParentUpdateContext.create(null, singleUpdate, this, visible);
-            }
-            parseSingleUpdate((_SingleUpdate) update, context);
-        } else {
-
-        }
+        stmt = this.handleUpdate(null, update, visible, this::createUpdateStmt);
         assert !(update instanceof _BatchDml) || stmt instanceof BatchStmt;
         return stmt;
     }
@@ -404,6 +368,14 @@ abstract class ArmyParser implements ArmyParser0 {
 
     protected abstract DdlDialect createDdlDialect();
 
+    protected _ChildUpdateMode childUpdateMode() {
+        throw new UnsupportedOperationException();
+    }
+
+    protected abstract boolean isSupportSingleUpdateAlias();
+
+    protected abstract boolean isSupportSingleDeleteAlias();
+
 
     /*################################## blow update template method ##################################*/
 
@@ -495,8 +467,7 @@ abstract class ArmyParser implements ArmyParser0 {
     /**
      * @see #update(Update, Visible)
      */
-    protected <T> T standardChildUpdate(@Nullable _SqlContext outerContext, _SingleUpdate update, Visible visible
-            , Function<_UpdateContext, T> function) {
+    protected void parseDomainChildUpdate(_SingleUpdate update, _UpdateContext context) {
         throw new UnsupportedOperationException();
     }
 
@@ -850,10 +821,13 @@ abstract class ArmyParser implements ArmyParser0 {
     }
 
 
-    protected final void singleTableSetClause(final _SingleUpdate stmt, final _SingleUpdateContext context) {
-        assert !(stmt instanceof _DomainUpdate) || ((_DomainUpdate) stmt).childItemPairList().size() == 0;
+    /**
+     * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #parseDomainChildWithId(_DomainUpdate, DomainUpdateContext)
+     * @see #parseStandardSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     */
+    protected final void singleTableSetClause(final List<_ItemPair> itemPairList, final _SingleUpdateContext context) {
 
-        final List<_ItemPair> itemPairList = stmt.itemPairList();
         final int itemPairSize = itemPairList.size();
         if (itemPairSize == 0) {
             throw _Exceptions.setClauseNotExists();
@@ -866,14 +840,10 @@ abstract class ArmyParser implements ArmyParser0 {
             }
             itemPairList.get(i).appendItemPair(context);
         }
-        final TableMeta<?> table = stmt.table();
-        final SingleTableMeta<?> singleTable;
-        if (table instanceof ChildTableMeta) {
-            singleTable = ((ChildTableMeta<?>) table).parentMeta();
-        } else {
-            singleTable = (SingleTableMeta<?>) table;
+        final TableMeta<?> targetTable = context.targetTable();
+        if (targetTable instanceof SingleTableMeta) {
+            this.appendUpdateTimeAndVersion((SingleTableMeta<?>) targetTable, context.safeTableAlias(), context, false);
         }
-        this.appendUpdateTimeAndVersion(singleTable, context.safeTableAlias(), context);
     }
 
     protected final void multiTableChildSetClause(final _SingleUpdate stmt, final _MultiUpdateContext context) {
@@ -995,6 +965,7 @@ abstract class ArmyParser implements ArmyParser0 {
         }
 
     }
+
 
     /**
      * @see #standardSimpleQuery(_StandardQuery, _SimpleQueryContext)
@@ -1401,10 +1372,10 @@ abstract class ArmyParser implements ArmyParser0 {
     /**
      * @see #singleTableSetClause(_SingleUpdate, _SingleUpdateContext)
      * @see #multiTableSetClause(_MultiUpdate, _MultiUpdateContext)
-     * @see #parseInsert(_SqlContext, _Insert, Visible)
+     * @see #parseDomainChildWithId(_DomainUpdate, DomainUpdateContext)
      */
     protected final void appendUpdateTimeAndVersion(final SingleTableMeta<?> table
-            , final @Nullable String safeTableAlias, final StmtContext context) {
+            , final @Nullable String safeTableAlias, final StmtContext context, final boolean firstItem) {
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
         FieldMeta<?> field;
@@ -1425,7 +1396,11 @@ abstract class ArmyParser implements ArmyParser0 {
         final boolean supportTableAlias;
         supportTableAlias = safeTableAlias != null && this.setClauseTableAlias();
 
-        sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+        if (firstItem) {
+            sqlBuilder.append(_Constant.SPACE_SET_SPACE);
+        } else {
+            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+        }
         if (supportTableAlias) {
             sqlBuilder.append(safeTableAlias)
                     .append(_Constant.POINT);
@@ -1605,6 +1580,171 @@ abstract class ArmyParser implements ArmyParser0 {
             }
         }
         return function.apply(context);
+    }
+
+
+    /**
+     * @see #update(Update, Visible)
+     */
+    private <T> T handleUpdate(final @Nullable _SqlContext outerContext, final Update stmt
+            , final Visible visible, final Function<_UpdateContext, T> function) {
+        stmt.prepared();
+        final _UpdateContext context;
+        if (stmt instanceof _MultiUpdate) {
+            assertDialectUpdate(stmt);
+            context = MultiUpdateContext.create(outerContext, (_MultiUpdate) stmt, this, visible);
+            parseMultiUpdate((_MultiUpdate) stmt, (MultiUpdateContext) context);
+        } else if (!(stmt instanceof _SingleUpdate)) {
+            throw _Exceptions.unknownStatement(stmt, this.dialect);
+        } else if (stmt instanceof _DomainUpdate) {
+            _SQLConsultant.assertStandardUpdate(stmt);
+            context = this.handleDomainUpdate(outerContext, (_DomainUpdate) stmt, visible);
+        } else if (stmt instanceof StandardUpdate) {
+            _SQLConsultant.assertStandardUpdate(stmt);
+            context = SingleUpdateContext.create(outerContext, (_SingleUpdate) stmt, this, visible);
+            this.parseStandardSingleUpdate((_SingleUpdate) stmt, (SingleUpdateContext) context);
+        } else if (stmt instanceof _SingleUpdate._ChildUpdate) {
+            assert outerContext == null; // now don't support outer context and multi-statement
+            assertDialectUpdate(stmt);
+            final _SingleUpdate._ChildUpdate childStmt = (_SingleUpdate._ChildUpdate) stmt;
+            if (stmt instanceof _Statement._JoinableStatement) {
+                final SingleJoinableUpdateContext parentContext;
+                parentContext = SingleJoinableUpdateContext.forParent(childStmt, this, visible);
+                context = SingleJoinableUpdateContext.forChild(childStmt, parentContext);
+            } else {
+                final SingleUpdateContext parentContext;
+                parentContext = SingleUpdateContext.forParent(childStmt, this, visible);
+                context = SingleUpdateContext.forChild(childStmt, parentContext);
+            }
+            this.parseSingleUpdate((_SingleUpdate) stmt, (_SingleUpdateContext) context);
+        } else if (stmt instanceof _Statement._JoinableStatement) {
+            assertDialectUpdate(stmt);
+            context = SingleJoinableUpdateContext.create(outerContext, (_SingleUpdate) stmt, this, visible);
+            this.parseSingleUpdate((_SingleUpdate) stmt, (SingleJoinableUpdateContext) context);
+        } else {
+            assertDialectUpdate(stmt);
+            context = SingleUpdateContext.create(outerContext, (_SingleUpdate) stmt, this, visible);
+            this.parseSingleUpdate((_SingleUpdate) stmt, (SingleUpdateContext) context);
+        }
+        return function.apply(context);
+    }
+
+
+    /**
+     * @see #handleUpdate(_SqlContext, Update, Visible, Function)
+     */
+    private _UpdateContext handleDomainUpdate(final @Nullable _SqlContext outerContext, final _DomainUpdate stmt
+            , final Visible visible) {
+        final _UpdateContext context;
+        final _ChildUpdateMode mode = this.childUpdateMode;
+        if (!(stmt.table() instanceof ChildTableMeta)
+                || (mode == _ChildUpdateMode.WITH_ID && stmt.childItemPairList().size() == 0)) {
+            context = DomainUpdateContext.create(outerContext, stmt, this, visible);
+            this.parseStandardSingleUpdate(stmt, (_SingleUpdateContext) context);
+        } else if (mode == _ChildUpdateMode.MULTI_TABLE) {
+            context = MultiUpdateContext.forChild(outerContext, stmt, this, visible);
+            this.parseDomainChildUpdate(stmt, context);
+        } else if (mode == _ChildUpdateMode.CTE) {
+            context = SingleJoinableUpdateContext.create(outerContext, stmt, this, visible);
+            this.parseDomainChildUpdate(stmt, context);
+        } else if (mode == _ChildUpdateMode.WITH_ID) {
+            final DomainUpdateContext parentContext;
+            parentContext = DomainUpdateContext.create(outerContext, stmt, this, visible);
+            context = DomainUpdateContext.forChild(stmt, parentContext);
+            assert parentContext.domainTable == ((DomainUpdateContext) context).domainTable;
+            assert parentContext.targetTable instanceof ParentTableMeta;
+            assert ((DomainUpdateContext) context).targetTable == parentContext.domainTable;
+            this.parseDomainChildWithId(stmt, (DomainUpdateContext) context);
+        } else {
+            throw _Exceptions.unexpectedEnum(mode);
+        }
+        return context;
+    }
+
+    /**
+     * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, Visible)
+     * @see _ChildUpdateMode#WITH_ID
+     */
+    private void parseDomainChildWithId(final _DomainUpdate stmt, final DomainUpdateContext childContext) {
+        assert this.childUpdateMode == _ChildUpdateMode.WITH_ID;
+        final DomainUpdateContext parentContext = childContext.parentContext;
+        assert parentContext != null;
+        final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) parentContext.targetTable;
+
+        //1. append child common
+        this.appendDomainUpdateCommon(childContext);
+        //2. append child SET clause
+        this.singleTableSetClause(stmt.childItemPairList(), childContext);
+        //3. append child WHERE clause
+        final List<_Predicate> whereList;
+        whereList = stmt.wherePredicateList();
+        //check first predicate
+        final _Predicate firstPredicate;
+        firstPredicate = whereList.get(0);
+        if (!firstPredicate.isIdPredicate()) {
+            throw _Exceptions.notFondIdPredicate(this.dialect);
+        }
+        this.dmlWhereClause(whereList, childContext);
+        //3.1 append parent condition field
+        parentContext.appendConditionFields();
+        //3.2 append parent visible
+        final FieldMeta<?> visibleField;
+        final Boolean visibleValue;
+        if ((visibleValue = childContext.visible.value) != null
+                && (visibleField = parentTable.tryGetField(_MetaBridge.VISIBLE)) != null) {
+            final StringBuilder childBuilder = childContext.sqlBuilder;
+            childBuilder.append(_Constant.SPACE_AND);
+            childContext.parentColumnFromSubQuery(visibleField);
+            childBuilder.append(_Constant.SPACE_EQUAL_SPACE);
+            this.literal(visibleField.mappingType(), visibleValue, childBuilder);
+        }
+
+        //below parent part
+        //1. append parent common
+        this.appendDomainUpdateCommon(parentContext);
+        //2. append parent SET clause
+        final List<_ItemPair> parentItemList;
+        parentItemList = stmt.itemPairList();
+
+        if (parentItemList.size() > 0) {
+            this.singleTableSetClause(parentItemList, parentContext);
+        } else {
+            this.appendUpdateTimeAndVersion(parentTable, parentContext.safeTableAlias, parentContext, true);
+        }
+        //3. append parent WHERE clause
+        this.dmlWhereClause(Collections.singletonList(firstPredicate), parentContext);
+        //3.1 append parent condition field
+        parentContext.appendConditionFields();
+        //3.2 append discriminator
+        this.discriminator(parentContext.domainTable, parentContext.safeTableAlias, parentContext);
+
+    }
+
+
+    /**
+     * @see #parseDomainChildWithId(_DomainUpdate, DomainUpdateContext)
+     */
+    private void appendDomainUpdateCommon(final DomainUpdateContext context) {
+        //1. append  space if need
+        final StringBuilder sqlBuilder;
+        if ((sqlBuilder = context.sqlBuilder).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+        // 2. append  table UPDATE key word
+        sqlBuilder.append(_Constant.UPDATE);
+        sqlBuilder.append(_Constant.SPACE);
+        this.safeObjectName(context.targetTable, sqlBuilder);
+
+        //3. append table alias
+        if (this.supportSingleUpdateAlias) {
+            if (this.singleDmlAliasAfterAs) {
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+            } else {
+                sqlBuilder.append(_Constant.SPACE);
+            }
+            sqlBuilder.append(context.safeTableAlias);
+        }
+
     }
 
 
@@ -1873,7 +2013,7 @@ abstract class ArmyParser implements ArmyParser0 {
     /**
      * @see #update(Update, Visible)
      */
-    private Stmt createSingleUpdateStmt(final _UpdateContext context) {
+    private Stmt createUpdateStmt(final _UpdateContext context) {
         assert context instanceof _SingleUpdateContext;
 
         final _UpdateContext parentContext;

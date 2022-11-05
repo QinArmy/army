@@ -7,6 +7,8 @@ import io.army.meta.ChildTableMeta;
 
 public interface _Predicate extends IPredicate, _Expression {
 
+    boolean isIdPredicate();
+
 
     boolean isOptimistic();
 
