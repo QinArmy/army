@@ -1231,4 +1231,21 @@ public interface Statement extends Item {
     }
 
 
+    /**
+     * This is base interface of below:
+     * <ul>
+     *     <li>{@link Insert}</li>
+     *     <li>{@link SubInsert}</li>
+     * </ul>
+     *
+     * @since 1.0
+     */
+    interface DmlInsert extends Item {
+
+
+    }
+
+    interface DqlInsert extends Item {
+
+    }
 }

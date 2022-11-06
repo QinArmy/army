@@ -2,9 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
@@ -36,7 +34,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         , TabularItem.DerivedTableSpec, Query._QueryUnionClause<SP>
         , Query._QueryIntersectClause<SP>, Query._QueryExceptClause<SP>
         , Query._QueryMinusClause<SP>, Query
-        , Statement, _Query, _SelfDescribed {
+        ,  _Query {
 
 
     private List<Hint> hintList;
@@ -365,13 +363,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     }
 
 
-    @Override
-    public final void appendSql(final _SqlContext context) {
-        if (!(this instanceof SubQuery)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        context.parser().scalarSubQuery(this, context);
-    }
 
     @Override
     public final void prepared() {
@@ -931,18 +922,11 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     static final class UnionSelect extends UnionRowSet implements Select {
 
-        private final Dialect dialect;
 
-        UnionSelect(Dialect dialect, RowSet left, UnionType unionType, RowSet right) {
+        UnionSelect( RowSet left, UnionType unionType, RowSet right) {
             super(left, unionType, right);
-            this.dialect = dialect;
         }
 
-
-        @Override
-        Dialect statementDialect() {
-            return this.dialect;
-        }
 
     }//UnionSelect
 

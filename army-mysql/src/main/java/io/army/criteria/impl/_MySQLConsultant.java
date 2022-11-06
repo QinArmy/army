@@ -8,7 +8,6 @@ import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.Database;
-import io.army.util._ClassUtils;
 
 public abstract class _MySQLConsultant extends _SQLConsultant {
 
@@ -21,18 +20,18 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     public static void assertInsert(final Insert insert) {
         if (insert instanceof _Insert._DomainInsert || insert instanceof _Insert._ValuesInsert) {
             if (!(insert instanceof MySQLInserts.MySQLValueSyntaxStatement)) {
-                throw instanceNotMatch(insert, MySQLInserts.MySQLValueSyntaxStatement.class);
+                throw nonArmyStatement(insert);
             }
         } else if (insert instanceof _Insert._AssignmentInsert) {
-            if (!(insert instanceof MySQLInserts.AssignmentsInsertStatement)) {
-                throw instanceNotMatch(insert, MySQLInserts.AssignmentsInsertStatement.class);
+            if (!(insert instanceof InsertSupport.AssignmentInsertStatement)) {
+                throw nonArmyStatement(insert);
             }
         } else if (insert instanceof _Insert._QueryInsert) {
-            if (!(insert instanceof MySQLInserts.MySQLQueryInsertStatement)) {
-                throw instanceNotMatch(insert, MySQLInserts.MySQLQueryInsertStatement.class);
+            if (!(insert instanceof InsertSupport.QuerySyntaxInsertStatement)) {
+                throw nonArmyStatement(insert);
             }
         } else {
-            throw new CriteriaException("Not MySQL dialect insert statement.");
+            throw nonArmyStatement(insert);
         }
 
     }
@@ -53,11 +52,11 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
                 throw nonArmyStatement(replace);
             }
         } else if (replace instanceof _Insert._AssignmentInsert) {
-            if (!(replace instanceof MySQLReplaces.PrimaryAssignmentReplaceStatement)) {
+            if (!(replace instanceof MySQLReplaces.AssignmentReplaceStatement)) {
                 throw nonArmyStatement(replace);
             }
         } else if (replace instanceof _Insert._QueryInsert) {
-            if (!(replace instanceof MySQLReplaces.PrimaryQueryReplaceStatement)) {
+            if (!(replace instanceof MySQLReplaces.QueryReplaceStatement)) {
                 throw nonArmyStatement(replace);
             }
         } else {
@@ -148,14 +147,6 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
 
     }
 
-    public static void assertJsonTable(final TabularItem jsonTable) {
-        if (!(jsonTable instanceof MySQLFunctions.JsonTable)) {
-            String m = String.format("%s isn't instance of %s", _ClassUtils.safeClassName(jsonTable)
-                    , MySQLFunctions.JsonTable.class);
-            throw new CriteriaException(m);
-        }
-
-    }
 
 
 }

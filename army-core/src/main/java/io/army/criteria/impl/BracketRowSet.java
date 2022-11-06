@@ -2,11 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartRowSet;
-import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
 import io.army.util._Assert;
-import io.army.util._Exceptions;
 
 import java.util.List;
 
@@ -19,7 +15,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         , Query._QueryMinusClause<SP>
         , TabularItem.DerivedTableSpec
         , Query._AsQueryClause<I>, Statement._RightParenClause<RR>
-        , Statement, _SelfDescribed {
+        , RowSet{
 
 
     private RowSet rowSet;
@@ -129,20 +125,6 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
             throw ContextStack.castCriteriaApi(this.context);
         }
         return ((DerivedTable) rowSet).selection(derivedAlias);
-    }
-
-
-    @Override
-    public final void appendSql(final _SqlContext context) {
-        final RowSet rowSet = this.rowSet;
-        if (rowSet == null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder()
-                .append(_Constant.SPACE_LEFT_PAREN);
-        context.parser().scalarSubQuery(rowSet, context);
-        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
     @Override

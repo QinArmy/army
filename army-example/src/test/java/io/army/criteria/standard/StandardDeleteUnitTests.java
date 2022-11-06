@@ -17,6 +17,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.army.criteria.impl.SQLs.AS;
+
 public class StandardDeleteUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(StandardDeleteUnitTests.class);
@@ -26,10 +28,10 @@ public class StandardDeleteUnitTests {
     public void deleteParent() {
         final Delete stmt;
         stmt = SQLs.domainDelete()
-                .deleteFrom(ChinaRegion_.T, "r")
-                .where(ChinaRegion_.id.equal(1))
-                .and(ChinaRegion_.name.equal("马鱼腮角"))
-                .and(ChinaProvince_.version.equal(2))
+                .deleteFrom(ChinaRegion_.T, AS,"r")
+                .where(ChinaRegion_.id::equal,SQLs::param,"1")
+                .and(ChinaRegion_.name::equal,SQLs::param,"马鱼腮角")
+                .and(ChinaProvince_.version::equal,SQLs::param,Integer.valueOf(2))
                 .asDelete();
 
         printStmt(stmt);
@@ -40,11 +42,11 @@ public class StandardDeleteUnitTests {
     public void deleteChild() {
         final Delete stmt;
         stmt = SQLs.domainDelete()
-                .deleteFrom(ChinaProvince_.T, "p")
-                .where(ChinaProvince_.id.equal(1))
-                .and(ChinaProvince_.name.equal("江南省"))
-                .and(ChinaProvince_.governor.equal("无名"))
-                .and(ChinaProvince_.version.equal(2))
+                .deleteFrom(ChinaProvince_.T,AS, "p")
+                .where(ChinaProvince_.id::equal,SQLs::param,"1")
+                .and(ChinaProvince_.name::equal,SQLs::param,"江南省")
+                .and(ChinaProvince_.governor::equal,SQLs::param,"无名")
+                .and(ChinaProvince_.version::equal,SQLs::param,"2")
                 .asDelete();
 
         printStmt(stmt);
@@ -54,12 +56,12 @@ public class StandardDeleteUnitTests {
     public void batchDeleteChild() {
         final Delete stmt;
         stmt = SQLs.batchDomainDelete()
-                .deleteFrom(ChinaProvince_.T, "p")
-                .where(ChinaProvince_.id.equalNamed())
-                .and(ChinaProvince_.name.equalNamed())
-                .and(ChinaProvince_.governor.equalNamed())
-                .and(ChinaProvince_.regionGdp.plusNamed().lessThan("6666.66"))
-                .and(ChinaProvince_.version.equal(2))
+                .deleteFrom(ChinaProvince_.T,AS, "p")
+                .where(ChinaProvince_.id::equal,SQLs::namedParam)
+                .and(ChinaProvince_.name::equal,SQLs::namedParam)
+                .and(ChinaProvince_.governor::equal,SQLs::namedParam)
+                .and(ChinaProvince_.regionGdp.plus(SQLs::namedParam).less(SQLs::literal,"6666.66"))
+                .and(ChinaProvince_.version::equal,SQLs::literal,"2")
                 .paramList(this::createProvinceList)
                 .asDelete();
 

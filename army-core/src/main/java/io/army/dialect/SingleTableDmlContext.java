@@ -5,9 +5,7 @@ import io.army.criteria.DataField;
 import io.army.criteria.QualifiedField;
 import io.army.criteria.TableField;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._DomainUpdate;
-import io.army.criteria.impl.inner._SingleDml;
-import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.SingleTableMeta;
@@ -25,8 +23,8 @@ import io.army.util._Exceptions;
  *     </ul>
  * </p>
  */
-abstract class SingleDmlStmtContext extends DmlStmtContext implements _SingleTableContext
-        , DmlContext._SetClauseContextSpec {
+abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _SingleTableContext
+        , _DmlContext._SetClauseContextSpec {
 
 
     final TableMeta<?> domainTable;
@@ -40,7 +38,7 @@ abstract class SingleDmlStmtContext extends DmlStmtContext implements _SingleTab
     final boolean supportAlias;
 
 
-    SingleDmlStmtContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser
+    SingleTableDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser
             , Visible visible) {
         super(outerContext, stmt, parser, visible);
 
@@ -60,10 +58,11 @@ abstract class SingleDmlStmtContext extends DmlStmtContext implements _SingleTab
         }
         this.safeTableAlias = parser.identifier(this.tableAlias);
 
-        this.supportAlias = !(this instanceof _DeleteContext) || parser.singleDeleteHasTableAlias();
+        this.supportAlias = (stmt instanceof _Update && parser.supportSingleUpdateAlias)
+                || (stmt instanceof _Delete && parser.supportSingleDeleteAlias);
     }
 
-    SingleDmlStmtContext(_SingleDml stmt, SingleDmlStmtContext parentContext) {
+    SingleTableDmlContext(_SingleDml stmt, SingleTableDmlContext parentContext) {
         super(null, stmt, parentContext.parser, parentContext.visible);
 
         this.domainTable = stmt.table();
@@ -74,7 +73,8 @@ abstract class SingleDmlStmtContext extends DmlStmtContext implements _SingleTab
         assert this.domainTable instanceof ChildTableMeta;
         assert parentContext.domainTable == ((ChildTableMeta<?>) this.domainTable).parentMeta();
 
-        this.supportAlias = !(this instanceof _DeleteContext) || this.parser.singleDeleteHasTableAlias();
+        this.supportAlias = (stmt instanceof _Update && parser.supportSingleUpdateAlias)
+                || (stmt instanceof _Delete && parser.supportSingleDeleteAlias);
     }
 
     @Override
@@ -131,7 +131,7 @@ abstract class SingleDmlStmtContext extends DmlStmtContext implements _SingleTab
             case ONLY_NULL:
             case ONLY_DEFAULT: {
                 if (updateMode == UpdateMode.ONLY_DEFAULT && !this.parser.isSupportOnlyDefault()) {
-                    throw _Exceptions.dontSupportOnlyDefault(this.parser.dialectMode());
+                    throw _Exceptions.dontSupportOnlyDefault(this.parser.dialect());
                 }
                 this.onAddConditionField(field);
             }

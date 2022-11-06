@@ -28,7 +28,7 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
 
     private List<TableField> conditionFieldList;
 
-    private SingleUpdateContext(@Nullable StatementContext outerContext, _SingleUpdate stmt, ArmyParser0 dialect
+    private SingleUpdateContext(@Nullable StatementContext outerContext, _SingleUpdate stmt, ArmyParser dialect
             , Visible visible) {
         super(outerContext, stmt, dialect, visible);
         this.parentContext = null;

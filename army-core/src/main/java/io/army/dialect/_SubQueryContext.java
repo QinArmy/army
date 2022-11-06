@@ -8,8 +8,6 @@ import io.army.meta.FieldMeta;
  * </p>
  *
  * @see _SelectContext
- * @see _UnionQueryContext
- * @see _LateralSubQueryContext
  * @see _SimpleQueryContext
  * @since 1.0
  */

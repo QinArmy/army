@@ -129,7 +129,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         @Override
         _QueryWithComplexSpec<I> createUnionValues(final UnionType unionType) {
             final Function<RowSet, I> unionFun;
-            unionFun = right -> this.function.apply(new UnionValues(PostgreDialect.POSTGRE15, this, unionType, right));
+            unionFun = right -> this.function.apply(new UnionValues( this, unionType, right));
             UnionType.exceptType(this.context, unionType);
             return new ComplexValues<>(this.context.getOuterContext(), unionFun);
         }
@@ -236,7 +236,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         _QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
             UnionType.exceptType(this.context, unionType);
             final Function<RowSet, I> unionFun;
-            unionFun = rowSet -> this.function.apply(new UnionValues(PostgreDialect.POSTGRE15, this, unionType, rowSet));
+            unionFun = rowSet -> this.function.apply(new UnionValues( this, unionType, rowSet));
             return new ComplexValues<>(this.context.getOuterContext(), unionFun);
         }
 

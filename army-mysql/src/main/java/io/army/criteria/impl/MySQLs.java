@@ -63,12 +63,12 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
     }
 
     public static MySQLDelete._SingleWithSpec<Delete> singleDelete() {
-        return MySQLSingleDelete.simple(SQLs::_identity);
+        return MySQLSingleDelete.simple(null,SQLs::_identity);
     }
 
 
     public static MySQLDelete._BatchSingleWithSpec<Delete> batchSingleDelete() {
-        return MySQLSingleDelete.batch(SQLs::_identity);
+        return MySQLSingleDelete.batch(null,SQLs::_identity);
     }
 
     public static MySQLDelete._MultiWithSpec<Delete> multiDelete() {

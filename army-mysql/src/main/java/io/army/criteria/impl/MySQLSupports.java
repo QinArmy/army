@@ -87,7 +87,7 @@ abstract class MySQLSupports extends CriteriaSupports {
             if (aliasList != null) {
                 context.onCteColumnAlias(cteName, aliasList);
             }
-            return MySQLQueries.subQuery(this.context, query -> {
+            return MySQLQueries.subQuery(null,this.context, query -> {
                 CriteriaUtils.createAndAddCte(context, cteName, aliasList, query);
                 MySQLCteBuilderImpl.this.cteName = null; //clear for next cte
                 MySQLCteBuilderImpl.this.columnAliasList = null; //clear for next cte

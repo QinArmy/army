@@ -57,7 +57,7 @@ public class StandardUpdateUnitTests {
                 .set(ChinaProvince_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
                 .set(ChinaProvince_.provincialCapital, SQLs::param, "光明顶")
                 .set(ChinaProvince_.governor, SQLs::param, "张无忌")
-                .where(ChinaProvince_.id::equal, SQLs::literal, 1)
+                .where(ChinaProvince_.id::equal, SQLs::literal, "")
                 .and(ChinaProvince_.name::equal, SQLs::param, "江湖")
                 .and(ChinaProvince_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greatEqual, BigDecimal.ZERO)
                 .and(ChinaProvince_.governor.equal(SQLs::param, "阳顶天").or(consumer -> {
@@ -88,7 +88,7 @@ public class StandardUpdateUnitTests {
                 .set(ChinaProvince_.governor, SQLs::namedNullableParam)
                 .where(ChinaProvince_.id::equal, SQLs::namedParam)
                 .and(ChinaProvince_.regionGdp::plus, SQLs::namedParam, ChinaProvince_.REGION_GDP, Expression::greatEqual, BigDecimal.ZERO)
-                .and(ChinaProvince_.version::equal, SQLs::literal, 0)
+                .and(ChinaProvince_.version::equal, SQLs::literal, "0")
                 .paramList(this::createProvinceList)
                 .asUpdate();
 
@@ -108,7 +108,7 @@ public class StandardUpdateUnitTests {
                 .set(User_.identityType, SQLs::literal, IdentityType.PERSON)
                 .set(User_.identityId, SQLs::literal, 888)
                 .set(User_.nickName, SQLs::param, "令狐冲")
-                .where(User_.id::equal, SQLs::literal, 1)
+                .where(User_.id::equal, SQLs::literal, "1")
                 .and(User_.nickName::equal, SQLs::param, "zoro")
                 .asUpdate();
 

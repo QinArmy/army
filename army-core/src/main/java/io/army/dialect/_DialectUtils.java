@@ -124,20 +124,13 @@ public abstract class _DialectUtils {
         return match;
     }
 
-
-    static void standardInertIntoTable(final _ValueInsertContext context) {
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-        sqlBuilder.append(_Constant.INSERT_INTO_SPACE);
-        ((ArmyParser0) context.parser()).safeObjectName(context.insertTable(), sqlBuilder);
-    }
-
     static void appendConditionFields(final _SingleUpdateContext context
             , final @Nullable List<TableField> conditionFieldList) {
         if (conditionFieldList == null || conditionFieldList.size() == 0) {
             return;
         }
         final String safeTableAlias = context.safeTableAlias();
-        final ArmyParser0 dialect = (ArmyParser0) context.parser();
+        final ArmyParser dialect = (ArmyParser) context.parser();
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
         String safeColumnName;

@@ -37,7 +37,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     public ArmyTransactionManager(LocalSessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
         this.sessionFactory = sessionFactory;
-        this.supportSavePoints = sessionFactory.supportSavePoints();
+        this.supportSavePoints = sessionFactory.isSupportSavePoints();
     }
 
     @Override

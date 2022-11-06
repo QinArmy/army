@@ -1,11 +1,15 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.Delete;
+import io.army.criteria.Hint;
+import io.army.criteria.Item;
+import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
 import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLQuery;
+import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
@@ -29,19 +33,19 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
-        extends SingleDelete.WithSingleDelete<I, Item, MySQLCtes, WE, WR, WA, OR, LR, Object, Object>
+        extends SingleDelete.WithSingleDelete<I, MySQLCtes, WE, WR, WA, OR, LR, Object, Object>
         implements MySQLDelete, _MySQLSingleDelete, Delete
         , MySQLDelete._SingleDeleteClause<DT>
         , MySQLQuery._PartitionClause<PR>
         , Delete._SingleDeleteFromClause<DT> {
 
 
-    static <I extends Item> _SingleWithSpec<I> simple(Function<Delete, I> function) {
-        return new SimpleDeleteStatement<>(function);
+    static <I extends Item> _SingleWithSpec<I> simple(@Nullable _WithClauseSpec spec, Function<Delete, I> function) {
+        return new SimpleDeleteStatement<>(spec,function);
     }
 
-    static <I extends Item> _BatchSingleWithSpec<I> batch(Function<Delete, I> function) {
-        return new BatchDeleteStatement<>(function);
+    static <I extends Item> _BatchSingleWithSpec<I> batch(@Nullable _WithClauseSpec spec,Function<Delete, I> function) {
+        return new BatchDeleteStatement<>(spec,function);
     }
 
     private final Function<Delete, I> function;
@@ -57,8 +61,8 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
     private List<String> partitionList;
 
 
-    private MySQLSingleDelete(Function<Delete, I> function) {
-        super(CriteriaContexts.primarySingleDmlContext());
+    private MySQLSingleDelete(@Nullable _WithClauseSpec spec, Function<Delete, I> function) {
+        super(spec,CriteriaContexts.primarySingleDmlContext(spec));
         this.function = function;
     }
 
@@ -93,18 +97,6 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
     public final _LeftParenStringQuadraOptionalSpec<PR> partition() {
         return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
     }
-
-    @Override
-    public final String toString() {
-        final String s;
-        if (this.isPrepared()) {
-            s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
-        } else {
-            s = super.toString();
-        }
-        return s;
-    }
-
     @Override
     public final List<Hint> hintList() {
         final List<Hint> list = this.hintList;
@@ -187,6 +179,12 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         return MySQLSupports.mySQLCteBuilder(recursive, this.context);
     }
 
+    @Override
+    final Dialect statementDialect() {
+        return MySQLDialect.MySQL80;
+    }
+
+
 
     private PR partitionEnd(final List<String> list) {
         if (this.partitionList != null) {
@@ -250,8 +248,8 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
             , MySQLDelete._SinglePartitionSpec<I>
             , MySQLDelete._SingleWhereAndSpec<I> {
 
-        private SimpleDeleteStatement(Function<Delete, I> function) {
-            super(function);
+        private SimpleDeleteStatement(@Nullable _WithClauseSpec spec, Function<Delete, I> function) {
+            super(spec,function);
         }
 
         @Override
@@ -328,8 +326,8 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
 
         private List<?> paramList;
 
-        private BatchDeleteStatement(Function<Delete, I> function) {
-            super(function);
+        private BatchDeleteStatement(@Nullable _WithClauseSpec spec,Function<Delete, I> function) {
+            super(spec,function);
         }
 
         @Override

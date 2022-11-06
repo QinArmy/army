@@ -1,7 +1,6 @@
 package io.army.dialect.mysql;
 
 
-import io.army.dialect.ArmyParser;
 import io.army.dialect.Database;
 import io.army.dialect._MockDialects;
 import io.army.example.pill.domain.User_;
@@ -27,7 +26,7 @@ public class MySQLDdlTests {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
-            ddl = new MySQLDdl((ArmyParser) _MockDialects.from(dialect));
+            ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
             ddl.createTable(User_.T, sqlList);
 
             List<String> errorList;
@@ -58,7 +57,7 @@ public class MySQLDdlTests {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
-            ddl = new MySQLDdl((ArmyParser) _MockDialects.from(dialect));
+            ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
             List<?> fieldList = table.fieldList();
             ddl.addColumn((List<FieldMeta<?>>) fieldList, sqlList);
             List<String> errorList;
@@ -85,7 +84,7 @@ public class MySQLDdlTests {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
-            ddl = new MySQLDdl((ArmyParser) _MockDialects.from(dialect));
+            ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
 
             List<_FieldResult> resultList = new ArrayList<>();
             resultList.add(new MockFieldResult(User_.nickName, false, true, false, false));
@@ -120,7 +119,7 @@ public class MySQLDdlTests {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
-            ddl = new MySQLDdl((ArmyParser) _MockDialects.from(dialect));
+            ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
             ddl.createIndex(table, Collections.singletonList("idx_identity_id"), sqlList);
             List<String> errorList;
             errorList = ddl.errorMsgList();
@@ -147,7 +146,7 @@ public class MySQLDdlTests {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
-            ddl = new MySQLDdl((ArmyParser) _MockDialects.from(dialect));
+            ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
 
             final List<String> sqlList = new ArrayList<>();
             sqlMap.put(dialect, sqlList);
@@ -183,7 +182,7 @@ public class MySQLDdlTests {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
-            ddl = new MySQLDdl((ArmyParser) _MockDialects.from(dialect));
+            ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
 
             final List<String> sqlList = new ArrayList<>();
             sqlMap.put(dialect, sqlList);

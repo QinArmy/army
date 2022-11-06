@@ -10,6 +10,7 @@ import io.army.criteria.impl.inner.postgre._PostgreInsert;
 import io.army.criteria.postgre.PostgreCtes;
 import io.army.criteria.postgre.PostgreInsert;
 import io.army.criteria.postgre.PostgreStatement;
+import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.postgre.PostgreDialect;
@@ -862,6 +863,7 @@ abstract class PostgreInserts extends InsertSupport {
     private static final class ConflictActionClauseResult
             implements _PostgreInsert._ConflictActionClauseResult {
 
+        private final String rowAlias;
         private final List<_ConflictTargetItem> targetItemList;
 
         private final List<_Predicate> indexPredicateList;
@@ -875,6 +877,7 @@ abstract class PostgreInserts extends InsertSupport {
         private final List<_Predicate> updatePredicateList;
 
         private ConflictActionClauseResult(OnConflictClause<?, ?, ?> clause) {
+            this.rowAlias = clause.valuesClause.tableAlias;
             this.targetItemList = _CollectionUtils.safeList(clause.targetItemList);
             if (this.targetItemList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(clause.valuesClause.context);
@@ -889,6 +892,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         private ConflictActionClauseResult(OnConflictClause<?, ?, ?> clause, List<_ItemPair> itemPairList
                 , List<_Predicate> updatePredicateList) {
+            this.rowAlias = clause.valuesClause.tableAlias;
             this.doNothing = clause.doNothing;
             this.targetItemList = _CollectionUtils.safeList(clause.targetItemList);
             if (this.targetItemList instanceof ArrayList) {
@@ -930,6 +934,11 @@ abstract class PostgreInserts extends InsertSupport {
         @Override
         public boolean isDoNothing() {
             return this.doNothing;
+        }
+
+        @Override
+        public String rowAlias() {
+            return this.rowAlias;
         }
 
 
@@ -1287,7 +1296,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//StaticValuesLeftParenClause
 
 
-    private static abstract class PostgreValueSyntaxInsertStatement<I extends DmlInsert, Q extends DqlInsert>
+    private static abstract class PostgreValueSyntaxInsertStatement<I extends Statement.DmlInsert, Q extends Statement.DqlInsert>
             extends AbstractValueSyntaxStatement<I, Q>
             implements PostgreInsert, _PostgreInsert {
 
@@ -1354,22 +1363,17 @@ abstract class PostgreInserts extends InsertSupport {
             return this.conflictAction;
         }
 
+
         @Override
-        public final String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(PostgreDialect.POSTGRE14, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
+        final Dialect statementDialect() {
+            return PostgreDialect.POSTGRE15;
         }
 
 
     }//PrimaryValueSyntaxInsertStatement
 
 
-    static abstract class DomainInsertStatement<I extends DmlInsert, Q extends DqlInsert>
+    static abstract class DomainInsertStatement<I extends Statement.DmlInsert, Q extends Statement.DqlInsert>
             extends PostgreValueSyntaxInsertStatement<I, Q>
             implements _PostgreInsert._PostgreDomainInsert {
 
@@ -1618,7 +1622,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//SubDomainReturningInsertStatement
 
 
-    static abstract class ValueInsertStatement<I extends DmlInsert, Q extends DqlInsert>
+    static abstract class ValueInsertStatement<I extends Statement.DmlInsert, Q extends Statement.DqlInsert>
             extends PostgreValueSyntaxInsertStatement<I, Q>
             implements _PostgreInsert._PostgreValueInsert {
 
@@ -1799,7 +1803,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//SubValueReturningInsertStatement
 
 
-    static abstract class QueryInsertStatement<I extends DmlInsert, Q extends DqlInsert>
+    static abstract class QueryInsertStatement<I extends Statement.DmlInsert, Q extends Statement.DqlInsert>
             extends InsertSupport.AbstractQuerySyntaxInsertStatement<I, Q>
             implements _PostgreInsert._PostgreQueryInsert, PostgreInsert {
 
@@ -1867,14 +1871,8 @@ abstract class PostgreInserts extends InsertSupport {
 
 
         @Override
-        public final String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(PostgreDialect.POSTGRE14, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
+        final Dialect statementDialect() {
+            return PostgreDialect.POSTGRE15;
         }
 
 

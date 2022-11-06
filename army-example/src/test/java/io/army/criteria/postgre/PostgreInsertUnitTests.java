@@ -44,7 +44,7 @@ public class PostgreInsertUnitTests {
                 .onConstraint("")
                 .doNothing()
                 .returningAll()
-
+                .asReturningInsert()
                 .child()
 
                 .insertInto(Person_.T)

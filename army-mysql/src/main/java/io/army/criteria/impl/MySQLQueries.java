@@ -516,12 +516,21 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     @Override
-    public final List<TableMeta<?>> lockOfTableList() {
-        final List<TableMeta<?>> list = this.ofTableList;
-        if (list == null) {
+    public final List<_Window> windowList() {
+        final List<_Window> list = this.windowList;
+        if(list == null || list instanceof ArrayList){
             throw ContextStack.castCriteriaApi(this.context);
         }
         return list;
+    }
+
+    @Override
+    public final List<String> lockOfTableList() {
+        final List<TableMeta<?>> list = this.ofTableList;
+        if (list == null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }//TODO
+         throw new UnsupportedOperationException();
     }
 
     @Override
@@ -721,7 +730,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         _QueryWithComplexSpec<I> createQueryUnion(final UnionType unionType) {
             UnionType.standardUnionType(this.context, unionType);
             final Function<RowSet, I> unionFunc;
-            unionFunc = rowSet -> this.function.apply(new UnionSelect(MySQLDialect.MySQL80, this, unionType, rowSet));
+            unionFunc = rowSet -> this.function.apply(new UnionSelect( this, unionType, rowSet));
             return new ComplexSelect<>(this.context.getOuterContext(), unionFunc);
         }
 
@@ -1061,7 +1070,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         @Override
         _QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
             final Function<RowSet, I> unionFunc;
-            unionFunc = rowSet -> this.function.apply(new UnionSelect(MySQLDialect.MySQL80, this, unionType, rowSet));
+            unionFunc = rowSet -> this.function.apply(new UnionSelect( this, unionType, rowSet));
             return new ComplexSelect<>(this.context.getOuterContext(), unionFunc);
         }
 

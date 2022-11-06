@@ -5,7 +5,14 @@ import io.army.criteria.SortItem;
 import java.util.List;
 
 /**
- * @see io.army.dialect._ParensRowSet
+ * <p>
+ *     This interface is base interface of below:
+ *     <ul>
+ *         <li>{@link _ParensRowSet}</li>
+ *         <li>{@link _Query}</li>
+ *     </ul>
+ * </p>
+ * @see _UnionRowSet
  */
 public interface _PartRowSet extends _Statement, _RowSet, _Statement._LimitClauseSpec {
 

@@ -10,17 +10,13 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.stmt.BatchStmt;
-import io.army.stmt.DmlStmtParams;
-import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-final class MultiUpdateContext extends MultiTableContext implements _MultiUpdateContext, DmlStmtParams {
+final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpdateContext {
 
     static MultiUpdateContext create(@Nullable _SqlContext outerContext, _MultiUpdate statement, ArmyParser dialect
             , Visible visible) {
@@ -37,21 +33,12 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
     }
 
 
-    private final Map<String, String> childAliasToParentAlias;
-    private final boolean hasVersion;
-
-    private final boolean supportQueryUpdate;
-
-
     private List<DataField> conditionFieldList;
 
 
     private MultiUpdateContext(@Nullable StatementContext outerContext, _Update stmt, TableContext tableContext
             , ArmyParser dialect, Visible visible) {
-        super(outerContext, tableContext, dialect, visible);
-        this.childAliasToParentAlias = tableContext.childAliasToParentAlias;
-        this.hasVersion = _DialectUtils.hasOptimistic(stmt.wherePredicateList());
-        this.supportQueryUpdate = dialect.supportQueryUpdate();
+        super(outerContext,stmt, tableContext, dialect, visible);
     }
 
 
@@ -90,7 +77,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         final UpdateMode updateMode;
         if (dataField instanceof TableField) {
             updateMode = ((TableField) dataField).updateMode();
-        } else if (this.supportQueryUpdate) {
+        } else if (this.parser.supportUpdateDerivedField) {
             final TableField f;
             f = ((_Selection) dataField).tableField();
             if (f == null) {
@@ -109,13 +96,13 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         if (!(dataField instanceof TableField)) {
             final DerivedField field = (DerivedField) dataField;
             final String tableAlias = field.tableAlias();
-            final TabularItem tableItem = this.aliasToTable.get(tableAlias);
+            final TabularItem tableItem = this.multiTableContext.aliasToTable.get(tableAlias);
             if (!(tableItem instanceof DerivedTable)
                     || ((DerivedTable) tableItem).selection(field.fieldName()) == null) {
                 throw _Exceptions.unknownColumn(field);
             }
             final String safeTableAlias;
-            safeTableAlias = this.aliasToSafeAlias.get(tableAlias);
+            safeTableAlias = this.multiTableContext.getAliasToSafeAlias().get(tableAlias);
             assert safeTableAlias != null;
             sqlBuilder
                     .append(_Constant.SPACE)
@@ -125,7 +112,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         } else if (dataField instanceof FieldMeta) {
             final FieldMeta<?> field = (FieldMeta<?>) dataField;
             final String safeTableAlias;
-            safeTableAlias = this.tableToSafeAlias.get(field.tableMeta());
+            safeTableAlias = this.multiTableContext.tableToSafeAlias.get(field.tableMeta());
             if (safeTableAlias == null) {
                 //self-join
                 throw _Exceptions.selfJoinNonQualifiedField(field);
@@ -138,11 +125,11 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         } else if (dataField instanceof QualifiedField) {
             final QualifiedField<?> field = (QualifiedField<?>) dataField;
             final String tableAlias = field.tableAlias();
-            if (this.aliasToTable.get(tableAlias) != field.tableMeta()) {
+            if (this.multiTableContext.aliasToTable.get(tableAlias) != field.tableMeta()) {
                 throw _Exceptions.unknownColumn(field);
             }
             final String safeTableAlias;
-            safeTableAlias = this.aliasToSafeAlias.get(tableAlias);
+            safeTableAlias = this.multiTableContext.getAliasToSafeAlias().get(tableAlias);
             assert safeTableAlias != null;
             sqlBuilder
                     .append(_Constant.SPACE)
@@ -157,7 +144,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
             case ONLY_NULL:
             case ONLY_DEFAULT: {
                 if (updateMode == UpdateMode.ONLY_DEFAULT && !this.parser.isSupportOnlyDefault()) {
-                    throw _Exceptions.dontSupportOnlyDefault(this.parser.dialectMode());
+                    throw _Exceptions.dontSupportOnlyDefault(this.parser.dialect());
                 }
                 List<DataField> conditionFieldList = this.conditionFieldList;
                 if (conditionFieldList == null) {
@@ -179,7 +166,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         if (conditionFieldList == null || conditionFieldList.size() == 0) {
             return;
         }
-        final ArmyParser0 dialect = this.parser;
+        final ArmyParser dialect = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder;
         String safeTableAlias, objectName;
         UpdateMode updateMode;
@@ -187,11 +174,13 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         for (DataField field : conditionFieldList) {
 
             if (field instanceof FieldMeta) {
-                safeTableAlias = this.tableToSafeAlias.get(((FieldMeta<?>) field).tableMeta());
+                safeTableAlias = this.multiTableContext.tableToSafeAlias.get(((FieldMeta<?>) field).tableMeta());
             } else if (field instanceof QualifiedField) {
-                safeTableAlias = this.aliasToSafeAlias.get(((QualifiedField<?>) field).tableAlias());
+                safeTableAlias = this.multiTableContext.getAliasToSafeAlias()
+                        .get(((QualifiedField<?>) field).tableAlias());
             } else {
-                safeTableAlias = this.aliasToSafeAlias.get(((DerivedField) field).tableAlias());
+                safeTableAlias = this.multiTableContext.getAliasToSafeAlias()
+                        .get(((DerivedField) field).tableAlias());
             }
             assert safeTableAlias != null;
 
@@ -233,43 +222,27 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         }
     }
 
-    @Override
-    public BatchStmt build(List<?> paramList) {
-        if (!this.hasNamedParam()) {
-            throw _Exceptions.noNamedParamInBatch();
-        }
-        return Stmts.batchDml(this, paramList);
-    }
 
     @Override
-    public DmlContext parentContext() {
+    public _UpdateContext parentContext() {
         //multi-table update always null
         return null;
     }
 
-    @Override
-    public boolean hasVersion() {
-        return this.hasVersion;
-    }
-
-    @Override
-    public List<Selection> selectionList() {
-        return Collections.emptyList();
-    }
 
 
     private String findTableAlias(final TableMeta<?> table) {
         final String safeTableAlias;
-        safeTableAlias = this.tableToSafeAlias.get(table);
+        safeTableAlias = this.multiTableContext.tableToSafeAlias.get(table);
         if (safeTableAlias == null) {
             // no bug, never here.
             throw _Exceptions.tableSelfJoin(table);
         }
-        if (this.aliasToTable.get(safeTableAlias) == table) {
+        if (this.multiTableContext.aliasToTable.get(safeTableAlias) == table) {
             return safeTableAlias;
         }
         String tableAlias = null;
-        for (Map.Entry<String, TabularItem> e : this.aliasToTable.entrySet()) {
+        for (Map.Entry<String, TabularItem> e : this.multiTableContext.aliasToTable.entrySet()) {
             if (e.getValue() == table) {
                 tableAlias = e.getKey();
             }

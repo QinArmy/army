@@ -227,9 +227,11 @@ abstract class CriteriaSupports {
                 stmt = parser.delete((Delete) this, visible);
             } else if (this instanceof Values) {
                 stmt = parser.values((Values) this, visible);
-            } else if (this instanceof DialectStatement) {
-                stmt = parser.dialectStatement((DialectStatement) this, visible);
-            } else {
+            } else if (this instanceof DqlStatement) {
+                stmt = parser.dialectDql((DqlStatement) this, visible);
+            } else if (this instanceof DmlStatement) {
+                stmt = parser.dialectDml((DmlStatement) this, visible);
+            }else {
                 throw new IllegalStateException("unknown statement");
             }
             return stmt;

@@ -15,6 +15,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.army.criteria.impl.SQLs.AS;
+
 public class StandardInsertUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(StandardInsertUnitTests.class);
@@ -49,6 +51,7 @@ public class StandardInsertUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .values(provinceList)
+                .asInsert()
                 .child()
                 .insertInto(ChinaProvince_.T)
                 .values(provinceList)
@@ -100,7 +103,7 @@ public class StandardInsertUnitTests {
                 .leftParen(ChinaRegion_.name, SQLs::literal, "光明顶")
                 .comma(ChinaRegion_.parentId, SQLs::param, 0)
                 .rightParen()
-
+                .asInsert()
                 .child()
 
                 .insertInto(ChinaCity_.T)
@@ -129,7 +132,7 @@ public class StandardInsertUnitTests {
                 .space()
 
                 .select(ChinaRegion_.id, ChinaRegion_.createTime)
-                .from(ChinaRegion_.T, "r")
+                .from(ChinaRegion_.T, AS,"r")
                 .asQuery()
                 .asInsert();
 

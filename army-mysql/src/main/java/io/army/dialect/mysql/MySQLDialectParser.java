@@ -16,9 +16,6 @@ import io.army.lang.Nullable;
 import io.army.mapping.StringType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmt;
-import io.army.stmt.Stmts;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -65,11 +62,11 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected void assertInsert(final _Insert insert) {
+    protected void assertInsert(final Insert insert) {
         if (insert instanceof MySQLReplace) {
             _MySQLConsultant.assertReplace((MySQLReplace) insert);
         } else {
-            _MySQLConsultant.assertInsert((Insert) insert);
+            _MySQLConsultant.assertInsert(insert);
         }
     }
 
@@ -147,38 +144,11 @@ final class MySQLDialectParser extends MySQLParser {
 
     }
 
-    @Nullable
-    @Override
-    protected Stmt handleDialectStatement(final @Nullable _SqlContext outerContext, final DialectStatement statement
-            , final Visible visible) {
-        statement.prepared();
-        final Stmt stmt;
-        if (statement instanceof MySQLReplace) {
-            assert outerContext == null;
-            _MySQLConsultant.assertReplace((MySQLReplace) statement);
-            stmt = this.handleInsert(null, (_Insert) statement, visible);
-            assert stmt != null;
-        } else if (statement instanceof Values && statement instanceof MySQLValues) {
-            if (!this.asOf80) {
-                throw _Exceptions.unknownStatement(statement, this.dialect);
-            }
-            _MySQLConsultant.assertValues((Values) statement);
-            stmt = this.values(outerContext, (Values) statement, visible);
-        } else if (statement instanceof MySQLLoadData) {
-            assert outerContext == null;
-            _MySQLConsultant.assertMySQLLoad((MySQLLoadData) statement);
-            stmt = this.loadData((_MySQLLoadData) statement, visible);
-        } else {
-            throw _Exceptions.dontSupportDialectStatement(statement, this.dialect);
-        }
-        return stmt;
-    }
-
 
     @Override
     protected void parseQuery(final _Query query, final _SimpleQueryContext context) {
         assert context.parser() == this;
-        final _MySQL80Query stmt = (_MySQL80Query) query;
+        final _MySQLQuery stmt = (_MySQLQuery) query;
 
         //1. WITH clause
         this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
@@ -249,7 +219,7 @@ final class MySQLDialectParser extends MySQLParser {
         lockMode = stmt.lockMode();
         if (lockMode != null) {
             //13. LOCK clause
-            this.lockClause(lockMode, stmt.ofTableList(), stmt.lockOption(), sqlBuilder);
+            this.lockClause(lockMode, stmt.lockOfTableList(), stmt.lockWaitOption(), sqlBuilder);
         }
 
         if (this.asOf80 && intoSize > 0) {
@@ -261,13 +231,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     @Override
-    protected void dialectParensQuery(final _ParensRowSet query, final _ParenRowSetContext context) {
-        this.orderByClause(query.orderByList(), context);
-        this.standardLimitClause(query.offset(), query.rowCount(), context);
-    }
-
-    @Override
-    protected void dialectSimpleValues(final _ValuesContext context, final _Values values) {
+    protected void parseValues(final _Values values, final _ValuesContext context) {
         assert context.parser() == this;
         final StringBuilder sqlBuilder;
         if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
@@ -281,7 +245,6 @@ final class MySQLDialectParser extends MySQLParser {
         this.orderByClause(values.orderByList(), context);
         //4. LIMIT clause
         this.standardLimitClause(values.offset(), values.rowCount(), context);
-
     }
 
     @Override
@@ -491,12 +454,31 @@ final class MySQLDialectParser extends MySQLParser {
 
     }
 
+    @Override
+    protected _PrimaryContext handleDialectDml(final @Nullable _SqlContext outerContext,final DmlStatement statement
+            ,final Visible visible) {
+        final  _PrimaryContext context;
+         if(statement instanceof MySQLLoadData){
+             _MySQLConsultant.assertMySQLLoad((MySQLLoadData) statement);
+             context = this.handleLoadData(outerContext,(_MySQLLoadData) statement,visible);
+         }else {
+             throw _Exceptions.unknownStatement(statement,this.dialect);
+         }
+        return context;
+    }
+
+    @Override
+    protected _PrimaryContext handleDialectDql(final @Nullable _SqlContext outerContext,final DqlStatement statement
+            ,final Visible visible) {
+        return super.handleDialectDql(outerContext, statement, visible);
+    }
+
     /*-----------------------below private method-----------------------*/
 
     /**
      * @see #appendInsertCommonPart(_InsertContext, _MySQLInsert)
-     * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
-     * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
+     * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #parseMultiUpdate(_MultiUpdate, _MultiUpdateContext)
      * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      * @see #parseQuery(_Query, _SimpleQueryContext)
@@ -552,7 +534,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     /**
-     * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      */
     private void updateModifiers(List<MySQLs.Modifier> modifierList, StringBuilder builder) {
@@ -605,7 +587,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     /**
-     * @see #simpleLoadData(_MySQLLoadData, Visible)
+     * @see #parseLoadData(_MySQLLoadData, _OtherDmlContext)
      */
     private void loadDataModifier(final List<MySQLs.Modifier> modifierList, final StringBuilder sqlBuilder) {
         for (MySQLs.Modifier modifier : modifierList) {
@@ -658,11 +640,11 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     /**
-     * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
+     * @see #parseMultiUpdate(_MultiUpdate, _MultiUpdateContext)
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      * @see #parseQuery(_Query, _SimpleQueryContext)
      */
-    private void mysqlTableReferences(final List<_TableBlock> blockList, final _MultiTableContext context
+    private void mysqlTableReferences(final List<_TableBlock> blockList, final _MultiTableStmtContext context
             , final boolean nested) {
         final int blockSize = blockList.size();
         assert blockSize > 0;
@@ -713,10 +695,8 @@ final class MySQLDialectParser extends MySQLParser {
                     }
                     sqlBuilder.append(modifier.render());
                 }
-                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
-                this.handleQuery((SubQuery) tableItem, context);
-                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
-                        .append(_Constant.SPACE_AS_SPACE);
+                this.handleSubQuery((SubQuery) tableItem, context);
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
             } else if (tableItem instanceof NestedItems) {
                 _MySQLConsultant.assertNestedItems((NestedItems) tableItem);
@@ -737,10 +717,8 @@ final class MySQLDialectParser extends MySQLParser {
                     throw _Exceptions.tableItemAliasNoText(tableItem);
                 }
             } else if (tableItem instanceof SubValues && tableItem instanceof MySQLValues) {
-                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
-                this.handleDqlValues((_Values) tableItem, context);
-                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
-                        .append(_Constant.SPACE_AS_SPACE);
+                this.handleSubValues((SubValues) tableItem, context);
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
             } else {
                 throw _Exceptions.dontSupportTableItem(tableItem, alias, this.dialect);
@@ -857,8 +835,8 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #parseValuesInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
      * @see #parseAssignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
      * @see #parseQueryInsert(_QueryInsertContext, _Insert._QueryInsert)
-     * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
-     * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
+     * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #parseMultiUpdate(_MultiUpdate, _MultiUpdateContext)
      * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      * @see #parseQuery(_Query, _SimpleQueryContext)
@@ -879,8 +857,8 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     /**
-     * @see #dialectSingleUpdate(_SingleUpdate, _SingleUpdateContext)
-     * @see #dialectMultiUpdate(_MultiUpdate, _MultiUpdateContext)
+     * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #parseMultiUpdate(_MultiUpdate, _MultiUpdateContext)
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      * @see #parseQuery(_Query, _SimpleQueryContext)
      */
@@ -931,7 +909,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     }
 
-    private void windowClause(final List<Window> windowList, final _SqlContext context) {
+    private void windowClause(final List<_Window> windowList, final _SqlContext context) {
         final int windowSize = windowList.size();
         if (windowSize == 0) {
             return;
@@ -941,14 +919,14 @@ final class MySQLDialectParser extends MySQLParser {
         }
         final StringBuilder sqlBuilder = context.sqlBuilder()
                 .append(_Constant.SPACE_WINDOW);
-        Window window;
+        _Window window;
         for (int i = 0; i < windowSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
             window = windowList.get(i);
             _MySQLConsultant.assertWindow(window);
-            ((_SelfDescribed) window).appendSql(context);
+            window.appendSql(context);
         }
 
     }
@@ -1011,33 +989,31 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
 
-    /**
-     * @see #dialectStatement(DialectStatement, Visible)
-     */
-    private Stmt loadData(final _MySQLLoadData loadData, final Visible visible) {
-        final Stmt stmt;
+    private _OtherDmlContext handleLoadData(@Nullable final _SqlContext outerContext,final _MySQLLoadData loadData
+            , final Visible visible) {
+        final _OtherDmlContext context;
         if (loadData instanceof _MySQLLoadData._ChildLoadData) {
             final _MySQLLoadData parentLoad;
             parentLoad = ((_MySQLLoadData._ChildLoadData) loadData).parentLoadData();
 
-            final SimpleStmt parentStmt, childStmt;
-            parentStmt = this.simpleLoadData(parentLoad, visible);
-            childStmt = this.simpleLoadData(loadData, visible);
-            stmt = Stmts.pair(parentStmt, childStmt);
+            final _OtherDmlContext parentContext;
+            parentContext = this.createOtherDmlContext(outerContext,parentLoad.table()::isField, visible);
+            this.parseLoadData(parentLoad, parentContext);
+
+            context =this.createOtherDmlContext(outerContext,loadData.table()::isField,parentContext);
         } else {
-            stmt = this.simpleLoadData(loadData, visible);
+            context = this.createOtherDmlContext(outerContext,loadData.table()::isField, visible);
         }
-        return stmt;
+        this.parseLoadData(loadData, context);
+        return context;
     }
 
     /**
-     * @see #loadData(_MySQLLoadData, Visible)
+     * @see #handleLoadData(_SqlContext, _MySQLLoadData, Visible)
      */
-    private SimpleStmt simpleLoadData(final _MySQLLoadData loadData, final Visible visible) {
+    private void parseLoadData(final _MySQLLoadData loadData, final _OtherDmlContext context) {
         final TableMeta<?> insertTable;
         insertTable = loadData.table();
-        final _OtherDmlContext context;
-        context = this.createOtherDmlContext(insertTable::isField, visible);
 
         //1. LOAD DATA keywords
         final StringBuilder sqlBuilder;
@@ -1109,11 +1085,11 @@ final class MySQLDialectParser extends MySQLParser {
         if (context.hasParam()) {
             throw new CriteriaException("MySQL LOAD DATA statement don't parameter placeholder.");
         }
-        return context.build();
+
     }
 
     /**
-     * @see #simpleLoadData(_MySQLLoadData, Visible)
+     * @see #parseLoadData(_MySQLLoadData, _OtherDmlContext)
      */
     private void loadDataInfileClause(final Path path, final StringBuilder sqlBuilder) {
         if (Files.notExists(path)) {
@@ -1129,7 +1105,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     /**
-     * @see #simpleLoadData(_MySQLLoadData, Visible)
+     * @see #parseLoadData(_MySQLLoadData, _OtherDmlContext)
      */
     private void loadDataFieldsColumnsClause(final _MySQLLoadData loadData, final boolean fieldKeywords
             , final _OtherDmlContext context) {
@@ -1165,7 +1141,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     /**
-     * @see #simpleLoadData(_MySQLLoadData, Visible)
+     * @see #parseLoadData(_MySQLLoadData, _OtherDmlContext)
      */
     private void loadDataLinesClause(final _MySQLLoadData loadData, final _OtherDmlContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
@@ -1185,7 +1161,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     /**
-     * @see #simpleLoadData(_MySQLLoadData, Visible)
+     * @see #parseLoadData(_MySQLLoadData, _OtherDmlContext)
      */
     private void loadDataColumnOrVarListClause(final List<_Expression> columnOrVarList,
                                                final _OtherDmlContext context) {
@@ -1204,7 +1180,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     /**
-     * @see #simpleLoadData(_MySQLLoadData, Visible)
+     * @see #parseLoadData(_MySQLLoadData, _OtherDmlContext)
      */
     private void loadDataSetColumnPairClause(final List<_Pair<FieldMeta<?>, _Expression>> columnPairList
             , final _OtherDmlContext context) {

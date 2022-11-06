@@ -3,7 +3,6 @@ package io.army.dialect.mysql;
 import io.army.criteria.SQLWords;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
@@ -18,7 +17,6 @@ import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
-import io.army.stmt.Stmt;
 import io.army.tx.Isolation;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
@@ -44,7 +42,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     MySQLParser(DialectEnv environment, MySQLDialect dialect) {
         super(environment, dialect);
-        this.asOf80 = this.dialectMode().version() >= MySQLDialect.MySQL80.version();
+        this.asOf80 = this.dialect().version() >= MySQLDialect.MySQL80.version();
     }
 
 
@@ -69,12 +67,6 @@ abstract class MySQLParser extends _ArmyDialectParser {
         return stmtList;
     }
 
-
-    @Override
-    public final boolean supportQueryUpdate() {
-        return false;
-    }
-
     @Override
     public final String safeObjectName(final DatabaseObject object) {
         final StringBuilder builder = new StringBuilder();
@@ -96,81 +88,15 @@ abstract class MySQLParser extends _ArmyDialectParser {
         return builder;
     }
 
-    @Override
-    protected final boolean supportTableOnly() {
-        // MySQL don't support only before table name.
-        return false;
-    }
-
-
-    @Override
-    public final boolean supportInsertReturning() {
-        // MySQL don't support insert returning.
-        return false;
-    }
-
-
-    @Override
-    public final boolean tableAliasAfterAs() {
-        // MySQL support table alias after 'AS' key word.
-        return true;
-    }
-
-    @Override
-    public final boolean hasRowKeywords() {
-        return false;
-    }
-
-
-    @Override
-    public boolean supportSavePoint() {
-        // always true,MySQL support save point.
-        return true;
-    }
-
-    @Override
-    public final boolean setClauseTableAlias() {
-        // MySQL support table alias in set clause.
-        return true;
-    }
-
-    @Override
-    public final boolean setClauseSupportRow() {
-        // MySQL SET clause don't support row
-        return false;
-    }
-
-    @Override
-    public final String defaultFuncName() {
-        return "DEFAULT";
-    }
-
-    @Override
-    public final boolean supportMultiUpdate() {
-        //MySQL use multi-table update syntax update/delete child table.
-        return true;
-    }
-
-
-    @Override
-    protected final boolean isIdentifierCaseSensitivity() {
-        //MySQL Identifier Case Sensitivity
-        return true;
-    }
 
     @Override
     protected final MySQLDdl createDdlDialect() {
         return MySQLDdl.create(this);
     }
 
-    @Override
-    protected final char identifierQuote() {
-        return IDENTIFIER_QUOTE;
-    }
 
     @Override
-    public final StringBuilder literal(final TypeMeta paramMeta, final Object nonNull
-            , final StringBuilder sqlBuilder) {
+    public final StringBuilder literal(final TypeMeta paramMeta, final Object nonNull, final StringBuilder sqlBuilder) {
 
         final SqlType sqlType;
         final MappingType mappingType;
@@ -394,26 +320,26 @@ abstract class MySQLParser extends _ArmyDialectParser {
         }
     }
 
-    @Nullable
+
     @Override
-    protected final Stmt standardChildDelete(final @Nullable _SqlContext outerContext, final _SingleDelete delete
-            , final Visible visible) {
-        final _MultiDeleteContext context;
-        context = this.createMultiDeleteContext(outerContext, delete, visible);
+    protected final void parseDomainChildDelete(final _SingleDelete delete, final _DeleteContext ctx) {
+        final _MultiDeleteContext context = (_MultiDeleteContext) ctx;
 
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) delete.table();
         final ParentTableMeta<?> parentTable = childTable.parentMeta();
 
         // 1. delete clause
-        final StringBuilder sqlBuilder = context.sqlBuilder()
-                .append(_Constant.DELETE);
+        final StringBuilder sqlBuilder;
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+        sqlBuilder.append(_Constant.DELETE_SPACE);
 
         final String safeParentTableAlias, safeChildTableAlias;
         safeChildTableAlias = context.saTableAliasOf(childTable);
         safeParentTableAlias = context.saTableAliasOf(parentTable);
 
-        sqlBuilder.append(_Constant.SPACE)
-                .append(safeChildTableAlias)// child table alias
+        sqlBuilder.append(safeChildTableAlias)// child table alias
                 .append(_Constant.SPACE_COMMA_SPACE)
                 .append(safeParentTableAlias)// parent table name
                 .append(_Constant.SPACE_FROM);
@@ -431,15 +357,6 @@ abstract class MySQLParser extends _ArmyDialectParser {
         if (parentTable.containField(_MetaBridge.VISIBLE)) {
             this.visiblePredicate(parentTable, safeParentTableAlias, context, false);
         }
-        final Stmt stmt;
-        if (outerContext != null) {
-            stmt = null;
-        } else if (delete instanceof _BatchDml) {
-            stmt = context.build(((_BatchDml) delete).paramList());
-        } else {
-            stmt = context.build();
-        }
-        return stmt;
     }
 
     @Override
@@ -455,7 +372,36 @@ abstract class MySQLParser extends _ArmyDialectParser {
     /*################################## blow properties template method ##################################*/
 
     @Override
-    protected final Set<String> createKeyWordSet(final Dialect dialect) {
+    protected final char identifierQuote() {
+        return IDENTIFIER_QUOTE;
+    }
+
+    @Override
+    protected final boolean isSupportTableOnly() {
+        // MySQL don't support only before table name.
+        return false;
+    }
+
+    @Override
+    protected final boolean isSetClauseTableAlias() {
+        // MySQL support table alias in set clause.
+        return true;
+    }
+
+    @Override
+    protected final String defaultFuncName() {
+        return "DEFAULT";
+    }
+
+
+    @Override
+    protected final boolean isIdentifierCaseSensitivity() {
+        //MySQL Identifier Case Sensitivity
+        return true;
+    }
+
+    @Override
+    protected final Set<String> createKeyWordSet() {
         final Set<String> keyWordSet;
         switch ((MySQLDialect) dialect) {
             case MySQL55:
@@ -473,54 +419,48 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final boolean isSupportDmlReturning(final Dialect dialect) {
-        // MySQL don't support RETURNING clause like Postgre SQL.
-        return false;
-    }
-
-    @Override
-    protected final boolean isSupportZone(final Dialect dialect) {
+    protected final boolean isSupportZone() {
         // MySQL don't support zone.
         return false;
     }
 
     @Override
-    protected final boolean isTableAliasAfterAs(final Dialect dialect) {
+    protected final boolean isTableAliasAfterAs() {
         // MySQL don't support AS key word before table alias.
         return true;
     }
 
     @Override
-    protected final boolean isSupportOnlyDefault(final Dialect dialect) {
+    protected final boolean isSupportOnlyDefault() {
         // MySQL support DEFAULT() function.
         return true;
     }
 
     @Override
-    protected final _ChildUpdateMode childUpdateMode(final Dialect dialect) {
+    protected final _ChildUpdateMode childUpdateMode() {
         return _ChildUpdateMode.MULTI_TABLE;
     }
 
     @Override
-    protected final boolean isSupportSingleUpdateAlias(final Dialect dialect) {
+    protected final boolean isSupportSingleUpdateAlias() {
         //MySQL always support single update alias;
         return true;
     }
 
     @Override
-    protected final boolean isSupportSingleDeleteAlias(final Dialect dialect) {
+    protected final boolean isSupportSingleDeleteAlias() {
         //as of 8.0 MySQL support single delete alias
         return dialect.version() >= MySQLDialect.MySQL80.version();
     }
 
     @Override
-    protected final boolean isSupportUpdateRow(final Dialect dialect) {
+    protected final boolean isSupportUpdateRow() {
         //MySQL don't support update row
         return false;
     }
 
     @Override
-    protected final boolean isSupportUpdateDerivedField(final Dialect dialect) {
+    protected final boolean isSupportUpdateDerivedField() {
         //MySQL don't support update derive field
         return false;
     }

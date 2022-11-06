@@ -65,7 +65,7 @@ public interface OracleQuery extends Query, OracleStatement {
 
     }
 
-    interface _OracleDynamicOrderByClause<OR> extends _DynamicOrderByClause<OR> {
+    interface _OracleDynamicOrderByClause<OR> extends _DynamicOrderByClause<SortNullItems,OR> {
 
         OR orderSiblingsBy(Consumer<SortNullItems> consumer);
 

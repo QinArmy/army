@@ -21,9 +21,9 @@ final class ParenRowSetContext extends StatementContext implements _ParenRowSetC
     private final StatementContext outerContext;
 
 
-    ParenRowSetContext(StatementContext outerContext, ArmyParser0 parser, Visible visible) {
+    ParenRowSetContext(@Nullable StatementContext outerContext, ArmyParser parser, Visible visible) {
         super(outerContext, parser, visible);
-        this.outerContext = null;
+        this.outerContext = outerContext;
     }
 
     ParenRowSetContext(StatementContext outerContext) {

@@ -4,12 +4,12 @@ import io.army.criteria.*;
 import io.army.criteria.impl.MySQLs;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
-import io.army.meta.SimpleTableMeta;
+import io.army.meta.SingleTableMeta;
 
 import java.util.List;
 import java.util.function.Supplier;
 
-public interface MySQLReplace extends ReplaceInsert, DmlInsert {
+public interface MySQLReplace extends  DialectStatement, Statement.DmlInsert {
 
 
     interface _ReplaceClause<RR> extends Item {
@@ -57,23 +57,23 @@ public interface MySQLReplace extends ReplaceInsert, DmlInsert {
 
     interface _ChildIntoClause<P> {
 
-        <T> _PartitionSpec<ReplaceInsert, T> into(ComplexTableMeta<P, T> table);
+        <T> _PartitionSpec<Insert, T> into(ComplexTableMeta<P, T> table);
     }
 
 
     interface _ChildReplaceIntoSpec<P> extends _ReplaceClause<_ChildIntoClause<P>> {
 
-        <T> _PartitionSpec<ReplaceInsert, T> replaceInto(ComplexTableMeta<P, T> table);
+        <T> _PartitionSpec<Insert, T> replaceInto(ComplexTableMeta<P, T> table);
     }
 
 
-    interface _ParentReplace<P> extends ReplaceInsert, Insert._ChildPartClause<_ChildReplaceIntoSpec<P>> {
+    interface _ParentReplace<P> extends Insert, Insert._ChildPartClause<_ChildReplaceIntoSpec<P>> {
 
     }
 
     interface _PrimaryIntoClause {
 
-        <T> _PartitionSpec<ReplaceInsert, T> into(SimpleTableMeta<T> table);
+        <T> _PartitionSpec<Insert, T> into(SingleTableMeta<T> table);
 
         <P> _PartitionSpec<_ParentReplace<P>, P> into(ParentTableMeta<P> table);
 
@@ -81,7 +81,7 @@ public interface MySQLReplace extends ReplaceInsert, DmlInsert {
 
     interface _PrimaryReplaceIntoSpec extends _ReplaceClause<_PrimaryIntoClause> {
 
-        <T> _PartitionSpec<ReplaceInsert, T> replaceInto(SimpleTableMeta<T> table);
+        <T> _PartitionSpec<Insert, T> replaceInto(SingleTableMeta<T> table);
 
         <P> _PartitionSpec<_ParentReplace<P>, P> replaceInto(ParentTableMeta<P> table);
 

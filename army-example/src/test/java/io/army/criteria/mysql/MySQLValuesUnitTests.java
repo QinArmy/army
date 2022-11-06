@@ -14,6 +14,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.function.Supplier;
 
+import static io.army.criteria.impl.SQLs.AS;
+
 public class MySQLValuesUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLValuesUnitTests.class);
@@ -32,13 +34,9 @@ public class MySQLValuesUnitTests {
     public void unionValues() {
         Values stmt;
         stmt = this.createSimpleValues(MySQLs::primaryValues)
-                .bracket()
-                .union(() -> this.createSimpleValues(MySQLs::primaryValues)
-                        .bracket()
-                        .asValues())
-                .bracket()
-                .orderBy(SQLs.ref("column_0"), SQLs.ref("column_1").desc())
-                .limit(3)
+
+                .orderBy(SQLs.ref("column_0"), SQLs.ref("column_1"), SQLs.DESC)
+                .limit(SQLs::literal, 3)
                 .asValues();
 
         printStmt(stmt);
@@ -51,9 +49,10 @@ public class MySQLValuesUnitTests {
         stmt = MySQLs.query()
                 .select(SQLs.derivedGroup("s"))
                 .from(() -> this.createSimpleValues(MySQLs::subValues)
-                        .asValues(), "s")
-                .join(ChinaRegion_.T, "c").on(SQLs.ref("s", "column_0")::equal, ChinaRegion_.id)
-                .where(ChinaRegion_.id::equal, SQLs::literal, 1)
+                        .asValues())
+                .as("c")
+                .join(ChinaRegion_.T, AS, "c").on(SQLs.ref("s", "column_0")::equal, ChinaRegion_.id)
+                .where(ChinaRegion_.id::equal, SQLs::literal, "1")
                 .asQuery();
 
         printStmt(stmt);
@@ -66,13 +65,10 @@ public class MySQLValuesUnitTests {
         stmt = MySQLs.query()
                 .select(SQLs.derivedGroup("s"))
                 .from(() -> this.createSimpleValues(MySQLs::subValues)
-                        .bracket()
-                        .unionAll(() -> this.createSimpleValues(MySQLs::subValues)
-                                .bracket()
-                                .asValues())
-                        .asValues(), "s")
-                .join(ChinaRegion_.T, "c").on(SQLs.ref("s", "column_0")::equal, ChinaRegion_.id)
-                .where(ChinaRegion_.id::equal, SQLs::literal, 1)
+                        .asValues())
+                .as("s")
+                .join(ChinaRegion_.T, AS, "c").on(SQLs.ref("s", "column_0")::equal, ChinaRegion_.id)
+                .where(ChinaRegion_.id::equal, SQLs::literal, "1")
                 .asQuery();
 
         printStmt(stmt);
@@ -86,32 +82,30 @@ public class MySQLValuesUnitTests {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      */
-    private <V extends RowSet.DqlValues> MySQLValues._UnionSpec<Void, V> createSimpleValues(Supplier<MySQLValues._ValuesStmtValuesClause<Void, V>> supplier) {
+    private <V extends RowSet.DqlValues> MySQLValues._UnionOrderBySpec<V> createSimpleValues(Supplier<MySQLValues._ValueSpec<V>> supplier) {
         return supplier.get()
+                .leftParen()
                 .values()
-
-                .row()
-                .leftParen(1, "海问香", new BigDecimal("9999.88"), LocalDate.now())
-                .comma(DayOfWeek.MONDAY, SQLs.TRUE, SQLs.literal(1).plus(SQLs::literal, 3))
+                .leftParen(SQLs::literal, 1, "海问香", new BigDecimal("9999.88"), LocalDate.now())
+                .comma(SQLs::literal, DayOfWeek.MONDAY, SQLs.TRUE, SQLs.literal(1).plus(SQLs::literal, 3))
                 .rightParen()
 
-                .row()
-                .leftParen(2, "大仓", new BigDecimal("9999.66"), LocalDate.now().plusDays(1))
-                .comma(DayOfWeek.SUNDAY, SQLs.TRUE, SQLs.literal(13).minus(SQLs::literal, 3))
+                .leftParen(SQLs::literal, 2, "大仓", new BigDecimal("9999.66"), LocalDate.now().plusDays(1))
+                .comma(SQLs::literal, DayOfWeek.SUNDAY, SQLs.TRUE, SQLs.literal(13).minus(SQLs::literal, 3))
                 .rightParen()
 
-                .row()
-                .leftParen(3, "卡拉肖克·玲", new BigDecimal("6666.88"), LocalDate.now().minusDays(3))
-                .comma(DayOfWeek.FRIDAY, SQLs.TRUE, SQLs.literal(3).minus(SQLs::literal, 3))
+                .leftParen(SQLs::literal, 3, "卡拉肖克·玲", new BigDecimal("6666.88"), LocalDate.now().minusDays(3))
+                .comma(SQLs::literal, DayOfWeek.FRIDAY, SQLs.TRUE, SQLs.literal(3).minus(SQLs::literal, 3))
                 .rightParen()
 
-                .row()
-                .leftParen(4, "幽弥狂", new BigDecimal("8888.88"), LocalDate.now().minusDays(8))
-                .comma(DayOfWeek.TUESDAY, SQLs.FALSE, SQLs.literal(81).divide(SQLs::literal, 3))
+                .leftParen(SQLs::literal, 4, "幽弥狂", new BigDecimal("8888.88"), LocalDate.now().minusDays(8))
+                .comma(SQLs::literal, DayOfWeek.TUESDAY, SQLs.FALSE, SQLs.literal(81).divide(SQLs::literal, 3))
                 .rightParen()
 
-                .orderBy(SQLs.ref("column_1"), SQLs.literal(2).desc())
-                .limit(4);
+                .orderBy(SQLs.ref("column_1"), SQLs.literal(2), SQLs.DESC)
+                .limit(SQLs::literal, 4)
+                .asValues()
+                .rightParen();
     }
 
 

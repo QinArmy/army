@@ -2,6 +2,7 @@ package io.army.example.bank.dao.sync.region;
 
 import io.army.criteria.Expression;
 import io.army.criteria.Insert;
+import io.army.criteria.LiteralMode;
 import io.army.criteria.Select;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static io.army.criteria.impl.SQLs.AS;
+
 @Repository("bankSyncMySQL57RegionDao")
 @Profile({BaseService.SYNC, BeanUtils.MY_SQL57})
 public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
@@ -29,11 +32,11 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
                     consumer.accept(ChinaCity_.mayorName);
                     consumer.accept(SQLs.field("province", ChinaRegion_.name).as("province"));
                 })
-                .from(ChinaCity_.T, "city")
-                .join(ChinaRegion_.T, "p_of_city")
+                .from(ChinaCity_.T, AS,"city")
+                .join(ChinaRegion_.T,AS, "p_of_city")
                 .on(ChinaCity_.id.equal(SQLs.field("p_of_city", ChinaRegion_.id)))
-                .join(ChinaRegion_.T, "province")
-                .on(SQLs.field("p_of_city", ChinaRegion_.parentId).equal(SQLs.field("province", ChinaRegion_.id)))
+                .join(ChinaRegion_.T, AS,"province")
+                .on(SQLs.field("p_of_city", ChinaRegion_.parentId)::equal,SQLs.field("province", ChinaRegion_.id))
                 .asQuery();
         return this.sessionContext.currentSession().queryAsMap(stmt);
     }
@@ -44,17 +47,19 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
         final Supplier<Expression> provinceIdSubQuery;
         provinceIdSubQuery = () -> MySQLs.scalarSubQuery()
                 .select(ChinaProvince_.id)
-                .from(ChinaProvince_.T, "p")
-                .join(ChinaRegion_.T, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
-                .where(ChinaProvince_.provincialCapital.equalNamed(ChinaRegion_.NAME))
+                .from(ChinaProvince_.T,AS, "p")
+                .join(ChinaRegion_.T,AS, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
+                .where(ChinaProvince_.provincialCapital::equal,SQLs::literal,ChinaRegion_.NAME)
                 .asQuery();
 
         final Insert stmt;
         stmt = SQLs.singleInsert()
+                .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .leftParen(ChinaCity_.name, ChinaCity_.parentId)
                 .rightParen()
                 .values(domainList)
+                .asInsert()
                 .child()
                 .insertInto(ChinaCity_.T)
                 .values(domainList)
@@ -67,9 +72,9 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
         final Select stmt;
         stmt = MySQLs.query()
                 .select(ChinaRegion_.id)
-                .from(ChinaRegion_.T, "t")
-                .where(ChinaRegion_.name.equalLiteral(regionName))
-                .and(ChinaRegion_.regionType.equalLiteral(regionType))
+                .from(ChinaRegion_.T, AS,"t")
+                .where(ChinaRegion_.name::equal,SQLs::param,regionName)
+                .and(ChinaRegion_.regionType::equal,SQLs::literal,regionType)
                 .asQuery();
         return this.sessionContext.currentSession().queryOne(stmt, Long.class);
     }

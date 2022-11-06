@@ -2,27 +2,30 @@ package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
-import io.army.stmt.BatchStmt;
+import io.army.modelgen._MetaBridge;
 import io.army.stmt.SingleParam;
 import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 abstract class InsertContext extends StatementContext implements _InsertContext
-        , DmlContext._SetClauseContextSpec
+        , _DmlContext._SetClauseContextSpec
         , _InsertContext._ValueSyntaxSpec
         , _InsertContext._AssignmentsSpec
         , _InsertContext._QuerySyntaxSpec
         , _InsertStmtParams {
 
     private final InsertContext parentContext;
-
-    final TableMeta<?> domainTable;
 
     final TableMeta<?> insertTable;
 
@@ -67,13 +70,10 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         final _Insert nonChildStmt;
         if (domainStmt instanceof _Insert._ChildInsert) {
             nonChildStmt = ((_Insert._ChildInsert) domainStmt).parentStmt();
-            this.insertTable = nonChildStmt.table();
-            this.domainTable = domainStmt.table();
         } else {
             nonChildStmt = domainStmt;
-            this.insertTable = nonChildStmt.table();
-            this.domainTable = this.insertTable;
         }
+        this.insertTable = nonChildStmt.table();
         assert this.insertTable instanceof SingleTableMeta;
 
         if (nonChildStmt instanceof _Insert._InsertOption) {
@@ -100,7 +100,9 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         if (fieldList != null && fieldList.size() > 0) {
             this.fieldList = fieldList;
         } else if (nonChildStmt instanceof _Insert._AssignmentInsert) {
-            this.fieldList = null;
+            final Map<FieldMeta<?>, _Expression> fieldMap;
+            fieldMap = ((_Insert._AssignmentInsert) nonChildStmt).assignmentMap();
+            this.fieldList = createNonChildFieldList((SingleTableMeta<?>) this.insertTable,fieldMap::containsKey);
         } else {
             assert !(nonChildStmt instanceof _Insert._QueryInsert);
             this.fieldList = castFieldList(this.insertTable);
@@ -112,7 +114,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         if (this.migration || idField.generatorType() != GeneratorType.POST) {
             this.returnId = null;
             this.idSelectionAlias = null;
-        } else if (this.parser.supportInsertReturning()) {
+        } else if (this.parser.childUpdateMode == _ChildUpdateMode.CTE) {
             //TODO
             throw new UnsupportedOperationException();
         } else if (this.conflictClause) {
@@ -140,7 +142,6 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         super(outerContext, parentContext.parser, parentContext.visible);
         this.parentContext = parentContext;
         this.insertTable = stmt.table();
-        this.domainTable = this.insertTable;
 
         if (stmt instanceof _Insert._InsertOption) {
             final _Insert._InsertOption option = (_Insert._InsertOption) stmt;
@@ -151,7 +152,6 @@ abstract class InsertContext extends StatementContext implements _InsertContext
             this.literalMode = LiteralMode.DEFAULT;
         }
         assert this.insertTable instanceof ChildTableMeta
-                && this.domainTable == parentContext.domainTable
                 && this.migration == parentContext.migration
                 && this.literalMode == parentContext.literalMode
                 && ((ChildTableMeta<?>) this.insertTable).parentMeta() == parentContext.insertTable;
@@ -171,7 +171,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         if (fieldList != null && fieldList.size() > 0) {
             this.fieldList = fieldList;
         } else if (stmt instanceof _Insert._AssignmentInsert) {
-            this.fieldList = null;
+            this.fieldList = createChildFieldList((ChildTableMeta<?>) this.insertTable);
         } else {
             assert !(stmt instanceof _Insert._QueryInsert);
             this.fieldList = castFieldList(this.insertTable);
@@ -182,17 +182,11 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         this.returnId = null;
         this.idSelectionAlias = null;
 
-
     }
 
     @Override
     public final _InsertContext parentContext() {
         return this.parentContext;
-    }
-
-    @Override
-    public final BatchStmt build(List<?> paramList) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -251,7 +245,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
         final List<FieldMeta<?>> fieldList = this.fieldList;
         assert fieldList != null; //when assignment insert, fieldList is null.
-        final ArmyParser0 parser = this.parser;
+        final ArmyParser parser = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_LEFT_PAREN);
 
@@ -324,7 +318,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
                 .append(_Constant.SPACE_RETURNING)
                 .append(_Constant.SPACE);
 
-        final ArmyParser0 dialect = this.parser;
+        final ArmyParser dialect = this.parser;
         //TODO for dialect table alias
         dialect.safeObjectName(returnId, sqlBuilder)
                 .append(_Constant.SPACE_AS_SPACE);
@@ -429,5 +423,75 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         return (List<FieldMeta<?>>) list;
     }
 
+
+
+    private static List<FieldMeta<?>> createNonChildFieldList(final SingleTableMeta<?> insertTable
+            , final Predicate<FieldMeta<?>> predicate) {
+
+        final List<FieldMeta<?>> insertFieldChain;
+        insertFieldChain = insertTable.fieldChain();
+
+        final ArrayList<FieldMeta<?>> fieldList = new ArrayList<>(6 + insertFieldChain.size());
+
+        FieldMeta<?> reservedField;
+        reservedField = insertTable.id();
+        if (reservedField.insertable() && reservedField.generatorType() != null) {
+            fieldList.add(reservedField);
+        }
+
+        reservedField = insertTable.getField(_MetaBridge.CREATE_TIME);
+        fieldList.add(reservedField);
+
+        reservedField = insertTable.tryGetField(_MetaBridge.UPDATE_TIME);
+        if (reservedField != null) {
+            fieldList.add(reservedField);
+        }
+
+        reservedField = insertTable.tryGetField(_MetaBridge.VERSION);
+        if (reservedField != null) {
+            fieldList.add(reservedField);
+        }
+
+
+        reservedField = insertTable.tryGetField(_MetaBridge.VISIBLE);
+        if (reservedField != null && !predicate.test(reservedField)) {
+            fieldList.add(reservedField);
+        }
+
+        if (insertTable instanceof ParentTableMeta) {
+            fieldList.add(insertTable.discriminator());
+        }
+
+        for (FieldMeta<?> field : insertFieldChain) {
+            if (field instanceof PrimaryFieldMeta) {
+                continue;
+            }
+            fieldList.add(field);
+        }
+
+        return Collections.unmodifiableList(fieldList);
+    }
+
+    private static List<FieldMeta<?>> createChildFieldList(final ChildTableMeta<?> insertTable) {
+        final List<FieldMeta<?>> fieldChain;
+        fieldChain = insertTable.fieldChain();
+
+        final int chainSize = fieldChain.size();
+        List<FieldMeta<?>> fieldList;
+        if (chainSize == 0) {
+            fieldList = Collections.singletonList(insertTable.id());
+        } else {
+            fieldList = new ArrayList<>(1 + chainSize);
+            fieldList.add(insertTable.id());
+
+            for (FieldMeta<?> field : fieldChain) {
+                assert !(field instanceof PrimaryFieldMeta);
+                fieldList.add(field);
+            }
+            fieldList = Collections.unmodifiableList(fieldList);
+        }
+        return fieldList;
+
+    }
 
 }

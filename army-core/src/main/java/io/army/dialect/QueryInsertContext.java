@@ -21,6 +21,7 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
 
     static QueryInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildQueryInsert domainStmt
             , ArmyParser dialect, Visible visible) {
+        assert outerContext == null || outerContext instanceof _MultiStatementContext;
         return new QueryInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
     }
 
@@ -105,7 +106,8 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
 
     @Override
     public SimpleStmt build() {
-        return Stmts.queryStmt(this);
+        //TODO postgre
+        return Stmts.minSimple(this);
     }
 
 

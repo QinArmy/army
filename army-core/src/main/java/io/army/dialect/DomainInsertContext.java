@@ -32,22 +32,24 @@ import java.util.Map;
 final class DomainInsertContext extends ValuesSyntaxInsertContext implements _InsertStmtParams._DomainParams {
 
     static DomainInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._DomainInsert insert
-            , ArmyParser0 dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
+        assert  !(insert instanceof _Insert._ChildDomainInsert);
         return new DomainInsertContext((StatementContext) outerContext, insert, dialect, visible);
     }
 
 
     static DomainInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildDomainInsert domainStmt
-            , ArmyParser0 dialect, Visible visible) {
-        assert outerContext == null || outerContext instanceof LiteralMultiStmtContext;
+            , ArmyParser dialect, Visible visible) {
+        assert outerContext == null || outerContext instanceof _MultiStatementContext;
         if (outerContext != null && domainStmt.parentStmt().table().id().generatorType() == GeneratorType.POST) {
             throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) domainStmt.table());
         }
         return new DomainInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
     }
 
-    static DomainInsertContext forChild(_Insert._ChildDomainInsert insert, DomainInsertContext parentContext) {
-        return new DomainInsertContext(insert, parentContext);
+    static DomainInsertContext forChild(@Nullable _SqlContext outerContext,_Insert._ChildDomainInsert insert
+            , DomainInsertContext parentContext) {
+        return new DomainInsertContext((StatementContext) outerContext,insert, parentContext);
     }
 
     private final DomainWrapper wrapper;
@@ -59,7 +61,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
      * create for {@link  SingleTableMeta}
      */
     private DomainInsertContext(@Nullable StatementContext outerContext, _Insert._DomainInsert domainStmt
-            , ArmyParser0 dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         super(outerContext, domainStmt, dialect, visible);
 
         this.domainList = domainStmt.domainList();
@@ -70,8 +72,9 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
     /**
      * create for {@link  ChildTableMeta}
      */
-    private DomainInsertContext(_Insert._ChildDomainInsert stmt, DomainInsertContext parentContext) {
-        super(stmt, parentContext);
+    private DomainInsertContext(@Nullable StatementContext outerContext,_Insert._ChildDomainInsert stmt
+            , DomainInsertContext parentContext) {
+        super(outerContext,stmt, parentContext);
 
         this.domainList = stmt.domainList();
         assert this.domainList == parentContext.domainList;//must check for criteria api implementation
@@ -90,15 +93,14 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         final int fieldSize = fieldList.size();
 
 
-        final ArmyParser0 dialect = this.parser;
+        final ArmyParser dialect = this.parser;
         final Map<FieldMeta<?>, _Expression> defaultValueMap;
 
         final LiteralMode literalMode = this.literalMode;
         final boolean migration = this.migration;
-        final boolean mockEnv = dialect.isMockEnv();
+        final boolean mockEnv = dialect.mockEnv;
         final NullMode nullMode = this.nullMode;
 
-        final FieldValueGenerator generator;
         final DomainWrapper wrapper = this.wrapper;
         final ObjectAccessor accessor = wrapper.accessor;
         final TableMeta<?> insertTable = this.insertTable, domainTable = wrapper.domainTable;
@@ -111,13 +113,14 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         } else {
             spaceDiscriminator = _Constant.SPACE_ZERO;
         }
+        final FieldValueGenerator generator;
         if (insertTable instanceof ChildTableMeta) {
             assert insertTable == domainTable;
             generator = null;
             manageVisible = false;
             defaultValueMap = wrapper.childDefaultMap;
         } else {
-            generator = dialect.getGenerator();
+            generator = dialect.generator;
             final FieldMeta<?> visibleField;
             visibleField = insertTable.tryGetField(_MetaBridge.VISIBLE);
             manageVisible = visibleField != null && !wrapper.nonChildDefaultMap.containsKey(visibleField);
@@ -129,8 +132,8 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         DelayIdParamValue delayIdParam;
         int outputValueSize = 0;
 
-        final StringBuilder sqlBuilder = this.sqlBuilder
-                .append(_Constant.SPACE_VALUES);
+        final StringBuilder sqlBuilder = this.sqlBuilder;
+        sqlBuilder.append(_Constant.SPACE_VALUES); // VALUES key words
         for (int rowIndex = 0; rowIndex < rowSize; rowIndex++) {
             currentDomain = domainList.get(rowIndex);
             wrapper.domain = currentDomain; //firstly,update current domain
@@ -313,7 +316,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
                 this.childDefaultMap = Collections.emptyMap();
             }
             this.accessor = ObjectAccessorFactory.forBean(this.domainTable.javaType());
-            this.readWrapper = new DomainReadWrapper(this, context.parser.mappingEnv());
+            this.readWrapper = new DomainReadWrapper(this, context.parser.mappingEnv);
         }
 
         @Override

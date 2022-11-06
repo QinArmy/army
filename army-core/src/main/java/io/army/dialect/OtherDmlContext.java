@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.Visible;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
@@ -10,16 +11,32 @@ import java.util.function.Predicate;
 
 final class OtherDmlContext extends StatementContext implements _OtherDmlContext {
 
-    static OtherDmlContext create(ArmyParser0 parser, Predicate<FieldMeta<?>> predicate, Visible visible) {
-        return new OtherDmlContext(parser, predicate, visible);
+    static OtherDmlContext create(@Nullable _SqlContext outerContext,Predicate<FieldMeta<?>> predicate
+            , ArmyParser parser,  Visible visible) {
+        return new OtherDmlContext((StatementContext) outerContext,predicate,parser, visible);
     }
 
+    static OtherDmlContext forChild(@Nullable _SqlContext outerContext,Predicate<FieldMeta<?>> predicate
+            ,OtherDmlContext parentContext) {
+        return new OtherDmlContext((StatementContext) outerContext, predicate,parentContext);
+    }
+
+    private final OtherDmlContext parentContext;
     private final Predicate<FieldMeta<?>> predicate;
 
 
-    private OtherDmlContext(ArmyParser0 parser, Predicate<FieldMeta<?>> predicate, Visible visible) {
-        super(parser, visible);
+    private OtherDmlContext(@Nullable StatementContext outerContext,Predicate<FieldMeta<?>> predicate
+            ,ArmyParser parser, Visible visible) {
+        super(outerContext,parser, visible);
         this.predicate = predicate;
+        this.parentContext = null;
+    }
+
+    private OtherDmlContext(@Nullable  StatementContext outerContext, Predicate<FieldMeta<?>> predicate
+            ,OtherDmlContext parentContext) {
+        super(outerContext, parentContext.parser,parentContext.visible);
+        this.predicate = predicate;
+        this.parentContext = parentContext;
     }
 
     @Override
@@ -37,6 +54,10 @@ final class OtherDmlContext extends StatementContext implements _OtherDmlContext
         this.parser.safeObjectName(field, sqlBuilder);
     }
 
+    @Override
+    public _OtherDmlContext parentContext() {
+        return this.parentContext;
+    }
 
     @Override
     public SimpleStmt build() {

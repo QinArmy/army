@@ -3,13 +3,9 @@ package io.army.criteria.impl;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.Dialect;
-import io.army.dialect.DialectParser;
-import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.Stmt;
 import io.army.struct.CodeEnum;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
@@ -545,10 +541,6 @@ abstract class InsertSupport {
             return this.insertTable;
         }
 
-        @Override
-        public final String tableAlias() {
-            return this.tableAlias;
-        }
 
         @Override
         public final List<FieldMeta<?>> fieldList() {
@@ -1742,25 +1734,21 @@ abstract class InsertSupport {
     }//AssignmentSetClause
 
 
-    private static abstract class AbstractInsertStatement<I extends DmlInsert, Q extends DqlInsert>
+    private static abstract class AbstractInsertStatement<I extends Statement.DmlInsert, Q extends Statement.DqlInsert>
+            extends CriteriaSupports.StatementMockSupport
             implements _Insert
             , Statement.StatementMockSpec
             , Statement
             , CriteriaContextSpec
             , Statement._DmlInsertClause<I>, Statement._DqlInsertClause<Q> {
 
-        final CriteriaContext context;
-
         final TableMeta<?> insertTable;
-
-        final String tableAlias;
 
         private Boolean prepared;
 
         AbstractInsertStatement(_Insert clause) {
-            this.context = ((CriteriaContextSpec) clause).getContext();
+            super(((CriteriaContextSpec) clause).getContext());
             this.insertTable = clause.table();
-            this.tableAlias = clause.tableAlias();
         }
 
         @Override
@@ -1768,26 +1756,10 @@ abstract class InsertSupport {
             return this.context;
         }
 
-        @Override
-        public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-            final DialectParser parser;
-            parser = _MockDialects.from(dialect);
-            return parser.printStmt(this.mockStmt(parser, visible), none);
-        }
-
-        @Override
-        public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-            return this.mockStmt(_MockDialects.from(dialect), visible);
-        }
 
         @Override
         public final TableMeta<?> table() {
             return this.insertTable;
-        }
-
-        @Override
-        public final String tableAlias() {
-            return this.tableAlias;
         }
 
         @Override
@@ -1844,21 +1816,6 @@ abstract class InsertSupport {
             this.prepared = Boolean.TRUE;
         }
 
-        private Stmt mockStmt(DialectParser parser, Visible visible) {
-            final Stmt stmt;
-            if (this instanceof Insert) {
-                stmt = parser.insert((Insert) this, visible);
-            } else if (this instanceof ReplaceInsert
-                    || this instanceof MergeInsert
-                    || this instanceof ReturningInsert) {
-                stmt = parser.dialectStatement((DialectStatement) this, visible);
-            } else {
-                //non-primary insert
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return stmt;
-        }
-
 
         private void prepareParentStatement() {
             _Assert.nonPrepared(this.prepared);
@@ -1870,7 +1827,7 @@ abstract class InsertSupport {
     }//AbstractInsertStatement
 
 
-    static abstract class AbstractValueSyntaxStatement<I extends DmlInsert, Q extends DqlInsert>
+    static abstract class AbstractValueSyntaxStatement<I extends Statement.DmlInsert, Q extends Statement.DqlInsert>
             extends AbstractInsertStatement<I, Q>
             implements _Insert._ValuesSyntaxInsert {
 
@@ -1933,8 +1890,8 @@ abstract class InsertSupport {
     }//AbstractValueSyntaxStatement
 
 
-    static abstract class ValueSyntaxInsertStatement<I extends DmlInsert>
-            extends AbstractValueSyntaxStatement<I, DqlInsert>
+    static abstract class ValueSyntaxInsertStatement<I extends Statement.DmlInsert>
+            extends AbstractValueSyntaxStatement<I, Statement.DqlInsert>
             implements ValueSyntaxOptions {
 
         ValueSyntaxInsertStatement(_ValuesSyntaxInsert clause) {
@@ -1946,7 +1903,7 @@ abstract class InsertSupport {
     }//ValueInsertStatement
 
 
-    private static abstract class AbstractAssignmentInsertStatement<I extends DmlInsert, Q extends DqlInsert>
+    private static abstract class AssignmentSyntaxInsertStatement<I extends Statement.DmlInsert, Q extends Statement.DqlInsert>
             extends AbstractInsertStatement<I, Q> implements _Insert._AssignmentInsert, ValueSyntaxOptions {
 
         private final boolean migration;
@@ -1957,7 +1914,7 @@ abstract class InsertSupport {
 
         private final Map<FieldMeta<?>, _Expression> fieldMap;
 
-        AbstractAssignmentInsertStatement(_AssignmentInsert clause) {
+        AssignmentSyntaxInsertStatement(_AssignmentInsert clause) {
             super(clause);
             this.migration = clause.isMigration();
             this.preferLiteral = clause.literalMode();
@@ -1994,8 +1951,9 @@ abstract class InsertSupport {
 
     }//AbstractAssignmentInsertStatement
 
-    static abstract class AssignmentInsertStatement<I extends DmlInsert>
-            extends AbstractAssignmentInsertStatement<I, DqlInsert> {
+    static abstract class AssignmentInsertStatement<I extends Statement.DmlInsert>
+            extends AssignmentSyntaxInsertStatement<I, Statement.DqlInsert>
+            implements Insert {
 
         AssignmentInsertStatement(_AssignmentInsert clause) {
             super(clause);
@@ -2004,7 +1962,7 @@ abstract class InsertSupport {
     }//AssignmentInsertStatement
 
 
-    static abstract class AbstractQuerySyntaxInsertStatement<I extends DmlInsert, Q extends DqlInsert>
+    static abstract class AbstractQuerySyntaxInsertStatement<I extends Statement.DmlInsert, Q extends Statement.DqlInsert>
             extends AbstractInsertStatement<I, Q>
             implements _Insert._QueryInsert, ValueSyntaxOptions {
 
@@ -2058,8 +2016,9 @@ abstract class InsertSupport {
     }//AbstractQuerySyntaxInsertStatement
 
 
-    static abstract class QuerySyntaxInsertStatement<I extends DmlInsert>
-            extends AbstractQuerySyntaxInsertStatement<I, DqlInsert> {
+    static abstract class QuerySyntaxInsertStatement<I extends Statement.DmlInsert>
+            extends AbstractQuerySyntaxInsertStatement<I, Statement.DqlInsert>
+            implements Insert{
 
 
         QuerySyntaxInsertStatement(_QueryInsert clause) {

@@ -13,8 +13,8 @@ import java.util.function.Supplier;
  * <p>
  * This class is base class of below:
  *     <ul>
- *         <li>{@link SQLs.DefaultWord}</li>
- *         <li>{@link SQLs.NullWord}</li>
+ *         <li>{@code  SQLs.DefaultWord}</li>
+ *         <li>{@code SQLs.NullWord}</li>
  *     </ul>
  * </p>
  */
@@ -27,7 +27,7 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final Selection as(String alias) {
-        if (!(this instanceof SQLParam || this instanceof SQLs.NullWord)) {
+        if (!(this instanceof SQLParam || this == SQLs.NULL)) {
             throw unsupportedOperation();
         }
         return Selections.forExp(this, alias);
@@ -47,7 +47,7 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final Expression asType(TypeMeta paramMeta) {
-        if (!(this instanceof SQLs.NullWord)) {
+        if (this != SQLs.NULL) {
             throw unsupportedOperation();
         }
         return CastExpression.cast(this, paramMeta);
@@ -55,7 +55,7 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate isNull() {
-        if (!(this instanceof SQLs.NullWord)) {
+        if (this != SQLs.NULL) {
             throw unsupportedOperation();
         }
         return UnaryPredicate.create(UnaryOperator.IS_NULL, this);
@@ -63,7 +63,7 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate isNotNull() {
-        if (!(this instanceof SQLs.NullWord)) {
+        if (this != SQLs.NULL) {
             throw unsupportedOperation();
         }
         return UnaryPredicate.create(UnaryOperator.IS_NOT_NULL, this);
@@ -248,11 +248,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate in(TeExpression<Expression, Function<String, ?>, String> valuesOperator, Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final IPredicate in(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size) {
         throw unsupportedOperation();
     }
@@ -277,10 +272,6 @@ abstract class NonOperationExpression implements ArmyExpression {
         throw unsupportedOperation();
     }
 
-    @Override
-    public final IPredicate notIn(TeExpression<Expression, Function<String, ?>, String> valuesOperator, Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
 
     @Override
     public final IPredicate like(Expression pattern) {

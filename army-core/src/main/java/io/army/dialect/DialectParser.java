@@ -35,9 +35,16 @@ public interface DialectParser {
 
     void scalarSubQuery(SubQuery query, _SqlContext original);
 
-    default Stmt dialectStatement(DialectStatement statement, Visible visible) {
+    default Stmt dialectDml(DmlStatement statement,Visible visible){
         throw new UnsupportedOperationException();
     }
+
+    default Stmt dialectDql(DqlStatement statement,Visible visible){
+        throw new UnsupportedOperationException();
+    }
+
+
+
 
     List<String> startTransaction(Isolation isolation, boolean readonly);
 
@@ -56,17 +63,7 @@ public interface DialectParser {
     String identifier(String identifier);
 
 
-    boolean supportSavePoint();
-
-
-    boolean setClauseTableAlias();
-
-
-    default boolean setClauseSupportRow() {
-        throw new UnsupportedOperationException();
-    }
-
-    Dialect dialectMode();
+    Dialect dialect();
 
 
     String printStmt(Stmt stmt, boolean beautify);

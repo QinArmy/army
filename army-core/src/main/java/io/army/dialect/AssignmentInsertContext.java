@@ -16,31 +16,34 @@ import io.army.stmt.Stmts;
 import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 final class AssignmentInsertContext extends InsertContext
         implements _AssignmentInsertContext, _InsertStmtParams._AssignmentParams {
 
     static AssignmentInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._AssignmentInsert stmt
-            , ArmyParser0 dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         assert !(stmt instanceof _Insert._ChildAssignmentInsert);
         return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
     static AssignmentInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildAssignmentInsert stmt
-            , ArmyParser0 dialect, Visible visible) {
-        assert outerContext == null || outerContext instanceof LiteralMultiStmtContext;
+            , ArmyParser dialect, Visible visible) {
+        assert outerContext == null || outerContext instanceof _MultiStatementContext;
+
         if (outerContext != null && stmt.parentStmt().table().id().generatorType() == GeneratorType.POST) {
             throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) stmt.table());
         }
         return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 
-    static AssignmentInsertContext forChild(_Insert._ChildAssignmentInsert stmt
+    static AssignmentInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildAssignmentInsert stmt
             , AssignmentInsertContext parentContext) {
-        return new AssignmentInsertContext(stmt, parentContext);
+        return new AssignmentInsertContext((StatementContext) outerContext, stmt, parentContext);
     }
 
 
@@ -55,11 +58,11 @@ final class AssignmentInsertContext extends InsertContext
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      *
-     * @see #forSingle(_SqlContext, _Insert._AssignmentInsert, ArmyParser0, Visible)
-     * @see #forParent(_SqlContext, _Insert._ChildAssignmentInsert, ArmyParser0, Visible)
+     * @see #forSingle(_SqlContext, _Insert._AssignmentInsert, ArmyParser, Visible)
+     * @see #forParent(_SqlContext, _Insert._ChildAssignmentInsert, ArmyParser, Visible)
      */
     private AssignmentInsertContext(@Nullable StatementContext outerContext, _Insert._AssignmentInsert domainStmt
-            , ArmyParser0 dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         super(outerContext, domainStmt, dialect, visible);
 
         if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
@@ -69,7 +72,6 @@ final class AssignmentInsertContext extends InsertContext
         }
 
         this.rowWrapper = new AssignmentWrapper(this, domainStmt);
-        assert this.rowWrapper.domainTable == domainTable;
 
     }
 
@@ -78,11 +80,11 @@ final class AssignmentInsertContext extends InsertContext
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      *
-     * @see #forChild(_Insert._ChildAssignmentInsert, AssignmentInsertContext)
+     * @see #forChild(_SqlContext,_Insert._ChildAssignmentInsert, AssignmentInsertContext)
      */
-    private AssignmentInsertContext(_Insert._ChildAssignmentInsert stmt
+    private AssignmentInsertContext(@Nullable StatementContext outerContext, _Insert._ChildAssignmentInsert stmt
             , AssignmentInsertContext parentContext) {
-        super(stmt, parentContext);
+        super(outerContext, stmt, parentContext);
 
         this.pairList = stmt.assignmentPairList();
         ;
@@ -96,7 +98,7 @@ final class AssignmentInsertContext extends InsertContext
     @Override
     void doAppendAssignments() {
 
-        final ArmyParser0 dialect = this.parser;
+        final ArmyParser dialect = this.parser;
 
         final TableMeta<?> insertTable = this.insertTable;
 
@@ -104,8 +106,7 @@ final class AssignmentInsertContext extends InsertContext
         //1. generate or validate
         if (insertTable instanceof SingleTableMeta) {
 
-            final FieldValueGenerator generator;
-            generator = dialect.getGenerator();
+            final FieldValueGenerator generator = dialect.generator;
             if (this.migration) {
                 //use wrapper.domainTable not this.insertTable
                 generator.validate(wrapper.domainTable, wrapper);
@@ -182,7 +183,7 @@ final class AssignmentInsertContext extends InsertContext
     private void appendArmyManageFields() {
         assert !this.migration;
 
-        final ArmyParser0 dialect = this.parser;
+        final ArmyParser dialect = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder;
 
         final Map<FieldMeta<?>, Object> generatedMap = this.rowWrapper.generatedMap;
@@ -192,7 +193,7 @@ final class AssignmentInsertContext extends InsertContext
         assert fieldSize > 0;
 
         final LiteralMode literalMode = this.literalMode;
-        final boolean mockEnv = dialect.isMockEnv();
+        final boolean mockEnv = dialect.mockEnv;
 
         FieldMeta<?> field;
         Object value;
@@ -238,75 +239,6 @@ final class AssignmentInsertContext extends InsertContext
     }
 
 
-    private static List<FieldMeta<?>> createNonChildFieldList(final SingleTableMeta<?> insertTable
-            , final Predicate<FieldMeta<?>> predicate) {
-
-        final List<FieldMeta<?>> insertFieldChain;
-        insertFieldChain = insertTable.fieldChain();
-
-        final ArrayList<FieldMeta<?>> fieldList = new ArrayList<>(6 + insertFieldChain.size());
-
-        FieldMeta<?> reservedField;
-        reservedField = insertTable.id();
-        if (reservedField.insertable() && reservedField.generatorType() != null) {
-            fieldList.add(reservedField);
-        }
-
-        reservedField = insertTable.getField(_MetaBridge.CREATE_TIME);
-        fieldList.add(reservedField);
-
-        reservedField = insertTable.tryGetField(_MetaBridge.UPDATE_TIME);
-        if (reservedField != null) {
-            fieldList.add(reservedField);
-        }
-
-        reservedField = insertTable.tryGetField(_MetaBridge.VERSION);
-        if (reservedField != null) {
-            fieldList.add(reservedField);
-        }
-
-
-        reservedField = insertTable.tryGetField(_MetaBridge.VISIBLE);
-        if (reservedField != null && !predicate.test(reservedField)) {
-            fieldList.add(reservedField);
-        }
-
-        if (insertTable instanceof ParentTableMeta) {
-            fieldList.add(insertTable.discriminator());
-        }
-
-        for (FieldMeta<?> field : insertFieldChain) {
-            if (field instanceof PrimaryFieldMeta) {
-                continue;
-            }
-            fieldList.add(field);
-        }
-
-        return Collections.unmodifiableList(fieldList);
-    }
-
-    private static List<FieldMeta<?>> createChildFieldList(final ChildTableMeta<?> insertTable) {
-        final List<FieldMeta<?>> fieldChain;
-        fieldChain = insertTable.fieldChain();
-
-        final int chainSize = fieldChain.size();
-        List<FieldMeta<?>> fieldList;
-        if (chainSize == 0) {
-            fieldList = Collections.singletonList(insertTable.id());
-        } else {
-            fieldList = new ArrayList<>(1 + chainSize);
-            fieldList.add(insertTable.id());
-
-            for (FieldMeta<?> field : fieldChain) {
-                assert !(field instanceof PrimaryFieldMeta);
-                fieldList.add(field);
-            }
-            fieldList = Collections.unmodifiableList(fieldList);
-        }
-        return fieldList;
-
-    }
-
     private static final class AssignmentWrapper extends _DialectUtils.ExpRowWrapper {
 
         private final Map<FieldMeta<?>, _Expression> nonChildPairMap;
@@ -320,12 +252,14 @@ final class AssignmentInsertContext extends InsertContext
         private DelayIdParam delayIdParam;
 
         private AssignmentWrapper(AssignmentInsertContext context, _Insert._AssignmentInsert domainStmt) {
-            super(domainStmt.table(), context.parser.mappingEnv());
+            super(domainStmt.table(), context.parser.mappingEnv);
 
             if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
+                assert context.insertTable == ((ChildTableMeta<?>) this.domainTable).parentMeta();
                 this.nonChildPairMap = ((_Insert._ChildAssignmentInsert) domainStmt).parentStmt().assignmentMap();
                 this.childPairMap = domainStmt.assignmentMap();
             } else {
+                assert  context.insertTable == this.domainTable;
                 this.nonChildPairMap = domainStmt.assignmentMap();
                 this.childPairMap = Collections.emptyMap();
             }

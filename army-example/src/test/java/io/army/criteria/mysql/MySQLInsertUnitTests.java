@@ -5,7 +5,6 @@ import io.army.criteria.Hint;
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.MySQLSyntax;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Insert;
@@ -36,6 +35,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static io.army.criteria.impl.SQLs.AS;
+
 public class MySQLInsertUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLInsertUnitTests.class);
@@ -52,9 +53,9 @@ public class MySQLInsertUnitTests {
         };
 
         Insert stmt;
-        stmt = MySQLs.domainInsert()
+        stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
-                .insert(hintSupplier, Collections.singletonList(MySQLSyntax._MySQLModifier.HIGH_PRIORITY))
+                .insert(hintSupplier, Collections.singletonList(MySQLs.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition()
                 .leftParen("p1")
@@ -65,8 +66,8 @@ public class MySQLInsertUnitTests {
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(this::createReginList)
                 .onDuplicateKey()
-                .update(ChinaRegion_.name, "光明顶")
-                .commaLiteral(ChinaRegion_.regionGdp, "6666.88")
+                .set(ChinaRegion_.name,SQLs::param, "光明顶")
+                .set(ChinaRegion_.regionGdp, SQLs::param,"6666.88")
                 .asInsert();
 
         printStmt(stmt);
@@ -86,12 +87,10 @@ public class MySQLInsertUnitTests {
 
         final List<Person> personList;
         personList = this.createPsersonList();
-        final List<MySQLSyntax._MySQLModifier> modifierList;
-        modifierList = Collections.singletonList(MySQLSyntax._MySQLModifier.HIGH_PRIORITY);
         final Insert stmt;
-        stmt = MySQLs.domainInsert()
+        stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
-                .insert(hintSupplier, modifierList)
+                .insert(hintSupplier, Collections.singletonList(MySQLs.HIGH_PRIORITY))
                 .into(User_.T)
                 .partition()
                 .leftParen("p1")
@@ -99,7 +98,8 @@ public class MySQLInsertUnitTests {
                 .defaultValue(User_.visible, SQLs::literal, true)
                 .values(personList)
                 .onDuplicateKey()
-                .update(User_.identityId, 0)
+                .set(User_.identityId,SQLs::param, 0)
+                .asInsert()
 
                 .child()
 
@@ -107,7 +107,7 @@ public class MySQLInsertUnitTests {
                 .defaultValue(Person_.birthday, SQLs::literal, LocalDate.now())
                 .values(personList)
                 .onDuplicateKey()
-                .update(Person_.birthday, 0L)
+                .set(Person_.birthday,SQLs::param, 0)
                 .asInsert();
 
         printStmt(stmt);
@@ -125,19 +125,19 @@ public class MySQLInsertUnitTests {
         };
 
         Insert stmt;
-        stmt = MySQLs.assignmentInsert()
+        stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
-                .insert(hintSupplier, Collections.singletonList(MySQLSyntax._MySQLModifier.HIGH_PRIORITY))
+                .insert(hintSupplier, Collections.singletonList(MySQLs.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition()
                 .leftParen("p1")
                 .rightParen()
-                .set(ChinaRegion_.name, "光明顶")
-                .setLiteral(ChinaRegion_.regionGdp, "6666.88")
-                .setLiteral(ChinaRegion_.parentId, 0)
+                .set(ChinaRegion_.name, SQLs::param,"光明顶")
+                .set(ChinaRegion_.regionGdp,SQLs::param, "6666.88")
+                .set(ChinaRegion_.parentId,SQLs::literal, 0)
                 .onDuplicateKey()
-                .update(ChinaRegion_.name, "光明顶")
-                .commaLiteral(ChinaRegion_.regionGdp, "6666.88")
+                .set(ChinaRegion_.name,SQLs::param, "光明顶")
+                .set(ChinaRegion_.regionGdp,SQLs::param, "6666.88")
                 .asInsert();
 
         printStmt(stmt);
@@ -158,8 +158,8 @@ public class MySQLInsertUnitTests {
         };
 
         Insert stmt;
-        stmt = MySQLs.queryInsert()
-                .insert(hintSupplier, Collections.singletonList(MySQLSyntax._MySQLModifier.HIGH_PRIORITY))
+        stmt = MySQLs.singleInsert()
+                .insert(hintSupplier, Collections.singletonList(MySQLs.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition()
                 .leftParen("p1")
@@ -170,23 +170,23 @@ public class MySQLInsertUnitTests {
                 .comma(ChinaRegion_.name, ChinaRegion_.regionGdp)
                 .comma(ChinaRegion_.parentId)
                 .rightParen()
-                .space(() -> MySQLs.subQuery()  //here just test,not real use case
-                        .select(consumer -> {
-                            consumer.accept(ChinaRegion_.id);
-                            consumer.accept(ChinaRegion_.createTime);
-                            consumer.accept(ChinaRegion_.updateTime);
-                            consumer.accept(ChinaRegion_.version);
+                .space()
+                .select(consumer -> {
+                    consumer.accept(ChinaRegion_.id);
+                    consumer.accept(ChinaRegion_.createTime);
+                    consumer.accept(ChinaRegion_.updateTime);
+                    consumer.accept(ChinaRegion_.version);
 
-                            consumer.accept(ChinaRegion_.visible);
-                            consumer.accept(ChinaRegion_.regionType);
-                            consumer.accept(ChinaRegion_.name);
-                            consumer.accept(ChinaRegion_.regionGdp);
+                    consumer.accept(ChinaRegion_.visible);
+                    consumer.accept(ChinaRegion_.regionType);
+                    consumer.accept(ChinaRegion_.name);
+                    consumer.accept(ChinaRegion_.regionGdp);
 
-                            consumer.accept(ChinaRegion_.parentId);
-                        })
-                        .from(ChinaRegion_.T, "c")
-                        .limit(10)
-                        .asQuery())
+                    consumer.accept(ChinaRegion_.parentId);
+                })
+                .from(ChinaRegion_.T, AS,"c")
+                .limit(SQLs::param,10)
+                .asQuery()
                 .asInsert();
 
         printStmt(stmt);

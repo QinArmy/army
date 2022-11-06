@@ -34,7 +34,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     MySQLFuncSyntax() {
     }
 
-    public interface _OverSpec extends Window._OverClause<Window._SimpleLeftParenClause<Void, Expression>> {
+    public interface _OverSpec extends Window._OverClause<Window._SimpleLeftParenClause< Expression>> {
 
 
     }
@@ -51,7 +51,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
 
     public interface _AggregateOverSpec
-            extends Window._AggregateWindowFunc<Window._SimpleLeftParenClause<Void, Expression>> {
+            extends Window._AggregateWindowFunc<Window._SimpleLeftParenClause< Expression>> {
 
     }
 

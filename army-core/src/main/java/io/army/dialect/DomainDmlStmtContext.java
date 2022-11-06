@@ -10,7 +10,7 @@ import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
-abstract class DomainDmlStmtContext extends SingleDmlStmtContext implements _SingleTableContext {
+abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _SingleTableContext {
 
 
     private final String safeParentAlias;
@@ -68,7 +68,7 @@ abstract class DomainDmlStmtContext extends SingleDmlStmtContext implements _Sin
         final String safeParentAlias = this.safeParentAlias;
         assert safeParentAlias != null;
 
-        final ArmyParser0 dialect = this.parser;
+        final ArmyParser dialect = this.parser;
         final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) parentField.tableMeta();
         final StringBuilder sqlBuilder = this.sqlBuilder
                 //below sub query left bracket
@@ -85,7 +85,7 @@ abstract class DomainDmlStmtContext extends SingleDmlStmtContext implements _Sin
         dialect.safeObjectName(parentTable, sqlBuilder);
 
 
-        if (dialect.tableAliasAfterAs()) {
+        if (dialect.singleDmlAliasAfterAs) {
             sqlBuilder.append(_Constant.SPACE_AS_SPACE);
         } else {
             sqlBuilder.append(_Constant.SPACE);

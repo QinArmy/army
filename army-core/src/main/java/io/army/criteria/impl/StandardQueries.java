@@ -363,18 +363,15 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     } // SimpleSubQuery
 
 
-    private static abstract class StandardBracketQueries<I extends Item, Q extends Query>
+     static abstract class StandardBracketQueries<I extends Item>
             extends BracketRowSet<
             I,
-            Q,
             _UnionOrderBySpec<I>,
             _UnionLimitSpec<I>,
             _AsQueryClause<I>,
             Object,
             Object,
-            _SelectSpec<I>,
-            RowSet,
-            Object> implements StandardQuery._UnionOrderBySpec<I>
+            _SelectSpec<I>> implements StandardQuery._UnionOrderBySpec<I>
             , Statement._RightParenClause<_UnionOrderBySpec<I>> {
 
 
@@ -382,11 +379,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             super(context);
         }
 
-        @Override
-        final Object createRowSetUnion(UnionType unionType, RowSet right) {
-            //standard query don't support union VALUES statement
-            throw ContextStack.castCriteriaApi(this.context);
-        }
 
         @Override
         final Dialect statementDialect() {
@@ -397,7 +389,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     private static final class StandardBracketSelect<I extends Item>
-            extends StandardBracketQueries<I, Select>
+            extends StandardBracketQueries<I>
             implements Select {
 
         private final Function<Select, I> function;
@@ -423,7 +415,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }//StandardBracketSelect
 
     private static final class StandardBracketSubQuery<I extends Item>
-            extends StandardBracketQueries<I, SubQuery>
+            extends StandardBracketQueries<I>
             implements SubQuery {
 
         private final Function<SubQuery, I> function;
@@ -485,7 +477,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         private I unionRight(final Select right) {
-            return this.function.apply(new UnionSelect(MySQLDialect.MySQL57, this.left, this.unionType, right));
+            return this.function.apply(new UnionSelect(this.left, this.unionType, right));
         }
 
 

@@ -476,9 +476,9 @@ abstract class StandardSyntax extends Functions {
     }// NullWord
 
 
-    private static final class LiteralSymbolStar extends NonOperationExpression {
+     static final class LiteralSymbolStar extends NonOperationExpression {
 
-        private static final LiteralSymbolStar STAR = new LiteralSymbolStar();
+         static final LiteralSymbolStar STAR = new LiteralSymbolStar();
 
         private LiteralSymbolStar() {
         }

@@ -568,7 +568,7 @@ abstract class Functions {
 
     /*-------------------below custom function -------------------*/
 
-     static final Pattern FUN_NAME_PATTER = Pattern.compile("^[_a-zA-Z][_\\w]*$");
+    static final Pattern FUN_NAME_PATTER = Pattern.compile("^[_a-zA-Z][_\\w]*$");
 
     public static Expression customFunc(String name, TypeMeta returnType) {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
@@ -906,9 +906,7 @@ abstract class Functions {
         keyType = keyExpr.typeMeta();
         valueType = valueExpr.typeMeta();
         final TypeMeta returnType;
-        if (keyExpr instanceof SQLs.NullWord && valueExpr instanceof SQLs.NullWord) {
-            returnType = _NullType.INSTANCE;
-        } else if (keyType instanceof TypeMeta.Delay || valueType instanceof TypeMeta.Delay) {
+      if (keyType instanceof TypeMeta.Delay || valueType instanceof TypeMeta.Delay) {
             returnType = CriteriaSupports.delayParamMeta(keyType, valueType, function);
         } else {
             returnType = function.apply(keyType.mappingType(), valueType.mappingType());
@@ -919,9 +917,7 @@ abstract class Functions {
     static TypeMeta _returnType(ArmyExpression expression, Function<MappingType, MappingType> function) {
         final TypeMeta exprType, returnType;
         exprType = expression.typeMeta();
-        if (expression instanceof SQLs.NullWord) {
-            returnType = _NullType.INSTANCE;
-        } else if (exprType instanceof TypeMeta.Delay && !((TypeMeta.Delay) exprType).isPrepared()) {
+        if (exprType instanceof TypeMeta.Delay && !((TypeMeta.Delay) exprType).isPrepared()) {
             returnType = CriteriaSupports.delayParamMeta((TypeMeta.Delay) exprType, function);
         } else if (exprType instanceof MappingType) {
             returnType = function.apply((MappingType) exprType);
@@ -1055,7 +1051,7 @@ abstract class Functions {
                 if (o instanceof Expression) {
                     argList.add(o);
                 } else {
-                    argList.add(SQLs.literal(elementType, o));
+                    argList.add(SQLs.literal(elementType.mappingType(), o));
                 }
             }
         } else {
@@ -1065,7 +1061,7 @@ abstract class Functions {
             if (exprList instanceof Expression) {
                 argList.add(exprList);
             } else {
-                argList.add(SQLs.literal(elementType, exprList));
+                argList.add(SQLs.literal(elementType.mappingType(), exprList));
             }
         }
         return SQLFunctions.complexArgFunc(name, argList, returnType);

@@ -20,10 +20,10 @@ import java.util.List;
  *
  * @since 1.0
  */
-interface DmlContext extends _PrimaryContext {
+public  interface _DmlContext extends _PrimaryContext {
 
     @Nullable
-    DmlContext parentContext();
+    _DmlContext parentContext();
 
     @Deprecated
     default BatchStmt build(List<?> paramList) {

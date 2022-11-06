@@ -1,6 +1,5 @@
 package io.army.dialect.postgre;
 
-import io.army.dialect.ArmyParser;
 import io.army.dialect._DdlDialect;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -11,11 +10,11 @@ import java.util.List;
 
 final class PostgreDdl extends _DdlDialect {
 
-    static PostgreDdl create(ArmyParser dialect) {
+    static PostgreDdl create(PostgreParser dialect) {
         return new PostgreDdl(dialect);
     }
 
-    private PostgreDdl(ArmyParser dialect) {
+    private PostgreDdl(PostgreParser dialect) {
         super(dialect);
     }
 

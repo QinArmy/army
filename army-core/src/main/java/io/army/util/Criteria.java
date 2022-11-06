@@ -7,6 +7,8 @@ import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
 
+import static io.army.criteria.impl.SQLs.AS;
+
 public abstract class Criteria {
 
     protected Criteria() {
@@ -22,15 +24,15 @@ public abstract class Criteria {
 
             stmt = SQLs.query()
                     .select(SQLs.childGroup(child, "c", "p"))
-                    .from(child, "c") // small table first
-                    .join(parent, "p").on(child.id().equal(parent.id()))
-                    .where(child.id().equal(id))
+                    .from(child, AS, "c") // small table first
+                    .join(parent,AS, "p").on(child.id().equal(parent.id()))
+                    .where(child.id().equal(SQLs::param,id))
                     .asQuery();
         } else {
             stmt = SQLs.query()
                     .select(SQLs.group(table, "t"))
-                    .from(table, "t")
-                    .where(table.id().equal(id))
+                    .from(table,AS, "t")
+                    .where(table.id().equal(SQLs::param,id))
                     .asQuery();
         }
         return stmt;
@@ -44,17 +46,17 @@ public abstract class Criteria {
             final ParentTableMeta<?> parent = child.parentMeta();
             stmt = SQLs.query()
                     .select(SQLs.childGroup(child, "c", "p"))
-                    .from(child, "c")
-                    .join(parent, "p").on(child.id().equal(parent.id()))
-                    .where(field.equal(value))
-                    .limit(2)
+                    .from(child,AS, "c")
+                    .join(parent,AS, "p").on(child.id().equal(parent.id()))
+                    .where(field.equal(SQLs::param,value))
+                    .limit(SQLs::param,2)
                     .asQuery();
         } else {
             stmt = SQLs.query()
                     .select(SQLs.group(table, "t"))
-                    .from(table, "t")
-                    .where(field.equal(value))
-                    .limit(2)
+                    .from(table, AS,"t")
+                    .where(field.equal(SQLs::param,value))
+                    .limit(SQLs::param,2)
                     .asQuery();
         }
         return stmt;

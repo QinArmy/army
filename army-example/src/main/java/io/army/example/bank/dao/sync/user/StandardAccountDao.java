@@ -12,6 +12,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Map;
 
+import static io.army.criteria.impl.SQLs.AS;
+
 @Repository("bankSyncStandardAccountDao")
 @Profile({BaseService.SYNC, BeanUtils.STANDARD})
 public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDao {
@@ -36,11 +38,11 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
                     consumer.accept(RegisterRecord_.completionTime);
 
                 })
-                .from(RegisterRecord_.T, "r")
-                .join(BankUser_.T, "pu").on(RegisterRecord_.partnerId.equal(SQLs.field("pu", BankUser_.id)))
-                .join(BankUser_.T, "u").on(RegisterRecord_.userId.equal(SQLs.field("u", BankUser_.id)))
-                .join(BankAccount_.T, "a").on(BankAccount_.userId.equal(SQLs.field("u", BankUser_.id)))
-                .where(RegisterRecord_.requestNo.equal(requestNo))
+                .from(RegisterRecord_.T, AS,"r")
+                .join(BankUser_.T,AS, "pu").on(RegisterRecord_.partnerId.equal(SQLs.field("pu", BankUser_.id)))
+                .join(BankUser_.T, AS,"u").on(RegisterRecord_.userId.equal(SQLs.field("u", BankUser_.id)))
+                .join(BankAccount_.T,AS, "a").on(BankAccount_.userId.equal(SQLs.field("u", BankUser_.id)))
+                .where(RegisterRecord_.requestNo::equal,SQLs::param,requestNo)
                 .and(RegisterRecord_.id.equal(SQLs.field("u", BankUser_.registerRecordId)))
                 .and(RegisterRecord_.id.equal(BankAccount_.registerRecordId))
                 .asQuery();
@@ -62,16 +64,16 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
 
                     consumer.accept(BankAccount_.accountType);
                 })
-                .from(RegisterRecord_.T, "r")
-                .join(BankUser_.T, "u").on(BankUser_.id.equal(RegisterRecord_.userId))
-                .join(BankAccount_.T, "a").on(BankUser_.id.equal(BankAccount_.userId))
-                .join(Certificate_.T, "c").on(Certificate_.id.equal(BankUser_.certificateId))
-                .where(RegisterRecord_.requestNo.equal(requestNo))
-                .and(Certificate_.certificateNo.equal(certificateNo))
-                .and(Certificate_.certificateType.equalLiteral(certificateType))
-                .and(BankUser_.userType.equalLiteral(BankUserType.PARTNER))
-                .and(BankUser_.registerRecordId.equal(RegisterRecord_.id))
-                .and(BankAccount_.registerRecordId.equal(RegisterRecord_.id))
+                .from(RegisterRecord_.T,AS, "r")
+                .join(BankUser_.T,AS, "u").on(BankUser_.id.equal(RegisterRecord_.userId))
+                .join(BankAccount_.T, AS,"a").on(BankUser_.id.equal(BankAccount_.userId))
+                .join(Certificate_.T, AS,"c").on(Certificate_.id.equal(BankUser_.certificateId))
+                .where(RegisterRecord_.requestNo::equal,SQLs::param,requestNo)
+                .and(Certificate_.certificateNo::equal,SQLs::param,certificateNo)
+                .and(Certificate_.certificateType::equal,SQLs::literal,certificateType)
+                .and(BankUser_.userType::equal,SQLs::literal,BankUserType.PARTNER)
+                .and(BankUser_.registerRecordId::equal,RegisterRecord_.id)
+                .and(BankAccount_.registerRecordId::equal,RegisterRecord_.id)
                 .asQuery();
         return this.sessionContext.currentSession().queryOneAsMap(stmt);
     }

@@ -32,7 +32,7 @@ final class ReactiveLocalSessionFactory extends _AbstractSessionFactory implemen
     }
 
     @Override
-    public boolean supportSavePoints() {
+    public boolean isSupportSavePoints() {
         return false;
     }
 

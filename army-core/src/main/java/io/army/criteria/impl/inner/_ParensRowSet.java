@@ -1,7 +1,7 @@
-package io.army.dialect;
+package io.army.criteria.impl.inner;
 
 import io.army.criteria.RowSet;
-import io.army.criteria.impl.inner._PartRowSet;
+
 
 public interface _ParensRowSet extends _PartRowSet {
 

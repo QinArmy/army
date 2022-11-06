@@ -14,7 +14,17 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 
-abstract class DmlStmtContext extends StatementContext implements NarrowDmlContext, DmlStmtParams {
+/**
+ * <p>
+ *     This class is base class of below:
+ *     <ul>
+ *         <li>{@link SingleTableDmlContext}</li>
+ *         <li>{@link MultiTableDmlContext}</li>
+ *     </ul>
+ * </p>
+ * @since 1.0
+ */
+abstract class NarrowDmlStmtContext extends StatementContext implements NarrowDmlContext, DmlStmtParams {
 
 
     final boolean versionPredicate;
@@ -30,7 +40,7 @@ abstract class DmlStmtContext extends StatementContext implements NarrowDmlConte
     private boolean existsNamedValued;
 
 
-    DmlStmtContext(@Nullable StatementContext outerContext, _DmlStatement stmt
+    NarrowDmlStmtContext(@Nullable StatementContext outerContext, _DmlStatement stmt
             , ArmyParser parser, Visible visible) {
         super(outerContext, parser, visible);
 

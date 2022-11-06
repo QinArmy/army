@@ -6,14 +6,14 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.util._Exceptions;
 
-abstract class SingleDmlContext extends SingleDmlStmtContext {
+abstract class SingleDmlContext extends SingleTableDmlContext {
 
 
     SingleDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
     }
 
-    SingleDmlContext(_SingleDml stmt, SingleDmlStmtContext parentContext) {
+    SingleDmlContext(_SingleDml stmt, SingleTableDmlContext parentContext) {
         super(stmt, parentContext);
     }
 

@@ -1,13 +1,9 @@
 package io.army.dialect.postgre;
 
 import io.army.criteria.impl.inner._Expression;
-import io.army.dialect.DialectEnv;
-import io.army.dialect._ArmyDialectParser;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
+import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.meta.DatabaseObject;
-import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.tx.Isolation;
 
@@ -33,7 +29,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
 
     @Override
-    protected final boolean supportTableOnly() {
+    protected final boolean isSupportTableOnly() {
         //Postgre support 'ONLY' key word before table name.
         return true;
     }
@@ -60,10 +56,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
 
-    @Override
-    public boolean supportQueryUpdate() {
-        return super.supportQueryUpdate();
-    }
+
 
     @Override
     public String safeObjectName(DatabaseObject object) {
@@ -75,10 +68,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
         return builder;
     }
 
-    @Override
-    public boolean setClauseSupportRow() {
-        return super.setClauseSupportRow();
-    }
+
 
     @Override
     protected final void standardLimitClause(final @Nullable _Expression offset, final @Nullable _Expression rowCount
@@ -96,52 +86,52 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
-    public boolean supportInsertReturning() {
-        return false;
-    }
-
-    @Override
-    public boolean supportZone() {
-        return false;
-    }
-
-    @Override
-    public boolean tableAliasAfterAs() {
-        return false;
-    }
-
-
-    @Override
-    public boolean hasRowKeywords() {
-        return false;
-    }
-
-
-    @Override
-    public boolean supportSavePoint() {
-        return false;
-    }
-
-    @Override
-    public boolean setClauseTableAlias() {
-        return false;
-    }
-
-
-    @Override
-    public String defaultFuncName() {
+    protected Set<String> createKeyWordSet() {
         return null;
     }
 
     @Override
-    public boolean supportMultiUpdate() {
+    protected String defaultFuncName() {
+        return null;
+    }
+
+    @Override
+    protected boolean isSupportZone() {
         return false;
     }
 
     @Override
-    protected Set<String> createKeyWordSet(ServerMeta meta) {
+    protected boolean isSetClauseTableAlias() {
+        return false;
+    }
+
+    @Override
+    protected boolean isTableAliasAfterAs() {
+        return false;
+    }
+
+    @Override
+    protected _ChildUpdateMode childUpdateMode() {
         return null;
     }
 
+    @Override
+    protected boolean isSupportSingleUpdateAlias() {
+        return false;
+    }
 
+    @Override
+    protected boolean isSupportSingleDeleteAlias() {
+        return false;
+    }
+
+    @Override
+    protected boolean isSupportUpdateRow() {
+        return false;
+    }
+
+    @Override
+    protected boolean isSupportUpdateDerivedField() {
+        return false;
+    }
 }

@@ -38,7 +38,10 @@ final class SyncLocalSessionFactory extends _AbstractSessionFactory implements L
 
     private final SessionContext sessionContext;
 
+     private final boolean supportSavePoints;
+
     private boolean closed;
+
 
 
     SyncLocalSessionFactory(LocalSessionFactoryBuilder builder) throws SessionFactoryException {
@@ -53,6 +56,8 @@ final class SyncLocalSessionFactory extends _AbstractSessionFactory implements L
         this.sessionContext = getSessionContext();
         //this.sessionCacheFactory = SessionCacheFactory.build(this);
         this.sessionCacheFactory = _SessionCacheFactory.create(this);
+        this.supportSavePoints = this.mappingEnv.serverMeta().isSupportSavePoints()
+                && this.executorFactory.supportSavePoints();
     }
 
 
@@ -85,8 +90,8 @@ final class SyncLocalSessionFactory extends _AbstractSessionFactory implements L
     }
 
     @Override
-    public boolean supportSavePoints() {
-        return this.dialectParser.supportSavePoint() && this.executorFactory.supportSavePoints();
+    public boolean isSupportSavePoints() {
+        return this.supportSavePoints;
     }
 
     @Override

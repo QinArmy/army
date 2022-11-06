@@ -17,7 +17,6 @@ import io.army.sqltype.MySQLTypes;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleParam;
 import io.army.stmt.Stmt;
-import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -25,9 +24,6 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 abstract class MySQLFunctions extends SQLFunctions {
@@ -158,8 +154,8 @@ abstract class MySQLFunctions extends SQLFunctions {
     }
 
 
-    private static abstract class MySQLWindowFunc extends WindowFunc<Window._SimpleLeftParenClause<Void, Expression>>
-            implements Window._SimpleLeftParenClause<Void, Expression>, MySQLFuncSyntax._OverSpec {
+    private static abstract class MySQLWindowFunc extends WindowFunc<Window._SimpleLeftParenClause< Expression>>
+            implements Window._SimpleLeftParenClause< Expression>, MySQLFuncSyntax._OverSpec {
 
         private MySQLWindowFunc(String name, TypeMeta returnType) {
             super(name, returnType);
@@ -167,40 +163,29 @@ abstract class MySQLFunctions extends SQLFunctions {
 
 
         @Override
-        public final Window._SimplePartitionBySpec<Void, Expression> leftParen() {
+        public final Window._SimplePartitionBySpec< Expression> leftParen() {
             return WindowClause.anonymousWindow(this.context, this::windowEnd)
                     .leftParen();
         }
 
         @Override
-        public final Window._SimplePartitionBySpec<Void, Expression> leftParen(String existingWindowName) {
+        public final Window._SimplePartitionBySpec< Expression> leftParen(String existingWindowName) {
             return WindowClause.anonymousWindow(this.context, this::windowEnd)
                     .leftParen(existingWindowName);
         }
 
         @Override
-        public final Window._SimplePartitionBySpec<Void, Expression> leftParen(Supplier<String> supplier) {
+        public final Window._SimplePartitionBySpec< Expression> leftParen(Supplier<String> supplier) {
             return WindowClause.anonymousWindow(this.context, this::windowEnd)
                     .leftParen(supplier);
         }
 
         @Override
-        public final Window._SimplePartitionBySpec<Void, Expression> leftParen(Function<Void, String> function) {
-            return WindowClause.anonymousWindow(this.context, this::windowEnd)
-                    .leftParen(function);
-        }
-
-        @Override
-        public final Window._SimplePartitionBySpec<Void, Expression> leftParenIf(Supplier<String> supplier) {
+        public final Window._SimplePartitionBySpec< Expression> leftParenIf(Supplier<String> supplier) {
             return WindowClause.anonymousWindow(this.context, this::windowEnd)
                     .leftParenIf(supplier);
         }
 
-        @Override
-        public final Window._SimplePartitionBySpec<Void, Expression> leftParenIf(Function<Void, String> function) {
-            return WindowClause.anonymousWindow(this.context, this::windowEnd)
-                    .leftParenIf(function);
-        }
 
 
     }//MySQLWindowFunc
@@ -470,52 +455,34 @@ abstract class MySQLFunctions extends SQLFunctions {
         }
 
         @Override
-        public MySQLClause._GroupConcatSeparatorClause orderBy(SortItem sortItem) {
-            this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
-            return this;
+        public MySQLClause._GroupConcatSeparatorClause orderBy(Expression exp) {
+            //TODO
+            return null;
         }
 
         @Override
-        public MySQLClause._GroupConcatSeparatorClause orderBy(SortItem sortItem1, SortItem sortItem2) {
-            this.orderByList = ArrayUtils.asUnmodifiableList(
-                    (ArmySortItem) sortItem1,
-                    (ArmySortItem) sortItem2
-            );
-            return this;
+        public MySQLClause._GroupConcatSeparatorClause orderBy(Expression exp, Statement.AscDesc ascDesc) {
+            return null;
         }
 
         @Override
-        public MySQLClause._GroupConcatSeparatorClause orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
-            this.orderByList = ArrayUtils.asUnmodifiableList(
-                    (ArmySortItem) sortItem1,
-                    (ArmySortItem) sortItem2,
-                    (ArmySortItem) sortItem3
-            );
-            return this;
+        public MySQLClause._GroupConcatSeparatorClause orderBy(Expression exp1, Expression exp2) {
+            return null;
         }
 
         @Override
-        public MySQLClause._GroupConcatSeparatorClause orderBy(Consumer<Consumer<SortItem>> consumer) {
-            return CriteriaSupports.<Void, MySQLClause._GroupConcatSeparatorClause>orderByClause(this.criteriaContext, this::orderByEnd)
-                    .orderBy(consumer);
+        public MySQLClause._GroupConcatSeparatorClause orderBy(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2) {
+            return null;
         }
 
         @Override
-        public MySQLClause._GroupConcatSeparatorClause orderBy(BiConsumer<Void, Consumer<SortItem>> consumer) {
-            return CriteriaSupports.<Void, MySQLClause._GroupConcatSeparatorClause>voidOrderByClause(this.criteriaContext, this::orderByEnd)
-                    .orderBy(consumer);
+        public MySQLClause._GroupConcatSeparatorClause orderBy(Expression exp1, Expression exp2, Statement.AscDesc ascDesc2) {
+            return null;
         }
 
         @Override
-        public MySQLClause._GroupConcatSeparatorClause ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
-            return CriteriaSupports.<Void, MySQLClause._GroupConcatSeparatorClause>orderByClause(this.criteriaContext, this::orderByEnd)
-                    .ifOrderBy(consumer);
-        }
-
-        @Override
-        public MySQLClause._GroupConcatSeparatorClause ifOrderBy(BiConsumer<Void, Consumer<SortItem>> consumer) {
-            return CriteriaSupports.<Void, MySQLClause._GroupConcatSeparatorClause>voidOrderByClause(this.criteriaContext, this::orderByEnd)
-                    .ifOrderBy(consumer);
+        public MySQLClause._GroupConcatSeparatorClause orderBy(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2, Statement.AscDesc ascDesc2) {
+            return null;
         }
 
         @Override
@@ -666,8 +633,12 @@ abstract class MySQLFunctions extends SQLFunctions {
                 stmt = context.parser().update((Update) statement, this.visible);
             } else if (statement instanceof Delete) {
                 stmt = context.parser().delete((Delete) statement, this.visible);
-            } else if (statement instanceof DialectStatement) {
-                stmt = context.parser().dialectStatement((DialectStatement) statement, this.visible);
+            } else if(statement instanceof Values){
+                stmt = context.parser().values((Values) statement, this.visible);
+            } else if (statement instanceof DqlStatement) {
+                stmt = context.parser().dialectDql((DqlStatement) statement, this.visible);
+            } else if (statement instanceof DmlStatement) {
+                stmt = context.parser().dialectDml((DmlStatement) statement, this.visible);
             } else {
                 //no bug,never here
                 throw new IllegalArgumentException();

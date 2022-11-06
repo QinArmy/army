@@ -7,6 +7,7 @@ import io.army.criteria.standard.StandardDelete;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
+import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -39,13 +40,15 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
     private String tableAlias;
 
     StandardDeletes() {
-        super(CriteriaContexts.primarySingleDmlContext());
+        super(CriteriaContexts.primarySingleDmlContext(null));
     }
 
 
     @SuppressWarnings("unchecked")
     @Override
-    public final DR deleteFrom(final @Nullable TableMeta<?> table, final @Nullable String tableAlias) {
+    public final DR deleteFrom(final @Nullable SingleTableMeta<?> table,SQLs.WordAs as
+            , final @Nullable String tableAlias) {
+        assert  as == SQLs.AS;
         if (this.deleteTable != null) {
             throw ContextStack.castCriteriaApi(this.context);
         } else if (table == null) {

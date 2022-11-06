@@ -15,11 +15,11 @@ public abstract class _DdlDialect implements DdlDialect {
 
     protected final List<String> errorMsgList = new ArrayList<>();
 
-    protected final ArmyParser dialect;
+    protected final _ArmyDialectParser dialect;
 
     protected final ServerMeta serverMeta;
 
-    protected _DdlDialect(ArmyParser dialect) {
+    protected _DdlDialect(_ArmyDialectParser dialect) {
         this.dialect = dialect;
         this.serverMeta = dialect.serverMeta;
     }

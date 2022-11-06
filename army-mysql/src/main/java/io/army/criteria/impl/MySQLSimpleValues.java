@@ -108,7 +108,7 @@ abstract class MySQLSimpleValues<I extends Item>
             UnionType.standardUnionType(this.context, unionType);
 
             final Function<RowSet, I> unionFunc;
-            unionFunc = rowSet -> this.function.apply(new UnionValues(MySQLDialect.MySQL80, this, unionType, rowSet));
+            unionFunc = rowSet -> this.function.apply(new UnionValues( this, unionType, rowSet));
             return new ComplexValues<>(this.context.getOuterContext(), unionFunc);
         }
 
@@ -230,7 +230,7 @@ abstract class MySQLSimpleValues<I extends Item>
             UnionType.standardUnionType(this.context, unionType);
 
             final Function<RowSet, I> unionFunc;
-            unionFunc = rowSet -> this.function.apply(new UnionValues(MySQLDialect.MySQL80, this, unionType, rowSet));
+            unionFunc = rowSet -> this.function.apply(new UnionValues( this, unionType, rowSet));
             return new ComplexValues<>(this.context.getOuterContext(), unionFunc);
         }
 

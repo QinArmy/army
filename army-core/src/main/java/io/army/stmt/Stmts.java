@@ -50,7 +50,7 @@ public abstract class Stmts {
     }
 
 
-    public static io.army.stmt.SimpleStmt queryStmt(_StmtParams params) {
+    public static SimpleStmt queryStmt(_StmtParams params) {
         return new QueryStmt(params);
     }
 

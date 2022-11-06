@@ -15,12 +15,12 @@ public abstract class _SQLConsultant {
     }
 
 
-    public static void assertStandardQuery(Query query) {
-        if (!(query instanceof StandardQueries) && !(query instanceof StandardUnionQueries)) {
-            String m = String.format("%s isn't instance of %s or %s"
-                    , query.getClass().getName(), StandardQueries.class.getName()
-                    , StandardUnionQueries.class.getName());
-            throw new CriteriaException(m);
+    public static void assertStandardQuery(final Query query) {
+        if (!(query instanceof StandardQueries
+                || query instanceof StandardQueries.StandardBracketQueries
+                || query instanceof SimpleQueries.UnionSelect
+                || query instanceof SimpleQueries.UnionSubQuery)) {
+            throw nonArmyStatement(query);
         }
     }
 

@@ -85,6 +85,10 @@ public abstract class SQLs extends StandardSyntax {
         return StandardDeletes.singleDelete(SQLs::_identity);
     }
 
+    public static StandardDelete._SimpleDomainDeleteClause domainDelete(){
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * <p>
      * Batch domain delete
@@ -94,17 +98,22 @@ public abstract class SQLs extends StandardSyntax {
         return StandardDeletes.batchSingleDelete(SQLs::_identity);
     }
 
+    public static StandardDelete._BatchDomainDeleteClause batchDomainDelete(){
+        throw new UnsupportedOperationException();
+    }
 
-    public static StandardQuery._StandardSelectClause<Select> query() {
+
+
+    public static StandardQuery._SelectSpec<Select> query() {
         return StandardQueries.primaryQuery(SQLs::_identity);
     }
 
-    public static StandardQuery._StandardSelectClause<SubQuery> subQuery() {
+    public static StandardQuery._SelectSpec<SubQuery> subQuery() {
         return StandardQueries.subQuery(ContextStack.peek(), SQLs::_identity);
     }
 
 
-    public static StandardQuery._StandardSelectClause<Expression> scalarSubQuery() {
+    public static StandardQuery._SelectSpec<Expression> scalarSubQuery() {
         return StandardQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
     }
 
@@ -315,7 +324,7 @@ public abstract class SQLs extends StandardSyntax {
      * @param type  non-nul
      * @param value nullable
      * @see #param(MappingType, Object)
-     * @see #param(TypeInfer, Object)
+     * @see #param(Expression, Object)
      * @see #literal(MappingType, Object)
      * @see #literal(TypeInfer, Object)
      */
@@ -330,11 +339,11 @@ public abstract class SQLs extends StandardSyntax {
      *
      * @param value nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will invoked.
      * @see #param(MappingType, Object)
-     * @see #param(TypeInfer, Object)
+     * @see #param(Expression, Object)
      * @see #literal(MappingType, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static Expression param(final TypeInfer typeExp, final @Nullable Object value) {
+    public static Expression param(final Expression typeExp, final @Nullable Object value) {
         final Expression result;
         if (typeExp instanceof TableField) {  //for field codec
             if (value instanceof Supplier) {
@@ -619,9 +628,9 @@ public abstract class SQLs extends StandardSyntax {
      * @param type  non-null
      * @param value nullable
      * @see #param(MappingType, Object)
-     * @see #param(TypeInfer, Object)
+     * @see #param(Expression, Object)
      * @see #literal(MappingType, Object)
-     * @see #literal(TypeInfer, Object)
+     * @see #literal(Expression, Object)
      */
     public static Expression literal(final MappingType type, final @Nullable Object value) {
         return LiteralExpression.single(type, value);
@@ -635,11 +644,11 @@ public abstract class SQLs extends StandardSyntax {
      * @param typeExp non-null
      * @param value   nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will invoked.
      * @see #param(MappingType, Object)
-     * @see #param(TypeInfer, Object)
+     * @see #param(Expression, Object)
      * @see #literal(MappingType, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static Expression literal(final TypeInfer typeExp, final @Nullable Object value) {
+    public static Expression literal(final Expression typeExp, final @Nullable Object value) {
         final Expression result;
         if (typeExp instanceof TableField) {
             if (value instanceof Supplier) {
@@ -1162,7 +1171,7 @@ public abstract class SQLs extends StandardSyntax {
             //2. append operator
             if (this instanceof OperatorItemPair) {
                 ((OperatorItemPair) this).operator
-                        .appendOperator(context.parser().dialectMode(), field, context);
+                        .appendOperator(context.parser().dialect(), field, context);
             } else {
                 context.sqlBuilder()
                         .append(_Constant.SPACE_EQUAL);

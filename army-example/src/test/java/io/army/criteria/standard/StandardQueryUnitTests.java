@@ -1,6 +1,9 @@
 package io.army.criteria.standard;
 
-import io.army.criteria.*;
+import io.army.criteria.Insert;
+import io.army.criteria.PrimaryStatement;
+import io.army.criteria.Select;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
@@ -33,9 +36,9 @@ public class StandardQueryUnitTests {
                 .from(User_.T, SQLs.AS, "u")
                 .groupBy(User_.userType)
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))// group by is empty ,so having clause no action
-                .orderBy(User_.id.desc())
+                .orderBy(User_.id,SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
-                .lock(LockMode0.READ)
+                .forUpdate()
                 .asQuery();
 
         printStmt(stmt);
@@ -54,9 +57,9 @@ public class StandardQueryUnitTests {
                 //.and(User_.visible.equal(false))
                 .groupBy(Person_.birthday)
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
-                .orderBy(Person_.id.desc())
+                .orderBy(Person_.id,SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
-                .lock(LockMode0.WRITE)
+                .forUpdate()
                 .asQuery();
 
         printStmt(stmt);
@@ -67,16 +70,16 @@ public class StandardQueryUnitTests {
     public void unionSelect() {
         final Select stmt;
 
-        stmt = SQLs.parenQuery()
+        stmt = SQLs.query()
                 .leftParen()
                 .select(User_.id)
                 .from(User_.T, SQLs.AS, "p")
-                .where(User_.id::equal, SQLs::literal, 1)
+                .where(User_.id::equal, SQLs::literal, "1")
                 .and(User_.nickName::equal, SQLs::param, "脉兽秀秀")
                 //.and(User_.visible.equal(false))
                 .groupBy(User_.userType)
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
-                .orderBy(User_.id.desc())
+                .orderBy(User_.id,SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
                 .asQuery()
 
@@ -88,12 +91,12 @@ public class StandardQueryUnitTests {
 
                 .select(User_.id)
                 .from(User_.T, SQLs.AS, "p")
-                .where(User_.id::equal, SQLs::literal, 2)
+                .where(User_.id::equal, SQLs::literal, "2")
                 .and(User_.nickName::equal, SQLs::param, "远浪舰长")
                 //.and(User_.visible.equal(false))
                 .groupBy(User_.userType)
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
-                .orderBy(User_.id.desc())
+                .orderBy(User_.id,SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
                 .asQuery()
 
@@ -108,7 +111,7 @@ public class StandardQueryUnitTests {
                 //.and(User_.visible.equal(false))
                 .groupBy(User_.userType)
                 .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
-                .orderBy(User_.id.desc())
+                .orderBy(User_.id,SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
 
 
@@ -152,7 +155,7 @@ public class StandardQueryUnitTests {
                         .limit(SQLs::literal, criteria::get, "offset", "rowCount")
                         .asQuery())
                 .as("us")
-                .where(SQLs.ref("us", "one")::equal, SQLs::param, 1)
+                .where(SQLs.ref("us", "one")::equal, SQLs::param, "1")
                 .asQuery();
 
         printStmt(stmt);

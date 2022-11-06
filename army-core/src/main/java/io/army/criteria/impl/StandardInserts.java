@@ -1,10 +1,13 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.Insert;
+import io.army.criteria.Statement;
+import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.standard.StandardInsert;
 import io.army.criteria.standard.StandardQuery;
+import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.*;
 import io.army.util._CollectionUtils;
@@ -128,7 +131,7 @@ abstract class StandardInserts extends InsertSupport {
     }//ChildInsertIntoClause
 
 
-    private static final class StandardStaticValuesClause<T, I extends DmlInsert>
+    private static final class StandardStaticValuesClause<T, I extends Statement.DmlInsert>
             extends InsertSupport.StaticColumnValuePairClause<
             T,
             StandardInsert._ValueStaticLeftParenSpec<T, I>>
@@ -151,7 +154,7 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardStaticValuesClause
 
 
-    private static final class StandardComplexValuesClause<T, I extends DmlInsert>
+    private static final class StandardComplexValuesClause<T, I extends Statement.DmlInsert>
             extends InsertSupport.ComplexInsertValuesClause<
             T,
             StandardInsert._ComplexColumnDefaultSpec<T, I>,
@@ -196,28 +199,24 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardComplexValuesClause
 
 
-    private static abstract class StandardValuesSyntaxStatement<I extends DmlInsert>
+   private    static abstract class StandardValuesSyntaxStatement<I extends Statement.DmlInsert>
             extends ValueSyntaxInsertStatement<I>
-            implements StandardInsert {
+            implements StandardInsert,Insert {
 
         private StandardValuesSyntaxStatement(StandardComplexValuesClause<?, ?> clause) {
             super(clause);
         }
 
         @Override
-        public final String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
+        final Dialect statementDialect() {
+            return MySQLDialect.MySQL57;
         }
+
 
     }//StandardValuesSyntaxStatement
 
-    static abstract class DomainsInsertStatement<I extends DmlInsert> extends StandardValuesSyntaxStatement<I>
+     static abstract class DomainsInsertStatement<I extends Statement.DmlInsert>
+             extends StandardValuesSyntaxStatement<I>
             implements _Insert._DomainInsert {
 
         private DomainsInsertStatement(StandardComplexValuesClause<?, ?> clause) {
@@ -310,7 +309,7 @@ abstract class StandardInserts extends InsertSupport {
 
     }//PrimaryParentDomainInsertStatement
 
-    static abstract class ValueInsertStatement<I extends DmlInsert> extends StandardValuesSyntaxStatement<I>
+    static abstract class ValueInsertStatement<I extends Statement.DmlInsert> extends StandardValuesSyntaxStatement<I>
             implements _Insert._ValuesInsert {
 
         final List<Map<FieldMeta<?>, _Expression>> rowPairList;
@@ -388,22 +387,17 @@ abstract class StandardInserts extends InsertSupport {
     }//PrimaryParentValueInsertStatement
 
 
-    static abstract class QueryInsertStatement<I extends DmlInsert>
-            extends InsertSupport.QuerySyntaxInsertStatement<I> {
+    static abstract class QueryInsertStatement<I extends Statement.DmlInsert>
+            extends InsertSupport.QuerySyntaxInsertStatement<I>
+            implements Insert{
 
         private QueryInsertStatement(final StandardComplexValuesClause<?, ?> clause) {
             super(clause);
         }
 
         @Override
-        public final String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
+        final Dialect statementDialect() {
+            return MySQLDialect.MySQL57;
         }
 
 

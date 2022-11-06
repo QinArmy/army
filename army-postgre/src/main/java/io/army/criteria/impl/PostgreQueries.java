@@ -705,7 +705,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         @Override
         _QueryWithComplexSpec<I> createQueryUnion(UnionType unionType) {
             final Function<RowSet, I> unionFunc;
-            unionFunc = right -> this.function.apply(new UnionSelect(PostgreDialect.POSTGRE15, this, unionType, right));
+            unionFunc = right -> this.function.apply(new UnionSelect( this, unionType, right));
             UnionType.exceptType(this.context, unionType);
             return new ComplexSelect<>(this.context.getOuterContext(), unionFunc);
         }
@@ -899,7 +899,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         PostgreQuery._QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
             UnionType.exceptType(this.context, unionType);
             final Function<RowSet, I> unionFunc;
-            unionFunc = right -> this.function.apply(new UnionSelect(PostgreDialect.POSTGRE15, this, unionType, right));
+            unionFunc = right -> this.function.apply(new UnionSelect( this, unionType, right));
             return new ComplexSelect<>(this.context.getOuterContext(), unionFunc);
         }
 

@@ -267,6 +267,11 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         }
 
         @Override
+        public final void clear() {
+            //no-op
+        }
+
+        @Override
         public final int selectionSize() {
             return ((_RowSet) this.left).selectionSize();
         }
@@ -301,7 +306,13 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
             return s;
         }
 
-        abstract Dialect statementDialect();
+        private Dialect statementDialect(){
+              RowSet left = this.left;
+             while ( !(left instanceof CriteriaSupports.StatementMockSupport)){
+                 left = ((UnionRowSet) left).left;
+             }
+             return ((CriteriaSupports.StatementMockSupport) left).statementDialect();
+        }
 
         private Stmt parseStatement(final DialectParser parser, final Visible visible) {
             if (!(this instanceof PrimaryStatement)) {
@@ -310,8 +321,10 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
             final Stmt stmt;
             if (this instanceof Select) {
                 stmt = parser.select((Select) this, visible);
-            } else if (this instanceof DialectStatement) {
-                stmt = parser.dialectStatement((DialectStatement) this, visible);
+            } else if (this instanceof Values) {
+                stmt = parser.values((Values) this, visible);
+            } else if (this instanceof DqlStatement) {
+                stmt = parser.dialectDql((DqlStatement) this, visible);
             } else {
                 throw new IllegalStateException("unknown statement");
             }
@@ -334,10 +347,6 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
             return ((DerivedTable) this.left).selection(derivedAlias);
         }
 
-        @Override
-        final Dialect statementDialect() {
-            throw _Exceptions.castCriteriaApi();
-        }
 
 
     }//UnionSubRowSet

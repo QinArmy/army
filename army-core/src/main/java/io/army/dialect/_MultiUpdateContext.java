@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.criteria.DataField;
 import io.army.meta.SingleTableMeta;
 
-public interface _MultiUpdateContext extends _UpdateContext, _MultiTableContext, _SetClauseContext {
+public interface _MultiUpdateContext extends _UpdateContext, _MultiTableStmtContext, _SetClauseContext {
 
 
     /**

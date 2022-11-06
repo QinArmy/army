@@ -10,7 +10,7 @@ package io.army.dialect;
  *     </ul>
  * </p>
  */
-public interface _UpdateContext extends _SqlContext, NarrowDmlContext, DmlContext.ConditionFieldsSpec
+public interface _UpdateContext extends _SqlContext, NarrowDmlContext, _DmlContext.ConditionFieldsSpec
         , _SetClauseContext {
 
 

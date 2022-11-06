@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Values;
-import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
@@ -572,17 +571,10 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
 
     static final class UnionValues extends UnionRowSet implements Values {
 
-        private final Dialect dialect;
-
-        UnionValues(Dialect dialect, RowSet left, UnionType unionType, RowSet right) {
+        UnionValues( RowSet left, UnionType unionType, RowSet right) {
             super(left, unionType, right);
-            this.dialect = dialect;
         }
 
-        @Override
-        Dialect statementDialect() {
-            return this.dialect;
-        }
 
     }//UnionSelect
 

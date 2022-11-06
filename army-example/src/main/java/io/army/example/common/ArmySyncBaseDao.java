@@ -12,6 +12,8 @@ import io.army.sync.SyncSession;
 import java.util.List;
 import java.util.Map;
 
+import static io.army.criteria.impl.SQLs.AS;
+
 public abstract class ArmySyncBaseDao implements SyncBaseDao {
 
     protected SessionContext sessionContext;
@@ -77,15 +79,15 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
             final ParentTableMeta<?> parent = child.parentMeta();
             stmt = SQLs.query()
                     .select(SQLs.childGroup(child, "c", "p"))
-                    .from(table, "c")
-                    .join(parent, "p").on(table.id().equal(parent.id()))
-                    .where(table.id().equalLiteral(id))
+                    .from(table, AS,"c")
+                    .join(parent, AS,"p").on(table.id().equal(parent.id()))
+                    .where(table.id()::equal,SQLs::param,id)
                     .asQuery();
         } else {
             stmt = SQLs.query()
                     .select(SQLs.group(table, "t"))
-                    .from(table, "t")
-                    .where(table.id().equalLiteral(id))
+                    .from(table, AS,"t")
+                    .where(table.id()::equal,SQLs::param,id)
                     .asQuery();
         }
         return stmt;

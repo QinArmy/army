@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-public interface Insert extends DmlStatement, DmlInsert {
+public interface Insert extends DmlStatement, Statement.DmlInsert {
 
 
     /**

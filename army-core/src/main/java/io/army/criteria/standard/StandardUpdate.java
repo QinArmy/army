@@ -1,10 +1,7 @@
 package io.army.criteria.standard;
 
 import io.army.criteria.*;
-import io.army.meta.ComplexTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.SingleTableMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 
 public interface StandardUpdate extends StandardStatement {
 
@@ -43,6 +40,14 @@ public interface StandardUpdate extends StandardStatement {
     interface _DomainUpdateClause {
 
         _StandardSetClause<Update, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
+
+        default <T>  _StandardSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias){
+            throw new UnsupportedOperationException();
+        }
+
+        default <T>  _StandardSetClause<Update, FieldMeta<? super T>> update(ChildTableMeta<T> table, String tableAlias){
+            throw new UnsupportedOperationException();
+        }
 
     }
 

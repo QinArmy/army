@@ -12,7 +12,7 @@ package io.army.dialect;
  *
  * @since 1.0
  */
-interface NarrowDmlContext extends DmlContext {
+interface NarrowDmlContext extends _DmlContext {
 
    /**
     * <p>

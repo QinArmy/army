@@ -1,7 +1,6 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.MySQLSyntax;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.mysql.MySQLDialect;
@@ -9,7 +8,6 @@ import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.*;
 import io.army.example.common.Criteria;
 import io.army.example.pill.domain.User_;
-import io.army.meta.FieldMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -19,6 +17,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static io.army.criteria.impl.SQLs.AS;
 
 public class MySQLCriteriaUnitTests {
 
@@ -31,12 +31,12 @@ public class MySQLCriteriaUnitTests {
 
         final Update stmt;
         stmt = MySQLs.singleUpdate()
-                .update(ChinaRegion_.T, "t")
+                .update(ChinaRegion_.T, AS, "t")
                 .set(ChinaRegion_.name, SQLs::param, "五指礁")
                 .where(ChinaRegion_.name::equal, SQLs::param, "")
                 .and(ChinaRegion_.regionType.equal(SQLs::literal, RegionType.CITY).or(ChinaRegion_.regionGdp.greatEqual(SQLs::literal, "3333")))
-                .orderBy(ChinaRegion_.id.desc())
-                .limit(criteria::getRowCount)
+                .orderBy(ChinaRegion_.id)
+                .limit(SQLs::param, criteria::getRowCount)
                 .asUpdate();
 
         printStmt(stmt);
@@ -55,9 +55,10 @@ public class MySQLCriteriaUnitTests {
             list.add(MySQLs.orderIndex("qb1", "t", Collections.singletonList("uni_name_region_type")));
             return list;
         };
+
         final Update stmt;
         stmt = MySQLs.singleUpdate()
-                .update(supplier, Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.IGNORE), ChinaCity_.T)
+                .update(supplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), ChinaCity_.T)
                 .partition()
                 .leftParen("p2", "p1")
                 .rightParen()
@@ -78,8 +79,8 @@ public class MySQLCriteriaUnitTests {
                 .where(ChinaRegion_.name::equal, SQLs::literal, "")
                 .and(ChinaRegion_.parentId.equal(SQLs::param, map.get("parentId")).or(ChinaRegion_.regionType.equal(SQLs::literal, RegionType.CITY)))
                 .and(ChinaRegion_.regionGdp::plus, SQLs::literal, 100, Expression::greatEqual, 0)
-                .orderBy(ChinaRegion_.name.desc())
-                .limit(map::get, "rowCount")
+                .orderBy(ChinaRegion_.name, SQLs.DESC)
+                .limit(SQLs::param, map::get, "rowCount")
                 .asUpdate();
 
         printStmt(stmt);
@@ -104,16 +105,13 @@ public class MySQLCriteriaUnitTests {
         paramList.add(paramMap);
 
 
-        final List<FieldMeta<ChinaRegion<?>>> fieldList = new ArrayList<>();
-        fieldList.add(ChinaRegion_.name);
-        fieldList.add(ChinaRegion_.regionGdp);
         final Update stmt;
         stmt = MySQLs.batchSingleUpdate()
-                .update(ChinaRegion_.T, "t")
+                .update(ChinaRegion_.T, AS, "t")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
-                .setList(fieldList, SQLs::namedNullableParam)
+                .set(ChinaRegion_.name, SQLs::namedNullableParam)
                 .where(ChinaRegion_.id::equal, SQLs::literal, paramMap::get, ChinaRegion_.ID)
-                .limit(10)
+                .limit(SQLs::param, 10)
                 .paramList(paramList)
                 .asUpdate();
 
@@ -133,19 +131,18 @@ public class MySQLCriteriaUnitTests {
                 hintList.add(MySQLs.orderIndex("regionDelete", "r", Collections.singletonList("PRIMARY")));
                 return hintList;
             };
-
             final Delete stmt;
             stmt = MySQLs.singleDelete()
-                    .delete(hintSupplier, Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.QUICK, MySQLSyntax._MySQLModifier.IGNORE))
-                    .from(ChinaRegion_.T, "r")
+                    .delete(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.QUICK, MySQLs.IGNORE))
+                    .from(ChinaRegion_.T, AS, "r")
                     .partition()
                     .leftParen("p1")
                     .rightParen()
                     .where(ChinaRegion_.createTime::between, SQLs::literal, map::get, "startTime", "endTIme")
                     .and(ChinaRegion_.updateTime::between, SQLs::param, map::get, "startTime", "endTIme")
                     .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")
-                    .orderBy(ChinaRegion_.name.desc(), ChinaRegion_.id)
-                    .ifLimit(map::get, "rowCount")
+                    .orderBy(ChinaRegion_.name, SQLs.DESC, ChinaRegion_.id)
+                    .ifLimit(SQLs::param, map::get, "rowCount")
                     .asDelete();
 
             printStmt(stmt);
@@ -196,8 +193,8 @@ public class MySQLCriteriaUnitTests {
 
             final Delete stmt;
             stmt = MySQLs.batchSingleDelete()
-                    .delete(hintSupplier, Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.QUICK, MySQLSyntax._MySQLModifier.IGNORE))
-                    .from(ChinaRegion_.T, "r")
+                    .delete(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.QUICK, MySQLs.IGNORE))
+                    .from(ChinaRegion_.T, AS, "r")
                     .partition()
                     .leftParen("p1")
                     .rightParen()
@@ -205,8 +202,8 @@ public class MySQLCriteriaUnitTests {
                     .and(ChinaRegion_.regionGdp::equal, SQLs::namedParam)// batch parameter
                     .and(ChinaRegion_.updateTime::between, SQLs::literal, map::get, "startTime", "endTIme")// common parameter
                     .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")// common parameter
-                    .orderBy(ChinaRegion_.name.desc())
-                    .ifLimit(map::get, "rowCount")
+                    .orderBy(ChinaRegion_.name, SQLs.DESC)
+                    .ifLimit(SQLs::param, map::get, "rowCount")
                     .paramList(paramList)
                     .asDelete();
 
@@ -240,13 +237,13 @@ public class MySQLCriteriaUnitTests {
                 return hintList;
             };
 
-            final List<MySQLSyntax._MySQLModifier> modifierList;
-            modifierList = Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.QUICK, MySQLSyntax._MySQLModifier.IGNORE);
-            final List<String> deleteTarget = Arrays.asList("c", "r", "u");
+            final List<MySQLs.Modifier> modifierList;
+            modifierList = Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.QUICK, MySQLs.IGNORE);
             final Delete stmt;
             stmt = MySQLs.multiDelete()
-                    .delete(hintSupplier, modifierList, deleteTarget)
-                    .from(ChinaCity_.T)
+                    .delete(hintSupplier, modifierList)
+                    .from("c", "r", "u")
+                    .using(ChinaCity_.T)
                     .partition()
                     .leftParen("p1")
                     .rightParen()
@@ -256,7 +253,7 @@ public class MySQLCriteriaUnitTests {
                     .leftParen("p1")
                     .rightParen()
                     .as("r").on(ChinaCity_.id::equal, ChinaRegion_.id)
-                    .join(BankUser_.T, "u").on(BankUser_.id::equal, ChinaCity_.id)// delete lonely parent testing
+                    .join(BankUser_.T, AS, "u").on(BankUser_.id::equal, ChinaCity_.id)// delete lonely parent testing
                     .where(ChinaRegion_.createTime::between, SQLs::literal, map::get, "startTime", "endTIme")
                     .and(ChinaRegion_.updateTime::between, SQLs::literal, map::get, "startTime", "endTIme")
                     .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")
@@ -298,13 +295,11 @@ public class MySQLCriteriaUnitTests {
             paramList.add(Collections.singletonMap(ChinaCity_.ID, 22));
             paramList.add(Collections.singletonMap(ChinaCity_.ID, 88L));
 
-            final List<MySQLSyntax._MySQLModifier> modifierList;
-            modifierList = Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.QUICK, MySQLSyntax._MySQLModifier.IGNORE);
-            final List<String> deleteTarget = Arrays.asList("c", "r");
             final Delete stmt;
             stmt = MySQLs.batchMultiDelete()
-                    .delete(hintSupplier, modifierList, deleteTarget)
-                    .from(ChinaCity_.T)
+                    .delete(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.QUICK, MySQLs.IGNORE))
+                    .from("c", "r")
+                    .using(ChinaCity_.T)
                     .partition()
                     .leftParen("p1")
                     .rightParen()
@@ -353,7 +348,7 @@ public class MySQLCriteriaUnitTests {
 
             final Update stmt;
             stmt = MySQLs.multiUpdate()
-                    .update(hintSupplier, Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.IGNORE), BankUser_.T)
+                    .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), BankUser_.T)
                     .partition()
                     .leftParen("p1")
                     .rightParen()
@@ -362,7 +357,7 @@ public class MySQLCriteriaUnitTests {
                     .forJoin()
                     .leftParen("PRIMARY")
                     .rightParen()
-                    .join(BankAccount_.T, "a")
+                    .join(BankAccount_.T,AS, "a")
                     .ignoreIndex()
                     .leftParen("idx_account_id")
                     .rightParen()
@@ -406,10 +401,10 @@ public class MySQLCriteriaUnitTests {
 
             final Update stmt;
             stmt = MySQLs.multiUpdate()
-                    .update(BankUser_.T, "u")
-                    .join(Person_.T, "p").on(BankUser_.id::equal, Person_.id)
-                    .join(PartnerUser_.T, "up").on(BankUser_.id::equal, PartnerUser_.id)
-                    .join(BankAccount_.T, "a").on(BankUser_.id::equal, BankAccount_.userId)
+                    .update(BankUser_.T, AS,"u")
+                    .join(Person_.T,AS, "p").on(BankUser_.id::equal, Person_.id)
+                    .join(PartnerUser_.T,AS, "up").on(BankUser_.id::equal, PartnerUser_.id)
+                    .join(BankAccount_.T,AS, "a").on(BankUser_.id::equal, BankAccount_.userId)
                     .set(BankUser_.nickName, SQLs::param, map.get("newNickName"))
                     .ifSet(BankAccount_.balance, SQLs::plusEqual, SQLs::literal, amount)
                     .where(BankUser_.partnerUserId::equal, SQLs::literal, map::get, "identityId")
@@ -448,9 +443,9 @@ public class MySQLCriteriaUnitTests {
 
             final Update stmt;
             stmt = MySQLs.multiUpdate()
-                    .update(PartnerUser_.T, "up")
-                    .join(BankUser_.T, "u").on(BankUser_.id::equal, PartnerUser_.id)
-                    .join(BankAccount_.T, "a").on(BankUser_.id::equal, BankAccount_.userId)
+                    .update(PartnerUser_.T,AS, "up")
+                    .join(BankUser_.T,AS, "u").on(BankUser_.id::equal, PartnerUser_.id)
+                    .join(BankAccount_.T,AS, "a").on(BankUser_.id::equal, BankAccount_.userId)
                     .set(BankUser_.nickName, SQLs::param, map::get, "newNickName")
                     .set(PartnerUser_.legalPersonId, SQLs::literal, "66666666")
                     .ifSet(BankAccount_.balance, SQLs::plusEqual, SQLs::literal, map::get, "amount")
@@ -510,7 +505,7 @@ public class MySQLCriteriaUnitTests {
 
             final Update stmt;
             stmt = MySQLs.batchMultiUpdate()
-                    .update(hintSupplier, Arrays.asList(MySQLSyntax._MySQLModifier.LOW_PRIORITY, MySQLSyntax._MySQLModifier.IGNORE), User_.T)
+                    .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), User_.T)
                     .partition()
                     .leftParen("p1")
                     .rightParen()
@@ -521,7 +516,7 @@ public class MySQLCriteriaUnitTests {
                     .leftParen("PRIMARY")
                     .rightParen()
 
-                    .join(BankAccount_.T, "a")
+                    .join(BankAccount_.T,AS, "a")
 
                     .ignoreIndex()
                     .forJoin()
@@ -570,8 +565,8 @@ public class MySQLCriteriaUnitTests {
             List<Long> idList = new ArrayList<>();
             final Select stmt;
             stmt = MySQLs.query()
-                    .select(SQLs.group(Captcha_.T, "c"))
-                    .from(Captcha_.T, "c")
+                    .select(SQLs.group(Captcha_.T,"c"))
+                    .from(Captcha_.T, AS,"c")
                     .where(Captcha_.id::in, SQLs::multiLiterals, idList)
                     .and(Captcha_.createTime::between, SQLs::literal, criteria::get, "startTime", "endTime")
                     .and(Captcha_.deadline::greatEqual, SQLs::literal, LocalDateTime.now())
@@ -600,14 +595,14 @@ public class MySQLCriteriaUnitTests {
             final Select stmt;
             stmt = MySQLs.query()
                     .select(SQLs.group(BankUser_.T, "u"))
-                    .from(BankUser_.T, "u")
-                    .join(BankAccount_.T, "a").on(BankUser_.id::equal, BankAccount_.id)
+                    .from(BankUser_.T, AS,"u")
+                    .join(BankAccount_.T,AS, "a").on(BankUser_.id::equal, BankAccount_.id)
                     .where(BankUser_.id::in, SQLs::multiLiterals, (Collection<?>) criteria.get("ids"))
                     .and(BankAccount_.createTime::between, SQLs::literal, criteria::get, "startTime", "endTime")
                     .and(BankUser_.updateTime::greatEqual, SQLs::literal, LocalDateTime.now())
                     .and(SQLs::exists, () -> MySQLs.subQuery()
                             .select(RegisterRecord_.id)
-                            .from(RegisterRecord_.T, "r")
+                            .from(RegisterRecord_.T,AS, "r")
                             .where(RegisterRecord_.userId::equal, BankUser_.id)
                             .asQuery())
                     .asQuery();

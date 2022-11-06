@@ -79,7 +79,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static _AggregateOverSpec count() {
-        return count(SQLs.star());
+        return count(SQLs.LiteralSymbolStar.STAR);
     }
 
     /**
@@ -93,7 +93,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec count(final StandardSyntax.WordAll distinct, final Expression expr) {
+    public static _AggregateOverSpec count(final Functions.FuncDistinct distinct, final Expression expr) {
         final String name = "COUNT";
         if (distinct != SQLs.DISTINCT) {
             throw CriteriaUtils.funcArgError(name, distinct);
@@ -221,7 +221,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type: the {@link  MappingType} of expr.
      * </p>
      *
-     * @param expr non-null parameter or {@link Expression},but couldn't be {@link SQLs#nullWord()}.
+     * @param expr non-null parameter or {@link Expression},but couldn't be {@link SQLs#NULL}
      * @see #min(StandardSyntax.WordAll, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
      */
@@ -235,7 +235,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @param distinct null or {@link  StandardSyntax.WordAll#DISTINCT}
-     * @param expr     non-null parameter or {@link Expression},but couldn't be {@link SQLs#nullWord()}.
+     * @param expr     non-null parameter or {@link Expression},but couldn't be {@link SQLs#NULL}
      * @see #min(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
      */
@@ -443,7 +443,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      * </p>
      *
-     * @param expr        non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param expr        non-null parameter or {@link  Expression},but couldn't be {@link SQLs#NULL}
      * @param n           nullable,probably is below:
      *                    <ul>
      *                        <li>null</li>
@@ -452,13 +452,13 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                        <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
      *                        <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
      *                    </ul>
-     * @param defaultWord {@link  SQLs#defaultWord()}
+     * @param defaultWord {@link  SQLs#DEFAULT}
      * @see #lag(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lag(final Expression expr, final Expression n, final Expression defaultWord) {
         final String name = "LAG";
-        if (!(defaultWord instanceof SQLs.DefaultWord)) {
+        if (defaultWord != SQLs.DEFAULT) {
             throw CriteriaUtils.funcArgError(name, defaultWord);
         }
         return MySQLFunctions.threeArgWindow(name, expr, n, defaultWord, expr.typeMeta());
@@ -469,7 +469,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      * </p>
      *
-     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
      * @see #lag(Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
@@ -482,7 +482,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      * </p>
      *
-     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
      * @param n    nullable,probably is below:
      *             <ul>
      *                 <li>null</li>
@@ -491,7 +491,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                 <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
      *                 <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
      *             </ul>
-     * @see #lead(Expression, Expression, Expression)
+     * @see #lead(Expression, Expression, SQLs.WordDefault)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lead(final Expression expr, final Expression n) {
@@ -503,7 +503,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      * </p>
      *
-     * @param expr        non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param expr        non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
      * @param n           nullable,probably is below:
      *                    <ul>
      *                        <li>null</li>
@@ -512,13 +512,13 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                        <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
      *                        <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
      *                    </ul>
-     * @param defaultWord {@link  SQLs#defaultWord()}
+     * @param defaultWord {@link  SQLs#DEFAULT}
      * @see #lead(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static _OverSpec lead(final Expression expr, final Expression n, final Expression defaultWord) {
+    public static _OverSpec lead(final Expression expr, final Expression n, final SQLs.WordDefault defaultWord) {
         final String name = "LEAD";
-        if (!(defaultWord instanceof SQLs.DefaultWord)) {
+        if (defaultWord != SQLs.DEFAULT) {
             throw CriteriaUtils.funcArgError(name, defaultWord);
         }
         return MySQLFunctions.threeArgWindow(name, expr, n, defaultWord, expr.typeMeta());
@@ -2940,10 +2940,6 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                       <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
      *                   </ul>
      * @param useDefault if n is non-nul and useDefault is true,output sql key word {@code DEFAULT}
-     * @see #lag(Object)
-     * @see #lag(Object, Object, boolean)
-     * @see #lead(Object)
-     * @see #lead(Object, Object, boolean)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
@@ -2954,7 +2950,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
 
         final ArmyExpression expression;
         expression = SQLs._funcParam(expr);
-        if (expr instanceof SQLs.NullWord) {
+        if (expr == SQLs.NULL) {
             throw CriteriaUtils.funcArgError(funcName, expr);
         }
 
@@ -2996,13 +2992,13 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      * </p>
      *
-     * @see #firstValue(Object)
-     * @see #lastValue(Object)
+     * @see #firstValue(Expression)
+     * @see #lastValue(Expression)
      */
     private static _OverSpec _nonNullArgWindowFunc(final String funcName, final Object expr) {
         final ArmyExpression expression;
         expression = SQLs._funcParam(expr);
-        if (expr instanceof SQLs.NullWord) {
+        if (expr == SQLs.NULL) {
             throw CriteriaUtils.funcArgError(funcName, expr);
         }
         return MySQLFunctions.oneArgWindowFunc(funcName, null, expression, expression.typeMeta());

@@ -29,7 +29,7 @@ public interface SessionFactory {
     <T> TableMeta<T> getTable(Class<T> domainClass);
 
 
-    boolean supportSavePoints();
+    boolean isSupportSavePoints();
 
     /**
      * Is this factory already closed?

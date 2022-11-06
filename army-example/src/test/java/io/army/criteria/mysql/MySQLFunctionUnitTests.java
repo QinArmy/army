@@ -13,6 +13,8 @@ import org.testng.annotations.Test;
 
 import java.util.function.Consumer;
 
+import static io.army.criteria.impl.SQLs.AS;
+
 public class MySQLFunctionUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLFunctionUnitTests.class);
@@ -27,7 +29,7 @@ public class MySQLFunctionUnitTests {
         final Select stmt;
         stmt = MySQLs.query()
                 .select(this::simpleCaseFunc)
-                .from(User_.T, "u")
+                .from(User_.T,AS, "u")
                 .asQuery();
         printStmt(stmt);
     }

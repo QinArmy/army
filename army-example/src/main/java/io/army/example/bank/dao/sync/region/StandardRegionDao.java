@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static io.army.criteria.impl.SQLs.AS;
+
 @Repository("bankSyncStandardRegionDao")
 @Profile({BaseService.SYNC, BeanUtils.STANDARD})
 public class StandardRegionDao extends BankSyncBaseDao implements BankRegionDao {
@@ -28,10 +30,10 @@ public class StandardRegionDao extends BankSyncBaseDao implements BankRegionDao 
                     consumer.accept(ChinaCity_.mayorName);
                     consumer.accept(SQLs.field("province", ChinaRegion_.name).as("province"));
                 })
-                .from(ChinaCity_.T, "city")
-                .join(ChinaRegion_.T, "p_of_city")
-                .on(ChinaCity_.id.equal(SQLs.field("p_of_city", ChinaRegion_.id)))
-                .join(ChinaRegion_.T, "province")
+                .from(ChinaCity_.T,AS, "city")
+                .join(ChinaRegion_.T, AS,"p_of_city")
+                .on(ChinaCity_.id::equal,SQLs.field("p_of_city", ChinaRegion_.id))
+                .join(ChinaRegion_.T, AS,"province")
                 .on(SQLs.field("p_of_city", ChinaRegion_.parentId).equal(SQLs.field("province", ChinaRegion_.id)))
                 .asQuery();
         return this.sessionContext.currentSession().queryAsMap(stmt);
@@ -44,9 +46,9 @@ public class StandardRegionDao extends BankSyncBaseDao implements BankRegionDao 
         final Supplier<Expression> provinceIdSubQuery;
         provinceIdSubQuery = () -> SQLs.scalarSubQuery()
                 .select(ChinaProvince_.id)
-                .from(ChinaProvince_.T, "p")
-                .join(ChinaRegion_.T, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
-                .where(ChinaProvince_.provincialCapital.equalNamed(ChinaRegion_.NAME))
+                .from(ChinaProvince_.T,AS, "p")
+                .join(ChinaRegion_.T,AS, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
+                .where(ChinaProvince_.provincialCapital::equal,SQLs::namedLiteral,ChinaRegion_.NAME)
                 .asQuery();
 
         final Insert stmt;
@@ -55,6 +57,7 @@ public class StandardRegionDao extends BankSyncBaseDao implements BankRegionDao 
                 .leftParen(ChinaCity_.name, ChinaCity_.parentId)
                 .rightParen()
                 .values(domainList)
+                .asInsert()
                 .child()
                 .insertInto(ChinaCity_.T)
                 .values(domainList)
@@ -67,9 +70,9 @@ public class StandardRegionDao extends BankSyncBaseDao implements BankRegionDao 
         final Select stmt;
         stmt = SQLs.query()
                 .select(ChinaRegion_.id)
-                .from(ChinaRegion_.T, "t")
-                .where(ChinaRegion_.name.equalLiteral(regionName))
-                .and(ChinaRegion_.regionType.equalLiteral(regionType))
+                .from(ChinaRegion_.T, AS,"t")
+                .where(ChinaRegion_.name::equal,SQLs::param,regionName)
+                .and(ChinaRegion_.regionType::equal,SQLs::literal,regionType)
                 .asQuery();
         return this.sessionContext.currentSession().queryOne(stmt, Long.class);
     }

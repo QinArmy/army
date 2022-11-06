@@ -6,6 +6,7 @@ import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner.mysql._MySQLInsert;
 import io.army.criteria.mysql.MySQLInsert;
 import io.army.criteria.mysql.MySQLQuery;
+import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.*;
 import io.army.util._CollectionUtils;
@@ -495,8 +496,9 @@ abstract class MySQLInserts extends InsertSupport {
     }//MySQLComplexValuesClause
 
 
-    static abstract class MySQLValueSyntaxStatement<I extends DmlInsert> extends ValueSyntaxInsertStatement<I>
-            implements MySQLInsert, _MySQLInsert {
+    static abstract class MySQLValueSyntaxStatement<I extends Statement.DmlInsert>
+            extends ValueSyntaxInsertStatement<I>
+            implements MySQLInsert, _MySQLInsert,Insert {
 
         private final List<Hint> hintList;
 
@@ -550,21 +552,15 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
+       final   Dialect statementDialect() {
+            return MySQLDialect.MySQL80;
         }
 
 
     }//MySQLValueSyntaxStatement
 
 
-    static abstract class DomainInsertStatement<I extends DmlInsert> extends MySQLValueSyntaxStatement<I>
+    static abstract class DomainInsertStatement<I extends Statement.DmlInsert> extends MySQLValueSyntaxStatement<I>
             implements _MySQLInsert._MySQLDomainInsert {
 
         private DomainInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
@@ -658,7 +654,7 @@ abstract class MySQLInserts extends InsertSupport {
     }//PrimaryParentDomainInsertStatement
 
 
-    static abstract class ValueInsertStatement<I extends DmlInsert> extends MySQLValueSyntaxStatement<I>
+    static abstract class ValueInsertStatement<I extends Statement.DmlInsert> extends MySQLValueSyntaxStatement<I>
             implements _MySQLInsert._MySQLValueInsert {
 
         final List<Map<FieldMeta<?>, _Expression>> valuePairList;
@@ -736,9 +732,9 @@ abstract class MySQLInserts extends InsertSupport {
     }//PrimarySimpleValueStatement
 
 
-    static abstract class PrimaryAssignmentStatement<I extends DmlInsert>
+    static abstract class PrimaryAssignmentStatement<I extends Statement.DmlInsert>
             extends InsertSupport.AssignmentInsertStatement<I>
-            implements MySQLInsert, _MySQLInsert._MySQLAssignmentInsert {
+            implements MySQLInsert, _MySQLInsert._MySQLAssignmentInsert ,Insert{
 
         private final List<Hint> hintList;
 
@@ -792,14 +788,8 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
+       final   Dialect statementDialect() {
+            return MySQLDialect.MySQL80;
         }
 
 
@@ -860,7 +850,7 @@ abstract class MySQLInserts extends InsertSupport {
     }//PrimaryParentAssignmentStatement
 
 
-    static abstract class PrimaryQueryInsertStatement<I extends DmlInsert>
+    static abstract class PrimaryQueryInsertStatement<I extends Statement.DmlInsert>
             extends InsertSupport.QuerySyntaxInsertStatement<I>
             implements MySQLInsert, _MySQLInsert._MySQLQueryInsert {
 
@@ -917,15 +907,10 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
+        final   Dialect statementDialect() {
+            return MySQLDialect.MySQL80;
         }
+
 
     }//PrimaryQueryInsertStatement
 

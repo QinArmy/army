@@ -1,47 +1,44 @@
 package io.army.dialect;
 
 import io.army.criteria.TabularItem;
-import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.stmt.DmlStmtParams;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
-abstract class MultiTableContext extends StatementContext implements _MultiTableContext, _PrimaryContext {
+final class MultiTableContext implements _MultiTableContext {
+
+    final StatementContext stmtContext;
 
     final Map<String, TabularItem> aliasToTable;
 
     final Map<TableMeta<?>, String> tableToSafeAlias;
 
-    Map<String, String> aliasToSafeAlias;
+    private final BiConsumer<String, FieldMeta<?>> outerFieldConsumer;
+
+   private Map<String, String> aliasToSafeAlias;
 
 
-    MultiTableContext(@Nullable StatementContext outerContext, TableContext tableContext
-            , ArmyParser dialect, Visible visible) {
-        super(outerContext, dialect, visible);
+    MultiTableContext(StatementContext stmtContext, TableContext tableContext
+            , @Nullable BiConsumer<String, FieldMeta<?>> outerFieldConsumer) {
+        this.stmtContext = stmtContext;
         this.aliasToTable = tableContext.aliasToTable;
         this.tableToSafeAlias = tableContext.tableToSafeAlias;
+        this.outerFieldConsumer = outerFieldConsumer;
 
-    }
-
-    MultiTableContext(StatementContext outerContext, TableContext tableContext) {
-        super(outerContext);
-        this.aliasToTable = tableContext.aliasToTable;
-        this.tableToSafeAlias = tableContext.tableToSafeAlias;
     }
 
     @Override
-    public final void appendField(final String tableAlias, final FieldMeta<?> field) {
+    public void appendField(final String tableAlias, final FieldMeta<?> field) {
+        final BiConsumer<String, FieldMeta<?>> outerFieldConsumer;
         if (this.aliasToTable.get(tableAlias) == field.tableMeta()) {
             this.appendSafeField(tableAlias, field);
-        } else if (this instanceof _SubQueryContext) {
-            this.appendOuterField(tableAlias, field);
+        } else if ((outerFieldConsumer = this.outerFieldConsumer) != null) {
+            outerFieldConsumer.accept(tableAlias, field);
         } else {
             throw _Exceptions.unknownColumn(tableAlias, field);
         }
@@ -49,20 +46,21 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
 
 
     @Override
-    public final void appendField(final FieldMeta<?> field) {
+    public  void appendField(final FieldMeta<?> field) {
         final TableMeta<?> fieldTable = field.tableMeta();
         final String safeTableAlias;
         safeTableAlias = this.tableToSafeAlias.get(fieldTable);
+        final BiConsumer<String, FieldMeta<?>> outerFieldConsumer;
         if (safeTableAlias != null) {
-            final StringBuilder sqlBuilder = this.sqlBuilder
-                    .append(_Constant.SPACE)
+            final StringBuilder sqlBuilder = this.stmtContext.sqlBuilder;
+            sqlBuilder.append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
-            this.parser.safeObjectName(field, sqlBuilder);
+            this.stmtContext.parser.safeObjectName(field, sqlBuilder);
         } else if (this.aliasToTable.containsValue(fieldTable)) {
             throw _Exceptions.selfJoinNonQualifiedField(field);
-        } else if (this instanceof _SubQueryContext) {
-            this.appendOuterField(field);
+        } else if ((outerFieldConsumer = this.outerFieldConsumer) != null) {
+            outerFieldConsumer.accept(null, field);
         } else {
             throw _Exceptions.unknownColumn(field);
         }
@@ -70,7 +68,7 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
 
 
     @Override
-    public final String safeTableAlias(final TableMeta<?> table, final String alias) {
+    public  String safeTableAlias(final TableMeta<?> table, final String alias) {
         if (this.aliasToTable.get(alias) != table) {
             throw _Exceptions.unknownTable(table, alias);
         }
@@ -78,17 +76,17 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
         safeAlias = this.tableToSafeAlias.get(table);
         if (safeAlias == null) {
             // table self-join
-            safeAlias = getAliasToSafeAlias().computeIfAbsent(alias, this.parser::identifier);
+            safeAlias = getAliasToSafeAlias().computeIfAbsent(alias, this.stmtContext.parser::identifier);
         }
         return safeAlias;
     }
 
     @Override
-    public final String safeTableAlias(final String alias) {
+    public  String safeTableAlias(final String alias) {
         if (this.aliasToTable.get(alias) == null) {
             throw _Exceptions.unknownTableAlias(alias);
         }
-        return this.getAliasToSafeAlias().computeIfAbsent(alias, this.parser::identifier);
+        return this.getAliasToSafeAlias().computeIfAbsent(alias, this.stmtContext.parser::identifier);
     }
 
     @Override
@@ -106,7 +104,7 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
     }
 
     @Override
-    public final TabularItem tableItemOf(final String tableAlias) {
+    public  TabularItem tableItemOf(final String tableAlias) {
         final TabularItem tableItem;
         tableItem = this.aliasToTable.get(tableAlias);
         if (tableItem == null) {
@@ -115,29 +113,9 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
         return tableItem;
     }
 
-    @Override
-    public final SimpleStmt build() {
-        if (this.hasNamedParam()) {
-            throw _Exceptions.namedParamInNonBatch();
-        }
-        final SimpleStmt stmt;
-        if (this instanceof DmlStmtParams) {
-            stmt = Stmts.dml((DmlStmtParams) this);
-        } else {
-            stmt = Stmts.minSimple(this);
-        }
-        return stmt;
-    }
 
-    void appendOuterField(String tableAlias, FieldMeta<?> field) {
-        throw new UnsupportedOperationException();
-    }
 
-    void appendOuterField(FieldMeta<?> field) {
-        throw new UnsupportedOperationException();
-    }
-
-    final Map<String, String> getAliasToSafeAlias() {
+     Map<String, String> getAliasToSafeAlias() {
         Map<String, String> aliasToSafeAlias = this.aliasToSafeAlias;
         if (aliasToSafeAlias == null) {
             aliasToSafeAlias = new HashMap<>();
@@ -146,19 +124,19 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
         return aliasToSafeAlias;
     }
 
-    final void appendSafeField(final String tableAlias, final FieldMeta<?> field) {
+     void appendSafeField(final String tableAlias, final FieldMeta<?> field) {
         String safeTableAlias;
         safeTableAlias = this.tableToSafeAlias.get(field.tableMeta());
         if (safeTableAlias == null) {
             //  self-join
-            safeTableAlias = getAliasToSafeAlias().computeIfAbsent(tableAlias, this.parser::identifier);
+            safeTableAlias = getAliasToSafeAlias().computeIfAbsent(tableAlias, this.stmtContext.parser::identifier);
         }
         final StringBuilder sqlBuilder;
-        sqlBuilder = this.sqlBuilder
+        sqlBuilder = this.stmtContext.sqlBuilder
                 .append(_Constant.SPACE)
                 .append(safeTableAlias)
                 .append(_Constant.POINT);
-        this.parser.safeObjectName(field, sqlBuilder);
+        this.stmtContext.parser.safeObjectName(field, sqlBuilder);
     }
 
 
