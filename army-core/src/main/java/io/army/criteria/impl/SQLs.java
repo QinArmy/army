@@ -23,8 +23,6 @@ import io.army.stmt.SingleParam;
 import io.army.util._Exceptions;
 
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -312,7 +310,7 @@ public abstract class SQLs extends StandardSyntax {
      * @return parameter expression
      * @see #literal(Object)
      */
-    public static Expression param(final Object value) {
+    public static <T> Expression param(final T value) {
         return ParamExpression.single(_MappingFactory.getDefault(value.getClass()), value);
     }
 
@@ -324,11 +322,11 @@ public abstract class SQLs extends StandardSyntax {
      * @param type  non-nul
      * @param value nullable
      * @see #param(MappingType, Object)
-     * @see #param(Expression, Object)
+     * @see #param(TypeInfer, Object)
      * @see #literal(MappingType, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static Expression param(final MappingType type, final @Nullable Object value) {
+    public static <T> Expression param(final MappingType type, final @Nullable T value) {
         return ParamExpression.single(type, value);
     }
 
@@ -339,11 +337,11 @@ public abstract class SQLs extends StandardSyntax {
      *
      * @param value nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will invoked.
      * @see #param(MappingType, Object)
-     * @see #param(Expression, Object)
+     * @see #param(TypeInfer, Object)
      * @see #literal(MappingType, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static Expression param(final Expression typeExp, final @Nullable Object value) {
+    public static <T> Expression param(final TypeInfer typeExp, final @Nullable T value) {
         final Expression result;
         if (typeExp instanceof TableField) {  //for field codec
             if (value instanceof Supplier) {
@@ -616,7 +614,7 @@ public abstract class SQLs extends StandardSyntax {
      * @return literal expression
      * @see #param(Object)
      */
-    public static Expression literal(final Object value) {
+    public static <T> Expression literal(final T value) {
         return LiteralExpression.single(_MappingFactory.getDefault(value.getClass()), value);
     }
 
@@ -628,11 +626,11 @@ public abstract class SQLs extends StandardSyntax {
      * @param type  non-null
      * @param value nullable
      * @see #param(MappingType, Object)
-     * @see #param(Expression, Object)
+     * @see #param(TypeInfer, Object)
      * @see #literal(MappingType, Object)
-     * @see #literal(Expression, Object)
+     * @see #literal(TypeInfer, Object)
      */
-    public static Expression literal(final MappingType type, final @Nullable Object value) {
+    public static <T> Expression literal(final MappingType type, final @Nullable T value) {
         return LiteralExpression.single(type, value);
     }
 
@@ -644,11 +642,11 @@ public abstract class SQLs extends StandardSyntax {
      * @param typeExp non-null
      * @param value   nullable,if value is instance of {@link Supplier},then {@link Supplier#get()} will invoked.
      * @see #param(MappingType, Object)
-     * @see #param(Expression, Object)
+     * @see #param(TypeInfer, Object)
      * @see #literal(MappingType, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static Expression literal(final Expression typeExp, final @Nullable Object value) {
+    public static <T> Expression literal(final TypeInfer typeExp, final @Nullable T value) {
         final Expression result;
         if (typeExp instanceof TableField) {
             if (value instanceof Supplier) {
@@ -919,8 +917,6 @@ public abstract class SQLs extends StandardSyntax {
      * </p>
      *
      * @param value {@link Expression} or parameter.
-     * @see Update._StaticSetClause#setPairs(BiConsumer)
-     * @see Update._StaticSetClause#setPairs(Consumer)
      */
     static ArmyItemPair _itemPair(final DataField field, final @Nullable AssignOperator operator
             , final @Nullable Object value) {

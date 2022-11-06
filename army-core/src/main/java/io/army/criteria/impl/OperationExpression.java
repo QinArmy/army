@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
-import io.army.function.TeExpression;
+import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
 
@@ -205,26 +205,17 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate between(Expression first, Expression second) {
+    public final IPredicate between(Expression first, SQLs.WordAnd and, Expression second) {
+        assert and == SQLs.AND;
         return BetweenPredicate.create(this, first, second);
     }
 
     @Override
-    public final <T> IPredicate between(BiFunction<Expression, T, Expression> operator, T first, T second) {
-        final Expression firstExp, secondExp;
-        firstExp = operator.apply(this, first);
-        secondExp = operator.apply(this, second);
-        return BetweenPredicate.create(this, firstExp, secondExp);
+    public final <T> IPredicate between(BiFunction<Expression, T, Expression> operator, T first
+            , SQLs.WordAnd and, T second) {
+        assert and == SQLs.AND;
+        return BetweenPredicate.create(this, operator.apply(this, first), operator.apply(this, second));
     }
-
-
-    @Override
-    public final IPredicate between(Supplier<ExpressionPair> supplier) {
-        final SQLs.ExpressionPairImpl pair;
-        pair = (SQLs.ExpressionPairImpl) supplier.get();
-        return BetweenPredicate.create(this, pair.first, pair.second);
-    }
-
 
     @Override
     public final IPredicate isNull() {
@@ -254,7 +245,7 @@ abstract class OperationExpression implements ArmyExpression {
 
 
     @Override
-    public final IPredicate in(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size) {
+    public final IPredicate in(TeNamedOperator<Expression, String, Integer> namedOperator, String paramName, int size) {
         return DualPredicate.create(this, DualOperator.IN, namedOperator.apply(this, paramName, size));
     }
 
@@ -274,7 +265,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate notIn(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size) {
+    public final IPredicate notIn(TeNamedOperator<Expression, String, Integer> namedOperator, String paramName, int size) {
         return DualPredicate.create(this, DualOperator.NOT_IN, namedOperator.apply(this, paramName, size));
     }
 

@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.DataField;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
-import io.army.function.TeExpression;
+import io.army.function.TeNamedOperator;
 
 import java.util.function.BiFunction;
 
@@ -55,12 +55,12 @@ abstract class OperationDataField extends OperationExpression implements DataFie
     }
 
     @Override
-    public final IPredicate in(TeExpression<DataField, String, Integer> namedOperator, int size) {
+    public final IPredicate in(TeNamedOperator<DataField, String, Integer> namedOperator, int size) {
         return DualPredicate.create(this, DualOperator.IN, namedOperator.apply(this, this.fieldName(), size));
     }
 
     @Override
-    public final IPredicate notIn(TeExpression<DataField, String, Integer> namedOperator, int size) {
+    public final IPredicate notIn(TeNamedOperator<DataField, String, Integer> namedOperator, int size) {
         return DualPredicate.create(this, DualOperator.NOT_IN, namedOperator.apply(this, this.fieldName(), size));
     }
 

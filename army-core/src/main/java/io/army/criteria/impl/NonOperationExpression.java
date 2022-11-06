@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.function.TeExpression;
+import io.army.function.TeNamedOperator;
 import io.army.meta.TypeMeta;
 
 import java.util.Collection;
@@ -218,17 +218,13 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate between(Expression first, Expression second) {
+    public final IPredicate between(Expression first, SQLs.WordAnd and, Expression second) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> IPredicate between(BiFunction<Expression, T, Expression> operator, T first, T second) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate between(Supplier<ExpressionPair> supplier) {
+    public final <T> IPredicate between(BiFunction<Expression, T, Expression> operator, T first
+            , SQLs.WordAnd and, T second) {
         throw unsupportedOperation();
     }
 
@@ -248,7 +244,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate in(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size) {
+    public final IPredicate in(TeNamedOperator<Expression, String, Integer> namedOperator, String paramName, int size) {
         throw unsupportedOperation();
     }
 
@@ -268,7 +264,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate notIn(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size) {
+    public final IPredicate notIn(TeNamedOperator<Expression, String, Integer> namedOperator, String paramName, int size) {
         throw unsupportedOperation();
     }
 

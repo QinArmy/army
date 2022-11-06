@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 
+import io.army.function.ExpressionDualOperator;
 import io.army.lang.Nullable;
 
 import java.util.function.BiFunction;
@@ -108,9 +109,9 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
     interface _UpdateWhereAndClause<WA> extends Statement._WhereAndClause<WA> {
 
-        <T> WA and(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand);
+        <T> WA and(ExpressionDualOperator<T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand);
 
-        <T> WA ifAnd(BiFunction<BiFunction<Expression, T, Expression>, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number numberOperand);
+        <T> WA ifAnd(ExpressionDualOperator<T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number numberOperand);
 
     }
 

@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._SqlContext;
 
 class BetweenPredicate extends OperationPredicate {
@@ -10,16 +9,16 @@ class BetweenPredicate extends OperationPredicate {
         return new BetweenPredicate(left, center, right);
     }
 
-    final _Expression left;
+    final ArmyExpression left;
 
-    final _Expression center;
+    final ArmyExpression center;
 
-    final _Expression right;
+    final ArmyExpression right;
 
     private BetweenPredicate(Expression left, Expression center, Expression right) {
-        this.left = (_Expression) left;
-        this.center = (_Expression) center;
-        this.right = (_Expression) right;
+        this.left = (ArmyExpression) left;
+        this.center = (ArmyExpression) center;
+        this.right = (ArmyExpression) right;
     }
 
     @Override

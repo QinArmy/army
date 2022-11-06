@@ -1,7 +1,7 @@
 package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
-import io.army.function.TeExpression;
+import io.army.function.TeNamedOperator;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 
@@ -119,11 +119,15 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, RightOpe
 
     IPredicate notEqualAll(SubQuery subQuery);
 
-    IPredicate between(Expression first, Expression second);
+    /**
+     * @param and {@link SQLs#AND}
+     */
+    IPredicate between(Expression first, SQLs.WordAnd and, Expression second);
 
-    <T> IPredicate between(BiFunction<Expression, T, Expression> operator, T first, T second);
-
-    IPredicate between(Supplier<ExpressionPair> supplier);
+    /**
+     * @param and {@link SQLs#AND}
+     */
+    <T> IPredicate between(BiFunction<Expression, T, Expression> operator, T first, SQLs.WordAnd and, T second);
 
     IPredicate isNull();
 
@@ -135,7 +139,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, RightOpe
 
     <T, O extends Collection<T>> IPredicate in(BiFunction<Expression, O, Expression> operator, O operand);
 
-    IPredicate in(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size);
+    IPredicate in(TeNamedOperator<Expression, String, Integer> namedOperator, String paramName, int size);
 
 
     IPredicate notIn(Expression operand);
@@ -144,7 +148,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, RightOpe
 
     <T, O extends Collection<T>> IPredicate notIn(BiFunction<Expression, O, Expression> operator, O operand);
 
-    IPredicate notIn(TeExpression<Expression, String, Integer> namedOperator, String paramName, int size);
+    IPredicate notIn(TeNamedOperator<Expression, String, Integer> namedOperator, String paramName, int size);
 
     IPredicate like(Expression pattern);
 

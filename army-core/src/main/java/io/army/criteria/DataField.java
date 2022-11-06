@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-import io.army.function.TeExpression;
+import io.army.function.TeNamedOperator;
 
 import java.util.function.BiFunction;
 
@@ -37,9 +37,9 @@ public interface DataField extends NamedExpression {
 
     IPredicate notLike(BiFunction<DataField, String, Expression> namedOperator);
 
-    IPredicate in(TeExpression<DataField, String, Integer> namedOperator, int size);
+    IPredicate in(TeNamedOperator<DataField, String, Integer> namedOperator, int size);
 
-    IPredicate notIn(TeExpression<DataField, String, Integer> namedOperator, int size);
+    IPredicate notIn(TeNamedOperator<DataField, String, Integer> namedOperator, int size);
 
     Expression mod(BiFunction<DataField, String, Expression> namedOperator);
 

@@ -1,6 +1,7 @@
 package io.army.criteria;
 
-import io.army.function.TePredicate;
+import io.army.criteria.impl.SQLs;
+import io.army.function.*;
 import io.army.lang.Nullable;
 
 import java.util.function.*;
@@ -20,17 +21,24 @@ public interface IPredicate extends Expression {
 
     <E> IPredicate or(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
-    <T> IPredicate or(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
+    <T> IPredicate or(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
 
-    <T> IPredicate or(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+    <T> IPredicate or(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
-    IPredicate or(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+    IPredicate or(ExpressionDualOperator<Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
-    <T> IPredicate or(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, T first, T second);
+    <T> IPredicate or(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, T first, SQLs.WordAnd and, T second);
 
-    <T> IPredicate or(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier);
+    <T> IPredicate or(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, SQLs.WordAnd and, Supplier<T> secondSupplier);
 
-    IPredicate or(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+    IPredicate or(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+
+    IPredicate or(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
+
+    IPredicate or(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, int size);
+
+    IPredicate or(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator, TeNamedOperator<DataField> namedOperator, int size);
+
 
     IPredicate or(Consumer<Consumer<IPredicate>> consumer);
 
@@ -38,17 +46,22 @@ public interface IPredicate extends Expression {
 
     <E> IPredicate ifOr(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
-    <T> IPredicate ifOr(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+    <T> IPredicate ifOr(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
 
-    <T> IPredicate ifOr(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+    <T> IPredicate ifOr(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
-    IPredicate ifOr(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+    IPredicate ifOr(ExpressionDualOperator<Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
-    <T> IPredicate ifOr(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second);
+    <T> IPredicate ifOr(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, SQLs.WordAnd and, @Nullable T second);
 
-    <T> IPredicate ifOr(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier);
+    <T> IPredicate ifOr(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, SQLs.WordAnd and, Supplier<T> secondSupplier);
 
-    IPredicate ifOr(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+    IPredicate ifOr(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+
+    IPredicate ifOr(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, @Nullable Integer size);
+
+    IPredicate ifOr(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator, TeNamedOperator<DataField> namedOperator, @Nullable Integer size);
+
 
     IPredicate ifOr(Consumer<Consumer<IPredicate>> consumer);
 
@@ -72,37 +85,51 @@ public interface IPredicate extends Expression {
      */
     <E> IPredicate and(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
-    /**
-     * @see Statement._WhereAndClause#and(BiFunction, BiFunction, Object)
-     */
-    <T> IPredicate and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
+    <T> IPredicate and(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
 
-    /**
-     * @see Statement._WhereAndClause#and(BiFunction, BiFunction, Supplier)
-     */
-    <T> IPredicate and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+    <T> IPredicate and(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
-    /**
-     * @see Statement._WhereAndClause#and(BiFunction, BiFunction, Function, String)
-     */
-    IPredicate and(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+    IPredicate and(ExpressionDualOperator<Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
-    /**
-     * @see Statement._WhereAndClause#and(TePredicate, BiFunction, Object, Object)
-     */
-    <T> IPredicate and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, T first, T second);
+    <T> IPredicate and(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, T first, SQLs.WordAnd and, T second);
 
-    /**
-     * @see Statement._WhereAndClause#and(TePredicate, BiFunction, Supplier, Supplier)
-     */
-    <T> IPredicate and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier);
+    <T> IPredicate and(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, SQLs.WordAnd and, Supplier<T> secondSupplier);
 
-    /**
-     * @see Statement._WhereAndClause#and(TePredicate, BiFunction, Function, String, String)
-     */
-    IPredicate and(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+    IPredicate and(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+
+    IPredicate and(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
+
+    IPredicate and(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, int size);
+
+    IPredicate and(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator, TeNamedOperator<DataField> namedOperator, int size);
+
 
     IPredicate and(Consumer<Consumer<IPredicate>> consumer);
+
+    IPredicate ifAnd(Supplier<IPredicate> supplier);
+
+    <E> IPredicate ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier);
+
+    <T> IPredicate ifAnd(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
+
+    <T> IPredicate ifAnd(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+
+    IPredicate ifAnd(ExpressionDualOperator<Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+
+    <T> IPredicate ifAnd(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, SQLs.WordAnd and, @Nullable T second);
+
+    <T> IPredicate ifAnd(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, SQLs.WordAnd and, Supplier<T> secondSupplier);
+
+    IPredicate ifAnd(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+
+    IPredicate ifAnd(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
+
+    IPredicate ifAnd(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, @Nullable Integer size);
+
+    IPredicate ifAnd(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator, TeNamedOperator<DataField> namedOperator, @Nullable Integer size);
+
+
+    IPredicate ifAnd(Consumer<Consumer<IPredicate>> consumer);
 
 
     /**

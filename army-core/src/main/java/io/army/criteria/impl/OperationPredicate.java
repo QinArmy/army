@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.function.TePredicate;
+import io.army.function.*;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.meta.*;
@@ -42,44 +42,57 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final <T> IPredicate or(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> IPredicate or(ExpressionDualOperator<T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, T operand) {
         return this.or(expOperator.apply(operator, operand));
     }
 
     @Override
-    public final <T> IPredicate or(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+    public final <T> IPredicate or(ExpressionDualOperator<T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
         return this.or(expOperator.apply(operator, supplier.get()));
     }
 
     @Override
-    public final IPredicate or(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+    public final IPredicate or(ExpressionDualOperator<Object, IPredicate> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
         return this.or(expOperator.apply(operator, function.apply(keyName)));
     }
 
     @Override
-    public final <T> IPredicate or(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
-        if (first == null || second == null) {
-            throw ContextStack.nullPointer(ContextStack.peek());
-        }
-        return this.or(expOperator.apply(operator, first, second));
+    public final <T> IPredicate or(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator
+            , T first, SQLs.WordAnd and, T second) {
+        return this.or(expOperator.apply(operator, first, and, second));
     }
 
     @Override
-    public final <T> IPredicate or(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
-        final T first, second;
-        if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
-            throw ContextStack.nullPointer(ContextStack.peek());
-        }
-        return this.or(expOperator.apply(operator, first, second));
+    public final <T> IPredicate or(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator
+            , Supplier<T> firstSupplier, SQLs.WordAnd and, Supplier<T> secondSupplier) {
+        return this.or(expOperator.apply(operator, firstSupplier.get(), and, secondSupplier.get()));
     }
 
     @Override
-    public final IPredicate or(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
-        final Object first, second;
-        if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
-            throw ContextStack.nullPointer(ContextStack.peek());
-        }
-        return this.or(expOperator.apply(operator, first, second));
+    public final IPredicate or(BetweenValueOperator<Object> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
+            , String firstKey, SQLs.WordAnd and, String secondKey) {
+        return this.or(expOperator.apply(operator, function.apply(firstKey), and, function.apply(secondKey)));
+    }
+
+    @Override
+    public final IPredicate or(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second) {
+        return this.or(expOperator.apply(first, and, second));
+    }
+
+    @Override
+    public final IPredicate or(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator
+            , String paramName, int size) {
+        return this.or(expOperator.apply(namedOperator, paramName, size));
+    }
+
+    @Override
+    public final IPredicate or(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator
+            , TeNamedOperator<DataField> namedOperator, int size) {
+        return this.or(expOperator.apply(namedOperator, size));
     }
 
     @Override
@@ -118,75 +131,104 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final <T> IPredicate ifOr(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
-        final IPredicate result;
+    public final <T> IPredicate ifOr(ExpressionDualOperator<T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+        final IPredicate predicate;
         if (operand == null) {
-            result = this;
+            predicate = this;
         } else {
-            result = this.or(expOperator.apply(operator, operand));
+            predicate = this.or(expOperator.apply(operator, operand));
         }
-        return result;
+        return predicate;
     }
 
     @Override
-    public final <T> IPredicate ifOr(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+    public final <T> IPredicate ifOr(ExpressionDualOperator<T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+        final IPredicate predicate;
         final T operand;
-        operand = supplier.get();
-        final IPredicate result;
-        if (operand == null) {
-            result = this;
+        if ((operand = supplier.get()) == null) {
+            predicate = this;
         } else {
-            result = this.or(expOperator.apply(operator, operand));
+            predicate = this.or(expOperator.apply(operator, operand));
         }
-        return result;
+        return predicate;
     }
 
     @Override
-    public final IPredicate ifOr(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+    public final IPredicate ifOr(ExpressionDualOperator<Object, IPredicate> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+        final IPredicate predicate;
         final Object operand;
-        operand = function.apply(keyName);
-        final IPredicate result;
-        if (operand == null) {
-            result = this;
+        if ((operand = function.apply(keyName)) == null) {
+            predicate = this;
         } else {
-            result = this.or(expOperator.apply(operator, operand));
+            predicate = this.or(expOperator.apply(operator, operand));
         }
-        return result;
+        return predicate;
     }
 
     @Override
-    public final <T> IPredicate ifOr(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
-        final IPredicate result;
+    public final <T> IPredicate ifOr(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator
+            , @Nullable T first, SQLs.WordAnd and, @Nullable T second) {
+        final IPredicate predicate;
         if (first == null || second == null) {
-            result = this;
+            predicate = this;
         } else {
-            result = this.or(expOperator.apply(operator, first, second));
+            predicate = this.or(expOperator.apply(operator, first, and, second));
         }
-        return result;
+        return predicate;
     }
 
     @Override
-    public final <T> IPredicate ifOr(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
+    public final <T> IPredicate ifOr(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator
+            , Supplier<T> firstSupplier, SQLs.WordAnd and, Supplier<T> secondSupplier) {
+        final IPredicate predicate;
         final T first, second;
-        final IPredicate result;
         if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
-            result = this;
+            predicate = this;
         } else {
-            result = this.or(expOperator.apply(operator, first, second));
+            predicate = this.or(expOperator.apply(operator, first, and, second));
         }
-        return result;
+        return predicate;
     }
 
     @Override
-    public final IPredicate ifOr(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
+    public final IPredicate ifOr(BetweenValueOperator<Object> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
+            , SQLs.WordAnd and, String secondKey) {
+        final IPredicate predicate;
         final Object first, second;
-        final IPredicate result;
         if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
-            result = this;
+            predicate = this;
         } else {
-            result = this.or(expOperator.apply(operator, first, second));
+            predicate = this.or(expOperator.apply(operator, first, and, second));
         }
-        return result;
+        return predicate;
+    }
+
+    @Override
+    public final IPredicate ifOr(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator
+            , String paramName, @Nullable Integer size) {
+        final IPredicate predicate;
+        if (size == null) {
+            predicate = this;
+        } else {
+            predicate = this.or(expOperator.apply(namedOperator, paramName, size));
+        }
+        return predicate;
+    }
+
+    @Override
+    public final IPredicate ifOr(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator
+            , TeNamedOperator<DataField> namedOperator, @Nullable Integer size) {
+        final IPredicate predicate;
+        if (size == null) {
+            predicate = this;
+        } else {
+            predicate = this.or(expOperator.apply(namedOperator, size));
+        }
+        return predicate;
     }
 
     @Override
@@ -220,46 +262,58 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
         return this.and(expOperator.apply(supplier.get()));
     }
 
-
     @Override
-    public final <T> IPredicate and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand) {
-        return this.and(expOperator.apply(operator, operand));
+    public final <T> IPredicate and(ExpressionDualOperator<T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, T operand) {
+        return null;
     }
 
     @Override
-    public final <T> IPredicate and(BiFunction<BiFunction<Expression, T, Expression>, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return this.and(expOperator.apply(operator, supplier.get()));
+    public final <T> IPredicate and(ExpressionDualOperator<T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+        return null;
     }
 
     @Override
-    public final IPredicate and(BiFunction<BiFunction<Expression, Object, Expression>, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return this.and(expOperator.apply(operator, function.apply(keyName)));
+    public final IPredicate and(ExpressionDualOperator<Object, IPredicate> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+        return null;
     }
 
     @Override
-    public final <T> IPredicate and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, @Nullable T second) {
-        if (first == null || second == null) {
-            throw ContextStack.nullPointer(ContextStack.peek());
-        }
-        return this.and(expOperator.apply(operator, first, second));
+    public final <T> IPredicate and(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator
+            , T first, StandardSyntax.WordAnd and, T second) {
+        return null;
     }
 
     @Override
-    public final <T> IPredicate and(TePredicate<BiFunction<Expression, T, Expression>, T, T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, Supplier<T> secondSupplier) {
-        final T first, second;
-        if ((first = firstSupplier.get()) == null || (second = secondSupplier.get()) == null) {
-            throw ContextStack.nullPointer(ContextStack.peek());
-        }
-        return this.and(expOperator.apply(operator, first, second));
+    public final <T> IPredicate and(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator
+            , Supplier<T> firstSupplier, StandardSyntax.WordAnd and, Supplier<T> secondSupplier) {
+        return null;
     }
 
     @Override
-    public final IPredicate and(TePredicate<BiFunction<Expression, Object, Expression>, Object, Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, String secondKey) {
-        final Object first, second;
-        if ((first = function.apply(firstKey)) == null || (second = function.apply(secondKey)) == null) {
-            throw ContextStack.nullPointer(ContextStack.peek());
-        }
-        return this.and(expOperator.apply(operator, first, second));
+    public final IPredicate and(BetweenValueOperator<Object> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKe
+                                y, SQLs.WordAnd and, String secondKey) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate and(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate and(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator
+            , String paramName, int size) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate and(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator
+            , TeNamedOperator<DataField> namedOperator, int size) {
+        return null;
     }
 
     @Override
@@ -273,6 +327,75 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
+    public final IPredicate ifAnd(Supplier<IPredicate> supplier) {
+        return null;
+    }
+
+    @Override
+    public final <E> IPredicate ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+        return null;
+    }
+
+    @Override
+    public final <T> IPredicate ifAnd(ExpressionDualOperator<T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
+        return null;
+    }
+
+    @Override
+    public final <T> IPredicate ifAnd(ExpressionDualOperator<T, IPredicate> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate ifAnd(ExpressionDualOperator<Object, IPredicate> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+        return null;
+    }
+
+    @Override
+    public final <T> IPredicate ifAnd(BetweenValueOperator<T> expOperator
+            , BiFunction<Expression, T, Expression> operator, @Nullable T first, SQLs.WordAnd and, @Nullable T second) {
+        return null;
+    }
+
+    @Override
+    public final <T> IPredicate ifAnd(BetweenValueOperator<T> expOperator
+            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, SQLs.WordAnd and, Supplier<T> secondSupplier) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate ifAnd(BetweenValueOperator<Object> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
+            , SQLs.WordAnd and, String secondKey) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate ifAnd(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate ifAnd(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator
+            , String paramName, @Nullable Integer size) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate ifAnd(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator
+            , TeNamedOperator<DataField> namedOperator, @Nullable Integer size) {
+        return null;
+    }
+
+    @Override
+    public final IPredicate ifAnd(Consumer<Consumer<IPredicate>> consumer) {
+        return null;
+    }
+
+    @Override
     public final IPredicate not() {
         return NotPredicate.not(this);
     }
@@ -282,7 +405,6 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
         final IPredicate result;
         if (supplier.getAsBoolean()) {
             result = NotPredicate.not(this);
-            ;
         } else {
             result = this;
         }
