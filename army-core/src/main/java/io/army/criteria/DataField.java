@@ -37,9 +37,9 @@ public interface DataField extends NamedExpression {
 
     IPredicate notLike(BiFunction<DataField, String, Expression> namedOperator);
 
-    IPredicate in(TeNamedOperator<DataField, String, Integer> namedOperator, int size);
+    IPredicate in(TeNamedOperator<DataField> namedOperator, int size);
 
-    IPredicate notIn(TeNamedOperator<DataField, String, Integer> namedOperator, int size);
+    IPredicate notIn(TeNamedOperator<DataField> namedOperator, int size);
 
     Expression mod(BiFunction<DataField, String, Expression> namedOperator);
 

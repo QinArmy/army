@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.army.criteria.impl.SQLs.AND;
+
 public class StandardUpdateUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(StandardUpdateUnitTests.class);
@@ -39,7 +41,7 @@ public class StandardUpdateUnitTests {
                 .update(table, "c")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
                 .set(ChinaRegion_.regionGdp, SQLs::param, addGdp)
-                .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", "secondId")
+                .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", AND, "secondId")
                 .and(ChinaRegion_.name::equal, SQLs::literal, "江湖")
                 .and(ChinaRegion_.regionGdp::plus, SQLs::literal, new BigDecimal(1000), Expression::greatEqual, BigDecimal.ZERO)
                 .asUpdate();

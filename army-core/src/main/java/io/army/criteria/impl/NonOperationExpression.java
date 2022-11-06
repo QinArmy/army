@@ -244,7 +244,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate in(TeNamedOperator<Expression, String, Integer> namedOperator, String paramName, int size) {
+    public final IPredicate in(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
         throw unsupportedOperation();
     }
 
@@ -264,7 +264,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate notIn(TeNamedOperator<Expression, String, Integer> namedOperator, String paramName, int size) {
+    public final IPredicate notIn(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
         throw unsupportedOperation();
     }
 

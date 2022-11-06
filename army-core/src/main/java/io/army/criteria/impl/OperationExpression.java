@@ -245,7 +245,7 @@ abstract class OperationExpression implements ArmyExpression {
 
 
     @Override
-    public final IPredicate in(TeNamedOperator<Expression, String, Integer> namedOperator, String paramName, int size) {
+    public final IPredicate in(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
         return DualPredicate.create(this, DualOperator.IN, namedOperator.apply(this, paramName, size));
     }
 
@@ -265,7 +265,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate notIn(TeNamedOperator<Expression, String, Integer> namedOperator, String paramName, int size) {
+    public final IPredicate notIn(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
         return DualPredicate.create(this, DualOperator.NOT_IN, namedOperator.apply(this, paramName, size));
     }
 

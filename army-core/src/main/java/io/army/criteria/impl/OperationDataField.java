@@ -55,12 +55,12 @@ abstract class OperationDataField extends OperationExpression implements DataFie
     }
 
     @Override
-    public final IPredicate in(TeNamedOperator<DataField, String, Integer> namedOperator, int size) {
+    public final IPredicate in(TeNamedOperator<DataField> namedOperator, int size) {
         return DualPredicate.create(this, DualOperator.IN, namedOperator.apply(this, this.fieldName(), size));
     }
 
     @Override
-    public final IPredicate notIn(TeNamedOperator<DataField, String, Integer> namedOperator, int size) {
+    public final IPredicate notIn(TeNamedOperator<DataField> namedOperator, int size) {
         return DualPredicate.create(this, DualOperator.NOT_IN, namedOperator.apply(this, this.fieldName(), size));
     }
 

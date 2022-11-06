@@ -139,7 +139,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, RightOpe
 
     <T, O extends Collection<T>> IPredicate in(BiFunction<Expression, O, Expression> operator, O operand);
 
-    IPredicate in(TeNamedOperator<Expression, String, Integer> namedOperator, String paramName, int size);
+    IPredicate in(TeNamedOperator<Expression> namedOperator, String paramName, int size);
 
 
     IPredicate notIn(Expression operand);
@@ -148,7 +148,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, RightOpe
 
     <T, O extends Collection<T>> IPredicate notIn(BiFunction<Expression, O, Expression> operator, O operand);
 
-    IPredicate notIn(TeNamedOperator<Expression, String, Integer> namedOperator, String paramName, int size);
+    IPredicate notIn(TeNamedOperator<Expression> namedOperator, String paramName, int size);
 
     IPredicate like(Expression pattern);
 

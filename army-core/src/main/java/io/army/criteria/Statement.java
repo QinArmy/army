@@ -541,13 +541,13 @@ public interface Statement extends Item {
 
         <T> WA where(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> valueOperator, T operand);
 
-        <T> WA where(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> supplier);
+        <T> WA where(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter);
 
         WA where(ExpressionDualOperator<Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
         <T> WA where(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, T first, SQLs.WordAnd and, T second);
 
-        <T> WA where(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, SQLs.WordAnd and, Supplier<T> secondSupplier);
+        <T> WA where(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
         WA where(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
@@ -555,27 +555,21 @@ public interface Statement extends Item {
 
         WA where(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, int size);
 
-        WA where(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator, TeNamedOperator<DataField> namedOperator, int size);
-
-
         <E> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
         <T> WA whereIf(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
 
-        <T> WA whereIf(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+        <T> WA whereIf(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
 
         WA whereIf(ExpressionDualOperator<Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
         <T> WA whereIf(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, SQLs.WordAnd and, @Nullable T second);
 
-        <T> WA whereIf(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, SQLs.WordAnd and, Supplier<T> secondSupplier);
+        <T> WA whereIf(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
         WA whereIf(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
         WA whereIf(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, @Nullable Integer size);
-
-        WA whereIf(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator, TeNamedOperator<DataField> namedOperator, @Nullable Integer size);
-
 
     }
 
@@ -632,13 +626,13 @@ public interface Statement extends Item {
 
         <T> WA and(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, T operand);
 
-        <T> WA and(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+        <T> WA and(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
 
         WA and(ExpressionDualOperator<Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
         <T> WA and(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, T first, SQLs.WordAnd and, T second);
 
-        <T> WA and(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, SQLs.WordAnd and, Supplier<T> secondSupplier);
+        <T> WA and(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
         WA and(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
@@ -646,27 +640,21 @@ public interface Statement extends Item {
 
         WA and(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, int size);
 
-        WA and(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator, TeNamedOperator<DataField> namedOperator, int size);
-
-
         <E> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
         <T> WA ifAnd(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T operand);
 
-        <T> WA ifAnd(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+        <T> WA ifAnd(ExpressionDualOperator<T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
 
         WA ifAnd(ExpressionDualOperator<Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
         <T> WA ifAnd(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, SQLs.WordAnd and, @Nullable T second);
 
-        <T> WA ifAnd(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstSupplier, SQLs.WordAnd and, Supplier<T> secondSupplier);
+        <T> WA ifAnd(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
         WA ifAnd(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
         WA ifAnd(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, @Nullable Integer size);
-
-        WA ifAnd(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator, TeNamedOperator<DataField> namedOperator, @Nullable Integer size);
-
 
     }
 

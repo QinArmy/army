@@ -341,7 +341,7 @@ public abstract class SQLs extends StandardSyntax {
      * @see #literal(MappingType, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static <T> Expression param(final TypeInfer typeExp, final @Nullable T value) {
+    public static Expression param(final TypeInfer typeExp, final @Nullable Object value) {
         final Expression result;
         if (typeExp instanceof TableField) {  //for field codec
             if (value instanceof Supplier) {
