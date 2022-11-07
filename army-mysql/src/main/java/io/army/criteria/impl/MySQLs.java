@@ -20,12 +20,12 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
     }
 
     public static MySQLQuery._WithSpec<Select> query() {
-        return MySQLQueries.primaryQuery(null, null, SQLs::identity);
+        return MySQLQueries.primaryQuery(null, null, SQLs::_identity);
     }
 
 
     public static MySQLQuery._WithSpec<SubQuery> subQuery() {
-        return MySQLQueries.subQuery(null, ContextStack.peek(), SQLs::identity);
+        return MySQLQueries.subQuery(null, ContextStack.peek(), SQLs::_identity);
     }
 
 
@@ -35,54 +35,54 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
 
 
     public static MySQLValues._ValueSpec<Values> primaryValues() {
-        return MySQLSimpleValues.primaryValues(null, SQLs::identity);
+        return MySQLSimpleValues.primaryValues(null, SQLs::_identity);
     }
 
 
     public static MySQLValues._ValueSpec<SubValues> subValues() {
-        return MySQLSimpleValues.subValues(ContextStack.peek(), SQLs::identity);
+        return MySQLSimpleValues.subValues(ContextStack.peek(), SQLs::_identity);
     }
 
 
     public static MySQLUpdate._SingleWithSpec<Update> singleUpdate() {
-        return MySQLSingleUpdate.simple(SQLs::identity);
+        return MySQLSingleUpdate.simple(SQLs::_identity);
     }
 
 
     public static MySQLUpdate._BatchSingleWithSpec<Update> batchSingleUpdate() {
-        return MySQLSingleUpdate.batch(SQLs::identity);
+        return MySQLSingleUpdate.batch(SQLs::_identity);
     }
 
     public static MySQLUpdate._MultiWithSpec<Update> multiUpdate() {
-        return MySQLMultiUpdate.simple(SQLs::identity);
+        return MySQLMultiUpdate.simple(SQLs::_identity);
     }
 
 
     public static MySQLUpdate._BatchMultiWithSpec<Update> batchMultiUpdate() {
-        return MySQLMultiUpdate.batch(SQLs::identity);
+        return MySQLMultiUpdate.batch(SQLs::_identity);
     }
 
     public static MySQLDelete._SingleWithSpec<Delete> singleDelete() {
-        return MySQLSingleDelete.simple(null, SQLs::identity);
+        return MySQLSingleDelete.simple(null, SQLs::_identity);
     }
 
 
     public static MySQLDelete._BatchSingleWithSpec<Delete> batchSingleDelete() {
-        return MySQLSingleDelete.batch(null, SQLs::identity);
+        return MySQLSingleDelete.batch(null, SQLs::_identity);
     }
 
     public static MySQLDelete._MultiWithSpec<Delete> multiDelete() {
-        return MySQLMultiDelete.simple(SQLs::identity);
+        return MySQLMultiDelete.simple(SQLs::_identity);
     }
 
 
     public static MySQLDelete._BatchMultiWithSpec<Delete> batchMultiDelete() {
-        return MySQLMultiDelete.batch(SQLs::identity);
+        return MySQLMultiDelete.batch(SQLs::_identity);
     }
 
 
     public static MySQLLoadData._LoadDataClause<SQLCommand> loadDataCommand() {
-        return MySQLLoads.loadDataCommand(SQLs::identity);
+        return MySQLLoads.loadDataCommand(SQLs::_identity);
     }
 
 

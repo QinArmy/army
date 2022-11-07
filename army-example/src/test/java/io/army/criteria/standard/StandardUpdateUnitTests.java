@@ -1,6 +1,9 @@
 package io.army.criteria.standard;
 
-import io.army.criteria.*;
+import io.army.criteria.Expression;
+import io.army.criteria.PrimaryStatement;
+import io.army.criteria.Update;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
@@ -9,7 +12,6 @@ import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.IdentityType;
-import io.army.meta.TableMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -34,16 +36,14 @@ public class StandardUpdateUnitTests {
         map.put("firstId", (byte) 1);
         map.put("secondId", "3");
 
-        TableMeta<?> table = ChinaRegion_.T;
-
         final Update stmt;
         stmt = SQLs.domainUpdate()
-                .update(table, "c")
+                .update(ChinaRegion_.T, "c")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
                 .set(ChinaRegion_.regionGdp, SQLs::param, addGdp)
                 .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", AND, "secondId")
                 .and(ChinaRegion_.name::equal, SQLs::literal, "江湖")
-                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, new BigDecimal(1000), Expression::greatEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::param, addGdp, Expression::greatEqual, BigDecimal.ZERO)
                 .asUpdate();
 
         printStmt(stmt);
@@ -62,19 +62,12 @@ public class StandardUpdateUnitTests {
                 .where(ChinaProvince_.id::equal, SQLs::literal, "")
                 .and(ChinaProvince_.name::equal, SQLs::param, "江湖")
                 .and(ChinaProvince_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greatEqual, BigDecimal.ZERO)
-                .and(ChinaProvince_.governor.equal(SQLs::param, "阳顶天").or(consumer -> {
-                    IPredicate predicate;
-
-                    predicate = ChinaProvince_.governor.equal(SQLs::param, "石教主");
-                    consumer.accept(predicate);
-
-                    predicate = ChinaProvince_.governor.equal(SQLs::param, "钟教主")
-                            .and(ChinaProvince_.governor::equal, SQLs::param, "老钟");
-                    consumer.accept(predicate);
-
-                    predicate = ChinaProvince_.governor.equal(SQLs::param, "方腊");
-                    consumer.accept(predicate);
-                }))
+                .and(() ->
+                        ChinaProvince_.governor.equal(SQLs::param, "石教主")
+                                .or(ChinaProvince_.governor::equal, SQLs::param, "钟教主")
+                                .or(ChinaProvince_.governor::equal, SQLs::param, "老钟")
+                                .or(ChinaProvince_.governor::equal, SQLs::param, "方腊")
+                )
                 .asUpdate();
 
         printStmt(stmt);

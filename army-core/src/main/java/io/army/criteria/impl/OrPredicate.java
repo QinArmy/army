@@ -5,76 +5,74 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Objects;
 
 final class OrPredicate extends OperationPredicate {
 
     static _Predicate create(OperationPredicate left, IPredicate right) {
-        return new OrPredicate(left, Collections.singletonList((OperationPredicate) right));
-    }
-
-
-    static _Predicate create(final OperationPredicate left, final List<IPredicate> rights) {
-        final int size = rights.size();
-        final _Predicate result;
-        switch (size) {
-            case 0:
-                result = left;
-                break;
-            case 1:
-                result = new OrPredicate(left, Collections.singletonList((OperationPredicate) rights.get(0)));
-                break;
-            default: {
-                final List<OperationPredicate> predicateList = new ArrayList<>(size);
-                for (IPredicate right : rights) {
-                    predicateList.add((OperationPredicate) right);
-                }
-                result = new OrPredicate(left, Collections.unmodifiableList(predicateList));
-            }
-        }
-        return result;
+        return new OrPredicate(left, (OperationPredicate) right);
     }
 
 
     private final OperationPredicate left;
 
-    private final List<OperationPredicate> rights;
+    private final OperationPredicate right;
 
-    private OrPredicate(OperationPredicate left, List<OperationPredicate> predicateList) {
+    private OrPredicate(OperationPredicate left, OperationPredicate right) {
         this.left = left;
-        this.rights = predicateList;
+        this.right = right;
     }
 
 
     @Override
     public void appendSql(final _SqlContext context) {
-        final StringBuilder builder = context.sqlBuilder()
-                .append(_Constant.SPACE_LEFT_PAREN);
+        final StringBuilder builder;
+        builder = context.sqlBuilder().append(_Constant.SPACE_LEFT_PAREN);// outer left paren
 
-        final OperationPredicate left = this.left;
-        if (left instanceof AndPredicate) {
+        final OperationPredicate left = this.left, right = this.right;
+        final boolean leftInnerParen, rightInnerParen;
+        leftInnerParen = left instanceof NotPredicate || left instanceof AndPredicate;
+        if (leftInnerParen) {
             builder.append(_Constant.SPACE_LEFT_PAREN); //left inner left bracket
         }
         left.appendSql(context);
-        if (left instanceof AndPredicate) {
+        if (leftInnerParen) {
             builder.append(_Constant.SPACE_RIGHT_PAREN); //left inner left bracket
         }
-        for (OperationPredicate right : this.rights) {
-            builder.append(_Constant.SPACE_OR);
 
-            if (right instanceof AndPredicate) {
-                builder.append(_Constant.SPACE_LEFT_PAREN); // inner left bracket
-            }
+        builder.append(_Constant.SPACE_OR);
 
-            right.appendSql(context);
-
-            if (right instanceof AndPredicate) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);// inner right bracket
-            }
+        rightInnerParen = right instanceof NotPredicate || right instanceof AndPredicate;
+        if (rightInnerParen) {
+            builder.append(_Constant.SPACE_LEFT_PAREN); // inner left bracket
         }
-        builder.append(_Constant.SPACE_RIGHT_PAREN);
+
+        right.appendSql(context);
+
+        if (rightInnerParen) {
+            builder.append(_Constant.SPACE_RIGHT_PAREN);// inner right bracket
+        }
+        builder.append(_Constant.SPACE_RIGHT_PAREN); // outer right paren
+    }
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.left, this.right);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        final boolean match;
+        if (obj == this) {
+            match = true;
+        } else if (obj instanceof OrPredicate) {
+            final OrPredicate o = (OrPredicate) obj;
+            match = o.left.equals(this.left) && o.right.equals(this.right);
+        } else {
+            match = false;
+        }
+        return match;
     }
 
     @Override
@@ -82,26 +80,28 @@ final class OrPredicate extends OperationPredicate {
         final StringBuilder builder = new StringBuilder(128)
                 .append(_Constant.SPACE_LEFT_PAREN);
 
-        final OperationPredicate left = this.left;
-        if (left instanceof AndPredicate) {
+        final OperationPredicate left = this.left, right = this.right;
+        final boolean leftInnerParen, rightInnerParen;
+        leftInnerParen = left instanceof NotPredicate || left instanceof AndPredicate;
+        if (leftInnerParen) {
             builder.append(_Constant.SPACE_LEFT_PAREN); //left inner left bracket
         }
         builder.append(left);
-        if (left instanceof AndPredicate) {
+        if (leftInnerParen) {
             builder.append(_Constant.SPACE_RIGHT_PAREN); //left inner left bracket
         }
 
-        for (OperationPredicate right : this.rights) {
-            builder.append(_Constant.SPACE_OR);
+        builder.append(_Constant.SPACE_OR);
 
-            if (right instanceof AndPredicate) {
-                builder.append(_Constant.SPACE_LEFT_PAREN);
-            }
-            builder.append(right);
+        rightInnerParen = right instanceof NotPredicate || right instanceof AndPredicate;
+        if (rightInnerParen) {
+            builder.append(_Constant.SPACE_LEFT_PAREN); // inner left bracket
+        }
 
-            if (right instanceof AndPredicate) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);
-            }
+        builder.append(right);
+
+        if (rightInnerParen) {
+            builder.append(_Constant.SPACE_RIGHT_PAREN);// inner right bracket
         }
 
         return builder.append(_Constant.SPACE_RIGHT_PAREN)

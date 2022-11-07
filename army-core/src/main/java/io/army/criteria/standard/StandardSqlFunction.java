@@ -9,6 +9,7 @@ import io.army.function.BetweenOperator;
 import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -20,6 +21,8 @@ public interface StandardSqlFunction {
     interface _CaseEndClause<I extends Item> {
 
         I end();
+
+        I end(MappingType type);
 
         I end(TypeInfer type);
 

@@ -51,7 +51,7 @@ public abstract class SQLs extends StandardSyntax {
 
 
     public static StandardUpdate._SingleUpdateClause<Update> singleUpdate() {
-        return StandardUpdates.simpleSingle(SQLs::identity);
+        return StandardUpdates.simpleSingle(SQLs::_identity);
     }
 
 
@@ -80,7 +80,7 @@ public abstract class SQLs extends StandardSyntax {
 
 
     public static StandardDelete._StandardDeleteClause<Delete> singleDelete() {
-        return StandardDeletes.singleDelete(SQLs::identity);
+        return StandardDeletes.singleDelete(SQLs::_identity);
     }
 
     public static StandardDelete._SimpleDomainDeleteClause domainDelete() {
@@ -93,7 +93,7 @@ public abstract class SQLs extends StandardSyntax {
      * </p>
      */
     public static StandardDelete._BatchDeleteClause<Delete> batchSingleDelete() {
-        return StandardDeletes.batchSingleDelete(SQLs::identity);
+        return StandardDeletes.batchSingleDelete(SQLs::_identity);
     }
 
     public static StandardDelete._BatchDomainDeleteClause batchDomainDelete() {
@@ -102,11 +102,11 @@ public abstract class SQLs extends StandardSyntax {
 
 
     public static StandardQuery._SelectSpec<Select> query() {
-        return StandardQueries.primaryQuery(SQLs::identity);
+        return StandardQueries.primaryQuery(SQLs::_identity);
     }
 
     public static StandardQuery._SelectSpec<SubQuery> subQuery() {
-        return StandardQueries.subQuery(ContextStack.peek(), SQLs::identity);
+        return StandardQueries.subQuery(ContextStack.peek(), SQLs::_identity);
     }
 
 
@@ -1123,7 +1123,7 @@ public abstract class SQLs extends StandardSyntax {
      *
      * @see Function#identity()
      */
-    public static <T extends Item> T identity(T t) {
+    static <T extends Item> T _identity(T t) {
         return t;
     }
 

@@ -7,11 +7,11 @@ import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.util._Exceptions;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * This class is base class of all {@link IPredicate} implementation .
@@ -87,16 +87,6 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     public final IPredicate or(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator
             , String paramName, int size) {
         return this.or(expOperator.apply(namedOperator, paramName, size));
-    }
-
-    @Override
-    public final IPredicate or(Consumer<Consumer<IPredicate>> consumer) {
-        final List<IPredicate> list = new ArrayList<>();
-        consumer.accept(list::add);
-        if (list.size() == 0) {
-            throw ContextStack.criteriaError(ContextStack.peek(), _Exceptions::predicateListIsEmpty);
-        }
-        return OrPredicate.create(this, list);
     }
 
     @Override
@@ -214,19 +204,6 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final IPredicate ifOr(Consumer<Consumer<IPredicate>> consumer) {
-        final List<IPredicate> list = new ArrayList<>();
-        consumer.accept(list::add);
-        final IPredicate result;
-        if (list.size() == 0) {
-            result = this;
-        } else {
-            result = OrPredicate.create(this, list);
-        }
-        return result;
-    }
-
-    @Override
     public final IPredicate and(final @Nullable IPredicate predicate) {
         if (predicate == null) {
             throw ContextStack.nullPointer(ContextStack.peek());
@@ -235,12 +212,18 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
+    public final IPredicate and(Supplier<IPredicate> supplier) {
+        return this.and(supplier.get());
+    }
+
+
+    @Override
     public final IPredicate and(Function<Expression, IPredicate> expOperator, Expression operand) {
         return this.and(expOperator.apply(operand));
     }
 
     @Override
-    public final <E> IPredicate and(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E extends RightOperand> IPredicate and(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         return this.and(expOperator.apply(supplier.get()));
     }
 
@@ -292,15 +275,10 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
         return this.and(expOperator.apply(namedOperator, paramName, size));
     }
 
-
     @Override
-    public final IPredicate and(Consumer<Consumer<IPredicate>> consumer) {
-        final List<IPredicate> list = new ArrayList<>();
-        consumer.accept(list::add);
-        if (list.size() == 0) {
-            throw ContextStack.criteriaError(ContextStack.peek(), _Exceptions::predicateListIsEmpty);
-        }
-        return AndPredicate.create(this, list);
+    public final IPredicate and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator
+            , BiFunction<DataField, String, Expression> namedOperator) {
+        return this.and(fieldOperator.apply(namedOperator));
     }
 
     @Override
@@ -315,7 +293,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final <E> IPredicate ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E extends RightOperand> IPredicate ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
         final IPredicate predicate;
         final E value;
         if ((value = supplier.get()) == null) {
@@ -413,19 +391,6 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
             predicate = this;
         } else {
             predicate = this.and(expOperator.apply(namedOperator, paramName, size));
-        }
-        return predicate;
-    }
-
-    @Override
-    public final IPredicate ifAnd(Consumer<Consumer<IPredicate>> consumer) {
-        final List<IPredicate> list = new ArrayList<>();
-        consumer.accept(list::add);
-        final IPredicate predicate;
-        if (list.size() == 0) {
-            predicate = this;
-        } else {
-            predicate = AndPredicate.create(this, list);
         }
         return predicate;
     }

@@ -7,6 +7,9 @@ import io.army.criteria.standard.StandardSqlFunction;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.function.BetweenOperator;
+import io.army.function.BetweenValueOperator;
+import io.army.function.ExpressionOperator;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
@@ -1072,10 +1075,9 @@ abstract class FunctionUtils {
     }//MultiArgOptionFunc
 
 
-    private static final class CaseFunc extends OperationExpression
-            implements StandardSqlFunction._CaseWhenSpec, StandardSqlFunction._CaseThenClause
-            , FunctionSpec, CriteriaContextSpec, OperationExpression.MutableParamMetaSpec
-            , Functions._FuncTypeUpdateClause {
+    private static final class CaseFunc<I extends Item> extends OperationExpression
+            implements StandardSqlFunction._CaseWhenSpec<I>, StandardSqlFunction._CaseThenClause<I>
+            , FunctionSpec, CriteriaContextSpec, OperationExpression.MutableParamMetaSpec {
 
         private final ArmyExpression caseValue;
 
@@ -1184,256 +1186,300 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause when(final @Nullable Expression expression) {
-            if (this.whenExpression != null) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            if (expression == null) {
-                throw ContextStack.nullPointer(this.criteriaContext);
-            }
-            this.whenExpression = (ArmyExpression) expression;
-            return this;
+        public StandardSqlFunction._CaseThenClause<I> when(Expression expression) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause when(Supplier<? extends Expression> supplier) {
-            return this.when(supplier.get());
+        public StandardSqlFunction._CaseThenClause<I> when(Supplier<Expression> supplier) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause when(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
-            return this.when(operator.apply(supplier.get()));
+        public <T> StandardSqlFunction._CaseThenClause<I> when(Function<T, Expression> valueOperator, T value) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause when(Function<Object, ? extends Expression> operator
-                , Function<String, ?> function, String keyName) {
-            return this.when(operator.apply(function.apply(keyName)));
+        public <T> StandardSqlFunction._CaseThenClause<I> when(Function<T, Expression> valueOperator, Supplier<T> getter) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause when(BiFunction<Object, Object, ? extends Expression> operator
-                , Supplier<?> firstOperand, Supplier<?> secondOperand) {
-            return this.when(operator.apply(firstOperand.get(), secondOperand.get()));
+        public StandardSqlFunction._CaseThenClause<I> when(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause when(BiFunction<Object, Object, ? extends Expression> operator
-                , Function<String, ?> function, String firstKey, String secondKey) {
-            return this.when(operator.apply(function.apply(firstKey), function.apply(secondKey)));
+        public <T> StandardSqlFunction._CaseThenClause<I> when(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, T operand) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause ifWhen(Supplier<? extends Expression> supplier) {
-            final Expression expression;
-            if ((expression = supplier.get()) != null) {
-                this.when(expression);
-            }
-            return this;
+        public <T> StandardSqlFunction._CaseThenClause<I> when(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause ifWhen(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
-            final Object value;
-            if ((value = supplier.get()) != null) {
-                this.when(operator.apply(value));
-            }
-            return this;
+        public StandardSqlFunction._CaseThenClause<I> when(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause ifWhen(Function<Object, ? extends Expression> operator
-                , Function<String, ?> function, String keyName) {
-            final Object value;
-            if ((value = function.apply(keyName)) != null) {
-                this.when(operator.apply(value));
-            }
-            return this;
+        public <T> StandardSqlFunction._CaseThenClause<I> when(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, T first, StandardSyntax.WordAnd and, T second) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause ifWhen(BiFunction<Object, Object, ? extends Expression> operator
-                , Supplier<?> firstOperand, Supplier<?> secondOperand) {
-            final Object firstValue, secondValue;
-            if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperand.get()) != null) {
-                this.when(operator.apply(firstValue, secondValue));
-            }
-            return this;
+        public <T> StandardSqlFunction._CaseThenClause<I> when(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, StandardSyntax.WordAnd and, Supplier<T> secondGetter) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause ifWhen(BiFunction<Object, Object, ? extends Expression> operator
-                , Function<String, ?> function, String firstKey, String secondKey) {
-            final Object firstValue, secondValue;
-            if ((firstValue = function.apply(firstKey)) != null && (secondValue = function.apply(secondKey)) != null) {
-                this.when(operator.apply(firstValue, secondValue));
-            }
-            return this;
+        public StandardSqlFunction._CaseThenClause<I> when(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, StandardSyntax.WordAnd and, String secondKey) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseWhenSpec then(final @Nullable Expression expression) {
-            final ArmyExpression whenExpression = this.whenExpression;
-            if (whenExpression != null) {
-                this.whenExpression = null; //clear for next when clause.
-                if (expression == null) {
-                    throw ContextStack.nullPointer(this.criteriaContext);
-                }
-                List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
-                if (expPairList == null) {
-                    this.expPairList = expPairList = new ArrayList<>();
-                } else if (!(expPairList instanceof ArrayList)) {
-                    throw ContextStack.castCriteriaApi(this.criteriaContext);
-                }
-                expPairList.add(_Pair.create(whenExpression, (ArmyExpression) expression));
-            }
-            return this;
+        public StandardSqlFunction._CaseThenClause<I> when(BetweenOperator expOperator, Expression first, StandardSyntax.WordAnd and, Expression second) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseWhenSpec then(Supplier<? extends Expression> supplier) {
-            if (this.whenExpression != null) {
-                this.then(supplier.get());
-            }
-            return this;
+        public StandardSqlFunction._CaseThenClause<I> ifWhen(Supplier<Expression> supplier) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseWhenSpec then(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
-            if (this.whenExpression != null) {
-                this.then(operator.apply(supplier.get()));
-            }
-            return this;
+        public <T> StandardSqlFunction._CaseThenClause<I> ifWhen(Function<T, Expression> valueOperator, T value) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseWhenSpec then(Function<Object, ? extends Expression> operator
-                , Function<String, ?> function, String keyName) {
-            if (this.whenExpression != null) {
-                this.then(operator.apply(function.apply(keyName)));
-            }
-            return this;
+        public <T> StandardSqlFunction._CaseThenClause<I> ifWhen(Function<T, Expression> valueOperator, Supplier<T> getter) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseWhenSpec then(BiFunction<Object, Object, ? extends Expression> operator
-                , Supplier<?> firstOperand, Supplier<?> secondOperand) {
-            if (this.whenExpression != null) {
-                this.then(operator.apply(firstOperand.get(), secondOperand.get()));
-            }
-            return this;
+        public StandardSqlFunction._CaseThenClause<I> ifWhen(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseWhenSpec then(BiFunction<Object, Object, ? extends Expression> operator
-                , Function<String, ?> function, String firstKey, String secondKey) {
-            if (this.whenExpression != null) {
-                this.then(operator.apply(function.apply(firstKey), function.apply(secondKey)));
-            }
-            return this;
+        public <T> StandardSqlFunction._CaseThenClause<I> ifWhen(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, T operand) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause Else(final @Nullable Expression expression) {
-            if (this.elseExpression != null) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            if (expression == null) {
-                throw ContextStack.nullPointer(this.criteriaContext);
-            }
-            this.elseExpression = (ArmyExpression) expression;
-            return this;
+        public <T> StandardSqlFunction._CaseThenClause<I> ifWhen(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause Else(Supplier<? extends Expression> supplier) {
-            return this.Else(supplier.get());
+        public StandardSqlFunction._CaseThenClause<I> ifWhen(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause Else(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
-            return this.Else(operator.apply(supplier.get()));
+        public <T> StandardSqlFunction._CaseThenClause<I> ifWhen(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, T first, StandardSyntax.WordAnd and, T second) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause Else(Function<Object, ? extends Expression> operator
-                , Function<String, ?> function, String keyName) {
-            return this.Else(operator.apply(function.apply(keyName)));
+        public <T> StandardSqlFunction._CaseThenClause<I> ifWhen(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, StandardSyntax.WordAnd and, Supplier<T> secondGetter) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause Else(BiFunction<Object, Object, ? extends Expression> operator
-                , Supplier<?> firstOperand, Supplier<?> secondOperand) {
-            return this.Else(operator.apply(firstOperand.get(), secondOperand.get()));
+        public StandardSqlFunction._CaseThenClause<I> ifWhen(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, StandardSyntax.WordAnd and, String secondKey) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause Else(BiFunction<Object, Object, ? extends Expression> operator
-                , Function<String, ?> function, String firstKey, String secondKey) {
-            return this.Else(operator.apply(function.apply(firstKey), function.apply(secondKey)));
+        public StandardSqlFunction._CaseWhenSpec<I> then(Expression expression) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause ifElse(Supplier<? extends Expression> supplier) {
-            final Expression expression;
-            if ((expression = supplier.get()) != null) {
-                this.Else(expression);
-            }
-            return this;
+        public StandardSqlFunction._CaseWhenSpec<I> then(Supplier<Expression> supplier) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause ifElse(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
-            final Object value;
-            if ((value = supplier.get()) != null) {
-                this.Else(operator.apply(value));
-            }
-            return this;
+        public <T> StandardSqlFunction._CaseWhenSpec<I> then(Function<T, Expression> valueOperator, T value) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause ifElse(Function<Object, ? extends Expression> operator
-                , Function<String, ?> function, String keyName) {
-            final Object value;
-            if ((value = function.apply(keyName)) != null) {
-                this.Else(operator.apply(value));
-            }
-            return this;
+        public <T> StandardSqlFunction._CaseWhenSpec<I> then(Function<T, Expression> valueOperator, Supplier<T> getter) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause ifElse(BiFunction<Object, Object, ? extends Expression> operator
-                , Supplier<?> firstOperand, Supplier<?> secondOperand) {
-            final Object firstValue, secondValue;
-            if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperand.get()) != null) {
-                this.Else(operator.apply(firstValue, secondValue));
-            }
-            return this;
+        public StandardSqlFunction._CaseWhenSpec<I> then(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause ifElse(BiFunction<Object, Object, ? extends Expression> operator
-                , Function<String, ?> function, String firstKey, String secondKey) {
-            final Object firstValue, secondValue;
-            if ((firstValue = function.apply(firstKey)) != null && (secondValue = function.apply(secondKey)) != null) {
-                this.Else(operator.apply(firstValue, secondValue));
-            }
-            return this;
+        public <T> StandardSqlFunction._CaseWhenSpec<I> then(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, T operand) {
+            return null;
         }
 
         @Override
-        public Functions._FuncTypeUpdateClause end() {
-            final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
-            if (expPairList == null || expPairList.size() == 0) {
-                String m = "case function at least one when clause";
-                throw ContextStack.criteriaError(this.criteriaContext, m);
-            } else if (expPairList instanceof ArrayList) {
-                this.expPairList = _CollectionUtils.unmodifiableList(expPairList);
-            } else {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            return this;
+        public <T> StandardSqlFunction._CaseWhenSpec<I> then(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
+            return null;
         }
+
+        @Override
+        public StandardSqlFunction._CaseWhenSpec<I> then(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseWhenSpec<I> then(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, T first, StandardSyntax.WordAnd and, T second) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseWhenSpec<I> then(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, StandardSyntax.WordAnd and, Supplier<T> secondGetter) {
+            return null;
+        }
+
+        @Override
+        public StandardSqlFunction._CaseWhenSpec<I> then(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, StandardSyntax.WordAnd and, String secondKey) {
+            return null;
+        }
+
+        @Override
+        public StandardSqlFunction._CaseWhenSpec<I> then(BetweenOperator expOperator, Expression first, StandardSyntax.WordAnd and, Expression second) {
+            return null;
+        }
+
+        @Override
+        public StandardSqlFunction._CaseEndClause<I> Else(Expression expression) {
+            return null;
+        }
+
+        @Override
+        public StandardSqlFunction._CaseEndClause<I> Else(Supplier<Expression> supplier) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseEndClause<I> Else(Function<T, Expression> valueOperator, T value) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseEndClause<I> Else(Function<T, Expression> valueOperator, Supplier<T> getter) {
+            return null;
+        }
+
+        @Override
+        public StandardSqlFunction._CaseEndClause<I> Else(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseEndClause<I> Else(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, T operand) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseEndClause<I> Else(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
+            return null;
+        }
+
+        @Override
+        public StandardSqlFunction._CaseEndClause<I> Else(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseEndClause<I> Else(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, T first, StandardSyntax.WordAnd and, T second) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseEndClause<I> Else(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, StandardSyntax.WordAnd and, Supplier<T> secondGetter) {
+            return null;
+        }
+
+        @Override
+        public StandardSqlFunction._CaseEndClause<I> Else(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, StandardSyntax.WordAnd and, String secondKey) {
+            return null;
+        }
+
+        @Override
+        public StandardSqlFunction._CaseEndClause<I> Else(BetweenOperator expOperator, Expression first, StandardSyntax.WordAnd and, Expression second) {
+            return null;
+        }
+
+        @Override
+        public StandardSqlFunction._CaseEndClause<I> ifElse(Supplier<Expression> supplier) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseEndClause<I> ifElse(Function<T, Expression> valueOperator, T value) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseEndClause<I> ifElse(Function<T, Expression> valueOperator, Supplier<T> getter) {
+            return null;
+        }
+
+        @Override
+        public StandardSqlFunction._CaseEndClause<I> ifElse(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseEndClause<I> ifElse(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, T operand) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseEndClause<I> ifElse(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
+            return null;
+        }
+
+        @Override
+        public StandardSqlFunction._CaseEndClause<I> ifElse(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseEndClause<I> ifElse(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, T first, StandardSyntax.WordAnd and, T second) {
+            return null;
+        }
+
+        @Override
+        public <T> StandardSqlFunction._CaseEndClause<I> ifElse(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, StandardSyntax.WordAnd and, Supplier<T> secondGetter) {
+            return null;
+        }
+
+        @Override
+        public StandardSqlFunction._CaseEndClause<I> ifElse(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, StandardSyntax.WordAnd and, String secondKey) {
+            return null;
+        }
+
+        @Override
+        public I end() {
+            return null;
+        }
+
+        @Override
+        public I end(MappingType type) {
+            return null;
+        }
+
+        @Override
+        public I end(TypeInfer type) {
+            return null;
+        }
+
 
     }//CaseFunc
 

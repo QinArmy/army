@@ -11,6 +11,7 @@ import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillPerson_;
 import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.UserType;
+import io.army.mapping.LongType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -37,11 +38,11 @@ public class StandardQueryUnitTests {
                 .select(SQLs::Case)
                 .when(PillUser_.userType::equal, SQLs::param, 1)
                 .then(PillUser_.userType)
-                .end()
+                .end(LongType.INSTANCE)
                 .as("a")
                 .asQuery();
 
-
+        printStmt(stmt);
     }
 
 

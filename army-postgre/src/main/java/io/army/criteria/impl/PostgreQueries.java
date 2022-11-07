@@ -26,7 +26,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         I,
         PostgreCtes,
         PostgreQuery._SelectSpec<I>,
-        PostgreSyntax.Modifier,
+        Postgres.Modifier,
+        PostgreQuery._PostgreSelectCommaSpec<I>,
         PostgreQuery._FromSpec<I>,
         PostgreQuery._TableSampleJoinSpec<I>,
         PostgreQuery._JoinSpec<I>,
@@ -45,7 +46,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         PostgreQuery._QueryWithComplexSpec<I>>
         implements PostgreQuery, _PostgreQuery
         , PostgreQuery._WithSpec<I>
-        , PostgreQuery._FromSpec<I>
+        , PostgreQuery._PostgreSelectCommaSpec<I>
         , PostgreQuery._TableSampleJoinSpec<I>
         , PostgreQuery._RepeatableJoinClause<I>
         , PostgreQuery._JoinSpec<I>
@@ -68,7 +69,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
 
     static <I extends Item> Function<String, _StaticCteLeftParenSpec<I>> complexCte(CriteriaContext context, I comma) {
-        return new PostgreCteComplexCommand<>(context, comma)::nextCte;
+        return new StaticComplexCommand<>(context, comma)::nextCte;
     }
 
     static <I extends Item> PostgreQuery._DynamicSubMaterializedSpec<I> dynamicCteQuery(CriteriaContext outerContext
@@ -705,7 +706,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         @Override
         _QueryWithComplexSpec<I> createQueryUnion(UnionType unionType) {
             final Function<RowSet, I> unionFunc;
-            unionFunc = right -> this.function.apply(new UnionSelect( this, unionType, right));
+            unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             UnionType.exceptType(this.context, unionType);
             return new ComplexSelect<>(this.context.getOuterContext(), unionFunc);
         }
@@ -899,7 +900,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         PostgreQuery._QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
             UnionType.exceptType(this.context, unionType);
             final Function<RowSet, I> unionFunc;
-            unionFunc = right -> this.function.apply(new UnionSelect( this, unionType, right));
+            unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             return new ComplexSelect<>(this.context.getOuterContext(), unionFunc);
         }
 
@@ -938,7 +939,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
             PostgreCtes,
             PostgreQuery._QueryComplexSpec<I>,
             Postgres.Modifier,
-            PostgreQuery._FromSpec<I>>
+            _PostgreSelectCommaSpec<I>,
+            _FromSpec<I>>
             implements PostgreQuery._QueryWithComplexSpec<I> {
 
         final Function<RowSet, I> function;
@@ -1046,7 +1048,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
 
     private static final class CteComma<I extends Item>
-            extends SelectClauseDispatcher<PostgreSyntax.Modifier, PostgreQuery._FromSpec<I>>
+            extends SelectClauseDispatcher<Postgres.Modifier, _PostgreSelectCommaSpec<I>, _FromSpec<I>>
             implements PostgreQuery._CteComma<I> {
 
         private final boolean recursive;
@@ -1077,17 +1079,17 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }//CteComma
 
 
-    private static final class PostgreCteComplexCommand<I extends Item>
-            extends SimpleQueries.SelectClauseDispatcher<
+    private static final class StaticComplexCommand<I extends Item>
+            extends SimpleQueries.ComplexSelectCommand<
             Postgres.Modifier,
-            _FromSpec<_CteSearchSpec<I>>>
+            _PostgreSelectCommaSpec<_CteSearchSpec<I>>,
+            _FromSpec<_CteSearchSpec<I>>,
+            _StaticCteAsClause<I>>
             implements _StaticCteMaterializedSpec<I>
             , _StaticCteLeftParenSpec<I>
             , _AsCteClause<I> {
 
         private final boolean recursive;
-
-        private final CriteriaContext context;
 
         private final I item;
 
@@ -1097,38 +1099,11 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
         private PostgreSupports.MaterializedOption materializedOption;
 
-        private Statement._LeftParenStringQuadraOptionalSpec<_StaticCteAsClause<I>> columnAliasClause;
 
-        private PostgreCteComplexCommand(CriteriaContext context, I item) {
+        private StaticComplexCommand(CriteriaContext context, I item) {
+            super(context);
             this.recursive = context.isWithRecursive();
-            this.context = context;
             this.item = item;
-        }
-
-
-        @Override
-        public _RightParenClause<_StaticCteAsClause<I>> leftParen(String string) {
-            return this.getColumnAliasClause()
-                    .leftParen(string);
-        }
-
-        @Override
-        public _CommaStringDualSpec<_StaticCteAsClause<I>> leftParen(String string1, String string2) {
-            return this.getColumnAliasClause()
-                    .leftParen(string1, string2);
-        }
-
-        @Override
-        public _RightParenClause<_StaticCteAsClause<I>> leftParen(Consumer<Consumer<String>> consumer) {
-            return this.getColumnAliasClause()
-                    .leftParen(consumer);
-        }
-
-        @Override
-        public _CommaStringQuadraSpec<_StaticCteAsClause<I>> leftParen(String string1, String string2, String string3
-                , String string4) {
-            return this.getColumnAliasClause()
-                    .leftParen(string1, string2, string3, string4);
         }
 
 
@@ -1303,17 +1278,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
             return this.item;
         }
 
-        private Statement._LeftParenStringQuadraOptionalSpec<_StaticCteAsClause<I>> getColumnAliasClause() {
-            Statement._LeftParenStringQuadraOptionalSpec<_StaticCteAsClause<I>> columnAliasClause;
-            columnAliasClause = this.columnAliasClause;
-            if (columnAliasClause == null) {
-                columnAliasClause = CriteriaSupports.stringQuadra(this.context, this::columnAliasClauseEnd);
-                this.columnAliasClause = columnAliasClause;
-            }
-            return columnAliasClause;
-        }
-
-        private _StaticCteAsClause<I> columnAliasClauseEnd(final List<String> list) {
+        @Override
+        _StaticCteAsClause<I> columnAliasClauseEnd(List<String> list) {
             if (this.columnAliasList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -1321,12 +1287,12 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
             return this;
         }
 
-
     }//PostgreCteComplexCommand
 
 
     private static final class StaticCteSelectSpec<I extends Item> extends SimpleQueries.SelectClauseDispatcher<
             Postgres.Modifier,
+            _PostgreSelectCommaSpec<I>,
             _FromSpec<I>> implements _StaticCteSelectSpec<I> {
 
         private final CriteriaContext context;
@@ -1334,7 +1300,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         private final Function<SubQuery, I> function;
 
         /**
-         * @see PostgreCteComplexCommand#leftParen()
+         * @see StaticComplexCommand#leftParen()
          * @see #leftParen()
          */
         private StaticCteSelectSpec(CriteriaContext context, Function<SubQuery, I> function) {

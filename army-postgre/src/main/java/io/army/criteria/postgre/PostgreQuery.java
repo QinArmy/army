@@ -39,8 +39,6 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-
-
     interface _FrameExclusionSpec<I extends Item> extends _RightParenClause<I> {
 
         _RightParenClause<I> excludeCurrentRow();
@@ -329,10 +327,14 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
+    interface _PostgreSelectCommaSpec<I extends Item> extends _SelectCommaClause<_PostgreSelectCommaSpec<I>>
+            , _FromSpec<I> {
 
-    interface _PostgreSelectClause<I extends Item> extends _SelectClause<_FromSpec<I>>
-            , _DynamicModifierSelectClause<Postgres.Modifier, _FromSpec<I>> {
+    }
 
+
+    interface _PostgreSelectClause<I extends Item> extends
+            _DynamicModifierSelectClause<Postgres.Modifier, _PostgreSelectCommaSpec<I>, _FromSpec<I>> {
 
     }
 

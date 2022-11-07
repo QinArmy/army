@@ -178,6 +178,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     }
 
     @Override
+    public final SR select(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias
+            , SQLs.WordAs as, String alias) {
+        return null;
+    }
+
+    @Override
     public final SR select(Function<Expression, Expression> funcRef, FieldMeta<?> field
             , SQLs.WordAs as, String alias) {
         assert as == SQLs.AS;
@@ -308,6 +314,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     @Override
     public final SR comma(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias) {
+        return null;
+    }
+
+    @Override
+    public final SR comma(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias
+            , SQLs.WordAs as, String alias) {
         return null;
     }
 
@@ -1007,6 +1019,13 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         }
 
         @Override
+        public final SR select(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias
+                , SQLs.WordAs as, String alias) {
+            return this.createSelectClause()
+                    .select(derivedAlias, period, fieldAlias, as, alias);
+        }
+
+        @Override
         public final SR select(String derivedAlias1, SQLs.SymbolPeriod period1, String fieldAlias1
                 , String derivedAlias2, SQLs.SymbolPeriod period2, String fieldAlias2) {
             return this.createSelectClause()
@@ -1129,18 +1148,33 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         }
 
         @Override
+        public final SD select(W modifier, StandardSyntax.SymbolStar star) {
+            return this.createSelectClause()
+                    .select(modifier, star);
+        }
+
+        @Override
+        public final SD select(Supplier<List<Hint>> hints, List<W> modifiers, StandardSyntax.SymbolStar star) {
+            return this.createSelectClause()
+                    .select(hints, modifiers, star);
+        }
+
+        @Override
         public final SD selects(Consumer<Selections> consumer) {
-            return null;
+            return this.createSelectClause()
+                    .selects(consumer);
         }
 
         @Override
         public final SD selects(W modifier, Consumer<Selections> consumer) {
-            return null;
+            return this.createSelectClause()
+                    .selects(modifier, consumer);
         }
 
         @Override
         public final SD selects(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Selections> consumer) {
-            return null;
+            return this.createSelectClause()
+                    .selects(hints, modifiers, consumer);
         }
 
 
@@ -1302,7 +1336,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     }//WithSelectClauseDispatcher
 
 
-    static abstract class ComplexSelectCommand<W extends Query.SelectModifier, SR, RR, SD>
+    static abstract class ComplexSelectCommand<W extends Query.SelectModifier, SR, SD, RR>
             extends SelectClauseDispatcher<W, SR, SD>
             implements Statement._LeftParenStringQuadraOptionalSpec<RR>
             , _RightParenClause<RR> {

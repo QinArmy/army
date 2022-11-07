@@ -2,7 +2,7 @@ package io.army.util;
 
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
-import io.army.meta.ChildTableMeta;
+import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
@@ -16,21 +16,21 @@ public abstract class Criteria {
     }
 
 
-    public static <T> Select createSelectDomainById(final TableMeta<T> table, final Object id) {
+    public static <P, T> Select createSelectDomainById(final TableMeta<T> table, final Object id) {
         final Select stmt;
-        if (table instanceof ChildTableMeta) {
-            final ChildTableMeta<?> child = (ChildTableMeta<?>) table;
-            final ParentTableMeta<?> parent = child.parentMeta();
+        if (table instanceof ComplexTableMeta) {
+            final ComplexTableMeta<P, T> child = (ComplexTableMeta<P, T>) table;
+            final ParentTableMeta<P> parent = child.parentMeta();
 
             stmt = SQLs.query()
-                    .select(SQLs.childGroup(child, "c", "p"))
+                    .select("p", SQLs.PERIOD, parent, "c", SQLs.PERIOD, child)
                     .from(child, AS, "c") // small table first
-                    .join(parent,AS, "p").on(child.id().equal(parent.id()))
-                    .where(child.id().equal(SQLs::param,id))
+                    .join(parent, AS, "p").on(child.id()::equal, parent.id())
+                    .where(child.id().equal(SQLs::param, id))
                     .asQuery();
         } else {
             stmt = SQLs.query()
-                    .select(SQLs.group(table, "t"))
+                    .select("t", SQLs.PERIOD, table)
                     .from(table,AS, "t")
                     .where(table.id().equal(SQLs::param,id))
                     .asQuery();
@@ -38,22 +38,22 @@ public abstract class Criteria {
         return stmt;
     }
 
-    public static <T> Select createSelectDomainByUnique(final TableMeta<T> table
+    public static <P, T> Select createSelectDomainByUnique(final TableMeta<T> table
             , final UniqueFieldMeta<? super T> field, final Object value) {
         final Select stmt;
-        if (table instanceof ChildTableMeta) {
-            final ChildTableMeta<T> child = (ChildTableMeta<T>) table;
-            final ParentTableMeta<?> parent = child.parentMeta();
+        if (table instanceof ComplexTableMeta) {
+            final ComplexTableMeta<P, T> child = (ComplexTableMeta<P, T>) table;
+            final ParentTableMeta<P> parent = child.parentMeta();
             stmt = SQLs.query()
-                    .select(SQLs.childGroup(child, "c", "p"))
-                    .from(child,AS, "c")
-                    .join(parent,AS, "p").on(child.id().equal(parent.id()))
-                    .where(field.equal(SQLs::param,value))
-                    .limit(SQLs::param,2)
+                    .select("p", SQLs.PERIOD, parent, "c", SQLs.PERIOD, child)
+                    .from(child, AS, "c")
+                    .join(parent, AS, "p").on(child.id().equal(parent.id()))
+                    .where(field.equal(SQLs::param, value))
+                    .limit(SQLs::param, 2)
                     .asQuery();
         } else {
             stmt = SQLs.query()
-                    .select(SQLs.group(table, "t"))
+                    .select("t", SQLs.PERIOD, table)
                     .from(table, AS,"t")
                     .where(field.equal(SQLs::param,value))
                     .limit(SQLs::param,2)

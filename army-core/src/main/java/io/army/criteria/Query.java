@@ -84,7 +84,7 @@ public interface Query extends RowSet {
     /*################################## blow select clause  interfaces ##################################*/
 
 
-    interface _SelectClause<SR> {
+    interface _SelectClause<SR> extends Item {
 
         SR select(FieldMeta<?> field);
 

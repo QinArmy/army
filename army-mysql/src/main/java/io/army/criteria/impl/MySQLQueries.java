@@ -35,6 +35,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         MySQLCtes,
         MySQLQuery._SelectSpec<I>,
         MySQLs.Modifier,
+        MySQLQuery._MySQLSelectCommaSpec<I>,
         MySQLQuery._FromSpec<I>,
         MySQLQuery._IndexHintJoinSpec<I>,
         MySQLQuery._JoinSpec<I>,
@@ -53,7 +54,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         MySQLQuery._QueryWithComplexSpec<I>>
         implements _MySQLQuery, MySQLQuery
         , MySQLQuery._WithSpec<I>
-        , MySQLQuery._FromSpec<I>
+        , MySQLQuery._MySQLSelectCommaSpec<I>
         , MySQLQuery._IndexHintJoinSpec<I>
         , MySQLQuery._WhereAndSpec<I>
         , MySQLQuery._GroupByWithRollupSpec<I>
@@ -916,7 +917,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }//PartitionOnClause
 
     private static final class MySQLCteComma<I extends Item>
-            extends WithSelectClauseDispatcher<MySQLCtes, _SelectSpec<I>, MySQLs.Modifier, _FromSpec<I>>
+            extends WithSelectClauseDispatcher<
+            MySQLCtes,
+            _SelectSpec<I>,
+            MySQLs.Modifier,
+            _MySQLSelectCommaSpec<I>,
+            _FromSpec<I>>
             implements MySQLQuery._CteComma<I> {
 
         private final boolean recursive;
@@ -957,7 +963,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     private static final class StaticComplexCommand<I extends Item>
             extends SimpleQueries.ComplexSelectCommand<
             MySQLs.Modifier,
-            MySQLQuery._FromSpec<_AsCteClause<I>>,
+            _MySQLSelectCommaSpec<_AsCteClause<I>>,
+            _FromSpec<_AsCteClause<I>>,
             _StaticCteAsClause<I>>
             implements MySQLQuery._StaticCteLeftParenSpec<I>
             , _RightParenClause<_StaticCteAsClause<I>>
@@ -1111,7 +1118,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
 
     private static final class ComplexSubQuery<I extends Item>
-            extends WithBuilderSelectClauseDispatcher<MySQLCtes, _QueryComplexSpec<I>, MySQLs.Modifier, _FromSpec<I>>
+            extends WithBuilderSelectClauseDispatcher<
+            MySQLCtes,
+            _QueryComplexSpec<I>,
+            MySQLs.Modifier,
+            _MySQLSelectCommaSpec<I>,
+            _FromSpec<I>>
             implements MySQLQuery._QueryWithComplexSpec<I> {
 
 
@@ -1167,7 +1179,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
 
     private static final class ComplexSelect<I extends Item>
-            extends WithBuilderSelectClauseDispatcher<MySQLCtes, _QueryComplexSpec<I>, MySQLs.Modifier, _FromSpec<I>>
+            extends WithBuilderSelectClauseDispatcher<
+            MySQLCtes,
+            _QueryComplexSpec<I>,
+            MySQLs.Modifier,
+            _MySQLSelectCommaSpec<I>,
+            _FromSpec<I>>
             implements _QueryWithComplexSpec<I> {
 
         private final Function<RowSet, I> function;
