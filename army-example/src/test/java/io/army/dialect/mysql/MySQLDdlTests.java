@@ -3,7 +3,7 @@ package io.army.dialect.mysql;
 
 import io.army.dialect.Database;
 import io.army.dialect._MockDialects;
-import io.army.example.pill.domain.User_;
+import io.army.example.pill.domain.PillUser_;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
@@ -27,7 +27,7 @@ public class MySQLDdlTests {
                 continue;
             }
             ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
-            ddl.createTable(User_.T, sqlList);
+            ddl.createTable(PillUser_.T, sqlList);
 
             List<String> errorList;
             errorList = ddl.errorMsgList();
@@ -52,7 +52,7 @@ public class MySQLDdlTests {
     public void addColumn() {
         final List<String> sqlList = new ArrayList<>();
         MySQLDdl ddl;
-        final TableMeta<?> table = User_.T;
+        final TableMeta<?> table = PillUser_.T;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
@@ -87,10 +87,10 @@ public class MySQLDdlTests {
             ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
 
             List<_FieldResult> resultList = new ArrayList<>();
-            resultList.add(new MockFieldResult(User_.nickName, false, true, false, false));
+            resultList.add(new MockFieldResult(PillUser_.nickName, false, true, false, false));
 
-            resultList.add(new MockFieldResult(User_.identityId, true, true, false, true));
-            resultList.add(new MockFieldResult(User_.identityType, false, true, false, false));
+            resultList.add(new MockFieldResult(PillUser_.identityId, true, true, false, true));
+            resultList.add(new MockFieldResult(PillUser_.identityType, false, true, false, false));
 
             ddl.modifyColumn(resultList, sqlList);
 
@@ -114,7 +114,7 @@ public class MySQLDdlTests {
     public void createIndex() {
         final List<String> sqlList = new ArrayList<>();
         MySQLDdl ddl;
-        final TableMeta<?> table = User_.T;
+        final TableMeta<?> table = PillUser_.T;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
@@ -141,7 +141,7 @@ public class MySQLDdlTests {
     public void changeIndex() {
         final EnumMap<MySQLDialect, List<String>> sqlMap = new EnumMap<>(MySQLDialect.class);
         MySQLDdl ddl;
-        final TableMeta<?> table = User_.T;
+        final TableMeta<?> table = PillUser_.T;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
@@ -177,7 +177,7 @@ public class MySQLDdlTests {
     public void dropIndex() {
         final EnumMap<MySQLDialect, List<String>> sqlMap = new EnumMap<>(MySQLDialect.class);
         MySQLDdl ddl;
-        final TableMeta<?> table = User_.T;
+        final TableMeta<?> table = PillUser_.T;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;

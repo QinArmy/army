@@ -7,7 +7,7 @@ import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.ChinaProvince;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
-import io.army.example.pill.domain.User_;
+import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.IdentityType;
 import io.army.meta.TableMeta;
 import org.slf4j.Logger;
@@ -106,12 +106,12 @@ public class StandardUpdateUnitTests {
     public void updateParentWithOnlyNullMode() {
         final Update stmt;
         stmt = SQLs.domainUpdate()
-                .update(User_.T, "u")
-                .set(User_.identityType, SQLs::literal, IdentityType.PERSON)
-                .set(User_.identityId, SQLs::literal, 888)
-                .set(User_.nickName, SQLs::param, "令狐冲")
-                .where(User_.id::equal, SQLs::literal, "1")
-                .and(User_.nickName::equal, SQLs::param, "zoro")
+                .update(PillUser_.T, "u")
+                .set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
+                .set(PillUser_.identityId, SQLs::literal, 888)
+                .set(PillUser_.nickName, SQLs::param, "令狐冲")
+                .where(PillUser_.id::equal, SQLs::literal, "1")
+                .and(PillUser_.nickName::equal, SQLs::param, "zoro")
                 .asUpdate();
 
         printStmt(stmt);

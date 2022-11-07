@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.example.pill.domain.User_;
+import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.UserType;
 import io.army.mapping.StringType;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class MySQLFunctionUnitTests {
         final Select stmt;
         stmt = MySQLs.query()
                 .select(this::simpleCaseFunc)
-                .from(User_.T,AS, "u")
+                .from(PillUser_.T, AS, "u")
                 .asQuery();
         printStmt(stmt);
     }
@@ -39,7 +39,7 @@ public class MySQLFunctionUnitTests {
      */
     private void simpleCaseFunc(Consumer<SelectItem> consumer) {
         Selection selection;
-        selection = MySQLs.Case(User_.userType)
+        selection = MySQLs.Case(PillUser_.userType)
                 .when(SQLs.literal(UserType.NONE))
                 .then(SQLs.literal(1))
 

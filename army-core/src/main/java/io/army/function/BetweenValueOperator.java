@@ -6,7 +6,7 @@ import io.army.criteria.impl.SQLs;
 
 import java.util.function.BiFunction;
 
-
+@FunctionalInterface
 public interface BetweenValueOperator<T> {
 
     IPredicate apply(BiFunction<Expression, T, Expression> valueOperator, T first, SQLs.WordAnd and, T second);

@@ -9,10 +9,10 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
 import io.army.dialect.postgre.PostgreDialect;
+import io.army.example.bank.domain.user.BankPerson;
+import io.army.example.bank.domain.user.BankPerson_;
 import io.army.example.bank.domain.user.BankUser_;
-import io.army.example.bank.domain.user.Person;
-import io.army.example.bank.domain.user.Person_;
-import io.army.example.pill.domain.User;
+import io.army.example.pill.domain.PillUser;
 import io.army.example.pill.struct.IdentityType;
 import io.army.example.pill.struct.UserType;
 import io.army.stmt.GeneratedKeyStmt;
@@ -33,13 +33,13 @@ public class PostgreInsertUnitTests {
 
     @Test
     public void domainInsertChild() {
-        final List<Person> personList;
-        personList = this.createBankPersonList();
+        final List<BankPerson> bankPersonList;
+        bankPersonList = this.createBankPersonList();
         final ReturningInsert stmt;
         stmt = Postgres.singleInsert()
                 .insertInto(BankUser_.T).as("u")
                 .overridingSystemValue()
-                .values(personList)
+                .values(bankPersonList)
                 .onConflict()
                 .onConstraint("")
                 .doNothing()
@@ -47,21 +47,21 @@ public class PostgreInsertUnitTests {
                 .asReturningInsert()
                 .child()
 
-                .insertInto(Person_.T)
-                .values(personList)
+                .insertInto(BankPerson_.T)
+                .values(bankPersonList)
                 .returningAll()
                 .asReturningInsert();
     }
 
 
-    private List<User> createUserList() {
-        final List<User> list = new ArrayList<>();
-        User u;
+    private List<PillUser> createUserList() {
+        final List<PillUser> list = new ArrayList<>();
+        PillUser u;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
 
         for (int i = 0; i < rowSize; i++) {
-            u = new User();
+            u = new PillUser();
 
             u.setIdentityId(i + 1L);
             u.setCreateTime(now);
@@ -77,14 +77,14 @@ public class PostgreInsertUnitTests {
         return list;
     }
 
-    private List<Person> createBankPersonList() {
-        final List<Person> list = new ArrayList<>();
-        Person u;
+    private List<BankPerson> createBankPersonList() {
+        final List<BankPerson> list = new ArrayList<>();
+        BankPerson u;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
 
         for (int i = 0; i < rowSize; i++) {
-            u = new Person();
+            u = new BankPerson();
 
 
             u.setCreateTime(now);

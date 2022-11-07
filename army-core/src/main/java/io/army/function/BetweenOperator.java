@@ -4,7 +4,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.impl.SQLs;
 
-
+@FunctionalInterface
 public interface BetweenOperator {
 
     IPredicate apply(Expression first, SQLs.WordAnd and, Expression second);

@@ -14,10 +14,10 @@ import io.army.dialect.mysql.MySQLDialect;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
-import io.army.example.pill.domain.Person;
-import io.army.example.pill.domain.Person_;
-import io.army.example.pill.domain.User;
-import io.army.example.pill.domain.User_;
+import io.army.example.pill.domain.PillPerson;
+import io.army.example.pill.domain.PillPerson_;
+import io.army.example.pill.domain.PillUser;
+import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.IdentityType;
 import io.army.example.pill.struct.UserType;
 import io.army.stmt.GeneratedKeyStmt;
@@ -85,29 +85,29 @@ public class MySQLInsertUnitTests {
             return hintList;
         };
 
-        final List<Person> personList;
-        personList = this.createPsersonList();
+        final List<PillPerson> pillPersonList;
+        pillPersonList = this.createPsersonList();
         final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, Collections.singletonList(MySQLs.HIGH_PRIORITY))
-                .into(User_.T)
+                .into(PillUser_.T)
                 .partition()
                 .leftParen("p1")
                 .rightParen()
-                .defaultValue(User_.visible, SQLs::literal, true)
-                .values(personList)
+                .defaultValue(PillUser_.visible, SQLs::literal, true)
+                .values(pillPersonList)
                 .onDuplicateKey()
-                .set(User_.identityId,SQLs::param, 0)
+                .set(PillUser_.identityId, SQLs::param, 0)
                 .asInsert()
 
                 .child()
 
-                .insertInto(Person_.T)
-                .defaultValue(Person_.birthday, SQLs::literal, LocalDate.now())
-                .values(personList)
+                .insertInto(PillPerson_.T)
+                .defaultValue(PillPerson_.birthday, SQLs::literal, LocalDate.now())
+                .values(pillPersonList)
                 .onDuplicateKey()
-                .set(Person_.birthday,SQLs::param, 0)
+                .set(PillPerson_.birthday, SQLs::param, 0)
                 .asInsert();
 
         printStmt(stmt);
@@ -218,14 +218,14 @@ public class MySQLInsertUnitTests {
     }
 
 
-    private List<Person> createPsersonList() {
-        final List<Person> list = new ArrayList<>();
-        Person u;
+    private List<PillPerson> createPsersonList() {
+        final List<PillPerson> list = new ArrayList<>();
+        PillPerson u;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
 
         for (int i = 0; i < rowSize; i++) {
-            u = new Person();
+            u = new PillPerson();
 
             u.setIdentityId(i + 1L);
             u.setCreateTime(now);
@@ -243,14 +243,14 @@ public class MySQLInsertUnitTests {
     }
 
 
-    private List<User> createUserList() {
-        final List<User> list = new ArrayList<>();
-        User u;
+    private List<PillUser> createUserList() {
+        final List<PillUser> list = new ArrayList<>();
+        PillUser u;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
 
         for (int i = 0; i < rowSize; i++) {
-            u = new User();
+            u = new PillUser();
 
             u.setIdentityId(i + 1L);
             u.setCreateTime(now);

@@ -8,8 +8,8 @@ import io.army.criteria.impl.SQLs;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.*;
-import io.army.example.pill.domain.Person_;
-import io.army.example.pill.domain.User_;
+import io.army.example.pill.domain.PillPerson_;
+import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.UserType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,11 +32,11 @@ public class StandardQueryUnitTests {
         final Select stmt;
 
         stmt = SQLs.query()
-                .select(SQLs.group(User_.T, "u"))
-                .from(User_.T, SQLs.AS, "u")
-                .groupBy(User_.userType)
-                .having(User_.userType.equal(SQLs::literal, UserType.PERSON))// group by is empty ,so having clause no action
-                .orderBy(User_.id,SQLs.DESC)
+                .select(SQLs.group(PillUser_.T, "u"))
+                .from(PillUser_.T, SQLs.AS, "u")
+                .groupBy(PillUser_.userType)
+                .having(PillUser_.userType.equal(SQLs::literal, UserType.PERSON))// group by is empty ,so having clause no action
+                .orderBy(PillUser_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
                 .forUpdate()
                 .asQuery();
@@ -49,15 +49,15 @@ public class StandardQueryUnitTests {
         final Select stmt;
 
         stmt = SQLs.query()
-                .select(SQLs.childGroup(Person_.T, "p", "u"))
-                .from(Person_.T, SQLs.AS, "p")
-                .join(User_.T, SQLs.AS, "u").on(Person_.id.equal(User_.id))
-                .where(Person_.id::equal, SQLs::literal, "1")
-                .and(User_.nickName::equal, SQLs::param, "脉兽秀秀")
+                .select(SQLs.childGroup(PillPerson_.T, "p", "u"))
+                .from(PillPerson_.T, SQLs.AS, "p")
+                .join(PillUser_.T, SQLs.AS, "u").on(PillPerson_.id.equal(PillUser_.id))
+                .where(PillPerson_.id::equal, SQLs::literal, "1")
+                .and(PillUser_.nickName::equal, SQLs::param, "脉兽秀秀")
                 //.and(User_.visible.equal(false))
-                .groupBy(Person_.birthday)
-                .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
-                .orderBy(Person_.id,SQLs.DESC)
+                .groupBy(PillPerson_.birthday)
+                .having(PillUser_.userType.equal(SQLs::literal, UserType.PERSON))
+                .orderBy(PillPerson_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
                 .forUpdate()
                 .asQuery();
@@ -72,14 +72,14 @@ public class StandardQueryUnitTests {
 
         stmt = SQLs.query()
                 .leftParen()
-                .select(User_.id)
-                .from(User_.T, SQLs.AS, "p")
-                .where(User_.id::equal, SQLs::literal, "1")
-                .and(User_.nickName::equal, SQLs::param, "脉兽秀秀")
+                .select(PillUser_.id)
+                .from(PillUser_.T, SQLs.AS, "p")
+                .where(PillUser_.id::equal, SQLs::literal, "1")
+                .and(PillUser_.nickName::equal, SQLs::param, "脉兽秀秀")
                 //.and(User_.visible.equal(false))
-                .groupBy(User_.userType)
-                .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
-                .orderBy(User_.id,SQLs.DESC)
+                .groupBy(PillUser_.userType)
+                .having(PillUser_.userType.equal(SQLs::literal, UserType.PERSON))
+                .orderBy(PillUser_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
                 .asQuery()
 
@@ -89,14 +89,14 @@ public class StandardQueryUnitTests {
 
                 .leftParen()
 
-                .select(User_.id)
-                .from(User_.T, SQLs.AS, "p")
-                .where(User_.id::equal, SQLs::literal, "2")
-                .and(User_.nickName::equal, SQLs::param, "远浪舰长")
+                .select(PillUser_.id)
+                .from(PillUser_.T, SQLs.AS, "p")
+                .where(PillUser_.id::equal, SQLs::literal, "2")
+                .and(PillUser_.nickName::equal, SQLs::param, "远浪舰长")
                 //.and(User_.visible.equal(false))
-                .groupBy(User_.userType)
-                .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
-                .orderBy(User_.id,SQLs.DESC)
+                .groupBy(PillUser_.userType)
+                .having(PillUser_.userType.equal(SQLs::literal, UserType.PERSON))
+                .orderBy(PillUser_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
                 .asQuery()
 
@@ -104,15 +104,15 @@ public class StandardQueryUnitTests {
 
                 .unionAll()
 
-                .select(User_.id)
-                .from(User_.T, SQLs.AS, "p")
-                .where(User_.id::equal, SQLs::literal, 2)
-                .and(User_.nickName::equal, SQLs::param, "蛮大人")
-                .and(User_.version.equal(SQLs::literal, 2))
+                .select(PillUser_.id)
+                .from(PillUser_.T, SQLs.AS, "p")
+                .where(PillUser_.id::equal, SQLs::literal, 2)
+                .and(PillUser_.nickName::equal, SQLs::param, "蛮大人")
+                .and(PillUser_.version.equal(SQLs::literal, 2))
                 //.and(User_.version::equal, SQLs::literal, 2)
-                .groupBy(User_.userType)
-                .having(User_.userType.equal(SQLs::literal, UserType.PERSON))
-                .orderBy(User_.id,SQLs.DESC)
+                .groupBy(PillUser_.userType)
+                .having(PillUser_.userType.equal(SQLs::literal, UserType.PERSON))
+                .orderBy(PillUser_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
 
 
@@ -125,14 +125,14 @@ public class StandardQueryUnitTests {
     public void simpleSubQuery() {
         final Select stmt;
         stmt = SQLs.query()
-                .select(User_.nickName)
-                .from(User_.T, SQLs.AS, "u")
-                .where(User_.nickName.equal(SQLs::param, "蛮吉"))
+                .select(PillUser_.nickName)
+                .from(PillUser_.T, SQLs.AS, "u")
+                .where(PillUser_.nickName.equal(SQLs::param, "蛮吉"))
                 .and(SQLs::exists, () -> SQLs.subQuery()
                         .select(ChinaProvince_.id)
                         .from(ChinaProvince_.T, SQLs.AS, "p")
                         .join(ChinaRegion_.T, SQLs.AS, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
-                        .where(ChinaProvince_.governor.equal(User_.nickName))
+                        .where(ChinaProvince_.governor.equal(PillUser_.nickName))
                         .asQuery()
                 )
                 .asQuery();
@@ -150,9 +150,9 @@ public class StandardQueryUnitTests {
         stmt = SQLs.query()
                 .select(SQLs.ref("us", "one"), SQLs.derivedGroup("us"))
                 .from(() -> SQLs.subQuery()
-                        .select(SQLs.literal(1).as("one"), SQLs.group(User_.T, "u"))
-                        .from(User_.T, SQLs.AS, "u")
-                        .where(User_.createTime::equal, SQLs::literal, LocalDateTime.now())
+                        .select(SQLs.literal(1).as("one"), SQLs.group(PillUser_.T, "u"))
+                        .from(PillUser_.T, SQLs.AS, "u")
+                        .where(PillUser_.createTime::equal, SQLs::literal, LocalDateTime.now())
                         .limit(SQLs::literal, criteria::get, "offset", "rowCount")
                         .asQuery())
                 .as("us")

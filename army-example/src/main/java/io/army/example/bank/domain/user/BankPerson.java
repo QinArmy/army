@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 @Table(name = "u_person", comment = "bank person user")
 @DiscriminatorValue(BankUserType.Constant.PERSON)
-public class Person extends BankUser<Person> {
+public class BankPerson extends BankUser<BankPerson> {
 
     @Column(updateMode = UpdateMode.IMMUTABLE, comment = "the user type that user form.")
     private BankUserType fromPartnerType;
@@ -25,7 +25,7 @@ public class Person extends BankUser<Person> {
         return birthday;
     }
 
-    public Person setBirthday(LocalDate birthday) {
+    public BankPerson setBirthday(LocalDate birthday) {
         this.birthday = birthday;
         return this;
     }
@@ -34,7 +34,7 @@ public class Person extends BankUser<Person> {
         return phone;
     }
 
-    public Person setPhone(String phone) {
+    public BankPerson setPhone(String phone) {
         this.phone = phone;
         return this;
     }
@@ -43,7 +43,7 @@ public class Person extends BankUser<Person> {
         return fromPartnerType;
     }
 
-    public Person setFromPartnerType(BankUserType fromPartnerType) {
+    public BankPerson setFromPartnerType(BankUserType fromPartnerType) {
         this.fromPartnerType = fromPartnerType;
         return this;
     }

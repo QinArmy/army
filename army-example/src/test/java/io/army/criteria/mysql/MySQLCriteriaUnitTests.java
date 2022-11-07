@@ -7,7 +7,7 @@ import io.army.dialect.mysql.MySQLDialect;
 import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.*;
 import io.army.example.common.Criteria;
-import io.army.example.pill.domain.User_;
+import io.army.example.pill.domain.PillUser_;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -403,7 +403,7 @@ public class MySQLCriteriaUnitTests {
             final Update stmt;
             stmt = MySQLs.multiUpdate()
                     .update(BankUser_.T, AS, "u")
-                    .join(Person_.T, AS, "p").on(BankUser_.id::equal, Person_.id)
+                    .join(BankPerson_.T, AS, "p").on(BankUser_.id::equal, BankPerson_.id)
                     .join(PartnerUser_.T, AS, "up").on(BankUser_.id::equal, PartnerUser_.id)
                     .join(BankAccount_.T, AS, "a").on(BankUser_.id::equal, BankAccount_.userId)
                     .set(BankUser_.nickName, SQLs::param, map.get("newNickName"))
@@ -506,7 +506,7 @@ public class MySQLCriteriaUnitTests {
 
             final Update stmt;
             stmt = MySQLs.batchMultiUpdate()
-                    .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), User_.T)
+                    .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), PillUser_.T)
                     .partition()
                     .leftParen("p1")
                     .rightParen()
@@ -517,18 +517,18 @@ public class MySQLCriteriaUnitTests {
                     .leftParen("PRIMARY")
                     .rightParen()
 
-                    .join(BankAccount_.T,AS, "a")
+                    .join(BankAccount_.T, AS, "a")
 
                     .ignoreIndex()
                     .forJoin()
                     .leftParen("idx_account_id")
                     .rightParen()
 
-                    .on(User_.id::equal, BankAccount_.id)
-                    .set(User_.createTime, SQLs::namedParam)
+                    .on(PillUser_.id::equal, BankAccount_.id)
+                    .set(PillUser_.createTime, SQLs::namedParam)
                     .set(BankAccount_.balance, SQLs::plusEqual, SQLs::namedParam)
-                    .where(User_.identityId::equal, SQLs::literal, map::get, "identityId")
-                    .ifAnd(User_.nickName::equal, SQLs::literal, map::get, "oldNickName")
+                    .where(PillUser_.identityId::equal, SQLs::literal, map::get, "identityId")
+                    .ifAnd(PillUser_.nickName::equal, SQLs::literal, map::get, "oldNickName")
                     .and(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTime")
                     .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTime")
                     .ifAnd(BankAccount_.version::equal, SQLs::literal, map::get, "version")

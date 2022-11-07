@@ -238,8 +238,8 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
             certificate = createPersonCertificate(form);
             this.baseDao.save(certificate);
         }
-        final Person user;
-        user = new Person()
+        final BankPerson user;
+        user = new BankPerson()
                 .setPartnerUserId(partnerPair.first)
                 .setPhone(form.getPhone())
                 .setNickName(form.getPhone())
@@ -369,7 +369,7 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
     }
 
 
-    private static BankAccount createPersonAccount(final Person user, final BankAccountType accountType) {
+    private static BankAccount createPersonAccount(final BankPerson user, final BankAccountType accountType) {
         switch (accountType) {
             case LENDER:
             case BORROWER:

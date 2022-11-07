@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Table(name = "u_user", comment = "user", indexes = @Index(name = "idx_identity_id", fieldList = {"identityId"}, unique = true))
 @Inheritance("userType")
-public class User extends VersionDomain {
+public class PillUser extends VersionDomain {
 
     @Column
     private Long id;

@@ -42,19 +42,19 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final <T> IPredicate or(ExpressionDualOperator<T, IPredicate> expOperator
+    public final <T> IPredicate or(ExpressionOperator<Expression, T, IPredicate> expOperator
             , BiFunction<Expression, T, Expression> operator, T operand) {
         return this.or(expOperator.apply(operator, operand));
     }
 
     @Override
-    public final <T> IPredicate or(ExpressionDualOperator<T, IPredicate> expOperator
+    public final <T> IPredicate or(ExpressionOperator<Expression, T, IPredicate> expOperator
             , BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
         return this.or(expOperator.apply(operator, getter.get()));
     }
 
     @Override
-    public final IPredicate or(ExpressionDualOperator<Object, IPredicate> expOperator
+    public final IPredicate or(ExpressionOperator<Expression, Object, IPredicate> expOperator
             , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
         return this.or(expOperator.apply(operator, function.apply(keyName)));
     }
@@ -125,7 +125,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final <T> IPredicate ifOr(ExpressionDualOperator<T, IPredicate> expOperator
+    public final <T> IPredicate ifOr(ExpressionOperator<Expression, T, IPredicate> expOperator
             , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
         final IPredicate predicate;
         if (operand == null) {
@@ -137,7 +137,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final <T> IPredicate ifOr(ExpressionDualOperator<T, IPredicate> expOperator
+    public final <T> IPredicate ifOr(ExpressionOperator<Expression, T, IPredicate> expOperator
             , BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
         final IPredicate predicate;
         final T operand;
@@ -150,7 +150,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final IPredicate ifOr(ExpressionDualOperator<Object, IPredicate> expOperator
+    public final IPredicate ifOr(ExpressionOperator<Expression, Object, IPredicate> expOperator
             , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
         final IPredicate predicate;
         final Object operand;
@@ -245,19 +245,19 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final <T> IPredicate and(ExpressionDualOperator<T, IPredicate> expOperator
+    public final <T> IPredicate and(ExpressionOperator<Expression, T, IPredicate> expOperator
             , BiFunction<Expression, T, Expression> operator, T operand) {
         return this.and(expOperator.apply(operator, operand));
     }
 
     @Override
-    public final <T> IPredicate and(ExpressionDualOperator<T, IPredicate> expOperator
+    public final <T> IPredicate and(ExpressionOperator<Expression, T, IPredicate> expOperator
             , BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
         return this.and(expOperator.apply(operator, getter.get()));
     }
 
     @Override
-    public final IPredicate and(ExpressionDualOperator<Object, IPredicate> expOperator
+    public final IPredicate and(ExpressionOperator<Expression, Object, IPredicate> expOperator
             , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
         return this.and(expOperator.apply(operator, function.apply(keyName)));
     }
@@ -327,7 +327,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final <T> IPredicate ifAnd(ExpressionDualOperator<T, IPredicate> expOperator
+    public final <T> IPredicate ifAnd(ExpressionOperator<Expression, T, IPredicate> expOperator
             , BiFunction<Expression, T, Expression> operator, @Nullable T operand) {
         final IPredicate predicate;
         if (operand == null) {
@@ -339,7 +339,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final <T> IPredicate ifAnd(ExpressionDualOperator<T, IPredicate> expOperator
+    public final <T> IPredicate ifAnd(ExpressionOperator<Expression, T, IPredicate> expOperator
             , BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
         final IPredicate predicate;
         final T operand;
@@ -352,7 +352,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final IPredicate ifAnd(ExpressionDualOperator<Object, IPredicate> expOperator
+    public final IPredicate ifAnd(ExpressionOperator<Expression, Object, IPredicate> expOperator
             , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
         final IPredicate predicate;
         final Object operand;
