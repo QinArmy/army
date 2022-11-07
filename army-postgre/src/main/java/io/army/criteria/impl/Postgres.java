@@ -26,12 +26,12 @@ public abstract class Postgres extends PostgreFuncSyntax {
     }
 
     public static PostgreQuery._WithSpec<Select> query() {
-        return PostgreQueries.primaryQuery(null, null, SQLs::_identity);
+        return PostgreQueries.primaryQuery(null, null, SQLs::identity);
     }
 
 
     public static PostgreQuery._WithSpec<SubQuery> subQuery() {
-        return PostgreQueries.subQuery(null, ContextStack.peek(), SQLs::_identity);
+        return PostgreQueries.subQuery(null, ContextStack.peek(), SQLs::identity);
     }
 
 
@@ -40,27 +40,27 @@ public abstract class Postgres extends PostgreFuncSyntax {
     }
 
     public static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> singleUpdate() {
-        return PostgreUpdates.single(SQLs::_identity, SQLs::_identity);
+        return PostgreUpdates.single(SQLs::identity, SQLs::identity);
     }
 
     public static PostgreUpdate._BatchSingleWithSpec<Update, ReturningUpdate> batchSingleUpdate() {
-        return PostgreUpdates.batch(SQLs::_identity, SQLs::_identity);
+        return PostgreUpdates.batch(SQLs::identity, SQLs::identity);
     }
 
     public static PostgreDelete._SingleWithSpec<Delete, ReturningDelete> singleDelete() {
-        return PostgreDeletes.primarySingle(SQLs::_identity, SQLs::_identity);
+        return PostgreDeletes.primarySingle(SQLs::identity, SQLs::identity);
     }
 
     public static PostgreDelete._BatchSingleWithSpec<Delete, ReturningDelete> batchSingleDelete() {
-        return PostgreDeletes.batch(SQLs::_identity, SQLs::_identity);
+        return PostgreDeletes.batch(SQLs::identity, SQLs::identity);
     }
 
     public static PostgreValues._WithSpec<Values> primaryValues() {
-        return PostgreSimpleValues.primaryValues(null, null, SQLs::_identity);
+        return PostgreSimpleValues.primaryValues(null, null, SQLs::identity);
     }
 
     public static PostgreValues._WithSpec<SubValues> subValues() {
-        return PostgreSimpleValues.subValues(null, ContextStack.peek(), SQLs::_identity);
+        return PostgreSimpleValues.subValues(null, ContextStack.peek(), SQLs::identity);
     }
 
 

@@ -83,7 +83,7 @@ public interface Statement extends Item {
      * @param <AR> next clause java type
      * @since 1.0
      */
-    interface _AsClause<AR> {
+    interface _AsClause<AR> extends Item {
 
         AR as(String alias);
     }

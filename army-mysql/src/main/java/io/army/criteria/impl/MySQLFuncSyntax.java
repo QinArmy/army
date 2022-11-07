@@ -50,8 +50,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     }
 
 
-    public interface _AggregateOverSpec
-            extends Window._AggregateWindowFunc<Window._SimpleLeftParenClause< Expression>> {
+    public interface _AggregateOverSpec<I extends Item>
+            extends Window._AggregateWindowFunc<Window._SimpleLeftParenClause<I>> {
 
     }
 
@@ -87,7 +87,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_adddate">ADDDATE(date,days)</a>
      */
     public static Expression addDate(final Expression date, final Expression days) {
-        return SQLFunctions.twoArgFunc("ADDDATE", date, days, LocalDateType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ADDDATE", date, days, LocalDateType.INSTANCE);
     }
 
     /**
@@ -120,7 +120,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subdate">SUBDATE(expr,days)</a>
      */
     public static Expression subDate(final Expression date, final Expression days) {
-        return SQLFunctions.twoArgFunc("SUBDATE", date, days, LocalDateType.INSTANCE);
+        return FunctionUtils.twoArgFunc("SUBDATE", date, days, LocalDateType.INSTANCE);
     }
 
     /**
@@ -131,7 +131,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_addtime">ADDTIME(expr1,expr2)</a>
      */
     public static Expression addTime(final Expression expr1, final Expression expr2) {
-        return SQLFunctions.twoArgFunc("ADDTIME", expr1, expr2, expr1.typeMeta());
+        return FunctionUtils.twoArgFunc("ADDTIME", expr1, expr2, expr1.typeMeta());
     }
 
     /**
@@ -142,7 +142,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subtime">SUBTIME(expr1,expr2)</a>
      */
     public static Expression subTime(final Expression expr1, final Expression expr2) {
-        return SQLFunctions.twoArgFunc("SUBTIME", expr1, expr2, expr1.typeMeta());
+        return FunctionUtils.twoArgFunc("SUBTIME", expr1, expr2, expr1.typeMeta());
     }
 
     /**
@@ -153,7 +153,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_convert-tz">CONVERT_TZ(dt,from_tz,to_tz)</a>
      */
     public static Expression convertTz(Expression dt, Expression fromTz, Expression toTz) {
-        return SQLFunctions.threeArgFunc("CONVERT_TZ", dt, fromTz, toTz, LocalDateTimeType.INSTANCE);
+        return FunctionUtils.threeArgFunc("CONVERT_TZ", dt, fromTz, toTz, LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -164,7 +164,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_curdate">CURRENT_DATE()</a>
      */
     public static Expression currentDate() {
-        return SQLFunctions.noArgFunc("CURRENT_DATE", LocalDateType.INSTANCE);
+        return FunctionUtils.noArgFunc("CURRENT_DATE", LocalDateType.INSTANCE);
     }
 
     /**
@@ -175,7 +175,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIME()</a>
      */
     public static Expression currentTime() {
-        return SQLFunctions.noArgFunc("CURRENT_TIME", LocalTimeType.INSTANCE);
+        return FunctionUtils.noArgFunc("CURRENT_TIME", LocalTimeType.INSTANCE);
     }
 
     /**
@@ -186,7 +186,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIME(fsp)</a>
      */
     public static Expression currentTime(final Expression fsp) {
-        return SQLFunctions.oneArgFunc("CURRENT_TIME", fsp, LocalTimeType.INSTANCE);
+        return FunctionUtils.oneArgFunc("CURRENT_TIME", fsp, LocalTimeType.INSTANCE);
     }
 
     /**
@@ -198,7 +198,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-timestamp">CURRENT_TIMESTAMP()</a>
      */
     public static Expression currentTimestamp() {
-        return SQLFunctions.noArgFunc("CURRENT_TIMESTAMP", LocalDateTimeType.INSTANCE);
+        return FunctionUtils.noArgFunc("CURRENT_TIMESTAMP", LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -211,7 +211,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIMESTAMP(fsp)</a>
      */
     public static Expression currentTimestamp(final Expression fsp) {
-        return SQLFunctions.oneArgFunc("CURRENT_TIMESTAMP", fsp, LocalDateTimeType.INSTANCE);
+        return FunctionUtils.oneArgFunc("CURRENT_TIMESTAMP", fsp, LocalDateTimeType.INSTANCE);
     }
 
 
@@ -224,7 +224,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date">DATE(expr)</a>
      */
     public static Expression date(final Expression expr) {
-        return SQLFunctions.oneArgFunc("DATE", expr, LocalDateType.INSTANCE);
+        return FunctionUtils.oneArgFunc("DATE", expr, LocalDateType.INSTANCE);
     }
 
     /**
@@ -237,7 +237,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_datediff">DATEDIFF(expr1,expr2)</a>
      */
     public static Expression dateDiff(final Expression expr1, final Expression expr2) {
-        return SQLFunctions.twoArgFunc("DATEDIFF", expr1, expr2, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("DATEDIFF", expr1, expr2, IntegerType.INSTANCE);
     }
 
     /**
@@ -292,7 +292,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-format">DATE_FORMAT(date,format)</a>
      */
     public static Expression dateFormat(final Expression date, final Expression format) {
-        return SQLFunctions.twoArgFunc("DATE_FORMAT", date, format, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("DATE_FORMAT", date, format, StringType.INSTANCE);
     }
 
     /**
@@ -304,7 +304,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofmonth">DAYOFMONTH(date)</a>
      */
     public static Expression dayOfMonth(final Expression date) {
-        return SQLFunctions.oneArgFunc("DAYOFMONTH", date, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("DAYOFMONTH", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -316,7 +316,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayname">DAYNAME(date)</a>
      */
     public static Expression dayName(final Expression date) {
-        return SQLFunctions.oneArgFunc("DAYNAME", date, DayOfWeekType.INSTANCE);
+        return FunctionUtils.oneArgFunc("DAYNAME", date, DayOfWeekType.INSTANCE);
     }
 
     /**
@@ -328,7 +328,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofweek">DAYOFYEAR(date)</a>
      */
     public static Expression dayOfWeek(final Expression date) {
-        return SQLFunctions.oneArgFunc("DAYOFWEEK", date, DayOfWeekType.INSTANCE);
+        return FunctionUtils.oneArgFunc("DAYOFWEEK", date, DayOfWeekType.INSTANCE);
     }
 
     /**
@@ -340,7 +340,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofyear">DAYOFYEAR(date)</a>
      */
     public static Expression dayOfYear(final Expression date) {
-        return SQLFunctions.oneArgFunc("DAYOFYEAR", date, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("DAYOFYEAR", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -397,9 +397,9 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(unit);
-        argList.add(SQLFunctions.FuncWord.FROM);
+        argList.add(FunctionUtils.FuncWord.FROM);
         argList.add(date);
-        return SQLFunctions.complexArgFunc("EXTRACT", argList, returnType);
+        return FunctionUtils.complexArgFunc("EXTRACT", argList, returnType);
     }
 
 
@@ -412,7 +412,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_from-days">FROM_DAYS(date)</a>
      */
     public static Expression fromDays(final Expression n) {
-        return SQLFunctions.oneArgFunc("FROM_DAYS", n, LocalDateType.INSTANCE);
+        return FunctionUtils.oneArgFunc("FROM_DAYS", n, LocalDateType.INSTANCE);
     }
 
     /**
@@ -425,7 +425,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_from-unixtime">FROM_UNIXTIME(unix_timestamp[,format])</a>
      */
     public static Expression fromUnixTime(final Expression unixTimestamp) {
-        return SQLFunctions.oneArgFunc("FROM_UNIXTIME", unixTimestamp, LocalDateTimeType.INSTANCE);
+        return FunctionUtils.oneArgFunc("FROM_UNIXTIME", unixTimestamp, LocalDateTimeType.INSTANCE);
     }
 
 
@@ -440,7 +440,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_from-unixtime">FROM_UNIXTIME(unix_timestamp[,format])</a>
      */
     public static Expression fromUnixTime(final Expression unixTimestamp, final Expression format) {
-        return SQLFunctions.twoArgFunc("FROM_UNIXTIME", unixTimestamp, format, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("FROM_UNIXTIME", unixTimestamp, format, StringType.INSTANCE);
     }
 
     /**
@@ -470,13 +470,13 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(type);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         if (format == null) {
             argList.add(SQLs.NULL);
         } else {
             argList.add(format);
         }
-        return SQLFunctions.complexArgFunc(funcName, argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
     /**
@@ -488,7 +488,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_hour">HOUR(time)</a>
      */
     public static Expression hour(final Expression time) {
-        return SQLFunctions.oneArgFunc("HOUR", time, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("HOUR", time, IntegerType.INSTANCE);
     }
 
     /**
@@ -500,7 +500,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_last-day">LAST_DAY(date)</a>
      */
     public static Expression lastDay(final Expression date) {
-        return SQLFunctions.oneArgFunc("LAST_DAY", date, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("LAST_DAY", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -512,7 +512,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_now">NOW([fsp])</a>
      */
     public static Expression now() {
-        return SQLFunctions.noArgFunc("NOW", LocalDateTimeType.INSTANCE);
+        return FunctionUtils.noArgFunc("NOW", LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -525,7 +525,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_now">NOW([fsp])</a>
      */
     public static Expression now(final Expression fsp) {
-        return SQLFunctions.oneArgFunc("NOW", fsp, LocalDateTimeType.INSTANCE);
+        return FunctionUtils.oneArgFunc("NOW", fsp, LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -537,7 +537,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_sysdate">SYSDATE([fsp])</a>
      */
     public static Expression sysDate() {
-        return SQLFunctions.noArgFunc("SYSDATE", LocalDateTimeType.INSTANCE);
+        return FunctionUtils.noArgFunc("SYSDATE", LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -549,7 +549,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_sysdate">SYSDATE([fsp])</a>
      */
     public static Expression sysDate(final Expression fsp) {
-        return SQLFunctions.oneArgFunc("SYSDATE", fsp, LocalDateTimeType.INSTANCE);
+        return FunctionUtils.oneArgFunc("SYSDATE", fsp, LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -561,7 +561,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestamp">TIMESTAMP(expr)</a>
      */
     public static Expression timestamp(final Expression expr) {
-        return SQLFunctions.oneArgFunc("TIMESTAMP", expr, LocalDateTimeType.INSTANCE);
+        return FunctionUtils.oneArgFunc("TIMESTAMP", expr, LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -573,7 +573,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestamp">TIMESTAMP(expr1,expr2)</a>
      */
     public static Expression timestamp(final Expression expr1, final Expression expr2) {
-        return SQLFunctions.twoArgFunc("TIMESTAMP", expr1, expr2, LocalDateTimeType.INSTANCE);
+        return FunctionUtils.twoArgFunc("TIMESTAMP", expr1, expr2, LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -640,12 +640,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(5);
 
         argList.add(unit);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(interval);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
 
         argList.add(datetimeExpression);
-        return SQLFunctions.complexArgFunc(funcName, argList, returnType);
+        return FunctionUtils.complexArgFunc(funcName, argList, returnType);
     }
 
     /**
@@ -697,12 +697,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(5);
 
         argList.add(unit);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(SQLs._funcParam(datetimeExpr1));
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
 
         argList.add(SQLs._funcParam(datetimeExpr2));
-        return SQLFunctions.complexArgFunc("TIMESTAMPDIFF", argList, returnType);
+        return FunctionUtils.complexArgFunc("TIMESTAMPDIFF", argList, returnType);
     }
 
     /**
@@ -714,7 +714,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_time-format">TIME_FORMAT(time,format)</a>
      */
     public static Expression timeFormat(final Expression timeFormat) {
-        return SQLFunctions.oneArgFunc("TIME_FORMAT", timeFormat, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("TIME_FORMAT", timeFormat, StringType.INSTANCE);
     }
 
     /**
@@ -726,7 +726,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_to-days">TO_DAYS(date)</a>
      */
     public static Expression toDays(final Expression date) {
-        return SQLFunctions.oneArgFunc("TO_DAYS", date, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("TO_DAYS", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -738,7 +738,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_to-seconds">TO_SECONDS(expr)</a>
      */
     public static Expression toSeconds(final Expression expr) {
-        return SQLFunctions.oneArgFunc("TO_SECONDS", expr, LongType.INSTANCE);
+        return FunctionUtils.oneArgFunc("TO_SECONDS", expr, LongType.INSTANCE);
     }
 
     /**
@@ -749,7 +749,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_unix-timestamp">UNIX_TIMESTAMP()</a>
      */
     public static Expression unixTimestamp() {
-        return SQLFunctions.noArgFunc("UNIX_TIMESTAMP", LongType.INSTANCE);
+        return FunctionUtils.noArgFunc("UNIX_TIMESTAMP", LongType.INSTANCE);
     }
 
     /**
@@ -760,7 +760,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_unix-timestamp">UNIX_TIMESTAMP(date)</a>
      */
     public static Expression unixTimestamp(final Expression date) {
-        return SQLFunctions.oneArgFunc("UNIX_TIMESTAMP", date, LongType.INSTANCE);
+        return FunctionUtils.oneArgFunc("UNIX_TIMESTAMP", date, LongType.INSTANCE);
     }
 
     /**
@@ -771,7 +771,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-date">UTC_DATE()</a>
      */
     public static Expression utcDate() {
-        return SQLFunctions.noArgFunc("UTC_DATE", LocalDateType.INSTANCE);
+        return FunctionUtils.noArgFunc("UTC_DATE", LocalDateType.INSTANCE);
     }
 
     /**
@@ -782,7 +782,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-time">UTC_TIME()</a>
      */
     public static Expression utcTime() {
-        return SQLFunctions.noArgFunc("UTC_DATE", LocalTimeType.INSTANCE);
+        return FunctionUtils.noArgFunc("UTC_DATE", LocalTimeType.INSTANCE);
     }
 
     /**
@@ -794,7 +794,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-time">UTC_TIME(fsp)</a>
      */
     public static Expression utcTime(final Expression fsp) {
-        return SQLFunctions.oneArgFunc("UTC_TIME", fsp, LocalTimeType.INSTANCE);
+        return FunctionUtils.oneArgFunc("UTC_TIME", fsp, LocalTimeType.INSTANCE);
     }
 
     /**
@@ -805,7 +805,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-timestamp">UTC_TIMESTAMP()</a>
      */
     public static Expression utcTimestamp() {
-        return SQLFunctions.noArgFunc("UTC_TIMESTAMP", LocalDateTimeType.INSTANCE);
+        return FunctionUtils.noArgFunc("UTC_TIMESTAMP", LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -817,7 +817,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-timestamp">UTC_TIMESTAMP(fsp)</a>
      */
     public static Expression utcTimestamp(final Expression fsp) {
-        return SQLFunctions.oneArgFunc("UTC_TIMESTAMP", fsp, LocalDateTimeType.INSTANCE);
+        return FunctionUtils.oneArgFunc("UTC_TIMESTAMP", fsp, LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -829,7 +829,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_week">WEEK(date)</a>
      */
     public static Expression week(final Expression date) {
-        return SQLFunctions.oneArgFunc("WEEK", date, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("WEEK", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -842,7 +842,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_week">WEEK(date)</a>
      */
     public static Expression week(final Expression date, final Expression mode) {
-        return SQLFunctions.twoArgFunc("WEEK", date, mode, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("WEEK", date, mode, IntegerType.INSTANCE);
     }
 
     /**
@@ -854,7 +854,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_weekday">WEEKDAY(date)</a>
      */
     public static Expression weekDay(final Expression date) {
-        return SQLFunctions.oneArgFunc("WEEKDAY", date, DayOfWeekType.INSTANCE);
+        return FunctionUtils.oneArgFunc("WEEKDAY", date, DayOfWeekType.INSTANCE);
     }
 
     /**
@@ -866,7 +866,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_weekofyear">WEEKOFYEAR(date)</a>
      */
     public static Expression weekOfYear(final Expression date) {
-        return SQLFunctions.oneArgFunc("WEEKOFYEAR", date, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("WEEKOFYEAR", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -878,7 +878,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_year">YEAR(date)</a>
      */
     public static Expression year(final Expression date) {
-        return SQLFunctions.oneArgFunc("YEAR", date, YearType.INSTANCE);
+        return FunctionUtils.oneArgFunc("YEAR", date, YearType.INSTANCE);
     }
 
     /**
@@ -890,7 +890,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_yearweek">YEARWEEK(date)</a>
      */
     public static Expression yearWeek(final Expression date) {
-        return SQLFunctions.oneArgFunc("YEARWEEK", date, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("YEARWEEK", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -902,7 +902,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_yearweek">YEARWEEK(date,mode)</a>
      */
     public static Expression yearWeek(final Expression date, final Expression mode) {
-        return SQLFunctions.twoArgFunc("YEARWEEK", date, mode, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("YEARWEEK", date, mode, IntegerType.INSTANCE);
     }
 
 
@@ -916,7 +916,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_makedate">MAKEDATE(year,dayofyear)</a>
      */
     public static Expression makeDate(final Expression year, final Expression dayOfYear) {
-        return SQLFunctions.twoArgFunc("MAKEDATE", year, dayOfYear, LocalDateType.INSTANCE);
+        return FunctionUtils.twoArgFunc("MAKEDATE", year, dayOfYear, LocalDateType.INSTANCE);
     }
 
     /**
@@ -930,7 +930,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_maketime">MAKETIME(hour,minute,second)</a>
      */
     public static Expression makeTime(Expression hour, Expression minute, Expression second) {
-        return SQLFunctions.threeArgFunc("MAKETIME", hour, minute, second, LocalTimeType.INSTANCE);
+        return FunctionUtils.threeArgFunc("MAKETIME", hour, minute, second, LocalTimeType.INSTANCE);
     }
 
     /**
@@ -942,7 +942,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_microsecond">MICROSECOND(expr)</a>
      */
     public static Expression microSecond(final Expression expr) {
-        return SQLFunctions.oneArgFunc("MICROSECOND", expr, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("MICROSECOND", expr, IntegerType.INSTANCE);
     }
 
     /**
@@ -954,7 +954,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_minute">MINUTE(expr)</a>
      */
     public static Expression minute(final Expression time) {
-        return SQLFunctions.oneArgFunc("MINUTE", time, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("MINUTE", time, IntegerType.INSTANCE);
     }
 
     /**
@@ -966,7 +966,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_month">MONTH(date)</a>
      */
     public static Expression month(final Expression date) {
-        return SQLFunctions.oneArgFunc("MONTH", date, MonthType.INSTANCE);
+        return FunctionUtils.oneArgFunc("MONTH", date, MonthType.INSTANCE);
     }
 
     /**
@@ -978,7 +978,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_monthname">MONTHNAME(date)</a>
      */
     public static Expression monthName(final Expression date) {
-        return SQLFunctions.oneArgFunc("MONTHNAME", date, MonthType.INSTANCE);
+        return FunctionUtils.oneArgFunc("MONTHNAME", date, MonthType.INSTANCE);
     }
 
     /**
@@ -991,7 +991,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_period-add">PERIOD_ADD(p,n)</a>
      */
     public static Expression periodAdd(final Expression p, final Expression n) {
-        return SQLFunctions.twoArgFunc("PERIOD_ADD", p, n, YearMonthType.INSTANCE);
+        return FunctionUtils.twoArgFunc("PERIOD_ADD", p, n, YearMonthType.INSTANCE);
     }
 
     /**
@@ -1004,7 +1004,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_period-diff">PERIOD_DIFF(P1,P2)</a>
      */
     public static Expression periodDiff(final Expression p1, final Expression p2) {
-        return SQLFunctions.twoArgFunc("PERIOD_DIFF", p1, p2, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("PERIOD_DIFF", p1, p2, IntegerType.INSTANCE);
     }
 
     /**
@@ -1016,7 +1016,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_quarter">QUARTER(date)</a>
      */
     public static Expression quarter(final Expression date) {
-        return SQLFunctions.oneArgFunc("QUARTER", date, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("QUARTER", date, IntegerType.INSTANCE);
     }
 
     /**
@@ -1028,7 +1028,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_time">TIME(expr)</a>
      */
     public static Expression time(final Expression expr) {
-        return SQLFunctions.oneArgFunc("TIME", expr, LocalTimeType.INSTANCE);
+        return FunctionUtils.oneArgFunc("TIME", expr, LocalTimeType.INSTANCE);
     }
 
     /**
@@ -1041,7 +1041,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timediff">TIMEDIFF(expr1,expr2)</a>
      */
     public static Expression timeDiff(final Expression expr1, final Expression expr2) {
-        return SQLFunctions.twoArgFunc("TIMEDIFF", expr1, expr2, expr1.typeMeta());
+        return FunctionUtils.twoArgFunc("TIMEDIFF", expr1, expr2, expr1.typeMeta());
     }
 
 
@@ -1054,7 +1054,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_second">SECOND(time)</a>
      */
     public static Expression second(final Expression time) {
-        return SQLFunctions.oneArgFunc("SECOND", time, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("SECOND", time, IntegerType.INSTANCE);
     }
 
     /**
@@ -1066,7 +1066,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_sec-to-time">SEC_TO_TIME(seconds)</a>
      */
     public static Expression secToTime(final Expression seconds) {
-        return SQLFunctions.oneArgFunc("SEC_TO_TIME", seconds, LocalTimeType.INSTANCE);
+        return FunctionUtils.oneArgFunc("SEC_TO_TIME", seconds, LocalTimeType.INSTANCE);
     }
 
     /**
@@ -1088,7 +1088,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         } else {
             returnType = _strToDateReturnType((ArmyExpression) format, formatType.mappingType());
         }
-        return SQLFunctions.twoArgFunc("STR_TO_DATE", str, format, returnType);
+        return FunctionUtils.twoArgFunc("STR_TO_DATE", str, format, returnType);
     }
 
 
@@ -1104,7 +1104,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ascii">ASCII(str)</a>
      */
     public static Expression ascii(final Expression str) {
-        return SQLFunctions.oneArgFunc("ASCII", str, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ASCII", str, IntegerType.INSTANCE);
     }
 
     /**
@@ -1116,7 +1116,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bin">BIN(n)</a>
      */
     public static Expression bin(final Expression n) {
-        return SQLFunctions.oneArgFunc("BIN", n, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("BIN", n, StringType.INSTANCE);
     }
 
     /**
@@ -1128,7 +1128,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bit-length">BIT_LENGTH(str)</a>
      */
     public static Expression binLength(final Expression str) {
-        return SQLFunctions.oneArgFunc("BIT_LENGTH", str, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("BIT_LENGTH", str, IntegerType.INSTANCE);
     }
 
     /**
@@ -1141,7 +1141,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
     public static Expression charFunc(final Expression n) {
-        return SQLFunctions.complexArgFunc("CHAR", Collections.singletonList(n), StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc("CHAR", Collections.singletonList(n), StringType.INSTANCE);
     }
 
     /**
@@ -1159,15 +1159,15 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
         final List<Object> argList = new ArrayList<>(3);
         argList.add(SQLs._funcParamList(StringType.INSTANCE, n));
-        argList.add(SQLFunctions.FuncWord.USING);
+        argList.add(FunctionUtils.FuncWord.USING);
         if (charsetName instanceof MySQLCharset) {
             argList.add(charsetName);
         } else if (charsetName instanceof String) {
-            argList.add(SQLFunctions.sqlIdentifier((String) charsetName));// sql identifier
+            argList.add(FunctionUtils.sqlIdentifier((String) charsetName));// sql identifier
         } else {
             throw CriteriaUtils.funcArgError(funcName, charsetName);
         }
-        return SQLFunctions.complexArgFunc(funcName, argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
     /**
@@ -1180,7 +1180,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR_LENGTH(str)</a>
      */
     public static Expression charLength(final Expression str) {
-        return SQLFunctions.oneArgFunc("CHAR_LENGTH", str, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("CHAR_LENGTH", str, IntegerType.INSTANCE);
     }
 
     /**
@@ -1193,7 +1193,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat">CONCAT(str1,str2,...)</a>
      */
     public static Expression concat(final Expression str) {
-        return SQLFunctions.oneArgFunc("CONCAT", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("CONCAT", str, StringType.INSTANCE);
     }
 
     /**
@@ -1213,9 +1213,9 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(separator);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(str);
-        return SQLFunctions.complexArgFunc(name, argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc(name, argList, StringType.INSTANCE);
     }
 
     /**
@@ -1247,7 +1247,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_export-set">EXPORT_SET(bits,on,off[,separator[,number_of_bits]])</a>
      */
     public static Expression exportSet(final Expression bits, final Expression on, Expression off) {
-        return SQLFunctions.threeArgFunc("EXPORT_SET", bits, on, off, StringType.INSTANCE);
+        return FunctionUtils.threeArgFunc("EXPORT_SET", bits, on, off, StringType.INSTANCE);
     }
 
     /**
@@ -1267,14 +1267,14 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(7);
 
         argList.add(bits);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(on);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
 
         argList.add(off);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(separator);
-        return SQLFunctions.complexArgFunc("EXPORT_SET", argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc("EXPORT_SET", argList, StringType.INSTANCE);
     }
 
     /**
@@ -1295,17 +1295,17 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(9);
 
         argList.add(bits);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(on);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
 
         argList.add(off);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(separator);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
 
         argList.add(numberOfBits);
-        return SQLFunctions.complexArgFunc("EXPORT_SET", argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc("EXPORT_SET", argList, StringType.INSTANCE);
     }
 
 
@@ -1350,7 +1350,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_format">FORMAT(X,D[,locale])</a>
      */
     public static Expression format(final Expression x, final Expression d) {
-        return SQLFunctions.twoArgFunc("FORMAT", x, d, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("FORMAT", x, d, StringType.INSTANCE);
     }
 
     /**
@@ -1369,12 +1369,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(5);
 
         argList.add(x);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(d);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
 
         argList.add(locale);
-        return SQLFunctions.complexArgFunc("FORMAT", argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc("FORMAT", argList, StringType.INSTANCE);
     }
 
     /**
@@ -1388,7 +1388,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_from-base64">FROM_BASE64(str)</a>
      */
     public static Expression fromBase64(final Expression str) {
-        return SQLFunctions.oneArgFunc("FROM_BASE64", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("FROM_BASE64", str, StringType.INSTANCE);
     }
 
     /**
@@ -1402,7 +1402,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_to-base64">TO_BASE64(str)</a>
      */
     public static Expression toBase64(final Expression str) {
-        return SQLFunctions.oneArgFunc("TO_BASE64", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("TO_BASE64", str, StringType.INSTANCE);
     }
 
     /**
@@ -1416,7 +1416,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_hex">HEX(str), HEX(N)</a>
      */
     public static Expression hex(final Expression strOrNum) {
-        return SQLFunctions.oneArgFunc("HEX", strOrNum, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("HEX", strOrNum, StringType.INSTANCE);
     }
 
     /**
@@ -1430,7 +1430,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_unhex">UNHEX(str)</a>
      */
     public static Expression unhex(final Expression str) {
-        return SQLFunctions.oneArgFunc("UNHEX", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("UNHEX", str, StringType.INSTANCE);
     }
 
     /**
@@ -1450,14 +1450,14 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(7);
 
         argList.add(str);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(pos);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
 
         argList.add(len);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(newStr);
-        return SQLFunctions.complexArgFunc("INSERT", argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc("INSERT", argList, StringType.INSTANCE);
     }
 
     /**
@@ -1471,7 +1471,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_instr">INSTR(str,substr)</a>
      */
     public static Expression instr(final Expression str, final Expression substr) {
-        return SQLFunctions.twoArgFunc("INSTR", str, substr, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("INSTR", str, substr, IntegerType.INSTANCE);
     }
 
     /**
@@ -1484,7 +1484,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_lower">LOWER(str)</a>
      */
     public static Expression lower(final Expression str) {
-        return SQLFunctions.oneArgFunc("LOWER", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("LOWER", str, StringType.INSTANCE);
     }
 
     /**
@@ -1498,7 +1498,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_upper">UPPER(str)</a>
      */
     public static Expression upper(final Expression str) {
-        return SQLFunctions.oneArgFunc("UPPER", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("UPPER", str, StringType.INSTANCE);
     }
 
     /**
@@ -1512,7 +1512,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_left">LEFT(str,len)</a>
      */
     public static Expression left(final Expression str, final Expression len) {
-        return SQLFunctions.twoArgFunc("LEFT", str, len, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("LEFT", str, len, StringType.INSTANCE);
     }
 
     /**
@@ -1525,7 +1525,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_length">LENGTH(str)</a>
      */
     public static Expression length(final Expression str) {
-        return SQLFunctions.oneArgFunc("LENGTH", str, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("LENGTH", str, IntegerType.INSTANCE);
     }
 
     /**
@@ -1538,7 +1538,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_load-file">LOAD_FILE(fileName)</a>
      */
     public static Expression loadFile(final Expression fileName) {
-        return SQLFunctions.oneArgFunc("LOAD_FILE", fileName, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("LOAD_FILE", fileName, StringType.INSTANCE);
     }
 
     /**
@@ -1554,7 +1554,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str)</a>
      */
     public static Expression locate(final Expression substr, final Expression str) {
-        return SQLFunctions.twoArgFunc("LOCATE", substr, str, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("LOCATE", substr, str, IntegerType.INSTANCE);
     }
 
     /**
@@ -1570,7 +1570,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str,pos)</a>
      */
     public static Expression locate(final Expression substr, final Expression str, final Expression pos) {
-        return SQLFunctions.threeArgFunc("LOCATE", substr, str, pos, IntegerType.INSTANCE);
+        return FunctionUtils.threeArgFunc("LOCATE", substr, str, pos, IntegerType.INSTANCE);
     }
 
     /**
@@ -1586,7 +1586,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_lpad">LPAD(str,len,padstr)</a>
      */
     public static Expression lpad(final Expression str, final Expression len, final Expression padstr) {
-        return SQLFunctions.threeArgFunc("LPAD", str, len, padstr, StringType.INSTANCE);
+        return FunctionUtils.threeArgFunc("LPAD", str, len, padstr, StringType.INSTANCE);
     }
 
     /**
@@ -1602,7 +1602,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_rpad">RPAD(str,len,padstr)</a>
      */
     public static Expression rpad(final Expression str, final Expression len, final Expression padstr) {
-        return SQLFunctions.threeArgFunc("RPAD", str, len, padstr, StringType.INSTANCE);
+        return FunctionUtils.threeArgFunc("RPAD", str, len, padstr, StringType.INSTANCE);
     }
 
 
@@ -1617,7 +1617,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ltrim">LTRIM(str)</a>
      */
     public static Expression ltrim(final Expression str) {
-        return SQLFunctions.oneArgFunc("LTRIM", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("LTRIM", str, StringType.INSTANCE);
     }
 
     /**
@@ -1631,7 +1631,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_rtrim">RTRIM(str)</a>
      */
     public static Expression rtrim(final Expression str) {
-        return SQLFunctions.oneArgFunc("RTRIM", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("RTRIM", str, StringType.INSTANCE);
     }
 
     /**
@@ -1659,7 +1659,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring">SUBSTRING(str,pos)</a>
      */
     public static Expression subString(final Expression str, final Expression pos) {
-        return SQLFunctions.twoArgFunc("SUBSTRING", str, pos, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("SUBSTRING", str, pos, StringType.INSTANCE);
     }
 
     /**
@@ -1674,7 +1674,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring">SUBSTRING(str,pos,len)</a>
      */
     public static Expression subString(final Expression str, final Expression pos, final Expression len) {
-        return SQLFunctions.threeArgFunc("SUBSTRING", str, pos, len, StringType.INSTANCE);
+        return FunctionUtils.threeArgFunc("SUBSTRING", str, pos, len, StringType.INSTANCE);
     }
 
     /**
@@ -1687,7 +1687,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_oct">OCT(N)</a>
      */
     public static Expression oct(final Expression n) {
-        return SQLFunctions.oneArgFunc("OCT", n, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("OCT", n, StringType.INSTANCE);
     }
 
     /**
@@ -1700,7 +1700,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ord">ORD(str)</a>
      */
     public static Expression ord(final Expression str) {
-        return SQLFunctions.oneArgFunc("ORD", str, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ORD", str, IntegerType.INSTANCE);
     }
 
     /**
@@ -1715,7 +1715,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_position">POSITION(substr IN str)</a>
      */
     public static Expression position(final Expression substr, final Expression str) {
-        return SQLFunctions.twoArgFunc("POSITION", substr, str, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("POSITION", substr, str, IntegerType.INSTANCE);
     }
 
 
@@ -1729,7 +1729,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_quote">QUOTE(str)</a>
      */
     public static Expression quote(final Expression str) {
-        return SQLFunctions.oneArgFunc("QUOTE", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("QUOTE", str, StringType.INSTANCE);
     }
 
     /**
@@ -1743,7 +1743,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_repeat">REPEAT(str,count)</a>
      */
     public static Expression repeat(final Expression str, final Expression count) {
-        return SQLFunctions.twoArgFunc("REPEAT", str, count, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("REPEAT", str, count, StringType.INSTANCE);
     }
 
     /**
@@ -1758,7 +1758,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_replace">REPLACE(str,from_str,to_str)</a>
      */
     public static Expression replace(final Expression str, final Expression fromStr, final Expression toStr) {
-        return SQLFunctions.threeArgFunc("REPLACE", str, fromStr, toStr, StringType.INSTANCE);
+        return FunctionUtils.threeArgFunc("REPLACE", str, fromStr, toStr, StringType.INSTANCE);
     }
 
     /**
@@ -1771,7 +1771,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_reverse">REVERSE(str)</a>
      */
     public static Expression reverse(final Expression str) {
-        return SQLFunctions.oneArgFunc("REVERSE", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("REVERSE", str, StringType.INSTANCE);
     }
 
     /**
@@ -1785,7 +1785,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_right">RIGHT(str,len)</a>
      */
     public static Expression right(final Expression str, final Expression len) {
-        return SQLFunctions.twoArgFunc("RIGHT", str, len, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("RIGHT", str, len, StringType.INSTANCE);
     }
 
     /**
@@ -1798,7 +1798,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_soundex">SOUNDEX(str)</a>
      */
     public static Expression soundex(final Expression str) {
-        return SQLFunctions.oneArgFunc("SOUNDEX", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("SOUNDEX", str, StringType.INSTANCE);
     }
 
 
@@ -1812,7 +1812,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_space">SPACE(n)</a>
      */
     public static Expression space(final Expression n) {
-        return SQLFunctions.oneArgFunc("SPACE", n, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("SPACE", n, StringType.INSTANCE);
     }
 
     /**
@@ -1827,7 +1827,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring-index">SUBSTRING_INDEX(str,delim,count)</a>
      */
     public static Expression substringIndex(final Expression str, final Expression delim, final Expression count) {
-        return SQLFunctions.threeArgFunc("SUBSTRING_INDEX", str, delim, count, StringType.INSTANCE);
+        return FunctionUtils.threeArgFunc("SUBSTRING_INDEX", str, delim, count, StringType.INSTANCE);
     }
 
     /**
@@ -1840,7 +1840,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(str)</a>
      */
     public static Expression trim(final Expression str) {
-        return SQLFunctions.oneArgFunc("TRIM", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("TRIM", str, StringType.INSTANCE);
     }
 
     /**
@@ -1854,7 +1854,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(remstr FROM str)</a>
      */
     public static Expression trim(final Expression remstr, final Expression str) {
-        return SQLFunctions.twoArgFunc("TRIM", remstr, str, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("TRIM", remstr, str, StringType.INSTANCE);
     }
 
     /**
@@ -1888,9 +1888,9 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
         argList.add(position);
         argList.add(remstr);
-        argList.add(SQLFunctions.FuncWord.FROM);
+        argList.add(FunctionUtils.FuncWord.FROM);
         argList.add(str);
-        return SQLFunctions.complexArgFunc(funcName, argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
 
@@ -1904,7 +1904,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str)</a>
      */
     public static Expression weightString(final Expression str) {
-        return SQLFunctions.oneArgFunc("WEIGHT_STRING", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("WEIGHT_STRING", str, StringType.INSTANCE);
     }
 
     /**
@@ -1930,14 +1930,14 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(6);
 
         argList.add(str);
-        argList.add(SQLFunctions.FuncWord.AS);
+        argList.add(FunctionUtils.FuncWord.AS);
         argList.add(type);
-        argList.add(SQLFunctions.FuncWord.LEFT_PAREN);
+        argList.add(FunctionUtils.FuncWord.LEFT_PAREN);
 
         argList.add(n);
-        argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
+        argList.add(FunctionUtils.FuncWord.RIGHT_PAREN);
 
-        return SQLFunctions.complexArgFunc(funcName, argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
     /*-------------------below Cast Functions and Operators -------------------*/
@@ -1983,9 +1983,9 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(3);
 
         argList.add(exp);
-        argList.add(SQLFunctions.FuncWord.AS);
+        argList.add(FunctionUtils.FuncWord.AS);
         argList.add(type);
-        return SQLFunctions.complexArgFunc("CAST", argList, _castReturnType(type));
+        return FunctionUtils.complexArgFunc("CAST", argList, _castReturnType(type));
     }
 
     /**
@@ -2057,13 +2057,13 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(6);
 
         argList.add(exp);
-        argList.add(SQLFunctions.FuncWord.AS);
+        argList.add(FunctionUtils.FuncWord.AS);
         argList.add(type);
-        argList.add(SQLFunctions.FuncWord.LEFT_PAREN);
+        argList.add(FunctionUtils.FuncWord.LEFT_PAREN);
 
         argList.add(n);
-        argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
-        return SQLFunctions.complexArgFunc(funcName, argList, _castReturnType(type));
+        argList.add(FunctionUtils.FuncWord.RIGHT_PAREN);
+        return FunctionUtils.complexArgFunc(funcName, argList, _castReturnType(type));
     }
 
     /**
@@ -2098,15 +2098,15 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(8);
 
         argList.add(exp);
-        argList.add(SQLFunctions.FuncWord.AS);
+        argList.add(FunctionUtils.FuncWord.AS);
         argList.add(type);
-        argList.add(SQLFunctions.FuncWord.LEFT_PAREN);
+        argList.add(FunctionUtils.FuncWord.LEFT_PAREN);
 
         argList.add(m);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(d);
-        argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
-        return SQLFunctions.complexArgFunc(funcName, argList, BigDecimalType.INSTANCE);
+        argList.add(FunctionUtils.FuncWord.RIGHT_PAREN);
+        return FunctionUtils.complexArgFunc(funcName, argList, BigDecimalType.INSTANCE);
     }
 
     /**
@@ -2130,12 +2130,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(5);
 
         argList.add(timestampValue);
-        argList.add(SQLFunctions.FuncWord.AT_TIME_ZONE);
+        argList.add(FunctionUtils.FuncWord.AT_TIME_ZONE);
         argList.add(timezoneSpecifier);
-        argList.add(SQLFunctions.FuncWord.AS);
+        argList.add(FunctionUtils.FuncWord.AS);
 
         argList.add(MySQLCastType.DATETIME);
-        return SQLFunctions.complexArgFunc(funcName, argList, LocalDateTimeType.INSTANCE);
+        return FunctionUtils.complexArgFunc(funcName, argList, LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -2162,15 +2162,15 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(8);
 
         argList.add(timestampValue);
-        argList.add(SQLFunctions.FuncWord.AT_TIME_ZONE);
+        argList.add(FunctionUtils.FuncWord.AT_TIME_ZONE);
         argList.add(timezoneSpecifier);
-        argList.add(SQLFunctions.FuncWord.AS);
+        argList.add(FunctionUtils.FuncWord.AS);
 
         argList.add(MySQLCastType.DATETIME);
-        argList.add(SQLFunctions.FuncWord.LEFT_PAREN);
+        argList.add(FunctionUtils.FuncWord.LEFT_PAREN);
         argList.add(precision);
-        argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
-        return SQLFunctions.complexArgFunc(funcName, argList, LocalDateTimeType.INSTANCE);
+        argList.add(FunctionUtils.FuncWord.RIGHT_PAREN);
+        return FunctionUtils.complexArgFunc(funcName, argList, LocalDateTimeType.INSTANCE);
     }
 
 
@@ -2215,9 +2215,9 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(3);
 
         argList.add(exp);
-        argList.add(SQLFunctions.FuncWord.USING);
+        argList.add(FunctionUtils.FuncWord.USING);
         argList.add(transcodingName);
-        return SQLFunctions.complexArgFunc("CONVERT", argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc("CONVERT", argList, StringType.INSTANCE);
     }
 
     /**
@@ -2261,9 +2261,9 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(3);
 
         argList.add(exp);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(type);
-        return SQLFunctions.complexArgFunc("CONVERT", argList, _castReturnType(type));
+        return FunctionUtils.complexArgFunc("CONVERT", argList, _castReturnType(type));
     }
 
 
@@ -2323,13 +2323,13 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(6);
 
         argList.add(exp);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(type);
-        argList.add(SQLFunctions.FuncWord.LEFT_PAREN);
+        argList.add(FunctionUtils.FuncWord.LEFT_PAREN);
 
         argList.add(n);
-        argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
-        return SQLFunctions.complexArgFunc(funcName, argList, _castReturnType(type));
+        argList.add(FunctionUtils.FuncWord.RIGHT_PAREN);
+        return FunctionUtils.complexArgFunc(funcName, argList, _castReturnType(type));
     }
 
     /**
@@ -2363,16 +2363,16 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(8);
 
         argList.add(exp);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(type);
-        argList.add(SQLFunctions.FuncWord.LEFT_PAREN);
+        argList.add(FunctionUtils.FuncWord.LEFT_PAREN);
 
         argList.add(m);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(d);
-        argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
+        argList.add(FunctionUtils.FuncWord.RIGHT_PAREN);
 
-        return SQLFunctions.complexArgFunc(funcName, argList, BigDecimalType.INSTANCE);
+        return FunctionUtils.complexArgFunc(funcName, argList, BigDecimalType.INSTANCE);
     }
 
 
@@ -2389,7 +2389,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html#function_bit-count">BIT_COUNT(N)</a>
      */
     public static Expression bitCount(final Expression n) {
-        return SQLFunctions.oneArgFunc("BIT_COUNT", n, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("BIT_COUNT", n, IntegerType.INSTANCE);
     }
 
 
@@ -2426,7 +2426,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final TypeMeta returnType;
         returnType = Functions._returnType((ArmyExpression) expr2, (ArmyExpression) expr3
                 , MySQLFuncSyntax::ifFuncReturnType);
-        return SQLFunctions.threeArgFunc("IF", predicate, expr2, expr3, returnType);
+        return FunctionUtils.threeArgFunc("IF", predicate, expr2, expr3, returnType);
     }
 
 
@@ -2443,7 +2443,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final TypeMeta returnType;
         returnType = Functions._returnType((ArmyExpression) expr1, (ArmyExpression) expr2
                 , MySQLFuncSyntax::ifNullReturnType);
-        return SQLFunctions.twoArgFunc("IFNULL", expr1, expr2, returnType);
+        return FunctionUtils.twoArgFunc("IFNULL", expr1, expr2, returnType);
     }
 
     /**
@@ -2456,7 +2456,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_ifnull">IFNULL(expr1,expr2)</a>
      */
     public static Expression nullIf(final Expression expr1, final Expression expr2) {
-        return SQLFunctions.twoArgFunc("NULLIF", expr1, expr2, expr1.typeMeta());
+        return FunctionUtils.twoArgFunc("NULLIF", expr1, expr2, expr1.typeMeta());
     }
 
     /*-------------------below Miscellaneous Functions-------------------*/
@@ -2470,7 +2470,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_any-value">ANY_VALUE(arg)</a>
      */
     public static Expression anyValue(final Expression arg) {
-        return SQLFunctions.oneArgFunc("ANY_VALUE", arg, arg.typeMeta());
+        return FunctionUtils.oneArgFunc("ANY_VALUE", arg, arg.typeMeta());
     }
 
     /**
@@ -2482,7 +2482,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_bin-to-uuid">BIN_TO_UUID(binary_uuid, swap_flag)</a>
      */
     public static Expression binToUuid(final Expression binaryUuid) {
-        return SQLFunctions.oneArgFunc("BIN_TO_UUID", binaryUuid, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("BIN_TO_UUID", binaryUuid, StringType.INSTANCE);
     }
 
     /**
@@ -2494,7 +2494,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_bin-to-uuid">BIN_TO_UUID(binary_uuid, swap_flag)</a>
      */
     public static Expression binToUuid(final Expression binaryUuid, final Expression swapFlag) {
-        return SQLFunctions.twoArgFunc("BIN_TO_UUID", binaryUuid, swapFlag, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("BIN_TO_UUID", binaryUuid, swapFlag, StringType.INSTANCE);
     }
 
     /**
@@ -2506,7 +2506,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_default">DEFAULT(col_name)</a>
      */
     public static Expression defaultValue(final TableField field) {
-        return SQLFunctions.oneArgFunc("DEFAULT", field, field);
+        return FunctionUtils.oneArgFunc("DEFAULT", field, field);
     }
 
 
@@ -2520,7 +2520,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_default">GROUPING(expr [, expr] ...)</a>
      */
     public static IPredicate grouping(final Expression expr) {
-        return SQLFunctions.oneArgFuncPredicate("GROUPING", expr);
+        return FunctionUtils.oneArgFuncPredicate("GROUPING", expr);
     }
 
 
@@ -2538,7 +2538,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         if (expList.size() == 0) {
             throw CriteriaUtils.funcArgError(funcName, expList);
         }
-        return SQLFunctions.complexArgPredicate(funcName, _createSimpleMultiArgList(expList));
+        return FunctionUtils.complexArgPredicate(funcName, _createSimpleMultiArgList(expList));
     }
 
     /**
@@ -2551,7 +2551,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_inet-aton">INET_ATON(expr)</a>
      */
     public static Expression inetAton(final Expression expr) {
-        return SQLFunctions.oneArgFunc("INET_ATON", expr, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("INET_ATON", expr, IntegerType.INSTANCE);
     }
 
     /**
@@ -2564,7 +2564,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_inet-ntoa">INET_NTOA(expr)</a>
      */
     public static Expression inetNtoa(final Expression expr) {
-        return SQLFunctions.oneArgFunc("INET_NTOA", expr, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("INET_NTOA", expr, StringType.INSTANCE);
     }
 
     /**
@@ -2577,7 +2577,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_inet6-aton">INET6_ATON(expr)</a>
      */
     public static Expression inet6Aton(final Expression expr) {
-        return SQLFunctions.oneArgFunc("INET6_ATON", expr, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("INET6_ATON", expr, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -2590,7 +2590,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_inet6-ntoa">INET6_NTOA(expr)</a>
      */
     public static Expression inet6Ntoa(final Expression expr) {
-        return SQLFunctions.oneArgFunc("INET6_NTOA", expr, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("INET6_NTOA", expr, StringType.INSTANCE);
     }
 
 
@@ -2604,7 +2604,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv4">IS_IPV4(expr)</a>
      */
     public static IPredicate isIpv4(final Expression expr) {
-        return SQLFunctions.oneArgFuncPredicate("IS_IPV4", expr);
+        return FunctionUtils.oneArgFuncPredicate("IS_IPV4", expr);
     }
 
 
@@ -2618,7 +2618,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv4-compat">IS_IPV4_COMPAT(expr)</a>
      */
     public static IPredicate isIpv4Compat(final Expression expr) {
-        return SQLFunctions.oneArgFuncPredicate("IS_IPV4_COMPAT", expr);
+        return FunctionUtils.oneArgFuncPredicate("IS_IPV4_COMPAT", expr);
     }
 
     /**
@@ -2631,7 +2631,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv4-mapped">IS_IPV4_MAPPED(expr)</a>
      */
     public static IPredicate isIpv4Mapped(final Expression expr) {
-        return SQLFunctions.oneArgFuncPredicate("IS_IPV4_MAPPED", expr);
+        return FunctionUtils.oneArgFuncPredicate("IS_IPV4_MAPPED", expr);
     }
 
     /**
@@ -2644,7 +2644,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv6">IS_IPV6(expr)</a>
      */
     public static IPredicate isIpv6(final Expression expr) {
-        return SQLFunctions.oneArgFuncPredicate("IS_IPV6", expr);
+        return FunctionUtils.oneArgFuncPredicate("IS_IPV6", expr);
     }
 
     /**
@@ -2657,7 +2657,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-uuid">IS_UUID(string_uuid)</a>
      */
     public static IPredicate isUuid(final Expression stringUuid) {
-        return SQLFunctions.oneArgFuncPredicate("IS_UUID", stringUuid);
+        return FunctionUtils.oneArgFuncPredicate("IS_UUID", stringUuid);
     }
 
     /**
@@ -2674,12 +2674,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final Expression func;
         switch (expList.size()) {
             case 0:
-                func = SQLFunctions.noArgFunc(name, IntegerType.INSTANCE);
+                func = FunctionUtils.noArgFunc(name, IntegerType.INSTANCE);
                 break;
             case 2:
             case 3:
             case 4:
-                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList), IntegerType.INSTANCE);
+                func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList), IntegerType.INSTANCE);
                 break;
             default:
                 throw CriteriaUtils.funcArgError(name, expList);
@@ -2707,9 +2707,9 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(name);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(value);
-        return SQLFunctions.namedComplexArgFunc("NAME_CONST", argList, value.typeMeta(), (String) paramValue);
+        return FunctionUtils.namedComplexArgFunc("NAME_CONST", argList, value.typeMeta(), (String) paramValue);
     }
 
     /**
@@ -2722,7 +2722,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_sleep">SLEEP(duration)</a>
      */
     public static Expression sleep(final Expression duration) {
-        return SQLFunctions.oneArgFunc("SLEEP", duration, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("SLEEP", duration, IntegerType.INSTANCE);
     }
 
     /**
@@ -2739,12 +2739,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final Expression func;
         switch (expList.size()) {
             case 0:
-                func = SQLFunctions.noArgFunc(name, IntegerType.INSTANCE);
+                func = FunctionUtils.noArgFunc(name, IntegerType.INSTANCE);
                 break;
             case 2:
             case 3:
             case 4:
-                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList), IntegerType.INSTANCE);
+                func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList), IntegerType.INSTANCE);
                 break;
             default:
                 throw CriteriaUtils.funcArgError(name, expList);
@@ -2761,7 +2761,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid">UUID()</a>
      */
     public static Expression uuid() {
-        return SQLFunctions.noArgFunc("UUID", StringType.INSTANCE);
+        return FunctionUtils.noArgFunc("UUID", StringType.INSTANCE);
     }
 
     /**
@@ -2773,7 +2773,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-short">UUID_SHORT()</a>
      */
     public static Expression uuidShort() {
-        return SQLFunctions.noArgFunc("UUID_SHORT", LongType.INSTANCE);
+        return FunctionUtils.noArgFunc("UUID_SHORT", LongType.INSTANCE);
     }
 
     /**
@@ -2785,7 +2785,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin">UUID_TO_BIN(string_uuid)</a>
      */
     public static Expression uuidToBin(final Expression stringUuid) {
-        return SQLFunctions.oneArgFunc("UUID_TO_BIN", stringUuid, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("UUID_TO_BIN", stringUuid, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -2809,7 +2809,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_values">VALUES(col_name)</a>
      */
     public static Expression values(final FieldMeta<?> field) {
-        return SQLFunctions.oneArgFunc("VALUES", field, field);
+        return FunctionUtils.oneArgFunc("VALUES", field, field);
     }
 
 
@@ -2828,7 +2828,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     public static Expression jsonArray(final Expression val) {
         final TypeMeta returnType;
         returnType = _returnType((ArmyExpression) val, JsonListType::from);
-        return SQLFunctions.oneOrMultiArgFunc("JSON_ARRAY", val, returnType);
+        return FunctionUtils.oneOrMultiArgFunc("JSON_ARRAY", val, returnType);
     }
 
     /**
@@ -2848,7 +2848,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         } else {
             returnType = _returnType((ArmyExpression) expList.get(0), JsonListType::from);
         }
-        return SQLFunctions.complexArgFunc("JSON_ARRAY", _createSimpleMultiArgList(expList), returnType);
+        return FunctionUtils.complexArgFunc("JSON_ARRAY", _createSimpleMultiArgList(expList), returnType);
     }
 
     /**
@@ -2865,7 +2865,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final String name = "JSON_OBJECT";
         final Expression func;
         if (expMap.size() == 0) {
-            func = SQLFunctions.noArgFunc(name, JsonMapType.from(_NullType.INSTANCE, _NullType.INSTANCE));
+            func = FunctionUtils.noArgFunc(name, JsonMapType.from(_NullType.INSTANCE, _NullType.INSTANCE));
         } else {
             TypeMeta valueType = null;
             for (Expression value : expMap.values()) {
@@ -2878,7 +2878,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             } else {
                 returnType = JsonMapType.from(StringType.INSTANCE, valueType.mappingType());
             }
-            func = SQLFunctions.jsonObjectFunc(name, expMap, returnType);
+            func = FunctionUtils.jsonObjectFunc(name, expMap, returnType);
         }
         return func;
     }
@@ -2899,7 +2899,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final int expSize = expList.size();
         final Expression func;
         if (expSize == 0) {
-            func = SQLFunctions.noArgFunc(name, JsonMapType.from(_NullType.INSTANCE, _NullType.INSTANCE));
+            func = FunctionUtils.noArgFunc(name, JsonMapType.from(_NullType.INSTANCE, _NullType.INSTANCE));
         } else if ((expSize & 1) != 0) {
             throw CriteriaUtils.funcArgError(name, expList);
         } else {
@@ -2908,7 +2908,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             valueExp = (ArmyExpression) expList.get(1);
             final TypeMeta returnType;
             returnType = _returnType(keyExp, valueExp, JsonMapType::from);
-            func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
+            func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
         }
         return func;
     }
@@ -2924,7 +2924,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-quote">JSON_QUOTE(string)</a>
      */
     public static Expression jsonQuote(final Expression string) {
-        return SQLFunctions.oneArgFunc("JSON_QUOTE", string, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("JSON_QUOTE", string, StringType.INSTANCE);
     }
 
     /**
@@ -2979,12 +2979,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> orgList = new ArrayList<>(5);
 
         orgList.add(jsonDoc);
-        orgList.add(SQLFunctions.FuncWord.COMMA);
+        orgList.add(FunctionUtils.FuncWord.COMMA);
         orgList.add(oneOrAll);
-        orgList.add(SQLFunctions.FuncWord.COMMA);
+        orgList.add(FunctionUtils.FuncWord.COMMA);
 
         orgList.add(paths);
-        return SQLFunctions.complexArgFunc(name, orgList, BooleanType.INSTANCE);
+        return FunctionUtils.complexArgFunc(name, orgList, BooleanType.INSTANCE);
     }
 
     /**
@@ -3010,14 +3010,14 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         }
         final List<Object> argList = new ArrayList<>(((2 + pathList.size()) << 1) - 1);
         argList.add(jsonDoc);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(oneOrAll);
 
         for (Expression path : pathList) {
-            argList.add(SQLFunctions.FuncWord.COMMA);
+            argList.add(FunctionUtils.FuncWord.COMMA);
             argList.add(path);
         }
-        return SQLFunctions.complexArgFunc(name, argList, BooleanType.INSTANCE);
+        return FunctionUtils.complexArgFunc(name, argList, BooleanType.INSTANCE);
     }
 
     /**
@@ -3038,9 +3038,9 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(jsonDoc);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(paths);
-        return SQLFunctions.complexArgFunc(name, argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc(name, argList, StringType.INSTANCE);
     }
 
     /**
@@ -3066,10 +3066,10 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
         argList.add(jsonDoc);
         for (Expression path : pathList) {
-            argList.add(SQLFunctions.FuncWord.COMMA);
+            argList.add(FunctionUtils.FuncWord.COMMA);
             argList.add(path);
         }
-        return SQLFunctions.complexArgFunc(name, argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc(name, argList, StringType.INSTANCE);
     }
 
     /**
@@ -3083,7 +3083,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-keys">JSON_KEYS(json_doc[, path])</a>
      */
     public static Expression jsonKeys(final Expression jsonDoc) {
-        return SQLFunctions.oneArgFunc("JSON_KEYS", jsonDoc, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("JSON_KEYS", jsonDoc, StringType.INSTANCE);
     }
 
     /**
@@ -3157,14 +3157,14 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         }
         final List<Object> argList = new ArrayList<>(((3 + escapeCharAndPaths.size()) << 1) - 1);
         argList.add(jsonDoc);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(searchStr);
 
         for (Expression exp : escapeCharAndPaths) {
-            argList.add(SQLFunctions.FuncWord.COMMA);
+            argList.add(FunctionUtils.FuncWord.COMMA);
             argList.add(exp);
         }
-        return SQLFunctions.complexArgFunc(name, argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc(name, argList, StringType.INSTANCE);
     }
 
 
@@ -3404,10 +3404,10 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(((1 + pathSize) << 1) - 1);
         argList.add(jsonDoc);
         for (Expression path : pathList) {
-            argList.add(SQLFunctions.FuncWord.COMMA);
+            argList.add(FunctionUtils.FuncWord.COMMA);
             argList.add(path);
         }
-        return SQLFunctions.complexArgFunc(name, argList, jsonDoc.typeMeta());
+        return FunctionUtils.complexArgFunc(name, argList, jsonDoc.typeMeta());
     }
 
 
@@ -3421,7 +3421,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-unquote">JSON_UNQUOTE(json_val)</a>
      */
     public static Expression jsonUnquote(final Expression jsonVal) {
-        return SQLFunctions.oneArgFunc("JSON_UNQUOTE", jsonVal, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("JSON_UNQUOTE", jsonVal, StringType.INSTANCE);
     }
 
     /**
@@ -3434,7 +3434,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-depth">JSON_DEPTH(json_doc)</a>
      */
     public static Expression jsonDepth(final Expression jsonDoc) {
-        return SQLFunctions.oneArgFunc("JSON_DEPTH", jsonDoc, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("JSON_DEPTH", jsonDoc, IntegerType.INSTANCE);
     }
 
     /**
@@ -3447,7 +3447,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-length">JSON_LENGTH(json_doc[, path])</a>
      */
     public static Expression jsonLength(final Expression jsonDoc) {
-        return SQLFunctions.oneArgFunc("JSON_LENGTH", jsonDoc, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("JSON_LENGTH", jsonDoc, IntegerType.INSTANCE);
     }
 
     /**
@@ -3475,7 +3475,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      */
     public static Expression jsonType(final Expression jsonVal) {
         //TODO 是否要 enum
-        return SQLFunctions.oneArgFunc("JSON_TYPE", jsonVal, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("JSON_TYPE", jsonVal, StringType.INSTANCE);
     }
 
 
@@ -3489,7 +3489,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-valid">JSON_VALID(val)</a>
      */
     public static IPredicate jsonValid(final Expression val) {
-        return SQLFunctions.oneArgFuncPredicate("JSON_VALID", val);
+        return FunctionUtils.oneArgFuncPredicate("JSON_VALID", val);
     }
 
     /*-------------------below JSON Table Functions-------------------*/
@@ -3612,12 +3612,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(5);
 
         argList.add(date);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLFunctions.FuncWord.INTERVAL);
+        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.INTERVAL);
         argList.add(expr);
 
         argList.add(unit);
-        return SQLFunctions.complexArgFunc(funcName, argList, returnType);
+        return FunctionUtils.complexArgFunc(funcName, argList, returnType);
     }
 
 
@@ -3775,12 +3775,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(5);
 
         argList.add(date);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLFunctions.FuncWord.INTERVAL);
+        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.INTERVAL);
         argList.add(expr);
 
         argList.add(unit);
-        return SQLFunctions.complexArgFunc(funcName, argList, returnType);
+        return FunctionUtils.complexArgFunc(funcName, argList, returnType);
     }
 
 
@@ -3792,9 +3792,9 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             , final @Nullable Object days) {
         final List<Object> argList = new ArrayList<>(3);
         argList.add(SQLs._funcParam(date));
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(SQLs._funcParam(days));
-        return SQLFunctions.complexArgFunc(funcName, argList, LocalDateType.INSTANCE);
+        return FunctionUtils.complexArgFunc(funcName, argList, LocalDateType.INSTANCE);
     }
 
     /**
@@ -3824,12 +3824,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(5);
 
         argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(SQLs._funcParam(IntegerType.INSTANCE, len));
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
 
         argList.add(SQLs._funcParam(StringType.INSTANCE, padstr));
-        return SQLFunctions.complexArgFunc(funcName, argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
 
@@ -3912,10 +3912,10 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             if (exp instanceof SqlValueParam.MultiValue) {
                 throw CriteriaUtils.funcArgError(name, exp);
             }
-            argList.add(SQLFunctions.FuncWord.COMMA);
+            argList.add(FunctionUtils.FuncWord.COMMA);
             argList.add(exp);
         }
-        return SQLFunctions.complexArgFunc(name, argList, jsonDoc.typeMeta());
+        return FunctionUtils.complexArgFunc(name, argList, jsonDoc.typeMeta());
     }
 
 
@@ -3931,12 +3931,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         int index = 0;
         for (Expression jsonDoc : jsonDocList) {
             if (index > 0) {
-                argList.add(SQLFunctions.FuncWord.COMMA);
+                argList.add(FunctionUtils.FuncWord.COMMA);
             }
             argList.add(jsonDoc);
             index++;
         }
-        return SQLFunctions.complexArgFunc(name, argList, jsonDocList.get(0).typeMeta());
+        return FunctionUtils.complexArgFunc(name, argList, jsonDocList.get(0).typeMeta());
     }
 
 

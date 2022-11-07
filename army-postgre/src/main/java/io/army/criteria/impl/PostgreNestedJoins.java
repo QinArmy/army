@@ -347,7 +347,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         public final TR tableSample(String methodName, Expression argument) {
-            this.sampleMethod = SQLFunctions.oneArgVoidFunc(methodName, argument);
+            this.sampleMethod = FunctionUtils.oneArgVoidFunc(methodName, argument);
             return (TR) this;
         }
 
@@ -355,7 +355,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         public final TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
             final List<Expression> expList = new ArrayList<>();
             consumer.accept(expList::add);
-            this.sampleMethod = SQLFunctions.multiArgVoidFunc(methodName, expList);
+            this.sampleMethod = FunctionUtils.multiArgVoidFunc(methodName, expList);
             return (TR) this;
         }
 
@@ -383,7 +383,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             final List<Expression> expList = new ArrayList<>();
             consumer.accept(expList::add);
             if (expList.size() > 0) {
-                this.sampleMethod = SQLFunctions.multiArgVoidFunc(methodName, expList);
+                this.sampleMethod = FunctionUtils.multiArgVoidFunc(methodName, expList);
             }
             return (TR) this;
         }

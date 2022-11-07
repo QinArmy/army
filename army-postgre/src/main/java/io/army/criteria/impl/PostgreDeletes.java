@@ -482,7 +482,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
         @Override
         public final _StaticReturningCommaSpec<Q> returning(Expression expression, SQLs.WordAs wordAs, String alias) {
             assert wordAs == SQLs.AS;
-            this.onAddSelection(Selections.forExp(expression, alias));
+            this.onAddSelection(ArmySelections.forExp(expression, alias));
             return this;
         }
 
@@ -528,7 +528,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
 
         @Override
         public final _StaticReturningCommaSpec<Q> comma(Expression expression, SQLs.WordAs wordAs, String alias) {
-            this.onAddSelection(Selections.forExp(expression, alias));
+            this.onAddSelection(ArmySelections.forExp(expression, alias));
             return this;
         }
 
@@ -888,7 +888,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
 
         @Override
         public _BatchStaticReturningCommaSpec<Q> returning(Expression expression, SQLs.WordAs wordAs, String alias) {
-            this.onAddSelection(Selections.forExp(expression, alias));
+            this.onAddSelection(ArmySelections.forExp(expression, alias));
             return new BatchParamClause<>(this);
         }
 
@@ -1045,7 +1045,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
 
         @Override
         public _BatchStaticReturningCommaSpec<Q> comma(Expression expression, SQLs.WordAs wordAs, String alias) {
-            this.statement.onAddSelection(Selections.forExp(expression, alias));
+            this.statement.onAddSelection(ArmySelections.forExp(expression, alias));
             return this;
         }
 

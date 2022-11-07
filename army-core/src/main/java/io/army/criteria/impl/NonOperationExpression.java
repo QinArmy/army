@@ -30,7 +30,7 @@ abstract class NonOperationExpression implements ArmyExpression {
         if (!(this instanceof SQLParam || this == SQLs.NULL)) {
             throw unsupportedOperation();
         }
-        return Selections.forExp(this, alias);
+        return ArmySelections.forExp(this, alias);
     }
 
     @Override

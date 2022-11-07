@@ -25,13 +25,13 @@ abstract class OperationExpression implements ArmyExpression {
     public final Selection as(final String alias) {
         final Selection selection;
         if (this instanceof TableField) {
-            selection = Selections.forField((TableField) this, alias);
+            selection = ArmySelections.forField((TableField) this, alias);
         } else if (this instanceof DerivedField) {
             selection = CriteriaContexts.createDerivedSelection((DerivedField) this, alias);
-        } else if (this instanceof SQLFunctions.FunctionSpec) {
-            selection = Selections.forFunc((SQLFunctions.FunctionSpec) this, alias);
+        } else if (this instanceof FunctionUtils.FunctionSpec) {
+            selection = ArmySelections.forFunc((FunctionUtils.FunctionSpec) this, alias);
         } else {
-            selection = Selections.forExp(this, alias);
+            selection = ArmySelections.forExp(this, alias);
         }
         return selection;
     }

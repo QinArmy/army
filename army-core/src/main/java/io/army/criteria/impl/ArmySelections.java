@@ -10,7 +10,7 @@ import io.army.meta.TypeMeta;
 
 import java.util.Objects;
 
-abstract class Selections implements _Selection {
+abstract class ArmySelections implements _Selection {
 
     static Selection forExp(Expression expression, String alias) {
         return new ExpressionSelection((ArmyExpression) expression, alias);
@@ -20,14 +20,14 @@ abstract class Selections implements _Selection {
         return new FieldSelectionImpl(field, alias);
     }
 
-    static Selection forFunc(SQLFunctions.FunctionSpec func, String alias) {
+    static Selection forFunc(FunctionUtils.FunctionSpec func, String alias) {
         return new FuncSelection(func, alias);
     }
 
 
     final String alias;
 
-    private Selections(String alias) {
+    private ArmySelections(String alias) {
         this.alias = alias;
     }
 
@@ -37,7 +37,7 @@ abstract class Selections implements _Selection {
         return this.alias;
     }
 
-    private static final class ExpressionSelection extends Selections {
+    private static final class ExpressionSelection extends ArmySelections {
 
         private final ArmyExpression expression;
 
@@ -88,7 +88,7 @@ abstract class Selections implements _Selection {
     }//ExpressionSelection
 
 
-    private static final class FieldSelectionImpl extends Selections implements FieldSelection {
+    private static final class FieldSelectionImpl extends ArmySelections implements FieldSelection {
 
         private final TableField field;
 
@@ -181,15 +181,15 @@ abstract class Selections implements _Selection {
     }//FieldSelectionImpl
 
 
-    private static final class FuncSelection extends Selections {
+    private static final class FuncSelection extends ArmySelections {
 
-        private final SQLFunctions.FunctionSpec func;
+        private final FunctionUtils.FunctionSpec func;
 
         private final String alias;
 
         private final TypeMeta returnType;
 
-        private FuncSelection(SQLFunctions.FunctionSpec func, String alias) {
+        private FuncSelection(FunctionUtils.FunctionSpec func, String alias) {
             super(alias);
             this.func = func;
             this.alias = alias;

@@ -631,6 +631,12 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public DerivedField refThis(String derivedTable, String derivedFieldName) {
+            String m = "current context don't support refThis(derivedTable,derivedFieldName)";
+            throw ContextStack.criteriaError(this, m);
+        }
+
+        @Override
         public <T> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field) {
             String m = "current context don't support qualifiedField(tableAlias,field)";
             throw ContextStack.criteriaError(this, m);
@@ -877,6 +883,10 @@ abstract class CriteriaContexts {
             return field;
         }
 
+        @Override
+        public final DerivedField refThis(String derivedTable, String derivedFieldName) {
+            throw new UnsupportedOperationException();
+        }
 
         @Override
         public final List<_TableBlock> endContext() {

@@ -198,11 +198,11 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
                 throw ContextStack.criteriaError(this.context, m);
             }
         } else if (columnSize == 1) {
-            this.selectionList = Collections.singletonList(Selections.forExp(columnList.get(0), this.columnAlias(0)));
+            this.selectionList = Collections.singletonList(ArmySelections.forExp(columnList.get(0), this.columnAlias(0)));
         } else {
             final List<Selection> selectionList = new ArrayList<>(columnSize);
             for (int i = 0; i < columnSize; i++) {
-                selectionList.add(Selections.forExp(columnList.get(i), this.columnAlias(i)));
+                selectionList.add(ArmySelections.forExp(columnList.get(i), this.columnAlias(i)));
             }
             this.selectionList = selectionList;
         }

@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
-abstract class MySQLFunctions extends SQLFunctions {
+abstract class MySQLFunctions extends FunctionUtils {
 
     private MySQLFunctions() {
     }
@@ -190,7 +190,7 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     }//MySQLWindowFunc
 
-    private static class NoArgWindowFunc extends MySQLWindowFunc implements SQLFunctions.NoArgFunction {
+    private static class NoArgWindowFunc extends MySQLWindowFunc implements FunctionUtils.NoArgFunction {
 
         private NoArgWindowFunc(String name, TypeMeta returnType) {
             super(name, returnType);
@@ -281,12 +281,12 @@ abstract class MySQLFunctions extends SQLFunctions {
 
         @Override
         final void appendArguments(final _SqlContext context) {
-            SQLFunctions.appendComplexArg(this.argList, context);
+            FunctionUtils.appendComplexArg(this.argList, context);
         }
 
         @Override
         final void argumentToString(final StringBuilder builder) {
-            SQLFunctions.complexArgToString(this.argList, builder);
+            FunctionUtils.complexArgToString(this.argList, builder);
         }
 
 
@@ -324,12 +324,12 @@ abstract class MySQLFunctions extends SQLFunctions {
 
         @Override
         final void appendArguments(final _SqlContext context) {
-            SQLFunctions.appendArguments(this.option, this.argList, this.clause, context);
+            FunctionUtils.appendArguments(this.option, this.argList, this.clause, context);
         }
 
         @Override
         final void argumentToString(final StringBuilder builder) {
-            SQLFunctions.argumentsToString(this.option, this.argList, this.clause, builder);
+            FunctionUtils.argumentsToString(this.option, this.argList, this.clause, builder);
 
         }
 
@@ -593,7 +593,7 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     }//GroupConcatClause
 
-    private static final class StatementDigestFunc extends SQLFunctions.FunctionExpression {
+    private static final class StatementDigestFunc extends FunctionUtils.FunctionExpression {
 
         private final Object statement;
 
@@ -685,7 +685,7 @@ abstract class MySQLFunctions extends SQLFunctions {
     }//StatementDigestFunc
 
     @Deprecated
-    private static final class IntervalTimeFunc extends SQLFunctions.FunctionExpression {
+    private static final class IntervalTimeFunc extends FunctionUtils.FunctionExpression {
 
         private final ArmyExpression date;
 
@@ -742,7 +742,7 @@ abstract class MySQLFunctions extends SQLFunctions {
 
 
     private static final class JsonValueFunc extends OperationExpression
-            implements SQLFunctions.FunctionSpec
+            implements FunctionUtils.FunctionSpec
             , OperationExpression.MutableParamMetaSpec
             , MySQLClause._JsonValueReturningSpec
             , MySQLClause._JsonValueOptionOnEmptySpec

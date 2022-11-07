@@ -801,7 +801,7 @@ abstract class CriteriaSupports {
 
         @Override
         public ReturningBuilder selection(Expression expression, SQLs.WordAs wordAs, String alias) {
-            this.consumer.accept(Selections.forExp((ArmyExpression) expression, alias));
+            this.consumer.accept(ArmySelections.forExp((ArmyExpression) expression, alias));
             return this;
         }
 

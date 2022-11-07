@@ -22,9 +22,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.impl.SQLs.PERIOD;
+
 public class StandardQueryUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(StandardQueryUnitTests.class);
+
+
+    @Test
+    public void selectCaseFunc() {
+        final Select stmt;
+        stmt = SQLs.query()
+                .select(SQLs::Case)
+                .when(PillUser_.userType::equal, SQLs::param, 1)
+                .then(PillUser_.userType)
+                .end()
+                .as("a")
+                .asQuery();
+
+
+    }
 
 
     @Test
@@ -32,8 +50,8 @@ public class StandardQueryUnitTests {
         final Select stmt;
 
         stmt = SQLs.query()
-                .select(SQLs.group(PillUser_.T, "u"))
-                .from(PillUser_.T, SQLs.AS, "u")
+                .select("u", PERIOD, PillUser_.T)
+                .from(PillUser_.T, AS, "u")
                 .groupBy(PillUser_.userType)
                 .having(PillUser_.userType.equal(SQLs::literal, UserType.PERSON))// group by is empty ,so having clause no action
                 .orderBy(PillUser_.id, SQLs.DESC)
@@ -49,7 +67,7 @@ public class StandardQueryUnitTests {
         final Select stmt;
 
         stmt = SQLs.query()
-                .select(SQLs.childGroup(PillPerson_.T, "p", "u"))
+                .select("u", PERIOD, PillUser_.T, "p", PERIOD, PillPerson_.T)
                 .from(PillPerson_.T, SQLs.AS, "p")
                 .join(PillUser_.T, SQLs.AS, "u").on(PillPerson_.id.equal(PillUser_.id))
                 .where(PillPerson_.id::equal, SQLs::literal, "1")

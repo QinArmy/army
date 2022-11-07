@@ -585,7 +585,7 @@ abstract class StandardSyntax extends Functions {
      */
     public static Expression count(final SymbolStar star) {
         assert star == SQLs.START;
-        return SQLFunctions.oneArgFunc("COUNT", LiteralSymbolStar.STAR, LongType.INSTANCE);
+        return FunctionUtils.oneArgFunc("COUNT", LiteralSymbolStar.STAR, LongType.INSTANCE);
     }
 
     /**
@@ -596,7 +596,7 @@ abstract class StandardSyntax extends Functions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static Expression count(Expression expr) {
-        return SQLFunctions.oneArgFunc("COUNT", expr, LongType.INSTANCE);
+        return FunctionUtils.oneArgFunc("COUNT", expr, LongType.INSTANCE);
     }
 
 

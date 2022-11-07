@@ -2,6 +2,10 @@ package io.army.criteria;
 
 
 import io.army.criteria.impl.SQLs;
+import io.army.function.ExpressionOperator;
+import io.army.meta.ComplexTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -35,10 +39,6 @@ public interface Query extends RowSet {
      * @see SQLs#DISTINCT
      */
     interface UnionModifier {
-
-    }
-
-    interface SelectStar {
 
     }
 
@@ -86,33 +86,148 @@ public interface Query extends RowSet {
 
     interface _SelectClause<SR> {
 
-        SR select(SelectItem selectItem);
+        SR select(FieldMeta<?> field);
 
-        SR select(SelectItem selectItem1, SelectItem selectItem2);
+        SR select(FieldMeta<?> field1, FieldMeta<?> field2);
 
-        SR select(SelectItem selectItem1, SelectItem selectItem2, SelectItem selectItem3);
+        SR select(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3);
 
+        SR select(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3, FieldMeta<?> field4);
+
+        SR select(Expression exp, SQLs.WordAs as, String alias);
+
+        SR select(Expression exp1, SQLs.WordAs as1, String alias1, Expression exp2, SQLs.WordAs as2, String alias2);
+
+        SR select(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias);
+
+        SR select(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
+
+        SR select(String derivedAlias1, SQLs.SymbolPeriod period1, String fieldAlias1, String derivedAlias2, SQLs.SymbolPeriod period2, String fieldAlias2);
+
+        SR select(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+        <P> SR select(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
+
+
+        SR select(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field);
+
+        SR select(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1, String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2);
+
+        _AsClause<SR> select(Supplier<Expression> supplier);
+
+        SR select(Supplier<Expression> funcRef, SQLs.WordAs as, String alias);
+
+        SR select(Function<Expression, Expression> funcRef, FieldMeta<?> field, SQLs.WordAs as, String alias);
+
+        SR select(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias);
+
+        SR select(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
+
+        SR select(Supplier<Expression> funcRef1, SQLs.WordAs as1, String alias1, Supplier<Expression> funcRef2, SQLs.WordAs as2, String alias2);
+
+        <I extends Item> I select(Function<Function<Expression, _AsClause<SR>>, I> sqlFunc);
+
+        <I extends Item> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc, Expression expression);
+
+        <E extends RightOperand> _AsClause<SR> select(Function<E, Expression> expOperator, Supplier<E> supplier);
+
+        SR select(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator, BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias);
+
+        <T> SR select(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
+
+        <T> SR select(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
+
+        SR select(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName, SQLs.WordAs as, String alias);
 
     }
 
 
-    interface _DynamicSelectClause<SR> extends _SelectClause<SR> {
+    interface _SelectCommaClause<SR> {
 
-        SR select(Consumer<Consumer<SelectItem>> consumer);
+        SR comma(FieldMeta<?> field);
+
+        SR comma(FieldMeta<?> field1, FieldMeta<?> field2);
+
+        SR comma(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3);
+
+        SR comma(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3, FieldMeta<?> field4);
+
+        SR comma(Expression exp, SQLs.WordAs as, String alias);
+
+        SR comma(Expression exp1, SQLs.WordAs as1, String alias1, Expression exp2, SQLs.WordAs as2, String alias2);
+
+        SR comma(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias);
+
+        SR comma(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
+
+        SR comma(String derivedAlias1, SQLs.SymbolPeriod period1, String fieldAlias1, String derivedAlias2, SQLs.SymbolPeriod period2, String fieldAlias2);
+
+        SR comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+        <P> SR comma(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
+
+
+        SR comma(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field);
+
+        SR comma(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1, String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2);
+
+        _AsClause<SR> comma(Supplier<Expression> supplier);
+
+        SR comma(Supplier<Expression> funcRef, SQLs.WordAs as, String alias);
+
+        SR comma(Function<Expression, Expression> funcRef, FieldMeta<?> field, SQLs.WordAs as, String alias);
+
+        SR comma(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias);
+
+        SR comma(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
+
+        SR comma(Supplier<Expression> funcRef1, SQLs.WordAs as1, String alias1, Supplier<Expression> funcRef2, SQLs.WordAs as2, String alias2);
+
+        <I extends Item> I comma(Function<Function<Expression, _AsClause<SR>>, I> sqlFunc);
+
+        <I extends Item> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc, Expression expression);
+
+        <E extends RightOperand> _AsClause<SR> comma(Function<E, Expression> expOperator, Supplier<E> supplier);
+
+        SR comma(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator, BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias);
+
+        <T> SR comma(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
+
+        <T> SR comma(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
+
+        SR comma(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName, SQLs.WordAs as, String alias);
+
+    }
+
+
+    interface _SelectCommaSpec extends _SelectCommaClause<_SelectCommaSpec> {
+
+    }
+
+
+    interface _DynamicSelectClause<SR, SD> extends _SelectClause<SR> {
+
+        SD select(SQLs.SymbolStar star);
+
+        SD selects(Consumer<Selections> consumer);
 
 
     }
 
-    interface _DynamicModifierSelectClause<W extends SelectModifier, SR> extends _DynamicSelectClause<SR> {
+    interface _DynamicModifierSelectClause<W extends SelectModifier, SR, SD> extends _DynamicSelectClause<SR, SD> {
 
-        SR select(W modifier, Consumer<Consumer<SelectItem>> consumer);
+        SD select(W modifier, SQLs.SymbolStar star);
+
+        SD selects(W modifier, Consumer<Selections> consumer);
 
     }
 
-    interface _DynamicHintModifierSelectClause<W extends SelectModifier, SR>
-            extends _DynamicModifierSelectClause<W, SR> {
+    interface _DynamicHintModifierSelectClause<W extends SelectModifier, SR, SD>
+            extends _DynamicModifierSelectClause<W, SR, SD> {
 
-        SR select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Consumer<SelectItem>> consumer);
+        SD select(Supplier<List<Hint>> hints, List<W> modifiers, SQLs.SymbolStar star);
+
+        SD selects(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Selections> consumer);
 
     }
 
@@ -295,9 +410,9 @@ public interface Query extends RowSet {
     }
 
 
-    interface _WithSelectDispatcher<B extends CteBuilderSpec, WE, W extends SelectModifier, SR>
+    interface _WithSelectDispatcher<B extends CteBuilderSpec, WE, W extends SelectModifier, SR, SD>
             extends DialectStatement._DynamicWithClause<B, WE>
-            , _DynamicHintModifierSelectClause<W, SR> {
+            , _DynamicHintModifierSelectClause<W, SR, SD> {
 
     }
 

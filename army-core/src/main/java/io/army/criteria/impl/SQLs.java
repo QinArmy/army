@@ -51,7 +51,7 @@ public abstract class SQLs extends StandardSyntax {
 
 
     public static StandardUpdate._SingleUpdateClause<Update> singleUpdate() {
-        return StandardUpdates.simpleSingle(SQLs::_identity);
+        return StandardUpdates.simpleSingle(SQLs::identity);
     }
 
 
@@ -80,10 +80,10 @@ public abstract class SQLs extends StandardSyntax {
 
 
     public static StandardDelete._StandardDeleteClause<Delete> singleDelete() {
-        return StandardDeletes.singleDelete(SQLs::_identity);
+        return StandardDeletes.singleDelete(SQLs::identity);
     }
 
-    public static StandardDelete._SimpleDomainDeleteClause domainDelete(){
+    public static StandardDelete._SimpleDomainDeleteClause domainDelete() {
         throw new UnsupportedOperationException();
     }
 
@@ -93,21 +93,20 @@ public abstract class SQLs extends StandardSyntax {
      * </p>
      */
     public static StandardDelete._BatchDeleteClause<Delete> batchSingleDelete() {
-        return StandardDeletes.batchSingleDelete(SQLs::_identity);
+        return StandardDeletes.batchSingleDelete(SQLs::identity);
     }
 
-    public static StandardDelete._BatchDomainDeleteClause batchDomainDelete(){
+    public static StandardDelete._BatchDomainDeleteClause batchDomainDelete() {
         throw new UnsupportedOperationException();
     }
 
 
-
     public static StandardQuery._SelectSpec<Select> query() {
-        return StandardQueries.primaryQuery(SQLs::_identity);
+        return StandardQueries.primaryQuery(SQLs::identity);
     }
 
     public static StandardQuery._SelectSpec<SubQuery> subQuery() {
-        return StandardQueries.subQuery(ContextStack.peek(), SQLs::_identity);
+        return StandardQueries.subQuery(ContextStack.peek(), SQLs::identity);
     }
 
 
@@ -1117,25 +1116,19 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-
-
-
-
-    /*-------------------below package method-------------------*/
-
     /**
      * <p>
-     * Package method that is used by army developer.
      * This method is similar to {@link Function#identity()}, except that use method reference.
      * </p>
      *
      * @see Function#identity()
      */
-    static <T extends Item> T _identity(T t) {
+    public static <T extends Item> T identity(T t) {
         return t;
     }
 
 
+    /*-------------------below package method-------------------*/
 
 
     static abstract class ArmyItemPair implements _ItemPair {

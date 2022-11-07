@@ -58,6 +58,8 @@ interface CriteriaContext {
 
     DerivedField ref(String derivedTable, String derivedFieldName);
 
+    DerivedField refThis(String derivedTable, String derivedFieldName);
+
     <T> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field);
 
     DerivedField outerRef(String derivedTable, String derivedFieldName);

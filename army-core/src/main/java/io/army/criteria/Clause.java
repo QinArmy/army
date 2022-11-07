@@ -1,9 +1,7 @@
 package io.army.criteria;
 
-public interface Clause {
-
-    @Override
-    String toString();
+@Deprecated
+public interface Clause extends Item {
 
 
 }

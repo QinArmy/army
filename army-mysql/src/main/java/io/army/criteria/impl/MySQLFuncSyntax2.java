@@ -26,24 +26,24 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec avg(Expression expr) {
+    public static _AggregateOverSpec<Expression> avg(Expression expr) {
         return MySQLFunctions.oneArgAggregateWindow("AVG", expr, DoubleType.INSTANCE);
     }
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static Expression avg(final @Nullable StandardSyntax.WordAll distinct, final Expression exp) {
+    public static Expression avg(final @Nullable Functions.FuncDistinct distinct, final Expression exp) {
         final String funcName = "AVG";
         final Expression func;
         if (distinct == null) {
-            func = SQLFunctions.oneArgFunc(funcName, exp, DoubleType.INSTANCE);
+            func = FunctionUtils.oneArgFunc(funcName, exp, DoubleType.INSTANCE);
         } else if (distinct == SQLs.DISTINCT) {
             final List<Object> argList = new ArrayList<>(3);
             argList.add(distinct);
-            argList.add(SQLFunctions.FuncWord.COMMA);
+            argList.add(FunctionUtils.FuncWord.COMMA);
             argList.add(exp);
-            func = SQLFunctions.complexArgFunc(funcName, argList, DoubleType.INSTANCE);
+            func = FunctionUtils.complexArgFunc(funcName, argList, DoubleType.INSTANCE);
         } else {
             throw CriteriaUtils.funcArgError(funcName, distinct);
         }
@@ -71,15 +71,6 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      */
     public static _AggregateOverSpec bitXor(final Expression expr) {
         return MySQLFunctions.oneArgAggregateWindow("BIT_XOR", expr, _bitwiseFuncReturnType(expr));
-    }
-
-
-    /**
-     * @see #count(Expression)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
-     */
-    public static _AggregateOverSpec count() {
-        return count(SQLs.LiteralSymbolStar.STAR);
     }
 
     /**
@@ -120,7 +111,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         argList.add(distinct);
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                argList.add(SQLFunctions.FuncWord.COMMA);
+                argList.add(FunctionUtils.FuncWord.COMMA);
             }
             argList.add(exprList.get(i));
         }
@@ -536,7 +527,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     public static _FromFirstLastSpec nthValue(final Expression expr, final Expression n) {
         final String name = "NTH_VALUE";
         final List<?> argList;
-        argList = SQLFunctions.twoArgList(name, expr, n);
+        argList = FunctionUtils.twoArgList(name, expr, n);
         return MySQLFunctions.fromFirstWindowFunc(name, argList, expr.typeMeta());
     }
 
@@ -615,7 +606,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xml-functions.html#function_extractvalue">ExtractValue(xml_frag, xpath_expr)</a>
      */
     public static Expression extractValue(final Expression xmlFrag, final Expression xpathExpr) {
-        return SQLFunctions.twoArgFunc("ExtractValue", xmlFrag, xpathExpr, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ExtractValue", xmlFrag, xpathExpr, StringType.INSTANCE);
     }
 
     /**
@@ -630,7 +621,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xml-functions.html#function_updatexml">UpdateXML(xml_target, xpath_expr, new_xml)</a>
      */
     public static Expression updateXml(final Expression xmlTarget, final Expression xpathExpr, final Expression newXml) {
-        return SQLFunctions.threeArgFunc("UpdateXML", xmlTarget, xpathExpr, newXml, StringType.INSTANCE);
+        return FunctionUtils.threeArgFunc("UpdateXML", xmlTarget, xpathExpr, newXml, StringType.INSTANCE);
     }
 
     /*-------------------below Encryption and Compression Functions-------------------*/
@@ -678,7 +669,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_compress">COMPRESS(string_to_compress)</a>
      */
     public static Expression compress(final Expression stringToCompress) {
-        return SQLFunctions.oneArgFunc("COMPRESS", stringToCompress, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("COMPRESS", stringToCompress, StringType.INSTANCE);
     }
 
     /**
@@ -691,7 +682,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_uncompress">UNCOMPRESS(string_to_uncompress)</a>
      */
     public static Expression unCompress(final Expression stringToUnCompress) {
-        return SQLFunctions.oneArgFunc("UNCOMPRESS", stringToUnCompress, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("UNCOMPRESS", stringToUnCompress, StringType.INSTANCE);
     }
 
     /**
@@ -704,7 +695,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_md5">MD5(str)</a>
      */
     public static Expression md5(final Expression str) {
-        return SQLFunctions.oneArgFunc("MD5", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("MD5", str, StringType.INSTANCE);
     }
 
     /**
@@ -717,7 +708,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_md5">RANDOM_BYTES(len)</a>
      */
     public static Expression randomBytes(final Expression len) {
-        return SQLFunctions.oneArgFunc("RANDOM_BYTES", len, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("RANDOM_BYTES", len, StringType.INSTANCE);
     }
 
     /**
@@ -730,7 +721,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_sha1">SHA1(str)</a>
      */
     public static Expression sha1(final Expression str) {
-        return SQLFunctions.oneArgFunc("SHA1", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("SHA1", str, StringType.INSTANCE);
     }
 
     /**
@@ -743,7 +734,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_sha1">SHA(str)</a>
      */
     public static Expression sha(final Expression str) {
-        return SQLFunctions.oneArgFunc("SHA", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("SHA", str, StringType.INSTANCE);
     }
 
     /**
@@ -759,9 +750,9 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     public static Expression sha2(final Expression str, final Expression hashLength) {
         final List<Object> argList = new ArrayList<>(3);
         argList.add(str);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(hashLength);
-        return SQLFunctions.complexArgFunc("SHA2", argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc("SHA2", argList, StringType.INSTANCE);
     }
 
 
@@ -836,7 +827,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_uncompressed-length">UNCOMPRESSED_LENGTH(compressed_string)</a>
      */
     public static Expression unCompressedLength(final Expression compressedString) {
-        return SQLFunctions.oneArgFunc("UNCOMPRESSED_LENGTH", compressedString, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("UNCOMPRESSED_LENGTH", compressedString, IntegerType.INSTANCE);
     }
 
 
@@ -850,7 +841,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_validate-password-strength">VALIDATE_PASSWORD_STRENGTH(str)</a>
      */
     public static Expression validatePasswordStrength(final Expression str) {
-        return SQLFunctions.oneArgFunc("VALIDATE_PASSWORD_STRENGTH", str, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("VALIDATE_PASSWORD_STRENGTH", str, IntegerType.INSTANCE);
     }
 
     /*-------------------below Locking Functions-------------------*/
@@ -865,7 +856,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_get-lock">GET_LOCK(str,timeout)</a>
      */
     public static Expression getLock(final Expression str, final Expression timeout) {
-        return SQLFunctions.twoArgFunc("GET_LOCK", str, timeout, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("GET_LOCK", str, timeout, IntegerType.INSTANCE);
     }
 
     /**
@@ -878,7 +869,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_is-free-lock">IS_FREE_LOCK(str)</a>
      */
     public static IPredicate isFreeLock(final Expression str) {
-        return SQLFunctions.oneArgFuncPredicate("IS_FREE_LOCK", str);
+        return FunctionUtils.oneArgFuncPredicate("IS_FREE_LOCK", str);
     }
 
     /**
@@ -891,7 +882,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_is-used-lock">IS_USED_LOCK(str)</a>
      */
     public static IPredicate isUsedLock(final Expression str) {
-        return SQLFunctions.oneArgFuncPredicate("IS_USED_LOCK", str);
+        return FunctionUtils.oneArgFuncPredicate("IS_USED_LOCK", str);
     }
 
     /**
@@ -903,7 +894,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_release-all-locks">RELEASE_ALL_LOCKS()</a>
      */
     public static Expression releaseAllLocks() {
-        return SQLFunctions.noArgFunc("RELEASE_ALL_LOCKS()", IntegerType.INSTANCE);
+        return FunctionUtils.noArgFunc("RELEASE_ALL_LOCKS()", IntegerType.INSTANCE);
     }
 
     /**
@@ -916,7 +907,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_release-lock">RELEASE_LOCK(str)</a>
      */
     public static Expression releaseLock(final Expression str) {
-        return SQLFunctions.oneArgFunc("RELEASE_LOCK", str, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("RELEASE_LOCK", str, IntegerType.INSTANCE);
     }
 
 
@@ -933,7 +924,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_benchmark">BENCHMARK(count,expr)</a>
      */
     public static Expression benchmark(final Expression count, final Expression expr) {
-        return SQLFunctions.twoArgFunc("BENCHMARK", count, expr, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("BENCHMARK", count, expr, IntegerType.INSTANCE);
     }
 
     /**
@@ -946,7 +937,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_charset">CHARSET(str)</a>
      */
     public static Expression charset(final Expression str) {
-        return SQLFunctions.oneArgFunc("CHARSET", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("CHARSET", str, StringType.INSTANCE);
     }
 
     /**
@@ -959,7 +950,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_coercibility">COERCIBILITY(str)</a>
      */
     public static Expression coercibility(final Expression str) {
-        return SQLFunctions.oneArgFunc("COERCIBILITY", str, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("COERCIBILITY", str, IntegerType.INSTANCE);
     }
 
     /**
@@ -972,7 +963,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_collation">COLLATION(str)</a>
      */
     public static Expression collation(final Expression str) {
-        return SQLFunctions.oneArgFunc("COLLATION", str, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("COLLATION", str, StringType.INSTANCE);
     }
 
     /**
@@ -984,7 +975,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_connection-id">CONNECTION_ID()</a>
      */
     public static Expression connectionId() {
-        return SQLFunctions.noArgFunc("CONNECTION_ID", LongType.INSTANCE);
+        return FunctionUtils.noArgFunc("CONNECTION_ID", LongType.INSTANCE);
     }
 
     /**
@@ -996,7 +987,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_current-role">CURRENT_ROLE()</a>
      */
     public static Expression currentRole() {
-        return SQLFunctions.noArgFunc("CURRENT_ROLE", StringType.INSTANCE);
+        return FunctionUtils.noArgFunc("CURRENT_ROLE", StringType.INSTANCE);
     }
 
     /**
@@ -1008,7 +999,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_current-user">CURRENT_USER()</a>
      */
     public static Expression currentUser() {
-        return SQLFunctions.noArgFunc("CURRENT_USER", StringType.INSTANCE);
+        return FunctionUtils.noArgFunc("CURRENT_USER", StringType.INSTANCE);
     }
 
     /**
@@ -1020,7 +1011,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_database">DATABASE()</a>
      */
     public static Expression database() {
-        return SQLFunctions.noArgFunc("DATABASE", StringType.INSTANCE);
+        return FunctionUtils.noArgFunc("DATABASE", StringType.INSTANCE);
     }
 
     /**
@@ -1032,7 +1023,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_icu-version">ICU_VERSION()</a>
      */
     public static Expression icuVersion() {
-        return SQLFunctions.noArgFunc("ICU_VERSION", StringType.INSTANCE);
+        return FunctionUtils.noArgFunc("ICU_VERSION", StringType.INSTANCE);
     }
 
     /**
@@ -1044,7 +1035,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id">LAST_INSERT_ID()</a>
      */
     public static Expression lastInsertId() {
-        return SQLFunctions.noArgFunc("LAST_INSERT_ID", LongType.INSTANCE);
+        return FunctionUtils.noArgFunc("LAST_INSERT_ID", LongType.INSTANCE);
     }
 
     /**
@@ -1057,7 +1048,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id">LAST_INSERT_ID()</a>
      */
     public static Expression lastInsertId(final Expression expr) {
-        return SQLFunctions.oneArgFunc("LAST_INSERT_ID", expr, LongType.INSTANCE);
+        return FunctionUtils.oneArgFunc("LAST_INSERT_ID", expr, LongType.INSTANCE);
     }
 
     /**
@@ -1069,7 +1060,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_roles-graphml">ROLES_GRAPHML()</a>
      */
     public static Expression rolesGraphml() {
-        return SQLFunctions.noArgFunc("ROLES_GRAPHML", StringType.INSTANCE);
+        return FunctionUtils.noArgFunc("ROLES_GRAPHML", StringType.INSTANCE);
     }
 
     /**
@@ -1081,7 +1072,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_row-count">ROW_COUNT()</a>
      */
     public static Expression rowCount() {
-        return SQLFunctions.noArgFunc("ROW_COUNT", LongType.INSTANCE);
+        return FunctionUtils.noArgFunc("ROW_COUNT", LongType.INSTANCE);
     }
 
     /**
@@ -1093,7 +1084,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_user">USER()</a>
      */
     public static Expression user() {
-        return SQLFunctions.noArgFunc("USER", StringType.INSTANCE);
+        return FunctionUtils.noArgFunc("USER", StringType.INSTANCE);
     }
 
     /**
@@ -1105,7 +1096,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_version">VERSION()</a>
      */
     public static Expression version() {
-        return SQLFunctions.noArgFunc("VERSION", StringType.INSTANCE);
+        return FunctionUtils.noArgFunc("VERSION", StringType.INSTANCE);
     }
 
 
@@ -1213,7 +1204,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-mysql-specific-functions.html#function_point">Point(x, y)</a>
      */
     public static Expression point(final Expression x, final Expression y) {
-        return SQLFunctions.twoArgFunc("Point", x, y, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("Point", x, y, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1227,7 +1218,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrcontains">MBRContains(g1, g2)</a>
      */
     public static IPredicate mbrContains(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("MBRContains", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("MBRContains", g1, g2);
     }
 
     /**
@@ -1241,7 +1232,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrcoveredby">MBRCoveredBy(g1, g2)</a>
      */
     public static IPredicate mbrCoveredBy(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("MBRCoveredBy", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("MBRCoveredBy", g1, g2);
     }
 
     /**
@@ -1255,7 +1246,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrcovers">MBRCovers(g1, g2)</a>
      */
     public static IPredicate mbrCovers(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("MBRCovers", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("MBRCovers", g1, g2);
     }
 
     /**
@@ -1269,7 +1260,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrdisjoint">MBRDisjoint(g1, g2)</a>
      */
     public static IPredicate mbrDisjoint(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("MBRDisjoint", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("MBRDisjoint", g1, g2);
     }
 
     /**
@@ -1283,7 +1274,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrequals">MBREquals(g1, g2)</a>
      */
     public static IPredicate mbrEquals(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("MBREquals", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("MBREquals", g1, g2);
     }
 
     /**
@@ -1297,7 +1288,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrintersects">MBRIntersects(g1, g2)</a>
      */
     public static IPredicate mbrIntersects(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("MBRIntersects", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("MBRIntersects", g1, g2);
     }
 
 
@@ -1312,7 +1303,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbroverlaps">MBROverlaps(g1, g2)</a>
      */
     public static IPredicate mbrOverlaps(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("MBROverlaps", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("MBROverlaps", g1, g2);
     }
 
     /**
@@ -1326,7 +1317,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrtouches">MBRTouches(g1, g2)</a>
      */
     public static IPredicate mbrTouches(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("MBRTouches", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("MBRTouches", g1, g2);
     }
 
     /**
@@ -1340,7 +1331,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrwithin">MBRWithin(g1, g2)</a>
      */
     public static IPredicate mbrWithin(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("MBRWithin", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("MBRWithin", g1, g2);
     }
 
     /**
@@ -1353,7 +1344,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-area">ST_Area({poly|mpoly})</a>
      */
     public static Expression stArea(final Expression polyOrmpoly) {
-        return SQLFunctions.oneArgFunc("ST_Area", polyOrmpoly, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_Area", polyOrmpoly, DoubleType.INSTANCE);
     }
 
     /**
@@ -1367,7 +1358,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-centroid">ST_Centroid({poly|mpoly})</a>
      */
     public static Expression stCentroid(final Expression polyOrmpoly) {
-        return SQLFunctions.oneArgFunc("ST_Centroid", polyOrmpoly, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_Centroid", polyOrmpoly, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1381,7 +1372,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-exteriorring">ST_ExteriorRing(poly)</a>
      */
     public static Expression stExteriorRing(final Expression polyOrmpoly) {
-        return SQLFunctions.oneArgFunc("ST_ExteriorRing", polyOrmpoly, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_ExteriorRing", polyOrmpoly, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1396,7 +1387,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-interiorringn">ST_InteriorRingN(poly, N)</a>
      */
     public static Expression stInteriorRingN(final Expression poly, final Expression n) {
-        return SQLFunctions.twoArgFunc("ST_InteriorRingN", poly, n, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_InteriorRingN", poly, n, ByteArrayType.INSTANCE);
     }
 
 
@@ -1410,7 +1401,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-numinteriorrings">ST_NumInteriorRing(poly)</a>
      */
     public static Expression stNumInteriorRing(final Expression poly) {
-        return SQLFunctions.oneArgFunc("ST_NumInteriorRing", poly, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_NumInteriorRing", poly, IntegerType.INSTANCE);
     }
 
     /**
@@ -1423,7 +1414,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-numinteriorrings">ST_NumInteriorRings(poly)</a>
      */
     public static Expression stNumInteriorRings(final Expression poly) {
-        return SQLFunctions.oneArgFunc("ST_NumInteriorRings", poly, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_NumInteriorRings", poly, IntegerType.INSTANCE);
     }
 
 
@@ -1438,7 +1429,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-asbinary">ST_AsBinary(g [, options])</a>
      */
     public static Expression stAsBinary(final Expression g) {
-        return SQLFunctions.oneArgFunc("ST_AsBinary", g, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_AsBinary", g, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1467,7 +1458,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-asbinary">ST_AsWKB(g [, options])</a>
      */
     public static Expression stAsWKB(final Expression g) {
-        return SQLFunctions.oneArgFunc("ST_AsWKB", g, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_AsWKB", g, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1482,7 +1473,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-asbinary">ST_AsWKB(g [, options])</a>
      */
     public static Expression stAsWKB(final Expression g, final Expression options) {
-        return SQLFunctions.twoArgFunc("ST_AsWKB", g, options, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_AsWKB", g, options, ByteArrayType.INSTANCE);
     }
 
 
@@ -1496,7 +1487,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-astext">ST_AsText(g [, options])</a>
      */
     public static Expression stAsText(final Expression g) {
-        return SQLFunctions.oneArgFunc("ST_AsText", g, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_AsText", g, StringType.INSTANCE);
     }
 
     /**
@@ -1510,7 +1501,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-astext">ST_AsText(g [, options])</a>
      */
     public static Expression stAsText(final Expression g, final Expression options) {
-        return SQLFunctions.twoArgFunc("ST_AsText", g, options, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_AsText", g, options, StringType.INSTANCE);
     }
 
     /**
@@ -1523,7 +1514,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-astext">ST_AsWKT(g [, options])</a>
      */
     public static Expression stAsWKT(final Expression g) {
-        return SQLFunctions.oneArgFunc("ST_AsWKT", g, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_AsWKT", g, StringType.INSTANCE);
     }
 
     /**
@@ -1537,7 +1528,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-astext">ST_AsWKT(g [, options])</a>
      */
     public static Expression stAsWKT(final Expression g, final Expression options) {
-        return SQLFunctions.twoArgFunc("ST_AsWKT", g, options, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_AsWKT", g, options, StringType.INSTANCE);
     }
 
     /**
@@ -1551,7 +1542,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-swapxy">ST_SwapXY(g)</a>
      */
     public static Expression stSwapXY(final Expression g) {
-        return SQLFunctions.oneArgFunc("ST_SwapXY", g, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_SwapXY", g, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1568,11 +1559,11 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         final Expression func;
         switch (expList.size()) {
             case 1:
-                func = SQLFunctions.oneArgFunc(name, expList.get(0), StringType.INSTANCE);
+                func = FunctionUtils.oneArgFunc(name, expList.get(0), StringType.INSTANCE);
                 break;
             case 2:
             case 3:
-                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList), StringType.INSTANCE);
+                func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList), StringType.INSTANCE);
                 break;
             default:
                 throw CriteriaUtils.funcArgError(name, expList);
@@ -1595,11 +1586,11 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         final Expression func;
         switch (expList.size()) {
             case 1:
-                func = SQLFunctions.oneArgFunc(name, expList.get(0), ByteArrayType.INSTANCE);
+                func = FunctionUtils.oneArgFunc(name, expList.get(0), ByteArrayType.INSTANCE);
                 break;
             case 2:
             case 3:
-                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList)
+                func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList)
                         , ByteArrayType.INSTANCE);
                 break;
             default:
@@ -1627,7 +1618,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
             case 3:
             case 4:
             case 5:
-                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList)
+                func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList)
                         , ByteArrayType.INSTANCE);
                 break;
             default:
@@ -1650,10 +1641,10 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         final Expression func;
         switch (expList.size()) {
             case 1:
-                func = SQLFunctions.oneArgFunc(name, expList.get(0), ByteArrayType.INSTANCE);
+                func = FunctionUtils.oneArgFunc(name, expList.get(0), ByteArrayType.INSTANCE);
                 break;
             case 2:
-                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList)
+                func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList)
                         , ByteArrayType.INSTANCE);
                 break;
             default:
@@ -1673,7 +1664,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-convexhull">ST_ConvexHull(g)</a>
      */
     public static Expression stConvexHull(final Expression g) {
-        return SQLFunctions.oneArgFunc("ST_ConvexHull", g, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_ConvexHull", g, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1688,7 +1679,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-difference">ST_Difference(g1, g2)</a>
      */
     public static Expression stDifference(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgFunc("ST_Difference", g1, g2, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_Difference", g1, g2, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1703,7 +1694,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-intersection">ST_Intersection(g1, g2)</a>
      */
     public static Expression stIntersection(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgFunc("ST_Intersection", g1, g2, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_Intersection", g1, g2, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1718,7 +1709,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-lineinterpolatepoint">ST_LineInterpolatePoint(ls, fractional_distance)</a>
      */
     public static Expression stLineInterpolatePoint(final Expression ls, final Expression fractionalDistance) {
-        return SQLFunctions.twoArgFunc("ST_LineInterpolatePoint", ls, fractionalDistance, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_LineInterpolatePoint", ls, fractionalDistance, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1733,7 +1724,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-lineinterpolatepoints">ST_LineInterpolatePoints(ls, fractional_distance)</a>
      */
     public static Expression stLineInterpolatePoints(final Expression ls, final Expression fractionalDistance) {
-        return SQLFunctions.twoArgFunc("ST_LineInterpolatePoints", ls, fractionalDistance, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_LineInterpolatePoints", ls, fractionalDistance, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1748,7 +1739,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-pointatdistance">ST_PointAtDistance(ls, distance)</a>
      */
     public static Expression stPointAtDistance(final Expression ls, final Expression distance) {
-        return SQLFunctions.twoArgFunc("ST_PointAtDistance", ls, distance, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_PointAtDistance", ls, distance, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1763,7 +1754,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-symdifference">ST_SymDifference(g1, g2)</a>
      */
     public static Expression stSymDifference(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgFunc("ST_SymDifference", g1, g2, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_SymDifference", g1, g2, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1778,7 +1769,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-transform">ST_Transform(g, target_srid)</a>
      */
     public static Expression stTransform(final Expression g, final Expression targetSrid) {
-        return SQLFunctions.twoArgFunc("ST_Transform", g, targetSrid, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_Transform", g, targetSrid, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1793,7 +1784,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-union">ST_Union(g1, g2)</a>
      */
     public static Expression stUnion(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgFunc("ST_Union", g1, g2, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_Union", g1, g2, ByteArrayType.INSTANCE);
     }
 
     /*-------------------below Spatial Convenience Functions-------------------*/
@@ -1813,7 +1804,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         switch (expList.size()) {
             case 2:
             case 3:
-                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList)
+                func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList)
                         , DoubleType.INSTANCE);
                 break;
             default:
@@ -1832,7 +1823,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-convenience-functions.html#function_st-isvalid">ST_IsValid(g)</a>
      */
     public static IPredicate stIsValid(final Expression g) {
-        return SQLFunctions.oneArgFuncPredicate("ST_IsValid", g);
+        return FunctionUtils.oneArgFuncPredicate("ST_IsValid", g);
     }
 
     /**
@@ -1847,7 +1838,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-makeenvelope">ST_MakeEnvelope(pt1, pt2)</a>
      */
     public static Expression stMakeEnvelope(final Expression pt1, final Expression pt2) {
-        return SQLFunctions.twoArgFunc("ST_MakeEnvelope", pt1, pt2, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_MakeEnvelope", pt1, pt2, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1862,7 +1853,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-simplify">ST_Simplify(g, max_distance)</a>
      */
     public static Expression stSimplify(final Expression g, final Expression maxDistance) {
-        return SQLFunctions.twoArgFunc("ST_Simplify", g, maxDistance, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_Simplify", g, maxDistance, ByteArrayType.INSTANCE);
     }
 
 
@@ -1877,7 +1868,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-convenience-functions.html#function_st-validate">ST_Validate(g)</a>
      */
     public static Expression stValidate(final Expression g) {
-        return SQLFunctions.oneArgFunc("ST_Validate", g, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_Validate", g, ByteArrayType.INSTANCE);
     }
 
 
@@ -1894,7 +1885,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-endpoint">ST_EndPoint(ls)</a>
      */
     public static Expression stEndPoint(final Expression ls) {
-        return SQLFunctions.oneArgFunc("ST_EndPoint", ls, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_EndPoint", ls, ByteArrayType.INSTANCE);
     }
 
 
@@ -1908,7 +1899,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-isclosed">ST_IsClosed(ls)</a>
      */
     public static Expression stIsClosed(final Expression ls) {
-        return SQLFunctions.oneArgFunc("ST_IsClosed", ls, BooleanType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_IsClosed", ls, BooleanType.INSTANCE);
     }
 
     /**
@@ -1921,7 +1912,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-length">ST_Length(ls [, unit])</a>
      */
     public static Expression stLength(Expression ls) {
-        return SQLFunctions.oneArgFunc("ST_Length", ls, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_Length", ls, DoubleType.INSTANCE);
     }
 
     /**
@@ -1935,7 +1926,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-length">ST_Length(ls [, unit])</a>
      */
     public static Expression stLength(final Expression ls, Expression unit) {
-        return SQLFunctions.twoArgFunc("ST_Length", ls, unit, DoubleType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_Length", ls, unit, DoubleType.INSTANCE);
     }
 
     /**
@@ -1948,7 +1939,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-numpoints">ST_NumPoints(ls)</a>
      */
     public static Expression stNumPoints(final Expression ls) {
-        return SQLFunctions.oneArgFunc("ST_NumPoints", ls, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_NumPoints", ls, IntegerType.INSTANCE);
     }
 
 
@@ -1964,7 +1955,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-pointn">ST_PointN(ls, N)</a>
      */
     public static Expression stPointN(final Expression ls, final Expression n) {
-        return SQLFunctions.twoArgFunc("ST_PointN", ls, n, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_PointN", ls, n, ByteArrayType.INSTANCE);
     }
 
 
@@ -1979,7 +1970,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-startpoint">ST_StartPoint(ls)</a>
      */
     public static Expression stStartPoint(final Expression ls) {
-        return SQLFunctions.oneArgFunc("ST_StartPoint", ls, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_StartPoint", ls, ByteArrayType.INSTANCE);
     }
 
 
@@ -1996,7 +1987,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-contains">ST_Contains(g1, g2)</a>
      */
     public static IPredicate stContains(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("ST_Contains", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("ST_Contains", g1, g2);
     }
 
 
@@ -2011,7 +2002,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-crosses">ST_Crosses(g1, g2)</a>
      */
     public static IPredicate stCrosses(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("ST_Crosses", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("ST_Crosses", g1, g2);
     }
 
     /**
@@ -2025,7 +2016,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-disjoint">ST_Disjoint(g1, g2)</a>
      */
     public static IPredicate stDisjoint(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("ST_Disjoint", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("ST_Disjoint", g1, g2);
     }
 
 
@@ -2041,7 +2032,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-distance">ST_Distance(g1, g2 [, unit])</a>
      */
     public static Expression stDistance(final Expression g1, Expression g2) {
-        return SQLFunctions.twoArgFunc("ST_Distance", g1, g2, DoubleType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_Distance", g1, g2, DoubleType.INSTANCE);
     }
 
     /**
@@ -2057,7 +2048,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-distance">ST_Distance(g1, g2 [, unit])</a>
      */
     public static Expression stDistance(final Expression g1, Expression g2, Expression unit) {
-        return SQLFunctions.threeArgFunc("ST_Distance", g1, g2, unit, DoubleType.INSTANCE);
+        return FunctionUtils.threeArgFunc("ST_Distance", g1, g2, unit, DoubleType.INSTANCE);
     }
 
 
@@ -2072,7 +2063,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-equals">ST_Equals(g1, g2)</a>
      */
     public static IPredicate stEquals(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("ST_Equals", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("ST_Equals", g1, g2);
     }
 
     /**
@@ -2086,7 +2077,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-frechetdistance">ST_FrechetDistance(g1, g2 [, unit])</a>
      */
     public static Expression stFrechetDistance(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgFunc("ST_FrechetDistance", g1, g2, DoubleType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_FrechetDistance", g1, g2, DoubleType.INSTANCE);
     }
 
     /**
@@ -2101,7 +2092,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-frechetdistance">ST_FrechetDistance(g1, g2 [, unit])</a>
      */
     public static Expression stFrechetDistance(final Expression g1, final Expression g2, final Expression unit) {
-        return SQLFunctions.threeArgFunc("ST_FrechetDistance", g1, g2, unit, DoubleType.INSTANCE);
+        return FunctionUtils.threeArgFunc("ST_FrechetDistance", g1, g2, unit, DoubleType.INSTANCE);
     }
 
     /**
@@ -2115,7 +2106,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-hausdorffdistance">ST_HausdorffDistance(g1, g2 [, unit])</a>
      */
     public static Expression stHausdorffDistance(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgFunc("ST_HausdorffDistance", g1, g2, DoubleType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_HausdorffDistance", g1, g2, DoubleType.INSTANCE);
     }
 
     /**
@@ -2129,7 +2120,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-hausdorffdistance">ST_HausdorffDistance(g1, g2 [, unit])</a>
      */
     public static Expression stHausdorffDistance(final Expression g1, final Expression g2, final Expression unit) {
-        return SQLFunctions.threeArgFunc("ST_HausdorffDistance", g1, g2, unit, DoubleType.INSTANCE);
+        return FunctionUtils.threeArgFunc("ST_HausdorffDistance", g1, g2, unit, DoubleType.INSTANCE);
     }
 
 
@@ -2143,7 +2134,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-intersects">ST_Intersects(g1, g2)</a>
      */
     public static IPredicate stIntersects(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("ST_Intersects", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("ST_Intersects", g1, g2);
     }
 
 
@@ -2158,7 +2149,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-overlaps">ST_Overlaps(g1, g2)</a>
      */
     public static IPredicate stOverlaps(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("ST_Overlaps", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("ST_Overlaps", g1, g2);
     }
 
     /**
@@ -2172,7 +2163,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-touches">ST_Touches(g1, g2)</a>
      */
     public static IPredicate stTouches(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("ST_Touches", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("ST_Touches", g1, g2);
     }
 
     /**
@@ -2186,7 +2177,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-within">ST_Within(g1, g2)</a>
      */
     public static IPredicate stWithin(final Expression g1, final Expression g2) {
-        return SQLFunctions.twoArgPredicateFunc("ST_Within", g1, g2);
+        return FunctionUtils.twoArgPredicateFunc("ST_Within", g1, g2);
     }
 
 
@@ -2204,7 +2195,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geohash-functions.html#function_st-geohash">ST_GeoHash(longitude, latitude, max_length), ST_GeoHash(point, max_length)</a>
      */
     public static Expression stGeoHash(final Expression point, final Expression maxLength) {
-        return SQLFunctions.twoArgFunc("ST_GeoHash", point, maxLength, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_GeoHash", point, maxLength, StringType.INSTANCE);
     }
 
     /**
@@ -2220,7 +2211,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geohash-functions.html#function_st-geohash">ST_GeoHash(longitude, latitude, max_length), ST_GeoHash(point, max_length)</a>
      */
     public static Expression stGeoHash(final Expression longitude, final Expression latitude, final Expression maxLength) {
-        return SQLFunctions.threeArgFunc("ST_GeoHash", longitude, latitude, maxLength, StringType.INSTANCE);
+        return FunctionUtils.threeArgFunc("ST_GeoHash", longitude, latitude, maxLength, StringType.INSTANCE);
     }
 
 
@@ -2234,7 +2225,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geohash-functions.html#function_st-latfromgeohash">ST_LatFromGeoHash(geohash_str)</a>
      */
     public static Expression stLatFromGeoHash(final Expression geohashStr) {
-        return SQLFunctions.oneArgFunc("ST_LatFromGeoHash", geohashStr, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_LatFromGeoHash", geohashStr, DoubleType.INSTANCE);
     }
 
     /**
@@ -2247,7 +2238,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geohash-functions.html#function_st-longfromgeohash">ST_LongFromGeoHash(geohash_str)</a>
      */
     public static Expression stLongFromGeoHash(final Expression geohashStr) {
-        return SQLFunctions.oneArgFunc("ST_LongFromGeoHash", geohashStr, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_LongFromGeoHash", geohashStr, DoubleType.INSTANCE);
     }
 
 
@@ -2262,7 +2253,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geohash-functions.html#function_st-pointfromgeohash">ST_PointFromGeoHash(geohash_str, srid)</a>
      */
     public static Expression stPointFromGeoHash(final Expression geohashStr, final Expression srid) {
-        return SQLFunctions.twoArgFunc("ST_PointFromGeoHash", geohashStr, srid, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_PointFromGeoHash", geohashStr, srid, ByteArrayType.INSTANCE);
     }
 
     /*-------------------below Functions That Create Geometry Values from WKT Values-------------------*/
@@ -2495,7 +2486,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-geometrycollection-property-functions.html#function_st-geometryn">ST_GeometryN(gc, N)</a>
      */
     public static Expression stGeometryN(final Expression gc, final Expression n) {
-        return SQLFunctions.twoArgFunc("ST_GeometryN", gc, n, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_GeometryN", gc, n, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -2508,7 +2499,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-geometrycollection-property-functions.html#function_st-numgeometries">ST_NumGeometries(gc)</a>
      */
     public static Expression stNumGeometries(final Expression gc) {
-        return SQLFunctions.oneArgFunc("ST_NumGeometries", gc, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_NumGeometries", gc, IntegerType.INSTANCE);
     }
 
     /*-------------------below General Geometry Property Functions-------------------*/
@@ -2523,7 +2514,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-dimension">ST_Dimension(g)</a>
      */
     public static Expression stDimension(final Expression g) {
-        return SQLFunctions.oneArgFunc("ST_Dimension", g, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_Dimension", g, IntegerType.INSTANCE);
     }
 
     /**
@@ -2537,7 +2528,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-envelope">ST_Envelope(g)</a>
      */
     public static Expression stEnvelope(final Expression g) {
-        return SQLFunctions.oneArgFunc("ST_Envelope", g, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_Envelope", g, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -2550,7 +2541,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-geometrytype">ST_GeometryType(g)</a>
      */
     public static Expression stGeometryType(final Expression g) {
-        return SQLFunctions.oneArgFunc("ST_GeometryType", g, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_GeometryType", g, StringType.INSTANCE);
     }
 
     /**
@@ -2563,7 +2554,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-isempty">ST_IsEmpty(g)</a>
      */
     public static Expression stIsEmpty(final Expression g) {
-        return SQLFunctions.oneArgFunc("ST_IsEmpty", g, BooleanType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_IsEmpty", g, BooleanType.INSTANCE);
     }
 
 
@@ -2577,7 +2568,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-issimple">ST_IsSimple(g)</a>
      */
     public static Expression stIsSimple(final Expression g) {
-        return SQLFunctions.oneArgFunc("ST_IsSimple", g, BooleanType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_IsSimple", g, BooleanType.INSTANCE);
     }
 
     /**
@@ -2590,7 +2581,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-srid">ST_SRID(g [, srid])</a>
      */
     public static Expression stSRID(final Expression p) {
-        return SQLFunctions.oneArgFunc("ST_SRID", p, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_SRID", p, IntegerType.INSTANCE);
     }
 
     /**
@@ -2604,7 +2595,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-srid">ST_SRID(g [, srid])</a>
      */
     public static Expression stSRID(final Expression p, final Expression srid) {
-        return SQLFunctions.twoArgFunc("ST_SRID", p, srid, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_SRID", p, srid, ByteArrayType.INSTANCE);
     }
 
     /*-------------------below Point Property Functions-------------------*/
@@ -2619,7 +2610,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-point-property-functions.html#function_st-latitude">ST_Latitude(p [, new_latitude_val])</a>
      */
     public static Expression stLatitude(final Expression p) {
-        return SQLFunctions.oneArgFunc("ST_Latitude", p, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_Latitude", p, DoubleType.INSTANCE);
     }
 
     /**
@@ -2634,7 +2625,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-point-property-functions.html#function_st-latitude">ST_Latitude(p [, new_latitude_val])</a>
      */
     public static Expression stLatitude(final Expression p, final Expression newLatitudeVal) {
-        return SQLFunctions.twoArgFunc("ST_Latitude", p, newLatitudeVal, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_Latitude", p, newLatitudeVal, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -2647,7 +2638,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-point-property-functions.html#function_st-longitude">ST_Longitude(p [, new_longitude_val])</a>
      */
     public static Expression stLongitude(final Expression p) {
-        return SQLFunctions.oneArgFunc("ST_Longitude", p, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_Longitude", p, DoubleType.INSTANCE);
     }
 
     /**
@@ -2662,7 +2653,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-point-property-functions.html#function_st-longitude">ST_Longitude(p [, new_longitude_val])</a>
      */
     public static Expression stLongitude(final Expression p, final Expression newLongitudeVal) {
-        return SQLFunctions.twoArgFunc("ST_Longitude", p, newLongitudeVal, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_Longitude", p, newLongitudeVal, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -2675,7 +2666,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-point-property-functions.html#function_st-x">ST_X(p [, new_x_val])</a>
      */
     public static Expression stX(final Expression p) {
-        return SQLFunctions.oneArgFunc("ST_X", p, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_X", p, DoubleType.INSTANCE);
     }
 
     /**
@@ -2690,7 +2681,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-point-property-functions.html#function_st-x">ST_X(p [, new_x_val])</a>
      */
     public static Expression stX(final Expression p, final Expression newXVal) {
-        return SQLFunctions.twoArgFunc("ST_X", p, newXVal, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_X", p, newXVal, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -2703,7 +2694,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-point-property-functions.html#function_st-y">ST_Y(p [, new_y_val])</a>
      */
     public static Expression stY(final Expression p) {
-        return SQLFunctions.oneArgFunc("ST_Y", p, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_Y", p, DoubleType.INSTANCE);
     }
 
     /**
@@ -2718,7 +2709,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-point-property-functions.html#function_st-y">ST_Y(p [, new_y_val])</a>
      */
     public static Expression stY(final Expression p, final Expression newYVal) {
-        return SQLFunctions.twoArgFunc("ST_Y", p, newYVal, ByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ST_Y", p, newYVal, ByteArrayType.INSTANCE);
     }
 
     /*-------------------below Performance Schema Functions-------------------*/
@@ -2733,7 +2724,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/performance-schema-functions.html#function_format-bytes">FORMAT_BYTES(count)</a>
      */
     public static Expression formatBytes(final Expression count) {
-        return SQLFunctions.oneArgFunc("FORMAT_BYTES", count, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("FORMAT_BYTES", count, StringType.INSTANCE);
     }
 
     /**
@@ -2746,7 +2737,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/performance-schema-functions.html#function_format-pico-time">FORMAT_PICO_TIME(time_val)</a>
      */
     public static Expression formatPicoTime(final Expression timeVal) {
-        return SQLFunctions.oneArgFunc("FORMAT_PICO_TIME", timeVal, StringType.INSTANCE);
+        return FunctionUtils.oneArgFunc("FORMAT_PICO_TIME", timeVal, StringType.INSTANCE);
     }
 
     /**
@@ -2758,7 +2749,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/performance-schema-functions.html#function_ps-current-thread-id">PS_CURRENT_THREAD_ID()</a>
      */
     public static Expression psCurrentThreadId() {
-        return SQLFunctions.noArgFunc("PS_CURRENT_THREAD_ID", LongType.INSTANCE);
+        return FunctionUtils.noArgFunc("PS_CURRENT_THREAD_ID", LongType.INSTANCE);
     }
 
     /**
@@ -2771,7 +2762,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/performance-schema-functions.html#function_ps-thread-id">PS_THREAD_ID(connection_id)</a>
      */
     public static Expression psThreadId(final Expression connectionId) {
-        return SQLFunctions.oneArgFunc("PS_THREAD_ID", connectionId, LongType.INSTANCE);
+        return FunctionUtils.oneArgFunc("PS_THREAD_ID", connectionId, LongType.INSTANCE);
     }
 
 
@@ -2788,7 +2779,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_gtid-subset">GTID_SUBSET(set1,set2)</a>
      */
     public static IPredicate gtidSubset(final Expression set1, final Expression set2) {
-        return SQLFunctions.twoArgPredicateFunc("GTID_SUBSET", set1, set2);
+        return FunctionUtils.twoArgPredicateFunc("GTID_SUBSET", set1, set2);
     }
 
     /**
@@ -2802,7 +2793,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_gtid-subtract">GTID_SUBTRACT(set1,set2)</a>
      */
     public static Expression gtidSubtract(final Expression set1, final Expression set2) {
-        return SQLFunctions.twoArgFunc("GTID_SUBTRACT", set1, set2, set1.typeMeta());
+        return FunctionUtils.twoArgFunc("GTID_SUBTRACT", set1, set2, set1.typeMeta());
     }
 
     /**
@@ -2815,7 +2806,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_FOR_EXECUTED_GTID_SET(gtid_set[, timeout])</a>
      */
     public static Expression waitForExecutedGtidSet(final Expression gtidSet) {
-        return SQLFunctions.oneArgFunc("WAIT_FOR_EXECUTED_GTID_SET", gtidSet, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("WAIT_FOR_EXECUTED_GTID_SET", gtidSet, IntegerType.INSTANCE);
     }
 
     /**
@@ -2829,7 +2820,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_FOR_EXECUTED_GTID_SET(gtid_set[, timeout])</a>
      */
     public static Expression waitForExecutedGtidSet(final Expression gtidSet, final Expression timeout) {
-        return SQLFunctions.twoArgFunc("WAIT_FOR_EXECUTED_GTID_SET", gtidSet, timeout, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("WAIT_FOR_EXECUTED_GTID_SET", gtidSet, timeout, IntegerType.INSTANCE);
     }
 
     /**
@@ -2842,7 +2833,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS(gtid_set[, timeout][,channel])</a>
      */
     static Expression waitUntilSqlThreadAfterGtids(final Expression gtidSet) {
-        return SQLFunctions.oneArgFunc("WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS", gtidSet, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS", gtidSet, IntegerType.INSTANCE);
     }
 
     /**
@@ -2855,7 +2846,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS(gtid_set[, timeout][,channel])</a>
      */
     static Expression waitUntilSqlThreadAfterGtids(Expression gtidSet, Expression timeout) {
-        return SQLFunctions.twoArgFunc("WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS", gtidSet, timeout, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS", gtidSet, timeout, IntegerType.INSTANCE);
     }
 
 
@@ -3022,10 +3013,10 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         }
         final Expression func;
         if (expressions instanceof List) {
-            func = SQLFunctions.multiArgOptionFunc(funcName, distinct, (List<?>) expressions
+            func = FunctionUtils.multiArgOptionFunc(funcName, distinct, (List<?>) expressions
                     , clause, StringType.INSTANCE);
         } else {
-            func = SQLFunctions.oneArgOptionFunc(funcName, distinct, expressions, clause, StringType.INSTANCE);
+            func = FunctionUtils.oneArgOptionFunc(funcName, distinct, expressions, clause, StringType.INSTANCE);
         }
         return func;
     }
@@ -3042,14 +3033,14 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         final List<Object> argList = new ArrayList<>();
 
         argList.add(str);
-        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(FunctionUtils.FuncWord.COMMA);
         argList.add(keyStr);
 
         for (Expression argExp : argExpList) {
-            argList.add(SQLFunctions.FuncWord.COMMA);
+            argList.add(FunctionUtils.FuncWord.COMMA);
             argList.add(argExp);
         }
-        return SQLFunctions.complexArgFunc(funcName, argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
 
@@ -3062,13 +3053,13 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         final int geometrySize = geometryList.size();
         switch (geometrySize) {
             case 0:
-                func = SQLFunctions.noArgFunc(name, ByteArrayType.INSTANCE);
+                func = FunctionUtils.noArgFunc(name, ByteArrayType.INSTANCE);
                 break;
             case 1:
-                func = SQLFunctions.oneArgFunc(name, geometryList.get(0), ByteArrayType.INSTANCE);
+                func = FunctionUtils.oneArgFunc(name, geometryList.get(0), ByteArrayType.INSTANCE);
                 break;
             default:
-                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(geometryList)
+                func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(geometryList)
                         , ByteArrayType.INSTANCE);
 
         }
