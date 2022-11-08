@@ -8,8 +8,6 @@ import io.army.meta.TypeMeta;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * Interface representing the sql expression, eg: column,function.
@@ -160,66 +158,22 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
 
     Expression mod(Expression operand);
 
-    Expression mod(Supplier<Expression> supplier);
-
-    Expression mod(Function<Expression, Expression> function);
-
     <T> Expression mod(BiFunction<Expression, T, Expression> operator, T operand);
 
-    <T> Expression mod(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
-
-    Expression mod(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
-
-
     Expression times(Expression operand);
-
-    Expression times(Supplier<Expression> supplier);
-
-    Expression times(Function<Expression, Expression> function);
-
-
     <T> Expression times(BiFunction<Expression, T, Expression> operator, T operand);
-
-    <T> Expression times(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
-
-    Expression times(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
-
-
     Expression plus(Expression operand);
-
-    Expression plus(Supplier<Expression> supplier);
-
-    Expression plus(Function<Expression, Expression> function);
 
     <T> Expression plus(BiFunction<Expression, T, Expression> operator, T operand);
 
-    <T> Expression plus(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
-
-    Expression plus(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
-
     Expression minus(Expression minuend);
 
-    Expression minus(Supplier<Expression> supplier);
-
-    Expression minus(Function<Expression, Expression> function);
 
     <T> Expression minus(BiFunction<Expression, T, Expression> operator, T operand);
 
-    <T> Expression minus(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
-
-    Expression minus(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
-
     Expression divide(Expression divisor);
 
-    Expression divide(Supplier<Expression> supplier);
-
-    Expression divide(Function<Expression, Expression> function);
-
     <T> Expression divide(BiFunction<Expression, T, Expression> operator, T operand);
-
-    <T> Expression divide(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
-
-    Expression divide(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
     Expression negate();
 
@@ -230,15 +184,7 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
      */
     Expression bitwiseAnd(Expression operand);
 
-    Expression bitwiseAnd(Supplier<Expression> supplier);
-
-    Expression bitwiseAnd(Function<Expression, Expression> function);
-
     <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand);
-
-    <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
-
-    Expression bitwiseAnd(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
     /**
      * Bitwise OR
@@ -247,15 +193,7 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
      */
     Expression bitwiseOr(Expression operand);
 
-    Expression bitwiseOr(Supplier<Expression> supplier);
-
-    Expression bitwiseOr(Function<Expression, Expression> function);
-
     <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand);
-
-    <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
-
-    Expression bitwiseOr(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
     /**
      * Bitwise XOR
@@ -264,16 +202,7 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
      */
     Expression xor(Expression operand);
 
-    Expression xor(Supplier<Expression> supplier);
-
-    Expression xor(Function<Expression, Expression> function);
-
-
     <T> Expression xor(BiFunction<Expression, T, Expression> operator, T operand);
-
-    <T> Expression xor(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
-
-    Expression xor(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
     /**
      * Bitwise Inversion
@@ -289,16 +218,7 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
      */
     Expression rightShift(Expression bitNumber);
 
-    Expression rightShift(Supplier<Expression> supplier);
-
-    Expression rightShift(Function<Expression, Expression> function);
-
-
     <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, T operand);
-
-    <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
-
-    Expression rightShift(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
     /**
      * Shifts a  number to the left.
@@ -307,16 +227,7 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
      */
     Expression leftShift(Expression bitNumber);
 
-    Expression leftShift(Supplier<Expression> supplier);
-
-    Expression leftShift(Function<Expression, Expression> function);
-
-
     <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, T operand);
-
-    <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
-
-    Expression leftShift(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
     @Override
     Expression asType(TypeMeta paramMeta);

@@ -1168,6 +1168,9 @@ abstract class CriteriaContexts {
 
     private static class SimpleQueryContext extends JoinableContext {
 
+        final List<SelectItem> SELECT_START = Collections.singletonList((SelectItem) SQLs.START);
+
+
         /**
          * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
          */

@@ -25,6 +25,7 @@ abstract class StandardSyntax extends Functions {
     StandardSyntax() {
     }
 
+
     public interface SymbolStar {
 
     }
@@ -398,7 +399,7 @@ abstract class StandardSyntax extends Functions {
 
     }//SQLSymbolPoint
 
-    private enum SQLSymbolStar implements SymbolStar {
+    private enum SQLSymbolStar implements SymbolStar, SelectItem {
 
         STAR;
 
@@ -476,9 +477,9 @@ abstract class StandardSyntax extends Functions {
     }// NullWord
 
 
-     static final class LiteralSymbolStar extends NonOperationExpression {
+    static final class LiteralSymbolStar extends NonOperationExpression {
 
-         static final LiteralSymbolStar STAR = new LiteralSymbolStar();
+        static final LiteralSymbolStar STAR = new LiteralSymbolStar();
 
         private LiteralSymbolStar() {
         }

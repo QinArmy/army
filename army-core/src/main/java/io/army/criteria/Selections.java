@@ -64,8 +64,6 @@ public interface Selections {
     <T> Query._SelectionsCommaSpec selection(ExpressionOperator<Expression, T, Expression> expOperator
             , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
 
-    <T> Query._SelectionsCommaSpec selection(ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
 
     //below six argument method
 
@@ -96,16 +94,12 @@ public interface Selections {
 
     <I extends Item, T> I selection(BiFunction<Expression, Function<Expression, Statement._AsClause<Query._SelectionsCommaSpec>>, I> sqlFunc
             , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
-
-    <I extends Item, T> I selection(BiFunction<Expression, Function<Expression, Statement._AsClause<Query._SelectionsCommaSpec>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
+            , BiFunction<Expression, T, Expression> operator, T operand);
 
     <I extends Item, T> I selection(BiFunction<Expression, Function<Expression, Statement._AsClause<Query._SelectionsCommaSpec>>, I> sqlFunc
             , ExpressionOperator<Expression, T, Expression> expOperator
             , BiFunction<Expression, T, Expression> operator, Function<String, ?> function
-            , String keyName, SQLs.WordAs as, String alias);
+            , String keyName);
 
 
 }

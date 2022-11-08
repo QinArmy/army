@@ -11,8 +11,6 @@ import io.army.meta.TypeMeta;
 
 import java.util.Collection;
 import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * this class is base class of most implementation of {@link Expression}
@@ -284,28 +282,8 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression mod(Supplier<Expression> supplier) {
-        return DualExpression.create(this, DualOperator.MOD, supplier.get());
-    }
-
-    @Override
-    public final Expression mod(Function<Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.MOD, function.apply(this));
-    }
-
-    @Override
     public final <T> Expression mod(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.MOD, operator.apply(this, operand));
-    }
-
-    @Override
-    public final <T> Expression mod(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return DualExpression.create(this, DualOperator.MOD, operator.apply(this, supplier.get()));
-    }
-
-    @Override
-    public final Expression mod(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return DualExpression.create(this, DualOperator.MOD, operator.apply(this, function.apply(keyName)));
     }
 
     @Override
@@ -314,43 +292,14 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression times(Supplier<Expression> supplier) {
-        return DualExpression.create(this, DualOperator.TIMES, supplier.get());
-    }
-
-    @Override
-    public final Expression times(Function<Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.TIMES, function.apply(this));
-    }
-
-    @Override
     public final <T> Expression times(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.TIMES, operator.apply(this, operand));
     }
 
-    @Override
-    public final <T> Expression times(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return DualExpression.create(this, DualOperator.TIMES, operator.apply(this, supplier.get()));
-    }
-
-    @Override
-    public final Expression times(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return DualExpression.create(this, DualOperator.TIMES, operator.apply(this, function.apply(keyName)));
-    }
 
     @Override
     public final Expression plus(Expression operand) {
         return DualExpression.create(this, DualOperator.PLUS, operand);
-    }
-
-    @Override
-    public final Expression plus(Supplier<Expression> supplier) {
-        return DualExpression.create(this, DualOperator.PLUS, supplier.get());
-    }
-
-    @Override
-    public final Expression plus(Function<Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.PLUS, function.apply(this));
     }
 
     @Override
@@ -359,44 +308,13 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> Expression plus(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return DualExpression.create(this, DualOperator.PLUS, operator.apply(this, supplier.get()));
-    }
-
-    @Override
-    public final Expression plus(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return DualExpression.create(this, DualOperator.PLUS, operator.apply(this, function.apply(keyName)));
-    }
-
-    @Override
     public final Expression minus(Expression operand) {
         return DualExpression.create(this, DualOperator.MINUS, operand);
     }
 
     @Override
-    public final Expression minus(Supplier<Expression> supplier) {
-        return DualExpression.create(this, DualOperator.MINUS, supplier.get());
-    }
-
-    @Override
-    public final Expression minus(Function<Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.MINUS, function.apply(this));
-    }
-
-
-    @Override
     public final <T> Expression minus(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.MINUS, operator.apply(this, operand));
-    }
-
-    @Override
-    public final <T> Expression minus(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return DualExpression.create(this, DualOperator.MINUS, operator.apply(this, supplier.get()));
-    }
-
-    @Override
-    public final Expression minus(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return DualExpression.create(this, DualOperator.MINUS, operator.apply(this, function.apply(keyName)));
     }
 
     @Override
@@ -405,29 +323,10 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression divide(Supplier<Expression> supplier) {
-        return DualExpression.create(this, DualOperator.DIVIDE, supplier.get());
-    }
-
-    @Override
-    public final Expression divide(Function<Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.DIVIDE, function.apply(this));
-    }
-
-    @Override
     public final <T> Expression divide(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.DIVIDE, operator.apply(this, operand));
     }
 
-    @Override
-    public final <T> Expression divide(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return DualExpression.create(this, DualOperator.DIVIDE, operator.apply(this, supplier.get()));
-    }
-
-    @Override
-    public final Expression divide(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return DualExpression.create(this, DualOperator.DIVIDE, operator.apply(this, function.apply(keyName)));
-    }
 
     @Override
     public final Expression negate() {
@@ -440,89 +339,34 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression bitwiseAnd(Supplier<Expression> supplier) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, supplier.get());
-    }
-
-    @Override
-    public final Expression bitwiseAnd(Function<Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, function.apply(this));
-    }
-
-    @Override
     public final <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.BITWISE_AND, operator.apply(this, operand));
     }
 
-    @Override
-    public final <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, operator.apply(this, supplier.get()));
-    }
-
-    @Override
-    public final Expression bitwiseAnd(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, operator.apply(this, function.apply(keyName)));
-    }
 
     @Override
     public final Expression bitwiseOr(Expression operand) {
         return DualExpression.create(this, DualOperator.BITWISE_OR, operand);
     }
 
-    @Override
-    public final Expression bitwiseOr(Supplier<Expression> supplier) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, supplier.get());
-    }
-
-    @Override
-    public final Expression bitwiseOr(Function<Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, function.apply(this));
-    }
 
     @Override
     public final <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.BITWISE_OR, operator.apply(this, operand));
     }
 
-    @Override
-    public final <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, operator.apply(this, supplier.get()));
-    }
-
-    @Override
-    public final Expression bitwiseOr(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, operator.apply(this, function.apply(keyName)));
-    }
 
     @Override
     public final Expression xor(Expression operand) {
         return DualExpression.create(this, DualOperator.XOR, operand);
     }
 
-    @Override
-    public final Expression xor(Supplier<Expression> supplier) {
-        return DualExpression.create(this, DualOperator.XOR, supplier.get());
-    }
-
-    @Override
-    public final Expression xor(Function<Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.XOR, function.apply(this));
-    }
 
     @Override
     public final <T> Expression xor(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.XOR, operator.apply(this, operand));
     }
 
-    @Override
-    public final <T> Expression xor(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return DualExpression.create(this, DualOperator.XOR, operator.apply(this, supplier.get()));
-    }
-
-    @Override
-    public final Expression xor(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return DualExpression.create(this, DualOperator.XOR, operator.apply(this, function.apply(keyName)));
-    }
 
     @Override
     public final Expression invert() {
@@ -535,59 +379,22 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression rightShift(Supplier<Expression> supplier) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, supplier.get());
-    }
-
-    @Override
-    public final Expression rightShift(Function<Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, function.apply(this));
-    }
-
-    @Override
     public final <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.RIGHT_SHIFT, operator.apply(this, operand));
     }
 
-    @Override
-    public final <T> Expression rightShift(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, operator.apply(this, supplier.get()));
-    }
-
-    @Override
-    public final Expression rightShift(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, operator.apply(this, function.apply(keyName)));
-    }
 
     @Override
     public final Expression leftShift(Expression operand) {
         return DualExpression.create(this, DualOperator.LEFT_SHIFT, operand);
     }
 
-    @Override
-    public final Expression leftShift(Supplier<Expression> supplier) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, supplier.get());
-    }
-
-    @Override
-    public final Expression leftShift(Function<Expression, Expression> function) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, function.apply(this));
-    }
 
     @Override
     public final <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
         return DualExpression.create(this, DualOperator.LEFT_SHIFT, operator.apply(this, operand));
     }
 
-    @Override
-    public final <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, Supplier<T> supplier) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, operator.apply(this, supplier.get()));
-    }
-
-    @Override
-    public final Expression leftShift(BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, operator.apply(this, function.apply(keyName)));
-    }
 
     @Override
     public final Expression asType(final @Nullable TypeMeta paramMeta) {

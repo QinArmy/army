@@ -9,6 +9,7 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillPerson_;
+import io.army.example.pill.domain.PillUser;
 import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.UserType;
 import io.army.mapping.LongType;
@@ -18,10 +19,7 @@ import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static io.army.criteria.impl.SQLs.*;
 
@@ -141,16 +139,20 @@ public class StandardQueryUnitTests {
 
     @Test
     public void simpleSubQuery() {
+
+        final PillUser u = new PillUser();
+        final Map<String, Object> map = Collections.emptyMap();
         final Select stmt;
         stmt = SQLs.query()
                 .select(PillUser_.nickName)
-                .from(PillUser_.T, SQLs.AS, "u")
+                .from(PillUser_.T, AS, "u")
                 .where(PillUser_.nickName.equal(SQLs::param, "蛮吉"))
+                .and(PillUser_.nickName::equal, SQLs::param, () -> "蛮吉")
                 .and(SQLs::exists, () -> SQLs.subQuery()
                         .select(ChinaProvince_.id)
-                        .from(ChinaProvince_.T, SQLs.AS, "p")
-                        .join(ChinaRegion_.T, SQLs.AS, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
-                        .where(ChinaProvince_.governor.equal(PillUser_.nickName))
+                        .from(ChinaProvince_.T, AS, "p")
+                        .join(ChinaRegion_.T, AS, "r").on(ChinaProvince_.id::equal, ChinaRegion_.id)
+                        .where(ChinaProvince_.governor::equal, PillUser_.nickName)
                         .asQuery()
                 )
                 .asQuery();
@@ -172,11 +174,11 @@ public class StandardQueryUnitTests {
                         .select(SQLs.literalFrom(1), AS, "one")
                         .comma("u", PERIOD, PillUser_.T)
                         .from(PillUser_.T, AS, "u")
-                        .where(PillUser_.createTime::equal, SQLs::literal, LocalDateTime.now())
+                        .where(PillUser_.createTime::equal, SQLs::literal, LocalDateTime::now)
                         .limit(SQLs::literal, criteria::get, "offset", "rowCount")
                         .asQuery())
                 .as("us")
-                .where(SQLs.ref("us", "one")::equal, SQLs::param, "1")
+                .where(SQLs.ref("us", "one")::equal, SQLs::param, () -> "1")
                 .asQuery();
 
         printStmt(stmt);

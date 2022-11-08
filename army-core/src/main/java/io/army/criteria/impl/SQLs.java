@@ -364,9 +364,7 @@ public abstract class SQLs extends StandardSyntax {
      * </p>
      *
      * @see #namedParam(TypeInfer, String)
-     * @see #namedNullableParam(TypeInfer, String)
      * @see #namedLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(TypeInfer, String)
      */
     public static Expression namedParam(final TypeInfer type, final String name) {
         final Expression result;
@@ -378,27 +376,6 @@ public abstract class SQLs extends StandardSyntax {
         return result;
     }
 
-
-    /**
-     * <p>
-     * Create named nullable parameter expression for batch update(or delete) and values(assignment) insert
-     * </p>
-     *
-     * @return named nullable parameter expression
-     * @see #namedParam(TypeInfer, String)
-     * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(TypeInfer, String)
-     */
-    public static Expression namedNullableParam(final TypeInfer type, final String name) {
-        final Expression result;
-        if (type instanceof TypeMeta) {
-            result = ParamExpression.namedNullableSingle((TypeMeta) type, name);
-        } else {
-            result = ParamExpression.namedNullableSingle(type.typeMeta(), name);
-        }
-        return result;
-    }
 
 
     /**
@@ -535,9 +512,7 @@ public abstract class SQLs extends StandardSyntax {
      * @param name non-null
      * @return non-null named literal expression
      * @see #namedParam(TypeInfer, String)
-     * @see #namedNullableParam(TypeInfer, String)
      * @see #namedLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(TypeInfer, String)
      */
     public static Expression namedLiteral(final TypeInfer type, final String name) {
         final Expression result;
@@ -550,31 +525,6 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    /**
-     * <p>
-     * Create named nullable literal expression. This expression can only be used in values insert statement.
-     * </p>
-     * <p>
-     * Note: this method couldn't be used in batch update(delete) statement.
-     * </p>
-     *
-     * @param type non-null
-     * @param name non-null
-     * @return named nullable literal expression
-     * @see #namedParam(TypeInfer, String)
-     * @see #namedNullableParam(TypeInfer, String)
-     * @see #namedLiteral(TypeInfer, String)
-     * @see #namedNullableLiteral(TypeInfer, String)
-     */
-    public static Expression namedNullableLiteral(final TypeInfer type, final String name) {
-        final Expression result;
-        if (type instanceof TypeMeta) {
-            result = LiteralExpression.namedNullableSingle((TypeMeta) type, name);
-        } else {
-            result = LiteralExpression.namedNullableSingle(type.typeMeta(), name);
-        }
-        return result;
-    }
 
 
     /**

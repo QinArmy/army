@@ -189,12 +189,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         return sqlFunc.apply(expOperator.apply(operator, operand), this::onSelectExpression);
     }
 
-    @Override
-    public final <I extends Item, T> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
-        return sqlFunc.apply(expOperator.apply(operator, getter.get()), this::onSelectExpression);
-    }
 
     //below five argument method
 
@@ -221,14 +215,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
             , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias) {
         assert as == SQLs.AS;
         this.context.onAddSelectItem(ArmySelections.forExp(expOperator.apply(operator, operand), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final <T> SR select(ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.context.onAddSelectItem(ArmySelections.forExp(expOperator.apply(operator, getter.get()), alias));
         return (SR) this;
     }
 
@@ -424,15 +410,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         return sqlFunc.apply(expOperator.apply(operator, operand), this::onSelectExpression);
     }
 
-    @Override
-    public final <I extends Item, T> I select(W modifier
-            , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
-        this.modifierList = this.asSingleModifier(modifier);
-        return sqlFunc.apply(expOperator.apply(operator, getter.get()), this::onSelectExpression);
-    }
-
     //below six argument method
 
     @Override
@@ -594,14 +571,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         return sqlFunc.apply(expOperator.apply(operator, operand), this::onSelectExpression);
     }
 
-    @Override
-    public final <I extends Item, T> I select(List<W> modifierList
-            , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
-        this.modifierList = this.asModifierList(modifierList);
-        return sqlFunc.apply(expOperator.apply(operator, getter.get()), this::onSelectExpression);
-    }
 
     //below six argument method
 
@@ -773,6 +742,17 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         return (SR) this;
     }
 
+    @Override
+    public final <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers
+            , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+            , ExpressionOperator<Expression, T, Expression> expOperator
+            , BiFunction<Expression, T, Expression> operator, T operand) {
+        this.hintList = this.asHintList(hints.get());
+        this.modifierList = this.asModifierList(modifiers);
+        return sqlFunc.apply(expOperator.apply(operator, operand), this::onSelectExpression);
+    }
+
+
     //below seven argument method
 
     @Override
@@ -797,6 +777,16 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         return (SR) this;
     }
 
+    @Override
+    public final <I extends Item> I select(Supplier<List<Hint>> hints, List<W> modifiers
+            , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+            , ExpressionOperator<Expression, Object, Expression> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+        this.hintList = this.asHintList(hints.get());
+        this.modifierList = this.asModifierList(modifiers);
+        return sqlFunc.apply(expOperator.apply(operator, function.apply(keyName)), this::onSelectExpression);
+    }
+
     //below eight argument method
 
     @Override
@@ -817,76 +807,73 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
             , ExpressionOperator<Expression, Object, Expression> expOperator
             , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
             , String keyName, SQLs.WordAs as, String alias) {
-        return null;
+        this.hintList = this.asHintList(hints.get());
+        this.modifierList = this.asModifierList(modifiers);
+        this.context.onAddSelectItem(ArmySelections.forExp(expOperator.apply(operator, function.apply(keyName)), alias));
+        return (SR) this;
     }
 
-    @Override
-    public final <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers
-            , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias) {
-        return null;
-    }
-
-    @Override
-    public final <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers
-            , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias) {
-        return null;
-    }
-
-    //below nine argument method
-
-    @Override
-    public final <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers
-            , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, Function<String, ?> function
-            , String keyName, SQLs.WordAs as, String alias) {
-        return null;
-    }
 
     /*-------------------below dynamic select method -------------------*/
 
     @Override
     public final SD select(SQLs.SymbolStar star) {
-        return null;
+        assert star == SQLs.START;
+        this.context.onAddSelectItem((SelectItem) star);
+        return (SD) this;
     }
 
     @Override
     public final SD select(W modifier, SQLs.SymbolStar star) {
-        return null;
+        assert star == SQLs.START;
+        this.modifierList = this.asSingleModifier(modifier);
+        this.context.onAddSelectItem((SelectItem) star);
+        return (SD) this;
     }
 
     @Override
     public final SD select(List<W> modifierList, SQLs.SymbolStar star) {
-        return null;
+        assert star == SQLs.START;
+        this.modifierList = this.asModifierList(modifierList);
+        this.context.onAddSelectItem((SelectItem) star);
+        return (SD) this;
     }
 
     @Override
     public final SD select(Supplier<List<Hint>> hints, List<W> modifiers, SQLs.SymbolStar star) {
-        return null;
+        assert star == SQLs.START;
+        this.hintList = this.asHintList(hints.get());
+        this.modifierList = this.asModifierList(modifiers);
+        this.context.onAddSelectItem((SelectItem) star);
+        return (SD) this;
     }
 
     @Override
     public final SD selects(Consumer<Selections> consumer) {
-        return null;
+        consumer.accept(new SelectionsImpl(this));
+        return (SD) this;
     }
 
     @Override
     public final SD selects(W modifier, Consumer<Selections> consumer) {
-        return null;
+        this.modifierList = this.asSingleModifier(modifier);
+        consumer.accept(new SelectionsImpl(this));
+        return (SD) this;
     }
 
     @Override
     public final SD selects(List<W> modifierList, Consumer<Selections> consumer) {
-        return null;
+        this.modifierList = this.asModifierList(modifierList);
+        consumer.accept(new SelectionsImpl(this));
+        return (SD) this;
     }
 
     @Override
     public final SD selects(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Selections> consumer) {
-        return null;
+        this.hintList = this.asHintList(hints.get());
+        this.modifierList = this.asModifierList(modifiers);
+        consumer.accept(new SelectionsImpl(this));
+        return (SD) this;
     }
 
     /*-------------------below _StaticSelectCommaClause-------------------*/
@@ -894,80 +881,104 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
     @Override
     public final SR comma(FieldMeta<?> field) {
-        return null;
+        this.context.onAddSelectItem(field);
+        return (SR) this;
     }
 
     @Override
     public final _AsClause<SR> comma(Supplier<Expression> supplier) {
-        return null;
+        return this.onSelectExpression(supplier.get());
     }
 
     @Override
     public final <I extends Item> I comma(Function<Function<Expression, _AsClause<SR>>, I> sqlFunc) {
-        return null;
+        return sqlFunc.apply(this::onSelectExpression);
     }
 
     //below two argument method
 
     @Override
     public final SR comma(FieldMeta<?> field1, FieldMeta<?> field2) {
-        return null;
+        this.context.onAddSelectItem(field1)
+                .onAddSelectItem(field2);
+        return (SR) this;
     }
 
     @Override
     public final <I extends Item> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
             , Expression expression) {
-        return null;
+        return sqlFunc.apply(expression, this::onSelectExpression);
     }
 
     @Override
     public final <E extends RightOperand> _AsClause<SR> comma(Function<E, Expression> expOperator
             , Supplier<E> supplier) {
-        return null;
+        return this.onSelectExpression(expOperator.apply(supplier.get()));
     }
 
     //below three argument method
 
     @Override
     public final SR comma(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3) {
-        return null;
+        this.context.onAddSelectItem(field1)
+                .onAddSelectItem(field2)
+                .onAddSelectItem(field3);
+        return (SR) this;
     }
 
     @Override
     public final SR comma(Expression exp, SQLs.WordAs as, String alias) {
-        return null;
+        assert as == SQLs.AS;
+        this.context.onAddSelectItem(ArmySelections.forExp(exp, alias));
+        return (SR) this;
     }
 
     @Override
     public final SR comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
-        return null;
+        assert period == SQLs.PERIOD && star == SQLs.START;
+        this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
+        return (SR) this;
     }
 
     @Override
     public final SR comma(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias) {
-        return null;
+        assert period == SQLs.PERIOD;
+        final CriteriaContext context = this.context;
+        context.onAddSelectItem(context.refThis(derivedAlias, fieldAlias));
+        return (SR) this;
     }
 
     @Override
     public final SR comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
-        return null;
+        assert period == SQLs.PERIOD;
+        this.context.onAddSelectItem(SelectionGroups.singleGroup(table, tableAlias));
+        return (SR) this;
     }
 
     @Override
     public final SR comma(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field) {
-        return null;
+        assert period == SQLs.PERIOD;
+        final CriteriaContext context = this.context;
+        context.onAddSelectItem(context.field(tableAlias, field));
+        return (SR) this;
     }
 
     @Override
     public final SR comma(Supplier<Expression> funcRef, SQLs.WordAs as, String alias) {
-        return null;
+        assert as == SQLs.AS;
+        this.context.onAddSelectItem(ArmySelections.forExp(funcRef.get(), alias));
+        return (SR) this;
     }
 
     //below four argument method
 
     @Override
     public final SR comma(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3, FieldMeta<?> field4) {
-        return null;
+        this.context.onAddSelectItem(field1)
+                .onAddSelectItem(field2)
+                .onAddSelectItem(field3)
+                .onAddSelectItem(field4);
+        return (SR) this;
     }
 
     @Override
@@ -1002,11 +1013,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         return null;
     }
 
-    @Override
-    public final <T> SR comma(ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias) {
-        return null;
-    }
 
     //below six argument method
 
@@ -1066,12 +1072,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         return null;
     }
 
-    @Override
-    public final <I extends Item, T> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator
-            , Supplier<T> getter, SQLs.WordAs as, String alias) {
-        return null;
-    }
 
     /*################################## blow FromSpec method ##################################*/
 
@@ -1747,12 +1747,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
             return null;
         }
 
-        @Override
-        public final <T> SR select(ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
         //below six argument method
 
         @Override
@@ -1807,22 +1801,15 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         @Override
         public final <I extends Item, T> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
                 , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias) {
+                , BiFunction<Expression, T, Expression> operator, T operand) {
             return null;
         }
 
-        @Override
-        public final <I extends Item, T> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias) {
-            return null;
-        }
 
         @Override
-        public final <I extends Item, T> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Function<String, ?> function
-                , String keyName, SQLs.WordAs as, String alias) {
+        public final <I extends Item> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
             return null;
         }
 
@@ -1924,26 +1911,17 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         public final <I extends Item, T> I select(W modifier
                 , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
                 , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final <I extends Item, T> I select(W modifier
-                , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias) {
+                , BiFunction<Expression, T, Expression> operator, T operand) {
             return null;
         }
 
         //below eight argument method
 
         @Override
-        public final <I extends Item, T> I select(W modifier, BiFunction<Expression
+        public final <I extends Item> I select(W modifier, BiFunction<Expression
                 , Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Function<String, ?> function
-                , String keyName, SQLs.WordAs as, String alias) {
+                , ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
             return null;
         }
 
@@ -2047,24 +2025,15 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         public final <I extends Item, T> I select(List<W> modifierList
                 , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
                 , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias) {
+                , BiFunction<Expression, T, Expression> operator, T operand) {
             return null;
         }
 
         @Override
-        public final <I extends Item, T> I select(List<W> modifierList
+        public final <I extends Item> I select(List<W> modifierList
                 , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final <I extends Item, T> I select(List<W> modifierList
-                , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Function<String, ?> function
-                , String keyName, SQLs.WordAs as, String alias) {
+                , ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
             return null;
         }
 
@@ -2176,26 +2145,17 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         public final <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers
                 , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
                 , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers
-                , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias) {
+                , BiFunction<Expression, T, Expression> operator, T operand) {
             return null;
         }
 
         //below nine argument method
 
         @Override
-        public final <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers
+        public final <I extends Item> I select(Supplier<List<Hint>> hints, List<W> modifiers
                 , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Function<String, ?> function
-                , String keyName, SQLs.WordAs as, String alias) {
+                , ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
             return null;
         }
 
@@ -2565,11 +2525,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
             return null;
         }
 
-        @Override
-        public <T> _SelectionsCommaSpec selection(ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias) {
-            return null;
-        }
 
         @Override
         public _SelectionsCommaSpec selection(FieldMeta<?> field1, SQLs.WordAs as1, String alias1, FieldMeta<?> field2
@@ -2623,22 +2578,15 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
 
         @Override
         public <I extends Item, T> I selection(BiFunction<Expression, Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias) {
+                , ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator, T operand) {
             return null;
         }
+
 
         @Override
         public <I extends Item, T> I selection(BiFunction<Expression, Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc
                 , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public <I extends Item, T> I selection(BiFunction<Expression, Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Function<String, ?> function
-                , String keyName, SQLs.WordAs as, String alias) {
+                , BiFunction<Expression, T, Expression> operator, Function<String, ?> function, String keyName) {
             return null;
         }
 
@@ -2748,12 +2696,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         }
 
         @Override
-        public <T> _SelectionsCommaSpec comma(ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
         public _SelectionsCommaSpec comma(FieldMeta<?> field1, SQLs.WordAs as1, String alias1, FieldMeta<?> field2
                 , SQLs.WordAs as2, String alias2) {
             return null;
@@ -2810,9 +2752,9 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         }
 
         @Override
-        public <I extends Item, T> I comma(BiFunction<Expression, Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias) {
+        public <I extends Item> I comma(BiFunction<Expression, Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc
+                , ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
             return null;
         }
 

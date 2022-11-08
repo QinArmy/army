@@ -132,9 +132,6 @@ public interface Query extends RowSet {
                 , ExpressionOperator<Expression, T, Expression> expOperator
                 , BiFunction<Expression, T, Expression> operator, T operand);
 
-        <I extends Item, T> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
 
         //below five argument method
 
@@ -145,8 +142,6 @@ public interface Query extends RowSet {
         <T> SR select(ExpressionOperator<Expression, T, Expression> expOperator
                 , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
 
-        <T> SR select(ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
 
         <I extends Item> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
                 , ExpressionOperator<Expression, Object, Expression> expOperator
@@ -225,9 +220,6 @@ public interface Query extends RowSet {
                 , ExpressionOperator<Expression, T, Expression> expOperator
                 , BiFunction<Expression, T, Expression> operator, T operand);
 
-        <I extends Item, T> I select(W modifier, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
 
         <I extends Item> I select(W modifier, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
                 , ExpressionOperator<Expression, Object, Expression> expOperator
@@ -279,10 +271,6 @@ public interface Query extends RowSet {
         <I extends Item, T> I select(List<W> modifierList, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
                 , ExpressionOperator<Expression, T, Expression> expOperator
                 , BiFunction<Expression, T, Expression> operator, T operand);
-
-        <I extends Item, T> I select(List<W> modifierList, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
 
         //below six argument method
 
@@ -337,11 +325,21 @@ public interface Query extends RowSet {
         SR select(Supplier<List<Hint>> hints, List<W> modifiers, Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
                 , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias);
 
+        <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, T operand);
+
+
         //below seven argument method
 
         SR select(Supplier<List<Hint>> hints, List<W> modifiers, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias);
 
         SR select(Supplier<List<Hint>> hints, List<W> modifiers, String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
+
+        <I extends Item> I select(Supplier<List<Hint>> hints, List<W> modifiers, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
+                , String keyName);
 
         //below eight argument method
 
@@ -352,19 +350,7 @@ public interface Query extends RowSet {
                 , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
                 , String keyName, SQLs.WordAs as, String alias);
 
-        <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
 
-        <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
-
-        //below nine argument method
-        <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Function<String, ?> function
-                , String keyName, SQLs.WordAs as, String alias);
 
     }
 
@@ -422,8 +408,6 @@ public interface Query extends RowSet {
         <T> SR comma(ExpressionOperator<Expression, T, Expression> expOperator
                 , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
 
-        <T> SR comma(ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
 
         //below six argument method
 
@@ -456,9 +440,9 @@ public interface Query extends RowSet {
                 , ExpressionOperator<Expression, T, Expression> expOperator
                 , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
 
-        <I extends Item, T> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
+        <I extends Item> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
     }
 
