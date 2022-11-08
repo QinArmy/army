@@ -40,16 +40,16 @@ public class MySQLFunctionUnitTests {
     private void simpleCaseFunc(Consumer<SelectItem> consumer) {
         Selection selection;
         selection = MySQLs.Case(PillUser_.userType)
-                .when(SQLs.literal(UserType.NONE))
-                .then(SQLs.literal(1))
+                .when(SQLs.literalFrom(UserType.NONE))
+                .then(SQLs.literalFrom(1))
 
-                .when(SQLs.literal(UserType.PARTNER))
-                .then(SQLs.literal(2))
+                .when(SQLs.literalFrom(UserType.PARTNER))
+                .then(SQLs.literalFrom(2))
 
-                .when(SQLs.literal(UserType.ENTERPRISE))
-                .then(SQLs.literal(3))
+                .when(SQLs.literalFrom(UserType.ENTERPRISE))
+                .then(SQLs.literalFrom(3))
 
-                .Else(SQLs.literal(0))
+                .Else(SQLs.literalFrom(0))
 
                 .end()
 

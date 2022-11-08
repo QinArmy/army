@@ -218,7 +218,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
 
 
     @Override
-    public final IPredicate and(Function<Expression, IPredicate> expOperator, Expression operand) {
+    public final <E extends Expression> IPredicate and(Function<E, IPredicate> expOperator, E operand) {
         return this.and(expOperator.apply(operand));
     }
 

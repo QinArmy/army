@@ -6,6 +6,7 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
 import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
+import io.army.meta.TypeMeta;
 import io.army.session.DataAccessException;
 import io.army.session.ParamException;
 import io.army.sqltype.SqlType;
@@ -33,6 +34,10 @@ public abstract class AbstractMappingType implements MappingType {
         return this;
     }
 
+    @Override
+    public final TypeMeta typeMeta() {
+        return this;
+    }
 
     @Override
     public final String toString() {

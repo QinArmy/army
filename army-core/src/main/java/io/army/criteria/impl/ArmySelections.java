@@ -12,18 +12,21 @@ import java.util.Objects;
 
 abstract class ArmySelections implements _Selection {
 
-    static Selection forExp(Expression expression, String alias) {
-        return new ExpressionSelection((ArmyExpression) expression, alias);
+    static Selection forExp(final Expression exp, final String alias) {
+        final Selection selection;
+        if (exp instanceof TableField) {
+            if (((TableField) exp).fieldName().equals(alias)) {
+                selection = (TableField) exp;
+            } else {
+                selection = new FieldSelectionImpl((TableField) exp, alias);
+            }
+        } else if (exp instanceof DataField && ((DataField) exp).fieldName().equals(alias)) {
+            selection = (DataField) exp;
+        } else {
+            selection = new ExpressionSelection((ArmyExpression) exp, alias);
+        }
+        return selection;
     }
-
-    static Selection forField(TableField field, String alias) {
-        return new FieldSelectionImpl(field, alias);
-    }
-
-    static Selection forFunc(FunctionUtils.FunctionSpec func, String alias) {
-        return new FuncSelection(func, alias);
-    }
-
 
     final String alias;
 

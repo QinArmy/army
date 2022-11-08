@@ -533,7 +533,7 @@ public interface Statement extends Item {
      */
     interface _WhereClause<WR, WA> extends _MinWhereClause<WR, WA> {
 
-        WA where(Function<Expression, IPredicate> expOperator, Expression operand);
+        <E extends Expression> WA where(Function<E, IPredicate> expOperator, E operand);
 
         <E extends RightOperand> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
@@ -618,7 +618,7 @@ public interface Statement extends Item {
      */
     interface _WhereAndClause<WA> extends _MinWhereAndClause<WA> {
 
-        WA and(Function<Expression, IPredicate> expOperator, Expression operand);
+        <E extends Expression> WA and(Function<E, IPredicate> expOperator, E operand);
 
         <E extends RightOperand> WA and(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
@@ -1237,4 +1237,11 @@ public interface Statement extends Item {
     interface DqlInsert extends Item {
 
     }
+
+    interface _AliasExpression<I extends Item> extends Expression, _AsClause<I> {
+
+
+    }
+
+
 }

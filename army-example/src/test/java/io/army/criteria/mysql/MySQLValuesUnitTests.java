@@ -86,23 +86,23 @@ public class MySQLValuesUnitTests {
         return supplier.get()
                 .leftParen()
                 .values()
-                .leftParen(SQLs::literal, 1, "海问香", new BigDecimal("9999.88"), LocalDate.now())
-                .comma(SQLs::literal, DayOfWeek.MONDAY, SQLs.TRUE, SQLs.literal(1).plus(SQLs::literal, 3))
+                .leftParen(SQLs::literalFrom, 1, "海问香", new BigDecimal("9999.88"), LocalDate.now())
+                .comma(SQLs::literalFrom, DayOfWeek.MONDAY, SQLs.TRUE, SQLs.literalFrom(1).plus(SQLs::literal, 3))
                 .rightParen()
 
-                .leftParen(SQLs::literal, 2, "大仓", new BigDecimal("9999.66"), LocalDate.now().plusDays(1))
-                .comma(SQLs::literal, DayOfWeek.SUNDAY, SQLs.TRUE, SQLs.literal(13).minus(SQLs::literal, 3))
+                .leftParen(SQLs::literalFrom, 2, "大仓", new BigDecimal("9999.66"), LocalDate.now().plusDays(1))
+                .comma(SQLs::literalFrom, DayOfWeek.SUNDAY, SQLs.TRUE, SQLs.literalFrom(13).minus(SQLs::literal, 3))
                 .rightParen()
 
-                .leftParen(SQLs::literal, 3, "卡拉肖克·玲", new BigDecimal("6666.88"), LocalDate.now().minusDays(3))
-                .comma(SQLs::literal, DayOfWeek.FRIDAY, SQLs.TRUE, SQLs.literal(3).minus(SQLs::literal, 3))
+                .leftParen(SQLs::literalFrom, 3, "卡拉肖克·玲", new BigDecimal("6666.88"), LocalDate.now().minusDays(3))
+                .comma(SQLs::literalFrom, DayOfWeek.FRIDAY, SQLs.TRUE, SQLs.literalFrom(3).minus(SQLs::literal, 3))
                 .rightParen()
 
-                .leftParen(SQLs::literal, 4, "幽弥狂", new BigDecimal("8888.88"), LocalDate.now().minusDays(8))
-                .comma(SQLs::literal, DayOfWeek.TUESDAY, SQLs.FALSE, SQLs.literal(81).divide(SQLs::literal, 3))
+                .leftParen(SQLs::literalFrom, 4, "幽弥狂", new BigDecimal("8888.88"), LocalDate.now().minusDays(8))
+                .comma(SQLs::literalFrom, DayOfWeek.TUESDAY, SQLs.FALSE, SQLs.literalFrom(81).divide(SQLs::literal, 3))
                 .rightParen()
 
-                .orderBy(SQLs.ref("column_1"), SQLs.literal(2), SQLs.DESC)
+                .orderBy(SQLs.ref("column_1"), SQLs.literalFrom(2), SQLs.DESC)
                 .limit(SQLs::literal, 4)
                 .asValues()
                 .rightParen();

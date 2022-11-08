@@ -327,14 +327,15 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _PostgreSelectCommaSpec<I extends Item> extends _SelectCommaClause<_PostgreSelectCommaSpec<I>>
+    interface _PostgreSelectCommaSpec<I extends Item> extends _StaticSelectCommaClause<_PostgreSelectCommaSpec<I>>
             , _FromSpec<I> {
 
     }
 
 
-    interface _PostgreSelectClause<I extends Item> extends
-            _DynamicModifierSelectClause<Postgres.Modifier, _PostgreSelectCommaSpec<I>, _FromSpec<I>> {
+    interface _PostgreSelectClause<I extends Item>
+            extends _ModifierSelectClause<Postgres.Modifier, _PostgreSelectCommaSpec<I>>
+            , _DynamicModifierSelectClause<Postgres.Modifier, _FromSpec<I>> {
 
     }
 

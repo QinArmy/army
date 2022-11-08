@@ -1,12 +1,26 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.criteria.TypeInfer;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.SqlType;
 
 
-public interface MappingType extends TypeMeta {
+public interface MappingType extends TypeMeta, TypeInfer {
+
+    /**
+     * @return always return this
+     */
+    @Override
+    TypeMeta typeMeta();
+
+
+    /**
+     * @return always return this
+     */
+    @Override
+    MappingType mappingType();
 
     Class<?> javaType();
 

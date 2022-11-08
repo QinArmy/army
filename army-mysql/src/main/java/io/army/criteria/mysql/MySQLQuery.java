@@ -220,13 +220,14 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _MySQLSelectCommaSpec<I extends Item> extends _SelectCommaClause<_MySQLSelectCommaSpec<I>>
+    interface _MySQLSelectCommaSpec<I extends Item> extends _StaticSelectCommaClause<_MySQLSelectCommaSpec<I>>
             , _FromSpec<I> {
 
     }
 
     interface _MySQLSelectClause<I extends Item>
-            extends _DynamicHintModifierSelectClause<MySQLs.Modifier, _MySQLSelectCommaSpec<I>, _FromSpec<I>> {
+            extends _HintsModifiersListSelectClause<MySQLs.Modifier, _MySQLSelectCommaSpec<I>>
+            , _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<I>> {
 
     }
 

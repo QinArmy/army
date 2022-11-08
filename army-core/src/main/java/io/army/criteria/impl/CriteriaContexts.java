@@ -637,7 +637,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public <T> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field) {
+        public <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
             String m = "current context don't support qualifiedField(tableAlias,field)";
             throw ContextStack.criteriaError(this, m);
         }
@@ -843,7 +843,7 @@ abstract class CriteriaContexts {
 
         @SuppressWarnings("unchecked")
         @Override
-        public final <T> QualifiedField<T> qualifiedField(final String tableAlias, final FieldMeta<T> field) {
+        public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
             if (!(this.aliasToBlock instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this);
             }

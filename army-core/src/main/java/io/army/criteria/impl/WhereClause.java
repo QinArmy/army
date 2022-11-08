@@ -60,7 +60,7 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
     }
 
     @Override
-    public final WA where(Function<Expression, IPredicate> expOperator, Expression operand) {
+    public final <E extends Expression> WA where(Function<E, IPredicate> expOperator, E operand) {
         return this.and(expOperator.apply(operand));
     }
 
@@ -217,7 +217,7 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
 
 
     @Override
-    public final WA and(Function<Expression, IPredicate> expOperator, Expression operand) {
+    public final <E extends Expression> WA and(Function<E, IPredicate> expOperator, E operand) {
         return this.and(expOperator.apply(operand));
     }
 
@@ -317,7 +317,7 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
         if (expression == null) {
             throw ContextStack.nullPointer(this.context);
         }
-        return this.and(expOperator2.apply(expression, SQLs.literal(numberOperand)));
+        return this.and(expOperator2.apply(expression, SQLs.literalFrom(numberOperand)));
     }
 
     @Override
@@ -421,7 +421,7 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
             if (expression == null) {
                 throw ContextStack.nullPointer(this.context);
             }
-            this.and(expOperator2.apply(expression, SQLs.literal(numberOperand)));
+            this.and(expOperator2.apply(expression, SQLs.literalFrom(numberOperand)));
         }
         return (WA) this;
     }

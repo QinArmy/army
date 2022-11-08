@@ -84,128 +84,391 @@ public interface Query extends RowSet {
     /*################################## blow select clause  interfaces ##################################*/
 
 
-    interface _SelectClause<SR> extends Item {
+    interface _StaticSelectClause<SR> extends Item {
+
+        //below one argument method
 
         SR select(FieldMeta<?> field);
 
-        SR select(FieldMeta<?> field1, FieldMeta<?> field2);
-
-        SR select(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3);
-
-        SR select(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3, FieldMeta<?> field4);
-
-        SR select(Expression exp, SQLs.WordAs as, String alias);
-
-        SR select(Expression exp1, SQLs.WordAs as1, String alias1, Expression exp2, SQLs.WordAs as2, String alias2);
-
-        SR select(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias);
-
-        SR select(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
-
-        SR select(String derivedAlias1, SQLs.SymbolPeriod period1, String fieldAlias1, String derivedAlias2, SQLs.SymbolPeriod period2, String fieldAlias2);
-
-        SR select(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
-
-        <P> SR select(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
-
-
-        SR select(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field);
-
-        SR select(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1, String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2);
 
         _AsClause<SR> select(Supplier<Expression> supplier);
 
-        SR select(Supplier<Expression> funcRef, SQLs.WordAs as, String alias);
-
-        SR select(Function<Expression, Expression> funcRef, FieldMeta<?> field, SQLs.WordAs as, String alias);
-
-        SR select(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias);
-
-        SR select(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
-
-        SR select(Supplier<Expression> funcRef1, SQLs.WordAs as1, String alias1, Supplier<Expression> funcRef2, SQLs.WordAs as2, String alias2);
-
         <I extends Item> I select(Function<Function<Expression, _AsClause<SR>>, I> sqlFunc);
+
+        //below two argument method
+
+        SR select(FieldMeta<?> field1, FieldMeta<?> field2);
 
         <I extends Item> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc, Expression expression);
 
         <E extends RightOperand> _AsClause<SR> select(Function<E, Expression> expOperator, Supplier<E> supplier);
 
-        SR select(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator, BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias);
+        //below three argument method
 
-        <T> SR select(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
+        SR select(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3);
 
-        <T> SR select(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
+        SR select(Expression exp, SQLs.WordAs as, String alias);
 
-        SR select(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName, SQLs.WordAs as, String alias);
+        SR select(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+
+        SR select(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias);
+
+        SR select(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+        SR select(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field);
+
+        SR select(Supplier<Expression> funcRef, SQLs.WordAs as, String alias);
+
+        //below four argument method
+
+        SR select(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3, FieldMeta<?> field4);
+
+        <T> SR select(Function<T, Expression> valueOperator, T value, SQLs.WordAs as, String alias);
+
+        SR select(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
+                , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias);
+
+        <I extends Item, T> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, T operand);
+
+        <I extends Item, T> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+
+        //below five argument method
+
+        SR select(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias);
+
+        SR select(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
+
+        <T> SR select(ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
+
+        <T> SR select(ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
+
+        <I extends Item> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
+                , String keyName);
+
+        //below six argument method
+
+        SR select(FieldMeta<?> field1, SQLs.WordAs as1, String alias1
+                , FieldMeta<?> field2, SQLs.WordAs as2, String alias2);
+
+        SR select(String derivedAlias1, SQLs.SymbolPeriod period1, String fieldAlias1
+                , String derivedAlias2, SQLs.SymbolPeriod period2, String fieldAlias2);
+
+        <P> SR select(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent
+                , String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
+
+        SR select(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1
+                , String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2);
+
+        SR select(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period
+                , FieldMeta<?> field, SQLs.WordAs as, String alias);
+
+        SR select(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period
+                , String fieldAlias, SQLs.WordAs as, String alias);
+
+        SR select(Supplier<Expression> funcRef1, SQLs.WordAs as1, String alias1
+                , Supplier<Expression> funcRef2, SQLs.WordAs as2, String alias2);
+
+        SR select(ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
+                , String keyName, SQLs.WordAs as, String alias);
+
 
     }
 
 
-    interface _SelectCommaClause<SR> {
+    interface _ModifierSelectClause<W extends SelectModifier, SR> extends _StaticSelectClause<SR> {
+
+        //below two argument method
+
+        SR select(W modifier, FieldMeta<?> field);
+
+        _AsClause<SR> select(W modifier, Supplier<Expression> supplier);
+
+        <I extends Item> I select(W modifier, Function<Function<Expression, _AsClause<SR>>, I> sqlFunc);
+
+        //below four argument method
+
+        SR select(W modifier, Expression exp, SQLs.WordAs as, String alias);
+
+        SR select(W modifier, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+
+        SR select(W modifier, String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias);
+
+        SR select(W modifier, String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+        SR select(W modifier, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field);
+
+        SR select(W modifier, Supplier<Expression> funcRef, SQLs.WordAs as, String alias);
+
+        //below five argument method
+
+        <T> SR select(W modifier, Function<T, Expression> valueOperator, T value, SQLs.WordAs as, String alias);
+
+        SR select(W modifier, Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
+                , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias);
+
+        //below six argument method
+
+        SR select(W modifier, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias);
+
+        SR select(W modifier, String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
+
+        <I extends Item, T> I select(W modifier, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, T operand);
+
+        <I extends Item, T> I select(W modifier, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+
+        <I extends Item> I select(W modifier, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+
+        //below seven argument method
+
+        <P> SR select(W modifier, String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent
+                , String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
+
+        SR select(W modifier, ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
+                , String keyName, SQLs.WordAs as, String alias);
+
+
+    }
+
+    interface _ModifierListSelectClause<W extends SelectModifier, SR> extends _ModifierSelectClause<W, SR> {
+
+        //below two argument method
+
+        SR select(List<W> modifierList, FieldMeta<?> field);
+
+        _AsClause<SR> select(List<W> modifierList, Supplier<Expression> supplier);
+
+        <I extends Item> I select(List<W> modifierList, Function<Function<Expression, _AsClause<SR>>, I> sqlFunc);
+
+        //below four argument method
+
+        SR select(List<W> modifierList, Expression exp, SQLs.WordAs as, String alias);
+
+        SR select(List<W> modifierList, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+
+        SR select(List<W> modifierList, String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias);
+
+        SR select(List<W> modifierList, String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+        SR select(List<W> modifierList, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field);
+
+        SR select(List<W> modifierList, Supplier<Expression> funcRef, SQLs.WordAs as, String alias);
+
+        //below five argument method
+
+        <T> SR select(List<W> modifierList, Function<T, Expression> valueOperator, T value, SQLs.WordAs as, String alias);
+
+        SR select(List<W> modifierList, Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
+                , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias);
+
+        <I extends Item, T> I select(List<W> modifierList, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, T operand);
+
+        <I extends Item, T> I select(List<W> modifierList, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+
+        //below six argument method
+
+        SR select(List<W> modifierList, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias);
+
+        SR select(List<W> modifierList, String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
+
+        <I extends Item> I select(List<W> modifierList, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+
+        //below seven argument method
+
+        <P> SR select(List<W> modifierList, String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent
+                , String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
+
+        SR select(List<W> modifierList, ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
+                , String keyName, SQLs.WordAs as, String alias);
+
+
+    }
+
+    interface _HintsModifiersListSelectClause<W extends SelectModifier, SR> extends _ModifierListSelectClause<W, SR> {
+
+        //below three argument method
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, FieldMeta<?> field);
+
+        _AsClause<SR> select(Supplier<List<Hint>> hints, List<W> modifiers, Supplier<Expression> supplier);
+
+        <I extends Item> I select(Supplier<List<Hint>> hints, List<W> modifiers, Function<Function<Expression, _AsClause<SR>>, I> sqlFunc);
+
+        //below five argument method
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, Expression exp, SQLs.WordAs as, String alias);
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias);
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field);
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, Supplier<Expression> funcRef, SQLs.WordAs as, String alias);
+
+        //below six argument method
+
+        <T> SR select(Supplier<List<Hint>> hints, List<W> modifiers, Function<T, Expression> valueOperator, T value, SQLs.WordAs as, String alias);
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
+                , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias);
+
+        //below seven argument method
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias);
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
+
+        //below eight argument method
+
+        <P> SR select(Supplier<List<Hint>> hints, List<W> modifiers, String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent
+                , String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
+
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
+                , String keyName, SQLs.WordAs as, String alias);
+
+        <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
+
+        <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
+
+        //below nine argument method
+        <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers, BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, Function<String, ?> function
+                , String keyName, SQLs.WordAs as, String alias);
+
+    }
+
+
+    interface _StaticSelectCommaClause<SR> {
+
+        //below one argument method
 
         SR comma(FieldMeta<?> field);
 
-        SR comma(FieldMeta<?> field1, FieldMeta<?> field2);
-
-        SR comma(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3);
-
-        SR comma(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3, FieldMeta<?> field4);
-
-        SR comma(Expression exp, SQLs.WordAs as, String alias);
-
-        SR comma(Expression exp1, SQLs.WordAs as1, String alias1, Expression exp2, SQLs.WordAs as2, String alias2);
-
-        SR comma(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias);
-
-        SR comma(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
-
-        SR comma(String derivedAlias1, SQLs.SymbolPeriod period1, String fieldAlias1, String derivedAlias2, SQLs.SymbolPeriod period2, String fieldAlias2);
-
-        SR comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
-
-        <P> SR comma(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
-
-
-        SR comma(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field);
-
-        SR comma(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1, String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2);
 
         _AsClause<SR> comma(Supplier<Expression> supplier);
 
-        SR comma(Supplier<Expression> funcRef, SQLs.WordAs as, String alias);
-
-        SR comma(Function<Expression, Expression> funcRef, FieldMeta<?> field, SQLs.WordAs as, String alias);
-
-        SR comma(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias);
-
-        SR comma(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
-
-        SR comma(Supplier<Expression> funcRef1, SQLs.WordAs as1, String alias1, Supplier<Expression> funcRef2, SQLs.WordAs as2, String alias2);
-
         <I extends Item> I comma(Function<Function<Expression, _AsClause<SR>>, I> sqlFunc);
+
+        //below two argument method
+
+        SR comma(FieldMeta<?> field1, FieldMeta<?> field2);
 
         <I extends Item> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc, Expression expression);
 
         <E extends RightOperand> _AsClause<SR> comma(Function<E, Expression> expOperator, Supplier<E> supplier);
 
-        SR comma(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator, BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias);
+        //below three argument method
 
-        <T> SR comma(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
+        SR comma(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3);
 
-        <T> SR comma(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
+        SR comma(Expression exp, SQLs.WordAs as, String alias);
 
-        SR comma(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName, SQLs.WordAs as, String alias);
+        SR comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+
+        SR comma(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias);
+
+        SR comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+        SR comma(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field);
+
+        SR comma(Supplier<Expression> funcRef, SQLs.WordAs as, String alias);
+
+        //below four argument method
+
+        SR comma(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3, FieldMeta<?> field4);
+
+        <T> SR comma(Function<T, Expression> valueOperator, T value, SQLs.WordAs as, String alias);
+
+        SR comma(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
+                , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias);
+
+        //below five argument method
+
+        SR comma(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias);
+
+        SR comma(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
+
+        <T> SR comma(ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
+
+        <T> SR comma(ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
+
+        //below six argument method
+
+        SR comma(FieldMeta<?> field1, SQLs.WordAs as1, String alias1
+                , FieldMeta<?> field2, SQLs.WordAs as2, String alias2);
+
+        SR comma(String derivedAlias1, SQLs.SymbolPeriod period1, String fieldAlias1
+                , String derivedAlias2, SQLs.SymbolPeriod period2, String fieldAlias2);
+
+        <P> SR comma(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent
+                , String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
+
+        SR comma(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1
+                , String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2);
+
+        SR comma(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period
+                , FieldMeta<?> field, SQLs.WordAs as, String alias);
+
+        SR comma(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period
+                , String fieldAlias, SQLs.WordAs as, String alias);
+
+        SR comma(Supplier<Expression> funcRef1, SQLs.WordAs as1, String alias1
+                , Supplier<Expression> funcRef2, SQLs.WordAs as2, String alias2);
+
+        SR comma(ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
+                , String keyName, SQLs.WordAs as, String alias);
+
+        <I extends Item, T> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
+
+        <I extends Item, T> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+                , ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter, SQLs.WordAs as, String alias);
 
     }
 
 
-    interface _SelectCommaSpec extends _SelectCommaClause<_SelectCommaSpec> {
+    interface _SelectionsCommaSpec extends _StaticSelectCommaClause<_SelectionsCommaSpec> {
 
     }
 
 
-    interface _DynamicSelectClause<SR, SD> extends _SelectClause<SR> {
+    interface _DynamicSelectClause<SD> {
 
         SD select(SQLs.SymbolStar star);
 
@@ -214,7 +477,7 @@ public interface Query extends RowSet {
 
     }
 
-    interface _DynamicModifierSelectClause<W extends SelectModifier, SR, SD> extends _DynamicSelectClause<SR, SD> {
+    interface _DynamicModifierSelectClause<W extends SelectModifier, SD> extends _DynamicSelectClause<SD> {
 
         SD select(W modifier, SQLs.SymbolStar star);
 
@@ -222,8 +485,18 @@ public interface Query extends RowSet {
 
     }
 
-    interface _DynamicHintModifierSelectClause<W extends SelectModifier, SR, SD>
-            extends _DynamicModifierSelectClause<W, SR, SD> {
+
+    interface _DynamicModifierListSelectClause<W extends SelectModifier, SD>
+            extends _DynamicModifierSelectClause<W, SD> {
+
+        SD select(List<W> modifierList, SQLs.SymbolStar star);
+
+        SD selects(List<W> modifierList, Consumer<Selections> consumer);
+
+    }
+
+    interface _DynamicHintModifierSelectClause<W extends SelectModifier, SD>
+            extends _DynamicModifierListSelectClause<W, SD> {
 
         SD select(Supplier<List<Hint>> hints, List<W> modifiers, SQLs.SymbolStar star);
 
@@ -410,9 +683,21 @@ public interface Query extends RowSet {
     }
 
 
+    interface _SelectDispatcher<W extends SelectModifier, SR, SD>
+            extends _HintsModifiersListSelectClause<W, SR>
+            , _DynamicHintModifierSelectClause<W, SD> {
+
+    }
+
+    interface _SelectAndCommaDispatcher<SR> extends _StaticSelectClause<SR>
+            , _StaticSelectCommaClause<SR> {
+
+    }
+
+
     interface _WithSelectDispatcher<B extends CteBuilderSpec, WE, W extends SelectModifier, SR, SD>
             extends DialectStatement._DynamicWithClause<B, WE>
-            , _DynamicHintModifierSelectClause<W, SR, SD> {
+            , _SelectDispatcher<W, SR, SD> {
 
     }
 

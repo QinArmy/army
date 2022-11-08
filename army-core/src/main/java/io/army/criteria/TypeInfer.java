@@ -9,7 +9,7 @@ public interface TypeInfer {
 
     interface TypeUpdateSpec {
 
-        SelectionSpec asType(TypeMeta paramMeta);
+        Expression asType(TypeMeta paramMeta);
 
     }
 

@@ -291,7 +291,7 @@ public interface StandardQuery extends Query, StandardStatement {
 
     }
 
-    interface _StandardSelectComma<I extends Item> extends _SelectCommaClause<_StandardSelectComma<I>>
+    interface _StandardSelectComma<I extends Item> extends _StaticSelectCommaClause<_StandardSelectComma<I>>
             , _FromSpec<I> {
 
     }
@@ -310,7 +310,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _StandardSelectClause<I extends Item>
-            extends _DynamicModifierSelectClause<SQLs.Modifier, _StandardSelectComma<I>, _FromSpec<I>> {
+            extends _ModifierSelectClause<SQLs.Modifier, _StandardSelectComma<I>>
+            , _DynamicModifierSelectClause<SQLs.Modifier, _FromSpec<I>> {
 
     }
 

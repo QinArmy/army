@@ -419,8 +419,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                 <li>null</li>
      *                 <li>{@link Long} type</li>
      *                 <li>{@link Integer} type</li>
-     *                 <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
-     *                 <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *                 <li>{@link SQLs#paramFrom(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                 <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
      *             </ul>
      * @see #lag(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
@@ -440,8 +440,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                        <li>null</li>
      *                        <li>{@link Long} type</li>
      *                        <li>{@link Integer} type</li>
-     *                        <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
-     *                        <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *                        <li>{@link SQLs#paramFrom(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                        <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
      *                    </ul>
      * @param defaultWord {@link  SQLs#DEFAULT}
      * @see #lag(Expression)
@@ -479,8 +479,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                 <li>null</li>
      *                 <li>{@link Long} type</li>
      *                 <li>{@link Integer} type</li>
-     *                 <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
-     *                 <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *                 <li>{@link SQLs#paramFrom(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                 <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
      *             </ul>
      * @see #lead(Expression, Expression, SQLs.WordDefault)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
@@ -500,8 +500,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                        <li>null</li>
      *                        <li>{@link Long} type</li>
      *                        <li>{@link Integer} type</li>
-     *                        <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
-     *                        <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *                        <li>{@link SQLs#paramFrom(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                        <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
      *                    </ul>
      * @param defaultWord {@link  SQLs#DEFAULT}
      * @see #lead(Expression)
@@ -546,8 +546,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                           <li>{@link  Byte}</li>
      *                      </ul>
      *               </li>
-     *               <li>positive number parameter {@link  Expression},eg:{@link SQLs#param(Object)}</li>
-     *               <li>positive number literal {@link  Expression},eg:{@link SQLs#literal(Object)}</li>
+     *               <li>positive number parameter {@link  Expression},eg:{@link SQLs#paramFrom(Object)}</li>
+     *               <li>positive number literal {@link  Expression},eg:{@link SQLs#literalFrom(Object)}</li>
      *               <li>variable {@link  Expression}</li>
      *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_ntile">NTILE(N) over_clause</a>
@@ -2927,8 +2927,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                       <li>null</li>
      *                       <li>{@link Long} type</li>
      *                       <li>{@link Integer} type</li>
-     *                       <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
-     *                       <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *                       <li>{@link SQLs#paramFrom(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                       <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
      *                   </ul>
      * @param useDefault if n is non-nul and useDefault is true,output sql key word {@code DEFAULT}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>

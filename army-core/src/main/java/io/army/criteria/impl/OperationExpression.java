@@ -1,7 +1,10 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.*;
+import io.army.criteria.Expression;
+import io.army.criteria.IPredicate;
+import io.army.criteria.SqlValueParam;
+import io.army.criteria.SubQuery;
 import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
@@ -21,20 +24,6 @@ abstract class OperationExpression implements ArmyExpression {
     OperationExpression() {
     }
 
-    @Override
-    public final Selection as(final String alias) {
-        final Selection selection;
-        if (this instanceof TableField) {
-            selection = ArmySelections.forField((TableField) this, alias);
-        } else if (this instanceof DerivedField) {
-            selection = CriteriaContexts.createDerivedSelection((DerivedField) this, alias);
-        } else if (this instanceof FunctionUtils.FunctionSpec) {
-            selection = ArmySelections.forFunc((FunctionUtils.FunctionSpec) this, alias);
-        } else {
-            selection = ArmySelections.forExp(this, alias);
-        }
-        return selection;
-    }
 
     @Override
     public final boolean isNullValue() {

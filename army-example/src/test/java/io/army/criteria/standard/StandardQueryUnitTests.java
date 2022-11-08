@@ -23,8 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static io.army.criteria.impl.SQLs.AS;
-import static io.army.criteria.impl.SQLs.PERIOD;
+import static io.army.criteria.impl.SQLs.*;
 
 public class StandardQueryUnitTests {
 
@@ -167,10 +166,12 @@ public class StandardQueryUnitTests {
 
         final Select stmt;
         stmt = SQLs.query()
-                .select(SQLs.ref("us", "one"), SQLs.derivedGroup("us"))
+                .select("us", PERIOD, "one")
+                .comma("us", PERIOD, START)
                 .from(() -> SQLs.subQuery()
-                        .select(SQLs.literal(1).as("one"), SQLs.group(PillUser_.T, "u"))
-                        .from(PillUser_.T, SQLs.AS, "u")
+                        .select(SQLs.literalFrom(1), AS, "one")
+                        .comma("u", PERIOD, PillUser_.T)
+                        .from(PillUser_.T, AS, "u")
                         .where(PillUser_.createTime::equal, SQLs::literal, LocalDateTime.now())
                         .limit(SQLs::literal, criteria::get, "offset", "rowCount")
                         .asQuery())
@@ -192,14 +193,9 @@ public class StandardQueryUnitTests {
                 .rightParen()
                 // below sub query is test case,not real.
                 .space()
-                .select(consumer -> {
-                    consumer.accept(ChinaRegion_.id);
-                    consumer.accept(ChinaRegion_.createTime);
-                    consumer.accept(ChinaRegion_.updateTime);
-                    consumer.accept(SQLs.literal(RegionType.CITY).as(ChinaRegion_.REGION_TYPE));
-                    consumer.accept(ChinaRegion_.regionGdp);
-                })
-                .from(ChinaRegion_.T, SQLs.AS, "r")
+                .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.regionGdp)
+                .comma(SQLs::literalFrom, RegionType.CITY, AS, ChinaRegion_.REGION_TYPE)
+                .from(ChinaRegion_.T, AS, "r")
                 .asQuery()
                 .asInsert()
 
@@ -209,11 +205,8 @@ public class StandardQueryUnitTests {
                 .leftParen(ChinaProvince_.id, ChinaProvince_.governor)
                 .rightParen()
                 .space()
-                .select(consumer -> {
-                    consumer.accept(ChinaProvince_.id);
-                    consumer.accept(ChinaProvince_.governor);
-                })
-                .from(ChinaProvince_.T, SQLs.AS, "c")
+                .select(ChinaProvince_.id, ChinaProvince_.governor)
+                .from(ChinaProvince_.T, AS, "c")
                 .asQuery()
                 .asInsert();
 
@@ -232,13 +225,8 @@ public class StandardQueryUnitTests {
                 .rightParen()
                 // below sub query is test case,not real.
                 .space()
-                .select(consumer -> {
-                    consumer.accept(ChinaRegion_.id);
-                    consumer.accept(ChinaRegion_.createTime);
-                    consumer.accept(ChinaRegion_.updateTime);
-                    consumer.accept(SQLs.literal(RegionType.CITY).as(ChinaRegion_.REGION_TYPE));
-                    consumer.accept(ChinaRegion_.regionGdp);
-                })
+                .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.regionGdp)
+                .comma(SQLs.literalFrom(RegionType.CITY), AS, ChinaRegion_.REGION_TYPE)
                 .from(ChinaRegion_.T, SQLs.AS, "r")
                 .asQuery()
                 .asInsert()
@@ -249,11 +237,8 @@ public class StandardQueryUnitTests {
                 .rightParen()
                 // below sub query is test case,not real.
                 .space()
-                .select(consumer -> {
-                    consumer.accept(ChinaCity_.id);
-                    consumer.accept(ChinaCity_.mayorName);
-                })
-                .from(ChinaCity_.T, SQLs.AS, "r")
+                .select(ChinaCity_.id, ChinaCity_.mayorName)
+                .from(ChinaCity_.T, AS, "r")
                 .asQuery()
                 .asInsert();
 
