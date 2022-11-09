@@ -3,11 +3,14 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping._NullType;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
+
+import java.util.function.Function;
 
 /**
  * <p>
@@ -416,7 +419,8 @@ abstract class StandardSyntax extends Functions {
      * This class representing sql {@code DEFAULT} key word.
      * </p>
      */
-    private static final class DefaultWord extends NonOperationExpression implements WordDefault {
+    private static final class DefaultWord extends NonOperationExpression.NonSelectionExpression
+            implements WordDefault {
 
         private DefaultWord() {
         }
@@ -477,7 +481,7 @@ abstract class StandardSyntax extends Functions {
     }// NullWord
 
 
-    static final class LiteralSymbolStar extends NonOperationExpression {
+    static final class LiteralSymbolStar extends NonOperationExpression.NonSelectionExpression {
 
         static final LiteralSymbolStar STAR = new LiteralSymbolStar();
 
@@ -500,25 +504,25 @@ abstract class StandardSyntax extends Functions {
         }
 
 
-    }//StarLiteral
+    }//LiteralSymbolStar
 
     /**
      * @see #TRUE
      * @see #FALSE
      */
-    private static final class BooleanWord extends OperationPredicate {
+    private static final class BooleanWord extends OperationPredicate<Selection> {
 
         private final boolean value;
 
         private BooleanWord(boolean value) {
+            super(SQLs::_identity);
             this.value = value;
         }
 
 
         @Override
         public void appendSql(final _SqlContext context) {
-            context.sqlBuilder()
-                    .append(this.value ? " TRUE" : " FALSE");
+            context.sqlBuilder().append(this.value ? " TRUE" : " FALSE");
         }
 
         @Override
@@ -598,6 +602,12 @@ abstract class StandardSyntax extends Functions {
      */
     public static Expression count(Expression expr) {
         return FunctionUtils.oneArgFunc("COUNT", expr, LongType.INSTANCE);
+    }
+
+
+    public static <I extends Item, R extends Item> _CaseFuncWhenSpec<R> Case(@Nullable Expression exp
+            , Function<ItemExpression<I>, R> endFunc, Function<Selection, I> asFunc) {
+        return FunctionUtils.caseFunction(exp, endFunc, asFunc);
     }
 
 

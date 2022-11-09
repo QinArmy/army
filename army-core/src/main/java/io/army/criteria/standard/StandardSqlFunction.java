@@ -8,8 +8,6 @@ import io.army.criteria.impl.SQLs;
 import io.army.function.BetweenOperator;
 import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
-import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -22,8 +20,6 @@ public interface StandardSqlFunction {
 
         I end();
 
-        I end(MappingType type);
-
         I end(TypeInfer type);
 
     }
@@ -34,19 +30,13 @@ public interface StandardSqlFunction {
 
         _CaseEndClause<I> Else(Supplier<Expression> supplier);
 
-        <T> _CaseEndClause<I> Else(Function<T, Expression> valueOperator, T value);
-
         <T> _CaseEndClause<I> Else(Function<T, Expression> valueOperator, Supplier<T> getter);
 
         _CaseEndClause<I> Else(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        <T> _CaseEndClause<I> Else(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, T operand);
-
         <T> _CaseEndClause<I> Else(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
 
         _CaseEndClause<I> Else(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        <T> _CaseEndClause<I> Else(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, T first, SQLs.WordAnd and, T second);
 
         <T> _CaseEndClause<I> Else(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
@@ -56,19 +46,13 @@ public interface StandardSqlFunction {
 
         _CaseEndClause<I> ifElse(Supplier<Expression> supplier);
 
-        <T> _CaseEndClause<I> ifElse(Function<T, Expression> valueOperator, @Nullable T value);
-
         <T> _CaseEndClause<I> ifElse(Function<T, Expression> valueOperator, Supplier<T> getter);
 
         _CaseEndClause<I> ifElse(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        <T> _CaseEndClause<I> ifElse(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, @Nullable T operand);
-
         <T> _CaseEndClause<I> ifElse(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
 
         _CaseEndClause<I> ifElse(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        <T> _CaseEndClause<I> ifElse(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, SQLs.WordAnd and, @Nullable T second);
 
         <T> _CaseEndClause<I> ifElse(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
@@ -83,19 +67,13 @@ public interface StandardSqlFunction {
 
         R then(Supplier<Expression> supplier);
 
-        <T> R then(Function<T, Expression> valueOperator, T value);
-
         <T> R then(Function<T, Expression> valueOperator, Supplier<T> getter);
 
         R then(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        <T> R then(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, T operand);
-
         <T> R then(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
 
         R then(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        <T> R then(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, T first, SQLs.WordAnd and, T second);
 
         <T> R then(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
@@ -111,19 +89,13 @@ public interface StandardSqlFunction {
 
         R when(Supplier<Expression> supplier);
 
-        <T> R when(Function<T, Expression> valueOperator, T value);
-
         <T> R when(Function<T, Expression> valueOperator, Supplier<T> getter);
 
         R when(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        <T> R when(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, T operand);
-
         <T> R when(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
 
         R when(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        <T> R when(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, T first, SQLs.WordAnd and, T second);
 
         <T> R when(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
@@ -133,19 +105,13 @@ public interface StandardSqlFunction {
 
         R ifWhen(Supplier<Expression> supplier);
 
-        <T> R ifWhen(Function<T, Expression> valueOperator, @Nullable T value);
-
         <T> R ifWhen(Function<T, Expression> valueOperator, Supplier<T> getter);
 
         R ifWhen(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        <T> R ifWhen(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, @Nullable T operand);
-
         <T> R ifWhen(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
 
         R ifWhen(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        <T> R ifWhen(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, @Nullable T first, SQLs.WordAnd and, @Nullable T second);
 
         <T> R ifWhen(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 

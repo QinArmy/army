@@ -106,7 +106,7 @@ public abstract class SQLs extends StandardSyntax {
 
 
     public static StandardQuery._SelectSpec<Expression> scalarSubQuery() {
-        return StandardQueries.subQuery(ContextStack.peek(), ScalarExpression::from);
+        return StandardQueries.subQuery(ContextStack.peek(), Expressions::scalarExpression);
     }
 
 
@@ -757,14 +757,14 @@ public abstract class SQLs extends StandardSyntax {
      * @param subQuery non-null
      */
     public static IPredicate exists(SubQuery subQuery) {
-        return UnaryPredicate.fromSubQuery(UnaryOperator.EXISTS, subQuery);
+        return Expressions.existsPredicate(UnaryOperator.EXISTS, subQuery);
     }
 
     /**
      * @param subQuery non-null
      */
     public static IPredicate notExists(SubQuery subQuery) {
-        return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, subQuery);
+        return Expressions.existsPredicate(UnaryOperator.NOT_EXISTS, subQuery);
     }
 
 

@@ -36,7 +36,7 @@ public abstract class Postgres extends PostgreFuncSyntax {
 
 
     public static PostgreQuery._WithSpec<Expression> scalarSubQuery() {
-        return PostgreQueries.subQuery(null, ContextStack.peek(), ScalarExpression::from);
+        return PostgreQueries.subQuery(null, ContextStack.peek(), Expressions::scalarExpression);
     }
 
     public static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> singleUpdate() {

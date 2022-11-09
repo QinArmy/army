@@ -29,11 +29,16 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
     }
 
     @Override
+    public final ItemPredicate<I> bracket() {
+        return Expressions.bracketPredicate(this);
+    }
+
+    @Override
     public final ItemPredicate<I> or(final @Nullable IPredicate predicate) {
         if (predicate == null) {
             throw ContextStack.nullPointer(ContextStack.peek());
         }
-        return OrPredicate.create(this, predicate);
+        return Expressions.orPredicate(this, predicate);
     }
 
     @Override
@@ -96,7 +101,7 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
         if (predicate == null) {
             result = this;
         } else {
-            result = OrPredicate.create(this, predicate);
+            result = Expressions.orPredicate(this, predicate);
         }
         return result;
     }
@@ -186,7 +191,7 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
         if (predicate == null) {
             throw ContextStack.nullPointer(ContextStack.peek());
         }
-        return AndPredicate.create(this, predicate);
+        return Expressions.andPredicate(this, predicate);
     }
 
     @Override
@@ -255,7 +260,7 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
         if ((operand = supplier.get()) == null) {
             predicate = this;
         } else {
-            predicate = AndPredicate.create(this, operand);
+            predicate = Expressions.andPredicate(this, operand);
         }
         return predicate;
     }
@@ -341,14 +346,14 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
 
     @Override
     public final ItemPredicate<I> not() {
-        return NotPredicate.not(this);
+        return Expressions.notPredicate(this);
     }
 
     @Override
     public final ItemPredicate<I> ifNot(BooleanSupplier supplier) {
         final ItemPredicate<I> result;
         if (supplier.getAsBoolean()) {
-            result = NotPredicate.not(this);
+            result = Expressions.notPredicate(this);
         } else {
             result = this;
         }
@@ -358,8 +363,9 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
     @Override
     public final boolean isOptimistic() {
         final boolean match;
-        final DualPredicate<?> predicate;
-        if (!(this instanceof DualPredicate) || (predicate = (DualPredicate<?>) this).operator != DualOperator.EQUAL) {
+        final Expressions.DualPredicate<?> predicate;
+        if (!(this instanceof Expressions.DualPredicate)
+                || (predicate = (Expressions.DualPredicate<?>) this).operator != DualOperator.EQUAL) {
             match = false;
         } else if (predicate.left instanceof TableField
                 && _MetaBridge.VERSION.equals(((TableField) predicate.left).fieldName())) {
@@ -378,11 +384,11 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
 
     @Override
     public final boolean isIdPredicate() {
-        final DualPredicate<?> predicate;
+        final Expressions.DualPredicate<?> predicate;
         final boolean match;
-        if (!(this instanceof DualPredicate)) {
+        if (!(this instanceof Expressions.DualPredicate)) {
             match = false;
-        } else if (!((predicate = (DualPredicate<?>) this).left instanceof PrimaryFieldMeta)) {
+        } else if (!((predicate = (Expressions.DualPredicate<?>) this).left instanceof PrimaryFieldMeta)) {
             match = false;
         } else if (predicate.operator == DualOperator.EQUAL) {
             match = predicate.right instanceof SqlValueParam.SingleValue
@@ -402,12 +408,12 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
     @Override
     public final TableField findParentId(final ChildTableMeta<?> child, final String alias) {
         final TableField parentId;
-        final DualPredicate<?> predicate;
+        final Expressions.DualPredicate<?> predicate;
         final TableMeta<?> leftTable, rightTable;
         final TableField leftField, rightField;
 
 
-        if (!(this instanceof DualPredicate) || (predicate = (DualPredicate<?>) this).operator != DualOperator.EQUAL) {
+        if (!(this instanceof Expressions.DualPredicate) || (predicate = (Expressions.DualPredicate<?>) this).operator != DualOperator.EQUAL) {
             parentId = null;
         } else if (!(predicate.left instanceof TableField && predicate.right instanceof TableField)) {
             parentId = null;

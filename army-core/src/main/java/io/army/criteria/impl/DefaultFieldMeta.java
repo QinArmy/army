@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.ArmyException;
 import io.army.annotation.*;
 import io.army.criteria.Expression;
+import io.army.criteria.Selection;
 import io.army.criteria.TableField;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
@@ -28,7 +29,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @since 1.0
  */
-abstract class DefaultFieldMeta<T> extends OperationDataField implements FieldMeta<T>, _Selection {
+abstract class DefaultFieldMeta<T> extends OperationDataField<Selection> implements FieldMeta<T>, _Selection {
 
     private static final String ID = _MetaBridge.ID;
 
@@ -163,8 +164,8 @@ abstract class DefaultFieldMeta<T> extends OperationDataField implements FieldMe
 
     private final boolean codec;
 
-    private DefaultFieldMeta(final TableMeta<T> table, final Field field)
-            throws MetaException {
+    private DefaultFieldMeta(final TableMeta<T> table, final Field field) throws MetaException {
+        super(SQLs::_identity);
         Objects.requireNonNull(table);
         Objects.requireNonNull(field);
 

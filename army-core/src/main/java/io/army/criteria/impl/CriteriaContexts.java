@@ -268,15 +268,15 @@ abstract class CriteriaContexts {
 
 
     private static CriteriaException notFoundDerivedField(CriteriaContext context
-            , Map<String, Map<String, RefDerivedField>> aliasToRefSelection) {
+            , Map<String, Map<String, RefDerivedField<?>>> aliasToRefSelection) {
         final StringBuilder builder = new StringBuilder()
                 .append("Not found derived field[");
         int count = 0;
         String alias;
-        for (Map.Entry<String, Map<String, RefDerivedField>> e : aliasToRefSelection.entrySet()) {
+        for (Map.Entry<String, Map<String, RefDerivedField<?>>> e : aliasToRefSelection.entrySet()) {
 
             alias = e.getKey();
-            for (RefDerivedField s : e.getValue().values()) {
+            for (RefDerivedField<?> s : e.getValue().values()) {
                 if (count > 0) {
                     builder.append(_Constant.SPACE_COMMA);
                 }
@@ -757,7 +757,7 @@ abstract class CriteriaContexts {
 
         private Map<String, _TableBlock> aliasToBlock = new HashMap<>();
 
-        private Map<String, Map<String, RefDerivedField>> aliasToRefDerivedField;
+        private Map<String, Map<String, RefDerivedField<?>>> aliasToRefDerivedField;
 
         private Map<String, Map<String, DerivedField>> aliasToDerivedField;
 
@@ -912,7 +912,7 @@ abstract class CriteriaContexts {
 
 
             //3. validate aliasToRefSelection
-            final Map<String, Map<String, RefDerivedField>> aliasToRefSelection = this.aliasToRefDerivedField;
+            final Map<String, Map<String, RefDerivedField<?>>> aliasToRefSelection = this.aliasToRefDerivedField;
             if (aliasToRefSelection != null && aliasToRefSelection.size() > 0) {
                 throw notFoundDerivedField(this, aliasToRefSelection);
             }
@@ -946,16 +946,16 @@ abstract class CriteriaContexts {
 
 
         private void doOnAddDerived(final DerivedTable derivedTable, final String alias) {
-            if (derivedTable instanceof SubQuery && !(derivedTable instanceof _LateralSubQuery)) {
+            if (derivedTable instanceof SubQuery) {
                 final CriteriaContext context = ((CriteriaContextSpec) derivedTable).getContext();
                 if (((SimpleQueryContext) context).refOuterField) {
                     String m = String.format("SubQuery %s isn't lateral,couldn't reference outer field.", alias);
                     throw ContextStack.criteriaError(this, m);
                 }
             }
-            final Map<String, Map<String, RefDerivedField>> aliasToRefSelection = this.aliasToRefDerivedField;
+            final Map<String, Map<String, RefDerivedField<?>>> aliasToRefSelection = this.aliasToRefDerivedField;
             if (aliasToRefSelection != null) {
-                final Map<String, RefDerivedField> fieldMap;
+                final Map<String, RefDerivedField<?>> fieldMap;
                 fieldMap = aliasToRefSelection.remove(alias);
                 if (fieldMap != null) {
                     this.finishRefSelections(derivedTable, alias, fieldMap);
@@ -987,7 +987,7 @@ abstract class CriteriaContexts {
         /**
          * @see #doOnAddDerived(DerivedTable, String)
          */
-        private void finishRefSelections(DerivedTable derivedTable, String alias, Map<String, RefDerivedField> fieldMap) {
+        private void finishRefSelections(DerivedTable derivedTable, String alias, Map<String, RefDerivedField<?>> fieldMap) {
             Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
             if (aliasToSelection == null) {
                 aliasToSelection = new HashMap<>();
@@ -996,7 +996,7 @@ abstract class CriteriaContexts {
             final Map<String, DerivedField> derivedFieldMap;
             derivedFieldMap = aliasToSelection.computeIfAbsent(alias, k -> new HashMap<>());
             Selection selection;
-            for (RefDerivedField field : fieldMap.values()) {
+            for (RefDerivedField<?> field : fieldMap.values()) {
                 selection = derivedTable.selection(field.fieldName);
                 if (selection == null) {
                     throw invalidRef(this, alias, field.fieldName);
@@ -1009,21 +1009,22 @@ abstract class CriteriaContexts {
 
         }
 
+        @SuppressWarnings("unchecked")
         @Nullable
-        private RefDerivedField getRefField(final String derivedTableAlias, final String fieldName
+        private <I extends Item> RefDerivedField<I> getRefField(final String derivedTableAlias, final String fieldName
                 , final boolean create) {
-            Map<String, Map<String, RefDerivedField>> aliasToRefDerivedField = this.aliasToRefDerivedField;
+            Map<String, Map<String, RefDerivedField<?>>> aliasToRefDerivedField = this.aliasToRefDerivedField;
             if (aliasToRefDerivedField == null && create) {
                 aliasToRefDerivedField = new HashMap<>();
                 this.aliasToRefDerivedField = aliasToRefDerivedField;
             }
-            final Map<String, RefDerivedField> fieldMap;
-            final RefDerivedField field;
+            final Map<String, RefDerivedField<?>> fieldMap;
+            final RefDerivedField<?> field;
             if (aliasToRefDerivedField == null) {
                 field = null;
             } else if (create) {
                 fieldMap = aliasToRefDerivedField.computeIfAbsent(derivedTableAlias, k -> new HashMap<>());
-                field = fieldMap.computeIfAbsent(fieldName, k -> new RefDerivedField(derivedTableAlias, fieldName));
+                field = fieldMap.computeIfAbsent(fieldName, k -> new RefDerivedField<>(derivedTableAlias, fieldName, null));
             } else {
                 fieldMap = aliasToRefDerivedField.get(derivedTableAlias);
                 if (fieldMap == null) {
@@ -1032,7 +1033,7 @@ abstract class CriteriaContexts {
                     field = fieldMap.get(fieldName);
                 }
             }
-            return field;
+            return (RefDerivedField<I>) field;
         }
 
         private DerivedField getDerivedField(final DerivedTable derivedTable, final String tableAlias
@@ -1053,7 +1054,7 @@ abstract class CriteriaContexts {
                         if (selection == null) {
                             throw invalidRef(this, tableAlias, fieldName);
                         }
-                        return new DerivedSelection(tableAlias, selection);
+                        return new DerivedSelection<>(tableAlias, selection, null);//TODO
                     });
             return field;
         }
@@ -1267,7 +1268,7 @@ abstract class CriteriaContexts {
             refWindowNameMap.putIfAbsent(windowName, Boolean.TRUE);
         }
 
-        private RefSelection createRefSelection(final String selectionAlias) {
+        private <I extends Item> RefSelection<I> createRefSelection(final String selectionAlias) {
             Map<String, Selection> selectionMap = this.selectionMap;
             if (selectionMap == null) {
                 final List<? extends SelectItem> selectItemList = this.selectItemList;
@@ -1282,7 +1283,7 @@ abstract class CriteriaContexts {
             if (selection == null) {
                 throw CriteriaUtils.unknownSelection(this, selectionAlias);
             }
-            return new RefSelection(selection);
+            return new RefSelection<>(selection, null);//TODO
         }
 
 
@@ -1388,7 +1389,7 @@ abstract class CriteriaContexts {
         /**
          * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
          */
-        private Map<String, RefSelection> refSelectionMap;
+        private Map<String, RefSelection<?>> refSelectionMap;
 
         private ValuesContext(@Nullable CriteriaContext outerContext) {
             super(outerContext);
@@ -1406,14 +1407,14 @@ abstract class CriteriaContexts {
 
         @Override
         public Expression ref(final String selectionAlias) {
-            Map<String, RefSelection> refSelectionMap = this.refSelectionMap;
+            Map<String, RefSelection<?>> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
                 this.refSelectionMap = refSelectionMap = new HashMap<>();
             }
             return refSelectionMap.computeIfAbsent(selectionAlias, this::createRefSelection);
         }
 
-        private RefSelection createRefSelection(final String selectionAlias) {
+        private <I extends Item> RefSelection<I> createRefSelection(final String selectionAlias) {
             Map<String, Selection> selectionMap = this.selectionMap;
             if (selectionMap == null) {
                 final List<? extends SelectItem> selectItemList = this.selectItemList;
@@ -1427,7 +1428,7 @@ abstract class CriteriaContexts {
             if (selection == null) {
                 throw CriteriaUtils.unknownSelection(this, selectionAlias);
             }
-            return new RefSelection(selection);
+            return new RefSelection<>(selection, null);
         }
 
 
@@ -1444,14 +1445,15 @@ abstract class CriteriaContexts {
     }//OtherPrimaryContext
 
 
-    private static final class DerivedSelection extends OperationDataField
+    static final class DerivedSelection<I extends Item> extends OperationDataField<I>
             implements DerivedField, _Selection {
 
         private final String tableName;
 
         private final Selection selection;
 
-        private DerivedSelection(String tableName, Selection selection) {
+        private DerivedSelection(String tableName, Selection selection, Function<Selection, I> function) {
+            super(function);
             this.tableName = tableName;
             this.selection = selection;
         }
@@ -1527,7 +1529,7 @@ abstract class CriteriaContexts {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof DerivedSelection) {
-                final DerivedSelection selection = (DerivedSelection) obj;
+                final DerivedSelection<?> selection = (DerivedSelection<?>) obj;
                 match = selection.tableName.equals(this.tableName)
                         && selection.selection.equals(this.selection);
             } else {
@@ -1544,7 +1546,7 @@ abstract class CriteriaContexts {
     }//DerivedSelection
 
 
-    private static final class RefDerivedField extends OperationDataField
+    static final class RefDerivedField<I extends Item> extends OperationDataField<I>
             implements DerivedField, _Selection {
 
         final String tableName;
@@ -1553,7 +1555,8 @@ abstract class CriteriaContexts {
 
         final DelaySelection paramMeta;
 
-        private RefDerivedField(String tableName, String fieldName) {
+        private RefDerivedField(String tableName, String fieldName, Function<Selection, I> function) {
+            super(function);
             this.tableName = tableName;
             this.fieldName = fieldName;
             this.paramMeta = new DelaySelection();
@@ -1654,11 +1657,12 @@ abstract class CriteriaContexts {
     /**
      * @see UnionQueryContext#ref(String)
      */
-    private static final class RefSelection extends OperationExpression {
+    static final class RefSelection<I extends Item> extends OperationExpression<I> {
 
         private final Selection selection;
 
-        private RefSelection(Selection selection) {
+        private RefSelection(Selection selection, Function<Selection, I> function) {
+            super(function);
             this.selection = selection;
         }
 

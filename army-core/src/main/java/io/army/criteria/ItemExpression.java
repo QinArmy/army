@@ -1,12 +1,13 @@
 package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
+import io.army.function.BiAsExpFunction;
+import io.army.function.BiAsFunction;
 import io.army.function.TeNamedOperator;
 import io.army.meta.TypeMeta;
 
 import java.util.Collection;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface ItemExpression<I extends Item> extends Expression, Statement._AsClause<I> {
@@ -20,9 +21,11 @@ public interface ItemExpression<I extends Item> extends Expression, Statement._A
 
     ItemPredicate<I> equal(Supplier<Expression> supplier);
 
-    <R> R equal(Function<Function<ItemExpression<I>, ItemPredicate<I>>, R> function);
+    <R> R equal(BiAsFunction<ItemPredicate<I>, I, R> function);
 
-    <R> R equal(BiFunction<Expression, Function<ItemExpression<I>, ItemPredicate<I>>, R> operator, Expression operand);
+    <R> R equal(BiAsExpFunction<ItemPredicate<I>, I, R> function);
+
+    <R> R equal(BiAsExpFunction<ItemPredicate<I>, I, R> function, Expression operand);
 
 
     @Override

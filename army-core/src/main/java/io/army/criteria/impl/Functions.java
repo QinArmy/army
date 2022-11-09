@@ -7,7 +7,6 @@ import io.army.meta.TypeMeta;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -108,9 +107,7 @@ abstract class Functions {
         StandardSqlFunction._CaseEndClause<I> whens(Consumer<CaseWhens> consumer);
     }
 
-    public interface _CaseRefWhenSpec<I extends Item> extends _CaseFuncWhenSpec<I>, Clause {
 
-    }
 
 
 
@@ -485,11 +482,6 @@ abstract class Functions {
     /*################################## blow date time function method ##################################*/
 
 
-    public static <I extends Item, R extends Item> _CaseRefWhenSpec<R> Case(Function<ItemExpression<I>, R> endFunc
-            , Function<Selection, I> aliasFunc) {
-        throw new UnsupportedOperationException();
-    }
-
     /*-------------------below custom function -------------------*/
 
     static final Pattern FUN_NAME_PATTER = Pattern.compile("^[_a-zA-Z][_\\w]*$");
@@ -556,34 +548,6 @@ abstract class Functions {
         return ContextStack.criteriaError(ContextStack.peek(), m);
     }
 
-
-    /**
-     * package class
-     */
-    static abstract class CaseValueFunctions extends Functions {
-
-        /**
-         * package constructor
-         */
-        CaseValueFunctions() {
-        }
-
-        /**
-         * @param expression non-null {@link Expression} ,if null then use CASE WHEN condition THEN result syntax
-         *                   ,else use CASE value WHEN compare_value THEN result syntax.
-         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#operator_case">case function</a>
-         */
-        public static StandardSqlFunction._CaseWhenClause<Expression> Case(final Expression expression) {
-            Objects.requireNonNull(expression);
-            throw new UnsupportedOperationException();
-        }
-
-        public static <I extends Item> _CaseRefWhenSpec<I> Case(Expression exp, Function<Expression, I> function) {
-            throw new UnsupportedOperationException();
-        }
-
-
-    }
 
     /*################################## blow static inner class  ##################################*/
 

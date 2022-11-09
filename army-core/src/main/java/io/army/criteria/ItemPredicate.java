@@ -12,6 +12,9 @@ import java.util.function.Supplier;
 public interface ItemPredicate<I extends Item> extends IPredicate, ItemExpression<I>, Statement._AsClause<I> {
 
     @Override
+    ItemPredicate<I> bracket();
+
+    @Override
     ItemPredicate<I> or(IPredicate predicate);
 
     @Override

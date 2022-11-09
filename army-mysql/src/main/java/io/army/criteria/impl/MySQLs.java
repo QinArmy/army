@@ -30,7 +30,7 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
 
 
     public static MySQLQuery._WithSpec<Expression> scalarSubQuery() {
-        return MySQLQueries.subQuery(null, ContextStack.peek(), ScalarExpression::from);
+        return MySQLQueries.subQuery(null, ContextStack.peek(), Expressions::scalarExpression);
     }
 
 

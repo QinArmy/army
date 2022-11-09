@@ -12,6 +12,9 @@ import java.util.function.Supplier;
 
 public interface IPredicate extends Expression, Statement._WhereAndClause<IPredicate> {
 
+    @Override
+    IPredicate bracket();
+
     /**
      * Logical OR
      * <p>
