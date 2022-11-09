@@ -52,8 +52,10 @@ interface CriteriaContext {
 
     void addEndEventListener(Runnable listener);
 
+    @Deprecated
     void onAddDerivedGroup(DerivedGroup group);
 
+    @Deprecated
     void selectList(List<? extends SelectItem> selectItemList);
 
     DerivedField ref(String derivedTable, String derivedFieldName);

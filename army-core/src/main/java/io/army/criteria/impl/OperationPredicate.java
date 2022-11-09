@@ -8,10 +8,9 @@ import io.army.mapping.BooleanType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 
-import java.util.function.BiFunction;
-import java.util.function.BooleanSupplier;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.*;
 
 /**
  * This class is base class of all {@link IPredicate} implementation .
@@ -91,6 +90,23 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
     public final ItemPredicate<I> or(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator
             , String paramName, int size) {
         return this.or(expOperator.apply(namedOperator, paramName, size));
+    }
+
+    @Override
+    public final ItemPredicate<I> or(Consumer<Consumer<IPredicate>> consumer) {
+        final List<IPredicate> list = new ArrayList<>();
+        consumer.accept(list::add);
+        final ItemPredicate<I> predicate;
+        switch (list.size()) {
+            case 0:
+                throw ContextStack.criteriaError(ContextStack.peek(), "You don't add any predicate");
+            case 1:
+                predicate = Expressions.orPredicate(this, list.get(0));
+                break;
+            default:
+                predicate = Expressions.orPredicate(this, list);
+        }
+        return predicate;
     }
 
     @Override
@@ -182,6 +198,24 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
             predicate = this;
         } else {
             predicate = this.or(expOperator.apply(namedOperator, paramName, size));
+        }
+        return predicate;
+    }
+
+    @Override
+    public final ItemPredicate<I> ifOr(Consumer<Consumer<IPredicate>> consumer) {
+        final List<IPredicate> list = new ArrayList<>();
+        consumer.accept(list::add);
+        final ItemPredicate<I> predicate;
+        switch (list.size()) {
+            case 0:
+                predicate = this;
+                break;
+            case 1:
+                predicate = Expressions.orPredicate(this, list.get(0));
+                break;
+            default:
+                predicate = Expressions.orPredicate(this, list);
         }
         return predicate;
     }

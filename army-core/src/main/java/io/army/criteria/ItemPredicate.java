@@ -4,10 +4,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.function.*;
 import io.army.lang.Nullable;
 
-import java.util.function.BiFunction;
-import java.util.function.BooleanSupplier;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public interface ItemPredicate<I extends Item> extends IPredicate, ItemExpression<I>, Statement._AsClause<I> {
 
@@ -44,6 +41,10 @@ public interface ItemPredicate<I extends Item> extends IPredicate, ItemExpressio
     @Override
     ItemPredicate<I> or(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, int size);
 
+
+    @Override
+    ItemPredicate<I> or(Consumer<Consumer<IPredicate>> consumer);
+
     @Override
     ItemPredicate<I> ifOr(Supplier<IPredicate> supplier);
 
@@ -64,6 +65,9 @@ public interface ItemPredicate<I extends Item> extends IPredicate, ItemExpressio
 
     @Override
     ItemPredicate<I> ifOr(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, @Nullable Integer size);
+
+    @Override
+    ItemPredicate<I> ifOr(Consumer<Consumer<IPredicate>> consumer);
 
     @Override
     ItemPredicate<I> and(IPredicate predicate);

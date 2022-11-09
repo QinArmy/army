@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 
-enum SubQueryOperator {
+enum QueryOperator {
 
     ANY {
         @Override

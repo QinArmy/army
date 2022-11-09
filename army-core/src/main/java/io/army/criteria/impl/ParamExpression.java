@@ -1,8 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.NamedParam;
-import io.army.criteria.SQLParam;
-import io.army.criteria.SqlValueParam;
+import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -12,7 +10,7 @@ import io.army.stmt.SingleParam;
 
 import java.util.*;
 
-abstract class ParamExpression extends OperationExpression implements SQLParam {
+abstract class ParamExpression extends OperationExpression<Selection> implements SQLParam {
 
 
     static ParamExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object value) {
@@ -41,18 +39,24 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
         return new NamedMultiParam(paramMeta, name, size);
     }
 
-    final TypeMeta paramMeta;
+    final TypeMeta typeMeta;
 
 
-    private ParamExpression(TypeMeta paramMeta) {
-        this.paramMeta = paramMeta;
+    private ParamExpression(TypeMeta typeMeta) {
+        super(SQLs::_identity);
+        this.typeMeta = typeMeta;
     }
 
 
     public final TypeMeta typeMeta() {
-        return this.paramMeta;
+        return this.typeMeta;
     }
 
+    @Override
+    public final ItemExpression<Selection> bracket() {
+        //return this,don't create new instance.
+        return this;
+    }
 
     static final class SingleParamExpression extends ParamExpression
             implements SingleParam, SqlValueParam.SingleNonNamedValue {
@@ -76,7 +80,7 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.paramMeta, this.value);
+            return Objects.hash(this.typeMeta, this.value);
         }
 
         @Override
@@ -86,7 +90,7 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
                 match = true;
             } else if (obj instanceof SingleParamExpression) {
                 final SingleParamExpression o = (SingleParamExpression) obj;
-                match = o.paramMeta == this.paramMeta && Objects.equals(o.value, this.value);
+                match = o.typeMeta == this.typeMeta && Objects.equals(o.value, this.value);
             } else {
                 match = false;
             }
@@ -138,7 +142,7 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.paramMeta, this.valueList);
+            return Objects.hash(this.typeMeta, this.valueList);
         }
 
         @Override
@@ -148,7 +152,7 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
                 match = true;
             } else if (obj instanceof MultiParamExpression) {
                 final MultiParamExpression o = (MultiParamExpression) obj;
-                match = o.paramMeta.equals(this.paramMeta)
+                match = o.typeMeta.equals(this.typeMeta)
                         && o.valueList.equals(this.valueList);
             } else {
                 match = false;
@@ -196,7 +200,7 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
 
         @Override
         public final int hashCode() {
-            return Objects.hash(this.paramMeta, this.name);
+            return Objects.hash(this.typeMeta, this.name);
         }
 
         @Override
@@ -206,7 +210,7 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
                 match = true;
             } else if (obj instanceof NamedSingleParam) {
                 final NamedSingleParam o = (NamedSingleParam) obj;
-                match = o.paramMeta == this.paramMeta && o.name.equals(this.name);
+                match = o.typeMeta == this.typeMeta && o.name.equals(this.name);
             } else {
                 match = false;
             }
@@ -270,7 +274,7 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.paramMeta, this.name, this.valueSize);
+            return Objects.hash(this.typeMeta, this.name, this.valueSize);
         }
 
         @Override
@@ -280,7 +284,7 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
                 match = true;
             } else if (obj instanceof NamedMultiParam) {
                 final NamedMultiParam o = (NamedMultiParam) obj;
-                match = o.paramMeta == this.paramMeta
+                match = o.typeMeta == this.typeMeta
                         && o.name.equals(this.name)
                         && o.valueSize == this.valueSize;
             } else {

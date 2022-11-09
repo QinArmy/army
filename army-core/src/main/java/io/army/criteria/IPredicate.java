@@ -4,10 +4,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.function.*;
 import io.army.lang.Nullable;
 
-import java.util.function.BiFunction;
-import java.util.function.BooleanSupplier;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 
 public interface IPredicate extends Expression, Statement._WhereAndClause<IPredicate> {
@@ -41,6 +38,8 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
 
     IPredicate or(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, int size);
 
+    IPredicate or(Consumer<Consumer<IPredicate>> consumer);
+
     IPredicate ifOr(Supplier<IPredicate> supplier);
 
     <E> IPredicate ifOr(Function<E, IPredicate> expOperator, Supplier<E> supplier);
@@ -55,6 +54,8 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
     IPredicate ifOr(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
     IPredicate ifOr(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, @Nullable Integer size);
+
+    IPredicate ifOr(Consumer<Consumer<IPredicate>> consumer);
 
     /**
      * Logical NOT

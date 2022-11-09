@@ -69,22 +69,22 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, It
 
     @Override
     public final ItemPredicate<I> equalAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.EQUAL, SubQueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.EQUAL, QueryOperator.ANY, subQuery);
     }
 
     @Override
     public final ItemPredicate<I> equalSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.EQUAL, SubQueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.EQUAL, QueryOperator.SOME, subQuery);
     }
 
     @Override
     public final ItemPredicate<I> equalAny(Supplier<SubQuery> supplier) {
-        return Expressions.compareQueryPredicate(this, DualOperator.EQUAL, SubQueryOperator.ANY, supplier.get());
+        return Expressions.compareQueryPredicate(this, DualOperator.EQUAL, QueryOperator.ANY, supplier.get());
     }
 
     @Override
     public final ItemPredicate<I> equalSome(Supplier<SubQuery> supplier) {
-        return Expressions.compareQueryPredicate(this, DualOperator.EQUAL, SubQueryOperator.SOME, supplier.get());
+        return Expressions.compareQueryPredicate(this, DualOperator.EQUAL, QueryOperator.SOME, supplier.get());
     }
 
     @Override
@@ -100,18 +100,18 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, It
 
     @Override
     public final ItemPredicate<I> lessAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.LESS, SubQueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.LESS, QueryOperator.ANY, subQuery);
     }
 
 
     @Override
     public final ItemPredicate<I> lessSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.LESS, SubQueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.LESS, QueryOperator.SOME, subQuery);
     }
 
     @Override
     public final ItemPredicate<I> lessAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.LESS, SubQueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.LESS, QueryOperator.ALL, subQuery);
     }
 
 
@@ -128,19 +128,19 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, It
 
     @Override
     public final ItemPredicate<I> lessEqualAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.LESS_EQUAL, SubQueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.LESS_EQUAL, QueryOperator.ANY, subQuery);
     }
 
 
     @Override
     public final ItemPredicate<I> lessEqualSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.LESS_EQUAL, SubQueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.LESS_EQUAL, QueryOperator.SOME, subQuery);
     }
 
 
     @Override
     public final ItemPredicate<I> lessEqualAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.LESS_EQUAL, SubQueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.LESS_EQUAL, QueryOperator.ALL, subQuery);
     }
 
 
@@ -157,19 +157,19 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, It
 
     @Override
     public final ItemPredicate<I> greatAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.GREAT, SubQueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.GREAT, QueryOperator.ANY, subQuery);
     }
 
 
     @Override
     public final ItemPredicate<I> greatSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.GREAT, SubQueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.GREAT, QueryOperator.SOME, subQuery);
     }
 
 
     @Override
     public final ItemPredicate<I> greatAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.GREAT, SubQueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.GREAT, QueryOperator.ALL, subQuery);
     }
 
 
@@ -187,18 +187,18 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, It
 
     @Override
     public final ItemPredicate<I> greatEqualAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.GREAT_EQUAL, SubQueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.GREAT_EQUAL, QueryOperator.ANY, subQuery);
     }
 
     @Override
     public final ItemPredicate<I> greatEqualSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.GREAT_EQUAL, SubQueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.GREAT_EQUAL, QueryOperator.SOME, subQuery);
     }
 
 
     @Override
     public final ItemPredicate<I> greatEqualAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.GREAT_EQUAL, SubQueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.GREAT_EQUAL, QueryOperator.ALL, subQuery);
     }
 
 
@@ -215,18 +215,18 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, It
 
     @Override
     public final ItemPredicate<I> notEqualAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.NOT_EQUAL, SubQueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.NOT_EQUAL, QueryOperator.ANY, subQuery);
     }
 
 
     @Override
     public final ItemPredicate<I> notEqualSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.NOT_EQUAL, SubQueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.NOT_EQUAL, QueryOperator.SOME, subQuery);
     }
 
     @Override
     public final ItemPredicate<I> notEqualAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualOperator.NOT_EQUAL, SubQueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualOperator.NOT_EQUAL, QueryOperator.ALL, subQuery);
     }
 
     @Override
@@ -447,11 +447,6 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, It
             expression = Expressions.castExp(this, paramMeta);
         }
         return expression;
-    }
-
-    @Override
-    public ItemExpression<I> bracket() {
-        return Expressions.bracketExp(this);
     }
 
 

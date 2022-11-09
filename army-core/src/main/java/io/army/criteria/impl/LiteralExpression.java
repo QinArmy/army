@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.ItemExpression;
 import io.army.criteria.NamedLiteral;
+import io.army.criteria.Selection;
 import io.army.criteria.SqlValueParam;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -18,7 +20,7 @@ import java.util.Objects;
  * This class representing sql literal expression.
  * </p>
  */
-abstract class LiteralExpression extends OperationExpression {
+abstract class LiteralExpression extends OperationExpression<Selection> {
 
     static LiteralExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object constant) {
         assert paramMeta != null;
@@ -78,17 +80,24 @@ abstract class LiteralExpression extends OperationExpression {
     }
 
 
-    final TypeMeta paramMeta;
+    final TypeMeta typeMeta;
 
 
-    private LiteralExpression(TypeMeta paramMeta) {
-        this.paramMeta = paramMeta;
+    private LiteralExpression(TypeMeta typeMeta) {
+        super(SQLs::_identity);
+        this.typeMeta = typeMeta;
     }
 
 
     @Override
     public final TypeMeta typeMeta() {
-        return this.paramMeta;
+        return this.typeMeta;
+    }
+
+    @Override
+    public final ItemExpression<Selection> bracket() {
+        //return this,don't create new instance.
+        return this;
     }
 
 
@@ -108,7 +117,7 @@ abstract class LiteralExpression extends OperationExpression {
             if (value == null) {
                 context.sqlBuilder().append(_Constant.SPACE_NULL);
             } else {
-                context.appendLiteral(this.paramMeta, value);
+                context.appendLiteral(this.typeMeta, value);
             }
 
         }
@@ -121,7 +130,7 @@ abstract class LiteralExpression extends OperationExpression {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.paramMeta, this.value);
+            return Objects.hash(this.typeMeta, this.value);
         }
 
         @Override
@@ -131,7 +140,7 @@ abstract class LiteralExpression extends OperationExpression {
                 match = true;
             } else if (obj instanceof SingleLiteral) {
                 final SingleLiteral o = (SingleLiteral) obj;
-                match = o.paramMeta == this.paramMeta && Objects.equals(o.value, this.value);
+                match = o.typeMeta == this.typeMeta && Objects.equals(o.value, this.value);
             } else {
                 match = false;
             }
@@ -166,14 +175,14 @@ abstract class LiteralExpression extends OperationExpression {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            appendMultiLiteral(context, this.paramMeta, this.valueList);
+            appendMultiLiteral(context, this.typeMeta, this.valueList);
         }
 
         @Override
         public void appendSqlWithParens(final _SqlContext context) {
             final StringBuilder sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE_LEFT_PAREN);
-            appendMultiLiteral(context, this.paramMeta, this.valueList);
+            appendMultiLiteral(context, this.typeMeta, this.valueList);
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
@@ -184,7 +193,7 @@ abstract class LiteralExpression extends OperationExpression {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.paramMeta, this.valueList);
+            return Objects.hash(this.typeMeta, this.valueList);
         }
 
         @Override
@@ -194,7 +203,7 @@ abstract class LiteralExpression extends OperationExpression {
                 match = true;
             } else if (obj instanceof MultiLiteralExpression) {
                 final MultiLiteralExpression o = (MultiLiteralExpression) obj;
-                match = o.paramMeta == this.paramMeta && o.valueList.equals(this.valueList);
+                match = o.typeMeta == this.typeMeta && o.valueList.equals(this.valueList);
             } else {
                 match = false;
             }
@@ -234,7 +243,7 @@ abstract class LiteralExpression extends OperationExpression {
 
         @Override
         public final int hashCode() {
-            return Objects.hash(this.paramMeta, this.name);
+            return Objects.hash(this.typeMeta, this.name);
         }
 
         @Override
@@ -244,7 +253,7 @@ abstract class LiteralExpression extends OperationExpression {
                 match = true;
             } else if (obj instanceof NamedSingleLiteral) {
                 final NamedSingleLiteral o = (NamedSingleLiteral) obj;
-                match = o.paramMeta == this.paramMeta && o.name.equals(this.name);
+                match = o.typeMeta == this.typeMeta && o.name.equals(this.name);
             } else {
                 match = false;
             }
@@ -309,7 +318,7 @@ abstract class LiteralExpression extends OperationExpression {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.paramMeta, this.name, this.valueSize);
+            return Objects.hash(this.typeMeta, this.name, this.valueSize);
         }
 
         @Override
@@ -319,7 +328,7 @@ abstract class LiteralExpression extends OperationExpression {
                 match = true;
             } else if (obj instanceof NamedMultiLiteral) {
                 final NamedMultiLiteral o = (NamedMultiLiteral) obj;
-                match = o.paramMeta == this.paramMeta
+                match = o.typeMeta == this.typeMeta
                         && o.name.equals(this.name)
                         && o.valueSize == this.valueSize;
             } else {

@@ -977,6 +977,7 @@ public abstract class SQLs extends StandardSyntax {
     /**
      * @see #expPair(Expression, Expression)
      */
+    @Deprecated
     static final class ExpressionPairImpl implements ExpressionPair {
 
         final Expression first;

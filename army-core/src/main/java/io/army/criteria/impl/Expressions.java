@@ -12,14 +12,26 @@ import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
-abstract class Expressions {
+abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
-    private Expressions() {
-        throw new UnsupportedOperationException();
+
+    /**
+     * private constructor
+     */
+    private Expressions(Function<Selection, I> function) {
+        super(function);
+    }
+
+    @Override
+    public final ItemExpression<I> bracket() {
+        return this instanceof BracketsExpression ? this : new BracketsExpression<>(this);
     }
 
     static <I extends Item> OperationExpression<I> dualExp(final OperationExpression<I> left
@@ -62,18 +74,6 @@ abstract class Expressions {
 
         }
         return new UnaryExpression<>(expression, operator);
-    }
-
-    static <I extends Item> OperationExpression<I> bracketExp(final OperationExpression<I> expression) {
-        final OperationExpression<I> result;
-        if (expression instanceof BracketsExpression
-                || expression instanceof TableField
-                || expression instanceof SqlValueParam.SingleValue) {
-            result = expression;
-        } else {
-            result = new BracketsExpression<>(expression);
-        }
-        return result;
     }
 
     static <I extends Item> OperationExpression<I> castExp(OperationExpression<I> expression, TypeMeta typeMeta) {
@@ -161,7 +161,17 @@ abstract class Expressions {
     }
 
     static <I extends Item> OperationPredicate<I> orPredicate(OperationPredicate<I> left, IPredicate right) {
-        return new OrPredicate<>(left, (OperationPredicate<?>) right);
+        return new OrPredicate<>(left, Collections.singletonList((OperationPredicate<?>) right));
+    }
+
+    static <I extends Item> OperationPredicate<I> orPredicate(OperationPredicate<I> left, List<IPredicate> rightList) {
+        final int size = rightList.size();
+        assert size > 0;
+        final List<OperationPredicate<?>> list = new ArrayList<>(size);
+        for (IPredicate right : rightList) {
+            list.add((OperationPredicate<?>) right);
+        }
+        return new OrPredicate<>(left, Collections.unmodifiableList(list));
     }
 
     static <I extends Item> AndPredicate<I> andPredicate(OperationPredicate<I> left, @Nullable IPredicate right) {
@@ -185,7 +195,7 @@ abstract class Expressions {
     }
 
     static <I extends Item> OperationPredicate<I> compareQueryPredicate(OperationExpression<I> left
-            , DualOperator operator, SubQueryOperator queryOperator, SubQuery subQuery) {
+            , DualOperator operator, QueryOperator queryOperator, SubQuery subQuery) {
         switch (operator) {
             case LESS:
             case LESS_EQUAL:
@@ -225,11 +235,11 @@ abstract class Expressions {
     }
 
     /**
-     * @see #compareQueryPredicate(OperationExpression, DualOperator, SubQueryOperator, SubQuery)
+     * @see #compareQueryPredicate(OperationExpression, DualOperator, QueryOperator, SubQuery)
      * @see #inOperator(OperationExpression, DualOperator, SubQuery)
      */
     private static void assertColumnSubQuery(final DualOperator operator
-            , final @Nullable SubQueryOperator queryOperator, final SubQuery subQuery) {
+            , final @Nullable QueryOperator queryOperator, final SubQuery subQuery) {
         final List<? extends SelectItem> selectItemList;
         selectItemList = subQuery.selectItemList();
         if (selectItemList.size() != 1 || !(selectItemList.get(0) instanceof Selection)) {
@@ -252,7 +262,7 @@ abstract class Expressions {
      *
      * @since 1.0
      */
-    private static final class DualExpression<I extends Item> extends OperationExpression<I> {
+    private static final class DualExpression<I extends Item> extends Expressions<I> {
 
 
         private final ArmyExpression left;
@@ -380,7 +390,7 @@ abstract class Expressions {
      * This class is a implementation of {@link Expression}.
      * The expression consist of a  {@link Expression} and a {@link UnaryOperator}.
      */
-    private static final class UnaryExpression<I extends Item> extends OperationExpression<I> {
+    private static final class UnaryExpression<I extends Item> extends Expressions<I> {
 
         final ArmyExpression expression;
 
@@ -486,7 +496,7 @@ abstract class Expressions {
     }//UnaryExpression
 
 
-    private static final class BracketsExpression<I extends Item> extends OperationExpression<I> {
+    private static final class BracketsExpression<I extends Item> extends Expressions<I> {
 
         private final ArmyExpression expression;
 
@@ -519,7 +529,7 @@ abstract class Expressions {
 
     }//BracketsExpression
 
-    private static final class ScalarExpression extends OperationExpression<Selection> {
+    private static final class ScalarExpression extends Expressions<Selection> {
 
         private final SubQuery subQuery;
 
@@ -747,50 +757,24 @@ abstract class Expressions {
 
         private final OperationPredicate<I> left;
 
-        private final OperationPredicate<?> right;
+        private final List<OperationPredicate<?>> rightList;
 
-        private OrPredicate(OperationPredicate<I> left, OperationPredicate<?> right) {
+        private OrPredicate(OperationPredicate<I> left, List<OperationPredicate<?>> rightList) {
             super(left.asFunction);
             this.left = left;
-            this.right = right;
+            this.rightList = rightList;
         }
 
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final StringBuilder builder;
-            builder = context.sqlBuilder().append(_Constant.SPACE_LEFT_PAREN);// outer left paren
-
-            final OperationPredicate<?> left = this.left, right = this.right;
-            final boolean leftInnerParen, rightInnerParen;
-            leftInnerParen = left instanceof NotPredicate || left instanceof AndPredicate;
-            if (leftInnerParen) {
-                builder.append(_Constant.SPACE_LEFT_PAREN); //left inner left bracket
-            }
-            left.appendSql(context);
-            if (leftInnerParen) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN); //left inner left bracket
-            }
-
-            builder.append(_Constant.SPACE_OR);
-
-            rightInnerParen = right instanceof NotPredicate || right instanceof AndPredicate;
-            if (rightInnerParen) {
-                builder.append(_Constant.SPACE_LEFT_PAREN); // inner left bracket
-            }
-
-            right.appendSql(context);
-
-            if (rightInnerParen) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);// inner right bracket
-            }
-            builder.append(_Constant.SPACE_RIGHT_PAREN); // outer right paren
+            this.appendOrPredicate(context.sqlBuilder(), predicate -> predicate.appendSql(context));
         }
 
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.left, this.right);
+            return Objects.hash(this.left, this.rightList);
         }
 
         @Override
@@ -800,7 +784,7 @@ abstract class Expressions {
                 match = true;
             } else if (obj instanceof OrPredicate) {
                 final OrPredicate<?> o = (OrPredicate<?>) obj;
-                match = o.left.equals(this.left) && o.right.equals(this.right);
+                match = o.left.equals(this.left) && o.rightList.equals(this.rightList);
             } else {
                 match = false;
             }
@@ -809,35 +793,44 @@ abstract class Expressions {
 
         @Override
         public String toString() {
-            final StringBuilder builder = new StringBuilder(128)
-                    .append(_Constant.SPACE_LEFT_PAREN);
+            final StringBuilder builder;
+            builder = new StringBuilder();
+            this.appendOrPredicate(builder, builder::append);
+            return builder.toString();
+        }
 
-            final OperationPredicate<?> left = this.left, right = this.right;
-            final boolean leftInnerParen, rightInnerParen;
+        private void appendOrPredicate(final StringBuilder builder, final Consumer<OperationPredicate<?>> consumer) {
+            builder.append(_Constant.SPACE_LEFT_PAREN);// outer left paren
+
+            final OperationPredicate<?> left = this.left;
+            final boolean leftInnerParen;
             leftInnerParen = left instanceof AndPredicate;
             if (leftInnerParen) {
                 builder.append(_Constant.SPACE_LEFT_PAREN); //left inner left bracket
             }
-            builder.append(left);
+            consumer.accept(left);
             if (leftInnerParen) {
                 builder.append(_Constant.SPACE_RIGHT_PAREN); //left inner left bracket
             }
 
-            builder.append(_Constant.SPACE_OR);
+            boolean rightInnerParen;
+            for (OperationPredicate<?> right : this.rightList) {
 
-            rightInnerParen = right instanceof AndPredicate;
-            if (rightInnerParen) {
-                builder.append(_Constant.SPACE_LEFT_PAREN); // inner left bracket
+                builder.append(_Constant.SPACE_OR);
+
+                rightInnerParen = right instanceof AndPredicate;
+                if (rightInnerParen) {
+                    builder.append(_Constant.SPACE_LEFT_PAREN); // inner left bracket
+                }
+
+                consumer.accept(right);
+
+                if (rightInnerParen) {
+                    builder.append(_Constant.SPACE_RIGHT_PAREN);// inner right bracket
+                }
             }
 
-            builder.append(right);
-
-            if (rightInnerParen) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);// inner right bracket
-            }
-
-            return builder.append(_Constant.SPACE_RIGHT_PAREN)
-                    .toString();
+            builder.append(_Constant.SPACE_RIGHT_PAREN); // outer right paren
         }
 
 
@@ -937,7 +930,7 @@ abstract class Expressions {
     }//BetweenPredicate
 
 
-    private static class CastExpression<I extends Item> extends OperationExpression<I> {
+    private static class CastExpression<I extends Item> extends Expressions<I> {
 
         private final _Expression expression;
 
@@ -1053,16 +1046,16 @@ abstract class Expressions {
 
         private final DualOperator operator;
 
-        private final SubQueryOperator queryOperator;
+        private final QueryOperator queryOperator;
 
         private final SubQuery subQuery;
 
         private SubQueryPredicate(OperationExpression<I> left, DualOperator operator
-                , @Nullable SubQueryOperator subQueryOperator, SubQuery subQuery) {
+                , @Nullable QueryOperator queryOperator, SubQuery subQuery) {
             super(left.asFunction);
             this.left = left;
             this.operator = operator;
-            this.queryOperator = subQueryOperator;
+            this.queryOperator = queryOperator;
             this.subQuery = subQuery;
         }
 
@@ -1076,7 +1069,7 @@ abstract class Expressions {
             sqlBuilder = context.sqlBuilder()
                     .append(this.operator.spaceOperator);
 
-            final SubQueryOperator queryOperator = this.queryOperator;
+            final QueryOperator queryOperator = this.queryOperator;
             if (queryOperator != null) {
                 sqlBuilder.append(this.queryOperator.rendered());
             }
@@ -1089,7 +1082,7 @@ abstract class Expressions {
                     .append(this.left)
                     .append(this.operator.spaceOperator);
 
-            final SubQueryOperator queryOperator = this.queryOperator;
+            final QueryOperator queryOperator = this.queryOperator;
             if (queryOperator != null) {
                 builder.append(this.queryOperator.rendered());
             }
