@@ -438,7 +438,7 @@ public interface Query extends RowSet {
 
         <I extends Item, T> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
                 , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
+                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
 
         <I extends Item> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
                 , ExpressionOperator<Expression, Object, Expression> expOperator

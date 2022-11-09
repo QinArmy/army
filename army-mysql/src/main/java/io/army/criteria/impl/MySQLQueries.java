@@ -519,7 +519,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     @Override
     public final List<_Window> windowList() {
         final List<_Window> list = this.windowList;
-        if(list == null || list instanceof ArrayList){
+        if (list == null || list instanceof ArrayList) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         return list;
@@ -531,7 +531,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         if (list == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }//TODO
-         throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -583,6 +583,11 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     @Override
     final List<MySQLs.Modifier> asModifierList(@Nullable List<MySQLs.Modifier> modifiers) {
         return CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::selectModifier);
+    }
+
+    @Override
+    final boolean isErrorModifier(MySQLs.Modifier modifier) {
+        return MySQLUtils.selectModifier(modifier) < 0;
     }
 
     @Override
@@ -731,7 +736,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         _QueryWithComplexSpec<I> createQueryUnion(final UnionType unionType) {
             UnionType.standardUnionType(this.context, unionType);
             final Function<RowSet, I> unionFunc;
-            unionFunc = rowSet -> this.function.apply(new UnionSelect( this, unionType, rowSet));
+            unionFunc = rowSet -> this.function.apply(new UnionSelect(this, unionType, rowSet));
             return new ComplexSelect<>(this.context.getOuterContext(), unionFunc);
         }
 
@@ -917,12 +922,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }//PartitionOnClause
 
     private static final class MySQLCteComma<I extends Item>
-            extends WithSelectClauseDispatcher<
+            extends WithBuilderSelectClauseDispatcher<
             MySQLCtes,
-            _SelectSpec<I>,
-            MySQLs.Modifier,
-            _MySQLSelectCommaSpec<I>,
-            _FromSpec<I>>
+            MySQLQuery._SelectSpec<I>,
+            MySQLSyntax.Modifier,
+            MySQLQuery._MySQLSelectCommaSpec<I>,
+            MySQLQuery._FromSpec<I>>
             implements MySQLQuery._CteComma<I> {
 
         private final boolean recursive;
@@ -931,6 +936,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         private final StaticComplexCommand<_CteComma<I>> complexCommand;
 
         private MySQLCteComma(MySQLQueries<I> statement, boolean recursive) {
+            super(statement.context);
             this.statement = statement;
             this.recursive = recursive;
             this.complexCommand = new StaticComplexCommand<>(statement.context, this);
@@ -944,18 +950,22 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         @Override
         public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+
             final MySQLQueries<I> statement = this.statement;
             statement.endStaticWithClause(this.recursive);
             return statement.leftParen();
         }
 
         @Override
-        MySQLQueries<I> createSelectClause() {
-            final MySQLQueries<I> statement = this.statement;
-            statement.endStaticWithClause(this.recursive);
-            return statement;
+        MySQLCtes createCteBuilder(boolean recursive, CriteriaContext withClauseContext) {
+            return MySQLSupports.mySQLCteBuilder(recursive, withClauseContext);
         }
 
+        @Override
+        MySQLQueries<I> onSelectClause(@Nullable _WithClauseSpec spec) {
+            this.statement.endStaticWithClause(this.recursive);
+            return this.statement;
+        }
 
     }//MySQLCteComma
 
@@ -1035,15 +1045,15 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }//StaticComplexCommand
 
 
-     static abstract class MySQLBracketQuery<I extends Item>
-             extends BracketRowSet<
-             I,
-             _UnionOrderBySpec<I>,
-             _UnionLimitSpec<I>,
-             _AsQueryClause<I>,
-             Object,
-             Object,
-             _QueryWithComplexSpec<I>> implements _UnionOrderBySpec<I> {
+    static abstract class MySQLBracketQuery<I extends Item>
+            extends BracketRowSet<
+            I,
+            _UnionOrderBySpec<I>,
+            _UnionLimitSpec<I>,
+            _AsQueryClause<I>,
+            Object,
+            Object,
+            _QueryWithComplexSpec<I>> implements _UnionOrderBySpec<I> {
 
 
         private MySQLBracketQuery(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext) {
@@ -1077,7 +1087,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         @Override
         _QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
             final Function<RowSet, I> unionFunc;
-            unionFunc = rowSet -> this.function.apply(new UnionSelect( this, unionType, rowSet));
+            unionFunc = rowSet -> this.function.apply(new UnionSelect(this, unionType, rowSet));
             return new ComplexSelect<>(this.context.getOuterContext(), unionFunc);
         }
 

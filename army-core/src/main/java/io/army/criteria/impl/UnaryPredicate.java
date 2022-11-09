@@ -1,36 +1,38 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.DataField;
-import io.army.criteria.SqlValueParam;
-import io.army.criteria.SubQuery;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 
-final class UnaryPredicate extends OperationPredicate {
+import java.util.Objects;
+import java.util.function.Function;
 
-    static UnaryPredicate fromSubQuery(UnaryOperator operator, @Nullable SubQuery subQuery) {
+final class UnaryPredicate<I extends Item> extends OperationPredicate<I> {
+
+    static UnaryPredicate<Selection> fromSubQuery(UnaryOperator operator, @Nullable SubQuery subQuery) {
         assert subQuery != null;
         switch (operator) {
             case NOT_EXISTS:
             case EXISTS:
-                return new UnaryPredicate(operator, (_SelfDescribed) subQuery);
+                return new UnaryPredicate<>(subQuery, operator, SQLs::_identity);
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
 
     }
 
-    static UnaryPredicate create(final UnaryOperator operator, final ArmyExpression expression) {
+    static <I extends Item> UnaryPredicate<I> create(final UnaryOperator operator
+            , final OperationExpression<I> expression) {
         if (expression instanceof SubQuery) {
             throw new IllegalArgumentException("expression couldn't be sub query.");
         }
         switch (operator) {
             case IS_NULL:
             case IS_NOT_NULL:
-                return new UnaryPredicate(operator, expression);
+                return new UnaryPredicate<>(operator, expression);
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
@@ -40,9 +42,16 @@ final class UnaryPredicate extends OperationPredicate {
 
     private final _SelfDescribed expressionOrSubQuery;
 
-    private UnaryPredicate(UnaryOperator operator, _SelfDescribed expressionOrSubQuery) {
+    private UnaryPredicate(UnaryOperator operator, OperationExpression<I> expression) {
+        super(expression.function);
         this.operator = operator;
-        this.expressionOrSubQuery = expressionOrSubQuery;
+        this.expressionOrSubQuery = expression;
+    }
+
+    private UnaryPredicate(SubQuery query, UnaryOperator operator, Function<Selection, I> function) {
+        super(function);
+        this.operator = operator;
+        this.expressionOrSubQuery = (_SelfDescribed) query;
     }
 
     @Override
@@ -79,6 +88,25 @@ final class UnaryPredicate extends OperationPredicate {
 
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.operator, this.expressionOrSubQuery);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        final boolean match;
+        if (obj == this) {
+            match = true;
+        } else if (obj instanceof UnaryPredicate) {
+            final UnaryPredicate<?> o = (UnaryPredicate<?>) obj;
+            match = o.operator == this.operator
+                    && o.expressionOrSubQuery.equals(this.expressionOrSubQuery);
+        } else {
+            match = false;
+        }
+        return match;
+    }
 
     @Override
     public String toString() {

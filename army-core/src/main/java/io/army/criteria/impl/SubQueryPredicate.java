@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.Item;
 import io.army.criteria.SelectItem;
 import io.army.criteria.Selection;
 import io.army.criteria.SubQuery;
@@ -10,13 +11,13 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 
-final class SubQueryPredicate extends OperationPredicate {
+final class SubQueryPredicate<I extends Item> extends OperationPredicate<I> {
 
 
-    static SubQueryPredicate create(ArmyExpression operand, DualOperator operator
+    static <I extends Item> SubQueryPredicate<I> create(OperationExpression<I> left, DualOperator operator
             , SubQueryOperator queryOperator, SubQuery subQuery) {
 
-        final SubQueryPredicate predicate;
+        final SubQueryPredicate<I> predicate;
         switch (operator) {
             case LESS:
             case LESS_EQUAL:
@@ -33,7 +34,7 @@ final class SubQueryPredicate extends OperationPredicate {
                         throw _Exceptions.unexpectedEnum(queryOperator);
                 }
                 assertColumnSubQuery(operator, queryOperator, subQuery);
-                predicate = new SubQueryPredicate(operand, operator, queryOperator, subQuery);
+                predicate = new SubQueryPredicate<>(left, operator, queryOperator, subQuery);
             }
             break;
             default:
@@ -42,13 +43,14 @@ final class SubQueryPredicate extends OperationPredicate {
         return predicate;
     }
 
-    static SubQueryPredicate inOperator(final ArmyExpression left, final DualOperator operator, final SubQuery subQuery) {
-        final SubQueryPredicate predicate;
+    static <I extends Item> SubQueryPredicate<I> inOperator(final OperationExpression<I> left
+            , final DualOperator operator, final SubQuery subQuery) {
+        final SubQueryPredicate<I> predicate;
         switch (operator) {
             case IN:
             case NOT_IN: {
                 assertColumnSubQuery(operator, null, subQuery);
-                predicate = new SubQueryPredicate(left, operator, null, subQuery);
+                predicate = new SubQueryPredicate<>(left, operator, null, subQuery);
             }
             break;
             default:
@@ -76,7 +78,7 @@ final class SubQueryPredicate extends OperationPredicate {
     }
 
 
-    private final ArmyExpression operand;
+    private final ArmyExpression left;
 
     private final DualOperator operator;
 
@@ -84,9 +86,10 @@ final class SubQueryPredicate extends OperationPredicate {
 
     private final SubQuery subQuery;
 
-    private SubQueryPredicate(ArmyExpression operand, DualOperator operator
+    private SubQueryPredicate(OperationExpression<I> left, DualOperator operator
             , @Nullable SubQueryOperator subQueryOperator, SubQuery subQuery) {
-        this.operand = operand;
+        super(left.function);
+        this.left = left;
         this.operator = operator;
         this.queryOperator = subQueryOperator;
         this.subQuery = subQuery;
@@ -96,11 +99,11 @@ final class SubQueryPredicate extends OperationPredicate {
     @Override
     public void appendSql(final _SqlContext context) {
 
-        this.operand.appendSql(context);
+        this.left.appendSql(context);
 
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder()
-                .append(this.operator.signText);
+                .append(this.operator.spaceOperator);
 
         final SubQueryOperator queryOperator = this.queryOperator;
         if (queryOperator != null) {
@@ -112,8 +115,8 @@ final class SubQueryPredicate extends OperationPredicate {
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder()
-                .append(this.operand)
-                .append(this.operator.signText);
+                .append(this.left)
+                .append(this.operator.spaceOperator);
 
         final SubQueryOperator queryOperator = this.queryOperator;
         if (queryOperator != null) {

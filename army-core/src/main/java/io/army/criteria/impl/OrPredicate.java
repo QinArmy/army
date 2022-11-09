@@ -1,24 +1,25 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
-import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.Item;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 
 import java.util.Objects;
 
-final class OrPredicate extends OperationPredicate {
+final class OrPredicate<I extends Item> extends OperationPredicate<I> {
 
-    static _Predicate create(OperationPredicate left, IPredicate right) {
-        return new OrPredicate(left, (OperationPredicate) right);
+    static <I extends Item> OperationPredicate<I> create(OperationPredicate<I> left, IPredicate right) {
+        return new OrPredicate<>(left, (OperationPredicate<?>) right);
     }
 
 
-    private final OperationPredicate left;
+    private final OperationPredicate<I> left;
 
-    private final OperationPredicate right;
+    private final OperationPredicate<?> right;
 
-    private OrPredicate(OperationPredicate left, OperationPredicate right) {
+    private OrPredicate(OperationPredicate<I> left, OperationPredicate<?> right) {
+        super(left.function);
         this.left = left;
         this.right = right;
     }
@@ -29,7 +30,7 @@ final class OrPredicate extends OperationPredicate {
         final StringBuilder builder;
         builder = context.sqlBuilder().append(_Constant.SPACE_LEFT_PAREN);// outer left paren
 
-        final OperationPredicate left = this.left, right = this.right;
+        final OperationPredicate<?> left = this.left, right = this.right;
         final boolean leftInnerParen, rightInnerParen;
         leftInnerParen = left instanceof NotPredicate || left instanceof AndPredicate;
         if (leftInnerParen) {
@@ -67,7 +68,7 @@ final class OrPredicate extends OperationPredicate {
         if (obj == this) {
             match = true;
         } else if (obj instanceof OrPredicate) {
-            final OrPredicate o = (OrPredicate) obj;
+            final OrPredicate<?> o = (OrPredicate<?>) obj;
             match = o.left.equals(this.left) && o.right.equals(this.right);
         } else {
             match = false;
@@ -80,7 +81,7 @@ final class OrPredicate extends OperationPredicate {
         final StringBuilder builder = new StringBuilder(128)
                 .append(_Constant.SPACE_LEFT_PAREN);
 
-        final OperationPredicate left = this.left, right = this.right;
+        final OperationPredicate<?> left = this.left, right = this.right;
         final boolean leftInnerParen, rightInnerParen;
         leftInnerParen = left instanceof NotPredicate || left instanceof AndPredicate;
         if (leftInnerParen) {

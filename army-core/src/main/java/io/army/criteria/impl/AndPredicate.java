@@ -1,44 +1,29 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
 import io.army.criteria.IPredicate;
+import io.army.criteria.Item;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.util._CollectionUtils;
+import io.army.util._StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-final class AndPredicate extends OperationPredicate {
+final class AndPredicate<I extends Item> extends OperationPredicate<I> {
 
 
-    static AndPredicate create(OperationPredicate left, @Nullable IPredicate right) {
+    static <I extends Item> AndPredicate<I> create(OperationPredicate<I> left, @Nullable IPredicate right) {
         assert right != null;
-        return new AndPredicate(left, Collections.singletonList((OperationPredicate) right));
-    }
-
-    static AndPredicate create(OperationPredicate left, List<IPredicate> rights) {
-        final int size = rights.size();
-        if (size == 0) {
-            throw new CriteriaException("and method list must be not empty.");
-        }
-        final List<OperationPredicate> rightList = new ArrayList<>(size);
-        for (IPredicate p : rights) {
-            rightList.add((OperationPredicate) p);
-        }
-        return new AndPredicate(left, _CollectionUtils.unmodifiableList(rightList));
+        return new AndPredicate<>(left, (OperationPredicate<?>) right);
     }
 
 
-    private final OperationPredicate left;
+    final OperationPredicate<I> left;
 
-    private final List<OperationPredicate> rightList;
+    final OperationPredicate<?> right;
 
-    private AndPredicate(OperationPredicate left, List<OperationPredicate> rightList) {
+    private AndPredicate(OperationPredicate<I> left, OperationPredicate<?> right) {
+        super(left.function);
         this.left = left;
-        this.rightList = rightList;
+        this.right = right;
     }
 
 
@@ -46,26 +31,20 @@ final class AndPredicate extends OperationPredicate {
     public void appendSql(final _SqlContext context) {
         this.left.appendSql(context);
 
-        final StringBuilder builder = context.sqlBuilder();
+        context.sqlBuilder().append(_Constant.SPACE_AND);
 
-        for (OperationPredicate p : this.rightList) {
-            builder.append(_Constant.SPACE_AND);
-            p.appendSql(context);
-        }
+        this.right.appendSql(context);
 
     }
 
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append(this.left);
-
-        for (OperationPredicate p : this.rightList) {
-            builder.append(_Constant.SPACE_AND);
-            builder.append(p);
-        }
-        return builder.toString();
+        return _StringUtils.builder()
+                .append(this.left)
+                .append(_Constant.SPACE_AND)
+                .append(this.right)
+                .toString();
     }
 
 

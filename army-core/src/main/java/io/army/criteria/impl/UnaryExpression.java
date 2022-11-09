@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.DataField;
-import io.army.criteria.Expression;
-import io.army.criteria.SqlValueParam;
-import io.army.criteria.TableField;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -17,9 +14,9 @@ import io.army.util._Exceptions;
  * This class is a implementation of {@link Expression}.
  * The expression consist of a  {@link Expression} and a {@link UnaryOperator}.
  */
-final class UnaryExpression extends OperationExpression {
+final class UnaryExpression<I extends Item> extends OperationExpression<I> {
 
-    static UnaryExpression create(ArmyExpression expression, UnaryOperator operator) {
+    static <I extends Item> UnaryExpression<I> create(OperationExpression<I> expression, UnaryOperator operator) {
         switch (operator) {
             case INVERT:
             case NEGATE: {
@@ -27,7 +24,7 @@ final class UnaryExpression extends OperationExpression {
                     throw _Exceptions.operatorRightIsNullable(operator);
                 }
             }
-            return new UnaryExpression(expression, operator);
+            return new UnaryExpression<>(expression, operator);
             default:
                 throw _Exceptions.unexpectedEnum(operator);
 
@@ -38,7 +35,8 @@ final class UnaryExpression extends OperationExpression {
 
     private final UnaryOperator operator;
 
-    private UnaryExpression(ArmyExpression expression, UnaryOperator operator) {
+    private UnaryExpression(OperationExpression<I> expression, UnaryOperator operator) {
+        super(expression.function);
         this.expression = expression;
         this.operator = operator;
     }

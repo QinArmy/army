@@ -148,6 +148,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         return this.lockMode;
     }
 
+
     @Override
     final List<Hint> asHintList(@Nullable List<Hint> hints) {
         //standard statement don't hints
@@ -156,11 +157,16 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     @Override
-    final List<StandardSyntax.Modifier> asModifierList(final @Nullable List<StandardSyntax.Modifier> modifiers) {
+    final List<SQLs.Modifier> asModifierList(final @Nullable List<StandardSyntax.Modifier> modifiers) {
         if (modifiers == null) {
             throw ContextStack.nullPointer(this.context);
         }
         return CriteriaUtils.asModifierList(this.context, modifiers, CriteriaUtils::standardModifier);
+    }
+
+    @Override
+    final boolean isErrorModifier(SQLs.Modifier modifier) {
+        return CriteriaUtils.standardModifier(modifier) < 0;
     }
 
     @Override

@@ -30,13 +30,13 @@ enum DualOperator {
     NOT_LIKE(" NOT LIKE");
 
 
-    final String signText;
+    final String spaceOperator;
 
     /**
-     * @param signText space and sign
+     * @param spaceOperator space and sign
      */
-    DualOperator(String signText) {
-        this.signText = signText;
+    DualOperator(String spaceOperator) {
+        this.spaceOperator = spaceOperator;
     }
 
 

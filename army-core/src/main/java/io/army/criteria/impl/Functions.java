@@ -484,7 +484,9 @@ abstract class Functions {
 
     /*################################## blow date time function method ##################################*/
 
-    public static <I extends Item> _CaseRefWhenSpec<I> Case(Function<Expression, I> function) {
+
+    public static <I extends Item, R extends Item> _CaseRefWhenSpec<R> Case(Function<ItemExpression<I>, R> endFunc
+            , Function<Selection, I> aliasFunc) {
         throw new UnsupportedOperationException();
     }
 
@@ -553,7 +555,6 @@ abstract class Functions {
         String m = String.format("custom function name[%s] error.", name);
         return ContextStack.criteriaError(ContextStack.peek(), m);
     }
-
 
 
     /**

@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.Item;
 import io.army.criteria.SqlValueParam;
 import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._Expression;
@@ -9,7 +10,7 @@ import io.army.dialect._SqlContext;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 
-import java.util.function.Function;
+import java.util.Objects;
 
 /**
  * This class is a implementation of {@link Expression}.
@@ -17,17 +18,11 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-final class DualExpression extends OperationExpression {
+final class DualExpression<I extends Item> extends OperationExpression<I> {
 
-    static <C> DualExpression functionCreate(ArmyExpression left, DualOperator operator
-            , Function<C, Object> function) {
-        final Object functionResult;
-        functionResult = function.apply(ContextStack.getTopCriteria());
-        assert functionResult != null;
-        return create(left, operator, SQLs._nonNullParam(left, functionResult));
-    }
 
-    static DualExpression create(ArmyExpression left, final DualOperator operator, Expression right) {
+    static <I extends Item> DualExpression<I> create(final OperationExpression<I> left, final DualOperator operator
+            , Expression right) {
         final ArmyExpression rightExp = (ArmyExpression) right;
         switch (operator) {
             case PLUS:
@@ -48,7 +43,7 @@ final class DualExpression extends OperationExpression {
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new DualExpression(left, operator, rightExp);
+        return new DualExpression<>(left, operator, rightExp);
     }
 
     private final ArmyExpression left;
@@ -58,7 +53,8 @@ final class DualExpression extends OperationExpression {
     private final ArmyExpression right;
 
 
-    private DualExpression(ArmyExpression left, DualOperator operator, ArmyExpression right) {
+    private DualExpression(OperationExpression<I> left, DualOperator operator, ArmyExpression right) {
+        super(left.function);
         this.left = left;
         this.operator = operator;
         this.right = right;
@@ -119,7 +115,7 @@ final class DualExpression extends OperationExpression {
         }
 
         //2. append operator
-        builder.append(this.operator.signText);
+        builder.append(this.operator.spaceOperator);
 
         if (rightInnerBracket) {
             builder.append(_Constant.SPACE_LEFT_PAREN);
@@ -139,10 +135,30 @@ final class DualExpression extends OperationExpression {
 
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.left, this.operator, this.right);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        final boolean match;
+        if (obj == this) {
+            match = true;
+        } else if (obj instanceof DualExpression) {
+            DualExpression<?> o = (DualExpression<?>) obj;
+            match = o.left.equals(this.left)
+                    && o.operator == this.operator
+                    && o.right.equals(this.right);
+        } else {
+            match = false;
+        }
+        return match;
+    }
 
     @Override
     public String toString() {
-        return String.format("%s %s%s", this.left, this.operator.signText, this.right);
+        return String.format("%s %s%s", this.left, this.operator.spaceOperator, this.right);
     }
 
     /*################################## blow private static inner class ##################################*/

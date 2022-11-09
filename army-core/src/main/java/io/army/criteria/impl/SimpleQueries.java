@@ -1068,10 +1068,16 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
     @Override
     public final <I extends Item, T> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
             , ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator
-            , T operand, SQLs.WordAs as, String alias) {
+            , Supplier<T> getter) {
         return null;
     }
 
+    @Override
+    public final <I extends Item> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
+            , ExpressionOperator<Expression, Object, Expression> expOperator
+            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+        return null;
+    }
 
     /*################################## blow FromSpec method ##################################*/
 
@@ -2747,7 +2753,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR,
         @Override
         public <I extends Item, T> I comma(BiFunction<Expression, Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc
                 , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias) {
+                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
             return null;
         }
 

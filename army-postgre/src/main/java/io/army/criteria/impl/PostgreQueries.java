@@ -495,8 +495,13 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
     @Override
-    final List<PostgreSyntax.Modifier> asModifierList(@Nullable List<PostgreSyntax.Modifier> modifiers) {
+    final List<Postgres.Modifier> asModifierList(@Nullable List<Postgres.Modifier> modifiers) {
         return CriteriaUtils.asModifierList(this.context, modifiers, PostgreUtils::selectModifier);
+    }
+
+    @Override
+    final boolean isErrorModifier(Postgres.Modifier modifier) {
+        return PostgreUtils.selectModifier(modifier) < 0;
     }
 
     @Override

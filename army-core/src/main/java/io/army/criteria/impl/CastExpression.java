@@ -1,23 +1,26 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
+import io.army.criteria.Item;
 import io.army.criteria.impl.inner._Expression;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.TypeMeta;
+import io.army.util._StringUtils;
 
-class CastExpression extends OperationExpression {
+class CastExpression<I extends Item> extends OperationExpression<I> {
 
-    static CastExpression cast(Expression expression, TypeMeta paramMeta) {
-        return new CastExpression(expression, paramMeta);
+    static <I extends Item> CastExpression<I> cast(OperationExpression<I> expression, TypeMeta paramMeta) {
+        return new CastExpression<>(expression, paramMeta);
     }
 
     private final _Expression expression;
 
-    private final TypeMeta paramMeta;
+    private final TypeMeta typeMeta;
 
-    private CastExpression(Expression expression, TypeMeta paramMeta) {
-        this.expression = (_Expression) expression;
-        this.paramMeta = paramMeta;
+    private CastExpression(OperationExpression<I> expression, TypeMeta typeMeta) {
+        super(expression.function);
+        this.expression = expression;
+        this.typeMeta = typeMeta;
     }
 
     @Override
@@ -28,13 +31,18 @@ class CastExpression extends OperationExpression {
 
     @Override
     public TypeMeta typeMeta() {
-        return this.paramMeta;
+        return this.typeMeta;
     }
 
 
     @Override
     public final String toString() {
-        return String.format(" CAST(%s )", this.expression);
+        return _StringUtils.builder()
+                .append(_Constant.SPACE)
+                .append(this.expression)
+                .append(" typeMeta:")
+                .append(this.typeMeta)
+                .toString();
     }
 
 

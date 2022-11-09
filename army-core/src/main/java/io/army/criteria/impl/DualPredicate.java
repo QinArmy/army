@@ -1,20 +1,24 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.Item;
 import io.army.criteria.SqlValueParam;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.Objects;
 
 /**
  *
  */
-final class DualPredicate extends OperationPredicate {
+final class DualPredicate<I extends Item> extends OperationPredicate<I> {
 
 
-    static DualPredicate create(final ArmyExpression left, final DualOperator operator, final Expression right) {
-        final DualPredicate predicate;
+    static <I extends Item> DualPredicate<I> create(final OperationExpression<I> left, final DualOperator operator
+            , final Expression right) {
+        final DualPredicate<I> predicate;
         switch (operator) {
             case EQUAL:
             case NOT_EQUAL:
@@ -36,7 +40,7 @@ final class DualPredicate extends OperationPredicate {
                 if (rightExp.isNullValue()) {
                     throw _Exceptions.operatorRightIsNullable(operator);
                 }
-                predicate = new DualPredicate(left, operator, rightExp);
+                predicate = new DualPredicate<>(left, operator, rightExp);
             }
             break;
             default:
@@ -55,10 +59,11 @@ final class DualPredicate extends OperationPredicate {
 
     final ArmyExpression right;
 
-    private DualPredicate(ArmyExpression left, DualOperator operator, ArmyExpression right) {
+    private DualPredicate(OperationExpression<I> left, DualOperator operator, Expression right) {
+        super(left.function);
         this.left = left;
         this.operator = operator;
-        this.right = right;
+        this.right = (ArmyExpression) right;
     }
 
     @Override
@@ -66,7 +71,7 @@ final class DualPredicate extends OperationPredicate {
         this.left.appendSql(context);
 
         final DualOperator operator = this.operator;
-        context.sqlBuilder().append(operator.signText);
+        context.sqlBuilder().append(operator.spaceOperator);
 
         final ArmyExpression right = this.right;
         switch (operator) {
@@ -97,7 +102,7 @@ final class DualPredicate extends OperationPredicate {
         if (obj == this) {
             match = true;
         } else if (obj instanceof DualPredicate) {
-            final DualPredicate p = (DualPredicate) obj;
+            final DualPredicate<?> p = (DualPredicate<?>) obj;
             match = p.operator == this.operator
                     && p.left.equals(this.left)
                     && p.right.equals(this.right);
@@ -109,7 +114,12 @@ final class DualPredicate extends OperationPredicate {
 
     @Override
     public String toString() {
-        return String.format(" %s%s%s", this.left, this.operator, this.right);
+        return _StringUtils.builder()
+                .append(_Constant.SPACE)
+                .append(this.left)
+                .append(this.operator)
+                .append(this.right)
+                .toString();
     }
 
 

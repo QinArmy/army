@@ -12,9 +12,6 @@ import io.army.util._Exceptions;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-/**
- * @see MySQLUnionValues
- */
 abstract class MySQLSimpleValues<I extends Item>
         extends SimpleValues<
         I,
@@ -273,6 +270,7 @@ abstract class MySQLSimpleValues<I extends Item>
             MySQLCtes,
             MySQLQuery._SelectSpec<I>,
             MySQLs.Modifier,
+            MySQLQuery._MySQLSelectCommaSpec<I>,
             MySQLQuery._FromSpec<I>>
             implements _ValueWithComplexSpec<I> {
 
@@ -334,6 +332,7 @@ abstract class MySQLSimpleValues<I extends Item>
             MySQLCtes,
             MySQLQuery._SelectSpec<I>,
             MySQLs.Modifier,
+            MySQLQuery._MySQLSelectCommaSpec<I>,
             MySQLQuery._FromSpec<I>>
             implements _ValueWithComplexSpec<I> {
 
