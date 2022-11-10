@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.postgre.PostgreCtes;
 import io.army.criteria.postgre.PostgreQuery;
 import io.army.criteria.postgre.PostgreStatement;

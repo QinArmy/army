@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.meta.*;

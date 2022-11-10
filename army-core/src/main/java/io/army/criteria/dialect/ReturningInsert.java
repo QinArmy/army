@@ -1,5 +1,10 @@
-package io.army.criteria;
+package io.army.criteria.dialect;
 
+
+import io.army.criteria.DialectStatement;
+import io.army.criteria.DqlStatement;
+import io.army.criteria.Insert;
+import io.army.criteria.Statement;
 
 /**
  * @see Insert

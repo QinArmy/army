@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
 import io.army.schema._SchemaResult;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;

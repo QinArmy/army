@@ -1,6 +1,6 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.Window;
+import io.army.criteria.dialect.Window;
 import io.army.dialect.DialectParser;
 
 /**

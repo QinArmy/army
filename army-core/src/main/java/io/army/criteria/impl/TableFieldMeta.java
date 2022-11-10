@@ -29,11 +29,11 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @since 1.0
  */
-abstract class DefaultFieldMeta<T> extends OperationDataField<Selection> implements FieldMeta<T>, _Selection {
+abstract class TableFieldMeta<T> extends OperationDataField<Selection> implements FieldMeta<T>, _Selection {
 
     private static final String ID = _MetaBridge.ID;
 
-    private static final ConcurrentMap<DefaultFieldMeta<?>, DefaultFieldMeta<?>> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<TableFieldMeta<?>, TableFieldMeta<?>> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     private static final ConcurrentMap<FieldMeta<?>, Boolean> CODEC_MAP = new ConcurrentHashMap<>();
 
@@ -48,7 +48,7 @@ abstract class DefaultFieldMeta<T> extends OperationDataField<Selection> impleme
         final DefaultSimpleFieldMeta<T> fieldMeta;
         fieldMeta = new DefaultSimpleFieldMeta<>(table, field);
 
-        final DefaultFieldMeta<?> cache;
+        final TableFieldMeta<?> cache;
         cache = INSTANCE_MAP.putIfAbsent(fieldMeta, fieldMeta);
 
         final DefaultSimpleFieldMeta<T> simple;
@@ -84,7 +84,7 @@ abstract class DefaultFieldMeta<T> extends OperationDataField<Selection> impleme
             newFieldMeta = new DefaultIndexFieldMeta<>(table, field, indexMeta, fieldAsc);
         }
 
-        final DefaultFieldMeta<?> cache;
+        final TableFieldMeta<?> cache;
         cache = INSTANCE_MAP.putIfAbsent(newFieldMeta, newFieldMeta);
 
         final DefaultIndexFieldMeta<T> indexField;
@@ -164,7 +164,7 @@ abstract class DefaultFieldMeta<T> extends OperationDataField<Selection> impleme
 
     private final boolean codec;
 
-    private DefaultFieldMeta(final TableMeta<T> table, final Field field) throws MetaException {
+    private TableFieldMeta(final TableMeta<T> table, final Field field) throws MetaException {
         super(SQLs::_identity);
         Objects.requireNonNull(table);
         Objects.requireNonNull(field);
@@ -390,8 +390,8 @@ abstract class DefaultFieldMeta<T> extends OperationDataField<Selection> impleme
         final boolean match;
         if (obj == this) {
             match = true;
-        } else if (obj instanceof DefaultFieldMeta) {
-            final DefaultFieldMeta<?> o = (DefaultFieldMeta<?>) obj;
+        } else if (obj instanceof TableFieldMeta) {
+            final TableFieldMeta<?> o = (TableFieldMeta<?>) obj;
             match = this.table.javaType == o.table.javaType
                     && this.fieldName.equals(o.fieldName);
         } else {
@@ -449,7 +449,7 @@ abstract class DefaultFieldMeta<T> extends OperationDataField<Selection> impleme
 
     /*################################## blow private method ##################################*/
 
-    private static class DefaultSimpleFieldMeta<T> extends DefaultFieldMeta<T> {
+    private static class DefaultSimpleFieldMeta<T> extends TableFieldMeta<T> {
 
         private DefaultSimpleFieldMeta(TableMeta<T> table, Field field) throws MetaException {
             super(table, field);
@@ -457,7 +457,7 @@ abstract class DefaultFieldMeta<T> extends OperationDataField<Selection> impleme
 
     }
 
-    private static class DefaultIndexFieldMeta<T> extends DefaultFieldMeta<T>
+    private static class DefaultIndexFieldMeta<T> extends TableFieldMeta<T>
             implements IndexFieldMeta<T> {
 
         private final IndexMeta<T> indexMeta;

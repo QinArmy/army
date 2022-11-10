@@ -1,14 +1,13 @@
 package io.army.criteria;
 
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
-import io.army.function.BiAsExpFunction;
-import io.army.function.BiAsFunction;
+import io.army.criteria.impl._ItemExpression;
 import io.army.function.TeNamedOperator;
 import io.army.meta.TypeMeta;
 
 import java.util.Collection;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 public interface ItemExpression<I extends Item> extends Expression, Statement._AsClause<I> {
 
@@ -19,26 +18,11 @@ public interface ItemExpression<I extends Item> extends Expression, Statement._A
     @Override
     <T> ItemPredicate<I> equal(BiFunction<Expression, T, Expression> operator, T operand);
 
-    ItemPredicate<I> equal(Supplier<Expression> supplier);
-
-    <R> R equal(BiAsFunction<ItemPredicate<I>, I, R> function);
-
-    <R> R equal(BiAsExpFunction<ItemPredicate<I>, I, R> function);
-
-    <R> R equal(BiAsExpFunction<ItemPredicate<I>, I, R> function, Expression operand);
-
-
     @Override
     ItemPredicate<I> equalAny(SubQuery subQuery);
 
     @Override
     ItemPredicate<I> equalSome(SubQuery subQuery);
-
-
-    ItemPredicate<I> equalAny(Supplier<SubQuery> supplier);
-
-
-    ItemPredicate<I> equalSome(Supplier<SubQuery> supplier);
 
 
     @Override
@@ -166,76 +150,76 @@ public interface ItemExpression<I extends Item> extends Expression, Statement._A
     <T> ItemPredicate<I> notLike(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    ItemExpression<I> mod(Expression operand);
+    _ItemExpression<I> mod(Expression operand);
 
     @Override
-    <T> ItemExpression<I> mod(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> _ItemExpression<I> mod(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    ItemExpression<I> times(Expression operand);
+    _ItemExpression<I> times(Expression operand);
 
     @Override
-    <T> ItemExpression<I> times(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> _ItemExpression<I> times(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    ItemExpression<I> plus(Expression operand);
+    _ItemExpression<I> plus(Expression operand);
 
     @Override
-    <T> ItemExpression<I> plus(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> _ItemExpression<I> plus(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    ItemExpression<I> minus(Expression minuend);
+    _ItemExpression<I> minus(Expression minuend);
 
     @Override
-    <T> ItemExpression<I> minus(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> _ItemExpression<I> minus(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    ItemExpression<I> divide(Expression divisor);
+    _ItemExpression<I> divide(Expression divisor);
 
     @Override
-    <T> ItemExpression<I> divide(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> _ItemExpression<I> divide(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    ItemExpression<I> negate();
+    _ItemExpression<I> negate();
 
     @Override
-    ItemExpression<I> bitwiseAnd(Expression operand);
+    _ItemExpression<I> bitwiseAnd(Expression operand);
 
     @Override
-    <T> ItemExpression<I> bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> _ItemExpression<I> bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    ItemExpression<I> bitwiseOr(Expression operand);
+    _ItemExpression<I> bitwiseOr(Expression operand);
 
     @Override
-    <T> ItemExpression<I> bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> _ItemExpression<I> bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    ItemExpression<I> xor(Expression operand);
+    _ItemExpression<I> xor(Expression operand);
 
     @Override
-    <T> ItemExpression<I> xor(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> _ItemExpression<I> xor(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    ItemExpression<I> invert();
+    _ItemExpression<I> invert();
 
     @Override
-    ItemExpression<I> rightShift(Expression bitNumber);
+    _ItemExpression<I> rightShift(Expression bitNumber);
 
     @Override
-    <T> ItemExpression<I> rightShift(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> _ItemExpression<I> rightShift(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    ItemExpression<I> leftShift(Expression bitNumber);
+    _ItemExpression<I> leftShift(Expression bitNumber);
 
     @Override
-    <T> ItemExpression<I> leftShift(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> _ItemExpression<I> leftShift(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    ItemExpression<I> asType(TypeMeta paramMeta);
+    _ItemExpression<I> asType(TypeMeta paramMeta);
 
     @Override
-    ItemExpression<I> bracket();
+    _ItemExpression<I> bracket();
 
 
     @Override

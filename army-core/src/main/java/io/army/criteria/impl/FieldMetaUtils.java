@@ -21,7 +21,7 @@ import java.util.Map;
 
 /**
  * @see io.army.meta.FieldMeta
- * @see DefaultFieldMeta
+ * @see TableFieldMeta
  */
 abstract class FieldMetaUtils extends TableMetaUtils {
 

@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._RowSet;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract class Expressions<I extends Item> extends OperationExpression<I> {
@@ -25,12 +25,12 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     /**
      * private constructor
      */
-    private Expressions(Function<Selection, I> function) {
+    Expressions(Function<Selection, I> function) {
         super(function);
     }
 
     @Override
-    public final ItemExpression<I> bracket() {
+    public final _ItemExpression<I> bracket() {
         return this instanceof BracketsExpression ? this : new BracketsExpression<>(this);
     }
 
@@ -768,7 +768,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            this.appendOrPredicate(context.sqlBuilder(), predicate -> predicate.appendSql(context));
+            this.appendOrPredicate(context.sqlBuilder(), context);
         }
 
 
@@ -795,21 +795,24 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
         public String toString() {
             final StringBuilder builder;
             builder = new StringBuilder();
-            this.appendOrPredicate(builder, builder::append);
+            this.appendOrPredicate(builder, null);
             return builder.toString();
         }
 
-        private void appendOrPredicate(final StringBuilder builder, final Consumer<OperationPredicate<?>> consumer) {
+        private void appendOrPredicate(final StringBuilder builder, final @Nullable _SqlContext context) {
             builder.append(_Constant.SPACE_LEFT_PAREN);// outer left paren
 
             final OperationPredicate<?> left = this.left;
-            final boolean leftInnerParen;
-            leftInnerParen = left instanceof AndPredicate;
-            if (leftInnerParen) {
+
+            if (left instanceof AndPredicate) {
                 builder.append(_Constant.SPACE_LEFT_PAREN); //left inner left bracket
             }
-            consumer.accept(left);
-            if (leftInnerParen) {
+            if (context == null) {
+                builder.append(left);
+            } else {
+                left.appendSql(context);
+            }
+            if (left instanceof AndPredicate) {
                 builder.append(_Constant.SPACE_RIGHT_PAREN); //left inner left bracket
             }
 
@@ -817,13 +820,16 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             for (OperationPredicate<?> right : this.rightList) {
 
                 builder.append(_Constant.SPACE_OR);
-
                 rightInnerParen = right instanceof AndPredicate;
                 if (rightInnerParen) {
                     builder.append(_Constant.SPACE_LEFT_PAREN); // inner left bracket
                 }
 
-                consumer.accept(right);
+                if (context == null) {
+                    builder.append(right);
+                } else {
+                    right.appendSql(context);
+                }
 
                 if (rightInnerParen) {
                     builder.append(_Constant.SPACE_RIGHT_PAREN);// inner right bracket

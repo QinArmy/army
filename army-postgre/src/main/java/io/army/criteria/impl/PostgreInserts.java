@@ -1,6 +1,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.ReturningInsert;
+import io.army.criteria.dialect.Returnings;
+import io.army.criteria.dialect.SubInsert;
+import io.army.criteria.dialect.SubReturningInsert;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
@@ -762,7 +766,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public Statement._DqlInsertClause<Q> returning(Consumer<ReturningBuilder> consumer) {
+        public Statement._DqlInsertClause<Q> returning(Consumer<Returnings> consumer) {
             return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
                     .returning(consumer);
         }
@@ -1145,7 +1149,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public Statement._DqlInsertClause<Q> returning(Consumer<ReturningBuilder> consumer) {
+        public Statement._DqlInsertClause<Q> returning(Consumer<Returnings> consumer) {
             if (this.returningList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -1281,7 +1285,7 @@ abstract class PostgreInserts extends InsertSupport {
 
 
         @Override
-        public Statement._DqlInsertClause<Q> returning(Consumer<ReturningBuilder> consumer) {
+        public Statement._DqlInsertClause<Q> returning(Consumer<Returnings> consumer) {
             return this.clause.staticValuesClauseEnd(this.endValuesClause())
                     .returning(consumer);
         }

@@ -1,6 +1,10 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.Expression;
+import io.army.criteria.Item;
+import io.army.criteria.SQLWords;
+import io.army.criteria.Statement;
+import io.army.criteria.dialect.SQLCommand;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner.mysql._MySQLLoadData;
 import io.army.criteria.mysql.MySQLCharset;

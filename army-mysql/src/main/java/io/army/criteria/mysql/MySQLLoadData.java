@@ -1,6 +1,10 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.*;
+import io.army.criteria.Expression;
+import io.army.criteria.Insert;
+import io.army.criteria.Item;
+import io.army.criteria.Statement;
+import io.army.criteria.dialect.SQLCommand;
 import io.army.criteria.impl.MySQLs;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;

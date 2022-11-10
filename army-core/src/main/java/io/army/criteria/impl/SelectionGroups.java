@@ -104,7 +104,7 @@ abstract class SelectionGroups {
                 context.appendField(tableAlias, field);
 
                 builder.append(_Constant.SPACE_AS_SPACE)
-                        .append(((DefaultFieldMeta<T>) field).fieldName);
+                        .append(((TableFieldMeta<T>) field).fieldName);
             }
 
         }
@@ -193,7 +193,7 @@ abstract class SelectionGroups {
                     context.appendField(childAlias, field);
                 }
                 builder.append(_Constant.SPACE_AS_SPACE)
-                        .append(((DefaultFieldMeta<T>) field).fieldName);
+                        .append(((TableFieldMeta<T>) field).fieldName);
 
             }
 

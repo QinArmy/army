@@ -1,6 +1,11 @@
 package io.army.criteria.oracle;
 
-import io.army.criteria.*;
+import io.army.criteria.Expression;
+import io.army.criteria.Item;
+import io.army.criteria.Query;
+import io.army.criteria.TableField;
+import io.army.criteria.dialect.SortNullItems;
+import io.army.criteria.dialect.Window;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;

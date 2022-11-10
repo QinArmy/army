@@ -1,4 +1,6 @@
-package io.army.criteria;
+package io.army.criteria.dialect;
+
+import io.army.criteria.Expression;
 
 public interface VarExpression extends Expression {
 

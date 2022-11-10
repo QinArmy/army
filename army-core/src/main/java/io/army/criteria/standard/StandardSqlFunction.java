@@ -1,6 +1,6 @@
 package io.army.criteria.standard;
 
-import io.army.criteria.Clause;
+import io.army.criteria.CaseWhens;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.criteria.TypeInfer;
@@ -10,6 +10,7 @@ import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
 
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -61,77 +62,249 @@ public interface StandardSqlFunction {
 
     }
 
-    interface _StaticCaseThenClause<R extends Item> extends Item {
+    interface _SqlCaseThenClause extends Item {
 
-        R then(Expression expression);
+        Item then(Expression expression);
 
-        R then(Supplier<Expression> supplier);
+        Item then(Supplier<Expression> supplier);
 
-        <T> R then(Function<T, Expression> valueOperator, Supplier<T> getter);
+        <T> Item then(Function<T, Expression> valueOperator, Supplier<T> getter);
 
-        R then(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        Item then(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        <T> R then(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
+        <T> Item then(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
 
-        R then(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        Item then(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        <T> R then(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
+        <T> Item then(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
-        R then(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+        Item then(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
-        R then(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
+        Item then(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
     }
 
+    interface _SqlCaseWhenClause extends Item {
 
-    interface _StaticCaseWhenClause<R extends Item> extends Item {
+        Item when(Expression expression);
 
-        R when(Expression expression);
+        Item when(Supplier<Expression> supplier);
 
-        R when(Supplier<Expression> supplier);
+        <T> Item when(Function<T, Expression> valueOperator, Supplier<T> getter);
 
-        <T> R when(Function<T, Expression> valueOperator, Supplier<T> getter);
+        Item when(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        R when(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        <T> Item when(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
 
-        <T> R when(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
+        Item when(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        R when(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        <T> Item when(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
-        <T> R when(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
+        Item when(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
-        R when(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+        Item when(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
 
-        R when(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
+        Item ifWhen(Supplier<Expression> supplier);
 
-        R ifWhen(Supplier<Expression> supplier);
+        <T> Item ifWhen(Function<T, Expression> valueOperator, Supplier<T> getter);
 
-        <T> R ifWhen(Function<T, Expression> valueOperator, Supplier<T> getter);
+        Item ifWhen(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        R ifWhen(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        <T> Item ifWhen(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
 
-        <T> R ifWhen(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
+        Item ifWhen(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        R ifWhen(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        <T> Item ifWhen(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
-        <T> R ifWhen(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
-
-        R ifWhen(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
-
-
-    }
-
-
-    interface _CaseThenClause<I extends Item> extends _StaticCaseThenClause<_CaseWhenSpec<I>> {
+        Item ifWhen(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
     }
 
+    interface _StaticCaseThenClause<R extends Item> extends _SqlCaseThenClause {
 
-    interface _CaseWhenClause<I extends Item> extends _StaticCaseWhenClause<_CaseThenClause<I>> {
+        @Override
+        _CaseWhenSpec<R> then(Expression expression);
+
+        @Override
+        _CaseWhenSpec<R> then(Supplier<Expression> supplier);
+
+        @Override
+        <T> _CaseWhenSpec<R> then(Function<T, Expression> valueOperator, Supplier<T> getter);
+
+        @Override
+        _CaseWhenSpec<R> then(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        <T> _CaseWhenSpec<R> then(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
+
+        @Override
+        _CaseWhenSpec<R> then(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        <T> _CaseWhenSpec<R> then(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
+
+        @Override
+        _CaseWhenSpec<R> then(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+
+        @Override
+        _CaseWhenSpec<R> then(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
+    }
+
+
+    interface _StaticCaseWhenClause<R extends Item> extends _SqlCaseWhenClause {
+
+        @Override
+        _StaticCaseThenClause<R> when(Expression expression);
+
+        @Override
+        _StaticCaseThenClause<R> when(Supplier<Expression> supplier);
+
+        @Override
+        <T> _StaticCaseThenClause<R> when(Function<T, Expression> valueOperator, Supplier<T> getter);
+
+        @Override
+        _StaticCaseThenClause<R> when(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        <T> _StaticCaseThenClause<R> when(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
+
+        @Override
+        _StaticCaseThenClause<R> when(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        <T> _StaticCaseThenClause<R> when(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
+
+        @Override
+        _StaticCaseThenClause<R> when(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+
+        @Override
+        _StaticCaseThenClause<R> when(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
+
+        @Override
+        _StaticCaseThenClause<R> ifWhen(Supplier<Expression> supplier);
+
+        @Override
+        <T> _StaticCaseThenClause<R> ifWhen(Function<T, Expression> valueOperator, Supplier<T> getter);
+
+        @Override
+        _StaticCaseThenClause<R> ifWhen(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        <T> _StaticCaseThenClause<R> ifWhen(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
+
+        @Override
+        _StaticCaseThenClause<R> ifWhen(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        <T> _StaticCaseThenClause<R> ifWhen(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
+
+        @Override
+        _StaticCaseThenClause<R> ifWhen(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+
 
     }
 
-    interface _CaseWhenSpec<I extends Item> extends _CaseWhenClause<I>, _CaseElseClause<I>, Clause {
 
+    interface _DynamicCaseThenClause extends _SqlCaseThenClause {
+
+        @Override
+        CaseWhens then(Expression expression);
+
+        @Override
+        CaseWhens then(Supplier<Expression> supplier);
+
+        @Override
+        <T> CaseWhens then(Function<T, Expression> valueOperator, Supplier<T> getter);
+
+        @Override
+        CaseWhens then(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        <T> CaseWhens then(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
+
+        @Override
+        CaseWhens then(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        <T> CaseWhens then(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
+
+        @Override
+        CaseWhens then(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+
+        @Override
+        CaseWhens then(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
+
+    }
+
+
+    interface _DynamicCaseWhenClause extends _SqlCaseWhenClause {
+
+        @Override
+        _DynamicCaseThenClause when(Expression expression);
+
+        @Override
+        _DynamicCaseThenClause when(Supplier<Expression> supplier);
+
+        @Override
+        <T> _DynamicCaseThenClause when(Function<T, Expression> valueOperator, Supplier<T> getter);
+
+        @Override
+        _DynamicCaseThenClause when(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        <T> _DynamicCaseThenClause when(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
+
+        @Override
+        _DynamicCaseThenClause when(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        <T> _DynamicCaseThenClause when(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
+
+        @Override
+        _DynamicCaseThenClause when(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+
+        @Override
+        _DynamicCaseThenClause when(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
+
+        @Override
+        _DynamicCaseThenClause ifWhen(Supplier<Expression> supplier);
+
+        @Override
+        <T> _DynamicCaseThenClause ifWhen(Function<T, Expression> valueOperator, Supplier<T> getter);
+
+        @Override
+        _DynamicCaseThenClause ifWhen(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        <T> _DynamicCaseThenClause ifWhen(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
+
+        @Override
+        _DynamicCaseThenClause ifWhen(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        <T> _DynamicCaseThenClause ifWhen(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
+
+        @Override
+        _DynamicCaseThenClause ifWhen(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+    }
+
+
+    interface _CaseThenClause<I extends Item> extends _StaticCaseThenClause<I> {
+
+    }
+
+
+    interface _CaseWhenClause<I extends Item> extends _StaticCaseWhenClause<I> {
+
+    }
+
+    interface _CaseWhenSpec<I extends Item> extends _CaseWhenClause<I>, _CaseElseClause<I> {
+
+    }
+
+
+    interface _CaseFuncWhenClause<I extends Item> extends _CaseWhenClause<I> {
+
+        _CaseEndClause<I> whens(Consumer<CaseWhens> consumer);
     }
 
 

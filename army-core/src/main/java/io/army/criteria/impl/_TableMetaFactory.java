@@ -120,7 +120,7 @@ public abstract class _TableMetaFactory {
 
 
     public static Set<FieldMeta<?>> codecFieldMetaSet() {
-        return DefaultFieldMeta.codecFieldMetaSet();
+        return TableFieldMeta.codecFieldMetaSet();
     }
 
     /*################################## blow private method ##################################*/

@@ -10,7 +10,7 @@ import java.util.function.Function;
  * <p>
  * This class is a implementation of {@link DataField},and This class is base class of below:
  *     <ul>
- *         <li>{@link DefaultFieldMeta}</li>
+ *         <li>{@link TableFieldMeta}</li>
  *         <li>{@link QualifiedFieldImpl}</li>
  *         <li>{@link  CriteriaContexts.DerivedSelection}</li>
  *         <li>{@link  CriteriaContexts.RefDerivedField}</li>
@@ -74,57 +74,57 @@ abstract class OperationDataField<I extends Item> extends OperationExpression<I>
     }
 
     @Override
-    public final ItemExpression<I> mod(BiFunction<DataField, String, Expression> namedOperator) {
+    public final _ItemExpression<I> mod(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.MOD, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final ItemExpression<I> plus(BiFunction<DataField, String, Expression> namedOperator) {
+    public final _ItemExpression<I> plus(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.PLUS, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final ItemExpression<I> minus(BiFunction<DataField, String, Expression> namedOperator) {
+    public final _ItemExpression<I> minus(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.MINUS, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final ItemExpression<I> times(BiFunction<DataField, String, Expression> namedOperator) {
+    public final _ItemExpression<I> times(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.TIMES, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final ItemExpression<I> divide(BiFunction<DataField, String, Expression> namedOperator) {
+    public final _ItemExpression<I> divide(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.DIVIDE, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final ItemExpression<I> bitwiseAnd(BiFunction<DataField, String, Expression> namedOperator) {
+    public final _ItemExpression<I> bitwiseAnd(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.BITWISE_AND, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final ItemExpression<I> bitwiseOr(BiFunction<DataField, String, Expression> namedOperator) {
+    public final _ItemExpression<I> bitwiseOr(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.BITWISE_OR, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final ItemExpression<I> xor(BiFunction<DataField, String, Expression> namedOperator) {
+    public final _ItemExpression<I> xor(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.XOR, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final ItemExpression<I> rightShift(BiFunction<DataField, String, Expression> namedOperator) {
+    public final _ItemExpression<I> rightShift(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.RIGHT_SHIFT, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final ItemExpression<I> leftShift(BiFunction<DataField, String, Expression> namedOperator) {
+    public final _ItemExpression<I> leftShift(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.LEFT_SHIFT, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final ItemExpression<I> bracket() {
+    public final _ItemExpression<I> bracket() {
         //return this ,don't create new instance
         return this;
     }

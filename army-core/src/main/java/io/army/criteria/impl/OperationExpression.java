@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
 import io.army.function.BiAsExpFunction;
 import io.army.function.BiAsFunction;
 import io.army.function.TeNamedOperator;
@@ -18,11 +19,11 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-abstract class OperationExpression<I extends Item> implements ArmyExpression, ItemExpression<I> {
+abstract class OperationExpression<I extends Item> implements ArmyExpression, _ItemExpression<I> {
 
-    final Function<Selection, I> asFunction;
+    final Function<? super Selection, I> asFunction;
 
-    OperationExpression(Function<Selection, I> asFunction) {
+    OperationExpression(Function<? super Selection, I> asFunction) {
         this.asFunction = asFunction;
     }
 
@@ -51,12 +52,12 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, It
 
     @Override
     public final <R> R equal(BiAsFunction<ItemPredicate<I>, I, R> function) {
-        return function.apply(this::equal, this.asFunction);
+        return function.apply(this::equal, this::onOuterEnd);
     }
 
     @Override
     public final <R> R equal(BiAsExpFunction<ItemPredicate<I>, I, R> function) {
-        return function.apply(null, this::equal, this.asFunction);
+        return function.apply(null, this::equal, this::onOuterEnd);
     }
 
     @Override
@@ -64,7 +65,7 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, It
         if (operand == null) {
             throw ContextStack.nullPointer(ContextStack.peek());
         }
-        return function.apply(operand, this::equal, this.asFunction);
+        return function.apply(operand, this::equal, this::onOuterEnd);
     }
 
     @Override
@@ -315,131 +316,131 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, It
     }
 
     @Override
-    public final ItemExpression<I> mod(Expression operand) {
+    public final _ItemExpression<I> mod(Expression operand) {
         return Expressions.dualExp(this, DualOperator.MOD, operand);
     }
 
     @Override
-    public final <T> ItemExpression<I> mod(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<I> mod(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.MOD, operator.apply(this, operand));
     }
 
     @Override
-    public final ItemExpression<I> times(Expression operand) {
+    public final _ItemExpression<I> times(Expression operand) {
         return Expressions.dualExp(this, DualOperator.TIMES, operand);
     }
 
     @Override
-    public final <T> ItemExpression<I> times(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<I> times(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.TIMES, operator.apply(this, operand));
     }
 
 
     @Override
-    public final ItemExpression<I> plus(Expression operand) {
+    public final _ItemExpression<I> plus(Expression operand) {
         return Expressions.dualExp(this, DualOperator.PLUS, operand);
     }
 
     @Override
-    public final <T> ItemExpression<I> plus(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<I> plus(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.PLUS, operator.apply(this, operand));
     }
 
     @Override
-    public final ItemExpression<I> minus(Expression operand) {
+    public final _ItemExpression<I> minus(Expression operand) {
         return Expressions.dualExp(this, DualOperator.MINUS, operand);
     }
 
     @Override
-    public final <T> ItemExpression<I> minus(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<I> minus(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.MINUS, operator.apply(this, operand));
     }
 
     @Override
-    public final ItemExpression<I> divide(Expression operand) {
+    public final _ItemExpression<I> divide(Expression operand) {
         return Expressions.dualExp(this, DualOperator.DIVIDE, operand);
     }
 
     @Override
-    public final <T> ItemExpression<I> divide(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<I> divide(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.DIVIDE, operator.apply(this, operand));
     }
 
 
     @Override
-    public final ItemExpression<I> negate() {
+    public final _ItemExpression<I> negate() {
         return Expressions.unaryExp(this, UnaryOperator.NEGATE);
     }
 
     @Override
-    public final ItemExpression<I> bitwiseAnd(Expression operand) {
+    public final _ItemExpression<I> bitwiseAnd(Expression operand) {
         return Expressions.dualExp(this, DualOperator.BITWISE_AND, operand);
     }
 
     @Override
-    public final <T> ItemExpression<I> bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<I> bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.BITWISE_AND, operator.apply(this, operand));
     }
 
 
     @Override
-    public final ItemExpression<I> bitwiseOr(Expression operand) {
+    public final _ItemExpression<I> bitwiseOr(Expression operand) {
         return Expressions.dualExp(this, DualOperator.BITWISE_OR, operand);
     }
 
 
     @Override
-    public final <T> ItemExpression<I> bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<I> bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.BITWISE_OR, operator.apply(this, operand));
     }
 
 
     @Override
-    public final ItemExpression<I> xor(Expression operand) {
+    public final _ItemExpression<I> xor(Expression operand) {
         return Expressions.dualExp(this, DualOperator.XOR, operand);
     }
 
 
     @Override
-    public final <T> ItemExpression<I> xor(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<I> xor(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.XOR, operator.apply(this, operand));
     }
 
 
     @Override
-    public final ItemExpression<I> invert() {
+    public final _ItemExpression<I> invert() {
         return Expressions.unaryExp(this, UnaryOperator.INVERT);
     }
 
     @Override
-    public final ItemExpression<I> rightShift(Expression operand) {
+    public final _ItemExpression<I> rightShift(Expression operand) {
         return Expressions.dualExp(this, DualOperator.RIGHT_SHIFT, operand);
     }
 
     @Override
-    public final <T> ItemExpression<I> rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<I> rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.RIGHT_SHIFT, operator.apply(this, operand));
     }
 
 
     @Override
-    public final ItemExpression<I> leftShift(Expression operand) {
+    public final _ItemExpression<I> leftShift(Expression operand) {
         return Expressions.dualExp(this, DualOperator.LEFT_SHIFT, operand);
     }
 
 
     @Override
-    public final <T> ItemExpression<I> leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<I> leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.LEFT_SHIFT, operator.apply(this, operand));
     }
 
 
     @Override
-    public final ItemExpression<I> asType(final @Nullable TypeMeta paramMeta) {
+    public final _ItemExpression<I> asType(final @Nullable TypeMeta paramMeta) {
         if (paramMeta == null) {
             throw ContextStack.nullPointer(ContextStack.peek());
         }
-        final ItemExpression<I> expression;
+        final _ItemExpression<I> expression;
         if (this instanceof MutableParamMetaSpec) {
             ((MutableParamMetaSpec) this).updateParamMeta(paramMeta);
             expression = this;
@@ -455,13 +456,20 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, It
         return this.asFunction.apply(ArmySelections.forExp(this, alias));
     }
 
+
+    final I onOuterEnd(Selection selection) {
+        return this.asFunction.apply(selection);
+    }
+
     interface MutableParamMetaSpec {
 
         void updateParamMeta(TypeMeta typeMeta);
     }
 
 
-    /*################################## blow protected template method ##################################*/
+
+
+
 
 
 }

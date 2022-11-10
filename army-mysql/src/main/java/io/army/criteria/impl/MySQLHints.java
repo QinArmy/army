@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
-import io.army.criteria.Hint;
+import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect.DialectParser;

@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 
+import io.army.criteria.dialect.SubQuery;
 import io.army.function.ExpressionOperator;
 import io.army.lang.Nullable;
 

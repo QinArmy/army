@@ -2,7 +2,7 @@ package io.army.criteria;
 
 import io.army.criteria.standard.StandardSqlFunction;
 
-public interface CaseWhens
-        extends StandardSqlFunction._StaticCaseWhenClause<StandardSqlFunction._StaticCaseThenClause<CaseWhens>> {
+public interface CaseWhens extends StandardSqlFunction._DynamicCaseWhenClause {
+
 
 }

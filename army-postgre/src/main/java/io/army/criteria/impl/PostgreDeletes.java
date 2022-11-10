@@ -1,6 +1,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.ReturningDelete;
+import io.army.criteria.dialect.Returnings;
+import io.army.criteria.dialect.SubDelete;
+import io.army.criteria.dialect.SubReturningDelete;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.postgre._PostgreDelete;
@@ -465,7 +469,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
         }
 
         @Override
-        public final _DqlDeleteSpec<Q> returning(Consumer<ReturningBuilder> consumer) {
+        public final _DqlDeleteSpec<Q> returning(Consumer<Returnings> consumer) {
             consumer.accept(CriteriaSupports.returningBuilder(this::onAddSelection));
             if (this.returningList == null) {
                 throw CriteriaUtils.returningListIsEmpty(this.context);
@@ -872,7 +876,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
         }
 
         @Override
-        public _BatchParamClause<_DqlDeleteSpec<Q>> returning(Consumer<ReturningBuilder> consumer) {
+        public _BatchParamClause<_DqlDeleteSpec<Q>> returning(Consumer<Returnings> consumer) {
             consumer.accept(CriteriaSupports.returningBuilder(this::onAddSelection));
             if (this.returningList == null) {
                 throw CriteriaUtils.returningListIsEmpty(this.context);

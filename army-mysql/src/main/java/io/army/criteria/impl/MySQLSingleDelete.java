@@ -1,9 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
-import io.army.criteria.Hint;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
+import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
 import io.army.criteria.mysql.MySQLCtes;

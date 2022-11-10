@@ -1,8 +1,8 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.Hint;
 import io.army.criteria.SQLWords;
 import io.army.criteria.SortItem;
+import io.army.criteria.dialect.Hint;
 
 import java.util.List;
 

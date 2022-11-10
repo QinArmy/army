@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ItemExpression;
 import io.army.criteria.NamedLiteral;
 import io.army.criteria.Selection;
 import io.army.criteria.SqlValueParam;
@@ -95,7 +94,7 @@ abstract class LiteralExpression extends OperationExpression<Selection> {
     }
 
     @Override
-    public final ItemExpression<Selection> bracket() {
+    public final _ItemExpression<Selection> bracket() {
         //return this,don't create new instance.
         return this;
     }

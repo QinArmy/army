@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.TableMeta;
 
@@ -47,7 +48,7 @@ public interface DialectStatement extends Statement {
 
         R returningAll();
 
-        R returning(Consumer<ReturningBuilder> consumer);
+        R returning(Consumer<Returnings> consumer);
 
 
     }

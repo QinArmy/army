@@ -2,6 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
@@ -377,7 +379,6 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-
     /**
      * <p>
      * Create named non-null multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
@@ -525,8 +526,6 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-
-
     /**
      * <p>
      * Create named non-null multi literal expression, multi literal expression will output multi LITERAL like below:
@@ -538,8 +537,8 @@ public abstract class SQLs extends StandardSyntax {
      * </p>
      *
      * @param type non-null,the type of element of {@link Collection}
-     * @param name    non-null,the key name of {@link Map} or the field name of java bean.
-     * @param size    positive,the size of {@link Collection}
+     * @param name non-null,the key name of {@link Map} or the field name of java bean.
+     * @param size positive,the size of {@link Collection}
      * @return named non-null multi literal expression
      * @see #namedMultiParams(TypeInfer, String, int)
      * @see #namedMultiLiterals(TypeInfer, String, int)
@@ -660,7 +659,9 @@ public abstract class SQLs extends StandardSyntax {
      * </p>
      */
     public static <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
-        return ContextStack.peek().field(tableAlias, field);
+        final QualifiedFieldImpl<T, Selection> qualifiedField;
+        qualifiedField = ContextStack.peek().field(tableAlias, field, SQLs::_identity);
+        return qualifiedField;
     }
 
     public static DerivedField ref(String derivedTable, String derivedFieldName) {
@@ -778,6 +779,11 @@ public abstract class SQLs extends StandardSyntax {
     static <T extends Item> T _identity(T t) {
         return t;
     }
+
+    static Expression _asExp(_ItemExpression<?> expression) {
+        return expression;
+    }
+
 
 
     /*-------------------below package method-------------------*/

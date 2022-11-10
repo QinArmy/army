@@ -1,6 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.NamedParam;
+import io.army.criteria.SQLParam;
+import io.army.criteria.Selection;
+import io.army.criteria.SqlValueParam;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -53,7 +56,7 @@ abstract class ParamExpression extends OperationExpression<Selection> implements
     }
 
     @Override
-    public final ItemExpression<Selection> bracket() {
+    public final _ItemExpression<Selection> bracket() {
         //return this,don't create new instance.
         return this;
     }

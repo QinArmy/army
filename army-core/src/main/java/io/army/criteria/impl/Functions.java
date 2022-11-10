@@ -1,14 +1,12 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.standard.StandardSqlFunction;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -100,11 +98,6 @@ abstract class Functions {
 
     public interface _FuncConditionTowClause extends _FuncConditionClause<_FuncSecondArgClause> {
 
-    }
-
-    public interface _CaseFuncWhenSpec<I extends Item> extends StandardSqlFunction._CaseWhenClause<I> {
-
-        StandardSqlFunction._CaseEndClause<I> whens(Consumer<CaseWhens> consumer);
     }
 
 

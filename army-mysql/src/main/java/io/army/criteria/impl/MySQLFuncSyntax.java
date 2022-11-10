@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.Window;
 import io.army.criteria.mysql.*;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
@@ -34,8 +35,13 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     MySQLFuncSyntax() {
     }
 
-    public interface _OverSpec extends Window._OverClause<Window._SimpleLeftParenClause< Expression>> {
+    public interface _OverSpec<R extends Expression, I extends Item>
+            extends Window._OverClause<Window._SimpleLeftParenClause<R>, R> {
 
+    }
+
+    public interface _AggregateWindowFunc<R extends Expression, I extends Item>
+            extends _OverSpec<R, I>, _ItemExpression<I> {
 
     }
 
@@ -51,7 +57,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
 
     public interface _AggregateOverSpec<I extends Item>
-            extends Window._AggregateWindowFunc<Window._SimpleLeftParenClause<I>> {
+            extends _AggregateWindowFunc<Window._SimpleLeftParenClause<I>> {
 
     }
 
@@ -3203,7 +3209,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-value">JSON_VALUE(json_doc, path)</a>
      */
     public static MySQLClause._JsonValueReturningSpec jsonValue(final Expression jsonDoc, final Expression path) {
-        return MySQLFunctions.jsonValueFunc(jsonDoc, path);
+        return MySQLFunctionUtils.jsonValueFunc(jsonDoc, path);
     }
 
 
@@ -3495,7 +3501,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     /*-------------------below JSON Table Functions-------------------*/
 
     public static MySQLClause._JsonTableColumnsClause<TabularItem> jsonTable(Expression expr, Expression path) {
-        return MySQLFunctions.jsonTable(expr, path);
+        return MySQLFunctionUtils.jsonTable(expr, path);
     }
 
 

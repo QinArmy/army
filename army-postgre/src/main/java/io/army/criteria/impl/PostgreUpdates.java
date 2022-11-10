@@ -1,6 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.ReturningUpdate;
+import io.army.criteria.dialect.Returnings;
+import io.army.criteria.dialect.SubReturningUpdate;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.postgre._PostgreUpdate;
@@ -402,7 +405,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
         }
 
         @Override
-        public final _DqlUpdateSpec<Q> returning(Consumer<ReturningBuilder> consumer) {
+        public final _DqlUpdateSpec<Q> returning(Consumer<Returnings> consumer) {
             final List<Selection> list = new ArrayList<>();
             consumer.accept(CriteriaSupports.returningBuilder(list::add));
             if (list.size() == 0) {
@@ -698,7 +701,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
         }
 
         @Override
-        public _BatchParamClause<_DqlUpdateSpec<Q>> returning(Consumer<ReturningBuilder> consumer) {
+        public _BatchParamClause<_DqlUpdateSpec<Q>> returning(Consumer<Returnings> consumer) {
             final List<Selection> list = new ArrayList<>();
             consumer.accept(CriteriaSupports.returningBuilder(list::add));
             if (list.size() == 0) {

@@ -2,6 +2,9 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.ReturningDelete;
+import io.army.criteria.dialect.ReturningUpdate;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.postgre.*;
 
 /**

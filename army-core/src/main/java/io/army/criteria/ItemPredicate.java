@@ -1,12 +1,13 @@
 package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
+import io.army.criteria.impl._ItemExpression;
 import io.army.function.*;
 import io.army.lang.Nullable;
 
 import java.util.function.*;
 
-public interface ItemPredicate<I extends Item> extends IPredicate, ItemExpression<I>, Statement._AsClause<I> {
+public interface ItemPredicate<I extends Item> extends IPredicate, _ItemExpression<I>, Statement._AsClause<I> {
 
     @Override
     ItemPredicate<I> bracket();

@@ -1,6 +1,10 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.Expression;
+import io.army.criteria.ItemPredicate;
+import io.army.criteria.Selection;
+import io.army.criteria.SqlValueParam;
+import io.army.criteria.dialect.SubQuery;
 import io.army.function.BiAsExpFunction;
 import io.army.function.BiAsFunction;
 import io.army.function.TeNamedOperator;
@@ -19,7 +23,7 @@ import java.util.function.Supplier;
  *     </ul>
  * </p>
  */
-abstract class NonOperationExpression implements ArmyExpression, ItemExpression<Selection> {
+abstract class NonOperationExpression implements ArmyExpression, _ItemExpression<Selection> {
 
 
     NonOperationExpression() {
@@ -295,122 +299,122 @@ abstract class NonOperationExpression implements ArmyExpression, ItemExpression<
     }
 
     @Override
-    public final ItemExpression<Selection> mod(Expression operand) {
+    public final _ItemExpression<Selection> mod(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemExpression<Selection> mod(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<Selection> mod(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemExpression<Selection> times(Expression operand) {
+    public final _ItemExpression<Selection> times(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemExpression<Selection> times(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<Selection> times(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemExpression<Selection> plus(Expression operand) {
+    public final _ItemExpression<Selection> plus(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemExpression<Selection> plus(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<Selection> plus(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemExpression<Selection> minus(Expression minuend) {
+    public final _ItemExpression<Selection> minus(Expression minuend) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemExpression<Selection> minus(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<Selection> minus(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemExpression<Selection> divide(Expression divisor) {
+    public final _ItemExpression<Selection> divide(Expression divisor) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemExpression<Selection> divide(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<Selection> divide(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemExpression<Selection> negate() {
+    public final _ItemExpression<Selection> negate() {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemExpression<Selection> bitwiseAnd(Expression operand) {
+    public final _ItemExpression<Selection> bitwiseAnd(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemExpression<Selection> bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<Selection> bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemExpression<Selection> bitwiseOr(Expression operand) {
+    public final _ItemExpression<Selection> bitwiseOr(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemExpression<Selection> bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<Selection> bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemExpression<Selection> xor(Expression operand) {
+    public final _ItemExpression<Selection> xor(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemExpression<Selection> xor(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<Selection> xor(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemExpression<Selection> invert() {
+    public final _ItemExpression<Selection> invert() {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemExpression<Selection> rightShift(Expression bitNumber) {
+    public final _ItemExpression<Selection> rightShift(Expression bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemExpression<Selection> rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<Selection> rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemExpression<Selection> leftShift(Expression bitNumber) {
+    public final _ItemExpression<Selection> leftShift(Expression bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemExpression<Selection> leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> _ItemExpression<Selection> leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemExpression<Selection> asType(TypeMeta paramMeta) {
+    public final _ItemExpression<Selection> asType(TypeMeta paramMeta) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemExpression<Selection> bracket() {
+    public final _ItemExpression<Selection> bracket() {
         throw unsupportedOperation();
     }
 

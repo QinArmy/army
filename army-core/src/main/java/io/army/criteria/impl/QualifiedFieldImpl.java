@@ -2,7 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
-import io.army.criteria.QualifiedField;
+import io.army.criteria.Item;
+import io.army.criteria.Selection;
 import io.army.criteria.TableField;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
@@ -17,21 +18,24 @@ import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 
-final class QualifiedFieldImpl<T> extends OperationDataField
-        implements QualifiedField<T>, _Selection {
+final class QualifiedFieldImpl<T, I extends Item> extends OperationDataField<I>
+        implements ItemField<T, I>, _Selection {
 
-    static <T> QualifiedField<T> create(final String tableAlias, final FieldMeta<T> field) {
-        return new QualifiedFieldImpl<>(tableAlias, field);
+    static <T, I extends Item> QualifiedFieldImpl<T, I> create(final String tableAlias, final FieldMeta<T> field
+            , final Function<Selection, I> function) {
+        return new QualifiedFieldImpl<>(tableAlias, field, function);
     }
 
     private final String tableAlias;
 
-    private final DefaultFieldMeta<T> field;
+    private final TableFieldMeta<T> field;
 
-    private QualifiedFieldImpl(final String tableAlias, final FieldMeta<T> field) {
-        this.field = (DefaultFieldMeta<T>) field;
+    private QualifiedFieldImpl(String tableAlias, FieldMeta<T> field, Function<Selection, I> function) {
+        super(function);
+        this.field = (TableFieldMeta<T>) field;
         this.tableAlias = tableAlias;
     }
 

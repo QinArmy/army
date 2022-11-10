@@ -1,8 +1,8 @@
 package io.army.dialect;
 
 import io.army.criteria.Selection;
-import io.army.criteria.SubQuery;
 import io.army.criteria.Visible;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;

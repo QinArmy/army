@@ -1,6 +1,10 @@
 package io.army.criteria.postgre;
 
-import io.army.criteria.*;
+import io.army.criteria.Expression;
+import io.army.criteria.Item;
+import io.army.criteria.Query;
+import io.army.criteria.Statement;
+import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.Postgres;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;

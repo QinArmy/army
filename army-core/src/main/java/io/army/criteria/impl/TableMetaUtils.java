@@ -278,7 +278,7 @@ abstract class TableMetaUtils {
                     throw columnNameDuplication(mappedClass, columnName);
                 } else {
                     columnNameSet.add(columnName);
-                    fieldMetaMap.put(fieldName, DefaultFieldMeta.createFieldMeta(tableMeta, field));
+                    fieldMetaMap.put(fieldName, TableFieldMeta.createFieldMeta(tableMeta, field));
                 }
 
             }
@@ -583,7 +583,7 @@ abstract class TableMetaUtils {
             if (field == null) {
                 throw notFoundIndexColumn(indexMeta, fieldName);
             }
-            indexFieldMeta = DefaultFieldMeta.createIndexFieldMeta(tableMeta, field, indexMeta, indexColumns.length
+            indexFieldMeta = TableFieldMeta.createIndexFieldMeta(tableMeta, field, indexMeta, indexColumns.length
                     , columnAsc);
 
             list.add(indexFieldMeta);
@@ -720,7 +720,7 @@ abstract class TableMetaUtils {
                 primaryKey = true;
                 final Field field = Objects.requireNonNull(columnToFieldMap.get(_MetaBridge.ID));
                 final IndexFieldMeta<T> idFieldMeta;
-                idFieldMeta = DefaultFieldMeta.createIndexFieldMeta(table, field, this, 1, null);
+                idFieldMeta = TableFieldMeta.createIndexFieldMeta(table, field, this, 1, null);
                 this.fieldList = Collections.singletonList(idFieldMeta);
             } else {
                 this.name = index.name();

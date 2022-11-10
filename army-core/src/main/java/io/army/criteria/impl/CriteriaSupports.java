@@ -2,6 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
+import io.army.criteria.dialect.Returnings;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
@@ -49,7 +51,7 @@ abstract class CriteriaSupports {
         throw new UnsupportedOperationException();
     }
 
-    static ReturningBuilder returningBuilder(Consumer<Selection> consumer) {
+    static Returnings returningBuilder(Consumer<Selection> consumer) {
         return new ReturningBuilderImpl(consumer);
     }
 
@@ -785,7 +787,7 @@ abstract class CriteriaSupports {
     } //RowItemPairsImpl
 
 
-    private static final class ReturningBuilderImpl implements ReturningBuilder {
+    private static final class ReturningBuilderImpl implements Returnings {
 
         private final Consumer<Selection> consumer;
 
@@ -794,25 +796,25 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public ReturningBuilder selection(Selection selection) {
+        public Returnings selection(Selection selection) {
             this.consumer.accept(selection);
             return this;
         }
 
         @Override
-        public ReturningBuilder selection(Expression expression, SQLs.WordAs wordAs, String alias) {
+        public Returnings selection(Expression expression, SQLs.WordAs wordAs, String alias) {
             this.consumer.accept(ArmySelections.forExp((ArmyExpression) expression, alias));
             return this;
         }
 
         @Override
-        public ReturningBuilder selection(Supplier<Selection> supplier) {
+        public Returnings selection(Supplier<Selection> supplier) {
             this.consumer.accept(supplier.get());
             return this;
         }
 
         @Override
-        public ReturningBuilder selection(NamedExpression exp1, NamedExpression exp2) {
+        public Returnings selection(NamedExpression exp1, NamedExpression exp2) {
             final Consumer<Selection> consumer = this.consumer;
             consumer.accept(exp1);
             consumer.accept(exp2);
@@ -820,7 +822,7 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public ReturningBuilder selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3) {
+        public Returnings selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3) {
             final Consumer<Selection> consumer = this.consumer;
             consumer.accept(exp1);
             consumer.accept(exp2);
@@ -829,7 +831,7 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public ReturningBuilder selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3
+        public Returnings selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3
                 , NamedExpression exp4) {
             final Consumer<Selection> consumer = this.consumer;
             consumer.accept(exp1);

@@ -6,6 +6,7 @@ import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
 import io.army.bean.ObjectAccessException;
 import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl.inner._DialectStatement;

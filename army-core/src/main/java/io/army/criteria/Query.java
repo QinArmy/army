@@ -1,6 +1,8 @@
 package io.army.criteria;
 
 
+import io.army.criteria.dialect.Hint;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.function.ExpressionOperator;
 import io.army.meta.ComplexTableMeta;

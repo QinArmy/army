@@ -12,6 +12,7 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 @SuppressWarnings("unused")
 abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
@@ -21,13 +22,13 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
 
 
 
+
     /*-------------------below Aggregate Function  -------------------*/
 
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
-     */
-    public static _AggregateOverSpec<Expression> avg(Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("AVG", expr, DoubleType.INSTANCE);
+
+    public static <R extends Expression, I extends Item> _AggregateWindowFunc<R, I> avg(Expression exp
+            , Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return MySQLFunctionUtils.oneArgAggregateWindow("AVG", exp, DoubleType.INSTANCE, endFunction, asFunction);
     }
 
     /**
@@ -54,7 +55,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-and">BIT_AND(expr) [over_clause]</a>
      */
     public static _AggregateOverSpec bitAnd(final Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("BIT_AND", expr, _bitwiseFuncReturnType(expr));
+        return MySQLFunctionUtils.oneArgAggregateWindow("BIT_AND", expr, _bitwiseFuncReturnType(expr));
     }
 
 
@@ -62,7 +63,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-or">BIT_OR(expr) [over_clause]</a>
      */
     public static _AggregateOverSpec bitOr(final Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("BIT_OR", expr, _bitwiseFuncReturnType(expr));
+        return MySQLFunctionUtils.oneArgAggregateWindow("BIT_OR", expr, _bitwiseFuncReturnType(expr));
     }
 
 
@@ -70,7 +71,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-xor">BIT_XOR(expr) [over_clause]</a>
      */
     public static _AggregateOverSpec bitXor(final Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("BIT_XOR", expr, _bitwiseFuncReturnType(expr));
+        return MySQLFunctionUtils.oneArgAggregateWindow("BIT_XOR", expr, _bitwiseFuncReturnType(expr));
     }
 
     /**
@@ -78,7 +79,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static _AggregateOverSpec count(final Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("COUNT", expr, LongType.INSTANCE);
+        return MySQLFunctionUtils.oneArgAggregateWindow("COUNT", expr, LongType.INSTANCE);
     }
 
     /**
@@ -92,7 +93,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         final List<Object> argList = new ArrayList<>(2);
         argList.add(distinct);
         argList.add(expr);
-        return MySQLFunctions.complexAggregateWindow(name, argList, LongType.INSTANCE);
+        return MySQLFunctionUtils.complexAggregateWindow(name, argList, LongType.INSTANCE);
     }
 
     /**
@@ -115,7 +116,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
             }
             argList.add(exprList.get(i));
         }
-        return MySQLFunctions.complexAggregateWindow(name, argList, LongType.INSTANCE);
+        return MySQLFunctionUtils.complexAggregateWindow(name, argList, LongType.INSTANCE);
     }
 
 
@@ -129,7 +130,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT(expr)</a>
      */
     public static MySQLClause._GroupConcatOrderBySpec groupConcat(Object exprOrExprList) {
-        return MySQLFunctions.groupConcatClause(false, exprOrExprList);
+        return MySQLFunctionUtils.groupConcatClause(false, exprOrExprList);
     }
 
     /**
@@ -146,7 +147,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         if (distinct != null && distinct != SQLs.DISTINCT) {
             throw CriteriaUtils.funcArgError("GROUP_CONCAT", distinct);
         }
-        return MySQLFunctions.groupConcatClause(distinct != null, exprOrExprList);
+        return MySQLFunctionUtils.groupConcatClause(distinct != null, exprOrExprList);
     }
 
 
@@ -161,7 +162,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     public static _AggregateOverSpec jsonArrayAgg(final Expression expr) {
         final TypeMeta returnType;
         returnType = Functions._returnType((ArmyExpression) expr, JsonListType::from);
-        return MySQLFunctions.oneArgAggregateWindow("JSON_ARRAYAGG", expr, returnType);
+        return MySQLFunctionUtils.oneArgAggregateWindow("JSON_ARRAYAGG", expr, returnType);
     }
 
     /**
@@ -176,7 +177,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     public static _AggregateOverSpec jsonObjectAgg(final Expression key, final Expression value) {
         final TypeMeta returnType;
         returnType = Functions._returnType((ArmyExpression) key, (ArmyExpression) value, JsonMapType::from);
-        return MySQLFunctions.twoArgAggregateWindow("JSON_OBJECTAGG", key, value, returnType);
+        return MySQLFunctionUtils.twoArgAggregateWindow("JSON_OBJECTAGG", key, value, returnType);
     }
 
 
@@ -190,7 +191,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
      */
     public static _AggregateOverSpec max(final Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("MAX", expr, expr.typeMeta());
+        return MySQLFunctionUtils.oneArgAggregateWindow("MAX", expr, expr.typeMeta());
     }
 
     /**
@@ -217,7 +218,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
      */
     public static _AggregateOverSpec min(final Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("MIN", expr, expr.typeMeta());
+        return MySQLFunctionUtils.oneArgAggregateWindow("MIN", expr, expr.typeMeta());
     }
 
     /**
@@ -243,7 +244,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_std">STD(xpr) [over_clause]</a>
      */
     public static _AggregateOverSpec std(Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("STD", expr, DoubleType.INSTANCE);
+        return MySQLFunctionUtils.oneArgAggregateWindow("STD", expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -255,7 +256,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev">STDDEV(xpr) [over_clause]</a>
      */
     public static _AggregateOverSpec stdDev(Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("STDDEV", expr, DoubleType.INSTANCE);
+        return MySQLFunctionUtils.oneArgAggregateWindow("STDDEV", expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -267,7 +268,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-pop">STDDEV_POP(xpr) [over_clause]</a>
      */
     public static _AggregateOverSpec stdDevPop(Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("STDDEV_POP", expr, DoubleType.INSTANCE);
+        return MySQLFunctionUtils.oneArgAggregateWindow("STDDEV_POP", expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -279,7 +280,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-samp">STDDEV_SAMP(xpr) [over_clause]</a>
      */
     public static _AggregateOverSpec stdDevSamp(Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("STDDEV_SAMP", expr, DoubleType.INSTANCE);
+        return MySQLFunctionUtils.oneArgAggregateWindow("STDDEV_SAMP", expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -292,7 +293,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">SUM([DISTINCT] expr) [over_clause]</a>
      */
     public static _AggregateOverSpec sum(Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("SUM", expr, expr.typeMeta());
+        return MySQLFunctionUtils.oneArgAggregateWindow("SUM", expr, expr.typeMeta());
     }
 
     /**
@@ -319,7 +320,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-pop">VAR_POP(xpr) [over_clause]</a>
      */
     public static _AggregateOverSpec varPop(Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("VAR_POP", expr, DoubleType.INSTANCE);
+        return MySQLFunctionUtils.oneArgAggregateWindow("VAR_POP", expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -331,7 +332,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-samp">VAR_SAMP(xpr) [over_clause]</a>
      */
     public static _AggregateOverSpec varSamp(Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("VAR_SAMP", expr, DoubleType.INSTANCE);
+        return MySQLFunctionUtils.oneArgAggregateWindow("VAR_SAMP", expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -343,7 +344,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-samp">VARIANCE(expr) [over_clause]</a>
      */
     public static _AggregateOverSpec variance(Expression expr) {
-        return MySQLFunctions.oneArgAggregateWindow("VARIANCE", expr, DoubleType.INSTANCE);
+        return MySQLFunctionUtils.oneArgAggregateWindow("VARIANCE", expr, DoubleType.INSTANCE);
     }
 
     /*-------------------below window function -------------------*/
@@ -356,7 +357,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_cume-dist">CUME_DIST() over_clause</a>
      */
     public static _OverSpec cumeDist() {
-        return MySQLFunctions.noArgWindowFunc("CUME_DIST", DoubleType.INSTANCE);
+        return MySQLFunctionUtils.noArgWindowFunc("CUME_DIST", DoubleType.INSTANCE);
     }
 
     /**
@@ -367,7 +368,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_dense-rank">DENSE_RANK() over_clause</a>
      */
     public static _OverSpec denseRank() {
-        return MySQLFunctions.noArgWindowFunc("DENSE_RANK", LongType.INSTANCE);
+        return MySQLFunctionUtils.noArgWindowFunc("DENSE_RANK", LongType.INSTANCE);
     }
 
 
@@ -380,7 +381,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_first-value">FIRST_VALUE(expr) [null_treatment] over_clause</a>
      */
     public static _OverSpec firstValue(final Expression expr) {
-        return MySQLFunctions.oneArgWindowFunc("FIRST_VALUE", expr, expr.typeMeta());
+        return MySQLFunctionUtils.oneArgWindowFunc("FIRST_VALUE", expr, expr.typeMeta());
     }
 
     /**
@@ -392,7 +393,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_last-value">LAST_VALUE(expr) [null_treatment] over_clause</a>
      */
     public static _OverSpec lastValue(final Expression expr) {
-        return MySQLFunctions.oneArgWindowFunc("LAST_VALUE", expr, expr.typeMeta());
+        return MySQLFunctionUtils.oneArgWindowFunc("LAST_VALUE", expr, expr.typeMeta());
     }
 
     /**
@@ -405,7 +406,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lag(final Expression expr) {
-        return MySQLFunctions.oneArgWindowFunc("LAG", expr, expr.typeMeta());
+        return MySQLFunctionUtils.oneArgWindowFunc("LAG", expr, expr.typeMeta());
     }
 
     /**
@@ -426,7 +427,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lag(final Expression expr, final Expression n) {
-        return MySQLFunctions.twoArgWindow("LAG", expr, n, expr.typeMeta());
+        return MySQLFunctionUtils.twoArgWindow("LAG", expr, n, expr.typeMeta());
     }
 
     /**
@@ -452,7 +453,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         if (defaultWord != SQLs.DEFAULT) {
             throw CriteriaUtils.funcArgError(name, defaultWord);
         }
-        return MySQLFunctions.threeArgWindow(name, expr, n, defaultWord, expr.typeMeta());
+        return MySQLFunctionUtils.threeArgWindow(name, expr, n, defaultWord, expr.typeMeta());
     }
 
     /**
@@ -465,7 +466,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lead(final Expression expr) {
-        return MySQLFunctions.oneArgWindowFunc("LEAD", expr, expr.typeMeta());
+        return MySQLFunctionUtils.oneArgWindowFunc("LEAD", expr, expr.typeMeta());
     }
 
     /**
@@ -486,7 +487,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
     public static _OverSpec lead(final Expression expr, final Expression n) {
-        return MySQLFunctions.twoArgWindow("LEAD", expr, n, expr.typeMeta());
+        return MySQLFunctionUtils.twoArgWindow("LEAD", expr, n, expr.typeMeta());
     }
 
     /**
@@ -512,7 +513,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         if (defaultWord != SQLs.DEFAULT) {
             throw CriteriaUtils.funcArgError(name, defaultWord);
         }
-        return MySQLFunctions.threeArgWindow(name, expr, n, defaultWord, expr.typeMeta());
+        return MySQLFunctionUtils.threeArgWindow(name, expr, n, defaultWord, expr.typeMeta());
     }
 
     /**
@@ -528,7 +529,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         final String name = "NTH_VALUE";
         final List<?> argList;
         argList = FunctionUtils.twoArgList(name, expr, n);
-        return MySQLFunctions.fromFirstWindowFunc(name, argList, expr.typeMeta());
+        return MySQLFunctionUtils.fromFirstWindowFunc(name, argList, expr.typeMeta());
     }
 
     /**
@@ -554,7 +555,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      */
     public static _OverSpec ntile(final Expression n) {
         //TODO a local variable in a stored routine?
-        return MySQLFunctions.oneArgWindowFunc("NTILE", n, LongType.INSTANCE);
+        return MySQLFunctionUtils.oneArgWindowFunc("NTILE", n, LongType.INSTANCE);
     }
 
     /**
@@ -565,7 +566,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">PERCENT_RANK() over_clause</a>
      */
     public static _OverSpec percentRank() {
-        return MySQLFunctions.noArgWindowFunc("PERCENT_RANK", DoubleType.INSTANCE);
+        return MySQLFunctionUtils.noArgWindowFunc("PERCENT_RANK", DoubleType.INSTANCE);
     }
 
     /**
@@ -576,7 +577,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">RANK() over_clause</a>
      */
     public static _OverSpec rank() {
-        return MySQLFunctions.noArgWindowFunc("RANK", LongType.INSTANCE);
+        return MySQLFunctionUtils.noArgWindowFunc("RANK", LongType.INSTANCE);
     }
 
 
@@ -588,7 +589,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_row-number">ROW_NUMBER() over_clause</a>
      */
     public static _OverSpec rowNumber() {
-        return MySQLFunctions.noArgWindowFunc("ROW_NUMBER", LongType.INSTANCE);
+        return MySQLFunctionUtils.noArgWindowFunc("ROW_NUMBER", LongType.INSTANCE);
     }
 
 
@@ -768,7 +769,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_statement-digest">STATEMENT_DIGEST(statement)</a>
      */
     public static Expression statementDigest(final PrimaryStatement stmt, final Visible visible, final boolean literal) {
-        return MySQLFunctions.statementDigest(stmt, visible, literal);
+        return MySQLFunctionUtils.statementDigest(stmt, visible, literal);
     }
 
     /**
@@ -783,7 +784,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_statement-digest">STATEMENT_DIGEST(statement)</a>
      */
     public static Expression statementDigest(final String stmt, final Visible visible, final boolean literal) {
-        return MySQLFunctions.statementDigest(stmt, visible, literal);
+        return MySQLFunctionUtils.statementDigest(stmt, visible, literal);
     }
 
     /**
@@ -799,7 +800,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      */
     public static Expression statementDigestText(final PrimaryStatement stmt, final Visible visible
             , final boolean literal) {
-        return MySQLFunctions.statementDigestText(stmt, visible, literal);
+        return MySQLFunctionUtils.statementDigestText(stmt, visible, literal);
     }
 
     /**
@@ -814,7 +815,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_statement-digest-text">STATEMENT_DIGEST_TEXT(statement)</a>
      */
     public static Expression statementDigestText(final String stmt, final Visible visible, final boolean literal) {
-        return MySQLFunctions.statementDigestText(stmt, visible, literal);
+        return MySQLFunctionUtils.statementDigestText(stmt, visible, literal);
     }
 
     /**
@@ -2900,7 +2901,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
             , final Expression expr, final TypeMeta returnType) {
         final _AggregateOverSpec func;
         if (distinct == null) {
-            func = MySQLFunctions.oneArgAggregateWindow(name, expr, returnType);
+            func = MySQLFunctionUtils.oneArgAggregateWindow(name, expr, returnType);
         } else if (distinct != SQLs.DISTINCT) {
             throw CriteriaUtils.funcArgError(name, distinct);
         } else if (expr instanceof SqlValueParam.MultiValue) {
@@ -2909,7 +2910,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
             final List<Object> argList = new ArrayList<>(2);
             argList.add(distinct);
             argList.add(expr);
-            func = MySQLFunctions.complexAggregateWindow(name, argList, returnType);
+            func = MySQLFunctionUtils.complexAggregateWindow(name, argList, returnType);
         }
         return func;
     }
@@ -2957,7 +2958,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
 
         final _OverSpec overSpec;
         if (nExp == null) {
-            overSpec = MySQLFunctions.oneArgWindowFunc(funcName, null, expression, expression.typeMeta());
+            overSpec = MySQLFunctionUtils.oneArgWindowFunc(funcName, null, expression, expression.typeMeta());
         } else if (!(nExp instanceof ParamExpression.SingleParamExpression
                 || nExp instanceof LiteralExpression.SingleLiteral)) {
             throw CriteriaUtils.funcArgError(funcName, n);
@@ -2968,11 +2969,11 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         } else if (useDefault) {
             final List<ArmyExpression> argList;
             argList = Arrays.asList(expression, nExp, (ArmyExpression) SQLs.defaultWord());
-            overSpec = MySQLFunctions.safeMultiArgWindowFunc(funcName, null, argList, expression.typeMeta());
+            overSpec = MySQLFunctionUtils.safeMultiArgWindowFunc(funcName, null, argList, expression.typeMeta());
         } else {
             final List<ArmyExpression> argList;
             argList = Arrays.asList(expression, nExp);
-            overSpec = MySQLFunctions.safeMultiArgWindowFunc(funcName, null, argList, expression.typeMeta());
+            overSpec = MySQLFunctionUtils.safeMultiArgWindowFunc(funcName, null, argList, expression.typeMeta());
         }
         return overSpec;
     }
@@ -2992,7 +2993,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         if (expr == SQLs.NULL) {
             throw CriteriaUtils.funcArgError(funcName, expr);
         }
-        return MySQLFunctions.oneArgWindowFunc(funcName, null, expression, expression.typeMeta());
+        return MySQLFunctionUtils.oneArgWindowFunc(funcName, null, expression, expression.typeMeta());
     }
 
 
@@ -3008,7 +3009,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         if (distinct != null && distinct != SQLs.DISTINCT) {
             throw CriteriaUtils.funcArgError(funcName, distinct);
         }
-        if (clause != null && !(clause instanceof MySQLFunctions.GroupConcatClause)) {
+        if (clause != null && !(clause instanceof MySQLFunctionUtils.GroupConcatClause)) {
             throw CriteriaUtils.funcArgError(funcName, clause);
         }
         final Expression func;

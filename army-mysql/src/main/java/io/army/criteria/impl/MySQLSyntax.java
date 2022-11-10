@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Hint;
 import io.army.criteria.Query;
+import io.army.criteria.dialect.Hint;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;

@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Insert;
 import io.army.criteria.Statement;
-import io.army.criteria.SubQuery;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.standard.StandardInsert;

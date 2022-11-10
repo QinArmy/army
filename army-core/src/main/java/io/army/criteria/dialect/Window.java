@@ -1,5 +1,8 @@
-package io.army.criteria;
+package io.army.criteria.dialect;
 
+import io.army.criteria.Expression;
+import io.army.criteria.Item;
+import io.army.criteria.Statement;
 import io.army.lang.Nullable;
 
 import java.util.function.BooleanSupplier;
@@ -297,9 +300,9 @@ public interface Window {
     }
 
 
-    interface _OverClause<OR> {
+    interface _OverClause<OR, OE extends Expression> {
 
-        Expression over(String windowName);
+        OE over(String windowName);
 
         OR over();
     }
@@ -549,10 +552,6 @@ public interface Window {
      */
     interface _SimpleAsClause<I extends Item> extends Statement._StaticAsClaus<_SimpleLeftParenClause<I>> {
 
-
-    }
-
-    interface _AggregateWindowFunc<OR> extends Window._OverClause<OR>, Expression {
 
     }
 

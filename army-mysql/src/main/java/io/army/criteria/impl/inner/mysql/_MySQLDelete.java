@@ -1,7 +1,7 @@
 package io.army.criteria.impl.inner.mysql;
 
 import io.army.criteria.DialectStatement;
-import io.army.criteria.Hint;
+import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.inner._Delete;
 import io.army.criteria.impl.inner._Statement;

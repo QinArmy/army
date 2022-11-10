@@ -2,7 +2,7 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.Item;
 import io.army.criteria.Query;
-import io.army.criteria.Window;
+import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.MySQLs;
 
 import java.util.List;

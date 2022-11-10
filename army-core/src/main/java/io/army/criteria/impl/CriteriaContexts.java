@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
@@ -631,14 +633,35 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public DerivedField refThis(String derivedTable, String derivedFieldName) {
-            String m = "current context don't support refThis(derivedTable,derivedFieldName)";
+        public <I extends Item> ItemDerivedField<I> ref(String derivedTable, String fieldName
+                , Function<Selection, I> function) {
+            String m = "current context don't support ref(derivedTable,fieldName)";
+            throw ContextStack.criteriaError(this, m);
+        }
+
+        @Override
+        public DerivedField refThis(String derivedTable, String fieldName) {
+            String m = "current context don't support refThis(derivedTable,fieldName)";
+            throw ContextStack.criteriaError(this, m);
+        }
+
+        @Override
+        public <I extends Item> ItemDerivedField<I> refThis(String derivedTable, String fieldName
+                , Function<Selection, I> function) {
+            String m = "current context don't support refThis(derivedTable,fieldName,function)";
             throw ContextStack.criteriaError(this, m);
         }
 
         @Override
         public <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
-            String m = "current context don't support qualifiedField(tableAlias,field)";
+            String m = "current context don't support field(tableAlias,field)";
+            throw ContextStack.criteriaError(this, m);
+        }
+
+        @Override
+        public <T, I extends Item> ItemField<T, I> field(String tableAlias, FieldMeta<T> field
+                , Function<Selection, I> function) {
+            String m = "current context don't support field(tableAlias,field)";
             throw ContextStack.criteriaError(this, m);
         }
 
@@ -761,7 +784,7 @@ abstract class CriteriaContexts {
 
         private Map<String, Map<String, DerivedField>> aliasToDerivedField;
 
-        private Map<String, Map<FieldMeta<?>, QualifiedField<?>>> qualifiedFieldMap;
+        private Map<String, Map<FieldMeta<?>, ItemField<?, ?>>> aliasFieldMap;
 
         private JoinableContext(@Nullable CriteriaContext outerContext) {
             super(outerContext);
@@ -841,19 +864,21 @@ abstract class CriteriaContexts {
             return table;
         }
 
+
         @SuppressWarnings("unchecked")
         @Override
-        public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
+        public final <T, I extends Item> ItemField<T, I> field(final String tableAlias, final FieldMeta<T> field
+                , final Function<Selection, I> function) {
             if (!(this.aliasToBlock instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this);
             }
-            Map<String, Map<FieldMeta<?>, QualifiedField<?>>> qualifiedFieldMap = this.qualifiedFieldMap;
-            if (qualifiedFieldMap == null) {
-                qualifiedFieldMap = new HashMap<>();
-                this.qualifiedFieldMap = qualifiedFieldMap;
+            Map<String, Map<FieldMeta<?>, ItemField<?, ?>>> aliasFieldMap = this.aliasFieldMap;
+            if (aliasFieldMap == null) {
+                aliasFieldMap = new HashMap<>();
+                this.aliasFieldMap = aliasFieldMap;
             }
-            return (QualifiedField<T>) qualifiedFieldMap.computeIfAbsent(tableAlias, k -> new HashMap<>())
-                    .computeIfAbsent(field, k -> QualifiedFieldImpl.create(tableAlias, field));
+            return (ItemField<T, I>) aliasFieldMap.computeIfAbsent(tableAlias, k -> new HashMap<>())
+                    .computeIfAbsent(field, k -> QualifiedFieldImpl.create(tableAlias, field, function));
         }
 
         @Override
@@ -884,8 +909,20 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final DerivedField refThis(String derivedTable, String derivedFieldName) {
+        public final <I extends Item> ItemDerivedField<I> ref(String derivedTable, String fieldName
+                , Function<Selection, I> function) {
+            return super.ref(derivedTable, fieldName, function);
+        }
+
+        @Override
+        public final DerivedField refThis(String derivedTable, String fieldName) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public final <I extends Item> ItemDerivedField<I> refThis(String derivedTable, String fieldName
+                , Function<Selection, I> function) {
+            return super.refThis(derivedTable, fieldName, function);
         }
 
         @Override
@@ -1446,7 +1483,7 @@ abstract class CriteriaContexts {
 
 
     static final class DerivedSelection<I extends Item> extends OperationDataField<I>
-            implements DerivedField, _Selection {
+            implements ItemDerivedField<I>, _Selection {
 
         private final String tableName;
 
@@ -1547,7 +1584,7 @@ abstract class CriteriaContexts {
 
 
     static final class RefDerivedField<I extends Item> extends OperationDataField<I>
-            implements DerivedField, _Selection {
+            implements ItemDerivedField<I>, _Selection {
 
         final String tableName;
 
@@ -1664,6 +1701,13 @@ abstract class CriteriaContexts {
         private RefSelection(Selection selection, Function<Selection, I> function) {
             super(function);
             this.selection = selection;
+        }
+
+
+        @Override
+        public _ItemExpression<I> bracket() {
+            //return this ,don't create new instance
+            return this;
         }
 
         @Override

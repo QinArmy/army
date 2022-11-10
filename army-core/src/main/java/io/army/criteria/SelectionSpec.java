@@ -1,6 +1,8 @@
 package io.army.criteria;
 
 
+import io.army.criteria.dialect.VarExpression;
+
 /**
  * <p>
  * This interface representing the ability that create {@link Selection}.

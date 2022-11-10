@@ -1,6 +1,7 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.ReturningInsert;
 import io.army.meta.*;
 
 import java.util.function.BooleanSupplier;

@@ -2,8 +2,8 @@ package io.army.criteria.postgre;
 
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
-import io.army.criteria.ReturningInsert;
 import io.army.criteria.Visible;
+import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.DialectParser;

@@ -1,4 +1,7 @@
-package io.army.criteria;
+package io.army.criteria.dialect;
+
+import io.army.criteria.Statement;
+import io.army.criteria.SubStatement;
 
 /**
  * <p>

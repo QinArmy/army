@@ -11,6 +11,7 @@ package io.army.criteria;
  *
  * @see ItemPair
  */
+@Deprecated
 public interface SetLeftItem {
 
 

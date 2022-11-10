@@ -1,6 +1,6 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.SubQuery;
+import io.army.criteria.dialect.SubQuery;
 import io.army.dialect.DialectParser;
 
 /**

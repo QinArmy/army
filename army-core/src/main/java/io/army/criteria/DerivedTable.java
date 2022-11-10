@@ -1,5 +1,7 @@
 package io.army.criteria;
 
+import io.army.criteria.dialect.SubQuery;
+
 import java.util.List;
 
 /**

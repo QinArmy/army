@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.standard.StandardSqlFunction;
@@ -16,7 +17,6 @@ import io.army.mapping.StringType;
 import io.army.mapping.VoidType;
 import io.army.meta.TypeMeta;
 import io.army.util._CollectionUtils;
-import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.*;
@@ -85,8 +85,8 @@ abstract class FunctionUtils {
     }
 
 
-    static <R extends Item, I extends Item> Functions._CaseFuncWhenSpec<R> caseFunction(
-            final @Nullable Expression caseValue, final Function<ItemExpression<I>, R> endFunc
+    static <R extends Item, I extends Item> StandardSqlFunction._CaseFuncWhenClause<R> caseFunction(
+            final @Nullable Expression caseValue, final Function<_ItemExpression<I>, R> endFunc
             , final Function<Selection, I> asFunc) {
         return new CaseFunction<>((ArmyExpression) caseValue, endFunc, asFunc);
     }
@@ -366,20 +366,20 @@ abstract class FunctionUtils {
         RESPECT_NULLS(" RESPECT NULLS"),
         IGNORE_NULLS(" IGNORE NULLS");
 
-        final String words;
+        final String spaceWords;
 
-        NullTreatment(String words) {
-            this.words = words;
+        NullTreatment(String spaceWords) {
+            this.spaceWords = spaceWords;
         }
 
         @Override
         public final String render() {
-            return this.words;
+            return this.spaceWords;
         }
 
         @Override
         public final String toString() {
-            return String.format("%s.%s", NullTreatment.class.getSimpleName(), this.name());
+            return CriteriaUtils.sqlWordsToString(this);
         }
 
 
@@ -390,31 +390,37 @@ abstract class FunctionUtils {
         FROM_FIRST(" FROM FIRST"),
         FROM_LAST(" FROM LAST");
 
-        final String words;
+        final String spaceWords;
 
-        FromFirstLast(String words) {
-            this.words = words;
+        FromFirstLast(String spaceWords) {
+            this.spaceWords = spaceWords;
         }
 
         @Override
         public final String render() {
-            return this.words;
+            return this.spaceWords;
         }
 
         @Override
         public final String toString() {
-            return String.format("%s.%s", FromFirstLast.class.getSimpleName(), this.name());
+            return CriteriaUtils.sqlWordsToString(this);
         }
 
     }//FromFirstLast
 
+    interface AggregateFunction {
 
-    static abstract class WindowFunc<OR> extends OperationExpression
-            implements Window._OverClause<OR>, OperationExpression.MutableParamMetaSpec, CriteriaContextSpec {
+    }
+
+
+    static abstract class WindowFunction<OR, OE extends Expression, I extends Item> extends Expressions<I>
+            implements Window._OverClause<OR, OE>, OperationExpression.MutableParamMetaSpec, CriteriaContextSpec {
 
         final CriteriaContext context;
 
         final String name;
+
+        private final Function<_ItemExpression<I>, OE> endFunction;
 
         private TypeMeta returnType;
 
@@ -422,9 +428,12 @@ abstract class FunctionUtils {
 
         private _Window anonymousWindow;
 
-        WindowFunc(String name, TypeMeta returnType) {
+        WindowFunction(String name, TypeMeta returnType, Function<_ItemExpression<I>, OE> endFunction
+                , Function<Selection, I> aliasFunction) {
+            super(aliasFunction);
             this.context = ContextStack.peek();
             this.name = name;
+            this.endFunction = endFunction;
             this.returnType = returnType;
         }
 
@@ -444,32 +453,18 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final Expression over(final String windowName) {
+        public final OE over(final String windowName) {
             if (this.existingWindowName != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.context.onRefWindow(windowName);
             this.existingWindowName = windowName;
-            return this;
+            return this.endFunction.apply(this);
         }
 
-        @SuppressWarnings("unchecked")
-        @Override
-        public final OR over() {
-            if (this.anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.anonymousWindow = GlobalWindow.INSTANCE;
-            return (OR) this;
-        }
 
         @Override
         public final void appendSql(final _SqlContext context) {
-            final String existingWindowName = this.existingWindowName;
-            final _Window anonymousWindow = this.anonymousWindow;
-            if (existingWindowName != null && anonymousWindow != null) {
-                throw _Exceptions.castCriteriaApi();
-            }
             //1. function
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
@@ -482,34 +477,37 @@ abstract class FunctionUtils {
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
-            //2. OVER clause
-            if (existingWindowName != null) {
-                sqlBuilder.append(_Constant.SPACE_OVER)
-                        .append(_Constant.LEFT_PAREN);
-                context.parser().identifier(existingWindowName, sqlBuilder);
-                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-            } else if (anonymousWindow instanceof GlobalWindow) {
-                sqlBuilder.append(_Constant.SPACE_OVER)
-                        .append(_Constant.LEFT_PAREN)
-                        .append(_Constant.RIGHT_PAREN);
-            } else if (anonymousWindow != null) {
-                sqlBuilder.append(_Constant.SPACE_OVER);
-                anonymousWindow.appendSql(context);
-            } else if (!(this instanceof Window._AggregateWindowFunc)) {
+            final String existingWindowName = this.existingWindowName;
+            final _Window anonymousWindow = this.anonymousWindow;
+
+            if (existingWindowName == null && anonymousWindow == null) {
+                if (!(this instanceof AggregateFunction)) {
+                    throw ContextStack.castCriteriaApi(this.context);
+                }
+            } else if (existingWindowName != null && anonymousWindow != null) {
                 throw ContextStack.castCriteriaApi(this.context);
+            } else {
+                //2. OVER clause
+                sqlBuilder.append(_Constant.SPACE_OVER);
+                if (anonymousWindow == null || anonymousWindow == GlobalWindow.INSTANCE) {
+                    sqlBuilder.append(_Constant.LEFT_PAREN);
+                    if (existingWindowName != null) {
+                        sqlBuilder.append(_Constant.SPACE);
+                        context.parser().identifier(existingWindowName, sqlBuilder);
+                    }
+                    sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+                } else {
+                    anonymousWindow.appendSql(context);
+                }
             }
+
         }
 
         @Override
         public final String toString() {
-            final String existingWindowName = this.existingWindowName;
-            final _Window anonymousWindow = this.anonymousWindow;
-
-            if (existingWindowName != null && anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
             //1. function
-            final StringBuilder sqlBuilder = new StringBuilder()
+            final StringBuilder sqlBuilder;
+            sqlBuilder = new StringBuilder()
                     .append(_Constant.SPACE)
                     .append(this.name) // function name
                     .append(_Constant.LEFT_PAREN);
@@ -519,21 +517,28 @@ abstract class FunctionUtils {
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
-            //2. OVER clause
-            if (existingWindowName != null) {
-                sqlBuilder.append(_Constant.SPACE_OVER)
-                        .append(_Constant.LEFT_PAREN)
-                        .append(existingWindowName)
-                        .append(_Constant.SPACE_RIGHT_PAREN);
-            } else if (anonymousWindow instanceof GlobalWindow) {
-                sqlBuilder.append(_Constant.SPACE_OVER)
-                        .append(_Constant.LEFT_PAREN)
-                        .append(_Constant.RIGHT_PAREN);
-            } else if (anonymousWindow != null) {
-                sqlBuilder.append(_Constant.SPACE_OVER)
-                        .append(anonymousWindow);
-            } else if (!(this instanceof Window._AggregateWindowFunc)) {
+            final String existingWindowName = this.existingWindowName;
+            final _Window anonymousWindow = this.anonymousWindow;
+
+            if (existingWindowName == null && anonymousWindow == null) {
+                if (!(this instanceof AggregateFunction)) {
+                    throw ContextStack.castCriteriaApi(this.context);
+                }
+            } else if (existingWindowName != null && anonymousWindow != null) {
                 throw ContextStack.castCriteriaApi(this.context);
+            } else {
+                //2. OVER clause
+                sqlBuilder.append(_Constant.SPACE_OVER);
+                if (anonymousWindow == null || anonymousWindow == GlobalWindow.INSTANCE) {
+                    sqlBuilder.append(_Constant.LEFT_PAREN);
+                    if (existingWindowName != null) {
+                        sqlBuilder.append(_Constant.SPACE)
+                                .append(existingWindowName);
+                    }
+                    sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+                } else {
+                    sqlBuilder.append(anonymousWindow);
+                }
             }
             return sqlBuilder.toString();
         }
@@ -542,12 +547,12 @@ abstract class FunctionUtils {
 
         abstract void argumentToString(StringBuilder builder);
 
-        final Expression windowEnd(final _Window anonymousWindow) {
+        final OE windowEnd(final _Window anonymousWindow) {
             if (this.anonymousWindow == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.anonymousWindow = anonymousWindow;
-            return this;
+            return this.endFunction.apply(this);
         }
 
     }//AggregateOverClause
@@ -1078,14 +1083,16 @@ abstract class FunctionUtils {
     }//MultiArgOptionFunc
 
 
-    private static final class CaseFunction<R extends Item, I extends Item> extends OperationExpression<I>
+    private static final class CaseFunction<R extends Item, I extends Item> extends Expressions<I>
             implements StandardSqlFunction._CaseWhenSpec<R>
-            , Functions._CaseFuncWhenSpec<R>
+            , StandardSqlFunction._CaseFuncWhenClause<R>
             , StandardSqlFunction._CaseThenClause<R>
             , FunctionSpec, CriteriaContextSpec
+            , CaseWhens
+            , StandardSqlFunction._DynamicCaseThenClause
             , OperationExpression.MutableParamMetaSpec {
 
-        private final Function<ItemExpression<I>, R> endFunc;
+        private final Function<_ItemExpression<I>, R> endFunc;
 
         private final ArmyExpression caseValue;
 
@@ -1099,7 +1106,7 @@ abstract class FunctionUtils {
 
         private TypeMeta returnType;
 
-        private CaseFunction(@Nullable ArmyExpression caseValue, Function<ItemExpression<I>, R> endFunc
+        private CaseFunction(@Nullable ArmyExpression caseValue, Function<_ItemExpression<I>, R> endFunc
                 , Function<Selection, I> asFunc) {
             super(asFunc);
             this.caseValue = caseValue;
@@ -1197,47 +1204,55 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause<R> when(Expression expression) {
+        public CaseFunction<R, I> when(Expression expression) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause<R> when(Supplier<Expression> supplier) {
+        public CaseFunction<R, I> when(Supplier<Expression> supplier) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseThenClause<R> when(Function<T, Expression> valueOperator, Supplier<T> getter) {
+        public <T> CaseFunction<R, I> when(Function<T, Expression> valueOperator, Supplier<T> getter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause<R> when(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        public CaseFunction<R, I> when(Function<Object, Expression> valueOperator, Function<String, ?> function
+                , String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseThenClause<R> when(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
+        public <T> CaseFunction<R, I> when(ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause<R> when(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        public CaseFunction<R, I> when(ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseThenClause<R> when(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, StandardSyntax.WordAnd and, Supplier<T> secondGetter) {
+        public <T> CaseFunction<R, I> when(BetweenValueOperator<T> expOperator
+                , BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter
+                , SQLs.WordAnd and, Supplier<T> secondGetter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause<R> when(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, StandardSyntax.WordAnd and, String secondKey) {
+        public CaseFunction<R, I> when(BetweenValueOperator<Object> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
+                , String firstKey, SQLs.WordAnd and, String secondKey) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause<R> when(BetweenOperator expOperator, Expression first, StandardSyntax.WordAnd and, Expression second) {
+        public CaseFunction<R, I> when(BetweenOperator expOperator, Expression first, SQLs.WordAnd and
+                , Expression second) {
             return null;
         }
 
@@ -1247,82 +1262,95 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause<R> ifWhen(Supplier<Expression> supplier) {
+        public CaseFunction<R, I> ifWhen(Supplier<Expression> supplier) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseThenClause<R> ifWhen(Function<T, Expression> valueOperator, Supplier<T> getter) {
+        public <T> CaseFunction<R, I> ifWhen(Function<T, Expression> valueOperator, Supplier<T> getter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause<R> ifWhen(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        public CaseFunction<R, I> ifWhen(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseThenClause<R> ifWhen(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
+        public <T> CaseFunction<R, I> ifWhen(ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause<R> ifWhen(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        public CaseFunction<R, I> ifWhen(ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseThenClause<R> ifWhen(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, StandardSyntax.WordAnd and, Supplier<T> secondGetter) {
+        public <T> CaseFunction<R, I> ifWhen(BetweenValueOperator<T> expOperator
+                , BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and
+                , Supplier<T> secondGetter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseThenClause<R> ifWhen(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, StandardSyntax.WordAnd and, String secondKey) {
+        public CaseFunction<R, I> ifWhen(BetweenValueOperator<Object> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
+                , String firstKey, SQLs.WordAnd and, String secondKey) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseWhenSpec<R> then(Expression expression) {
+        public CaseFunction<R, I> then(Expression expression) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseWhenSpec<R> then(Supplier<Expression> supplier) {
+        public CaseFunction<R, I> then(Supplier<Expression> supplier) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseWhenSpec<R> then(Function<T, Expression> valueOperator, Supplier<T> getter) {
+        public <T> CaseFunction<R, I> then(Function<T, Expression> valueOperator, Supplier<T> getter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseWhenSpec<R> then(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        public CaseFunction<R, I> then(Function<Object, Expression> valueOperator
+                , Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseWhenSpec<R> then(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
+        public <T> CaseFunction<R, I> then(ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseWhenSpec<R> then(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        public CaseFunction<R, I> then(ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseWhenSpec<R> then(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, StandardSyntax.WordAnd and, Supplier<T> secondGetter) {
+        public <T> CaseFunction<R, I> then(BetweenValueOperator<T> expOperator
+                , BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and
+                , Supplier<T> secondGetter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseWhenSpec<R> then(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, StandardSyntax.WordAnd and, String secondKey) {
+        public CaseFunction<R, I> then(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator
+                , Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseWhenSpec<R> then(BetweenOperator expOperator, Expression first, StandardSyntax.WordAnd and, Expression second) {
+        public CaseFunction<R, I> then(BetweenOperator expOperator, Expression first, SQLs.WordAnd and
+                , Expression second) {
             return null;
         }
 
@@ -1337,37 +1365,45 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseEndClause<R> Else(Function<T, Expression> valueOperator, Supplier<T> getter) {
+        public <T> StandardSqlFunction._CaseEndClause<R> Else(Function<T, Expression> valueOperator
+                , Supplier<T> getter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> Else(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        public StandardSqlFunction._CaseEndClause<R> Else(Function<Object, Expression> valueOperator
+                , Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseEndClause<R> Else(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
+        public <T> StandardSqlFunction._CaseEndClause<R> Else(ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> Else(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        public StandardSqlFunction._CaseEndClause<R> Else(ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseEndClause<R> Else(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, StandardSyntax.WordAnd and, Supplier<T> secondGetter) {
+        public <T> StandardSqlFunction._CaseEndClause<R> Else(BetweenValueOperator<T> expOperator
+                , BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and
+                , Supplier<T> secondGetter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> Else(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, StandardSyntax.WordAnd and, String secondKey) {
+        public StandardSqlFunction._CaseEndClause<R> Else(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator
+                , Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> Else(BetweenOperator expOperator, Expression first, StandardSyntax.WordAnd and, Expression second) {
+        public StandardSqlFunction._CaseEndClause<R> Else(BetweenOperator expOperator, Expression first
+                , SQLs.WordAnd and, Expression second) {
             return null;
         }
 
@@ -1377,44 +1413,58 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseEndClause<R> ifElse(Function<T, Expression> valueOperator, Supplier<T> getter) {
+        public <T> StandardSqlFunction._CaseEndClause<R> ifElse(Function<T, Expression> valueOperator
+                , Supplier<T> getter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> ifElse(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        public StandardSqlFunction._CaseEndClause<R> ifElse(Function<Object, Expression> valueOperator
+                , Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseEndClause<R> ifElse(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
+        public <T> StandardSqlFunction._CaseEndClause<R> ifElse(ExpressionOperator<Expression, T, Expression> expOperator
+                , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> ifElse(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        public StandardSqlFunction._CaseEndClause<R> ifElse(ExpressionOperator<Expression, Object, Expression> expOperator
+                , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function
+                , String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseEndClause<R> ifElse(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, StandardSyntax.WordAnd and, Supplier<T> secondGetter) {
+        public <T> StandardSqlFunction._CaseEndClause<R> ifElse(BetweenValueOperator<T> expOperator
+                , BiFunction<Expression, T, Expression> operator
+                , Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> ifElse(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, StandardSyntax.WordAnd and, String secondKey) {
+        public StandardSqlFunction._CaseEndClause<R> ifElse(BetweenValueOperator<Object> expOperator
+                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
+                , SQLs.WordAnd and, String secondKey) {
             return null;
         }
 
         @Override
         public R end() {
+            if (this.returnType != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
             this.returnType = StringType.INSTANCE;
             return this.endFunc.apply(this);
         }
 
         @Override
         public R end(final @Nullable TypeInfer type) {
-            if (type == null) {
+            if (this.returnType != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            } else if (type == null) {
                 throw ContextStack.nullPointer(this.context);
             } else if (type instanceof TypeMeta) {
                 this.returnType = (TypeMeta) type;

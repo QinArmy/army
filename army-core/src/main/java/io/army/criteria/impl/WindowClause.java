@@ -1,6 +1,10 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.Expression;
+import io.army.criteria.Item;
+import io.army.criteria.SQLWords;
+import io.army.criteria.Statement;
+import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Window;
 import io.army.dialect.Dialect;
@@ -20,7 +24,7 @@ import java.util.function.Supplier;
 
 /**
  * <p>
- * This class is base class of all simple {@link io.army.criteria.Window}.
+ * This class is base class of all simple {@link Window}.
  * </p>
  *
  * @since 1.0
@@ -43,8 +47,8 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
     }
 
 
-    static Window._SimpleLeftParenClause<Expression> anonymousWindow(CriteriaContext context
-            , Function<_Window, Expression> function) {
+    static <I extends Expression> Window._SimpleLeftParenClause<I> anonymousWindow(CriteriaContext context
+            , Function<_Window, I> function) {
         return new SimpleWindow<>(context, function);
     }
 
