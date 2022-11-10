@@ -5,7 +5,7 @@ import io.army.criteria.dialect.SQLCommand;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.mysql.*;
 
-public abstract class MySQLs extends MySQLFuncSyntax2 {
+public abstract class MySQLs extends MySQLFunctionSyntax {
 
     /**
      * private constructor

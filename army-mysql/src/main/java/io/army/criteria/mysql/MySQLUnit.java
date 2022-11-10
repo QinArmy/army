@@ -29,15 +29,15 @@ public enum MySQLUnit implements SQLWords {
     DAY_HOUR(" DAY_HOUR"),
     YEAR_MONTH(" YEAR_MONTH");
 
-    private final String words;
+    private final String spaceWords;
 
-    MySQLUnit(String words) {
-        this.words = words;
+    MySQLUnit(String spaceWords) {
+        this.spaceWords = spaceWords;
     }
 
     @Override
     public final String render() {
-        return this.words;
+        return this.spaceWords;
     }
 
 

@@ -20,7 +20,7 @@ import java.util.List;
  * package class
  */
 @SuppressWarnings("unused")
-abstract class MySQLSyntax extends Functions.CaseValueFunctions {
+abstract class MySQLSyntax {
 
     /**
      * package constructor
