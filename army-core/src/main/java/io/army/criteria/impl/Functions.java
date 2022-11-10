@@ -35,7 +35,7 @@ abstract class Functions {
     /**
      * @see SQLs#DISTINCT
      */
-    public interface FuncDistinct {
+    public interface FuncDistinct extends SQLWords {
 
     }
 

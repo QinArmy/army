@@ -484,8 +484,6 @@ abstract class StandardSyntax extends Functions {
 
     static final class LiteralSymbolStar extends NonOperationExpression.NonSelectionExpression {
 
-        static final LiteralSymbolStar STAR = new LiteralSymbolStar();
-
         private LiteralSymbolStar() {
         }
 
@@ -577,6 +575,11 @@ abstract class StandardSyntax extends Functions {
     public static final WordDefault DEFAULT = new DefaultWord();
 
     public static final Expression NULL = new NullWord();
+
+    /**
+     * package field
+     */
+    static final Expression _START_EXP = new LiteralSymbolStar();
 
     /*-------------------below Aggregate Function-------------------*/
 

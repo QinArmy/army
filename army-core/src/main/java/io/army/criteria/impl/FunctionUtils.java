@@ -184,9 +184,10 @@ abstract class FunctionUtils {
 
 
     static void appendArguments(final @Nullable SQLWords option, final List<ArmyExpression> argList
-            , final @Nullable Clause clause, final _SqlContext context) {
+            , final _SqlContext context) {
 
-        final StringBuilder sqlBuilder = context.sqlBuilder();
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
 
         if (option != null) {
             sqlBuilder.append(_Constant.SPACE)
@@ -204,14 +205,11 @@ abstract class FunctionUtils {
             argList.get(i).appendSql(context);
         }//for
 
-        if (clause != null) {
-            ((_SelfDescribed) clause).appendSql(context);
-        }
 
     }
 
     static void argumentsToString(final @Nullable SQLWords option, final List<ArmyExpression> argList
-            , final @Nullable Clause clause, final StringBuilder builder) {
+            , final StringBuilder builder) {
 
         if (option != null) {
             builder.append(_Constant.SPACE)
@@ -228,9 +226,6 @@ abstract class FunctionUtils {
 
         }//for
 
-        if (clause != null) {
-            builder.append(clause);
-        }
 
     }
 
@@ -408,10 +403,6 @@ abstract class FunctionUtils {
 
     }//FromFirstLast
 
-    interface AggregateFunction {
-
-    }
-
 
     static abstract class WindowFunction<OR, OE extends Expression, I extends Item> extends Expressions<I>
             implements Window._OverClause<OR, OE>, OperationExpression.MutableParamMetaSpec, CriteriaContextSpec {
@@ -481,7 +472,7 @@ abstract class FunctionUtils {
             final _Window anonymousWindow = this.anonymousWindow;
 
             if (existingWindowName == null && anonymousWindow == null) {
-                if (!(this instanceof AggregateFunction)) {
+                if (!(this instanceof StandardSqlFunction.AggregateFunction)) {
                     throw ContextStack.castCriteriaApi(this.context);
                 }
             } else if (existingWindowName != null && anonymousWindow != null) {
@@ -521,7 +512,7 @@ abstract class FunctionUtils {
             final _Window anonymousWindow = this.anonymousWindow;
 
             if (existingWindowName == null && anonymousWindow == null) {
-                if (!(this instanceof AggregateFunction)) {
+                if (!(this instanceof StandardSqlFunction.AggregateFunction)) {
                     throw ContextStack.castCriteriaApi(this.context);
                 }
             } else if (existingWindowName != null && anonymousWindow != null) {

@@ -16,6 +16,10 @@ import java.util.function.Supplier;
 
 public interface StandardSqlFunction {
 
+    interface AggregateFunction {
+
+    }
+
 
     interface _CaseEndClause<I extends Item> {
 

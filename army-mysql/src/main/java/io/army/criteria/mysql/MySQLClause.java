@@ -1,8 +1,10 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.Clause;
 import io.army.criteria.Expression;
+import io.army.criteria.Selection;
+import io.army.criteria.SortItems;
 import io.army.criteria.Statement;
+import io.army.criteria.impl._ItemExpression;
 import io.army.sqltype.MySQLTypes;
 
 import java.util.function.Supplier;
@@ -10,19 +12,21 @@ import java.util.function.Supplier;
 public interface MySQLClause {
 
 
-    interface _GroupConcatSeparatorClause extends Clause {
+    interface _GroupConcatSeparatorClause extends _ItemExpression<Selection> {
 
-        Clause separator(String strVal);
+        Expression separator(String strVal);
 
-        Clause separator(Supplier<String> supplier);
+        Expression separator(Supplier<String> supplier);
 
-        Clause ifSeparator(Supplier<String> supplier);
+        Expression ifSeparator(Supplier<String> supplier);
 
 
     }
 
-    interface _GroupConcatOrderBySpec extends Expression
+
+    interface _GroupConcatOrderBySpec extends _ItemExpression<Selection>
             , Statement._StaticOrderByClause<_GroupConcatSeparatorClause>
+            , Statement._DynamicOrderByClause<SortItems, _GroupConcatSeparatorClause>
             , _GroupConcatSeparatorClause {
 
     }

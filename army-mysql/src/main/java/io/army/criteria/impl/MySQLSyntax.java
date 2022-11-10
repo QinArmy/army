@@ -33,7 +33,7 @@ abstract class MySQLSyntax extends Functions.CaseValueFunctions {
 
     }
 
-    public interface WordDistinct extends Modifier, FuncDistinct {
+    public interface WordDistinct extends Modifier, Functions.FuncDistinct {
 
     }
 
