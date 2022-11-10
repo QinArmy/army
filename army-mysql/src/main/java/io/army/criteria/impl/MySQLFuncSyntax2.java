@@ -273,8 +273,9 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_cume-dist">CUME_DIST() over_clause</a>
      */
-    public static _OverSpec cumeDist() {
-        return MySQLFunctionUtils.noArgWindowFunc("CUME_DIST", DoubleType.INSTANCE);
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> cumeDist(
+            Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return MySQLFunctionUtils.noArgWindowFunc("CUME_DIST", DoubleType.INSTANCE, endFunction, asFunction);
     }
 
     /**
@@ -284,8 +285,9 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_dense-rank">DENSE_RANK() over_clause</a>
      */
-    public static _OverSpec denseRank() {
-        return MySQLFunctionUtils.noArgWindowFunc("DENSE_RANK", LongType.INSTANCE);
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> denseRank(
+            Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return MySQLFunctionUtils.noArgWindowFunc("DENSE_RANK", LongType.INSTANCE, endFunction, asFunction);
     }
 
 
@@ -294,11 +296,12 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      * </p>
      *
-     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param expr non-null parameter or {@link  Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_first-value">FIRST_VALUE(expr) [null_treatment] over_clause</a>
      */
-    public static _OverSpec firstValue(final Expression expr) {
-        return MySQLFunctionUtils.oneArgWindowFunc("FIRST_VALUE", expr, expr.typeMeta());
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> firstValue(final Expression expr
+            , Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return MySQLFunctionUtils.oneArgWindowFunc("FIRST_VALUE", expr, expr.typeMeta(), endFunction, asFunction);
     }
 
     /**
@@ -309,8 +312,9 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_last-value">LAST_VALUE(expr) [null_treatment] over_clause</a>
      */
-    public static _OverSpec lastValue(final Expression expr) {
-        return MySQLFunctionUtils.oneArgWindowFunc("LAST_VALUE", expr, expr.typeMeta());
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> lastValue(final Expression expr
+            , Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return MySQLFunctionUtils.oneArgWindowFunc("LAST_VALUE", expr, expr.typeMeta(), endFunction, asFunction);
     }
 
     /**
@@ -318,12 +322,12 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      * </p>
      *
-     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
-     * @see #lag(Expression, Expression, Expression)
+     * @param expr non-null parameter or {@link  Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static _OverSpec lag(final Expression expr) {
-        return MySQLFunctionUtils.oneArgWindowFunc("LAG", expr, expr.typeMeta());
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> lag(final Expression expr
+            , Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return leadOrLog("LAG", expr, null, null, endFunction, asFunction);
     }
 
     /**
@@ -340,12 +344,13 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                 <li>{@link SQLs#paramFrom(Object)},argument type is {@link Long} or {@link Integer}</li>
      *                 <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
      *             </ul>
-     * @see #lag(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static _OverSpec lag(final Expression expr, final Expression n) {
-        return MySQLFunctionUtils.twoArgWindow("LAG", expr, n, expr.typeMeta());
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> lag(Expression expr, @Nullable Expression n
+            , Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return leadOrLog("LAG", expr, n, null, endFunction, asFunction);
     }
+
 
     /**
      * <p>
@@ -362,15 +367,12 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                        <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
      *                    </ul>
      * @param defaultWord {@link  SQLs#DEFAULT}
-     * @see #lag(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static _OverSpec lag(final Expression expr, final Expression n, final Expression defaultWord) {
-        final String name = "LAG";
-        if (defaultWord != SQLs.DEFAULT) {
-            throw CriteriaUtils.funcArgError(name, defaultWord);
-        }
-        return MySQLFunctionUtils.threeArgWindow(name, expr, n, defaultWord, expr.typeMeta());
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> lag(final Expression expr
+            , final @Nullable Expression n, final @Nullable SQLs.WordDefault defaultWord
+            , Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return leadOrLog("LAG", expr, n, defaultWord, endFunction, asFunction);
     }
 
     /**
@@ -379,12 +381,13 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
-     * @see #lag(Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static _OverSpec lead(final Expression expr) {
-        return MySQLFunctionUtils.oneArgWindowFunc("LEAD", expr, expr.typeMeta());
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> lead(final Expression expr
+            , Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return leadOrLog("LEAD", expr, null, null, endFunction, asFunction);
     }
+
 
     /**
      * <p>
@@ -400,11 +403,11 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                 <li>{@link SQLs#paramFrom(Object)},argument type is {@link Long} or {@link Integer}</li>
      *                 <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
      *             </ul>
-     * @see #lead(Expression, Expression, SQLs.WordDefault)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static _OverSpec lead(final Expression expr, final Expression n) {
-        return MySQLFunctionUtils.twoArgWindow("LEAD", expr, n, expr.typeMeta());
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> lead(Expression expr, @Nullable Expression n
+            , Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return leadOrLog("LEAD", expr, n, null, endFunction, asFunction);
     }
 
     /**
@@ -422,15 +425,12 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *                        <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
      *                    </ul>
      * @param defaultWord {@link  SQLs#DEFAULT}
-     * @see #lead(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static _OverSpec lead(final Expression expr, final Expression n, final SQLs.WordDefault defaultWord) {
-        final String name = "LEAD";
-        if (defaultWord != SQLs.DEFAULT) {
-            throw CriteriaUtils.funcArgError(name, defaultWord);
-        }
-        return MySQLFunctionUtils.threeArgWindow(name, expr, n, defaultWord, expr.typeMeta());
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> lead(Expression expr, @Nullable Expression n
+            , final @Nullable SQLs.WordDefault defaultWord, Function<_ItemExpression<I>, R> endFunction
+            , Function<Selection, I> asFunction) {
+        return leadOrLog("LEAD", expr, n, defaultWord, endFunction, asFunction);
     }
 
     /**
@@ -442,11 +442,9 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @param n    positive.output literal.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_nth-value">NTH_VALUE(expr, N) [from_first_last] [null_treatment] over_clause</a>
      */
-    public static _FromFirstLastSpec nthValue(final Expression expr, final Expression n) {
-        final String name = "NTH_VALUE";
-        final List<?> argList;
-        argList = FunctionUtils.twoArgList(name, expr, n);
-        return MySQLFunctionUtils.fromFirstWindowFunc(name, argList, expr.typeMeta());
+    public static <R extends Expression, I extends Item> _FromFirstLastSpec<R, I> nthValue(Expression expr, Expression n
+            , Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return MySQLFunctionUtils.twoArgFromFirstWindowFunc("NTH_VALUE", expr, n, expr.typeMeta(), endFunction, asFunction);
     }
 
     /**
@@ -470,9 +468,10 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_ntile">NTILE(N) over_clause</a>
      */
-    public static _OverSpec ntile(final Expression n) {
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> ntile(final Expression n
+            , Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
         //TODO a local variable in a stored routine?
-        return MySQLFunctionUtils.oneArgWindowFunc("NTILE", n, LongType.INSTANCE);
+        return MySQLFunctionUtils.oneArgWindowFunc("NTILE", n, LongType.INSTANCE, endFunction, asFunction);
     }
 
     /**
@@ -482,8 +481,9 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">PERCENT_RANK() over_clause</a>
      */
-    public static _OverSpec percentRank() {
-        return MySQLFunctionUtils.noArgWindowFunc("PERCENT_RANK", DoubleType.INSTANCE);
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> percentRank(
+            Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return MySQLFunctionUtils.noArgWindowFunc("PERCENT_RANK", DoubleType.INSTANCE, endFunction, asFunction);
     }
 
     /**
@@ -493,8 +493,9 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">RANK() over_clause</a>
      */
-    public static _OverSpec rank() {
-        return MySQLFunctionUtils.noArgWindowFunc("RANK", LongType.INSTANCE);
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> rank(
+            Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return MySQLFunctionUtils.noArgWindowFunc("RANK", LongType.INSTANCE, endFunction, asFunction);
     }
 
 
@@ -505,8 +506,9 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_row-number">ROW_NUMBER() over_clause</a>
      */
-    public static _OverSpec rowNumber() {
-        return MySQLFunctionUtils.noArgWindowFunc("ROW_NUMBER", LongType.INSTANCE);
+    public static <R extends Expression, I extends Item> _OverSpec<R, I> rowNumber(
+            Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        return MySQLFunctionUtils.noArgWindowFunc("ROW_NUMBER", LongType.INSTANCE, endFunction, asFunction);
     }
 
 
@@ -2982,6 +2984,29 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
 
         }
         return func;
+    }
+
+    /**
+     * @see #lag(Expression, Expression, SQLs.WordDefault, Function, Function)
+     * @see #lead(Expression, Expression, SQLs.WordDefault, Function, Function)
+     */
+    private static <R extends Expression, I extends Item> _OverSpec<R, I> leadOrLog(
+            final String name, final @Nullable Expression expr
+            , final @Nullable Expression n, final @Nullable SQLs.WordDefault defaultWord
+            , Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
+        if (expr == null) {
+            throw ContextStack.nullPointer(ContextStack.peek());
+        }
+        assert defaultWord == null || defaultWord == SQLs.DEFAULT;
+        final _OverSpec<R, I> spec;
+        if (n == null) {
+            spec = MySQLFunctionUtils.oneArgWindowFunc(name, expr, expr.typeMeta(), endFunction, asFunction);
+        } else if (defaultWord == null) {
+            spec = MySQLFunctionUtils.twoArgWindowFunc(name, expr, n, expr.typeMeta(), endFunction, asFunction);
+        } else {
+            spec = MySQLFunctionUtils.threeArgWindow(name, expr, n, defaultWord, expr.typeMeta(), endFunction, asFunction);
+        }
+        return spec;
     }
 
 

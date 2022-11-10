@@ -25,6 +25,7 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -41,9 +42,35 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         return new IntervalTimeFunc(name, SQLs._funcParam(date), SQLs._funcParam(expr), unit, returnType);
     }
 
-    static MySQLFuncSyntax._OverSpec noArgWindowFunc(String name, TypeMeta returnType) {
-        return new NoArgWindowFunction(name, returnType);
+    static <R extends Expression, I extends Item> MySQLFuncSyntax._OverSpec<R, I> noArgWindowFunc(String name
+            , TypeMeta returnType, Function<_ItemExpression<I>, R> endFunction
+            , Function<Selection, I> asFunction) {
+        return new NoArgWindowFunction<>(name, returnType, endFunction, asFunction);
     }
+
+    static <R extends Expression, I extends Item> MySQLFuncSyntax._OverSpec<R, I> oneArgWindowFunc(String name
+            , Expression arg, TypeMeta returnType, Function<_ItemExpression<I>, R> endFunction
+            , Function<Selection, I> asFunction) {
+        if (arg instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, arg);
+        }
+        return new OneArgWindowFunction<>(name, (ArmyExpression) arg, returnType, endFunction, asFunction);
+    }
+
+    static <R extends Expression, I extends Item> MySQLFuncSyntax._OverSpec<R, I> twoArgWindowFunc(String name
+            , Expression one, Expression two, TypeMeta returnType, Function<_ItemExpression<I>, R> endFunction
+            , Function<Selection, I> asFunction) {
+        return new MultiArgWindowFunction<>(name, null, twoExpList(name, one, two), returnType, endFunction, asFunction);
+    }
+
+    static <R extends Expression, I extends Item> MySQLFuncSyntax._OverSpec<R, I> threeArgWindow(
+            String name, Expression one
+            , Expression two, Expression three
+            , TypeMeta returnType, Function<_ItemExpression<I>, R> endFunction
+            , Function<Selection, I> asFunction) {
+        return new MultiArgWindowFunction<>(name, null, threeExpList(name, one, two, three), returnType, endFunction, asFunction);
+    }
+
 
     @Deprecated
     static MySQLFuncSyntax._OverSpec oneArgWindowFunc(String name, @Nullable SQLWords option
@@ -58,24 +85,17 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         return new OneArgWindowFunction(name, (ArmyExpression) expr, returnType);
     }
 
-    static MySQLFuncSyntax._OverSpec twoArgWindow(String name, Expression one, Expression two, TypeMeta returnType) {
-        return new ComplexArgWindowFunc(name, twoArgList(name, one, two), returnType);
-    }
-
-    static MySQLFuncSyntax._OverSpec threeArgWindow(String name, Expression one, Expression two
-            , Expression three, TypeMeta returnType) {
-        return new ComplexArgWindowFunc(name, threeArgList(name, one, two, three), returnType);
-    }
-
 
     static MySQLFuncSyntax._OverSpec safeMultiArgWindowFunc(String name, @Nullable SQLWords option
             , List<ArmyExpression> argList, TypeMeta returnType) {
         return new MultiArgWindowFunc(name, option, argList, null, returnType);
     }
 
-    static MySQLFuncSyntax._FromFirstLastSpec fromFirstWindowFunc(String name, List<?> argList
-            , TypeMeta returnType) {
-        return new FromFirstLastMultiArgWindowFunc(name, argList, returnType);
+    static <R extends Expression, I extends Item> MySQLFuncSyntax._FromFirstLastSpec<R, I> twoArgFromFirstWindowFunc(
+            String name, Expression one, Expression two
+            , TypeMeta returnType, Function<_ItemExpression<I>, R> endFunction
+            , Function<Selection, I> asFunction) {
+        return new FromFirstLastMultiArgWindowFunc<>(name, twoExpList(name, one, two), returnType, endFunction, asFunction);
     }
 
 
@@ -411,31 +431,100 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
     }//NullTreatmentMultiArgWindowFunc
 
-    private static final class FromFirstLastMultiArgWindowFunc extends NullTreatmentMultiArgWindowFunc
-            implements MySQLFuncSyntax._FromFirstLastSpec {
+
+    private static final class FromFirstLastMultiArgWindowFunc<R extends Expression, I extends Item>
+            extends MultiArgWindowFunction<R, I>
+            implements MySQLFuncSyntax._FromFirstLastSpec<R, I> {
+
 
         private FromFirstLast fromFirstLast;
 
-        private FromFirstLastMultiArgWindowFunc(String name, List<?> argumentList, TypeMeta returnType) {
-            super(name, argumentList, returnType);
+        private NullTreatment nullTreatment;
+
+        /**
+         * @see #twoArgFromFirstWindowFunc(String, Expression, Expression, TypeMeta, Function, Function)
+         */
+        public FromFirstLastMultiArgWindowFunc(String name, List<ArmyExpression> argList, TypeMeta returnType
+                , Function<_ItemExpression<I>, R> endFunction, Function<Selection, I> aliasFunction) {
+            super(name, null, argList, returnType, endFunction, aliasFunction);
         }
 
         @Override
-        public MySQLFuncSyntax._NullTreatmentSpec fromFirst() {
-            if (this.fromFirstLast != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
+        public MySQLFuncSyntax._NullTreatmentSpec<R, I> fromFirst() {
+            this.fromFirstLast = FromFirstLast.FROM_FIRST;
+            return this;
+        }
+
+        @Override
+        public MySQLFuncSyntax._NullTreatmentSpec<R, I> fromLast() {
             this.fromFirstLast = FromFirstLast.FROM_LAST;
             return this;
         }
 
         @Override
-        public MySQLFuncSyntax._NullTreatmentSpec fromLast() {
-            if (this.fromFirstLast != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.fromFirstLast = FromFirstLast.FROM_LAST;
+        public MySQLFuncSyntax._NullTreatmentSpec<R, I> ifFromFirst(BooleanSupplier predicate) {
+            this.fromFirstLast = predicate.getAsBoolean() ? FromFirstLast.FROM_FIRST : null;
             return this;
+        }
+
+        @Override
+        public MySQLFuncSyntax._NullTreatmentSpec<R, I> ifFromLast(BooleanSupplier predicate) {
+            this.fromFirstLast = predicate.getAsBoolean() ? FromFirstLast.FROM_LAST : null;
+            return this;
+        }
+
+        @Override
+        public MySQLFuncSyntax._OverSpec<R, I> respectNulls() {
+            this.nullTreatment = NullTreatment.RESPECT_NULLS;
+            return this;
+        }
+
+        @Override
+        public MySQLFuncSyntax._OverSpec<R, I> ignoreNulls() {
+            this.nullTreatment = NullTreatment.IGNORE_NULLS;
+            return this;
+        }
+
+        @Override
+        public MySQLFuncSyntax._OverSpec<R, I> ifRespectNulls(BooleanSupplier predicate) {
+            this.nullTreatment = predicate.getAsBoolean() ? NullTreatment.RESPECT_NULLS : null;
+            return this;
+        }
+
+        @Override
+        public MySQLFuncSyntax._OverSpec<R, I> ifIgnoreNulls(BooleanSupplier predicate) {
+            this.nullTreatment = predicate.getAsBoolean() ? NullTreatment.IGNORE_NULLS : null;
+            return this;
+        }
+
+        @Override
+        void appendOuterClause(final _SqlContext context) {
+            final FromFirstLast fromFirstLast = this.fromFirstLast;
+            final NullTreatment nullTreatment = this.nullTreatment;
+
+            if (fromFirstLast != null || nullTreatment != null) {
+                final StringBuilder sqlBuilder;
+                sqlBuilder = context.sqlBuilder();
+                if (fromFirstLast != null) {
+                    sqlBuilder.append(fromFirstLast);
+                }
+                if (nullTreatment != null) {
+                    sqlBuilder.append(nullTreatment);
+                }
+            }
+        }
+
+        @Override
+        void outerClauseToString(final StringBuilder builder) {
+            final FromFirstLast fromFirstLast = this.fromFirstLast;
+            final NullTreatment nullTreatment = this.nullTreatment;
+
+            if (fromFirstLast != null) {
+                builder.append(fromFirstLast);
+            }
+            if (nullTreatment != null) {
+                builder.append(nullTreatment);
+            }
         }
 
 

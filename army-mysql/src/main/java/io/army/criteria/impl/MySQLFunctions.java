@@ -5,6 +5,7 @@ import io.army.criteria.Selection;
 import io.army.criteria.mysql.MySQLClause;
 import io.army.lang.Nullable;
 import io.army.mapping.DoubleType;
+import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping.optional.JsonListType;
 import io.army.mapping.optional.JsonMapType;
@@ -287,13 +288,237 @@ public abstract class MySQLFunctions extends Functions {
     }
 
 
+    /*-------------------below window function-------------------*/
 
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link  DoubleType}.
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_cume-dist">CUME_DIST() over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> cumeDist() {
+        return MySQLs.cumeDist(SQLs::_asExp, SQLs::_identity);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link  LongType}.
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_dense-rank">DENSE_RANK() over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> denseRank() {
+        return MySQLs.denseRank(SQLs::_asExp, SQLs::_identity);
+    }
 
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null parameter or {@link  Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_first-value">FIRST_VALUE(expr) [null_treatment] over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> firstValue(final Expression expr) {
+        return MySQLs.firstValue(expr, SQLs::_asExp, SQLs::_identity);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null parameter or {@link  Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_last-value">LAST_VALUE(expr) [null_treatment] over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> lastValue(final Expression expr) {
+        return MySQLs.lastValue(expr, SQLs::_asExp, SQLs::_identity);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null parameter or {@link  Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> lag(final Expression expr) {
+        return MySQLs.lag(expr, SQLs::_asExp, SQLs::_identity);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param n    nullable,probably is below:
+     *             <ul>
+     *                 <li>null</li>
+     *                 <li>{@link Long} type</li>
+     *                 <li>{@link Integer} type</li>
+     *                 <li>{@link SQLs#paramFrom(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                 <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *             </ul>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> lag(Expression expr, @Nullable Expression n) {
+        return MySQLs.lag(expr, n, SQLs::_asExp, SQLs::_identity);
+    }
 
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr        non-null parameter or {@link  Expression},but couldn't be {@link SQLs#NULL}
+     * @param n           nullable,probably is below:
+     *                    <ul>
+     *                        <li>null</li>
+     *                        <li>{@link Long} type</li>
+     *                        <li>{@link Integer} type</li>
+     *                        <li>{@link SQLs#paramFrom(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                        <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *                    </ul>
+     * @param defaultWord {@link  SQLs#DEFAULT}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> lag(final Expression expr
+            , final @Nullable Expression n, final @Nullable SQLs.WordDefault defaultWord) {
+        return MySQLs.lag(expr, n, defaultWord, SQLs::_asExp, SQLs::_identity);
+    }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> lead(final Expression expr) {
+        return MySQLs.lead(expr, SQLs::_asExp, SQLs::_identity);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
+     * @param n    nullable,probably is below:
+     *             <ul>
+     *                 <li>null</li>
+     *                 <li>{@link Long} type</li>
+     *                 <li>{@link Integer} type</li>
+     *                 <li>{@link SQLs#paramFrom(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                 <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *             </ul>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> lead(Expression expr, @Nullable Expression n) {
+        return MySQLs.lead(expr, n, SQLs::_asExp, SQLs::_identity);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr        non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
+     * @param n           nullable,probably is below:
+     *                    <ul>
+     *                        <li>null</li>
+     *                        <li>{@link Long} type</li>
+     *                        <li>{@link Integer} type</li>
+     *                        <li>{@link SQLs#paramFrom(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                        <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *                    </ul>
+     * @param defaultWord {@link  SQLs#DEFAULT}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> lead(Expression expr, @Nullable Expression n
+            , final @Nullable SQLs.WordDefault defaultWord) {
+        return MySQLs.lead(expr, n, defaultWord, SQLs::_asExp, SQLs::_identity);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null {@link  Expression}
+     * @param n    positive.output literal.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_nth-value">NTH_VALUE(expr, N) [from_first_last] [null_treatment] over_clause</a>
+     */
+    public static MySQLFuncSyntax._FromFirstLastSpec<Expression, Selection> nthValue(Expression expr, Expression n) {
+        return MySQLs.nthValue(expr, n, SQLs::_asExp, SQLs::_identity);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link LongType}
+     * </p>
+     *
+     * @param n positive number or {@link  Expression}.in any of the following forms:
+     *          <ul>
+     *               <li>positive number:
+     *                      <ul>
+     *                           <li>{@link  Long}</li>
+     *                           <li>{@link  Integer}</li>
+     *                           <li>{@link  Short}</li>
+     *                           <li>{@link  Byte}</li>
+     *                      </ul>
+     *               </li>
+     *               <li>positive number parameter {@link  Expression},eg:{@link SQLs#paramFrom(Object)}</li>
+     *               <li>positive number literal {@link  Expression},eg:{@link SQLs#literalFrom(Object)}</li>
+     *               <li>variable {@link  Expression}</li>
+     *          </ul>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_ntile">NTILE(N) over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> ntile(final Expression n) {
+        return MySQLs.ntile(n, SQLs::_asExp, SQLs::_identity);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType}.
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">PERCENT_RANK() over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> percentRank() {
+        return MySQLs.percentRank(SQLs::_asExp, SQLs::_identity);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link LongType}.
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">RANK() over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> rank() {
+        return MySQLs.rank(SQLs::_asExp, SQLs::_identity);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link LongType}.
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_row-number">ROW_NUMBER() over_clause</a>
+     */
+    public static MySQLFuncSyntax._OverSpec<Expression, Selection> rowNumber() {
+        return MySQLs.rowNumber(SQLs::_asExp, SQLs::_identity);
+    }
 
 
 }

@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._Window;
-import io.army.criteria.standard.StandardSqlFunction;
+import io.army.criteria.standard.SQLFunction;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -85,7 +85,7 @@ abstract class FunctionUtils {
     }
 
 
-    static <R extends Item, I extends Item> StandardSqlFunction._CaseFuncWhenClause<R> caseFunction(
+    static <R extends Item, I extends Item> SQLFunction._CaseFuncWhenClause<R> caseFunction(
             final @Nullable Expression caseValue, final Function<_ItemExpression<I>, R> endFunc
             , final Function<Selection, I> asFunc) {
         return new CaseFunction<>((ArmyExpression) caseValue, endFunc, asFunc);
@@ -292,6 +292,26 @@ abstract class FunctionUtils {
         return argList;
     }
 
+    static List<ArmyExpression> twoExpList(final String name, Expression one, Expression two) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        }
+        return Arrays.asList((ArmyExpression) one, (ArmyExpression) two);
+    }
+
+    static List<ArmyExpression> threeExpList(final String name, Expression one, Expression two, Expression three) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (three instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, three);
+        }
+        return Arrays.asList((ArmyExpression) one, (ArmyExpression) two, (ArmyExpression) three);
+    }
+
     static List<Object> threeArgList(final String name, Expression one, Expression two, Expression three) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
@@ -468,11 +488,15 @@ abstract class FunctionUtils {
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
+            if (this instanceof SQLFunction._OuterOptionalClause) {
+                this.appendOuterClause(context);
+            }
+
             final String existingWindowName = this.existingWindowName;
             final _Window anonymousWindow = this.anonymousWindow;
 
             if (existingWindowName == null && anonymousWindow == null) {
-                if (!(this instanceof StandardSqlFunction.AggregateFunction)) {
+                if (!(this instanceof SQLFunction.AggregateFunction)) {
                     throw ContextStack.castCriteriaApi(this.context);
                 }
             } else if (existingWindowName != null && anonymousWindow != null) {
@@ -508,11 +532,15 @@ abstract class FunctionUtils {
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
+            if (this instanceof SQLFunction._OuterOptionalClause) {
+                this.outerClauseToString(sqlBuilder);
+            }
+
             final String existingWindowName = this.existingWindowName;
             final _Window anonymousWindow = this.anonymousWindow;
 
             if (existingWindowName == null && anonymousWindow == null) {
-                if (!(this instanceof StandardSqlFunction.AggregateFunction)) {
+                if (!(this instanceof SQLFunction.AggregateFunction)) {
                     throw ContextStack.castCriteriaApi(this.context);
                 }
             } else if (existingWindowName != null && anonymousWindow != null) {
@@ -537,6 +565,14 @@ abstract class FunctionUtils {
         abstract void appendArguments(_SqlContext context);
 
         abstract void argumentToString(StringBuilder builder);
+
+        void appendOuterClause(_SqlContext context) {
+            throw new UnsupportedOperationException();
+        }
+
+        void outerClauseToString(StringBuilder builder) {
+            throw new UnsupportedOperationException();
+        }
 
         final OE windowEnd(final _Window anonymousWindow) {
             if (this.anonymousWindow == null) {
@@ -1075,12 +1111,12 @@ abstract class FunctionUtils {
 
 
     private static final class CaseFunction<R extends Item, I extends Item> extends Expressions<I>
-            implements StandardSqlFunction._CaseWhenSpec<R>
-            , StandardSqlFunction._CaseFuncWhenClause<R>
-            , StandardSqlFunction._CaseThenClause<R>
+            implements SQLFunction._CaseWhenSpec<R>
+            , SQLFunction._CaseFuncWhenClause<R>
+            , SQLFunction._CaseThenClause<R>
             , FunctionSpec, CriteriaContextSpec
             , CaseWhens
-            , StandardSqlFunction._DynamicCaseThenClause
+            , SQLFunction._DynamicCaseThenClause
             , OperationExpression.MutableParamMetaSpec {
 
         private final Function<_ItemExpression<I>, R> endFunc;
@@ -1248,7 +1284,7 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> whens(Consumer<CaseWhens> consumer) {
+        public SQLFunction._CaseEndClause<R> whens(Consumer<CaseWhens> consumer) {
             return null;
         }
 
@@ -1346,97 +1382,97 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> Else(Expression expression) {
+        public SQLFunction._CaseEndClause<R> Else(Expression expression) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> Else(Supplier<Expression> supplier) {
+        public SQLFunction._CaseEndClause<R> Else(Supplier<Expression> supplier) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseEndClause<R> Else(Function<T, Expression> valueOperator
+        public <T> SQLFunction._CaseEndClause<R> Else(Function<T, Expression> valueOperator
                 , Supplier<T> getter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> Else(Function<Object, Expression> valueOperator
+        public SQLFunction._CaseEndClause<R> Else(Function<Object, Expression> valueOperator
                 , Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseEndClause<R> Else(ExpressionOperator<Expression, T, Expression> expOperator
+        public <T> SQLFunction._CaseEndClause<R> Else(ExpressionOperator<Expression, T, Expression> expOperator
                 , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> Else(ExpressionOperator<Expression, Object, Expression> expOperator
+        public SQLFunction._CaseEndClause<R> Else(ExpressionOperator<Expression, Object, Expression> expOperator
                 , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseEndClause<R> Else(BetweenValueOperator<T> expOperator
+        public <T> SQLFunction._CaseEndClause<R> Else(BetweenValueOperator<T> expOperator
                 , BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and
                 , Supplier<T> secondGetter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> Else(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator
+        public SQLFunction._CaseEndClause<R> Else(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator
                 , Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> Else(BetweenOperator expOperator, Expression first
+        public SQLFunction._CaseEndClause<R> Else(BetweenOperator expOperator, Expression first
                 , SQLs.WordAnd and, Expression second) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> ifElse(Supplier<Expression> supplier) {
+        public SQLFunction._CaseEndClause<R> ifElse(Supplier<Expression> supplier) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseEndClause<R> ifElse(Function<T, Expression> valueOperator
+        public <T> SQLFunction._CaseEndClause<R> ifElse(Function<T, Expression> valueOperator
                 , Supplier<T> getter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> ifElse(Function<Object, Expression> valueOperator
+        public SQLFunction._CaseEndClause<R> ifElse(Function<Object, Expression> valueOperator
                 , Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseEndClause<R> ifElse(ExpressionOperator<Expression, T, Expression> expOperator
+        public <T> SQLFunction._CaseEndClause<R> ifElse(ExpressionOperator<Expression, T, Expression> expOperator
                 , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> ifElse(ExpressionOperator<Expression, Object, Expression> expOperator
+        public SQLFunction._CaseEndClause<R> ifElse(ExpressionOperator<Expression, Object, Expression> expOperator
                 , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function
                 , String keyName) {
             return null;
         }
 
         @Override
-        public <T> StandardSqlFunction._CaseEndClause<R> ifElse(BetweenValueOperator<T> expOperator
+        public <T> SQLFunction._CaseEndClause<R> ifElse(BetweenValueOperator<T> expOperator
                 , BiFunction<Expression, T, Expression> operator
                 , Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter) {
             return null;
         }
 
         @Override
-        public StandardSqlFunction._CaseEndClause<R> ifElse(BetweenValueOperator<Object> expOperator
+        public SQLFunction._CaseEndClause<R> ifElse(BetweenValueOperator<Object> expOperator
                 , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
                 , SQLs.WordAnd and, String secondKey) {
             return null;

@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.standard.StandardSqlFunction;
+import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -609,7 +609,7 @@ abstract class StandardSyntax extends Functions {
     }
 
 
-    public static <I extends Item, R extends Item> StandardSqlFunction._CaseFuncWhenClause<R> Case(@Nullable Expression exp
+    public static <I extends Item, R extends Item> SQLFunction._CaseFuncWhenClause<R> Case(@Nullable Expression exp
             , Function<_ItemExpression<I>, R> endFunc, Function<Selection, I> asFunc) {
         return FunctionUtils.caseFunction(exp, endFunc, asFunc);
     }

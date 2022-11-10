@@ -4,7 +4,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.mysql.*;
-import io.army.criteria.standard.StandardSqlFunction;
+import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.*;
@@ -42,16 +42,19 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     }
 
     public interface _AggregateWindowFunc<R extends Expression, I extends Item>
-            extends _OverSpec<R, I>, _ItemExpression<I>, StandardSqlFunction.AggregateFunction {
+            extends _OverSpec<R, I>, _ItemExpression<I>, SQLFunction.AggregateFunction {
 
     }
 
-    public interface _NullTreatmentSpec extends Functions._NullTreatmentClause<_OverSpec>, _OverSpec {
+    public interface _NullTreatmentSpec<R extends Expression, I extends Item>
+            extends Functions._NullTreatmentClause<_OverSpec<R, I>>, _OverSpec<R, I> {
 
 
     }
 
-    public interface _FromFirstLastSpec extends Functions._FromFirstLastClause<_NullTreatmentSpec>, _NullTreatmentSpec {
+    public interface _FromFirstLastSpec<R extends Expression, I extends Item>
+            extends Functions._FromFirstLastClause<_NullTreatmentSpec<R, I>>, _NullTreatmentSpec<R, I>
+            , SQLFunction._OuterOptionalClause {
 
 
     }

@@ -7,6 +7,7 @@ import io.army.meta.TypeMeta;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -46,12 +47,20 @@ abstract class Functions {
 
         NR ignoreNulls();
 
+        NR ifRespectNulls(BooleanSupplier predicate);
+
+        NR ifIgnoreNulls(BooleanSupplier predicate);
+
     }
 
     public interface _FromFirstLastClause<FR> {
         FR fromFirst();
 
         FR fromLast();
+
+        FR ifFromFirst(BooleanSupplier predicate);
+
+        FR ifFromLast(BooleanSupplier predicate);
 
     }
 
