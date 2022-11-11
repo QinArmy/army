@@ -438,22 +438,24 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, _A
 
 
     @Override
-    public final OperationExpression<I> asType(final @Nullable TypeMeta paramMeta) {
-        if (paramMeta == null) {
+    public final OperationExpression<I> mapTo(final @Nullable TypeMeta typeMeta) {
+        if (typeMeta == null) {
             throw ContextStack.nullPointer(ContextStack.peek());
         }
         final OperationExpression<I> expression;
         if (this instanceof MutableParamMetaSpec) {
-            ((MutableParamMetaSpec) this).updateParamMeta(paramMeta);
+            ((MutableParamMetaSpec) this).updateParamMeta(typeMeta);
             expression = this;
         } else {
-            expression = Expressions.castExp(this, paramMeta);
+            expression = Expressions.castExp(this, typeMeta);
         }
         return expression;
     }
 
     @Override
-    public abstract OperationExpression<I> bracket();
+    public OperationExpression<I> bracket() {
+        return Expressions.bracketExp(this);
+    }
 
     @Override
     public final I as(final String alias) {

@@ -1,17 +1,24 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.*;
+import io.army.criteria.Clause;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.Expression;
+import io.army.criteria.SQLElement;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLLocale;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.lang.Nullable;
-import io.army.mapping.*;
-import io.army.meta.TypeMeta;
+import io.army.mapping.ByteArrayType;
+import io.army.mapping.IntegerType;
+import io.army.mapping.MappingType;
+import io.army.mapping.StringType;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * package class
@@ -69,12 +76,12 @@ abstract class MySQLStringFunctions extends Functions {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param n nullable parameter or {@link Expression}
+     * @param n parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static Expression charFunc(final Expression n) {
-        return FunctionUtils.complexArgFunc("CHAR", Collections.singletonList(n), StringType.INSTANCE);
+    public static Expression Char(final Expression n) {
+        return FunctionUtils.oneOrMultiArgFunc("CHAR", n, StringType.INSTANCE);
     }
 
     /**
@@ -82,25 +89,67 @@ abstract class MySQLStringFunctions extends Functions {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param n           nullable parameter or non-empty {@link List} or {@link Expression}
-     * @param charsetName non-null, {@link io.army.criteria.mysql.MySQLCharset} or {@link String} ,output identifier
+     * @param list parameter or {@link Expression} list
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static Expression charFunc(final Expression n, final Object charsetName) {
-        final String funcName = "CHAR";
+    public static Expression Char(final List<Expression> list) {
+        return FunctionUtils.multiArgFunc("CHAR", list, StringType.INSTANCE);
+    }
 
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(_funcParamList(StringType.INSTANCE, n));
-        argList.add(FunctionUtils.FuncWord.USING);
-        if (charsetName instanceof MySQLCharset) {
-            argList.add(charsetName);
-        } else if (charsetName instanceof String) {
-            argList.add(FunctionUtils.sqlIdentifier((String) charsetName));// sql identifier
-        } else {
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param n           nullable parameter or non-empty {@link List} or {@link Expression}
+     * @param using       {@link MySQLs#USING}
+     * @param charsetName non-null, {@link MySQLCharset} or {@link MySQLs#charset(String)} ,output identifier
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
+     */
+    public static Expression Char(final Expression n, final MySQLs.WordUsing using, final SQLElement charsetName) {
+        assert using == MySQLs.USING;
+        final String funcName = "CHAR";
+        if (!(charsetName instanceof MySQLCharset || charsetName instanceof SQLs.SQLIdentifierImpl)) {
             throw CriteriaUtils.funcArgError(funcName, charsetName);
         }
+
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(n);
+        argList.add(MySQLs.USING);
+        argList.add(charsetName);
         return FunctionUtils.complexArgFunc(funcName, argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param list        parameter or {@link Expression} list
+     * @param using       {@link MySQLs#USING}
+     * @param charsetName non-null, {@link MySQLCharset} or {@link MySQLs#charset(String)} ,output identifier
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
+     */
+    public static Expression Char(final List<Expression> list, final MySQLs.WordUsing using
+            , final SQLElement charsetName) {
+        assert using == MySQLs.USING;
+        final String name = "CHAR";
+        if (!(charsetName instanceof MySQLCharset || charsetName instanceof SQLs.SQLIdentifierImpl)) {
+            throw CriteriaUtils.funcArgError(name, charsetName);
+        }
+        final int size = list.size();
+        if (size == 0) {
+            throw CriteriaUtils.funcArgListIsEmpty(name);
+        }
+        final List<Object> argList = new ArrayList<>(size + 2);
+        argList.addAll(list);
+        argList.add(MySQLs.USING);
+        argList.add(charsetName);
+        return FunctionUtils.complexArgFunc(name, argList, StringType.INSTANCE);
     }
 
     /**
@@ -140,15 +189,7 @@ abstract class MySQLStringFunctions extends Functions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat-ws">CONCAT_WS(separator,str1,str2,...)</a>
      */
     public static Expression concatWs(final Expression separator, final Expression str) {
-        final String name = "CONCAT_WS";
-        if (separator instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, separator);
-        }
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(separator);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        argList.add(str);
-        return FunctionUtils.complexArgFunc(name, argList, StringType.INSTANCE);
+        return FunctionUtils.twoOrMultiArgFunc("CONCAT_WS", separator, str, StringType.INSTANCE);
     }
 
     /**
@@ -156,13 +197,39 @@ abstract class MySQLStringFunctions extends Functions {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param n       non-null parameter or {@link Expression}
-     * @param strList non-null parameter or non-empty {@link List} or {@link Expression}
+     * @param list nullable parameter or {@link Collection} or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat-ws">CONCAT_WS(separator,str1,str2,...)</a>
+     */
+    public static Expression concatWs(List<Expression> list) {
+        return FunctionUtils.multiArgFunc("CONCAT_WS", list, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param n   non-null parameter or {@link Expression}
+     * @param str non-null parameter or non-empty {@link List} or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_elt">ELT(N,str1,str2,str3,...)</a>
      */
-    public static Expression elt(final Expression n, final Object strList) {
-        return _singleAndListFunc("ELT", n, StringType.INSTANCE, strList, StringType.INSTANCE);
+    public static Expression elt(final Expression n, final Expression str) {
+        return FunctionUtils.twoOrMultiArgFunc("ELT", n, str, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param list nullable parameter or {@link Collection} or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_elt">ELT(N,str1,str2,str3,...)</a>
+     */
+    public static Expression elt(List<Expression> list) {
+        return FunctionUtils.multiArgFunc("ELT", list, StringType.INSTANCE);
     }
 
 
@@ -879,121 +946,6 @@ abstract class MySQLStringFunctions extends Functions {
 
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link  MappingType} of expr.
-     * </p>
-     *
-     * @param name     MIN or MAX
-     * @param distinct null or {@link  SQLsSyntax.WordAll#DISTINCT}
-     * @param expr     non-null parameter or {@link Expression},but couldn't be {@link SQLs#nullWord()}.
-     * @see #min(Expression)
-     * @see #min(SQLsSyntax.WordAll, Expression)
-     * @see #max(Expression)
-     * @see #max(SQLsSyntax.WordAll, Expression)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
-     */
-    private static _AggregateOverSpec _distinctOneAggregateWindow(final String name, final @Nullable SQLsSyntax.WordAll distinct
-            , final Expression expr, final TypeMeta returnType) {
-        final _AggregateOverSpec func;
-        if (distinct == null) {
-            func = MySQLFunctionUtils.oneArgAggregateWindow(name, expr, returnType);
-        } else if (distinct != SQLs.DISTINCT) {
-            throw CriteriaUtils.funcArgError(name, distinct);
-        } else if (expr instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, expr);
-        } else {
-            final List<Object> argList = new ArrayList<>(2);
-            argList.add(distinct);
-            argList.add(expr);
-            func = MySQLFunctionUtils.complexAggregateWindow(name, argList, returnType);
-        }
-        return func;
-    }
-
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
-     *
-     * @param funcName   LAG or LEAD
-     * @param expr       non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
-     * @param n          nullable,probably is below:
-     *                   <ul>
-     *                       <li>null</li>
-     *                       <li>{@link Long} type</li>
-     *                       <li>{@link Integer} type</li>
-     *                       <li>{@link SQLs#paramFrom(Object)},argument type is {@link Long} or {@link Integer}</li>
-     *                       <li>{@link SQLs#literalFrom(Object) },argument type is {@link Long} or {@link Integer}</li>
-     *                   </ul>
-     * @param useDefault if n is non-nul and useDefault is true,output sql key word {@code DEFAULT}
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
-     */
-    private static MySQLFunctionSyntax._OverSpec _lagOrLead(final String funcName, final Object expr
-            , final @Nullable Object n, final boolean useDefault) {
-
-        assert funcName.equals("LAG") || funcName.equals("LEAD");
-
-        final ArmyExpression expression;
-        expression = SQLs._funcParam(expr);
-        if (expr == SQLs.NULL) {
-            throw CriteriaUtils.funcArgError(funcName, expr);
-        }
-
-        final ArmyExpression nExp;
-        final TypeMeta nType;
-        if (n == null) {
-            nExp = null;
-            nType = null;
-        } else {
-            nExp = SQLs._funcParam(n);
-            nType = nExp.typeMeta();
-        }
-
-        final MySQLFunctionSyntax._OverSpec overSpec;
-        if (nExp == null) {
-            overSpec = MySQLFunctionUtils.oneArgWindowFunc(funcName, null, expression, expression.typeMeta());
-        } else if (!(nExp instanceof ParamExpression.SingleParamExpression
-                || nExp instanceof LiteralExpression.SingleLiteral)) {
-            throw CriteriaUtils.funcArgError(funcName, n);
-        } else if (nExp.isNullValue()) {
-            throw CriteriaUtils.funcArgError(funcName, n);
-        } else if (!(nType instanceof LongType || nType instanceof IntegerType)) {
-            throw CriteriaUtils.funcArgError(funcName, n);
-        } else if (useDefault) {
-            final List<ArmyExpression> argList;
-            argList = Arrays.asList(expression, nExp, (ArmyExpression) SQLs.defaultWord());
-            overSpec = MySQLFunctionUtils.safeMultiArgWindowFunc(funcName, null, argList, expression.typeMeta());
-        } else {
-            final List<ArmyExpression> argList;
-            argList = Arrays.asList(expression, nExp);
-            overSpec = MySQLFunctionUtils.safeMultiArgWindowFunc(funcName, null, argList, expression.typeMeta());
-        }
-        return overSpec;
-    }
-
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
-     *
-     * @see #firstValue(Expression)
-     * @see #lastValue(Expression)
-     */
-    private static MySQLFunctionSyntax._OverSpec _nonNullArgWindowFunc(final String funcName, final Object expr) {
-        final ArmyExpression expression;
-        expression = SQLs._funcParam(expr);
-        if (expr == SQLs.NULL) {
-            throw CriteriaUtils.funcArgError(funcName, expr);
-        }
-        return MySQLFunctionUtils.oneArgWindowFunc(funcName, null, expression, expression.typeMeta());
-    }
-
-
-    /**
      * @see #groupConcat(Object)
      * @see #groupConcat(SQLsSyntax.WordAll, Object)
      */
@@ -1061,29 +1013,6 @@ abstract class MySQLStringFunctions extends Functions {
 
         }
         return func;
-    }
-
-    /**
-     * @see #lag(Expression, Expression, SQLs.WordDefault, Function, Function)
-     * @see #lead(Expression, Expression, SQLs.WordDefault, Function, Function)
-     */
-    private static <R extends Expression, I extends Item> MySQLFunctionSyntax._OverSpec<R, I> leadOrLog(
-            final String name, final @Nullable Expression expr
-            , final @Nullable Expression n, final @Nullable SQLs.WordDefault defaultWord
-            , Function<_AliasExpression<I>, R> endFunction, Function<Selection, I> asFunction) {
-        if (expr == null) {
-            throw ContextStack.nullPointer(ContextStack.peek());
-        }
-        assert defaultWord == null || defaultWord == SQLs.DEFAULT;
-        final MySQLFunctionSyntax._OverSpec<R, I> spec;
-        if (n == null) {
-            spec = MySQLFunctionUtils.oneArgWindowFunc(name, expr, expr.typeMeta(), endFunction, asFunction);
-        } else if (defaultWord == null) {
-            spec = MySQLFunctionUtils.twoArgWindowFunc(name, expr, n, expr.typeMeta(), endFunction, asFunction);
-        } else {
-            spec = MySQLFunctionUtils.threeArgWindow(name, expr, n, defaultWord, expr.typeMeta(), endFunction, asFunction);
-        }
-        return spec;
     }
 
 

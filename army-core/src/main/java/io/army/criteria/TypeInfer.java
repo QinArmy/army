@@ -9,7 +9,7 @@ public interface TypeInfer extends Item {
 
     interface TypeUpdateSpec {
 
-        Expression asType(TypeMeta paramMeta);
+        Expression mapTo(TypeMeta paramMeta);
 
     }
 

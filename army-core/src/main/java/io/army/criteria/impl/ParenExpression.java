@@ -217,7 +217,7 @@ public interface ParenExpression<I extends Item> extends _ItemExpression<I> {
     <T> _ParenExpression<I> leftShift(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    _ParenExpression<I> asType(TypeMeta paramMeta);
+    _ParenExpression<I> mapTo(TypeMeta typeMeta);
 
     @Override
     _ParenExpression<I> bracket();

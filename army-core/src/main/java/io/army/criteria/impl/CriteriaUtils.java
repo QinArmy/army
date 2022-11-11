@@ -647,6 +647,11 @@ abstract class CriteriaUtils {
         throw ContextStack.criteriaError(ContextStack.peek(), m);
     }
 
+    static CriteriaException funcArgListIsEmpty(String name) {
+        String m = String.format("function %s argument list must non-empty.", name);
+        return ContextStack.criteriaError(ContextStack.peek(), m);
+    }
+
     static CriteriaException nonCollectionValue(String keyName) {
         String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());
         return ContextStack.criteriaError(ContextStack.peek(), m);
@@ -671,10 +676,6 @@ abstract class CriteriaUtils {
         return unknownWords(ContextStack.peek(), word);
     }
 
-
-    static CriteriaException funcArgListIsEmpty(String name) {
-        return ContextStack.criteriaError(ContextStack.peek(), String.format("%s arg list is empty", name));
-    }
 
     static CriteriaException returningListIsEmpty(CriteriaContext context) {
         return ContextStack.criteriaError(context, "RETURNING list is empty");

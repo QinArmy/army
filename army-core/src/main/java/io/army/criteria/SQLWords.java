@@ -1,10 +1,8 @@
 package io.army.criteria;
 
-public interface SQLWords {
+public interface SQLWords extends SQLElement {
 
-    /**
-     * @return sql keywords.
-     */
+
     String render();
 
     @Override

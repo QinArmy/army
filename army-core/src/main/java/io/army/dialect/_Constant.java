@@ -128,6 +128,8 @@ public interface _Constant {
 
     String SPACE_RIGHT_PAREN = " )";
 
+    String PARENS = "()";
+
     String SPACE_FOR_UPDATE = " FOR UPDATE";
 
     String SPACE_FOR_SHARE = " FOR SHARE";

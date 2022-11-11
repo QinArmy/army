@@ -409,7 +409,7 @@ abstract class NonOperationExpression implements ArmyExpression, _AliasExpressio
     }
 
     @Override
-    public final OperationExpression<Selection> asType(TypeMeta paramMeta) {
+    public final OperationExpression<Selection> mapTo(TypeMeta typeMeta) {
         throw unsupportedOperation();
     }
 

@@ -73,4 +73,5 @@ public enum MySQLCharset implements SQLWords {
         return String.format(" %s.%s", MySQLCharset.class.getName(), this.name());
     }
 
+
 }

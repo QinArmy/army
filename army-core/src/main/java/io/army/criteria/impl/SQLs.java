@@ -24,6 +24,7 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -211,6 +212,13 @@ public abstract class SQLs extends SQLsSyntax {
             }
             return function.apply((IPredicate) t);
         };
+    }
+
+    static SQLIdentifier _identifier(@Nullable String identifier) {
+        if (identifier == null) {
+            throw ContextStack.nullPointer(ContextStack.peek());
+        }
+        return new SQLIdentifierImpl(identifier);
     }
 
 
@@ -492,6 +500,46 @@ public abstract class SQLs extends SQLsSyntax {
 
 
     }//CteImpl
+
+
+    static final class SQLIdentifierImpl implements SQLIdentifier {
+
+        private final String identifier;
+
+        private SQLIdentifierImpl(String identifier) {
+            this.identifier = identifier;
+        }
+
+        @Override
+        public String render() {
+            return this.identifier;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.identifier);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof SQLIdentifierImpl) {
+                match = ((SQLIdentifierImpl) obj).identifier.equals(this.identifier);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            return this.identifier;
+        }
+
+
+    }//SQLIdentifierImpl
 
 
 }

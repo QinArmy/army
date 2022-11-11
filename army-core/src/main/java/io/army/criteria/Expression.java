@@ -231,7 +231,7 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
     <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    Expression asType(TypeMeta paramMeta);
+    Expression mapTo(TypeMeta typeMeta);
 
     Expression bracket();
 

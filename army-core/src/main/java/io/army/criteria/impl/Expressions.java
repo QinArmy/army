@@ -80,6 +80,10 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
         return new CastExpression<>(expression, typeMeta);
     }
 
+    static <I extends Item> OperationExpression<I> bracketExp(OperationExpression<I> expression) {
+        return new BracketsExpression<>(expression);
+    }
+
     static Expression scalarExpression(final SubQuery subQuery) {
         final List<? extends SelectItem> selectItemList;
         selectItemList = ((_RowSet) subQuery).selectItemList();
@@ -88,6 +92,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
         }
         return new ScalarExpression(subQuery);
     }
+
 
     static OperationPredicate<TypeInfer> existsPredicate(UnaryOperator operator, @Nullable SubQuery subQuery) {
         assert subQuery != null;

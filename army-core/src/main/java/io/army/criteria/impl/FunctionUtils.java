@@ -97,16 +97,19 @@ abstract class FunctionUtils {
         return new OneArgOptionFunc(name, option, SQLs._funcParam(expr), clause, returnType);
     }
 
-    static Expression oneArgFunc(String name, @Nullable Object expr, TypeMeta returnType) {
+    static Expression oneArgFunc(String name, Expression expr, TypeMeta returnType) {
         if (expr instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, expr);
         }
-        return new OneArgFunc(name, SQLs._funcParam(expr), returnType);
+        return new OneArgFuncExpression(name, (ArmyExpression) expr, returnType);
     }
+
 
     static Expression twoArgFunc(final String name, final Expression one
             , final Expression two, TypeMeta returnType) {
-        return new ComplexArgFunc(name, twoArgList(name, one, two), returnType);
+        final List<ArmyExpression> argList;
+        argList = twoExpList(name, one, two);
+        return new MultiArgFunctionExpression(name, null, argList, returnType);
     }
 
     static Expression threeArgFunc(final String name, final Expression one
@@ -125,13 +128,27 @@ abstract class FunctionUtils {
     }
 
 
-    static Expression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
-        return new OneArgFunc(name, (ArmyExpression) exp, returnType);
-    }
-
     static Expression noArgFunc(String name, TypeMeta returnType) {
         return new NoArgFuncExpression(name, returnType);
     }
+
+    static Expression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
+        return new OneArgFuncExpression(name, (ArmyExpression) exp, returnType);
+    }
+
+    static Expression twoOrMultiArgFunc(final String name, final Expression one
+            , final Expression two, TypeMeta returnType) {
+        final List<ArmyExpression> argList;
+        argList = new ArrayList<>(2);
+        argList.add((ArmyExpression) one);
+        argList.add((ArmyExpression) two);
+        return new MultiArgFunctionExpression(name, null, argList, returnType);
+    }
+
+    static Expression multiArgFunc(String name, List<Expression> argList, TypeMeta returnType) {
+        return new MultiArgFunctionExpression(name, null, expList(name, argList), returnType);
+    }
+
 
     static IPredicate noArgFuncPredicate(final String name) {
         return new NoArgFuncPredicate(name);
@@ -173,9 +190,6 @@ abstract class FunctionUtils {
         return new MultiArgOptionFunc(name, option, funcParamList(argList), clause, returnType);
     }
 
-    static Object sqlIdentifier(String identifier) {
-        return new SQLIdentifier(identifier);
-    }
 
     static Functions._FuncConditionTowClause conditionTwoFunc(final String name
             , BiFunction<MappingType, MappingType, MappingType> function) {
@@ -312,6 +326,19 @@ abstract class FunctionUtils {
         return Arrays.asList((ArmyExpression) one, (ArmyExpression) two, (ArmyExpression) three);
     }
 
+    static List<ArmyExpression> expList(final String name, final List<Expression> expList) {
+        final int size = expList.size();
+        if (size == 0) {
+            throw CriteriaUtils.funcArgListIsEmpty(name);
+        }
+        final List<ArmyExpression> argList = new ArrayList<>(expList.size());
+        for (Expression exp : expList) {
+            argList.add((ArmyExpression) exp);
+        }
+        return argList;
+    }
+
+
     static List<Object> threeArgList(final String name, Expression one, Expression two, Expression three) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
@@ -431,7 +458,7 @@ abstract class FunctionUtils {
 
         final String name;
 
-        private final Function<_AliasExpression<I>, OE> endFunction;
+        private final Function<_ItemExpression<I>, OE> expFunction;
 
         private TypeMeta returnType;
 
@@ -439,12 +466,12 @@ abstract class FunctionUtils {
 
         private _Window anonymousWindow;
 
-        WindowFunction(String name, TypeMeta returnType, Function<_AliasExpression<I>, OE> endFunction
-                , Function<Selection, I> aliasFunction) {
-            super(SQLs._toSelection(aliasFunction));
+        WindowFunction(String name, TypeMeta returnType, Function<_ItemExpression<I>, OE> expFunction
+                , Function<TypeInfer, I> endFunc) {
+            super(endFunc);
             this.context = ContextStack.peek();
             this.name = name;
-            this.endFunction = endFunction;
+            this.expFunction = expFunction;
             this.returnType = returnType;
         }
 
@@ -470,7 +497,7 @@ abstract class FunctionUtils {
             }
             this.context.onRefWindow(windowName);
             this.existingWindowName = windowName;
-            return this.endFunction.apply(this);
+            return this.expFunction.apply(this);
         }
 
 
@@ -488,7 +515,7 @@ abstract class FunctionUtils {
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
-            if (this instanceof SQLFunction._OuterOptionalClause) {
+            if (this instanceof SQLFunction._OuterClauseBeforeOver) {
                 this.appendOuterClause(context);
             }
 
@@ -532,7 +559,7 @@ abstract class FunctionUtils {
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
-            if (this instanceof SQLFunction._OuterOptionalClause) {
+            if (this instanceof SQLFunction._OuterClauseBeforeOver) {
                 this.outerClauseToString(sqlBuilder);
             }
 
@@ -579,18 +606,20 @@ abstract class FunctionUtils {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.anonymousWindow = anonymousWindow;
-            return this.endFunction.apply(this);
+            return this.expFunction.apply(this);
         }
 
     }//AggregateOverClause
 
-    private static class NoArgFuncExpression extends OperationExpression implements FunctionSpec {
+    private static class NoArgFuncExpression extends OperationExpression<TypeInfer> implements FunctionSpec
+            , NoArgFunction {
 
         private final String name;
 
         private final TypeMeta returnType;
 
         private NoArgFuncExpression(String name, TypeMeta returnType) {
+            super(SQLs::_identity);
             this.name = name;
             this.returnType = returnType;
         }
@@ -605,8 +634,7 @@ abstract class FunctionUtils {
             context.sqlBuilder()
                     .append(_Constant.SPACE)
                     .append(this.name)
-                    .append(_Constant.LEFT_PAREN)
-                    .append(_Constant.RIGHT_PAREN);
+                    .append(_Constant.PARENS);
         }
 
         @Override
@@ -633,19 +661,124 @@ abstract class FunctionUtils {
             return _StringUtils.builder()
                     .append(_Constant.SPACE)
                     .append(this.name)
-                    .append(_Constant.LEFT_PAREN)
-                    .append(_Constant.RIGHT_PAREN)
+                    .append(_Constant.PARENS)
                     .toString();
         }
 
 
     }//NoArgFuncExpression
 
-    private static final class NoArgFuncPredicate extends OperationPredicate implements FunctionSpec {
+
+    static abstract class FunctionExpression extends OperationExpression<TypeInfer>
+            implements FunctionSpec, OperationExpression.MutableParamMetaSpec {
+
+        final String name;
+
+        private TypeMeta returnType;
+
+        FunctionExpression(String name, TypeMeta returnType) {
+            super(SQLs::_identity);
+            this.name = name;
+            this.returnType = returnType;
+        }
+
+        @Override
+        public final OperationExpression<TypeInfer> bracket() {
+            //return this,don't create new instance
+            return this;
+        }
+
+        @Override
+        public final TypeMeta typeMeta() {
+            return this.returnType;
+        }
+
+        @Override
+        public void updateParamMeta(final TypeMeta typeMeta) {
+            this.returnType = typeMeta;
+        }
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name) // function name
+                    .append(_Constant.LEFT_PAREN);
+
+            if (this instanceof OneArgFuncExpression) {
+                ((OneArgFuncExpression) this).argument.appendSql(context);
+            } else if (this instanceof MultiArgFunctionExpression) {
+                final MultiArgFunctionExpression e = (MultiArgFunctionExpression) this;
+                FunctionUtils.appendArguments(e.option, e.argList, context);
+            } else {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+        @Override
+        public final String toString() {
+            final StringBuilder builder = new StringBuilder();
+
+            builder.append(_Constant.SPACE)
+                    .append(this.name) // function name
+                    .append(_Constant.LEFT_PAREN);
+            if (this instanceof OneArgFuncExpression) {
+                builder.append(((OneArgFuncExpression) this).argument);
+            } else if (this instanceof MultiArgFunctionExpression) {
+                final MultiArgFunctionExpression e = (MultiArgFunctionExpression) this;
+                FunctionUtils.argumentsToString(e.option, e.argList, builder);
+            } else {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            return builder.append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
+        }
+
+
+    }//FunctionExpression
+
+    private static final class OneArgFuncExpression extends FunctionExpression {
+
+        private final ArmyExpression argument;
+
+        private OneArgFuncExpression(String name, ArmyExpression argument, TypeMeta returnType) {
+            super(name, returnType);
+            this.argument = argument;
+        }
+
+
+    }//OneArgFuncExpression
+
+
+    private static final class MultiArgFunctionExpression extends FunctionExpression {
+
+        private final SQLWords option;
+
+        private final List<ArmyExpression> argList;
+
+        private MultiArgFunctionExpression(String name, @Nullable final SQLWords option
+                , List<ArmyExpression> argList, TypeMeta returnType) {
+            super(name, returnType);
+            assert argList.size() > 0;
+            this.option = option;
+            this.argList = argList;
+        }
+
+
+    }//MultiArgFunctionExpression
+
+
+    private static final class NoArgFuncPredicate extends OperationPredicate<TypeInfer> implements FunctionSpec
+            , NoArgFunction {
 
         private final String name;
 
         private NoArgFuncPredicate(String name) {
+            super(SQLs::_identity);
             this.name = name;
         }
 
@@ -654,8 +787,25 @@ abstract class FunctionUtils {
             context.sqlBuilder()
                     .append(_Constant.SPACE)
                     .append(this.name)
-                    .append(_Constant.LEFT_PAREN)
-                    .append(_Constant.SPACE_RIGHT_PAREN);
+                    .append(_Constant.PARENS);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof NoArgFuncPredicate) {
+                match = ((NoArgFuncPredicate) obj).name.equals(this.name);
+            } else {
+                match = false;
+            }
+            return match;
         }
 
         @Override
@@ -663,8 +813,7 @@ abstract class FunctionUtils {
             return _StringUtils.builder()
                     .append(_Constant.SPACE)
                     .append(this.name)
-                    .append(_Constant.LEFT_PAREN)
-                    .append(_Constant.SPACE_RIGHT_PAREN)
+                    .append(_Constant.PARENS)
                     .toString();
         }
 
@@ -672,13 +821,14 @@ abstract class FunctionUtils {
     }//NoArgFuncPredicate
 
 
-    private static final class OneArgFuncPredicate extends OperationPredicate implements FunctionSpec {
+    private static final class OneArgFuncPredicate extends OperationPredicate<TypeInfer> {
 
         private final String name;
 
         private final ArmyExpression argument;
 
         private OneArgFuncPredicate(String name, ArmyExpression argument) {
+            super(SQLs::_identity);
             this.name = name;
             this.argument = argument;
         }
@@ -712,33 +862,6 @@ abstract class FunctionUtils {
 
     }//OneArgFuncPredicate
 
-
-    private static final class MultiArgFunction extends OperationExpression implements FunctionSpec {
-
-        private final String name;
-
-        private final List<? extends Expression> argList;
-
-        private final TypeMeta returnType;
-
-        private MultiArgFunction(String name, List<? extends Expression> argList, TypeMeta returnType) {
-            this.name = name;
-            this.argList = argList;
-            this.returnType = returnType;
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return this.returnType;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            FunctionUtils.appendMultiArgFunc(this.name, this.argList, context);
-        }
-
-
-    }//MultiArgFunction
 
     private static final class MultiArgVoidFunction extends NonOperationExpression implements FunctionSpec {
 
@@ -806,85 +929,6 @@ abstract class FunctionUtils {
 
     }//ComplexFuncPredicate
 
-
-    static abstract class FunctionExpression extends OperationExpression
-            implements FunctionSpec, OperationExpression.MutableParamMetaSpec {
-
-        final String name;
-
-        private TypeMeta returnType;
-
-        FunctionExpression(String name, TypeMeta returnType) {
-            this.name = name;
-            this.returnType = returnType;
-        }
-
-        @Override
-        public final TypeMeta typeMeta() {
-            return this.returnType;
-        }
-
-        @Override
-        public void updateParamMeta(final TypeMeta typeMeta) {
-            this.returnType = typeMeta;
-        }
-
-        @Override
-        public final void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name) // function name
-                    .append(_Constant.LEFT_PAREN);
-
-            this.appendArguments(context);
-
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-        }
-
-        @Override
-        public final String toString() {
-            final StringBuilder builder = new StringBuilder();
-
-            builder.append(_Constant.SPACE)
-                    .append(this.name) // function name
-                    .append(_Constant.LEFT_PAREN);
-
-            this.argumentsToString(builder);
-
-            return builder.append(_Constant.SPACE_RIGHT_PAREN)
-                    .toString();
-        }
-
-        abstract void appendArguments(final _SqlContext context);
-
-        abstract void argumentsToString(StringBuilder builder);
-
-    }//FunctionExpression
-
-
-    private static final class OneArgFunc extends FunctionExpression {
-
-        private final ArmyExpression argument;
-
-        private OneArgFunc(String name, ArmyExpression argument, TypeMeta returnType) {
-            super(name, returnType);
-            this.argument = argument;
-        }
-
-        @Override
-        void appendArguments(final _SqlContext context) {
-            this.argument.appendSql(context);
-        }
-
-        @Override
-        void argumentsToString(final StringBuilder builder) {
-            builder.append(this.argument);
-        }
-
-
-    }//OneArgFunc
-
     private static final class JsonObjectFunc extends FunctionExpression {
 
         private final Map<String, Expression> expMap;
@@ -928,59 +972,7 @@ abstract class FunctionUtils {
     }//JsonMapFunc
 
 
-    @Deprecated
-    private static final class OneArgOptionFunc extends FunctionUtils.FunctionExpression {
 
-        private final SQLWords option;
-
-        private final ArmyExpression argument;
-
-        private final Clause clause;
-
-        private OneArgOptionFunc(String name, @Nullable SQLWords option
-                , ArmyExpression argument, @Nullable Clause clause
-                , TypeMeta returnType) {
-            super(name, returnType);
-            this.option = option;
-            this.argument = argument;
-            this.clause = clause;
-        }
-
-        @Override
-        void appendArguments(final _SqlContext context) {
-            final SQLWords option = this.option;
-            if (option != null) {
-                context.sqlBuilder()
-                        .append(_Constant.SPACE)
-                        .append(option.render());
-            }
-            this.argument.appendSql(context);
-
-            final Clause clause = this.clause;
-            if (clause != null) {
-                ((_SelfDescribed) clause).appendSql(context);
-            }
-
-        }
-
-        @Override
-        void argumentsToString(final StringBuilder builder) {
-            final SQLWords option = this.option;
-            if (option != null) {
-                builder.append(_Constant.SPACE)
-                        .append(option.render());
-            }
-            builder.append(this.argument);
-
-            final Clause clause = this.clause;
-            if (clause != null) {
-                builder.append(clause);
-            }
-
-        }
-
-
-    }//OneArgOptionFunc
 
     private static final class SQLIdentifier {
 
@@ -1077,37 +1069,7 @@ abstract class FunctionUtils {
     }//NamedComplexArgFunc
 
 
-    private static final class MultiArgOptionFunc extends FunctionUtils.FunctionExpression {
 
-        private final SQLWords option;
-
-        private final List<ArmyExpression> argList;
-
-        private final Clause clause;
-
-        private MultiArgOptionFunc(String name, @Nullable SQLWords option
-                , List<ArmyExpression> argList, @Nullable Clause clause
-                , TypeMeta returnType) {
-            super(name, returnType);
-            assert argList.size() > 0;
-
-            this.option = option;
-            this.argList = _CollectionUtils.unmodifiableList(argList);
-            this.clause = clause;
-        }
-
-        @Override
-        void appendArguments(final _SqlContext context) {
-            FunctionUtils.appendArguments(this.option, this.argList, this.clause, context);
-        }
-
-        @Override
-        void argumentsToString(final StringBuilder builder) {
-            FunctionUtils.argumentsToString(this.option, this.argList, this.clause, builder);
-        }
-
-
-    }//MultiArgOptionFunc
 
 
     private static final class CaseFunction<R extends Item, I extends Item> extends Expressions<I>

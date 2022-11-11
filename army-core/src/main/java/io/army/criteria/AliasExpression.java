@@ -217,7 +217,7 @@ public interface AliasExpression<I extends Item> extends _ItemExpression<I>, Sta
     <T> _AliasExpression<I> leftShift(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    _AliasExpression<I> asType(TypeMeta paramMeta);
+    _AliasExpression<I> mapTo(TypeMeta typeMeta);
 
     @Override
     _AliasExpression<I> bracket();

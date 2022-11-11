@@ -224,7 +224,7 @@ public interface _SpacePredicateExp<I extends Item> extends _ItemExpression<I> {
     <T> _SpacePredicateExp<I> leftShift(BiFunction<Expression, T, Expression> operator, T operand);
 
     @Override
-    _SpacePredicateExp<I> asType(TypeMeta paramMeta);
+    _SpacePredicateExp<I> mapTo(TypeMeta typeMeta);
 
     @Override
     _SpacePredicateExp<I> bracket();

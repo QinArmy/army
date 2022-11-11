@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Query;
+import io.army.criteria.SQLIdentifier;
+import io.army.criteria.SQLWords;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect._Constant;
@@ -9,6 +11,7 @@ import io.army.util._StringUtils;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -34,6 +37,10 @@ abstract class MySQLSyntax extends SQLSyntax {
     }
 
     public interface WordDistinct extends Modifier, SQLSyntax.ArgDistinct {
+
+    }
+
+    public interface WordUsing extends SQLWords {
 
     }
 
@@ -71,15 +78,12 @@ abstract class MySQLSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(MySQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
 
     }//MySQLModifier
+
 
     private enum KeyWordDistinct implements WordDistinct {
 
@@ -99,19 +103,40 @@ abstract class MySQLSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(MySQLs.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return keyWordsToString(this);
         }
 
 
     }//WordDistinct
 
 
+    private enum KeyWordUsing implements WordUsing {
+
+        USING(" USING");
+
+        private final String spaceWord;
+
+        KeyWordUsing(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+    }//KeyWordUsing
+
+
     public static final Modifier ALL = MySQLModifier.ALL;
     public static final WordDistinct DISTINCT = KeyWordDistinct.DISTINCT;
+
     public static final Modifier DISTINCTROW = MySQLModifier.DISTINCTROW;
     public static final Modifier HIGH_PRIORITY = MySQLModifier.HIGH_PRIORITY;
 
@@ -129,6 +154,23 @@ abstract class MySQLSyntax extends SQLSyntax {
     public static final Modifier IGNORE = MySQLModifier.IGNORE;
     public static final Modifier CONCURRENT = MySQLModifier.CONCURRENT;
     public static final Modifier LOCAL = MySQLModifier.LOCAL;
+
+
+    public static final WordUsing USING = KeyWordUsing.USING;
+
+
+    /**
+     * @see io.army.criteria.mysql.MySQLCharset
+     */
+    public static SQLIdentifier charset(String charsetName) {
+        final Pattern pattern;
+        pattern = Pattern.compile("a-zA-Z[_\\w]*]");
+        if (!pattern.matcher(charsetName).matches()) {
+            String m = String.format("Illegal charset name[%s]", charsetName);
+            throw ContextStack.criteriaError(ContextStack.peek(), charsetName);
+        }
+        return SQLs._identifier(charsetName);
+    }
 
     /*################################## blow join-order hint ##################################*/
 
@@ -397,6 +439,17 @@ abstract class MySQLSyntax extends SQLSyntax {
      */
     public static Hint qbName(String name) {
         return MySQLHints.qbName(name);
+    }
+
+    /*-------------------below private method -------------------*/
+
+
+    private static String keyWordsToString(Enum<?> words) {
+        return _StringUtils.builder()
+                .append(MySQLs.class.getSimpleName())
+                .append(_Constant.POINT)
+                .append(words.name())
+                .toString();
     }
 
 }

@@ -20,7 +20,7 @@ public interface SQLFunction {
 
     }
 
-    interface _OuterOptionalClause {
+    interface _OuterClauseBeforeOver {
 
     }
 
