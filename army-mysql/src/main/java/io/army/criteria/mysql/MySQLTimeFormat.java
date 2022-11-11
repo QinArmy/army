@@ -2,7 +2,7 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.SQLWords;
 
-public enum MySQLFormat implements SQLWords {
+public enum MySQLTimeFormat implements SQLWords {
 
     EUR(" 'EUR'"),
     USA(" 'USA'"),
@@ -12,7 +12,7 @@ public enum MySQLFormat implements SQLWords {
 
     private final String word;
 
-    MySQLFormat(String word) {
+    MySQLTimeFormat(String word) {
         this.word = word;
     }
 
@@ -24,7 +24,7 @@ public enum MySQLFormat implements SQLWords {
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", MySQLFormat.class.getName(), this.name());
+        return String.format("%s.%s", MySQLTimeFormat.class.getName(), this.name());
     }
 
 

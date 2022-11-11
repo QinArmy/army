@@ -192,9 +192,9 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         final List<Object> orgList = new ArrayList<>(5);
 
         orgList.add(jsonDoc);
-        orgList.add(FunctionUtils.FuncWord.COMMA);
+        orgList.add(SQLSyntax.FuncWord.COMMA);
         orgList.add(oneOrAll);
-        orgList.add(FunctionUtils.FuncWord.COMMA);
+        orgList.add(SQLSyntax.FuncWord.COMMA);
 
         orgList.add(paths);
         return FunctionUtils.complexArgFunc(name, orgList, BooleanType.INSTANCE);
@@ -223,11 +223,11 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         }
         final List<Object> argList = new ArrayList<>(((2 + pathList.size()) << 1) - 1);
         argList.add(jsonDoc);
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(oneOrAll);
 
         for (Expression path : pathList) {
-            argList.add(FunctionUtils.FuncWord.COMMA);
+            argList.add(SQLSyntax.FuncWord.COMMA);
             argList.add(path);
         }
         return FunctionUtils.complexArgFunc(name, argList, BooleanType.INSTANCE);
@@ -251,7 +251,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(jsonDoc);
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(paths);
         return FunctionUtils.complexArgFunc(name, argList, StringType.INSTANCE);
     }
@@ -279,7 +279,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
         argList.add(jsonDoc);
         for (Expression path : pathList) {
-            argList.add(FunctionUtils.FuncWord.COMMA);
+            argList.add(SQLSyntax.FuncWord.COMMA);
             argList.add(path);
         }
         return FunctionUtils.complexArgFunc(name, argList, StringType.INSTANCE);
@@ -370,11 +370,11 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         }
         final List<Object> argList = new ArrayList<>(((3 + escapeCharAndPaths.size()) << 1) - 1);
         argList.add(jsonDoc);
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(searchStr);
 
         for (Expression exp : escapeCharAndPaths) {
-            argList.add(FunctionUtils.FuncWord.COMMA);
+            argList.add(SQLSyntax.FuncWord.COMMA);
             argList.add(exp);
         }
         return FunctionUtils.complexArgFunc(name, argList, StringType.INSTANCE);
@@ -619,7 +619,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         final List<Object> argList = new ArrayList<>(((1 + pathSize) << 1) - 1);
         argList.add(jsonDoc);
         for (Expression path : pathList) {
-            argList.add(FunctionUtils.FuncWord.COMMA);
+            argList.add(SQLSyntax.FuncWord.COMMA);
             argList.add(path);
         }
         return FunctionUtils.complexArgFunc(name, argList, jsonDoc.typeMeta());

@@ -19,6 +19,48 @@ abstract class SQLSyntax {
         throw new UnsupportedOperationException();
     }
 
+    enum FuncWord implements SQLWords {
+
+        INTERVAL,
+        COMMA,
+        FROM,
+        USING,
+        IN,
+        AS,
+        AT_TIME_ZONE,
+        LEFT_PAREN,
+        RIGHT_PAREN;
+
+        @Override
+        public final String render() {
+            final String words;
+            switch (this) {
+                case COMMA:
+                    words = ",";
+                    break;
+                case LEFT_PAREN:
+                    words = "(";
+                    break;
+                case RIGHT_PAREN:
+                    words = ")";
+                    break;
+                case AT_TIME_ZONE:
+                    words = "AT TIME ZONE";
+                    break;
+                default:
+                    words = this.name();
+            }
+            return words;
+        }
+
+        @Override
+        public final String toString() {
+            return String.format("%s.%s", FuncWord.class.getSimpleName(), this.name());
+        }
+
+
+    }//Word
+
 
     /**
      * @see SQLs#DISTINCT

@@ -2,6 +2,7 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.SQLWords;
 
+@Deprecated
 public enum MySQLWords implements SQLWords {
 
     TIME(" TIME"),

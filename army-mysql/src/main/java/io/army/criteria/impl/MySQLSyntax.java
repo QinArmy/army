@@ -44,36 +44,47 @@ abstract class MySQLSyntax extends SQLSyntax {
 
     }
 
+    public interface TrimPosition extends SQLWords {
+
+    }
+
+
     private enum MySQLModifier implements Modifier {
 
 
-        ALL,
-        DISTINCTROW,
+        ALL(" ALL"),
+        DISTINCTROW(" DISTINCTROW"),
 
-        HIGH_PRIORITY,
+        HIGH_PRIORITY(" HIGH_PRIORITY"),
 
-        STRAIGHT_JOIN,
+        STRAIGHT_JOIN(" STRAIGHT_JOIN"),
 
-        SQL_SMALL_RESULT,
-        SQL_BIG_RESULT,
-        SQL_BUFFER_RESULT,
+        SQL_SMALL_RESULT(" SQL_SMALL_RESULT"),
+        SQL_BIG_RESULT(" SQL_BIG_RESULT"),
+        SQL_BUFFER_RESULT(" SQL_BUFFER_RESULT"),
 
-        SQL_NO_CACHE,
-        SQL_CALC_FOUND_ROWS,
+        SQL_NO_CACHE(" SQL_NO_CACHE"),
+        SQL_CALC_FOUND_ROWS(" SQL_CALC_FOUND_ROWS"),
 
-        LOW_PRIORITY,
-        DELAYED,
+        LOW_PRIORITY(" LOW_PRIORITY"),
+        DELAYED(" DELAYED"),
 
-        QUICK,
-        IGNORE,
+        QUICK(" QUICK"),
+        IGNORE(" IGNORE"),
 
-        CONCURRENT,
-        LOCAL;
+        CONCURRENT(" CONCURRENT"),
+        LOCAL(" LOCAL");
+
+        private final String spaceWords;
+
+        MySQLModifier(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
 
 
         @Override
         public final String render() {
-            return this.name();
+            return this.spaceWords;
         }
 
         @Override
@@ -133,6 +144,31 @@ abstract class MySQLSyntax extends SQLSyntax {
 
     }//KeyWordUsing
 
+    enum WordTrimPosition implements TrimPosition {
+
+        BOTH(" BOTH"),
+        LEADING(" LEADING"),
+        TRAILING(" TRAILING");
+
+        private final String spaceWords;
+
+        WordTrimPosition(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+
+    }//WordTrimPosition
+
 
     public static final Modifier ALL = MySQLModifier.ALL;
     public static final WordDistinct DISTINCT = KeyWordDistinct.DISTINCT;
@@ -157,6 +193,12 @@ abstract class MySQLSyntax extends SQLSyntax {
 
 
     public static final WordUsing USING = KeyWordUsing.USING;
+
+    public static final TrimPosition BOTH = WordTrimPosition.BOTH;
+
+    public static final TrimPosition LEADING = WordTrimPosition.LEADING;
+
+    public static final TrimPosition TRAILING = WordTrimPosition.TRAILING;
 
 
     /**

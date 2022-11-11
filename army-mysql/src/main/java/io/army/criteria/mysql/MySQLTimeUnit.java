@@ -2,7 +2,7 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.SQLWords;
 
-public enum MySQLUnit implements SQLWords {
+public enum MySQLTimeUnit implements SQLWords {
 
     MICROSECOND(" MICROSECOND"),
     SECOND(" SECOND"),
@@ -31,7 +31,7 @@ public enum MySQLUnit implements SQLWords {
 
     private final String spaceWords;
 
-    MySQLUnit(String spaceWords) {
+    MySQLTimeUnit(String spaceWords) {
         this.spaceWords = spaceWords;
     }
 
@@ -43,7 +43,7 @@ public enum MySQLUnit implements SQLWords {
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", MySQLUnit.class.getName(), this.name());
+        return String.format("%s.%s", MySQLTimeUnit.class.getName(), this.name());
     }
 
     public final boolean isTimePart() {

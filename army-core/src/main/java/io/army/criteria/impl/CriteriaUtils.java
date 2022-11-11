@@ -681,6 +681,11 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, "RETURNING list is empty");
     }
 
+    static CriteriaException funDontSupportMultiValue(String name) {
+        String m = String.format("function[%s] don't support multi-value", name);
+        return ContextStack.criteriaError(ContextStack.peek(), m);
+    }
+
     private static CriteriaException unknownSelectItem(final RowSet left, final SelectItem item) {
         return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext()
                 , _Exceptions::unknownSelectItem, item);

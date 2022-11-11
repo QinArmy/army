@@ -6,7 +6,7 @@ import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLClause;
-import io.army.criteria.mysql.MySQLUnit;
+import io.army.criteria.mysql.MySQLTimeUnit;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -705,9 +705,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         private final ArmyExpression expr;
 
-        private final MySQLUnit unit;
+        private final MySQLTimeUnit unit;
 
-        private IntervalTimeFunc(String name, ArmyExpression date, ArmyExpression expr, MySQLUnit unit
+        private IntervalTimeFunc(String name, ArmyExpression date, ArmyExpression expr, MySQLTimeUnit unit
                 , TypeMeta returnType) {
             super(name, returnType);
             this.date = date;
@@ -820,9 +820,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                         sqlBuilder.append(_Constant.SPACE_RETURNING)
                                 .append(_Constant.SPACE);
                         sqlBuilder.append(((MySQLCastType) o).render());
-                    } else if (o == FuncWord.LEFT_PAREN) {
-                        sqlBuilder.append(((FuncWord) o).render());
-                    } else if (o instanceof FuncWord || o instanceof MySQLCharset) {
+                    } else if (o == SQLSyntax.FuncWord.LEFT_PAREN) {
+                        sqlBuilder.append(((SQLSyntax.FuncWord) o).render());
+                    } else if (o instanceof SQLSyntax.FuncWord || o instanceof MySQLCharset) {
                         sqlBuilder.append(_Constant.SPACE)
                                 .append(((SQLWords) o).render());
                     } else if (o instanceof Expression) {
@@ -877,9 +877,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                         builder.append(_Constant.SPACE_RETURNING)
                                 .append(_Constant.SPACE)
                                 .append(((MySQLCastType) o).render());
-                    } else if (o == FuncWord.LEFT_PAREN) {
-                        builder.append(((FuncWord) o).render());
-                    } else if (o instanceof FuncWord || o instanceof MySQLCharset) {
+                    } else if (o == SQLSyntax.FuncWord.LEFT_PAREN) {
+                        builder.append(((SQLSyntax.FuncWord) o).render());
+                    } else if (o instanceof SQLSyntax.FuncWord || o instanceof MySQLCharset) {
                         builder.append(_Constant.SPACE)
                                 .append(((SQLWords) o).render());
                     } else if (o instanceof Expression) {
@@ -939,9 +939,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             final List<Object> list = new ArrayList<>(4);
 
             list.add(type);
-            list.add(FuncWord.LEFT_PAREN);
+            list.add(SQLSyntax.FuncWord.LEFT_PAREN);
             list.add(n);
-            list.add(FuncWord.RIGHT_PAREN);
+            list.add(SQLSyntax.FuncWord.RIGHT_PAREN);
 
             this.returningList = list;
             return this;
@@ -958,9 +958,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             final List<Object> list = new ArrayList<>(5);
 
             list.add(type);
-            list.add(FuncWord.LEFT_PAREN);
+            list.add(SQLSyntax.FuncWord.LEFT_PAREN);
             list.add(n);
-            list.add(FuncWord.RIGHT_PAREN);
+            list.add(SQLSyntax.FuncWord.RIGHT_PAREN);
 
             list.add(charset);
             this.returningList = list;
@@ -978,12 +978,12 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             final List<Object> list = new ArrayList<>(6);
 
             list.add(type);
-            list.add(FuncWord.LEFT_PAREN);
+            list.add(SQLSyntax.FuncWord.LEFT_PAREN);
             list.add(m);
-            list.add(FuncWord.COMMA);
+            list.add(SQLSyntax.FuncWord.COMMA);
 
             list.add(d);
-            list.add(FuncWord.RIGHT_PAREN);
+            list.add(SQLSyntax.FuncWord.RIGHT_PAREN);
             this.returningList = list;
             return this;
         }

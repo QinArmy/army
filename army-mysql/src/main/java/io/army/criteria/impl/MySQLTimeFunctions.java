@@ -2,18 +2,18 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
-import io.army.criteria.mysql.MySQLFormat;
-import io.army.criteria.mysql.MySQLUnit;
-import io.army.criteria.mysql.MySQLWords;
-import io.army.lang.Nullable;
+import io.army.criteria.SqlValueParam;
+import io.army.criteria.mysql.MySQLTimeFormat;
+import io.army.criteria.mysql.MySQLTimeUnit;
 import io.army.mapping.*;
 import io.army.mapping.optional.OffsetDateTimeType;
+import io.army.mapping.optional.OffsetTimeType;
 import io.army.mapping.optional.ZonedDateTimeType;
 import io.army.meta.TypeMeta;
+import io.army.sqltype.MySQLTypes;
 import io.army.util._Exceptions;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -21,6 +21,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
+@SuppressWarnings("unused")
 abstract class MySQLTimeFunctions extends MySQLStringFunctions {
 
     MySQLTimeFunctions() {
@@ -46,9 +47,11 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #addDate(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_adddate">ADDDATE(date,INTERVAL expr unit)</a>
      */
-    public static Expression addDate(final Expression date, final Expression expr, final MySQLUnit unit) {
-        return _dateIntervalFunc("ADDDATE", date, expr, unit);
+    public static Expression addDate(final Expression date, final SQLs.WordInterval interval, final Expression expr
+            , final MySQLTimeUnit unit) {
+        return _dateIntervalFunc("ADDDATE", date, interval, expr, unit);
     }
+
 
     /**
      * <p>
@@ -57,7 +60,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @param date nullable parameter or {@link Expression}
      * @param days nullable parameter or {@link Expression}
-     * @see #addDate(Expression, Expression, MySQLUnit)
+     * @see #addDate(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_adddate">ADDDATE(date,days)</a>
      */
     public static Expression addDate(final Expression date, final Expression days) {
@@ -79,8 +82,9 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *             @see #subDate(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subdate">SUBDATE(date,INTERVAL expr unit)</a>
      */
-    public static Expression subDate(final Expression date, final Expression expr, final MySQLUnit unit) {
-        return _dateIntervalFunc("SUBDATE", date, expr, unit);
+    public static Expression subDate(final Expression date, SQLs.WordInterval interval, final Expression expr
+            , final MySQLTimeUnit unit) {
+        return _dateIntervalFunc("SUBDATE", date, interval, expr, unit);
     }
 
     /**
@@ -90,7 +94,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @param date nullable parameter or {@link Expression}
      * @param days nullable parameter or {@link Expression}
-     * @see #subDate(Expression, Expression, MySQLUnit)
+     * @see #subDate(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subdate">SUBDATE(expr,days)</a>
      */
     public static Expression subDate(final Expression date, final Expression days) {
@@ -231,8 +235,9 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param unit non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-add">DATE_ADD(date,INTERVAL expr unit)</a>
      */
-    public static Expression dateAdd(final Expression date, final Expression expr, final MySQLUnit unit) {
-        return _dateAddOrSub("DATE_ADD", date, expr, unit);
+    public static Expression dateAdd(final Expression date, final SQLs.WordInterval interval, final Expression expr
+            , final MySQLTimeUnit unit) {
+        return _dateAddOrSub("DATE_ADD", date, interval, expr, unit);
     }
 
     /**
@@ -252,8 +257,9 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param unit non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-add">DATE_SUB(date,INTERVAL expr unit)</a>
      */
-    public static Expression dateSub(final Expression date, final Expression expr, final MySQLUnit unit) {
-        return _dateAddOrSub("DATE_SUB", date, expr, unit);
+    public static Expression dateSub(final Expression date, final SQLs.WordInterval interval, final Expression expr
+            , final MySQLTimeUnit unit) {
+        return _dateAddOrSub("DATE_SUB", date, interval, expr, unit);
     }
 
     /**
@@ -321,10 +327,10 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      *      <ul>
-     *          <li>unit {@link MySQLUnit#YEAR}:{@link YearType}</li>
-     *          <li>unit {@link MySQLUnit#MONTH}:{@link MonthType}</li>
-     *          <li>unit {@link MySQLUnit#WEEK}:{@link DayOfWeekType}</li>
-     *          <li>unit {@link MySQLUnit#YEAR_MONTH}:{@link YearMonthType}</li>
+     *          <li>unit {@link MySQLTimeUnit#YEAR}:{@link YearType}</li>
+     *          <li>unit {@link MySQLTimeUnit#MONTH}:{@link MonthType}</li>
+     *          <li>unit {@link MySQLTimeUnit#WEEK}:{@link DayOfWeekType}</li>
+     *          <li>unit {@link MySQLTimeUnit#YEAR_MONTH}:{@link YearMonthType}</li>
      *          <li>otherwise:{@link IntegerType}</li>
      *      </ul>
      * </p>
@@ -333,7 +339,13 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_extract">EXTRACT(date)</a>
      */
-    public static Expression extract(final MySQLUnit unit, final Expression date) {
+    public static Expression extract(final MySQLTimeUnit unit, final SQLs.WordFrom from, final Expression date) {
+        final String name = "EXTRACT";
+        if (from != SQLs.FROM) {
+            throw CriteriaUtils.funcArgError(name, from);
+        } else if (!(date instanceof ArmyExpression)) {
+            throw CriteriaUtils.funcArgError(name, date);
+        }
         final MappingType returnType;
         switch (unit) {
             case YEAR:
@@ -369,11 +381,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
             default:
                 throw _Exceptions.unexpectedEnum(unit);
         }
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(unit);
-        argList.add(FunctionUtils.FuncWord.FROM);
-        argList.add(date);
-        return FunctionUtils.complexArgFunc("EXTRACT", argList, returnType);
+        return FunctionUtils.complexArgFunc(name, returnType, unit, from, date);
     }
 
 
@@ -424,33 +432,26 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @param type   non-null,should be below:
      *               <ul>
-     *                      <li>{@link MySQLWords#TIME}</li>
-     *                      <li>{@link MySQLWords#DATE}</li>
-     *                      <li>{@link MySQLWords#DATETIME}</li>
+     *                      <li>{@link MySQLTypes#TIME}</li>
+     *                      <li>{@link MySQLTypes#DATE}</li>
+     *                      <li>{@link MySQLTypes#DATETIME}</li>
      *               </ul>
      * @param format nullable
      * @throws CriteriaException throw when 1.type error;2.invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_get-format">GET_FORMAT({DATE|TIME|DATETIME}, {'EUR'|'USA'|'JIS'|'ISO'|'INTERNAL'})</a>
      */
-    public static Expression getFormat(final MySQLWords type, final @Nullable MySQLFormat format) {
-        final String funcName = "GET_FORMAT";
+    public static Expression getFormat(final MySQLTypes type, final MySQLTimeFormat format) {
+        final String name = "GET_FORMAT";
         switch (type) {
             case TIME:
             case DATE:
             case DATETIME:
                 break;
             default:
-                throw CriteriaUtils.funcArgError(funcName, type);
+                throw CriteriaUtils.funcArgError(name, type);
         }
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(type);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        if (format == null) {
-            argList.add(SQLs.NULL);
-        } else {
-            argList.add(format);
-        }
-        return FunctionUtils.complexArgFunc(funcName, argList, StringType.INSTANCE);
+        Objects.requireNonNull(format);
+        return FunctionUtils.complexArgFunc(name, StringType.INSTANCE, type, FuncWord.COMMA, format);
     }
 
     /**
@@ -563,29 +564,32 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @param unit         non-null,should be one of below:
      *                     <ul>
-     *                          <li>{@link MySQLUnit#MICROSECOND}</li>
-     *                          <li>{@link MySQLUnit#SECOND}</li>
-     *                          <li>{@link MySQLUnit#MINUTE}</li>
-     *                          <li>{@link MySQLUnit#HOUR}</li>
+     *                          <li>{@link MySQLTimeUnit#MICROSECOND}</li>
+     *                          <li>{@link MySQLTimeUnit#SECOND}</li>
+     *                          <li>{@link MySQLTimeUnit#MINUTE}</li>
+     *                          <li>{@link MySQLTimeUnit#HOUR}</li>
      *
-     *                          <li>{@link MySQLUnit#DAY}</li>
-     *                          <li>{@link MySQLUnit#WEEK}</li>
-     *                          <li>{@link MySQLUnit#MONTH}</li>
-     *                          <li>{@link MySQLUnit#QUARTER}</li>
+     *                          <li>{@link MySQLTimeUnit#DAY}</li>
+     *                          <li>{@link MySQLTimeUnit#WEEK}</li>
+     *                          <li>{@link MySQLTimeUnit#MONTH}</li>
+     *                          <li>{@link MySQLTimeUnit#QUARTER}</li>
      *
-     *                          <li>{@link MySQLUnit#YEAR}</li>
+     *                          <li>{@link MySQLTimeUnit#YEAR}</li>
      *                     </ul>
      * @param interval     nullable parameter or {@link Expression}
      * @param datetimeExpr nullable parameter or {@link Expression}
      * @throws CriteriaException throw when unit error or invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestampadd">TIMESTAMPADD(unit,interval,datetime_expr)</a>
      */
-    public static Expression timestampAdd(final MySQLUnit unit, final Expression interval
+    public static Expression timestampAdd(final MySQLTimeUnit unit, final Expression interval
             , final Expression datetimeExpr) {
 
-        final String funcName = "TIMESTAMPADD";
-        final ArmyExpression datetimeExpression;
-        datetimeExpression = SQLs._funcParam(datetimeExpr);
+        final String name = "TIMESTAMPADD";
+        if (!(interval instanceof ArmyExpression)) {
+            throw CriteriaUtils.funcArgError(name, interval);
+        } else if (!(datetimeExpr instanceof ArmyExpression)) {
+            throw CriteriaUtils.funcArgError(name, datetimeExpr);
+        }
         final TypeMeta returnType;
         switch (unit) {
             case HOUR:
@@ -600,33 +604,26 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
             case DAY:
             case WEEK: {
                 final TypeMeta type;
-                type = datetimeExpression.typeMeta();
+                type = datetimeExpr.typeMeta();
                 if (type instanceof TypeMeta.Delay) {
-                    returnType = CriteriaSupports.delayParamMeta((TypeMeta.Delay) type, MySQLFunctions::_timestampAdd);
+                    returnType = CriteriaSupports.delayParamMeta((TypeMeta.Delay) type, MySQLTimeFunctions::_timestampAdd);
                 } else {
                     returnType = _timestampAdd(type.mappingType());
                 }
             }
             break;
             default:
-                throw CriteriaUtils.funcArgError(funcName, unit);
+                throw CriteriaUtils.funcArgError(name, unit);
         }
-        final List<Object> argList = new ArrayList<>(5);
-
-        argList.add(unit);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        argList.add(interval);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-
-        argList.add(datetimeExpression);
-        return FunctionUtils.complexArgFunc(funcName, argList, returnType);
+        return FunctionUtils.complexArgFunc(name, returnType, unit, FuncWord.COMMA, interval
+                , FuncWord.COMMA, datetimeExpr);
     }
 
     /**
      * <p>
      * The {@link MappingType} of function return type:
      *      <ul>
-     *          <li>If {@link MySQLUnit#MINUTE} or {@link MySQLUnit#SECOND} or {@link MySQLUnit#MICROSECOND} then {@link LongType}</li>
+     *          <li>If {@link MySQLTimeUnit#MINUTE} or {@link MySQLTimeUnit#SECOND} or {@link MySQLTimeUnit#MICROSECOND} then {@link LongType}</li>
      *          <li>Else {@link IntegerType}</li>
      *      </ul>
      * </p>
@@ -636,8 +633,15 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param datetimeExpr2 nullable parameter or {@link  Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestampdiff">TIMESTAMPDIFF(unit,datetime_expr1,datetime_expr2)</a>
      */
-    public static Expression timestampDiff(final MySQLUnit unit, final Expression datetimeExpr1
+    public static Expression timestampDiff(final MySQLTimeUnit unit, final Expression datetimeExpr1
             , final Expression datetimeExpr2) {
+        final String name = "TIMESTAMPADD";
+        if (!(datetimeExpr1 instanceof ArmyExpression)) {
+            throw CriteriaUtils.funcArgError(name, datetimeExpr1);
+        } else if (!(datetimeExpr2 instanceof ArmyExpression)) {
+            throw CriteriaUtils.funcArgError(name, datetimeExpr2);
+        }
+
         final TypeMeta returnType;
         switch (unit) {
             case MINUTE:
@@ -668,15 +672,8 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
                 throw _Exceptions.unexpectedEnum(unit);
         }
 
-        final List<Object> argList = new ArrayList<>(5);
-
-        argList.add(unit);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(datetimeExpr1));
-        argList.add(FunctionUtils.FuncWord.COMMA);
-
-        argList.add(SQLs._funcParam(datetimeExpr2));
-        return FunctionUtils.complexArgFunc("TIMESTAMPDIFF", argList, returnType);
+        return FunctionUtils.complexArgFunc(name, returnType, unit, FuncWord.COMMA, datetimeExpr1
+                , FuncWord.COMMA, datetimeExpr2);
     }
 
     /**
@@ -684,11 +681,12 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param timeFormat nullable parameter or {@link Expression}
+     * @param time   nullable parameter or {@link Expression}
+     * @param format nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_time-format">TIME_FORMAT(time,format)</a>
      */
-    public static Expression timeFormat(final Expression timeFormat) {
-        return FunctionUtils.oneArgFunc("TIME_FORMAT", timeFormat, StringType.INSTANCE);
+    public static Expression timeFormat(final Expression time, Expression format) {
+        return FunctionUtils.twoArgFunc("TIME_FORMAT", time, format, StringType.INSTANCE);
     }
 
     /**
@@ -1056,13 +1054,230 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
         final TypeMeta formatType;
         formatType = format.typeMeta();
         final TypeMeta returnType;
-        if (formatType instanceof TypeMeta.Delay) {
+        if (formatType instanceof TypeMeta.Delay) {//TODO modify delay implementation
             final Function<MappingType, MappingType> function = t -> _strToDateReturnType((ArmyExpression) format, t);
             returnType = CriteriaSupports.delayParamMeta((TypeMeta.Delay) formatType, function);
         } else {
             returnType = _strToDateReturnType((ArmyExpression) format, formatType.mappingType());
         }
         return FunctionUtils.twoArgFunc("STR_TO_DATE", str, format, returnType);
+    }
+
+
+    /*-------------------below private method-------------------*/
+
+
+    /**
+     * @see #addDate(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
+     * @see #subDate(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
+     */
+    private static Expression _dateIntervalFunc(final String name, final Expression date
+            , final SQLs.WordInterval interval, final Expression expr, final MySQLTimeUnit unit) {
+        final TypeMeta returnType;
+        if (unit.isTimePart()) {
+            returnType = LocalDateTimeType.INSTANCE;
+        } else {
+            returnType = LocalDateType.INSTANCE;
+        }
+
+        if (!(date instanceof ArmyExpression)) {
+            throw CriteriaUtils.funcArgError(name, date);
+        } else if (interval != SQLs.INTERVAL) {
+            throw CriteriaUtils.funcArgError(name, interval);
+        }
+        if (!(expr instanceof ArmyExpression)) {
+            throw CriteriaUtils.funcArgError(name, date);
+        }
+        return FunctionUtils.complexArgFunc(name, returnType, date, FuncWord.COMMA, interval, expr, unit);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     *      <ul>
+     *          <li>If date or expr is NULL, {@link _NullType}</li>
+     *          <li>If date {@link MappingType} is {@link LocalDateType} and unit no time parts then {@link LocalDateType},otherwise {@link LocalDateTimeType}</li>
+     *          <li>If date {@link MappingType} is {@link LocalTimeType} and unit no date parts then {@link LocalTimeType},otherwise {@link LocalDateTimeType}</li>
+     *          <li>If date {@link MappingType} is {@link LocalDateTimeType} or {@link OffsetDateTimeType} or {@link ZonedDateTimeType} then {@link LocalDateTimeType}</li>
+     *          <li>otherwise {@link StringType}</li>
+     *      </ul>
+     * </p>
+     *
+     * @param name DATE_ADD or DATE_SUB
+     * @param date nullable parameter or {@link Expression}
+     * @param expr nullable parameter or {@link Expression}
+     * @param unit non-null
+     * @see #dateAdd(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
+     * @see #dateSub(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-add">DATE_ADD(date,INTERVAL expr unit), DATE_SUB(date,INTERVAL expr unit)</a>
+     */
+    private static Expression _dateAddOrSub(final String name, final Expression date
+            , final SQLs.WordInterval interval, final Expression expr, final MySQLTimeUnit unit) {
+        final TypeMeta type, returnType;
+        type = date.typeMeta();
+        if (type instanceof TypeMeta.Delay) {
+            returnType = CriteriaSupports.delayParamMeta((TypeMeta.Delay) type, t -> _dateAddSubReturnType(t, unit));
+        } else {
+            returnType = _dateAddSubReturnType(type.mappingType(), unit);
+        }
+        return FunctionUtils.complexArgFunc(name, returnType, date, FuncWord.COMMA, interval, expr, unit);
+    }
+
+
+    /**
+     * @see #dateAdd(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
+     */
+    private static MappingType _dateAddSubReturnType(final MappingType type, final MySQLTimeUnit unit) {
+        final MappingType returnType;
+        if (type instanceof _NullType) {
+            returnType = type;
+        } else if (type instanceof LocalDateType) {
+            switch (unit) {
+                case YEAR:
+                case QUARTER:
+                case MONTH:
+                case WEEK:
+                case DAY:
+                    returnType = LocalDateType.INSTANCE;
+                    break;
+                default:
+                    returnType = LocalDateTimeType.INSTANCE;
+            }
+        } else if (type instanceof LocalTimeType || type instanceof OffsetTimeType) {
+            switch (unit) {
+                case HOUR:
+                case MINUTE:
+                case SECOND:
+                case MICROSECOND:
+                    returnType = LocalTimeType.INSTANCE;
+                    break;
+                default:
+                    returnType = LocalDateTimeType.INSTANCE;
+            }
+        } else if (type instanceof LocalDateTimeType
+                || type instanceof OffsetDateTimeType
+                || type instanceof ZonedDateTimeType) {
+            returnType = LocalDateTimeType.INSTANCE;
+        } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+
+    /**
+     * @see #timestampAdd(MySQLTimeUnit, Expression, Expression)
+     */
+    private static MappingType _timestampAdd(final MappingType type) {
+        final MappingType returnType;
+        if (type instanceof LocalDateType) {
+            returnType = LocalDateType.INSTANCE;
+        } else if (type instanceof LocalDateTimeType
+                || type instanceof ZonedDateTimeType
+                || type instanceof OffsetDateTimeType) {
+            returnType = LocalDateTimeType.INSTANCE;
+        } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+
+    /**
+     * @see #strToDate(Expression, Expression)
+     */
+    private static MappingType _strToDateReturnType(final ArmyExpression formatExp, final MappingType type) {
+        final MappingType returnType;
+        if (formatExp instanceof SqlValueParam.SingleNonNamedValue
+                && type instanceof StringType) {
+            final Object value;
+            value = ((SqlValueParam.SingleNonNamedValue) formatExp).value();
+            if (value instanceof String) {
+                returnType = _parseStrToDateReturnType((String) value);
+            } else {
+                returnType = StringType.INSTANCE;
+            }
+        } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * @see #_strToDateReturnType(ArmyExpression, MappingType)
+     */
+    private static MappingType _parseStrToDateReturnType(final String format) {
+        final char[] array = format.toCharArray();
+        final int last = array.length - 1;
+        boolean date = false, time = false;
+        outerFor:
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] != '%' || i == last) {
+                continue;
+            }
+            switch (array[i + 1]) {
+                case 'a'://Abbreviated weekday name (Sun..Sat)
+                case 'b'://Abbreviated month name (Jan..Dec)
+                case 'c'://Month, numeric (0..12)
+                case 'D'://Day of the month with English suffix (0th, 1st, 2nd, 3rd, …)
+                case 'd'://Day of the month, numeric (00..31)
+                case 'e'://Day of the month, numeric (0..31)
+                case 'j'://Day of year (001..366)
+                case 'M'://Month name (January..December)
+                case 'U'://Week (00..53), where Sunday is the first day of the week; WEEK() mode 0
+                case 'u'://Week (00..53), where Monday is the first day of the week; WEEK() mode 1
+                case 'V'://Week (01..53), where Sunday is the first day of the week; WEEK() mode 2; used with %X
+                case 'v'://Week (01..53), where Monday is the first day of the week; WEEK() mode 3; used with %x
+                case 'W'://Weekday name (Sunday..Saturday)
+                case 'w'://Day of the week (0=Sunday..6=Saturday)
+                case 'X'://Year for the week where Sunday is the first day of the week, numeric, four digits; used with %V
+                case 'x'://Year for the week, where Monday is the first day of the week, numeric, four digits; used with %v
+                case 'Y'://Year, numeric, four digits
+                case 'y': {//Year, numeric (two digits)
+                    date = true;
+                    if (time) {
+                        break outerFor;
+                    }
+                }
+                break;
+                case 'H'://Hour (00..23)
+                case 'h'://Hour (01..12)
+                case 'I'://Hour (01..12)
+                case 'k'://Hour (0..23)
+                case 'l'://Hour (1..12)
+                case 'P'://AM or PM
+                case 'i'://Minutes, numeric (00..59)
+                case 'r'://Time, 12-hour (hh:mm:ss followed by AM or PM)
+                case 'S'://Seconds (00..59)
+                case 's'://Seconds (00..59)
+                case 'T'://Time, 24-hour (hh:mm:ss)
+                case 'f': {//Microseconds (000000..999999)
+                    time = true;
+                    if (date) {
+                        break outerFor;
+                    }
+                }
+                break;
+                default:
+                    //A literal % character
+                    //x, for any “x” not listed above
+            }
+
+            i++;
+        }
+
+        final MappingType type;
+        if (date && time) {
+            type = LocalDateTimeType.INSTANCE;
+        } else if (date) {
+            type = LocalDateType.INSTANCE;
+        } else if (time) {
+            type = LocalTimeType.INSTANCE;
+        } else {
+            type = StringType.INSTANCE;
+        }
+        return type;
     }
 
 

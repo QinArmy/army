@@ -436,7 +436,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpecificFunctions {
     public static Expression sha2(final Expression str, final Expression hashLength) {
         final List<Object> argList = new ArrayList<>(3);
         argList.add(str);
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(hashLength);
         return FunctionUtils.complexArgFunc("SHA2", argList, StringType.INSTANCE);
     }
@@ -780,7 +780,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpecificFunctions {
         }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(name);
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(value);
         return FunctionUtils.namedComplexArgFunc("NAME_CONST", argList, value.typeMeta(), (String) paramValue);
     }

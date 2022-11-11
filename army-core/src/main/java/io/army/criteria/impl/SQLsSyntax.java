@@ -55,7 +55,11 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     }
 
-    public interface WordAs {
+    public interface WordAs extends SQLWords {
+
+    }
+
+    public interface WordInterval extends SQLWords {
 
     }
 
@@ -76,6 +80,10 @@ abstract class SQLsSyntax extends SQLSyntax {
     }
 
     public interface WordFirst extends Query.FetchFirstNext {
+
+    }
+
+    public interface WordFrom extends SQLWords {
 
     }
 
@@ -154,7 +162,18 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     private enum KeyWordAs implements WordAs {
 
-        AS;
+        AS(" AS");
+
+        private final String spaceWord;
+
+        KeyWordAs(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
 
         @Override
         public final String toString() {
@@ -162,6 +181,28 @@ abstract class SQLsSyntax extends SQLSyntax {
         }
 
     }//KeyWordAs
+
+    private enum KeyWordInterval implements WordInterval {
+
+        INTERVAL(" INTERVAL");
+
+        private final String spaceWord;
+
+        KeyWordInterval(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+    }//KeyWordInterval
 
     private enum KeyWordPercent implements WordPercent, SQLWords {
 
@@ -398,6 +439,29 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     }//KeyWordOny
 
+    private enum KeyWordFrom implements WordFrom {
+
+        FROM(" FROM");
+
+        private final String spaceWords;
+
+        KeyWordFrom(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+
+    }//KeyWordFrom
+
 
     private enum SQLSymbolPeriod implements SymbolPeriod {
 
@@ -566,6 +630,10 @@ abstract class SQLsSyntax extends SQLSyntax {
     public static final WordRow ROW = KeyWordRow.ROW;
 
     public static final WordRows ROWS = KeyWordRows.ROWS;
+
+    public static final WordFrom FROM = KeyWordFrom.FROM;
+
+    public static final WordInterval INTERVAL = KeyWordInterval.INTERVAL;
 
     public static final Statement.AscDesc ASC = KeyWordAscDesc.ASC;
 

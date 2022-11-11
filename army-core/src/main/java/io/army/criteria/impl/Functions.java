@@ -589,7 +589,7 @@ abstract class Functions extends SQLSyntax {
         Expression expression;
         for (int i = 0; i < expSize; i++) {
             if (i > 0) {
-                argList.add(FunctionUtils.FuncWord.COMMA);
+                argList.add(SQLSyntax.FuncWord.COMMA);
             }
             expression = expList.get(i);
             if (expression instanceof SqlValueParam.MultiValue) {
@@ -612,7 +612,7 @@ abstract class Functions extends SQLSyntax {
         }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(g1);
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(g2);
         return FunctionUtils.complexArgFunc(name, argList, returnType);
     }
@@ -631,9 +631,9 @@ abstract class Functions extends SQLSyntax {
         final List<Object> argList = new ArrayList<>(5);
 
         argList.add(e1);
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(e2);
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
 
         argList.add(e3);
         return FunctionUtils.complexArgFunc(name, argList, returnType);
@@ -681,7 +681,7 @@ abstract class Functions extends SQLSyntax {
         }
         final List<Object> argLit = new ArrayList<>(3);
         argLit.add(single);
-        argLit.add(FunctionUtils.FuncWord.COMMA);
+        argLit.add(SQLSyntax.FuncWord.COMMA);
         argLit.add(multi);
         return FunctionUtils.complexArgFunc(name, argLit, returnType);
     }
@@ -702,7 +702,7 @@ abstract class Functions extends SQLSyntax {
             }
             argList = new ArrayList<>(((1 + exprSize) << 1) - 1);
             for (Object o : actualExprList) {
-                argList.add(FunctionUtils.FuncWord.COMMA);
+                argList.add(SQLSyntax.FuncWord.COMMA);
                 if (o instanceof Expression) {
                     argList.add(o);
                 } else {
@@ -712,7 +712,7 @@ abstract class Functions extends SQLSyntax {
         } else {
             argList = new ArrayList<>(3);
             argList.add(expr);
-            argList.add(FunctionUtils.FuncWord.COMMA);
+            argList.add(SQLSyntax.FuncWord.COMMA);
             if (exprList instanceof Expression) {
                 argList.add(exprList);
             } else {

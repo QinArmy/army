@@ -6,14 +6,10 @@ import io.army.criteria.IPredicate;
 import io.army.criteria.SqlValueParam;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLCharset;
-import io.army.criteria.mysql.MySQLUnit;
 import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.JsonType;
-import io.army.mapping.optional.OffsetDateTimeType;
-import io.army.mapping.optional.OffsetTimeType;
-import io.army.mapping.optional.ZonedDateTimeType;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 
@@ -80,7 +76,7 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         final List<Object> argList = new ArrayList<>(3);
 
         argList.add(exp);
-        argList.add(FunctionUtils.FuncWord.AS);
+        argList.add(SQLSyntax.FuncWord.AS);
         argList.add(type);
         return FunctionUtils.complexArgFunc("CAST", argList, _castReturnType(type));
     }
@@ -154,12 +150,12 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         final List<Object> argList = new ArrayList<>(6);
 
         argList.add(exp);
-        argList.add(FunctionUtils.FuncWord.AS);
+        argList.add(SQLSyntax.FuncWord.AS);
         argList.add(type);
-        argList.add(FunctionUtils.FuncWord.LEFT_PAREN);
+        argList.add(SQLSyntax.FuncWord.LEFT_PAREN);
 
         argList.add(n);
-        argList.add(FunctionUtils.FuncWord.RIGHT_PAREN);
+        argList.add(SQLSyntax.FuncWord.RIGHT_PAREN);
         return FunctionUtils.complexArgFunc(funcName, argList, _castReturnType(type));
     }
 
@@ -195,14 +191,14 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         final List<Object> argList = new ArrayList<>(8);
 
         argList.add(exp);
-        argList.add(FunctionUtils.FuncWord.AS);
+        argList.add(SQLSyntax.FuncWord.AS);
         argList.add(type);
-        argList.add(FunctionUtils.FuncWord.LEFT_PAREN);
+        argList.add(SQLSyntax.FuncWord.LEFT_PAREN);
 
         argList.add(m);
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(d);
-        argList.add(FunctionUtils.FuncWord.RIGHT_PAREN);
+        argList.add(SQLSyntax.FuncWord.RIGHT_PAREN);
         return FunctionUtils.complexArgFunc(funcName, argList, BigDecimalType.INSTANCE);
     }
 
@@ -227,9 +223,9 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         final List<Object> argList = new ArrayList<>(5);
 
         argList.add(timestampValue);
-        argList.add(FunctionUtils.FuncWord.AT_TIME_ZONE);
+        argList.add(SQLSyntax.FuncWord.AT_TIME_ZONE);
         argList.add(timezoneSpecifier);
-        argList.add(FunctionUtils.FuncWord.AS);
+        argList.add(SQLSyntax.FuncWord.AS);
 
         argList.add(MySQLCastType.DATETIME);
         return FunctionUtils.complexArgFunc(funcName, argList, LocalDateTimeType.INSTANCE);
@@ -259,14 +255,14 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         final List<Object> argList = new ArrayList<>(8);
 
         argList.add(timestampValue);
-        argList.add(FunctionUtils.FuncWord.AT_TIME_ZONE);
+        argList.add(SQLSyntax.FuncWord.AT_TIME_ZONE);
         argList.add(timezoneSpecifier);
-        argList.add(FunctionUtils.FuncWord.AS);
+        argList.add(SQLSyntax.FuncWord.AS);
 
         argList.add(MySQLCastType.DATETIME);
-        argList.add(FunctionUtils.FuncWord.LEFT_PAREN);
+        argList.add(SQLSyntax.FuncWord.LEFT_PAREN);
         argList.add(precision);
-        argList.add(FunctionUtils.FuncWord.RIGHT_PAREN);
+        argList.add(SQLSyntax.FuncWord.RIGHT_PAREN);
         return FunctionUtils.complexArgFunc(funcName, argList, LocalDateTimeType.INSTANCE);
     }
 
@@ -312,7 +308,7 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         final List<Object> argList = new ArrayList<>(3);
 
         argList.add(exp);
-        argList.add(FunctionUtils.FuncWord.USING);
+        argList.add(SQLSyntax.FuncWord.USING);
         argList.add(transcodingName);
         return FunctionUtils.complexArgFunc("CONVERT", argList, StringType.INSTANCE);
     }
@@ -358,7 +354,7 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         final List<Object> argList = new ArrayList<>(3);
 
         argList.add(exp);
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(type);
         return FunctionUtils.complexArgFunc("CONVERT", argList, _castReturnType(type));
     }
@@ -420,12 +416,12 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         final List<Object> argList = new ArrayList<>(6);
 
         argList.add(exp);
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(type);
-        argList.add(FunctionUtils.FuncWord.LEFT_PAREN);
+        argList.add(SQLSyntax.FuncWord.LEFT_PAREN);
 
         argList.add(n);
-        argList.add(FunctionUtils.FuncWord.RIGHT_PAREN);
+        argList.add(SQLSyntax.FuncWord.RIGHT_PAREN);
         return FunctionUtils.complexArgFunc(funcName, argList, _castReturnType(type));
     }
 
@@ -460,14 +456,14 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         final List<Object> argList = new ArrayList<>(8);
 
         argList.add(exp);
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(type);
-        argList.add(FunctionUtils.FuncWord.LEFT_PAREN);
+        argList.add(SQLSyntax.FuncWord.LEFT_PAREN);
 
         argList.add(m);
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(d);
-        argList.add(FunctionUtils.FuncWord.RIGHT_PAREN);
+        argList.add(SQLSyntax.FuncWord.RIGHT_PAREN);
 
         return FunctionUtils.complexArgFunc(funcName, argList, BigDecimalType.INSTANCE);
     }
@@ -570,208 +566,6 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     /*-------------------below private method-------------------*/
 
 
-    /**
-     * <p>
-     * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>If date or expr is NULL, {@link _NullType}</li>
-     *          <li>If date {@link MappingType} is {@link LocalDateType} and unit no time parts then {@link LocalDateType},otherwise {@link LocalDateTimeType}</li>
-     *          <li>If date {@link MappingType} is {@link LocalTimeType} and unit no date parts then {@link LocalTimeType},otherwise {@link LocalDateTimeType}</li>
-     *          <li>If date {@link MappingType} is {@link LocalDateTimeType} or {@link OffsetDateTimeType} or {@link ZonedDateTimeType} then {@link LocalDateTimeType}</li>
-     *          <li>otherwise {@link StringType}</li>
-     *      </ul>
-     * </p>
-     *
-     * @param funcName DATE_ADD or DATE_SUB
-     * @param date     nullable parameter or {@link Expression}
-     * @param expr     nullable parameter or {@link Expression}
-     * @param unit     non-null
-     * @see #dateAdd(Expression, Expression, MySQLUnit)
-     * @see #dateSub(Expression, Expression, MySQLUnit)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-add">DATE_ADD(date,INTERVAL expr unit), DATE_SUB(date,INTERVAL expr unit)</a>
-     */
-    static Expression _dateAddOrSub(final String funcName, final Expression date
-            , final Expression expr, final MySQLUnit unit) {
-        final TypeMeta type, returnType;
-        type = date.typeMeta();
-        if (type instanceof TypeMeta.Delay) {
-            returnType = CriteriaSupports.delayParamMeta((TypeMeta.Delay) type, t -> _dateAddSubReturnType(t, unit));
-        } else {
-            returnType = _dateAddSubReturnType(type.mappingType(), unit);
-        }
-        final List<Object> argList = new ArrayList<>(5);
-
-        argList.add(date);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        argList.add(FunctionUtils.FuncWord.INTERVAL);
-        argList.add(expr);
-
-        argList.add(unit);
-        return FunctionUtils.complexArgFunc(funcName, argList, returnType);
-    }
-
-
-    /**
-     * @see #dateAdd(Expression, Expression, MySQLUnit)
-     */
-    private static MappingType _dateAddSubReturnType(final MappingType type, final MySQLUnit unit) {
-        final MappingType returnType;
-        if (type instanceof _NullType) {
-            returnType = type;
-        } else if (type instanceof LocalDateType) {
-            switch (unit) {
-                case YEAR:
-                case QUARTER:
-                case MONTH:
-                case WEEK:
-                case DAY:
-                    returnType = LocalDateType.INSTANCE;
-                    break;
-                default:
-                    returnType = LocalDateTimeType.INSTANCE;
-            }
-        } else if (type instanceof LocalTimeType || type instanceof OffsetTimeType) {
-            switch (unit) {
-                case HOUR:
-                case MINUTE:
-                case SECOND:
-                case MICROSECOND:
-                    returnType = LocalTimeType.INSTANCE;
-                    break;
-                default:
-                    returnType = LocalDateTimeType.INSTANCE;
-            }
-        } else if (type instanceof LocalDateTimeType
-                || type instanceof OffsetDateTimeType
-                || type instanceof ZonedDateTimeType) {
-            returnType = LocalDateTimeType.INSTANCE;
-        } else {
-            returnType = StringType.INSTANCE;
-        }
-        return returnType;
-    }
-
-
-    /**
-     * @see #strToDate(Expression, Expression)
-     */
-    private static MappingType _strToDateReturnType(final ArmyExpression formatExp, final MappingType type) {
-        final MappingType returnType;
-        if (formatExp instanceof SqlValueParam.SingleNonNamedValue
-                && type instanceof StringType) {
-            final Object value;
-            value = ((SqlValueParam.SingleNonNamedValue) formatExp).value();
-            if (value instanceof String) {
-                returnType = _parseStrToDateReturnType((String) value);
-            } else {
-                returnType = StringType.INSTANCE;
-            }
-        } else {
-            returnType = StringType.INSTANCE;
-        }
-        return returnType;
-    }
-
-    /**
-     * @see #_strToDateReturnType(ArmyExpression, MappingType)
-     */
-    private static MappingType _parseStrToDateReturnType(final String format) {
-        final char[] array = format.toCharArray();
-        final int last = array.length - 1;
-        boolean date = false, time = false;
-        outerFor:
-        for (int i = 0; i < array.length; i++) {
-            if (array[i] != '%' || i == last) {
-                continue;
-            }
-            switch (array[i + 1]) {
-                case 'a'://Abbreviated weekday name (Sun..Sat)
-                case 'b'://Abbreviated month name (Jan..Dec)
-                case 'c'://Month, numeric (0..12)
-                case 'D'://Day of the month with English suffix (0th, 1st, 2nd, 3rd, …)
-                case 'd'://Day of the month, numeric (00..31)
-                case 'e'://Day of the month, numeric (0..31)
-                case 'j'://Day of year (001..366)
-                case 'M'://Month name (January..December)
-                case 'U'://Week (00..53), where Sunday is the first day of the week; WEEK() mode 0
-                case 'u'://Week (00..53), where Monday is the first day of the week; WEEK() mode 1
-                case 'V'://Week (01..53), where Sunday is the first day of the week; WEEK() mode 2; used with %X
-                case 'v'://Week (01..53), where Monday is the first day of the week; WEEK() mode 3; used with %x
-                case 'W'://Weekday name (Sunday..Saturday)
-                case 'w'://Day of the week (0=Sunday..6=Saturday)
-                case 'X'://Year for the week where Sunday is the first day of the week, numeric, four digits; used with %V
-                case 'x'://Year for the week, where Monday is the first day of the week, numeric, four digits; used with %v
-                case 'Y'://Year, numeric, four digits
-                case 'y': {//Year, numeric (two digits)
-                    date = true;
-                    if (time) {
-                        break outerFor;
-                    }
-                }
-                break;
-                case 'H'://Hour (00..23)
-                case 'h'://Hour (01..12)
-                case 'I'://Hour (01..12)
-                case 'k'://Hour (0..23)
-                case 'l'://Hour (1..12)
-                case 'P'://AM or PM
-                case 'i'://Minutes, numeric (00..59)
-                case 'r'://Time, 12-hour (hh:mm:ss followed by AM or PM)
-                case 'S'://Seconds (00..59)
-                case 's'://Seconds (00..59)
-                case 'T'://Time, 24-hour (hh:mm:ss)
-                case 'f': {//Microseconds (000000..999999)
-                    time = true;
-                    if (date) {
-                        break outerFor;
-                    }
-                }
-                break;
-                default:
-                    //A literal % character
-                    //x, for any “x” not listed above
-            }
-
-            i++;
-        }
-
-        final MappingType type;
-        if (date && time) {
-            type = LocalDateTimeType.INSTANCE;
-        } else if (date) {
-            type = LocalDateType.INSTANCE;
-        } else if (time) {
-            type = LocalTimeType.INSTANCE;
-        } else {
-            type = StringType.INSTANCE;
-        }
-        return type;
-    }
-
-
-    /**
-     * @see #addDate(Expression, Expression, MySQLUnit)
-     * @see #subDate(Expression, Expression, MySQLUnit)
-     */
-    private static Expression _dateIntervalFunc(final String funcName, final Expression date
-            , final Expression expr, final MySQLUnit unit) {
-        final TypeMeta returnType;
-        if (unit.isTimePart()) {
-            returnType = LocalDateTimeType.INSTANCE;
-        } else {
-            returnType = LocalDateType.INSTANCE;
-        }
-
-        final List<Object> argList = new ArrayList<>(5);
-
-        argList.add(date);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        argList.add(FunctionUtils.FuncWord.INTERVAL);
-        argList.add(expr);
-
-        argList.add(unit);
-        return FunctionUtils.complexArgFunc(funcName, argList, returnType);
-    }
 
 
     /**
@@ -782,26 +576,9 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
             , final @Nullable Object days) {
         final List<Object> argList = new ArrayList<>(3);
         argList.add(SQLs._funcParam(date));
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(SQLs._funcParam(days));
         return FunctionUtils.complexArgFunc(funcName, argList, LocalDateType.INSTANCE);
-    }
-
-    /**
-     * @see #timestampAdd(MySQLUnit, Expression, Expression)
-     */
-    private static MappingType _timestampAdd(final MappingType type) {
-        final MappingType returnType;
-        if (type instanceof LocalDateType) {
-            returnType = LocalDateType.INSTANCE;
-        } else if (type instanceof LocalDateTimeType
-                || type instanceof ZonedDateTimeType
-                || type instanceof OffsetDateTimeType) {
-            returnType = LocalDateTimeType.INSTANCE;
-        } else {
-            returnType = StringType.INSTANCE;
-        }
-        return returnType;
     }
 
 
@@ -891,9 +668,9 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         final List<Object> argList = new ArrayList<>(5);
 
         argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(SQLs._funcParam(IntegerType.INSTANCE, len));
-        argList.add(FunctionUtils.FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
 
         argList.add(SQLs._funcParam(StringType.INSTANCE, padstr));
         return FunctionUtils.complexArgFunc(funcName, argList, StringType.INSTANCE);
@@ -979,7 +756,7 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
             if (exp instanceof SqlValueParam.MultiValue) {
                 throw CriteriaUtils.funcArgError(name, exp);
             }
-            argList.add(FunctionUtils.FuncWord.COMMA);
+            argList.add(SQLSyntax.FuncWord.COMMA);
             argList.add(exp);
         }
         return FunctionUtils.complexArgFunc(name, argList, jsonDoc.typeMeta());
@@ -998,7 +775,7 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         int index = 0;
         for (Expression jsonDoc : jsonDocList) {
             if (index > 0) {
-                argList.add(FunctionUtils.FuncWord.COMMA);
+                argList.add(SQLSyntax.FuncWord.COMMA);
             }
             argList.add(jsonDoc);
             index++;

@@ -34,48 +34,6 @@ abstract class FunctionUtils {
 
     private static final Pattern FUNC_NAME_PATTERN = Pattern.compile("^[_a-zA-Z]\\w*$");
 
-    enum FuncWord implements SQLWords {
-
-        INTERVAL,
-        COMMA,
-        FROM,
-        USING,
-        IN,
-        AS,
-        AT_TIME_ZONE,
-        LEFT_PAREN,
-        RIGHT_PAREN;
-
-        @Override
-        public final String render() {
-            final String words;
-            switch (this) {
-                case COMMA:
-                    words = ",";
-                    break;
-                case LEFT_PAREN:
-                    words = "(";
-                    break;
-                case RIGHT_PAREN:
-                    words = ")";
-                    break;
-                case AT_TIME_ZONE:
-                    words = "AT TIME ZONE";
-                    break;
-                default:
-                    words = this.name();
-            }
-            return words;
-        }
-
-        @Override
-        public final String toString() {
-            return String.format("%s.%s", FuncWord.class.getSimpleName(), this.name());
-        }
-
-
-    }//Word
-
     static List<ArmyExpression> funcParamList(final List<?> argList) {
         final List<ArmyExpression> expList = new ArrayList<>(argList.size());
         for (Object o : argList) {
@@ -114,7 +72,9 @@ abstract class FunctionUtils {
 
     static Expression threeArgFunc(final String name, final Expression one
             , final Expression two, final Expression three, TypeMeta returnType) {
-        return new ComplexArgFunc(name, threeArgList(name, one, two, three), returnType);
+        final List<ArmyExpression> argList;
+        argList = threeExpList(name, one, two, three);
+        return new MultiArgFunctionExpression(name, null, argList, returnType);
     }
 
 
@@ -145,8 +105,38 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, null, argList, returnType);
     }
 
+    static Expression oneAndMultiArgFunc(final String name, final Expression exp, final List<Expression> expList
+            , final TypeMeta returnType) {
+        if (exp instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, exp);
+        }
+        final int size = expList.size();
+        if (size == 0) {
+            throw CriteriaUtils.funcArgListIsEmpty(name);
+        }
+        final List<ArmyExpression> argList = new ArrayList<>(1 + size);
+        argList.add((ArmyExpression) exp);
+        for (Expression e : expList) {
+            argList.add((ArmyExpression) e);
+        }
+        return new MultiArgFunctionExpression(name, null, argList, returnType);
+    }
+
     static Expression multiArgFunc(String name, List<Expression> argList, TypeMeta returnType) {
         return new MultiArgFunctionExpression(name, null, expList(name, argList), returnType);
+    }
+
+    static Expression multiArgFunc(String name, TypeMeta returnType, Expression... exps) {
+        final List<ArmyExpression> argList = new ArrayList<>(exps.length);
+        for (Expression exp : exps) {
+            if (exp instanceof SqlValueParam) {
+                throw CriteriaUtils.funcArgError(name, exp);
+            }
+            if (exp != null) {
+                argList.add((ArmyExpression) exp);
+            }
+        }
+        return new MultiArgFunctionExpression(name, null, argList, returnType);
     }
 
 
@@ -167,6 +157,16 @@ abstract class FunctionUtils {
 
 
     static Expression complexArgFunc(String name, List<?> argList, TypeMeta returnType) {
+        return new ComplexArgFunc(name, argList, returnType);
+    }
+
+    static Expression complexArgFunc(String name, TypeMeta returnType, Object... args) {
+        final List<Object> argList = new ArrayList<>(args.length);
+        for (Object arg : args) {
+            if (arg != null) {
+                argList.add(arg);
+            }
+        }
         return new ComplexArgFunc(name, argList, returnType);
     }
 
@@ -251,7 +251,7 @@ abstract class FunctionUtils {
         for (Object o : argumentList) {
             if (o instanceof Expression) {
                 ((ArmyExpression) o).appendSql(context); // convert to ArmyExpression to avoid non-army expression
-            } else if (o == FuncWord.LEFT_PAREN) {
+            } else if (o == SQLSyntax.FuncWord.LEFT_PAREN) {
                 sqlBuilder.append(((SQLWords) o).render());
             } else if (o instanceof SQLWords) {
                 sqlBuilder.append(_Constant.SPACE)
@@ -277,7 +277,7 @@ abstract class FunctionUtils {
         for (Object o : argumentList) {
             if (o instanceof Expression || o instanceof Clause) {
                 builder.append(o);
-            } else if (o == FuncWord.LEFT_PAREN) {
+            } else if (o == SQLSyntax.FuncWord.LEFT_PAREN) {
                 builder.append(((SQLWords) o).render());
             } else if (o instanceof SQLWords) {
                 builder.append(_Constant.SPACE)
@@ -301,7 +301,7 @@ abstract class FunctionUtils {
         }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(one);
-        argList.add(FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(two);
         return argList;
     }
@@ -350,9 +350,9 @@ abstract class FunctionUtils {
         final List<Object> argList = new ArrayList<>(3);
 
         argList.add(one);
-        argList.add(FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
         argList.add(two);
-        argList.add(FuncWord.COMMA);
+        argList.add(SQLSyntax.FuncWord.COMMA);
 
         argList.add(three);
         return argList;
@@ -972,8 +972,6 @@ abstract class FunctionUtils {
     }//JsonMapFunc
 
 
-
-
     private static final class SQLIdentifier {
 
         private final String identifier;
@@ -1067,9 +1065,6 @@ abstract class FunctionUtils {
 
 
     }//NamedComplexArgFunc
-
-
-
 
 
     private static final class CaseFunction<R extends Item, I extends Item> extends Expressions<I>

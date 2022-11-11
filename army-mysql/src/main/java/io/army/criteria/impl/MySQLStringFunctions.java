@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.Clause;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLElement;
@@ -10,7 +9,6 @@ import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLLocale;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.lang.Nullable;
-import io.army.mapping.ByteArrayType;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
@@ -25,6 +23,7 @@ import java.util.List;
  *
  * @since 1.0
  */
+@SuppressWarnings("unused")
 abstract class MySQLStringFunctions extends Functions {
 
     MySQLStringFunctions() {
@@ -224,12 +223,13 @@ abstract class MySQLStringFunctions extends Functions {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
+     * @param n    non-null parameter or {@link Expression}
      * @param list nullable parameter or {@link Collection} or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_elt">ELT(N,str1,str2,str3,...)</a>
      */
-    public static Expression elt(List<Expression> list) {
-        return FunctionUtils.multiArgFunc("ELT", list, StringType.INSTANCE);
+    public static Expression elt(final Expression n, List<Expression> list) {
+        return FunctionUtils.oneAndMultiArgFunc("ELT", n, list, StringType.INSTANCE);
     }
 
 
@@ -247,7 +247,7 @@ abstract class MySQLStringFunctions extends Functions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_export-set">EXPORT_SET(bits,on,off[,separator[,number_of_bits]])</a>
      */
     public static Expression exportSet(final Expression bits, final Expression on, Expression off) {
-        return FunctionUtils.threeArgFunc("EXPORT_SET", bits, on, off, StringType.INSTANCE);
+        return exportSet(bits, on, off, null, null);
     }
 
     /**
@@ -263,18 +263,9 @@ abstract class MySQLStringFunctions extends Functions {
      * @see #exportSet(Expression, Expression, Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_export-set">EXPORT_SET(bits,on,off[,separator[,number_of_bits]])</a>
      */
-    public static Expression exportSet(final Expression bits, final Expression on, Expression off, final Expression separator) {
-        final List<Object> argList = new ArrayList<>(7);
-
-        argList.add(bits);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        argList.add(on);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-
-        argList.add(off);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        argList.add(separator);
-        return FunctionUtils.complexArgFunc("EXPORT_SET", argList, StringType.INSTANCE);
+    public static Expression exportSet(final Expression bits, final Expression on, Expression off
+            , final @Nullable Expression separator) {
+        return exportSet(bits, on, off, separator, null);
     }
 
     /**
@@ -290,22 +281,9 @@ abstract class MySQLStringFunctions extends Functions {
      * @see #exportSet(Expression, Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_export-set">EXPORT_SET(bits,on,off[,separator[,number_of_bits]])</a>
      */
-    public static Expression exportSet(final Expression bits, final Expression on, Expression off, final Expression separator
-            , final Expression numberOfBits) {
-        final List<Object> argList = new ArrayList<>(9);
-
-        argList.add(bits);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        argList.add(on);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-
-        argList.add(off);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        argList.add(separator);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-
-        argList.add(numberOfBits);
-        return FunctionUtils.complexArgFunc("EXPORT_SET", argList, StringType.INSTANCE);
+    public static Expression exportSet(final Expression bits, final Expression on, Expression off
+            , @Nullable final Expression separator, @Nullable final Expression numberOfBits) {
+        return FunctionUtils.multiArgFunc("EXPORT_SET", StringType.INSTANCE, bits, on, off, separator, numberOfBits);
     }
 
 
@@ -319,8 +297,36 @@ abstract class MySQLStringFunctions extends Functions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_field">FIELD(str,str1,str2,str3,...)</a>
      */
-    public static Expression field(final Expression str, final Object strList) {
-        return _singleAndListFunc("FIELD", str, StringType.INSTANCE, strList, IntegerType.INSTANCE);
+    public static Expression field(final Expression str, final Expression strList) {
+        return FunctionUtils.twoOrMultiArgFunc("FIELD", str, strList, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param str     nullable parameter or {@link Expression}
+     * @param strList non-null literal or non-empty {@link List}  or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_field">FIELD(str,str1,str2,str3,...)</a>
+     */
+    public static Expression field(final Expression str, final List<Expression> strList) {
+        return FunctionUtils.oneAndMultiArgFunc("FIELD", str, strList, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param str     nullable parameter or {@link Expression}
+     * @param strList nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_find-in-set">FIND_IN_SET(str,strlist)</a>
+     */
+    public static Expression fieldInSet(final Expression str, final Expression strList) {
+        return FunctionUtils.twoOrMultiArgFunc("FIND_IN_SET", str, strList, IntegerType.INSTANCE);
     }
 
 
@@ -334,8 +340,8 @@ abstract class MySQLStringFunctions extends Functions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_find-in-set">FIND_IN_SET(str,strlist)</a>
      */
-    public static Expression fieldInSet(final Expression str, final Object strList) {
-        return _singleAndListFunc("FIND_IN_SET", str, StringType.INSTANCE, strList, IntegerType.INSTANCE);
+    public static Expression fieldInSet(final Expression str, final List<Expression> strList) {
+        return FunctionUtils.oneAndMultiArgFunc("FIND_IN_SET", str, strList, IntegerType.INSTANCE);
     }
 
     /**
@@ -353,6 +359,7 @@ abstract class MySQLStringFunctions extends Functions {
         return FunctionUtils.twoArgFunc("FORMAT", x, d, StringType.INSTANCE);
     }
 
+
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link StringType}
@@ -365,16 +372,8 @@ abstract class MySQLStringFunctions extends Functions {
      * @see #format(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_format">FORMAT(X,D[,locale])</a>
      */
-    public static Expression format(final Expression x, final Expression d, final MySQLLocale locale) {
-        final List<Object> argList = new ArrayList<>(5);
-
-        argList.add(x);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        argList.add(d);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-
-        argList.add(locale);
-        return FunctionUtils.complexArgFunc("FORMAT", argList, StringType.INSTANCE);
+    public static Expression format(final Expression x, final Expression d, final @Nullable MySQLLocale locale) {
+        return FunctionUtils.complexArgFunc("FORMAT", StringType.INSTANCE, x, d, locale);
     }
 
     /**
@@ -447,17 +446,7 @@ abstract class MySQLStringFunctions extends Functions {
      */
     public static Expression insert(final Expression str, final Expression pos
             , final Expression len, final Expression newStr) {
-        final List<Object> argList = new ArrayList<>(7);
-
-        argList.add(str);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        argList.add(pos);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-
-        argList.add(len);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        argList.add(newStr);
-        return FunctionUtils.complexArgFunc("INSERT", argList, StringType.INSTANCE);
+        return FunctionUtils.multiArgFunc("INSERT", StringType.INSTANCE, str, pos, len, newStr);
     }
 
     /**
@@ -640,12 +629,26 @@ abstract class MySQLStringFunctions extends Functions {
      * </p>
      *
      * @param bits    non-null {@link Long} or {@link Integer} or {@link BitSet} or {@link Expression}
-     * @param strList non-null {@link String} or {@link  List} or  {@link Expression}
+     * @param strList {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring">MAKE_SET(bits,str1,str2,...)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_make-set">MAKE_SET(bits,str1,str2,...)</a>
      */
-    public static Expression makeSet(final Expression bits, final Object strList) {
-        return _singleAndListFunc("MAKE_SET", bits, StringType.INSTANCE, strList, StringType.INSTANCE);
+    public static Expression makeSet(final Expression bits, final Expression strList) {
+        return FunctionUtils.twoOrMultiArgFunc("MAKE_SET", bits, strList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param bits    non-null {@link Expression}
+     * @param strList {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_make-set">MAKE_SET(bits,str1,str2,...)</a>
+     */
+    public static Expression makeSet(final Expression bits, final List<Expression> strList) {
+        return FunctionUtils.oneAndMultiArgFunc("MAKE_SET", bits, strList, StringType.INSTANCE);
     }
 
     /**
@@ -853,8 +856,9 @@ abstract class MySQLStringFunctions extends Functions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(remstr FROM str)</a>
      */
-    public static Expression trim(final Expression remstr, final Expression str) {
-        return FunctionUtils.twoArgFunc("TRIM", remstr, str, StringType.INSTANCE);
+    public static Expression trim(final Expression remstr, SQLs.WordFrom from, final Expression str) {
+        assert from == SQLs.FROM;
+        return FunctionUtils.complexArgFunc("TRIM", StringType.INSTANCE, remstr, from, str);
     }
 
     /**
@@ -873,24 +877,19 @@ abstract class MySQLStringFunctions extends Functions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM([BOTH | LEADING | TRAILING] remstr FROM str), TRIM([remstr FROM] str),TRIM(remstr FROM str)</a>
      */
-    public static Expression trim(final MySQLWords position, final Expression remstr, final Expression str) {
-        final String funcName = "TRIM";
-        switch (position) {
-            case BOTH:
-            case LEADING:
-            case TRAILING:
-                break;
-            default:
-                throw CriteriaUtils.funcArgError(funcName, position);
+    public static Expression trim(final @Nullable MySQLs.TrimPosition position, final @Nullable Expression remstr
+            , final @Nullable SQLs.WordFrom from, final Expression str) {
+        final String name = "TRIM";
+        if (!(str instanceof ArmyExpression)) {
+            throw CriteriaUtils.funcArgError(name, str);
+        } else if (position != null && !(position instanceof MySQLSyntax.WordTrimPosition)) {
+            throw CriteriaUtils.funcArgError(name, position);
+        } else if (remstr != null && from != SQLs.FROM) {
+            throw ContextStack.criteriaError(ContextStack.peek(), "remstr and from syntax error");
+        } else if (position != null && from != SQLs.FROM) {
+            throw ContextStack.criteriaError(ContextStack.peek(), "position and from syntax error");
         }
-
-        final List<Object> argList = new ArrayList<>(4);
-
-        argList.add(position);
-        argList.add(remstr);
-        argList.add(FunctionUtils.FuncWord.FROM);
-        argList.add(str);
-        return FunctionUtils.complexArgFunc(funcName, argList, StringType.INSTANCE);
+        return FunctionUtils.complexArgFunc(name, StringType.INSTANCE, position, remstr, from, str);
     }
 
 
@@ -918,102 +917,30 @@ abstract class MySQLStringFunctions extends Functions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str [AS {CHAR|BINARY}(N)]</a>
      */
-    public static Expression weightString(final Expression str, final MySQLCastType type, final Expression n) {
-        final String funcName = "WEIGHT_STRING";
+    public static Expression weightString(final Expression str, final SQLs.WordAs as
+            , final MySQLCastType type, final Expression n) {
+        assert as == SQLs.AS;
+        final String name = "WEIGHT_STRING";
         switch (type) {
             case CHAR:
             case BINARY:
                 break;
             default:
-                throw CriteriaUtils.funcArgError(funcName, type);
+                throw CriteriaUtils.funcArgError(name, type);
         }
-        final List<Object> argList = new ArrayList<>(6);
-
-        argList.add(str);
-        argList.add(FunctionUtils.FuncWord.AS);
-        argList.add(type);
-        argList.add(FunctionUtils.FuncWord.LEFT_PAREN);
-
-        argList.add(n);
-        argList.add(FunctionUtils.FuncWord.RIGHT_PAREN);
-
-        return FunctionUtils.complexArgFunc(funcName, argList, StringType.INSTANCE);
+        if (!(str instanceof ArmyExpression)) {
+            throw CriteriaUtils.funcArgError(name, str);
+        } else if (!(n instanceof ArmyExpression)) {
+            throw CriteriaUtils.funcArgError(name, n);
+        }
+        return FunctionUtils.complexArgFunc(name, StringType.INSTANCE
+                , str, as, type, SQLSyntax.FuncWord.LEFT_PAREN, n, SQLSyntax.FuncWord.RIGHT_PAREN);
     }
 
 
 
     /*-------------------below private method -------------------*/
 
-
-    /**
-     * @see #groupConcat(Object)
-     * @see #groupConcat(SQLsSyntax.WordAll, Object)
-     */
-    private static Expression _groupConcat(@Nullable SQLsSyntax.WordAll distinct, @Nullable Object expressions
-            , @Nullable Clause clause) {
-
-        final String funcName = "GROUP_CONCAT";
-
-        if (distinct != null && distinct != SQLs.DISTINCT) {
-            throw CriteriaUtils.funcArgError(funcName, distinct);
-        }
-        if (clause != null && !(clause instanceof MySQLFunctionUtils.GroupConcatClause)) {
-            throw CriteriaUtils.funcArgError(funcName, clause);
-        }
-        final Expression func;
-        if (expressions instanceof List) {
-            func = FunctionUtils.multiArgOptionFunc(funcName, distinct, (List<?>) expressions
-                    , clause, StringType.INSTANCE);
-        } else {
-            func = FunctionUtils.oneArgOptionFunc(funcName, distinct, expressions, clause, StringType.INSTANCE);
-        }
-        return func;
-    }
-
-    /**
-     * @see #aesEncrypt(Expression, Expression, List)
-     * @see #aesDecrypt(Expression, Expression, List)
-     */
-    private static Expression _aesEncryptOrDecrypt(final String funcName, final Expression str, final Expression keyStr
-            , final List<Expression> argExpList) {
-        if (argExpList.size() > 4) {
-            throw CriteriaUtils.funcArgError(funcName, argExpList);
-        }
-        final List<Object> argList = new ArrayList<>();
-
-        argList.add(str);
-        argList.add(FunctionUtils.FuncWord.COMMA);
-        argList.add(keyStr);
-
-        for (Expression argExp : argExpList) {
-            argList.add(FunctionUtils.FuncWord.COMMA);
-            argList.add(argExp);
-        }
-        return FunctionUtils.complexArgFunc(funcName, argList, StringType.INSTANCE);
-    }
-
-
-    /**
-     * @see #geometryCollection(List)
-     * @see #lineString(List)
-     */
-    private static Expression _geometryTypeFunc(final String name, final List<Expression> geometryList) {
-        final Expression func;
-        final int geometrySize = geometryList.size();
-        switch (geometrySize) {
-            case 0:
-                func = FunctionUtils.noArgFunc(name, ByteArrayType.INSTANCE);
-                break;
-            case 1:
-                func = FunctionUtils.oneArgFunc(name, geometryList.get(0), ByteArrayType.INSTANCE);
-                break;
-            default:
-                func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(geometryList)
-                        , ByteArrayType.INSTANCE);
-
-        }
-        return func;
-    }
 
 
 }

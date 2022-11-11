@@ -2,16 +2,18 @@ package io.army.sqltype;
 
 import io.army.criteria.SQLWords;
 import io.army.dialect.Database;
+import io.army.dialect._Constant;
+import io.army.util._StringUtils;
 
 public enum MySQLTypes implements SqlType, SQLWords {
 
-    NULL,
-    BOOLEAN,
+    NULL(" "),
+    BOOLEAN(" "),
 
-    TINYINT,
-    TINYINT_UNSIGNED,
-    SMALLINT,
-    SMALLINT_UNSIGNED,
+    TINYINT(" "),
+    TINYINT_UNSIGNED(" "),
+    SMALLINT(" "),
+    SMALLINT_UNSIGNED(" "),
 
     INT,
     INT_UNSIGNED,
@@ -119,25 +121,25 @@ public enum MySQLTypes implements SqlType, SQLWords {
         final String words;
         switch (this) {
             case TINYINT_UNSIGNED:
-                words = "TINYINT UNSIGNED";
+                words = " TINYINT UNSIGNED";
                 break;
             case SMALLINT_UNSIGNED:
-                words = "SMALLINT UNSIGNED";
+                words = " SMALLINT UNSIGNED";
                 break;
             case MEDIUMINT_UNSIGNED:
-                words = "MEDIUMINT UNSIGNED";
+                words = " MEDIUMINT UNSIGNED";
                 break;
             case INT_UNSIGNED:
-                words = "INT UNSIGNED";
+                words = " INT UNSIGNED";
                 break;
             case DECIMAL_UNSIGNED:
-                words = "DECIMAL UNSIGNED";
+                words = " DECIMAL UNSIGNED";
                 break;
             case BIGINT_UNSIGNED:
-                words = "BIGINT UNSIGNED";
+                words = " BIGINT UNSIGNED";
                 break;
             default:
-                words = this.name();
+                words = _Constant.SPACE + this.name();
         }
         return words;
     }
@@ -145,7 +147,7 @@ public enum MySQLTypes implements SqlType, SQLWords {
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", MySQLTypes.class.getName(), this.name());
+        return _StringUtils.sqlWordsToString(this);
     }
 
 
