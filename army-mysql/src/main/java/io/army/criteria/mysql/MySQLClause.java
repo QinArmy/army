@@ -4,7 +4,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.Selection;
 import io.army.criteria.SortItems;
 import io.army.criteria.Statement;
-import io.army.criteria.impl._ItemExpression;
+import io.army.criteria.impl._AliasExpression;
 import io.army.sqltype.MySQLTypes;
 
 import java.util.function.Supplier;
@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 public interface MySQLClause {
 
 
-    interface _GroupConcatSeparatorClause extends _ItemExpression<Selection> {
+    interface _GroupConcatSeparatorClause extends _AliasExpression<Selection> {
 
         Expression separator(String strVal);
 
@@ -24,7 +24,7 @@ public interface MySQLClause {
     }
 
 
-    interface _GroupConcatOrderBySpec extends _ItemExpression<Selection>
+    interface _GroupConcatOrderBySpec extends _AliasExpression<Selection>
             , Statement._StaticOrderByClause<_GroupConcatSeparatorClause>
             , Statement._DynamicOrderByClause<SortItems, _GroupConcatSeparatorClause>
             , _GroupConcatSeparatorClause {

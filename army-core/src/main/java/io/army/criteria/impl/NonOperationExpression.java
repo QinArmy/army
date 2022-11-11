@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.AliasPredicate;
 import io.army.criteria.Expression;
-import io.army.criteria.ItemPredicate;
 import io.army.criteria.Selection;
 import io.army.criteria.SqlValueParam;
 import io.army.criteria.dialect.SubQuery;
@@ -23,7 +23,7 @@ import java.util.function.Supplier;
  *     </ul>
  * </p>
  */
-abstract class NonOperationExpression implements ArmyExpression, _ItemExpression<Selection> {
+abstract class NonOperationExpression implements ArmyExpression, _AliasExpression<Selection> {
 
 
     NonOperationExpression() {
@@ -42,379 +42,379 @@ abstract class NonOperationExpression implements ArmyExpression, _ItemExpression
     }
 
     @Override
-    public final ItemPredicate<Selection> equal(Expression operand) {
+    public final OperationPredicate<Selection> equal(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemPredicate<Selection> equal(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate<Selection> equal(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> equal(Supplier<Expression> supplier) {
+    public final OperationPredicate<Selection> equal(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <R> R equal(BiAsFunction<ItemPredicate<Selection>, Selection, R> function) {
+    public final <R> R equal(BiAsFunction<AliasPredicate<Selection>, Selection, R> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <R> R equal(BiAsExpFunction<ItemPredicate<Selection>, Selection, R> function) {
+    public final <R> R equal(BiAsExpFunction<AliasPredicate<Selection>, Selection, R> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <R> R equal(BiAsExpFunction<ItemPredicate<Selection>, Selection, R> function, Expression operand) {
+    public final <R> R equal(BiAsExpFunction<AliasPredicate<Selection>, Selection, R> function, Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> equalAny(SubQuery subQuery) {
+    public final OperationPredicate<Selection> equalAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> equalSome(SubQuery subQuery) {
+    public final OperationPredicate<Selection> equalSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> equalAny(Supplier<SubQuery> supplier) {
+    public final OperationPredicate<Selection> equalAny(Supplier<SubQuery> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> equalSome(Supplier<SubQuery> supplier) {
+    public final OperationPredicate<Selection> equalSome(Supplier<SubQuery> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> less(Expression operand) {
+    public final OperationPredicate<Selection> less(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemPredicate<Selection> less(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate<Selection> less(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> lessAny(SubQuery subQuery) {
+    public final OperationPredicate<Selection> lessAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> lessSome(SubQuery subQuery) {
+    public final OperationPredicate<Selection> lessSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> lessAll(SubQuery subQuery) {
+    public final OperationPredicate<Selection> lessAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> lessEqual(Expression operand) {
+    public final OperationPredicate<Selection> lessEqual(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemPredicate<Selection> lessEqual(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate<Selection> lessEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> lessEqualAny(SubQuery subQuery) {
+    public final OperationPredicate<Selection> lessEqualAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> lessEqualSome(SubQuery subQuery) {
+    public final OperationPredicate<Selection> lessEqualSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> lessEqualAll(SubQuery subQuery) {
+    public final OperationPredicate<Selection> lessEqualAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> great(Expression operand) {
+    public final OperationPredicate<Selection> great(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemPredicate<Selection> great(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate<Selection> great(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> greatAny(SubQuery subQuery) {
+    public final OperationPredicate<Selection> greatAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> greatSome(SubQuery subQuery) {
+    public final OperationPredicate<Selection> greatSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> greatAll(SubQuery subQuery) {
+    public final OperationPredicate<Selection> greatAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> greatEqual(Expression operand) {
+    public final OperationPredicate<Selection> greatEqual(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemPredicate<Selection> greatEqual(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate<Selection> greatEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> greatEqualAny(SubQuery subQuery) {
+    public final OperationPredicate<Selection> greatEqualAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> greatEqualSome(SubQuery subQuery) {
+    public final OperationPredicate<Selection> greatEqualSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> greatEqualAll(SubQuery subQuery) {
+    public final OperationPredicate<Selection> greatEqualAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> notEqual(Expression operand) {
+    public final OperationPredicate<Selection> notEqual(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemPredicate<Selection> notEqual(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate<Selection> notEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> notEqualAny(SubQuery subQuery) {
+    public final OperationPredicate<Selection> notEqualAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> notEqualSome(SubQuery subQuery) {
+    public final OperationPredicate<Selection> notEqualSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> notEqualAll(SubQuery subQuery) {
+    public final OperationPredicate<Selection> notEqualAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> between(Expression first, StandardSyntax.WordAnd and, Expression second) {
+    public final OperationPredicate<Selection> between(Expression first, SQLsSyntax.WordAnd and, Expression second) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemPredicate<Selection> between(BiFunction<Expression, T, Expression> operator, T first, StandardSyntax.WordAnd and, T second) {
+    public final <T> OperationPredicate<Selection> between(BiFunction<Expression, T, Expression> operator, T first, SQLsSyntax.WordAnd and, T second) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> isNull() {
+    public final OperationPredicate<Selection> isNull() {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> isNotNull() {
+    public final OperationPredicate<Selection> isNotNull() {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> in(Expression operand) {
+    public final OperationPredicate<Selection> in(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> in(SubQuery subQuery) {
+    public final OperationPredicate<Selection> in(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T, O extends Collection<T>> ItemPredicate<Selection> in(BiFunction<Expression, O, Expression> operator
+    public final <T, O extends Collection<T>> AliasPredicate<Selection> in(BiFunction<Expression, O, Expression> operator
             , O operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> in(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
+    public final OperationPredicate<Selection> in(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> notIn(Expression operand) {
+    public final OperationPredicate<Selection> notIn(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> notIn(SubQuery subQuery) {
+    public final OperationPredicate<Selection> notIn(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T, O extends Collection<T>> ItemPredicate<Selection> notIn(BiFunction<Expression, O, Expression> operator
+    public final <T, O extends Collection<T>> OperationPredicate<Selection> notIn(BiFunction<Expression, O, Expression> operator
             , O operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> notIn(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
+    public final OperationPredicate<Selection> notIn(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> like(Expression pattern) {
+    public final OperationPredicate<Selection> like(Expression pattern) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemPredicate<Selection> like(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate<Selection> like(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final ItemPredicate<Selection> notLike(Expression pattern) {
+    public final OperationPredicate<Selection> notLike(Expression pattern) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> ItemPredicate<Selection> notLike(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate<Selection> notLike(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> mod(Expression operand) {
+    public final OperationExpression<Selection> mod(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> _ItemExpression<Selection> mod(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression<Selection> mod(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> times(Expression operand) {
+    public final OperationExpression<Selection> times(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> _ItemExpression<Selection> times(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression<Selection> times(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> plus(Expression operand) {
+    public final OperationExpression<Selection> plus(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> _ItemExpression<Selection> plus(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression<Selection> plus(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> minus(Expression minuend) {
+    public final OperationExpression<Selection> minus(Expression minuend) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> _ItemExpression<Selection> minus(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression<Selection> minus(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> divide(Expression divisor) {
+    public final OperationExpression<Selection> divide(Expression divisor) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> _ItemExpression<Selection> divide(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression<Selection> divide(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> negate() {
+    public final OperationExpression<Selection> negate() {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> bitwiseAnd(Expression operand) {
+    public final OperationExpression<Selection> bitwiseAnd(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> _ItemExpression<Selection> bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression<Selection> bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> bitwiseOr(Expression operand) {
+    public final OperationExpression<Selection> bitwiseOr(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> _ItemExpression<Selection> bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression<Selection> bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> xor(Expression operand) {
+    public final OperationExpression<Selection> xor(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> _ItemExpression<Selection> xor(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression<Selection> xor(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> invert() {
+    public final OperationExpression<Selection> invert() {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> rightShift(Expression bitNumber) {
+    public final OperationExpression<Selection> rightShift(Expression bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> _ItemExpression<Selection> rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression<Selection> rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> leftShift(Expression bitNumber) {
+    public final OperationExpression<Selection> leftShift(Expression bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> _ItemExpression<Selection> leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression<Selection> leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> asType(TypeMeta paramMeta) {
+    public final OperationExpression<Selection> asType(TypeMeta paramMeta) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final _ItemExpression<Selection> bracket() {
+    public final OperationExpression<Selection> bracket() {
         throw unsupportedOperation();
     }
 

@@ -3,7 +3,7 @@ package io.army.example.pill.domain;
 import io.army.annotation.*;
 import io.army.example.common.VersionDomain;
 import io.army.example.pill.struct.IdentityType;
-import io.army.example.pill.struct.UserType;
+import io.army.example.pill.struct.PillUserType;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +15,7 @@ public class PillUser extends VersionDomain {
     private Long id;
 
     @Column
-    private UserType userType;
+    private PillUserType userType;
 
     @Column
     private LocalDateTime createTime;
@@ -47,11 +47,11 @@ public class PillUser extends VersionDomain {
         this.id = id;
     }
 
-    public UserType getUserType() {
+    public PillUserType getUserType() {
         return userType;
     }
 
-    public void setUserType(UserType userType) {
+    public void setUserType(PillUserType userType) {
         this.userType = userType;
     }
 

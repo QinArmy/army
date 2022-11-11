@@ -21,7 +21,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-abstract class MySQLTimeFunctions extends MySQLNumberStringFunctions {
+abstract class MySQLTimeFunctions extends MySQLStringFunctions {
 
     MySQLTimeFunctions() {
     }

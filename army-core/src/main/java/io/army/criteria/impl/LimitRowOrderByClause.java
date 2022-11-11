@@ -345,7 +345,7 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
 
     @Override
     public final LF fetch(Query.FetchFirstNext firstOrNext, final @Nullable Expression percent
-            , StandardSyntax.WordPercent wordPercent, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
+            , SQLsSyntax.WordPercent wordPercent, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
         if (percent == null) {
             throw ContextStack.nullPointer(this.context);
         } else if (firstOrNext != SQLs.FIRST && firstOrNext != SQLs.NEXT) {
@@ -370,7 +370,7 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
 
     @Override
     public final LF fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-            , Number percent, StandardSyntax.WordPercent wordPercent, Query.FetchRow row
+            , Number percent, SQLsSyntax.WordPercent wordPercent, Query.FetchRow row
             , Query.FetchOnlyWithTies onlyWithTies) {
         final Expression percentExp;
         percentExp = operator.apply(BigDecimalType.INSTANCE, percent);
@@ -380,7 +380,7 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
     @Override
     public final <N extends Number> LF fetch(Query.FetchFirstNext firstOrNext
             , BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier
-            , StandardSyntax.WordPercent wordPercent, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
+            , SQLsSyntax.WordPercent wordPercent, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
         final Expression percentExp;
         percentExp = operator.apply(BigDecimalType.INSTANCE, supplier.get());
         return this.fetch(firstOrNext, percentExp, wordPercent, row, onlyWithTies);
@@ -388,7 +388,7 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
 
     @Override
     public final LF fetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
-            , Function<String, ?> function, String keyName, StandardSyntax.WordPercent wordPercent, Query.FetchRow row
+            , Function<String, ?> function, String keyName, SQLsSyntax.WordPercent wordPercent, Query.FetchRow row
             , Query.FetchOnlyWithTies onlyWithTies) {
         final Expression percentExp;
         percentExp = operator.apply(BigDecimalType.INSTANCE, function.apply(keyName));
@@ -397,7 +397,7 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
 
     @Override
     public final LF ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Number, Expression> operator
-            , @Nullable Number percent, StandardSyntax.WordPercent wordPercent, Query.FetchRow row
+            , @Nullable Number percent, SQLsSyntax.WordPercent wordPercent, Query.FetchRow row
             , Query.FetchOnlyWithTies onlyWithTies) {
         if (percent != null) {
             final Expression percentExp;
@@ -410,7 +410,7 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
     @Override
     public final <N extends Number> LF ifFetch(Query.FetchFirstNext firstOrNext
             , BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier
-            , StandardSyntax.WordPercent wordPercent, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
+            , SQLsSyntax.WordPercent wordPercent, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
         final N percent;
         percent = supplier.get();
         if (percent != null) {
@@ -423,7 +423,7 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
 
     @Override
     public final LF ifFetch(Query.FetchFirstNext firstOrNext, BiFunction<MappingType, Object, Expression> operator
-            , Function<String, ?> function, String keyName, StandardSyntax.WordPercent wordPercent
+            , Function<String, ?> function, String keyName, SQLsSyntax.WordPercent wordPercent
             , Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
         final Object percent;
         percent = function.apply(keyName);

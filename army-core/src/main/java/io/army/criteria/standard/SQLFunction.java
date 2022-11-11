@@ -312,7 +312,7 @@ public interface SQLFunction {
 
     interface _CaseFuncWhenClause<I extends Item> extends _CaseWhenClause<I> {
 
-        _CaseEndClause<I> whens(Consumer<CaseWhens> consumer);
+        _CaseElseClause<I> whens(Consumer<CaseWhens> consumer);
     }
 
 

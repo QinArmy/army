@@ -634,7 +634,7 @@ abstract class CriteriaContexts {
 
         @Override
         public <I extends Item> ItemDerivedField<I> ref(String derivedTable, String fieldName
-                , Function<Selection, I> function) {
+                , Function<TypeInfer, I> function) {
             String m = "current context don't support ref(derivedTable,fieldName)";
             throw ContextStack.criteriaError(this, m);
         }
@@ -647,7 +647,7 @@ abstract class CriteriaContexts {
 
         @Override
         public <I extends Item> ItemDerivedField<I> refThis(String derivedTable, String fieldName
-                , Function<Selection, I> function) {
+                , Function<TypeInfer, I> function) {
             String m = "current context don't support refThis(derivedTable,fieldName,function)";
             throw ContextStack.criteriaError(this, m);
         }
@@ -660,7 +660,7 @@ abstract class CriteriaContexts {
 
         @Override
         public <T, I extends Item> ItemField<T, I> field(String tableAlias, FieldMeta<T> field
-                , Function<Selection, I> function) {
+                , Function<TypeInfer, I> function) {
             String m = "current context don't support field(tableAlias,field)";
             throw ContextStack.criteriaError(this, m);
         }
@@ -868,7 +868,7 @@ abstract class CriteriaContexts {
         @SuppressWarnings("unchecked")
         @Override
         public final <T, I extends Item> ItemField<T, I> field(final String tableAlias, final FieldMeta<T> field
-                , final Function<Selection, I> function) {
+                , final Function<TypeInfer, I> function) {
             if (!(this.aliasToBlock instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this);
             }
@@ -910,7 +910,7 @@ abstract class CriteriaContexts {
 
         @Override
         public final <I extends Item> ItemDerivedField<I> ref(String derivedTable, String fieldName
-                , Function<Selection, I> function) {
+                , Function<TypeInfer, I> function) {
             return super.ref(derivedTable, fieldName, function);
         }
 
@@ -921,7 +921,7 @@ abstract class CriteriaContexts {
 
         @Override
         public final <I extends Item> ItemDerivedField<I> refThis(String derivedTable, String fieldName
-                , Function<Selection, I> function) {
+                , Function<TypeInfer, I> function) {
             return super.refThis(derivedTable, fieldName, function);
         }
 
@@ -1489,7 +1489,7 @@ abstract class CriteriaContexts {
 
         private final Selection selection;
 
-        private DerivedSelection(String tableName, Selection selection, Function<Selection, I> function) {
+        private DerivedSelection(String tableName, Selection selection, Function<TypeInfer, I> function) {
             super(function);
             this.tableName = tableName;
             this.selection = selection;
@@ -1592,7 +1592,7 @@ abstract class CriteriaContexts {
 
         final DelaySelection paramMeta;
 
-        private RefDerivedField(String tableName, String fieldName, Function<Selection, I> function) {
+        private RefDerivedField(String tableName, String fieldName, Function<TypeInfer, I> function) {
             super(function);
             this.tableName = tableName;
             this.fieldName = fieldName;
@@ -1698,14 +1698,14 @@ abstract class CriteriaContexts {
 
         private final Selection selection;
 
-        private RefSelection(Selection selection, Function<Selection, I> function) {
+        private RefSelection(Selection selection, Function<TypeInfer, I> function) {
             super(function);
             this.selection = selection;
         }
 
 
         @Override
-        public _ItemExpression<I> bracket() {
+        public RefSelection<I> bracket() {
             //return this ,don't create new instance
             return this;
         }

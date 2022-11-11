@@ -9,7 +9,7 @@ import io.army.criteria.QualifiedField;
  *
  * @since 1.0
  */
-interface ItemField<T, I extends Item> extends QualifiedField<T>, _ItemExpression<I> {
+interface ItemField<T, I extends Item> extends QualifiedField<T>, _AliasExpression<I> {
 
 
 }

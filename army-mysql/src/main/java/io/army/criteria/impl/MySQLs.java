@@ -21,6 +21,7 @@ public abstract class MySQLs extends MySQLFunctionSyntax {
         return MySQLReplaces.primaryReplace();
     }
 
+
     public static MySQLQuery._WithSpec<Select> query() {
         return MySQLQueries.primaryQuery(null, null, SQLs::_identity);
     }

@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.NamedParam;
 import io.army.criteria.SQLParam;
-import io.army.criteria.Selection;
 import io.army.criteria.SqlValueParam;
+import io.army.criteria.TypeInfer;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -13,7 +13,7 @@ import io.army.stmt.SingleParam;
 
 import java.util.*;
 
-abstract class ParamExpression extends OperationExpression<Selection> implements SQLParam {
+abstract class ParamExpression extends OperationExpression<TypeInfer> implements SQLParam {
 
 
     static ParamExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object value) {
@@ -56,7 +56,7 @@ abstract class ParamExpression extends OperationExpression<Selection> implements
     }
 
     @Override
-    public final _ItemExpression<Selection> bracket() {
+    public final ParamExpression bracket() {
         //return this,don't create new instance.
         return this;
     }

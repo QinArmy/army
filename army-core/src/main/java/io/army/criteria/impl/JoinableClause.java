@@ -65,13 +65,13 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final FT from(TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
+    public final FT from(TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
         assert wordAs == SQLs.AS;
         return this.onAddNoOnTableItem(_JoinType.NONE, null, table, tableAlias);
     }
 
     @Override
-    public final FT from(Query.TableModifier modifier, TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
+    public final FT from(Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
         assert wordAs == SQLs.AS;
         return this.onAddNoOnTableItem(_JoinType.NONE, modifier, table, tableAlias);
     }
@@ -92,7 +92,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final FC from(String cteName, StandardSyntax.WordAs wordAs, String alias) {
+    public final FC from(String cteName, SQLsSyntax.WordAs wordAs, String alias) {
         assert wordAs == SQLs.AS;
         return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, alias);
     }
@@ -103,19 +103,19 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final FC from(Query.TabularModifier modifier, String cteName, StandardSyntax.WordAs wordAs, String alias) {
+    public final FC from(Query.TabularModifier modifier, String cteName, SQLsSyntax.WordAs wordAs, String alias) {
         assert wordAs == SQLs.AS;
         return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, alias);
     }
 
     @Override
-    public final FT using(TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
+    public final FT using(TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
         assert wordAs == SQLs.AS;
         return this.onAddNoOnTableItem(_JoinType.NONE, null, table, tableAlias);
     }
 
     @Override
-    public final FT using(Query.TableModifier modifier, TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
+    public final FT using(Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
         assert wordAs == SQLs.AS;
         return this.onAddNoOnTableItem(_JoinType.NONE, modifier, table, tableAlias);
     }
@@ -136,7 +136,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final FC using(String cteName, StandardSyntax.WordAs wordAs, String alias) {
+    public final FC using(String cteName, SQLsSyntax.WordAs wordAs, String alias) {
         assert wordAs == SQLs.AS;
         return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, alias);
     }
@@ -147,7 +147,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final FC using(Query.TabularModifier modifier, String cteName, StandardSyntax.WordAs wordAs, String alias) {
+    public final FC using(Query.TabularModifier modifier, String cteName, SQLsSyntax.WordAs wordAs, String alias) {
         assert wordAs == SQLs.AS;
         return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, alias);
     }

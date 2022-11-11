@@ -3,8 +3,8 @@ package io.army.criteria.impl;
 import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.Item;
-import io.army.criteria.Selection;
 import io.army.criteria.TableField;
+import io.army.criteria.TypeInfer;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Selection;
@@ -25,7 +25,7 @@ final class QualifiedFieldImpl<T, I extends Item> extends OperationDataField<I>
         implements ItemField<T, I>, _Selection {
 
     static <T, I extends Item> QualifiedFieldImpl<T, I> create(final String tableAlias, final FieldMeta<T> field
-            , final Function<Selection, I> function) {
+            , final Function<TypeInfer, I> function) {
         return new QualifiedFieldImpl<>(tableAlias, field, function);
     }
 
@@ -33,7 +33,7 @@ final class QualifiedFieldImpl<T, I extends Item> extends OperationDataField<I>
 
     private final TableFieldMeta<T> field;
 
-    private QualifiedFieldImpl(String tableAlias, FieldMeta<T> field, Function<Selection, I> function) {
+    private QualifiedFieldImpl(String tableAlias, FieldMeta<T> field, Function<TypeInfer, I> function) {
         super(function);
         this.field = (TableFieldMeta<T>) field;
         this.tableAlias = tableAlias;
@@ -105,7 +105,7 @@ final class QualifiedFieldImpl<T, I extends Item> extends OperationDataField<I>
         if (obj == this) {
             match = true;
         } else if (obj instanceof QualifiedFieldImpl) {
-            final QualifiedFieldImpl<?> o = (QualifiedFieldImpl<?>) obj;
+            final QualifiedFieldImpl<?, ?> o = (QualifiedFieldImpl<?, ?>) obj;
             match = o.field == this.field && o.tableAlias.equals(this.tableAlias);
         } else {
             match = false;

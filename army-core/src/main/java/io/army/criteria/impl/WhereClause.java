@@ -248,7 +248,7 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
     }
 
     @Override
-    public final WA and(BetweenOperator expOperator, Expression first, StandardSyntax.WordAnd and, Expression second) {
+    public final WA and(BetweenOperator expOperator, Expression first, SQLsSyntax.WordAnd and, Expression second) {
         return this.and(expOperator.apply(first, and, second));
     }
 

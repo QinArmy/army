@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.standard.SQLFunction;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 
@@ -24,20 +25,13 @@ import java.util.regex.Pattern;
  *
  * @see SQLs
  */
-abstract class Functions {
+abstract class Functions extends SQLSyntax {
 
     /**
      * package constructor,forbid application developer directly extend this util class.
      */
     Functions() {
         throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @see SQLs#DISTINCT
-     */
-    public interface FuncDistinct extends SQLWords {
-
     }
 
 
@@ -478,6 +472,11 @@ abstract class Functions {
      */
     public static Expression truncate(final Expression x, final Expression d) {
         return FunctionUtils.twoArgFunc("TRUNCATE", x, d, DoubleType.INSTANCE);
+    }
+
+
+    public SQLFunction._CaseFuncWhenClause<Expression> Case() {
+        return FunctionUtils.caseFunction(null, SQLs::_asExp, SQLs::_identity);
     }
 
 

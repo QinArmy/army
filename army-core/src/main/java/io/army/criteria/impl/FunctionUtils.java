@@ -87,7 +87,7 @@ abstract class FunctionUtils {
 
     static <R extends Item, I extends Item> SQLFunction._CaseFuncWhenClause<R> caseFunction(
             final @Nullable Expression caseValue, final Function<_ItemExpression<I>, R> endFunc
-            , final Function<Selection, I> asFunc) {
+            , final Function<TypeInfer, I> asFunc) {
         return new CaseFunction<>((ArmyExpression) caseValue, endFunc, asFunc);
     }
 
@@ -431,7 +431,7 @@ abstract class FunctionUtils {
 
         final String name;
 
-        private final Function<_ItemExpression<I>, OE> endFunction;
+        private final Function<_AliasExpression<I>, OE> endFunction;
 
         private TypeMeta returnType;
 
@@ -439,9 +439,9 @@ abstract class FunctionUtils {
 
         private _Window anonymousWindow;
 
-        WindowFunction(String name, TypeMeta returnType, Function<_ItemExpression<I>, OE> endFunction
+        WindowFunction(String name, TypeMeta returnType, Function<_AliasExpression<I>, OE> endFunction
                 , Function<Selection, I> aliasFunction) {
-            super(aliasFunction);
+            super(SQLs._toSelection(aliasFunction));
             this.context = ContextStack.peek();
             this.name = name;
             this.endFunction = endFunction;
@@ -1119,7 +1119,7 @@ abstract class FunctionUtils {
             , SQLFunction._DynamicCaseThenClause
             , OperationExpression.MutableParamMetaSpec {
 
-        private final Function<_ItemExpression<I>, R> endFunc;
+        private final Function<_AliasExpression<I>, R> endFunc;
 
         private final ArmyExpression caseValue;
 
@@ -1134,7 +1134,7 @@ abstract class FunctionUtils {
         private TypeMeta returnType;
 
         private CaseFunction(@Nullable ArmyExpression caseValue, Function<_ItemExpression<I>, R> endFunc
-                , Function<Selection, I> asFunc) {
+                , Function<TypeInfer, I> asFunc) {
             super(asFunc);
             this.caseValue = caseValue;
             this.endFunc = endFunc;
@@ -1284,7 +1284,7 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public SQLFunction._CaseEndClause<R> whens(Consumer<CaseWhens> consumer) {
+        public SQLFunction._CaseElseClause<R> whens(Consumer<CaseWhens> consumer) {
             return null;
         }
 

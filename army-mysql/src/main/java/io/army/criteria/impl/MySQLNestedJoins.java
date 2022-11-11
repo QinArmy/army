@@ -65,7 +65,7 @@ abstract class MySQLNestedJoins {
         }
 
         @Override
-        public MySQLQuery._NestedIndexHintJoinSpec<I> leftParen(TableMeta<?> table, StandardSyntax.WordAs wordAs
+        public MySQLQuery._NestedIndexHintJoinSpec<I> leftParen(TableMeta<?> table, SQLsSyntax.WordAs wordAs
                 , String tableAlias) {
             assert wordAs == SQLs.AS;
 
@@ -506,7 +506,7 @@ abstract class MySQLNestedJoins {
             implements MySQLQuery._NestedIndexHintJoinSpec<I> {
 
         /**
-         * @see MySQLNestedLeftParenClause#leftParen(TableMeta, StandardSyntax.WordAs, String)
+         * @see MySQLNestedLeftParenClause#leftParen(TableMeta, SQLsSyntax.WordAs, String)
          */
         private NestedIndexHintJoinClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer
                 , _JoinType joinType, @Nullable SQLWords modifier

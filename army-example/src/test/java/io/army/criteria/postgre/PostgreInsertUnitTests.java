@@ -14,7 +14,7 @@ import io.army.example.bank.domain.user.BankPerson_;
 import io.army.example.bank.domain.user.BankUser_;
 import io.army.example.pill.domain.PillUser;
 import io.army.example.pill.struct.IdentityType;
-import io.army.example.pill.struct.UserType;
+import io.army.example.pill.struct.PillUserType;
 import io.army.stmt.GeneratedKeyStmt;
 import io.army.stmt.PairStmt;
 import io.army.stmt.Stmt;
@@ -66,7 +66,7 @@ public class PostgreInsertUnitTests {
             u.setIdentityId(i + 1L);
             u.setCreateTime(now);
             u.setUpdateTime(now);
-            u.setUserType(UserType.NONE);
+            u.setUserType(PillUserType.NONE);
 
             u.setIdentityType(IdentityType.PERSON);
             u.setNickName("妖侠" + 1);

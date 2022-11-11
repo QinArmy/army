@@ -3,11 +3,19 @@ package io.army.criteria;
 import io.army.criteria.impl.SQLs;
 import io.army.function.*;
 import io.army.lang.Nullable;
+import io.army.mapping.BooleanType;
+import io.army.meta.TypeMeta;
 
 import java.util.function.*;
 
 
 public interface IPredicate extends Expression, Statement._WhereAndClause<IPredicate> {
+
+    /**
+     * @return always return {@link BooleanType}
+     */
+    @Override
+    TypeMeta typeMeta();
 
     @Override
     IPredicate bracket();

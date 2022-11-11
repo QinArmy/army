@@ -28,7 +28,7 @@ import java.util.function.Function;
  */
 abstract class StandardQueries<I extends Item> extends SimpleQueries<
         I,
-        StandardSyntax.Modifier,
+        SQLsSyntax.Modifier,
         StandardQuery._StandardSelectComma<I>, // SR
         StandardQuery._FromSpec<I>, // SD
         StandardQuery._JoinSpec<I>,// FT
@@ -159,7 +159,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     @Override
-    final List<SQLs.Modifier> asModifierList(final @Nullable List<StandardSyntax.Modifier> modifiers) {
+    final List<SQLs.Modifier> asModifierList(final @Nullable List<SQLsSyntax.Modifier> modifiers) {
         if (modifiers == null) {
             throw ContextStack.nullPointer(this.context);
         }

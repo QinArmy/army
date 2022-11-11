@@ -412,7 +412,7 @@ abstract class CriteriaUtils {
         return rowCount;
     }
 
-    static int standardModifier(final StandardSyntax.Modifier distinct) {
+    static int standardModifier(final SQLsSyntax.Modifier distinct) {
         return (distinct == SQLs.DISTINCT || distinct == SQLs.ALL) ? 1 : -1;
     }
 

@@ -1,9 +1,6 @@
 package io.army.criteria.standard;
 
-import io.army.criteria.Insert;
-import io.army.criteria.PrimaryStatement;
-import io.army.criteria.Select;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
@@ -11,8 +8,7 @@ import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillPerson_;
 import io.army.example.pill.domain.PillUser;
 import io.army.example.pill.domain.PillUser_;
-import io.army.example.pill.struct.UserType;
-import io.army.mapping.LongType;
+import io.army.example.pill.struct.PillUserType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -33,9 +29,11 @@ public class StandardQueryUnitTests {
         final Select stmt;
         stmt = SQLs.query()
                 .select(SQLs::Case)
-                .when(PillUser_.userType::equal, SQLs::param, 1)
-                .then(PillUser_.userType)
-                .end(LongType.INSTANCE)
+                .when(PillUser_.userType::equal, SQLs::literal, () -> PillUserType.PARTNER)
+                .then(SQLs.literalFrom(PillUserType.PARTNER))
+                .Else(SQLs.literalFrom(PillUserType.NONE))
+                .end()
+                .plus(SQLs::literal, 1).times(SQLs::literal, 5)
                 .as("a")
                 .asQuery();
 
@@ -51,7 +49,7 @@ public class StandardQueryUnitTests {
                 .select("u", PERIOD, PillUser_.T)
                 .from(PillUser_.T, AS, "u")
                 .groupBy(PillUser_.userType)
-                .having(PillUser_.userType.equal(SQLs::literal, UserType.PERSON))// group by is empty ,so having clause no action
+                .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))// group by is empty ,so having clause no action
                 .orderBy(PillUser_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
                 .forUpdate()
@@ -63,16 +61,22 @@ public class StandardQueryUnitTests {
     @Test
     public void simpleChildSelect() {
         final Select stmt;
-
         stmt = SQLs.query()
                 .select("u", PERIOD, PillUser_.T, "p", PERIOD, PillPerson_.T)
                 .from(PillPerson_.T, SQLs.AS, "p")
                 .join(PillUser_.T, SQLs.AS, "u").on(PillPerson_.id.equal(PillUser_.id))
-                .where(PillPerson_.id::equal, SQLs::literal, "1")
-                .and(PillUser_.nickName::equal, SQLs::param, "脉兽秀秀")
+                .where(PillPerson_.id.equal(SQLs::literal, 1))
+                .and(PillUser_.nickName::equal, SQLs::param, () -> "脉兽秀秀")
+                .and(IPredicate::not, PillUser_.createTime.between(SQLs::literal, LocalDateTime.now().minusDays(1), AND, LocalDateTime.now()))
+                .and(PillUser_.id::in, () -> SQLs.subQuery()
+                        .select(RegisterRecord_.userId)
+                        .from(RegisterRecord_.T, AS, "r")
+                        .where(RegisterRecord_.createTime::between, SQLs::literal, () -> LocalDateTime.now().minusDays(1), AND, LocalDateTime::now)
+                        .asQuery()
+                )
                 //.and(User_.visible.equal(false))
                 .groupBy(PillPerson_.birthday)
-                .having(PillUser_.userType.equal(SQLs::literal, UserType.PERSON))
+                .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
                 .orderBy(PillPerson_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
                 .forUpdate()
@@ -94,7 +98,7 @@ public class StandardQueryUnitTests {
                 .and(PillUser_.nickName::equal, SQLs::param, "脉兽秀秀")
                 //.and(User_.visible.equal(false))
                 .groupBy(PillUser_.userType)
-                .having(PillUser_.userType.equal(SQLs::literal, UserType.PERSON))
+                .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
                 .orderBy(PillUser_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
                 .asQuery()
@@ -111,7 +115,7 @@ public class StandardQueryUnitTests {
                 .and(PillUser_.nickName::equal, SQLs::param, "远浪舰长")
                 //.and(User_.visible.equal(false))
                 .groupBy(PillUser_.userType)
-                .having(PillUser_.userType.equal(SQLs::literal, UserType.PERSON))
+                .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
                 .orderBy(PillUser_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
                 .asQuery()
@@ -127,7 +131,7 @@ public class StandardQueryUnitTests {
                 .and(PillUser_.version.equal(SQLs::literal, 2))
                 //.and(User_.version::equal, SQLs::literal, 2)
                 .groupBy(PillUser_.userType)
-                .having(PillUser_.userType.equal(SQLs::literal, UserType.PERSON))
+                .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
                 .orderBy(PillUser_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
 

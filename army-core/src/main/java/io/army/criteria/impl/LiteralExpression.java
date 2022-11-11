@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.NamedLiteral;
-import io.army.criteria.Selection;
 import io.army.criteria.SqlValueParam;
+import io.army.criteria.TypeInfer;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -19,7 +19,7 @@ import java.util.Objects;
  * This class representing sql literal expression.
  * </p>
  */
-abstract class LiteralExpression extends OperationExpression<Selection> {
+abstract class LiteralExpression extends OperationExpression<TypeInfer> {
 
     static LiteralExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object constant) {
         assert paramMeta != null;
@@ -94,7 +94,7 @@ abstract class LiteralExpression extends OperationExpression<Selection> {
     }
 
     @Override
-    public final _ItemExpression<Selection> bracket() {
+    public final LiteralExpression bracket() {
         //return this,don't create new instance.
         return this;
     }

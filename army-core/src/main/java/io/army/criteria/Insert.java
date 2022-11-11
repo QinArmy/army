@@ -115,15 +115,13 @@ public interface Insert extends DmlStatement, Statement.DmlInsert {
 
         CR defaultValue(FieldMeta<T> field, Expression value);
 
-        CR defaultValue(FieldMeta<T> field, Supplier<? extends Expression> supplier);
+        CR defaultValue(FieldMeta<T> field, Supplier<Expression> supplier);
 
-        CR defaultValue(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function);
+        CR defaultValue(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-        <E> CR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value);
+        <E> CR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, @Nullable E value);
 
-        <E> CR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier);
-
-        CR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+        CR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator, Function<String, ?> function, String keyName);
 
     }
 

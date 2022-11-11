@@ -726,7 +726,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._StaticReturningCommaSpec<Q> returning(Expression expression, StandardSyntax.WordAs wordAs
+        public PostgreInsert._StaticReturningCommaSpec<Q> returning(Expression expression, SQLsSyntax.WordAs wordAs
                 , String alias) {
             return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
                     .returning(expression, wordAs, alias);
@@ -1052,7 +1052,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._StaticReturningCommaSpec<Q> returning(Expression expression, StandardSyntax.WordAs wordAs
+        public PostgreInsert._StaticReturningCommaSpec<Q> returning(Expression expression, SQLsSyntax.WordAs wordAs
                 , String alias) {
             this.onAddSelection(ArmySelections.forExp((ArmyExpression) expression, alias));
             return this;
@@ -1101,7 +1101,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._StaticReturningCommaSpec<Q> comma(Expression expression, StandardSyntax.WordAs wordAs
+        public PostgreInsert._StaticReturningCommaSpec<Q> comma(Expression expression, SQLsSyntax.WordAs wordAs
                 , String alias) {
             return this.comma(ArmySelections.forExp((ArmyExpression) expression, alias));
         }
@@ -1245,7 +1245,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._StaticReturningCommaSpec<Q> returning(Expression expression, StandardSyntax.WordAs wordAs
+        public PostgreInsert._StaticReturningCommaSpec<Q> returning(Expression expression, SQLsSyntax.WordAs wordAs
                 , String alias) {
             return this.clause.staticValuesClauseEnd(this.endValuesClause())
                     .returning(expression, wordAs, alias);

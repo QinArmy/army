@@ -19,7 +19,7 @@ import io.army.example.pill.domain.PillPerson_;
 import io.army.example.pill.domain.PillUser;
 import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.IdentityType;
-import io.army.example.pill.struct.UserType;
+import io.army.example.pill.struct.PillUserType;
 import io.army.stmt.GeneratedKeyStmt;
 import io.army.stmt.PairStmt;
 import io.army.stmt.Stmt;
@@ -230,7 +230,7 @@ public class MySQLInsertUnitTests {
             u.setIdentityId(i + 1L);
             u.setCreateTime(now);
             u.setUpdateTime(now);
-            u.setUserType(UserType.NONE);
+            u.setUserType(PillUserType.NONE);
 
             u.setIdentityType(IdentityType.PERSON);
             u.setNickName("脉兽" + 1);
@@ -255,7 +255,7 @@ public class MySQLInsertUnitTests {
             u.setIdentityId(i + 1L);
             u.setCreateTime(now);
             u.setUpdateTime(now);
-            u.setUserType(UserType.NONE);
+            u.setUserType(PillUserType.NONE);
 
             u.setIdentityType(IdentityType.PERSON);
             u.setNickName("脉兽" + 1);

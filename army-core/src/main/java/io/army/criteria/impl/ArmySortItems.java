@@ -38,9 +38,9 @@ class ArmySortItems implements ArmySortItem {
 
     private final ArmyExpression sortItem;
 
-    private final StandardSyntax.KeyWordAscDesc aseWord;
+    private final SQLsSyntax.KeyWordAscDesc aseWord;
 
-    private ArmySortItems(ArmyExpression sortItem, @Nullable StandardSyntax.KeyWordAscDesc aseWord) {
+    private ArmySortItems(ArmyExpression sortItem, @Nullable SQLsSyntax.KeyWordAscDesc aseWord) {
         this.sortItem = sortItem;
         this.aseWord = aseWord;
     }
@@ -52,7 +52,7 @@ class ArmySortItems implements ArmySortItem {
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
 
-        final StandardSyntax.KeyWordAscDesc aseWord = this.aseWord;
+        final SQLsSyntax.KeyWordAscDesc aseWord = this.aseWord;
         if (aseWord != null) {
             sqlBuilder.append(aseWord.spaceWord);
         }
@@ -67,7 +67,7 @@ class ArmySortItems implements ArmySortItem {
         final StringBuilder builder = new StringBuilder()
                 .append(this.sortItem);
 
-        final StandardSyntax.KeyWordAscDesc aseWord = this.aseWord;
+        final SQLsSyntax.KeyWordAscDesc aseWord = this.aseWord;
         if (aseWord != null) {
             builder.append(aseWord.spaceWord);
         }

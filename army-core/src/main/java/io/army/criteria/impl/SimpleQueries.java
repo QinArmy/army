@@ -30,10 +30,11 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
         extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         implements Query._SelectDispatcher<W, SR, SD>
         , Query._SelectAndCommaDispatcher<SR>
+        , Query._StaticSelectSpaceClause<SR>
         , Statement._QueryWhereClause<WR, WA>, Query._GroupByClause<GR>
         , Query._HavingClause<HR>, Query._AsQueryClause<Q>
         , TabularItem.DerivedTableSpec, Query._QueryUnionClause<SP>

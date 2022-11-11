@@ -25,7 +25,7 @@ abstract class PostgreSyntax extends Functions {
 
     }
 
-    public interface WordDistinct extends Modifier, FuncDistinct {
+    public interface WordDistinct extends Modifier, SQLSyntax.ArgDistinct {
 
     }
 

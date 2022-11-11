@@ -2,7 +2,7 @@ package io.army.example.pill.struct;
 
 import io.army.struct.CodeEnum;
 
-public enum UserType implements CodeEnum {
+public enum PillUserType implements CodeEnum {
 
     NONE(Constant.NONE),
     PERSON(Constant.PERSON),
@@ -12,7 +12,7 @@ public enum UserType implements CodeEnum {
 
     private final byte code;
 
-    UserType(byte code) {
+    PillUserType(byte code) {
         this.code = code;
     }
 

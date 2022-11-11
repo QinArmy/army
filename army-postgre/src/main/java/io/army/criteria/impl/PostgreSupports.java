@@ -714,7 +714,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public PostgreStatement._CyclePathColumnClause<I> to(Expression cycleMarkValue
-                , StandardSyntax.WordDefault wordDefault, Expression cycleMarkDefault) {
+                , SQLsSyntax.WordDefault wordDefault, Expression cycleMarkDefault) {
             if (this.cycleColumnList != null) {
                 if (wordDefault != SQLs.DEFAULT) {
                     throw CriteriaUtils.unknownWords(this.context, wordDefault);

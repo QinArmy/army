@@ -4,12 +4,12 @@ package io.army.example.pill.domain;
 import io.army.annotation.Column;
 import io.army.annotation.DiscriminatorValue;
 import io.army.annotation.Table;
-import io.army.example.pill.struct.UserType;
+import io.army.example.pill.struct.PillUserType;
 
 import java.time.LocalDate;
 
 @Table(name = "u_person", comment = "person user")
-@DiscriminatorValue(UserType.Constant.PERSON)
+@DiscriminatorValue(PillUserType.Constant.PERSON)
 public class PillPerson extends PillUser {
 
     @Column(comment = "user's birthday")

@@ -46,7 +46,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
     }
 
     @Override
-    public PostgreStatement._NestedTableSampleJoinSpec<I> leftParen(TableMeta<?> table, StandardSyntax.WordAs wordAs
+    public PostgreStatement._NestedTableSampleJoinSpec<I> leftParen(TableMeta<?> table, SQLsSyntax.WordAs wordAs
             , String tableAlias) {
         assert wordAs == SQLs.AS;
         final NestedTableSampleJoinClause<I> block;
@@ -59,7 +59,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
     @Override
     public PostgreStatement._NestedTableSampleJoinSpec<I> leftParen(final Query.TableModifier modifier
-            , TableMeta<?> table, StandardSyntax.WordAs wordAs, String tableAlias) {
+            , TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
         assert wordAs == SQLs.AS;
         if (modifier != SQLs.ONLY) {
             throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
@@ -123,7 +123,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
     }
 
     @Override
-    public PostgreStatement._PostgreNestedJoinClause<I> leftParen(String cteName, StandardSyntax.WordAs wordAs
+    public PostgreStatement._PostgreNestedJoinClause<I> leftParen(String cteName, SQLsSyntax.WordAs wordAs
             , String alias) {
         assert wordAs == SQLs.AS;
 

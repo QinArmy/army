@@ -9,7 +9,7 @@ import io.army.criteria.Item;
  *
  * @since 1.0
  */
-interface ItemDerivedField<I extends Item> extends DerivedField, _ItemExpression<I> {
+interface ItemDerivedField<I extends Item> extends DerivedField, _AliasExpression<I> {
 
 
 }

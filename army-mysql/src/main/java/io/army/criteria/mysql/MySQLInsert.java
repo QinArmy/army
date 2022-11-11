@@ -2,6 +2,7 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.impl.MySQLFunctions;
 import io.army.criteria.impl.MySQLs;
 import io.army.meta.*;
 
@@ -34,8 +35,11 @@ public interface MySQLInsert extends MySQLStatement {
     }
 
 
+    /**
+     * @see MySQLFunctions#values(FieldMeta)
+     */
     interface _OnDuplicateKeyUpdateSpec<I extends Item, F extends TableField> extends _DmlInsertClause<I> {
-
+        //TODO MySQLFunctions#values(FieldMeta)
         _StaticOnDuplicateKeySetClause<I, F> onDuplicateKey();
 
         _DmlInsertClause<I> onDuplicateKey(Consumer<ItemPairs<F>> consumer);

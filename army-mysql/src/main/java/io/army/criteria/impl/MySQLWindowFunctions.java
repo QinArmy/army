@@ -29,16 +29,16 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
 
 
     /**
-     * @see MySQLs#avg(Functions.FuncDistinct, Expression, Function, Function)
+     * @see MySQLs#avg(SQLSyntax.ArgDistinct, Expression, Function, Function)
      */
     public static MySQLs._AggregateWindowFunc<Expression, Selection> avg(Expression exp) {
         return MySQLs.avg(null, exp, SQLs::_asExp, SQLs::_identity);
     }
 
     /**
-     * @see MySQLs#avg(Functions.FuncDistinct, Expression, Function, Function)
+     * @see MySQLs#avg(SQLSyntax.ArgDistinct, Expression, Function, Function)
      */
-    public static MySQLs._AggregateWindowFunc<Expression, Selection> avg(@Nullable Functions.FuncDistinct distinct
+    public static MySQLs._AggregateWindowFunc<Expression, Selection> avg(@Nullable SQLSyntax.ArgDistinct distinct
             , Expression exp) {
         return MySQLs.avg(distinct, exp, SQLs::_asExp, SQLs::_identity);
     }
@@ -83,7 +83,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static MySQLs._AggregateWindowFunc<Expression, Selection> count(@Nullable SQLs.FuncDistinct distinct
+    public static MySQLs._AggregateWindowFunc<Expression, Selection> count(@Nullable SQLSyntax.ArgDistinct distinct
             , List<Expression> argList) {
         return MySQLs.count(distinct, argList, SQLs::_asExp, SQLs::_identity);
     }
@@ -93,12 +93,12 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
         throw new UnsupportedOperationException();
     }
 
-    public static MySQLClause._GroupConcatOrderBySpec groupConcat(@Nullable SQLs.FuncDistinct distinct, Expression exp) {
+    public static MySQLClause._GroupConcatOrderBySpec groupConcat(@Nullable SQLSyntax.ArgDistinct distinct, Expression exp) {
         //TODO
         throw new UnsupportedOperationException();
     }
 
-    public static MySQLClause._GroupConcatOrderBySpec groupConcat(@Nullable SQLs.FuncDistinct distinct
+    public static MySQLClause._GroupConcatOrderBySpec groupConcat(@Nullable SQLSyntax.ArgDistinct distinct
             , List<Expression> argList) {
         //TODO
         throw new UnsupportedOperationException();
@@ -150,7 +150,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
      */
-    public static MySQLs._AggregateWindowFunc<Expression, Selection> max(@Nullable SQLs.FuncDistinct distinct
+    public static MySQLs._AggregateWindowFunc<Expression, Selection> max(@Nullable SQLSyntax.ArgDistinct distinct
             , Expression exp) {
         return MySQLs.max(distinct, exp, SQLs::_asExp, SQLs::_identity);
     }
@@ -177,7 +177,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @param exp non-null parameter or {@link Expression},but couldn't be {@link SQLs#NULL}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
      */
-    public static MySQLs._AggregateWindowFunc<Expression, Selection> min(@Nullable SQLs.FuncDistinct distinct
+    public static MySQLs._AggregateWindowFunc<Expression, Selection> min(@Nullable SQLSyntax.ArgDistinct distinct
             , Expression exp) {
         return MySQLs.min(distinct, exp, SQLs::_asExp, SQLs::_identity);
     }
@@ -250,7 +250,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">SUM([DISTINCT] expr) [over_clause]</a>
      */
-    public static MySQLs._AggregateWindowFunc<Expression, Selection> sum(@Nullable SQLs.FuncDistinct distinct
+    public static MySQLs._AggregateWindowFunc<Expression, Selection> sum(@Nullable SQLSyntax.ArgDistinct distinct
             , Expression exp) {
         return MySQLs.sum(distinct, exp, SQLs::_asExp, SQLs::_identity);
     }
@@ -359,7 +359,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      * </p>
      *
-     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param expr non-null parameter or {@link  Expression}
      * @param n    nullable,probably is below:
      *             <ul>
      *                 <li>null</li>

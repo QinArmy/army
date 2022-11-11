@@ -14,13 +14,13 @@ import java.util.List;
  * <p>
  * This class is base class of below:
  *     <ul>
- *         <li>{@link MySQLFuncSyntax}</li>
+ *         <li>{@link MySQLStringFunctions}</li>
  *     </ul>
  * </p>
  * package class
  */
 @SuppressWarnings("unused")
-abstract class MySQLSyntax {
+abstract class MySQLSyntax extends SQLSyntax {
 
     /**
      * package constructor
@@ -33,7 +33,7 @@ abstract class MySQLSyntax {
 
     }
 
-    public interface WordDistinct extends Modifier, Functions.FuncDistinct {
+    public interface WordDistinct extends Modifier, SQLSyntax.ArgDistinct {
 
     }
 

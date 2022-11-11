@@ -122,4 +122,7 @@
       (argument mismatch; io.army.function.TeNamedOperator&lt;io.army.criteria.DataField> cannot be converted to
       java.util.function.BiFunction&lt;io.army.criteria.Expression,T,io.army.criteria.Expression>)
 
+25. 为什么 INSERT 语句中的 defaultValue 子句保留 T value 相关方法而删除 Supplier getter 相关方法 ? 这与其它语句的取舍不同.
+    * 因为 defaultValue 子句的场景更多的来源于 简单值而不是 pojo.
+    
 
