@@ -7,13 +7,13 @@ import io.army.util._StringUtils;
 
 public enum MySQLTypes implements SqlType, SQLWords {
 
-    NULL(" "),
-    BOOLEAN(" "),
+    NULL,
+    BOOLEAN,
 
-    TINYINT(" "),
-    TINYINT_UNSIGNED(" "),
-    SMALLINT(" "),
-    SMALLINT_UNSIGNED(" "),
+    TINYINT,
+    TINYINT_UNSIGNED,
+    SMALLINT,
+    SMALLINT_UNSIGNED,
 
     INT,
     INT_UNSIGNED,

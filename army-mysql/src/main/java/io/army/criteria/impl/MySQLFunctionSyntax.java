@@ -1,18 +1,15 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
-import io.army.criteria.Item;
-import io.army.criteria.SqlValueParam;
-import io.army.criteria.TypeInfer;
+import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
+import io.army.criteria.mysql.MySQLCastType;
+import io.army.criteria.mysql.MySQLFunction;
 import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
-import io.army.mapping.DoubleType;
-import io.army.mapping.LongType;
-import io.army.mapping.MappingType;
-import io.army.mapping.StringType;
+import io.army.mapping.*;
 import io.army.mapping.optional.JsonListType;
 import io.army.mapping.optional.JsonMapType;
+import io.army.mapping.optional.JsonType;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
@@ -546,6 +543,47 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
             Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.noArgWindowFunc("ROW_NUMBER", LongType.INSTANCE, endFunction, asFunction);
     }
+
+    /*-------------------below JSON function -------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     *      <ul>
+     *          <li>If don't specified RETURNING clause then {@link StringType}</li>
+     *          <li>Else if type is {@link MySQLCastType#BINARY }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
+     *          <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
+     *          <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
+     *          <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
+     *          <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
+     *          <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
+     *          <li>Else if type is {@link MySQLCastType#SIGNED_INTEGER }then {@link LongType}</li>
+     *          <li>Else if type is {@link MySQLCastType#UNSIGNED_INTEGER }then {@link UnsignedBigIntegerType}</li>
+     *          <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
+     *          <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
+     *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
+     *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
+     *          <li>Else if type is {@link MySQLCastType#JSON }then {@link JsonType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Point }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link ByteArrayType}</li>
+     *      </ul>
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-value">JSON_VALUE(json_doc, path)</a>
+     */
+    public static <E extends Expression, I extends Item> MySQLFunction._JsonValueLeftParenClause<E> jsonValue(
+            Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
+        return MySQLFunctionUtils.jsonValueFunc(expFunc, endFunc);
+    }
+
+
 
 
     /*-------------------below private method-------------------*/

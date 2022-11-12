@@ -46,6 +46,23 @@ abstract class MySQLSyntax extends SQLSyntax {
 
     }
 
+    public interface WordPath extends SQLWords {
+
+    }
+
+    public interface WordNested extends SQLWords {
+
+    }
+
+    public interface WordExistsPath extends SQLWords {
+
+    }
+
+    public interface WordsForOrdinality extends SQLWords {
+
+    }
+
+
     public interface TrimPosition extends SQLWords {
 
     }
@@ -146,6 +163,100 @@ abstract class MySQLSyntax extends SQLSyntax {
 
     }//KeyWordUsing
 
+    private enum KeyWordPath implements WordPath {
+
+        PATH(" PATH");
+
+        private final String spaceWord;
+
+        KeyWordPath(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+    }//KeyWordPath
+
+    private enum KeyWordNested implements WordNested {
+
+        NESTED(" NESTED");
+
+        private final String spaceWord;
+
+        KeyWordNested(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+    }//KeyWordNested
+
+    private enum KeyWordExistsPath implements WordExistsPath {
+
+        EXISTS_PATH(" EXISTS PATH");
+
+        private final String spaceWord;
+
+        KeyWordExistsPath(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+
+    }//KeyWordExistsPath
+
+
+    private enum KeyWordsForOrdinality implements WordsForOrdinality {
+
+        FOR_ORDINALITY(" FOR ORDINALITY");
+
+        private final String spaceWord;
+
+        KeyWordsForOrdinality(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+    }//KeyWordsForOrdinality
+
     enum WordTrimPosition implements TrimPosition {
 
         BOTH(" BOTH"),
@@ -201,6 +312,16 @@ abstract class MySQLSyntax extends SQLSyntax {
     public static final TrimPosition LEADING = WordTrimPosition.LEADING;
 
     public static final TrimPosition TRAILING = WordTrimPosition.TRAILING;
+
+
+    public static final WordPath PATH = KeyWordPath.PATH;
+
+    public static final WordExistsPath EXISTS_PATH = KeyWordExistsPath.EXISTS_PATH;
+
+
+    public static final WordsForOrdinality FOR_ORDINALITY = KeyWordsForOrdinality.FOR_ORDINALITY;
+
+    // public static final WordNested NESTED = KeyWordNested.NESTED;
 
 
     public static final Expression LITERAL_one = SQLs.literal(StringType.INSTANCE, "one");

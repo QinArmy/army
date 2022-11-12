@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
-import io.army.criteria.SqlValueParam;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.standard.SQLFunction;
@@ -736,52 +735,8 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     }
 
 
-    /**
-     * @see #jsonArrayAppend(Expression, List)
-     * @see #jsonArrayInsert(Expression, List)
-     * @see #jsonInsert(Expression, List)
-     */
-    private static Expression _jsonPathValOperateFunc(final String name, final Expression jsonDoc
-            , final List<Expression> pathValList) {
-        if (jsonDoc instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, jsonDoc);
-        }
-        final int size = pathValList.size();
-        if (size == 0 || (size & 1) != 0) {
-            throw CriteriaUtils.funcArgError(name, pathValList);
-        }
-        final List<Object> argList = new ArrayList<>(((1 + size) << 1) - 1);
-        argList.add(jsonDoc);
-        for (Expression exp : pathValList) {
-            if (exp instanceof SqlValueParam.MultiValue) {
-                throw CriteriaUtils.funcArgError(name, exp);
-            }
-            argList.add(SQLSyntax.FuncWord.COMMA);
-            argList.add(exp);
-        }
-        return FunctionUtils.complexArgFunc(name, argList, jsonDoc.typeMeta());
-    }
 
 
-    /**
-     * @see #jsonMerge(List)
-     */
-    private static Expression _jsonMergerFunc(final String name, final List<Expression> jsonDocList) {
-        final int size = jsonDocList.size();
-        if (size < 2) {
-            throw CriteriaUtils.funcArgError(name, jsonDocList);
-        }
-        final List<Object> argList = new ArrayList<>(size);
-        int index = 0;
-        for (Expression jsonDoc : jsonDocList) {
-            if (index > 0) {
-                argList.add(SQLSyntax.FuncWord.COMMA);
-            }
-            argList.add(jsonDoc);
-            index++;
-        }
-        return FunctionUtils.complexArgFunc(name, argList, jsonDocList.get(0).typeMeta());
-    }
 
 
 }

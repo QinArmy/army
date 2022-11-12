@@ -1,15 +1,14 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.mysql.MySQLCastType;
-import io.army.criteria.mysql.MySQLClause;
+import io.army.criteria.mysql.MySQLFunction;
 import io.army.mapping.*;
 import io.army.mapping.optional.JsonListType;
 import io.army.mapping.optional.JsonMapType;
-import io.army.mapping.optional.JsonType;
 import io.army.meta.TypeMeta;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * package class
@@ -485,42 +484,21 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         return jsonSearch(SQLs.param(StringType.INSTANCE, jsonDoc), oneOrAll, searchStr, escapeChar, paths);
     }
 
+
     /**
-     * <p>
-     * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>If don't specified RETURNING clause then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#BINARY }then {@link ByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
-     *          <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
-     *          <li>Else if type is {@link MySQLCastType#SIGNED_INTEGER }then {@link LongType}</li>
-     *          <li>Else if type is {@link MySQLCastType#UNSIGNED_INTEGER }then {@link UnsignedBigIntegerType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
-     *          <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
-     *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
-     *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
-     *          <li>Else if type is {@link MySQLCastType#JSON }then {@link JsonType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Point }then {@link ByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link ByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link ByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link ByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link ByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link ByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link ByteArrayType}</li>
-     *      </ul>
-     * </p>
-     *
-     * @param jsonDoc non-null
-     * @param path    non-null
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-value">JSON_VALUE(json_doc, path)</a>
+     * @see MySQLs#jsonValue(Function, Function)
      */
-    public static MySQLClause._JsonValueReturningSpec jsonValue(final Expression jsonDoc, final Expression path) {
-        return MySQLFunctionUtils.jsonValueFunc(jsonDoc, path);
+    public static Expression jsonValue(final Expression jsonDoc, final Expression path) {
+        return MySQLs.jsonValue(SQLs::_asExp, SQLs::_identity)
+                .leftParen(jsonDoc, path)
+                .rightParen();
+    }
+
+    /**
+     * @see MySQLs#jsonValue(Function, Function)
+     */
+    public static MySQLFunction._JsonValueLeftParenClause<Expression> jsonValue() {
+        return MySQLs.jsonValue(SQLs::_asExp, SQLs::_identity);
     }
 
 
@@ -547,6 +525,42 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
      * </p>
      *
+     * @param jsonDoc       non-null
+     * @param firstPath     wrap to literal expression
+     * @param firstValue    wrap to parameter expression
+     * @param pathValuePair non-null, size must even,path wrap to literal expression,value wrap to parameter expression
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-array-append">JSON_ARRAY_APPEND(json_doc, path, val[, path, val] ...)</a>
+     */
+    public static Expression jsonArrayAppend(final Expression jsonDoc, String firstPath, Object firstValue
+            , Object... pathValuePair) {
+        return _jsonPathValOperateFunc("JSON_ARRAY_APPEND", jsonDoc, firstPath, firstValue, pathValuePair);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     * </p>
+     *
+     * @param jsonDoc       non-null,wrap to parameter expression
+     * @param firstPath     non-null,wrap to literal expression
+     * @param firstValue    non-null,wrap to parameter expression
+     * @param pathValuePair non-null, size must even,path wrap to literal expression,value wrap to parameter expression
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-array-append">JSON_ARRAY_APPEND(json_doc, path, val[, path, val] ...)</a>
+     */
+    public static Expression jsonArrayAppend(final String jsonDoc, String firstPath, Object firstValue
+            , Object... pathValuePair) {
+        return _jsonPathValOperateFunc("JSON_ARRAY_APPEND", SQLs.param(StringType.INSTANCE, jsonDoc)
+                , firstPath, firstValue, pathValuePair);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     * </p>
+     *
      * @param jsonDoc     non-null
      * @param pathValList non-null,non-empty,size is even
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -554,6 +568,42 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      */
     public static Expression jsonArrayInsert(final Expression jsonDoc, final List<Expression> pathValList) {
         return _jsonPathValOperateFunc("JSON_ARRAY_INSERT", jsonDoc, pathValList);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     * </p>
+     *
+     * @param jsonDoc       non-null
+     * @param firstPath     wrap to literal expression
+     * @param firstValue    wrap to parameter expression
+     * @param pathValuePair non-null, size must even,path wrap to literal expression,value wrap to parameter expression
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-array-insert">JSON_ARRAY_INSERT(json_doc, path, val[, path, val] ...)</a>
+     */
+    public static Expression jsonArrayInsert(final Expression jsonDoc, String firstPath, Object firstValue
+            , Object... pathValuePair) {
+        return _jsonPathValOperateFunc("JSON_ARRAY_INSERT", jsonDoc, firstPath, firstValue, pathValuePair);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     * </p>
+     *
+     * @param jsonDoc       non-null,wrap to parameter expression
+     * @param firstPath     non-null,wrap to literal expression
+     * @param firstValue    non-null,wrap to parameter expression
+     * @param pathValuePair non-null, size must even,path wrap to literal expression,value wrap to parameter expression
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-array-insert">JSON_ARRAY_INSERT(json_doc, path, val[, path, val] ...)</a>
+     */
+    public static Expression jsonArrayInsert(final String jsonDoc, String firstPath, Object firstValue
+            , Object... pathValuePair) {
+        return _jsonPathValOperateFunc("JSON_ARRAY_INSERT", SQLs.param(StringType.INSTANCE, jsonDoc)
+                , firstPath, firstValue, pathValuePair);
     }
 
     /**
@@ -570,6 +620,42 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         return _jsonPathValOperateFunc("JSON_INSERT", jsonDoc, pathValList);
     }
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     * </p>
+     *
+     * @param jsonDoc       non-null
+     * @param firstPath     wrap to literal expression
+     * @param firstValue    wrap to parameter expression
+     * @param pathValuePair non-null, size must even,path wrap to literal expression,value wrap to parameter expression
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-insert">JSON_INSERT(json_doc, path, val[, path, val] ...)</a>
+     */
+    public static Expression jsonInsert(final Expression jsonDoc, String firstPath, Object firstValue
+            , Object... pathValuePair) {
+        return _jsonPathValOperateFunc("JSON_INSERT", jsonDoc, firstPath, firstValue, pathValuePair);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     * </p>
+     *
+     * @param jsonDoc       non-null,wrap to parameter expression
+     * @param firstPath     non-null,wrap to literal expression
+     * @param firstValue    non-null,wrap to parameter expression
+     * @param pathValuePair non-null, size must even,path wrap to literal expression,value wrap to parameter expression
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-insert">JSON_INSERT(json_doc, path, val[, path, val] ...)</a>
+     */
+    public static Expression jsonInsert(final String jsonDoc, String firstPath, Object firstValue
+            , Object... pathValuePair) {
+        return _jsonPathValOperateFunc("JSON_INSERT", SQLs.param(StringType.INSTANCE, jsonDoc)
+                , firstPath, firstValue, pathValuePair);
+    }
+
     /**
      * <p>
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
@@ -582,6 +668,41 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      */
     public static Expression jsonReplace(final Expression jsonDoc, final List<Expression> pathValList) {
         return _jsonPathValOperateFunc("JSON_REPLACE", jsonDoc, pathValList);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     * </p>
+     *
+     * @param jsonDoc       non-null
+     * @param firstPath     wrap to literal expression
+     * @param firstValue    wrap to parameter expression
+     * @param pathValuePair non-null, size must even,path wrap to literal expression,value wrap to parameter expression
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-replace">JSON_REPLACE(json_doc, path, val[, path, val] ...)</a>
+     */
+    public static Expression jsonReplace(final Expression jsonDoc, String firstPath, Object firstValue
+            , Object... pathValuePair) {
+        return _jsonPathValOperateFunc("JSON_REPLACE", jsonDoc, firstPath, firstValue, pathValuePair);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     * </p>
+     *
+     * @param jsonDoc       non-null,wrap to parameter expression
+     * @param firstPath     non-null,wrap to literal expression
+     * @param firstValue    non-null,wrap to parameter expression
+     * @param pathValuePair non-null, size must even,path wrap to literal expression,value wrap to parameter expression
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-replace">JSON_REPLACE(json_doc, path, val[, path, val] ...)</a>
+     */
+    public static Expression jsonReplace(final String jsonDoc, String firstPath, Object firstValue
+            , Object... pathValuePair) {
+        return _jsonPathValOperateFunc("JSON_REPLACE", SQLs.param(StringType.INSTANCE, jsonDoc)
+                , firstPath, firstValue, pathValuePair);
     }
 
 
@@ -599,6 +720,41 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         return _jsonPathValOperateFunc("JSON_SET", jsonDoc, pathValList);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     * </p>
+     *
+     * @param jsonDoc       non-null
+     * @param firstPath     wrap to literal expression
+     * @param firstValue    wrap to parameter expression
+     * @param pathValuePair non-null, size must even,path wrap to literal expression,value wrap to parameter expression
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-set">JSON_SET(json_doc, path, val[, path, val] ...)</a>
+     */
+    public static Expression jsonSet(final Expression jsonDoc, String firstPath, Object firstValue
+            , Object... pathValuePair) {
+        return _jsonPathValOperateFunc("JSON_SET", jsonDoc, firstPath, firstValue, pathValuePair);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     * </p>
+     *
+     * @param jsonDoc       non-null,wrap to parameter expression
+     * @param firstPath     non-null,wrap to literal expression
+     * @param firstValue    non-null,wrap to parameter expression
+     * @param pathValuePair non-null, size must even,path wrap to literal expression,value wrap to parameter expression
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-set">JSON_SET(json_doc, path, val[, path, val] ...)</a>
+     */
+    public static Expression jsonSet(final String jsonDoc, String firstPath, Object firstValue
+            , Object... pathValuePair) {
+        return _jsonPathValOperateFunc("JSON_SET", SQLs.param(StringType.INSTANCE, jsonDoc)
+                , firstPath, firstValue, pathValuePair);
+    }
+
 
     /**
      * <p>
@@ -608,13 +764,13 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * You should use {@link #jsonMergePreserve(Expression, Expression)},if database is 8.0+.
      * </p>
      *
-     * @param jsonDoc     non-null
-     * @param jsonDocList non-null,multi parameter(literal) {@link Expression} is allowed.
+     * @param jsonDoc1 non-null
+     * @param jsonDoc2 non-null,multi parameter(literal) {@link Expression} is allowed.
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge">JSON_MERGE(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static Expression jsonMerge(final Expression jsonDoc, final Expression jsonDocList) {
-        return _singleAndMultiArgFunc("JSON_MERGE", jsonDoc, jsonDocList, jsonDoc.typeMeta());
+    public static Expression jsonMerge(final Expression jsonDoc1, final Expression jsonDoc2, Expression... jsonDocArray) {
+        return _jsonMergeOperationFunction("JSON_MERGE", jsonDoc1, jsonDoc2, jsonDocArray);
     }
 
     /**
@@ -630,7 +786,11 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge">JSON_MERGE(json_doc, json_doc[, json_doc] ...)</a>
      */
     public static Expression jsonMerge(final List<Expression> jsonDocList) {
-        return _jsonMergerFunc("JSON_MERGE", jsonDocList);
+        final String name = "JSON_MERGE";
+        if (jsonDocList.size() < 2) {
+            throw CriteriaUtils.funcArgError(name, jsonDocList);
+        }
+        return FunctionUtils.multiArgFunc(name, jsonDocList, jsonDocList.get(0).typeMeta());
     }
 
     /**
@@ -638,14 +798,15 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
      * </p>
      *
-     * @param jsonDoc     non-null
-     * @param jsonDocList non-null,multi parameter(literal) {@link Expression} is allowed.
+     * @param jsonDoc1 non-null
+     * @param jsonDoc2 non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-preserve">JSON_MERGE_PRESERVE(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static Expression jsonMergePreserve(final Expression jsonDoc, final Expression jsonDocList) {
-        return _singleAndMultiArgFunc("JSON_MERGE_PRESERVE", jsonDoc, jsonDocList, jsonDoc.typeMeta());
+    public static Expression jsonMergePreserve(final Expression jsonDoc1, final Expression jsonDoc2, Expression... jsonDocArray) {
+        return _jsonMergeOperationFunction("JSON_MERGE_PRESERVE", jsonDoc1, jsonDoc2, jsonDocArray);
     }
+
 
     /**
      * <p>
@@ -657,7 +818,11 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-preserve">JSON_MERGE_PRESERVE(json_doc, json_doc[, json_doc] ...)</a>
      */
     public static Expression jsonMergePreserve(final List<Expression> jsonDocList) {
-        return _jsonMergerFunc("JSON_MERGE_PRESERVE", jsonDocList);
+        final String name = "JSON_MERGE_PRESERVE";
+        if (jsonDocList.size() < 2) {
+            throw CriteriaUtils.funcArgError(name, jsonDocList);
+        }
+        return FunctionUtils.multiArgFunc(name, jsonDocList, jsonDocList.get(0).typeMeta());
     }
 
     /**
@@ -665,14 +830,15 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
      * </p>
      *
-     * @param jsonDoc     non-null
-     * @param jsonDocList non-null,multi parameter(literal) {@link Expression} is allowed.
+     * @param jsonDoc1 non-null
+     * @param jsonDoc2 non-null,multi parameter(literal) {@link Expression} is allowed.
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-patch">JSON_MERGE_PATCH(json_doc, json_doc[, json_doc] ...)</a>
      */
-    public static Expression jsonMergePatch(final Expression jsonDoc, final Expression jsonDocList) {
-        return _singleAndMultiArgFunc("JSON_MERGE_PATCH", jsonDoc, jsonDocList, jsonDoc.typeMeta());
+    public static Expression jsonMergePatch(final Expression jsonDoc1, final Expression jsonDoc2, Expression... jsonDocArray) {
+        return _jsonMergeOperationFunction("JSON_MERGE_PATCH", jsonDoc1, jsonDoc2, jsonDocArray);
     }
+
 
     /**
      * <p>
@@ -684,7 +850,11 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-merge-patch">JSON_MERGE_PATCH(json_doc, json_doc[, json_doc] ...)</a>
      */
     public static Expression jsonMergePatch(final List<Expression> jsonDocList) {
-        return _jsonMergerFunc("JSON_MERGE_PATCH", jsonDocList);
+        final String name = "JSON_MERGE_PATCH";
+        if (jsonDocList.size() < 2) {
+            throw CriteriaUtils.funcArgError(name, jsonDocList);
+        }
+        return FunctionUtils.multiArgFunc(name, jsonDocList, jsonDocList.get(0).typeMeta());
     }
 
     /**
@@ -692,13 +862,13 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
      * </p>
      *
-     * @param jsonDoc  non-null
-     * @param pathList non-null,multi parameter(literal) {@link Expression} is allowed.
+     * @param jsonDoc   non-null
+     * @param firstPath non-null,multi parameter(literal) {@link Expression} is allowed.
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-remove">JSON_REMOVE(json_doc, path[, path] ...)</a>
      */
-    public static Expression jsonRemove(final Expression jsonDoc, final Expression pathList) {
-        return _singleAndMultiArgFunc("JSON_REMOVE", jsonDoc, pathList, jsonDoc.typeMeta());
+    public static Expression jsonRemove(final Expression jsonDoc, final Expression firstPath, Expression... paths) {
+        return FunctionUtils.twoAndMultiArgFunc("JSON_REMOVE", jsonDoc, firstPath, Arrays.asList(paths), jsonDoc.typeMeta());
     }
 
     /**
@@ -713,20 +883,47 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      */
     public static Expression jsonRemove(final Expression jsonDoc, final List<Expression> pathList) {
         final String name = "JSON_REMOVE";
-        if (jsonDoc instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, jsonDoc);
-        }
-        final int pathSize = pathList.size();
-        if (pathSize == 0) {
+        if (pathList.size() == 0) {
             throw CriteriaUtils.funcArgError(name, pathList);
         }
-        final List<Object> argList = new ArrayList<>(((1 + pathSize) << 1) - 1);
-        argList.add(jsonDoc);
-        for (Expression path : pathList) {
-            argList.add(SQLSyntax.FuncWord.COMMA);
-            argList.add(path);
+        return FunctionUtils.oneAndMultiArgFunc(name, jsonDoc, pathList, jsonDoc.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     * </p>
+     *
+     * @param jsonDoc   non-null
+     * @param firstPath non-null,wrap to literal expression
+     * @param paths     non-null, empty or paths,wrap to literal expressions
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-remove">JSON_REMOVE(json_doc, path[, path] ...)</a>
+     */
+    public static Expression jsonRemove(final Expression jsonDoc, final String firstPath, String... paths) {
+        List<ArmyExpression> argList = new ArrayList<>(2 + paths.length);
+        argList.add((ArmyExpression) jsonDoc);
+        argList.add(((ArmyExpression) SQLs.literal(StringType.INSTANCE, firstPath)));
+
+        for (String path : paths) {
+            argList.add(((ArmyExpression) SQLs.literal(StringType.INSTANCE, path)));
         }
-        return FunctionUtils.complexArgFunc(name, argList, jsonDoc.typeMeta());
+        return FunctionUtils.safeMultiArgFunc("JSON_REMOVE", argList, jsonDoc.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
+     * </p>
+     *
+     * @param jsonDoc   non-null,wrap to parameter expression
+     * @param firstPath non-null,wrap to literal expression
+     * @param paths     non-null, empty or paths,wrap to literal expressions
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-remove">JSON_REMOVE(json_doc, path[, path] ...)</a>
+     */
+    public static Expression jsonRemove(final String jsonDoc, final String firstPath, String... paths) {
+        return jsonRemove(SQLs.param(StringType.INSTANCE, jsonDoc), firstPath, paths);
     }
 
 
@@ -750,11 +947,12 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *
      * @param jsonDoc non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-depth">JSON_DEPTH(json_doc)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-depth">JSON_DEPTH(json_doc)</a>
      */
     public static Expression jsonDepth(final Expression jsonDoc) {
         return FunctionUtils.oneArgFunc("JSON_DEPTH", jsonDoc, IntegerType.INSTANCE);
     }
+
 
     /**
      * <p>
@@ -763,11 +961,12 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *
      * @param jsonDoc non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-length">JSON_LENGTH(json_doc[, path])</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-length">JSON_LENGTH(json_doc[, path])</a>
      */
     public static Expression jsonLength(final Expression jsonDoc) {
         return FunctionUtils.oneArgFunc("JSON_LENGTH", jsonDoc, IntegerType.INSTANCE);
     }
+
 
     /**
      * <p>
@@ -777,10 +976,10 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param jsonDoc non-null
      * @param path    non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-length">JSON_LENGTH(json_doc[, path])</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-length">JSON_LENGTH(json_doc[, path])</a>
      */
     public static Expression jsonLength(final Expression jsonDoc, final Expression path) {
-        return _simpleTowArgFunc("JSON_LENGTH", jsonDoc, path, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("JSON_LENGTH", jsonDoc, path, IntegerType.INSTANCE);
     }
 
     /**
@@ -790,7 +989,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *
      * @param jsonVal non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-type">JSON_TYPE(json_val)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-type">JSON_TYPE(json_val)</a>
      */
     public static Expression jsonType(final Expression jsonVal) {
         //TODO 是否要 enum
@@ -805,7 +1004,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      *
      * @param val non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-modification-functions.html#function_json-valid">JSON_VALID(val)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-valid">JSON_VALID(val)</a>
      */
     public static IPredicate jsonValid(final Expression val) {
         return FunctionUtils.oneArgFuncPredicate("JSON_VALID", val);
@@ -813,8 +1012,108 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
     /*-------------------below JSON Table Functions-------------------*/
 
-    public static MySQLClause._JsonTableColumnsClause<TabularItem> jsonTable(Expression expr, Expression path) {
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
+     */
+    public static MySQLFunction._JsonTableColumnsClause<TabularItem> jsonTable(Expression expr, Expression path) {
         return MySQLFunctionUtils.jsonTable(expr, path);
+    }
+
+    /*-------------------below private method -------------------*/
+
+
+    /**
+     * @see #jsonArrayAppend(Expression, List)
+     * @see #jsonArrayInsert(Expression, List)
+     * @see #jsonInsert(Expression, List)
+     */
+    private static Expression _jsonPathValOperateFunc(final String name, final Expression jsonDoc
+            , final List<Expression> pathValList) {
+        if (jsonDoc instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, jsonDoc);
+        }
+        final int size = pathValList.size();
+        if (size == 0 || (size & 1) != 0) {
+            throw CriteriaUtils.funcArgError(name, pathValList);
+        }
+        return FunctionUtils.oneAndMultiArgFunc(name, jsonDoc, pathValList, jsonDoc.typeMeta());
+    }
+
+    /**
+     * @see #jsonArrayAppend(Expression, List)
+     * @see #jsonArrayInsert(Expression, List)
+     * @see #jsonInsert(Expression, List)
+     * @see #jsonReplace(Expression, List)
+     * @see #jsonSet(Expression, String, Object, Object...)
+     */
+    private static Expression _jsonPathValOperateFunc(final String name, final Expression jsonDoc, final String firstPath
+            , final Object firstValue, final Object... pathValuePair) {
+        if (pathValuePair.length == 0 || (pathValuePair.length & 1) != 0) {
+            throw CriteriaUtils.funcArgError(name, pathValuePair);
+        }
+        final List<ArmyExpression> argList = new ArrayList<>(3 + pathValuePair.length);
+        argList.add((ArmyExpression) jsonDoc);
+        argList.add((ArmyExpression) SQLs.literal(StringType.INSTANCE, firstPath));
+        argList.add((ArmyExpression) SQLs.paramFrom(firstValue));
+
+        Object o;
+        for (int i = 0; i < pathValuePair.length; i++) {
+            o = pathValuePair[i];
+            if ((i & 1) == 0) { //even
+                if (o == null) {
+                    argList.add((ArmyExpression) SQLs.param(_NullType.INSTANCE, null));
+                } else {
+                    argList.add((ArmyExpression) SQLs.paramFrom(o));
+                }
+            } else if (!(o instanceof String)) {
+                throw ContextStack.criteriaError(ContextStack.peek(), "path must be String type");
+            } else {
+                argList.add((ArmyExpression) SQLs.literal(StringType.INSTANCE, o));
+            }
+        }
+        return FunctionUtils.safeMultiArgFunc(name, argList, jsonDoc.typeMeta());
+    }
+
+
+    /**
+     * @see #jsonMerge(List)
+     */
+    private static Expression _jsonMergerFunc(final String name, final List<Expression> jsonDocList) {
+        final int size = jsonDocList.size();
+        if (size < 2) {
+            throw CriteriaUtils.funcArgError(name, jsonDocList);
+        }
+        final List<Object> argList = new ArrayList<>(size);
+        int index = 0;
+        for (Expression jsonDoc : jsonDocList) {
+            if (index > 0) {
+                argList.add(SQLSyntax.FuncWord.COMMA);
+            }
+            argList.add(jsonDoc);
+            index++;
+        }
+        return FunctionUtils.complexArgFunc(name, argList, jsonDocList.get(0).typeMeta());
+    }
+
+    /**
+     * @see #jsonMerge(Expression, Expression, Expression...)
+     * @see #jsonMergePreserve(Expression, Expression, Expression...)
+     * @see #jsonMergePatch(Expression, Expression, Expression...)
+     */
+    private static Expression _jsonMergeOperationFunction(final String name, final Expression jsonDoc1
+            , final Expression jsonDoc2, Expression... jsonDocArray) {
+        final List<ArmyExpression> argList = new ArrayList<>(2 + jsonDocArray.length);
+        argList.add((ArmyExpression) jsonDoc1);
+        argList.add((ArmyExpression) jsonDoc2);
+        for (Expression jsonDoc : jsonDocArray) {
+            argList.add((ArmyExpression) jsonDoc);
+        }
+        return FunctionUtils.safeMultiArgFunc(name, argList, jsonDoc1.typeMeta());
     }
 
 

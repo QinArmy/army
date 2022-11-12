@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.TypeInfer;
-import io.army.criteria.mysql.MySQLClause;
+import io.army.criteria.mysql.MySQLFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.DoubleType;
 import io.army.mapping.LongType;
@@ -88,17 +88,17 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
         return MySQLs.count(distinct, argList, SQLs::_asExp, SQLs::_identity);
     }
 
-    public static MySQLClause._GroupConcatOrderBySpec groupConcat(Expression exp) {
+    public static MySQLFunction._GroupConcatOrderBySpec groupConcat(Expression exp) {
         //TODO
         throw new UnsupportedOperationException();
     }
 
-    public static MySQLClause._GroupConcatOrderBySpec groupConcat(@Nullable SQLSyntax.ArgDistinct distinct, Expression exp) {
+    public static MySQLFunction._GroupConcatOrderBySpec groupConcat(@Nullable SQLSyntax.ArgDistinct distinct, Expression exp) {
         //TODO
         throw new UnsupportedOperationException();
     }
 
-    public static MySQLClause._GroupConcatOrderBySpec groupConcat(@Nullable SQLSyntax.ArgDistinct distinct
+    public static MySQLFunction._GroupConcatOrderBySpec groupConcat(@Nullable SQLSyntax.ArgDistinct distinct
             , List<Expression> argList) {
         //TODO
         throw new UnsupportedOperationException();
