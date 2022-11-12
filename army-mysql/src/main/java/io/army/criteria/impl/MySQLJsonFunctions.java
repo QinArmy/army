@@ -3,23 +3,20 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLClause;
-import io.army.criteria.mysql.MySQLJsonContainWord;
 import io.army.mapping.*;
 import io.army.mapping.optional.JsonListType;
 import io.army.mapping.optional.JsonMapType;
 import io.army.mapping.optional.JsonType;
 import io.army.meta.TypeMeta;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * package class
  *
  * @since 1.0
  */
+@SuppressWarnings("unused")
 abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
 
 
@@ -149,10 +146,10 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param candidate non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #jsonContains(Expression, Expression, Expression)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-contains">JSON_CONTAINS(target, candidate[, path])</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-contains">JSON_CONTAINS(target, candidate[, path])</a>
      */
-    public static Expression jsonContains(final Expression target, final Expression candidate) {
-        return _simpleTowArgFunc("JSON_CONTAINS", target, candidate, BooleanType.INSTANCE);
+    public static IPredicate jsonContains(final Expression target, final Expression candidate) {
+        return FunctionUtils.twoArgPredicateFunc("JSON_CONTAINS", target, candidate);
     }
 
     /**
@@ -167,8 +164,8 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see #jsonContains(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-contains">JSON_CONTAINS(target, candidate[, path])</a>
      */
-    public static Expression jsonContains(final Expression target, final Expression candidate, final Expression path) {
-        return _simpleThreeArgFunc("JSON_CONTAINS", target, candidate, path, BooleanType.INSTANCE);
+    public static IPredicate jsonContains(final Expression target, final Expression candidate, final Expression path) {
+        return FunctionUtils.threeArgPredicateFunc("JSON_CONTAINS", target, candidate, path);
     }
 
     /**
@@ -177,27 +174,15 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * </p>
      *
      * @param jsonDoc  non-null
-     * @param oneOrAll non-null
+     * @param oneOrAll literal 'one' or 'all'
      * @param paths    non-null,multi parameter(literal) {@link Expression} is allowed
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #jsonContainsPath(Expression, MySQLJsonContainWord, List)
+     * @see #jsonContainsPath(Expression, Expression, List)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-contains-path">JSON_CONTAINS_PATH(json_doc, one_or_all, path[, path] ...)</a>
      */
-    public static Expression jsonContainsPath(final Expression jsonDoc, final MySQLJsonContainWord oneOrAll
+    public static IPredicate jsonContainsPath(final Expression jsonDoc, final Expression oneOrAll
             , final Expression paths) {
-        final String name = "JSON_CONTAINS_PATH";
-        if (jsonDoc instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, jsonDoc);
-        }
-        final List<Object> orgList = new ArrayList<>(5);
-
-        orgList.add(jsonDoc);
-        orgList.add(SQLSyntax.FuncWord.COMMA);
-        orgList.add(oneOrAll);
-        orgList.add(SQLSyntax.FuncWord.COMMA);
-
-        orgList.add(paths);
-        return FunctionUtils.complexArgFunc(name, orgList, BooleanType.INSTANCE);
+        return FunctionUtils.threeArgPredicateFunc("JSON_CONTAINS_PATH", jsonDoc, oneOrAll, paths);
     }
 
     /**
@@ -209,28 +194,12 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param oneOrAll non-null
      * @param pathList non-null,non-empty
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #jsonContainsPath(Expression, MySQLJsonContainWord, Expression)
+     * @see #jsonContainsPath(Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-contains-path">JSON_CONTAINS_PATH(json_doc, one_or_all, path[, path] ...)</a>
      */
-    public static Expression jsonContainsPath(final Expression jsonDoc, final MySQLJsonContainWord oneOrAll
+    public static IPredicate jsonContainsPath(final Expression jsonDoc, final Expression oneOrAll
             , final List<Expression> pathList) {
-        final String name = "JSON_CONTAINS_PATH";
-        if (jsonDoc instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, jsonDoc);
-        }
-        if (pathList.size() == 0) {
-            throw CriteriaUtils.funcArgError(name, pathList);
-        }
-        final List<Object> argList = new ArrayList<>(((2 + pathList.size()) << 1) - 1);
-        argList.add(jsonDoc);
-        argList.add(SQLSyntax.FuncWord.COMMA);
-        argList.add(oneOrAll);
-
-        for (Expression path : pathList) {
-            argList.add(SQLSyntax.FuncWord.COMMA);
-            argList.add(path);
-        }
-        return FunctionUtils.complexArgFunc(name, argList, BooleanType.INSTANCE);
+        return FunctionUtils.twoAndMultiArgFuncPredicate("JSON_CONTAINS_PATH", jsonDoc, oneOrAll, pathList);
     }
 
     /**
@@ -245,15 +214,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-extract">JSON_EXTRACT(json_doc, path[, path] ...)</a>
      */
     public static Expression jsonExtract(final Expression jsonDoc, final Expression paths) {
-        final String name = "JSON_EXTRACT";
-        if (jsonDoc instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, jsonDoc);
-        }
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(jsonDoc);
-        argList.add(SQLSyntax.FuncWord.COMMA);
-        argList.add(paths);
-        return FunctionUtils.complexArgFunc(name, argList, StringType.INSTANCE);
+        return FunctionUtils.twoOrMultiArgFunc("JSON_EXTRACT", jsonDoc, paths, StringType.INSTANCE);
     }
 
     /**
@@ -268,21 +229,42 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-extract">JSON_EXTRACT(json_doc, path[, path] ...)</a>
      */
     public static Expression jsonExtract(final Expression jsonDoc, final List<Expression> pathList) {
-        final String name = "JSON_EXTRACT";
-        if (jsonDoc instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, jsonDoc);
-        }
-        if (pathList.size() == 0) {
-            throw CriteriaUtils.funcArgError(name, pathList);
-        }
-        final List<Object> argList = new ArrayList<>(((1 + pathList.size()) << 1) - 1);
+        return FunctionUtils.oneAndMultiArgFunc("JSON_EXTRACT", jsonDoc, pathList, StringType.INSTANCE);
+    }
 
-        argList.add(jsonDoc);
-        for (Expression path : pathList) {
-            argList.add(SQLSyntax.FuncWord.COMMA);
-            argList.add(path);
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param jsonDoc   non-null,wrap to {@link SQLs#param(TypeInfer, Object)}
+     * @param firstPath non-null,non-empty,wrap to {@link SQLs#param(TypeInfer, Object)} or {@link SQLs#multiParams(TypeInfer, Collection)}
+     * @param paths     optional paths ,wrap to {@link SQLs#multiParams(TypeInfer, Collection)}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonExtract(Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-extract">JSON_EXTRACT(json_doc, path[, path] ...)</a>
+     */
+    public static Expression jsonExtract(final Expression jsonDoc, final String firstPath, String... paths) {
+
+        final Expression pathLiterals;
+        if (paths.length == 0) {
+            pathLiterals = SQLs.param(StringType.INSTANCE, firstPath);
+        } else {
+            final List<String> pathList;
+            pathList = new ArrayList<>(1 + paths.length);
+            pathList.add(firstPath);
+            Collections.addAll(pathList, paths);
+            pathLiterals = SQLs.multiParams(StringType.INSTANCE, pathList);
         }
-        return FunctionUtils.complexArgFunc(name, argList, StringType.INSTANCE);
+        return FunctionUtils.twoOrMultiArgFunc("JSON_EXTRACT", jsonDoc, pathLiterals, StringType.INSTANCE);
+    }
+
+    /**
+     * @param jsonDoc wrap to {@link SQLs#param(TypeInfer, Object)}
+     * @see #jsonExtract(Expression, String, String...)
+     */
+    public static Expression jsonExtract(final String jsonDoc, final String firstPath, String... paths) {
+        return jsonExtract(SQLs.param(StringType.INSTANCE, jsonDoc), firstPath, paths);
     }
 
     /**
@@ -293,7 +275,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param jsonDoc non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #jsonKeys(Expression, Expression)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-keys">JSON_KEYS(json_doc[, path])</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-keys">JSON_KEYS(json_doc[, path])</a>
      */
     public static Expression jsonKeys(final Expression jsonDoc) {
         return FunctionUtils.oneArgFunc("JSON_KEYS", jsonDoc, StringType.INSTANCE);
@@ -308,10 +290,58 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param path    non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #jsonKeys(Expression)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-keys">JSON_KEYS(json_doc[, path])</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-keys">JSON_KEYS(json_doc[, path])</a>
      */
     public static Expression jsonKeys(final Expression jsonDoc, final Expression path) {
-        return _simpleTowArgFunc("JSON_KEYS", jsonDoc, path, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("JSON_KEYS", jsonDoc, path, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param jsonDoc non-null
+     * @param path    wrap to {@link SQLs#param(TypeInfer, Object)}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonKeys(Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-keys">JSON_KEYS(json_doc[, path])</a>
+     */
+    public static Expression jsonKeys(final Expression jsonDoc, final String path) {
+        return FunctionUtils.twoArgFunc("JSON_KEYS", jsonDoc, SQLs.param(StringType.INSTANCE, path)
+                , StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param jsonDoc non-null, wrap to {@link SQLs#param(TypeInfer, Object)}
+     * @param path    non-null,wrap to {@link SQLs#param(TypeInfer, Object)}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonKeys(Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-keys">JSON_KEYS(json_doc[, path])</a>
+     */
+    public static Expression jsonKeys(final String jsonDoc, final String path) {
+        return FunctionUtils.twoArgFunc("JSON_KEYS", SQLs.param(StringType.INSTANCE, jsonDoc)
+                , SQLs.param(StringType.INSTANCE, path)
+                , StringType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @param jsonDoc1 non-null
+     * @param jsonDoc2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-overlaps">JSON_OVERLAPS(json_doc1, json_doc2)</a>
+     */
+    public static IPredicate jsonOverlaps(final Expression jsonDoc1, final Expression jsonDoc2) {
+        return FunctionUtils.twoArgPredicateFunc("JSON_OVERLAPS", jsonDoc1, jsonDoc2);
     }
 
     /**
@@ -322,10 +352,10 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @param jsonDoc1 non-null
      * @param jsonDoc2 non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-overlaps">JSON_OVERLAPS(json_doc1, json_doc2)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-overlaps">JSON_OVERLAPS(json_doc1, json_doc2)</a>
      */
-    public static Expression jsonOverlaps(final Expression jsonDoc1, final Expression jsonDoc2) {
-        return _simpleTowArgFunc("JSON_OVERLAPS", jsonDoc1, jsonDoc2, BooleanType.INSTANCE);
+    public static IPredicate jsonOverlaps(final String jsonDoc1, final String jsonDoc2) {
+        return jsonOverlaps(SQLs.param(StringType.INSTANCE, jsonDoc1), SQLs.param(StringType.INSTANCE, jsonDoc2));
     }
 
     /**
@@ -334,15 +364,15 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * </p>
      *
      * @param jsonDoc   non-null
-     * @param oneOrAll  non-null
+     * @param oneOrAll  non-null,{@link MySQLs#LITERAL_one} or {@link MySQLs#LITERAL_all} ,or equivalence
      * @param searchStr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #jsonSearch(Expression, MySQLJsonContainWord, Expression, List)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
+     * @see #jsonSearch(Expression, Expression, Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
      */
-    public static Expression jsonSearch(final Expression jsonDoc, final MySQLJsonContainWord oneOrAll
+    public static Expression jsonSearch(final Expression jsonDoc, final Expression oneOrAll
             , final Expression searchStr) {
-        return jsonSearch(jsonDoc, oneOrAll, searchStr, Collections.emptyList());
+        return FunctionUtils.threeArgFunc("JSON_SEARCH", jsonDoc, oneOrAll, searchStr, StringType.INSTANCE);
     }
 
     /**
@@ -350,36 +380,110 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * The {@link MappingType} of function return type: {@link StringType}
      * </p>
      *
-     * @param jsonDoc            non-null
-     * @param oneOrAll           non-null
-     * @param searchStr          non-null
-     * @param escapeCharAndPaths non-null
+     * @param jsonDoc   non-null
+     * @param oneOrAll  non-null,{@link MySQLs#LITERAL_one} or {@link MySQLs#LITERAL_all} ,or equivalence
+     * @param searchStr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #jsonSearch(Expression, MySQLJsonContainWord, Expression)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
+     * @see #jsonSearch(Expression, Expression, Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
      */
-    public static Expression jsonSearch(final Expression jsonDoc, final MySQLJsonContainWord oneOrAll
-            , final Expression searchStr, final List<Expression> escapeCharAndPaths) {
-
-        final String name = "JSON_SEARCH";
-        if (jsonDoc instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, jsonDoc);
-        }
-        if (searchStr instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, searchStr);
-        }
-        final List<Object> argList = new ArrayList<>(((3 + escapeCharAndPaths.size()) << 1) - 1);
-        argList.add(jsonDoc);
-        argList.add(SQLSyntax.FuncWord.COMMA);
-        argList.add(searchStr);
-
-        for (Expression exp : escapeCharAndPaths) {
-            argList.add(SQLSyntax.FuncWord.COMMA);
-            argList.add(exp);
-        }
-        return FunctionUtils.complexArgFunc(name, argList, StringType.INSTANCE);
+    public static Expression jsonSearch(final Expression jsonDoc, final Expression oneOrAll
+            , final Expression searchStr, final Expression escapeChar) {
+        return FunctionUtils.multiArgFunc("JSON_SEARCH", StringType.INSTANCE, jsonDoc, oneOrAll, searchStr, escapeChar);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param jsonDoc   non-null
+     * @param oneOrAll  non-null,{@link MySQLs#LITERAL_one} or {@link MySQLs#LITERAL_all} ,or equivalence
+     * @param searchStr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonSearch(Expression, Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
+     */
+    public static Expression jsonSearch(final Expression jsonDoc, final Expression oneOrAll
+            , final Expression searchStr, final Expression escapeChar, Expression path) {
+        return FunctionUtils.multiArgFunc("JSON_SEARCH", StringType.INSTANCE
+                , jsonDoc, oneOrAll, searchStr, escapeChar, path);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param jsonDoc   non-null
+     * @param oneOrAll  non-null,{@link MySQLs#LITERAL_one} or {@link MySQLs#LITERAL_all} ,or equivalence
+     * @param searchStr non-null
+     * @param pathList  non-null,empty or path list
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonSearch(Expression, Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
+     */
+    public static Expression jsonSearch(final Expression jsonDoc, final Expression oneOrAll
+            , final Expression searchStr, final Expression escapeChar, List<Expression> pathList) {
+        final List<ArmyExpression> argList = new ArrayList<>(4 + pathList.size());
+
+        argList.add((ArmyExpression) jsonDoc);
+        argList.add((ArmyExpression) oneOrAll);
+        argList.add((ArmyExpression) searchStr);
+        argList.add((ArmyExpression) escapeChar);
+
+        for (Expression path : pathList) {
+            argList.add((ArmyExpression) path);
+        }
+        return FunctionUtils.safeMultiArgFunc("JSON_SEARCH", argList, StringType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param jsonDoc    non-null
+     * @param oneOrAll   non-null,{@link MySQLs#LITERAL_one} or {@link MySQLs#LITERAL_all} ,or equivalence
+     * @param searchStr  non-null,wrap to literal expression
+     * @param escapeChar non-null,wrap to literal expression
+     * @param paths      non-null,wrap to literal expressions
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonSearch(Expression, Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
+     */
+    public static Expression jsonSearch(final Expression jsonDoc, final Expression oneOrAll
+            , final String searchStr, String escapeChar, String... paths) {
+
+        final List<String> stringList = new ArrayList<>(2 + paths.length);
+        stringList.add(searchStr);
+        stringList.add(escapeChar);
+        Collections.addAll(stringList, paths);
+
+        final Expression multiLiteral;
+        multiLiteral = LiteralExpression.safeMulti(StringType.INSTANCE, stringList);
+        return FunctionUtils.threeArgFunc("JSON_SEARCH", jsonDoc, oneOrAll, multiLiteral, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param jsonDoc    non-null wrap parameter expression
+     * @param oneOrAll   non-null,{@link MySQLs#LITERAL_one} or {@link MySQLs#LITERAL_all} ,or equivalence
+     * @param searchStr  non-null,wrap to literal expression
+     * @param escapeChar non-null,wrap to literal expression
+     * @param paths      non-null,wrap to literal expressions
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonSearch(Expression, Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
+     */
+    public static Expression jsonSearch(final String jsonDoc, final Expression oneOrAll
+            , final String searchStr, String escapeChar, String... paths) {
+        return jsonSearch(SQLs.param(StringType.INSTANCE, jsonDoc), oneOrAll, searchStr, escapeChar, paths);
+    }
 
     /**
      * <p>

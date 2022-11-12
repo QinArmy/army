@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.Expression;
 import io.army.criteria.Query;
 import io.army.criteria.SQLIdentifier;
 import io.army.criteria.SQLWords;
@@ -7,6 +8,7 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
+import io.army.mapping.StringType;
 import io.army.util._StringUtils;
 
 import java.util.EnumSet;
@@ -199,6 +201,11 @@ abstract class MySQLSyntax extends SQLSyntax {
     public static final TrimPosition LEADING = WordTrimPosition.LEADING;
 
     public static final TrimPosition TRAILING = WordTrimPosition.TRAILING;
+
+
+    public static final Expression LITERAL_one = SQLs.literal(StringType.INSTANCE, "one");
+
+    public static final Expression LITERAL_all = SQLs.literal(StringType.INSTANCE, "all");
 
 
     /**

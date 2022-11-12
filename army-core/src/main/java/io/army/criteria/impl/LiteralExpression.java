@@ -31,10 +31,12 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
         return new MultiLiteralExpression(paramMeta, values);
     }
 
-    static LiteralExpression namedNullableSingle(final @Nullable TypeMeta paramMeta, final @Nullable String name) {
-        assert paramMeta != null && name != null;
-        return new NamedSingleLiteral(paramMeta, name);
+
+    static LiteralExpression safeMulti(TypeMeta typeMeta, List<?> values) {
+        assert values.size() > 0;
+        return new MultiLiteralExpression(values, typeMeta);
     }
+
 
     static LiteralExpression namedSingle(final @Nullable TypeMeta paramMeta, final @Nullable String name) {
         assert paramMeta != null && name != null;
@@ -161,16 +163,27 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
      }//SingleLiteralExpression
 
 
-     static final class MultiLiteralExpression extends LiteralExpression
-             implements MultiValueExpression {
+    static final class MultiLiteralExpression extends LiteralExpression
+            implements MultiValueExpression {
 
-         private final List<?> valueList;
+        private final List<?> valueList;
 
-         private MultiLiteralExpression(TypeMeta paramMeta, Collection<?> valueList) {
-             super(paramMeta);
-             this.valueList = _CollectionUtils.asUnmodifiableList(valueList);
-             assert this.valueList.size() > 0;
-         }
+        private MultiLiteralExpression(TypeMeta paramMeta, Collection<?> valueList) {
+            super(paramMeta);
+            this.valueList = _CollectionUtils.asUnmodifiableList(valueList);
+            assert this.valueList.size() > 0;
+        }
+
+        /**
+         * for {@link #safeMulti(TypeMeta, List)}
+         *
+         * @see #safeMulti(TypeMeta, List)
+         */
+        private MultiLiteralExpression(List<?> valueList, TypeMeta paramMeta) {
+            super(paramMeta);
+            this.valueList = _CollectionUtils.unmodifiableList(valueList);
+            assert this.valueList.size() > 0;
+        }
 
         @Override
         public void appendSql(final _SqlContext context) {
