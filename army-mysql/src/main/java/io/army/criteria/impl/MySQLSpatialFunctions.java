@@ -1390,18 +1390,19 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
 
     /*-------------------below Functions That Create Geometry Values from WKT Values-------------------*/
 
+
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-geomcollfromtext">ST_GeomCollFromText(wkt [, srid [, options]])</a>
      */
-    public static Expression stGeomCollFromText(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_GeomCollFromText", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stGeomCollFromText(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_GeomCollFromText", wkt, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
@@ -1410,12 +1411,41 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-geomcollfromtext">ST_GeomCollFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stGeomCollFromText(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_GeomCollFromText", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-geomcollfromtext">ST_GeomCollFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stGeomCollFromText(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_GeomCollFromText", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-geomfromtext">ST_GeomFromText(wkt [, srid [, options]])</a>
      */
-    public static Expression stGeomFromText(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_GeomFromText", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stGeomFromText(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_GeomFromText", wkt, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
@@ -1424,12 +1454,41 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-geomfromtext">ST_GeomFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stGeomFromText(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_GeomFromText", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-geomfromtext">ST_GeomFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stGeomFromText(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_GeomFromText", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-linefromtext">ST_LineStringFromText(wkt [, srid [, options]])</a>
      */
-    public static Expression stLineStringFromText(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_LineStringFromText", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stLineStringFromText(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_LineStringFromText", wkt, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
@@ -1438,12 +1497,41 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-linefromtext">ST_LineStringFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stLineStringFromText(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_LineStringFromText", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-linefromtext">ST_LineStringFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stLineStringFromText(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_LineStringFromText", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-mlinefromtext">ST_MultiLineStringFromText(wkt [, srid [, options]])</a>
      */
-    public static Expression stMultiLineStringFromText(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_MultiLineStringFromText", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stMultiLineStringFromText(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_MultiLineStringFromText", wkt, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
@@ -1452,12 +1540,41 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-mlinefromtext">ST_MultiLineStringFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stMultiLineStringFromText(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_MultiLineStringFromText", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-mlinefromtext">ST_MultiLineStringFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stMultiLineStringFromText(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_MultiLineStringFromText", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-mpointfromtext">ST_MultiPointFromText(wkt [, srid [, options]])</a>
      */
-    public static Expression stMultiPointFromText(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_MultiPointFromText", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stMultiPointFromText(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_MultiPointFromText", wkt, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
@@ -1466,12 +1583,41 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-mpointfromtext">ST_MultiPointFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stMultiPointFromText(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_MultiPointFromText", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-mpointfromtext">ST_MultiPointFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stMultiPointFromText(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_MultiPointFromText", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-mpolyfromtext">ST_MultiPolygonFromText(wkt [, srid [, options]])</a>
      */
-    public static Expression stMultiPolygonFromText(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_MultiPolygonFromText", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stMultiPolygonFromText(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_MultiPolygonFromText", wkt, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
@@ -1480,12 +1626,41 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-mpolyfromtext">ST_MultiPolygonFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stMultiPolygonFromText(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_MultiPolygonFromText", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-mpolyfromtext">ST_MultiPolygonFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stMultiPolygonFromText(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_MultiPolygonFromText", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-pointfromtext">ST_PointFromText(wkt [, srid [, options]])</a>
      */
-    public static Expression stPointFromText(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_PointFromText", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stPointFromText(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_PointFromText", wkt, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
@@ -1494,28 +1669,86 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-pointfromtext">ST_PointFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stPointFromText(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_PointFromText", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-pointfromtext">ST_PointFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stPointFromText(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_PointFromText", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-polyfromtext">ST_PolygonFromText(wkt [, srid [, options]])</a>
      */
-    public static Expression stPolygonFromText(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_PolygonFromText", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stPolygonFromText(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_PolygonFromText", wkt, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-polyfromtext">ST_PolygonFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stPolygonFromText(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_PolygonFromText", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-polyfromtext">ST_PolygonFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stPolygonFromText(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_PolygonFromText", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
     }
 
     /*-------------------below Functions That Create Geometry Values from WKB Values-------------------*/
 
+
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-geomcollfromwkb">ST_GeomCollFromWKB(wkb [, srid [, options]])</a>
      */
-    public static Expression stGeomCollFromWKB(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_GeomCollFromWKB", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stGeomCollFromWKB(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_GeomCollFromWKB", wkt, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
@@ -1524,12 +1757,41 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-geomcollfromwkb">ST_GeomCollFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stGeomCollFromWKB(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_GeomCollFromWKB", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-geomcollfromwkb">ST_GeomCollFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stGeomCollFromWKB(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_GeomCollFromWKB", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-geomfromwkb">ST_GeomFromWKB(wkb [, srid [, options]])</a>
      */
-    public static Expression stGeomFromWKB(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_GeomFromWKB", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stGeomFromWKB(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_GeomFromWKB", wkt, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
@@ -1538,12 +1800,41 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-geomfromwkb">ST_GeomFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stGeomFromWKB(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_GeomFromWKB", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-geomfromwkb">ST_GeomFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stGeomFromWKB(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_GeomFromWKB", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-linefromwkb">ST_LineStringFromWKB(wkb [, srid [, options]])</a>
      */
-    public static Expression stLineStringFromWKB(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_LineStringFromWKB", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stLineStringFromWKB(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_LineStringFromWKB", wkt, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
@@ -1552,12 +1843,40 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-linefromwkb">ST_LineStringFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stLineStringFromWKB(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_LineStringFromWKB", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-linefromwkb">ST_LineStringFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stLineStringFromWKB(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_LineStringFromWKB", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-mlinefromwkb">ST_MultiLineStringFromWKB(wkb [, srid [, options]])</a>
      */
-    public static Expression stMultiLineStringFromWKB(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_MultiLineStringFromWKB", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stMultiLineStringFromWKB(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_MultiLineStringFromWKB", wkt, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
@@ -1566,12 +1885,41 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-mlinefromwkb">ST_MultiLineStringFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stMultiLineStringFromWKB(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_MultiLineStringFromWKB", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-mlinefromwkb">ST_MultiLineStringFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stMultiLineStringFromWKB(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_MultiLineStringFromWKB", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-mpolyfromwkb">ST_MultiPolygonFromWKB(wkb [, srid [, options]])</a>
      */
-    public static Expression stMultiPolygonFromWKB(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_MultiPolygonFromWKB", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stMultiPolygonFromWKB(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_MultiPolygonFromWKB", wkt, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
@@ -1580,12 +1928,69 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-mpolyfromwkb">ST_MultiPolygonFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stMultiPolygonFromWKB(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_MultiPolygonFromWKB", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-mpolyfromwkb">ST_MultiPolygonFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stMultiPolygonFromWKB(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_MultiPolygonFromWKB", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-pointfromwkb">ST_PointFromWKB(wkb [, srid [, options]])</a>
      */
-    public static Expression stPointFromWKB(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_PointFromWKB", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stPointFromWKB(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_PointFromWKB", wkt, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-pointfromwkb">ST_PointFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stPointFromWKB(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_PointFromWKB", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-pointfromwkb">ST_PointFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stPointFromWKB(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_PointFromWKB", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
     }
 
 
@@ -1595,12 +2000,40 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
      * </p>
      *
-     * @param expList non-null,size in [1,3]
+     * @param wkt non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-polyfromwkb">ST_PolygonFromWKB(wkb [, srid [, options]])</a>
      */
-    public static Expression stPolygonFromWKB(final List<Expression> expList) {
-        return _simpleMaxThreeArgFunc("ST_PolygonFromWKB", expList, PrimitiveByteArrayType.INSTANCE);
+    public static Expression stPolygonFromWKB(final Expression wkt) {
+        return FunctionUtils.oneArgFunc("ST_PolygonFromWKB", wkt, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-polyfromwkb">ST_PolygonFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stPolygonFromWKB(final Expression wkt, Expression srid) {
+        return FunctionUtils.twoArgFunc("ST_PolygonFromWKB", wkt, srid, PrimitiveByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link PrimitiveByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param wkt non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-polyfromwkb">ST_PolygonFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stPolygonFromWKB(final Expression wkt, Expression srid, Expression options) {
+        return FunctionUtils.threeArgFunc("ST_PolygonFromWKB", wkt, srid, options, PrimitiveByteArrayType.INSTANCE);
     }
 
     /*-------------------below GeometryCollection Property Functions-------------------*/
@@ -1685,8 +2118,8 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-isempty">ST_IsEmpty(g)</a>
      */
-    public static Expression stIsEmpty(final Expression g) {
-        return FunctionUtils.oneArgFunc("ST_IsEmpty", g, BooleanType.INSTANCE);
+    public static IPredicate stIsEmpty(final Expression g) {
+        return FunctionUtils.oneArgFuncPredicate("ST_IsEmpty", g);
     }
 
 
@@ -1699,8 +2132,8 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-issimple">ST_IsSimple(g)</a>
      */
-    public static Expression stIsSimple(final Expression g) {
-        return FunctionUtils.oneArgFunc("ST_IsSimple", g, BooleanType.INSTANCE);
+    public static IPredicate stIsSimple(final Expression g) {
+        return FunctionUtils.oneArgFuncPredicate("ST_IsSimple", g);
     }
 
     /**
