@@ -33,7 +33,7 @@ import java.util.function.Function;
  * @since 1.0
  */
 @FunctionalInterface
-public interface SqlOneFunction<E extends Expression, I extends Item, R extends Item> {
+public interface SqlOneFunction<E extends Item, I extends Item, R extends Item> {
 
 
     R apply(Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc);

@@ -47,7 +47,7 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
     }
 
 
-    static <I extends Expression> Window._SimpleLeftParenClause<I> anonymousWindow(CriteriaContext context
+    static <I extends Item> Window._SimpleLeftParenClause<I> anonymousWindow(CriteriaContext context
             , Function<_Window, I> function) {
         return new SimpleWindow<>(context, function);
     }

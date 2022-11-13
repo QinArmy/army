@@ -1,8 +1,8 @@
 package io.army.dialect;
 
-import io.army.criteria.RowSet;
 import io.army.criteria.Selection;
 import io.army.criteria.Values;
+import io.army.criteria.ValuesQuery;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._RowSet;
 import io.army.lang.Nullable;
@@ -15,7 +15,7 @@ import java.util.List;
 
 final class ValuesContext extends StatementContext implements _ValuesContext {
 
-    static ValuesContext create(@Nullable _SqlContext outerContext, RowSet.DqlValues stmt, ArmyParser dialect
+    static ValuesContext create(@Nullable _SqlContext outerContext, ValuesQuery stmt, ArmyParser dialect
             , Visible visible) {
         return new ValuesContext((StatementContext) outerContext, stmt, dialect, visible);
     }
@@ -23,7 +23,7 @@ final class ValuesContext extends StatementContext implements _ValuesContext {
 
     private final List<Selection> selectionList;
 
-    private ValuesContext(@Nullable StatementContext outerContext, RowSet.DqlValues stmt, ArmyParser dialect
+    private ValuesContext(@Nullable StatementContext outerContext, ValuesQuery stmt, ArmyParser dialect
             , Visible visible) {
         super(outerContext, dialect, visible);
         if (outerContext == null && stmt instanceof Values) {

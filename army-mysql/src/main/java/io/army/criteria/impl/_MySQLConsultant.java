@@ -100,7 +100,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     }
 
 
-    public static void assertValues(final RowSet.DqlValues values) {
+    public static void assertValues(final ValuesQuery values) {
         if (!(values instanceof MySQLSimpleValues
                 || values instanceof MySQLSimpleValues.MySQLBracketValues
                 || values instanceof SimpleValues.UnionValues

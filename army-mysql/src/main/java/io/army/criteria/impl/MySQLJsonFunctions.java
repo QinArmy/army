@@ -1013,15 +1013,11 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     /*-------------------below JSON Table Functions-------------------*/
 
     /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link BooleanType}
-     * </p>
-     *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
      */
-    public static MySQLFunction._JsonTableColumnsClause<TabularItem> jsonTable(Expression expr, Expression path) {
-        return MySQLFunctionUtils.jsonTable(expr, path);
+    public static MySQLFunction._JsonTableColumnsClause<TabularItem> jsonTable() {
+        return MySQLFunctionUtils.jsonTable(SQLs::_identity);
     }
 
     /*-------------------below private method -------------------*/

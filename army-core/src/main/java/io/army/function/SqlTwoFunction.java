@@ -34,7 +34,7 @@ import java.util.function.Function;
  * @since 1.0
  */
 @FunctionalInterface
-public interface SqlTwoFunction<E extends Expression, I extends Item, R extends Item> {
+public interface SqlTwoFunction<E extends Item, I extends Item, R extends Item> {
 
     R apply(Expression exp1, Expression ex2, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc);
 

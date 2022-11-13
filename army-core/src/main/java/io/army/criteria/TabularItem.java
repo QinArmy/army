@@ -15,7 +15,7 @@ import io.army.lang.Nullable;
  *
  * @since 1.0
  */
-public interface TabularItem {
+public interface TabularItem extends Item {
 
 
     interface DerivedTableSpec {

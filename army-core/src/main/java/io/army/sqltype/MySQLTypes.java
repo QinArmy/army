@@ -69,7 +69,7 @@ public enum MySQLTypes implements SqlType, SQLWords {
     }
 
     @Override
-    public final boolean supportNoPrecision() {
+    public final boolean isNoPrecision() {
         final boolean match;
         switch (this) {
             case VARCHAR:
@@ -83,7 +83,7 @@ public enum MySQLTypes implements SqlType, SQLWords {
     }
 
     @Override
-    public final boolean supportPrecision() {
+    public final boolean isSupportPrecision() {
         final boolean match;
         switch (this) {
             case VARCHAR:
@@ -103,7 +103,7 @@ public enum MySQLTypes implements SqlType, SQLWords {
     }
 
     @Override
-    public final boolean supportPrecisionScale() {
+    public final boolean isSupportPrecisionScale() {
         final boolean match;
         switch (this) {
             case DECIMAL:
@@ -115,6 +115,26 @@ public enum MySQLTypes implements SqlType, SQLWords {
         }
         return match;
     }
+
+    @Override
+    public final boolean isSupportCharset() {
+        final boolean match;
+        switch (this) {
+            case VARCHAR:
+            case CHAR:
+            case NCHAR:
+            case TINYTEXT:
+            case TEXT:
+            case MEDIUMTEXT:
+            case LONGTEXT:
+                match = true;
+                break;
+            default:
+                match = false;
+        }
+        return match;
+    }
+
 
     @Override
     public final String render() {

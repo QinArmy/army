@@ -24,24 +24,24 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
     }
 
 
-    public interface _OverSpec<R extends Expression, I extends Item>
+    public interface _OverSpec<R extends Item, I extends Item>
             extends Window._OverClause<Window._SimpleLeftParenClause<R>, R> {
 
     }
 
-    public interface _AggregateWindowFunc<R extends Expression, I extends Item>
+    public interface _AggregateWindowFunc<R extends Item, I extends Item>
             extends _OverSpec<R, I>, _AliasExpression<I>, SQLFunction.AggregateFunction {
 
     }
 
-    public interface _NullTreatmentSpec<R extends Expression, I extends Item>
+    public interface _NullTreatmentOverSpec<R extends Item, I extends Item>
             extends Functions._NullTreatmentClause<_OverSpec<R, I>>, _OverSpec<R, I> {
 
 
     }
 
-    public interface _FromFirstLastSpec<R extends Expression, I extends Item>
-            extends Functions._FromFirstLastClause<_NullTreatmentSpec<R, I>>, _NullTreatmentSpec<R, I>
+    public interface _FromFirstLastOverSpec<R extends Item, I extends Item>
+            extends Functions._FromFirstLastClause<_NullTreatmentOverSpec<R, I>>, _NullTreatmentOverSpec<R, I>
             , SQLFunction._OuterClauseBeforeOver {
 
     }
@@ -61,8 +61,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param distinct nullable,{@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> avg(@Nullable SQLSyntax.ArgDistinct distinct
-            , Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> avg(@Nullable SQLSyntax.ArgDistinct distinct
+            , Expression exp, Function<_ItemWindow<I>, W> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("AVG", distinct, exp, DoubleType.INSTANCE, expFunc, endFunc);
     }
 
@@ -70,8 +70,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-and">BIT_AND(expr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> bitAnd(Expression exp
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> bitAnd(Expression exp
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregateWindow("BIT_AND", exp, _bitwiseFuncType(exp), endFunction, asFunction);
     }
 
@@ -79,16 +79,16 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-or">BIT_OR(expr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> bitOr(Expression exp
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> bitOr(Expression exp
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregateWindow("BIT_OR", exp, _bitwiseFuncType(exp), endFunction, asFunction);
     }
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-xor">BIT_XOR(expr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> bitXor(Expression exp
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> bitXor(Expression exp
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregateWindow("BIT_XOR", exp, _bitwiseFuncType(exp), endFunction, asFunction);
     }
 
@@ -99,7 +99,7 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> countStar(Function<_ItemExpression<I>, E> endFunction
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> countStar(Function<_ItemWindow<I>, W> endFunction
             , Function<TypeInfer, I> asFunction) {
         return count(SQLs._START_EXP, endFunction, asFunction);
     }
@@ -111,8 +111,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> count(Expression exp
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> count(Expression exp
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregateWindow("COUNT", exp, LongType.INSTANCE, endFunction, asFunction);
     }
 
@@ -124,8 +124,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> count(@Nullable SQLSyntax.ArgDistinct distinct
-            , List<Expression> argList, Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> count(@Nullable SQLSyntax.ArgDistinct distinct
+            , List<Expression> argList, Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.multiArgAggregateWindowFunc("COUNT", distinct, argList, LongType.INSTANCE, endFunction, asFunction);
     }
 
@@ -138,8 +138,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param exp parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_json-arrayagg">JSON_ARRAYAGG(col_or_expr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> jsonArrayAgg(final Expression exp
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> jsonArrayAgg(final Expression exp
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         final TypeMeta returnType;//TODO validate JsonListType
         returnType = Functions._returnType((ArmyExpression) exp, JsonListType::from);
         return MySQLFunctionUtils.oneArgAggregateWindow("JSON_ARRAYAGG", exp, returnType, endFunction, asFunction);
@@ -154,8 +154,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param value non-null parameter or {@link Expression},but couldn't be null.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_json-objectagg">JSON_OBJECTAGG(key, value) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> jsonObjectAgg(final Expression key
-            , Expression value, Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> jsonObjectAgg(final Expression key
+            , Expression value, Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         final TypeMeta returnType;//TODO validate JsonMapType
         returnType = Functions._returnType((ArmyExpression) key, (ArmyExpression) value, JsonMapType::from);
         final List<Expression> argList;
@@ -172,8 +172,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> max(@Nullable ArgDistinct distinct
-            , Expression expr, Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> max(@Nullable ArgDistinct distinct
+            , Expression expr, Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregateWindow("MAX", expr, expr.typeMeta(), endFunction, asFunction);
     }
 
@@ -186,8 +186,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr non-null parameter or {@link Expression},but couldn't be {@link SQLs#NULL}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> min(@Nullable ArgDistinct distinct
-            , Expression expr, Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> min(@Nullable ArgDistinct distinct
+            , Expression expr, Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregateWindow("MIN", expr, expr.typeMeta(), endFunction, asFunction);
     }
 
@@ -200,8 +200,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_std">STD(xpr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> std(Expression expr
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> std(Expression expr
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregateWindow("STD", expr, DoubleType.INSTANCE, endFunction, asFunction);
     }
 
@@ -213,8 +213,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev">STDDEV(xpr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> stdDev(Expression expr
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> stdDev(Expression expr
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregateWindow("STDDEV", expr, DoubleType.INSTANCE, endFunction, asFunction);
     }
 
@@ -226,8 +226,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-pop">STDDEV_POP(xpr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> stdDevPop(Expression expr
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> stdDevPop(Expression expr
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregateWindow("STDDEV_POP", expr, DoubleType.INSTANCE, endFunction, asFunction);
     }
 
@@ -239,8 +239,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-samp">STDDEV_SAMP(xpr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> stdDevSamp(Expression expr
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> stdDevSamp(Expression expr
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregateWindow("STDDEV_SAMP", expr, DoubleType.INSTANCE, endFunction, asFunction);
     }
 
@@ -252,8 +252,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">SUM([DISTINCT] expr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> sum(@Nullable ArgDistinct distinct
-            , Expression expr, Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> sum(@Nullable ArgDistinct distinct
+            , Expression expr, Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregate("SUM", distinct, expr, expr.typeMeta(), endFunction, asFunction);
     }
 
@@ -266,8 +266,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-pop">VAR_POP(xpr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> varPop(Expression expr
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> varPop(Expression expr
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregateWindow("VAR_POP", expr, DoubleType.INSTANCE, endFunction, asFunction);
     }
 
@@ -279,8 +279,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-samp">VAR_SAMP(xpr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> varSamp(Expression expr
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> varSamp(Expression expr
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregateWindow("VAR_SAMP", expr, DoubleType.INSTANCE, endFunction, asFunction);
     }
 
@@ -292,8 +292,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-samp">VARIANCE(expr) [over_clause]</a>
      */
-    public static <E extends Expression, I extends Item> _AggregateWindowFunc<E, I> variance(Expression expr
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> variance(Expression expr
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgAggregateWindow("VARIANCE", expr, DoubleType.INSTANCE, endFunction, asFunction);
     }
 
@@ -306,8 +306,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_cume-dist">CUME_DIST() over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> cumeDist(
-            Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _OverSpec<W, I> cumeDist(
+            Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.noArgWindowFunc("CUME_DIST", DoubleType.INSTANCE, endFunction, asFunction);
     }
 
@@ -318,8 +318,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_dense-rank">DENSE_RANK() over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> denseRank(
-            Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _OverSpec<W, I> denseRank(
+            Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.noArgWindowFunc("DENSE_RANK", LongType.INSTANCE, endFunction, asFunction);
     }
 
@@ -332,8 +332,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr non-null parameter or {@link  Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_first-value">FIRST_VALUE(expr) [null_treatment] over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> firstValue(final Expression expr
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _OverSpec<W, I> firstValue(final Expression expr
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgWindowFunc("FIRST_VALUE", expr, expr.typeMeta(), endFunction, asFunction);
     }
 
@@ -345,8 +345,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr non-null parameter or {@link  Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_last-value">LAST_VALUE(expr) [null_treatment] over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> lastValue(final Expression expr
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _OverSpec<W, I> lastValue(final Expression expr
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.oneArgWindowFunc("LAST_VALUE", expr, expr.typeMeta(), endFunction, asFunction);
     }
 
@@ -358,8 +358,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr non-null parameter or {@link  Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> lag(final Expression expr
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _OverSpec<W, I> lag(final Expression expr
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return leadOrLog("LAG", expr, null, null, endFunction, asFunction);
     }
 
@@ -379,8 +379,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> lag(Expression expr, @Nullable Expression n
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _OverSpec<W, I> lag(Expression expr, @Nullable Expression n
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return leadOrLog("LAG", expr, n, null, endFunction, asFunction);
     }
 
@@ -402,9 +402,9 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param defaultWord {@link  SQLs#DEFAULT}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> lag(final Expression expr
+    public static <W extends Item, I extends Item> _OverSpec<W, I> lag(final Expression expr
             , final @Nullable Expression n, final @Nullable SQLs.WordDefault defaultWord
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return leadOrLog("LAG", expr, n, defaultWord, endFunction, asFunction);
     }
 
@@ -416,8 +416,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#NULL}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> lead(final Expression expr
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _OverSpec<W, I> lead(final Expression expr
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return leadOrLog("LEAD", expr, null, null, endFunction, asFunction);
     }
 
@@ -438,8 +438,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *             </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> lead(Expression expr, @Nullable Expression n
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _OverSpec<W, I> lead(Expression expr, @Nullable Expression n
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return leadOrLog("LEAD", expr, n, null, endFunction, asFunction);
     }
 
@@ -460,8 +460,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * @param defaultWord {@link  SQLs#DEFAULT}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> lead(Expression expr, @Nullable Expression n
-            , final @Nullable SQLs.WordDefault defaultWord, Function<_ItemExpression<I>, E> endFunction
+    public static <W extends Item, I extends Item> _OverSpec<W, I> lead(Expression expr, @Nullable Expression n
+            , final @Nullable SQLs.WordDefault defaultWord, Function<_ItemWindow<I>, W> endFunction
             , Function<TypeInfer, I> asFunction) {
         return leadOrLog("LEAD", expr, n, defaultWord, endFunction, asFunction);
     }
@@ -473,10 +473,11 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *
      * @param expr non-null {@link  Expression}
      * @param n    positive.output literal.
+     * @param <W>  representing {@link _ItemWindow} or supper
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_nth-value">NTH_VALUE(expr, N) [from_first_last] [null_treatment] over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _FromFirstLastSpec<E, I> nthValue(Expression expr, Expression n
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _FromFirstLastOverSpec<W, I> nthValue(Expression expr, Expression n
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.twoArgFromFirstWindowFunc("NTH_VALUE", expr, n, expr.typeMeta(), endFunction, asFunction);
     }
 
@@ -501,8 +502,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_ntile">NTILE(N) over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> ntile(final Expression n
-            , Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _OverSpec<W, I> ntile(final Expression n
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         //TODO a local variable in a stored routine?
         return MySQLFunctionUtils.oneArgWindowFunc("NTILE", n, LongType.INSTANCE, endFunction, asFunction);
     }
@@ -514,8 +515,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">PERCENT_RANK() over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> percentRank(
-            Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _OverSpec<W, I> percentRank(
+            Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.noArgWindowFunc("PERCENT_RANK", DoubleType.INSTANCE, endFunction, asFunction);
     }
 
@@ -526,8 +527,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">RANK() over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> rank(
-            Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _OverSpec<W, I> rank(
+            Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.noArgWindowFunc("RANK", LongType.INSTANCE, endFunction, asFunction);
     }
 
@@ -539,8 +540,8 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_row-number">ROW_NUMBER() over_clause</a>
      */
-    public static <E extends Expression, I extends Item> _OverSpec<E, I> rowNumber(
-            Function<_ItemExpression<I>, E> endFunction, Function<TypeInfer, I> asFunction) {
+    public static <W extends Item, I extends Item> _OverSpec<W, I> rowNumber(
+            Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         return MySQLFunctionUtils.noArgWindowFunc("ROW_NUMBER", LongType.INSTANCE, endFunction, asFunction);
     }
 
@@ -616,18 +617,19 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
     }
 
     /**
+     * @param <W> representing {@link _ItemWindow} or supper
      * @see #lag(Expression, Expression, SQLs.WordDefault, Function, Function)
      * @see #lead(Expression, Expression, SQLs.WordDefault, Function, Function)
      */
-    private static <R extends Expression, I extends Item> MySQLFunctionSyntax._OverSpec<R, I> leadOrLog(
+    private static <W extends Item, I extends Item> MySQLFunctionSyntax._OverSpec<W, I> leadOrLog(
             final String name, final @Nullable Expression expr
             , final @Nullable Expression n, final @Nullable SQLs.WordDefault defaultWord
-            , Function<_ItemExpression<I>, R> endFunction, Function<TypeInfer, I> asFunction) {
+            , Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
         if (expr == null) {
             throw ContextStack.nullPointer(ContextStack.peek());
         }
         assert defaultWord == null || defaultWord == SQLs.DEFAULT;
-        final MySQLFunctionSyntax._OverSpec<R, I> spec;
+        final MySQLFunctionSyntax._OverSpec<W, I> spec;
         if (n == null) {
             spec = MySQLFunctionUtils.oneArgWindowFunc(name, expr, expr.typeMeta(), endFunction, asFunction);
         } else if (defaultWord == null) {

@@ -10,7 +10,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-public interface Values extends DqlStatement, DialectStatement, RowSet.DqlValues {
+public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
 
 
     interface _StaticValueRowCommaDualSpec<RR> extends Statement._RightParenClause<RR> {

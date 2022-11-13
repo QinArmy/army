@@ -432,7 +432,7 @@ abstract class ArmyParser implements DialectParser {
 
     /**
      * @see #handleValues(_SqlContext, Values, Visible)
-     * @see #handleDqlValues(RowSet.DqlValues, _SqlContext)
+     * @see #handleDqlValues(ValuesQuery, _SqlContext)
      */
     protected void parseValues(_Values values, _ValuesContext context) {
         throw standardParserDontSupportDialect();
@@ -475,7 +475,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleSelect(_SqlContext, Select, Visible)
      * @see #handleQuery(Query, _SqlContext)
      * @see #handleValues(_SqlContext, Values, Visible)
-     * @see #handleDqlValues(RowSet.DqlValues, _SqlContext)
+     * @see #handleDqlValues(ValuesQuery, _SqlContext)
      */
     protected void parseParensRowSet(_ParensRowSet values, _ParenRowSetContext context) {
         throw standardParserDontSupportDialect();
@@ -543,8 +543,8 @@ abstract class ArmyParser implements DialectParser {
         //3. parse RowSet
         if (rowSet instanceof Query) {
             this.handleQuery((Select) rowSet, original);
-        } else if (rowSet instanceof RowSet.DqlValues) {
-            this.handleDqlValues((RowSet.DqlValues) rowSet, original);
+        } else if (rowSet instanceof ValuesQuery) {
+            this.handleDqlValues((ValuesQuery) rowSet, original);
         } else {
             throw _Exceptions.unknownStatement(rowSet, this.dialect);
         }
@@ -601,7 +601,7 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #handleRowSet(RowSet, _SqlContext)
      */
-    protected final void handleDqlValues(final RowSet.DqlValues values, final _SqlContext original) {
+    protected final void handleDqlValues(final ValuesQuery values, final _SqlContext original) {
         this.assertRowSet(values);
         if (values instanceof _Values) {
             final ValuesContext context;
@@ -609,7 +609,7 @@ abstract class ArmyParser implements DialectParser {
             this.parseValues((_Values) values, context);
         } else if (values instanceof _UnionRowSet) {
             final _UnionRowSet union = (_UnionRowSet) values;
-            this.handleDqlValues((RowSet.DqlValues) union.leftRowSet(), original);
+            this.handleDqlValues((ValuesQuery) union.leftRowSet(), original);
             ((StatementContext) original).sqlBuilder.append(union.unionType().render());
             this.handleRowSet(union.rightRowSet(), original);
         } else {

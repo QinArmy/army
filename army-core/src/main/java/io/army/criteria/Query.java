@@ -99,7 +99,7 @@ public interface Query extends RowSet {
 
         _AsClause<SR> select(Supplier<Expression> supplier);
 
-        <I extends Item> I select(SqlFunction<_AliasExpression<I>, SR, I> sqlFunction);
+        <I extends Item> I select(SqlFunction<_AliasExpression<SR>, SR, I> sqlFunction);
 
 
         //below two argument method

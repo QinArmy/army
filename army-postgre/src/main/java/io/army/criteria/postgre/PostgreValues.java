@@ -2,7 +2,7 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.*;
 
-public interface PostgreValues extends PostgreStatement, RowSet.DqlValues {
+public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
     interface _ValuesStaticOrderByCommaClause<OR> extends _StaticOrderByCommaClause<OR> {
         //TODO add using operator

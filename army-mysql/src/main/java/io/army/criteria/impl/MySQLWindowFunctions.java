@@ -461,7 +461,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @param n    positive.output literal.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_nth-value">NTH_VALUE(expr, N) [from_first_last] [null_treatment] over_clause</a>
      */
-    public static MySQLFunctionSyntax._FromFirstLastSpec<Expression, TypeInfer> nthValue(Expression expr, Expression n) {
+    public static MySQLFunctionSyntax._FromFirstLastOverSpec<Expression, TypeInfer> nthValue(Expression expr, Expression n) {
         return MySQLs.nthValue(expr, n, SQLs::_asExp, SQLs::_identity);
     }
 

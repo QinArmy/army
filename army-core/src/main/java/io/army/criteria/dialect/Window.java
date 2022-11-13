@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-public interface Window {
+public interface Window extends Item {
 
 
     interface Builder extends Item {
@@ -300,7 +300,7 @@ public interface Window {
     }
 
 
-    interface _OverClause<OR, OE extends Expression> {
+    interface _OverClause<OR, OE extends Item> {
 
         OE over(String windowName);
 

@@ -481,14 +481,18 @@ abstract class FunctionUtils {
     }//FromFirstLast
 
 
-    static abstract class WindowFunction<OR, OE extends Expression, I extends Item> extends Expressions<I>
-            implements Window._OverClause<OR, OE>, OperationExpression.MutableParamMetaSpec, CriteriaContextSpec {
+    static abstract class WindowFunction<OR, OE extends Item, I extends Item> extends Expressions<I>
+            implements Window._OverClause<OR, OE>
+            , OperationExpression.MutableParamMetaSpec
+            , CriteriaContextSpec
+            , SQLFunction
+            , _ItemWindow<I> {
 
         final CriteriaContext context;
 
         final String name;
 
-        private final Function<_ItemExpression<I>, OE> expFunction;
+        private final Function<_ItemWindow<I>, OE> windowFunc;
 
         private TypeMeta returnType;
 
@@ -496,12 +500,12 @@ abstract class FunctionUtils {
 
         private _Window anonymousWindow;
 
-        WindowFunction(String name, TypeMeta returnType, Function<_ItemExpression<I>, OE> expFunction
+        WindowFunction(String name, TypeMeta returnType, Function<_ItemWindow<I>, OE> windowFunc
                 , Function<TypeInfer, I> endFunc) {
             super(endFunc);
             this.context = ContextStack.peek();
             this.name = name;
-            this.expFunction = expFunction;
+            this.windowFunc = windowFunc;
             this.returnType = returnType;
         }
 
@@ -527,7 +531,7 @@ abstract class FunctionUtils {
             }
             this.context.onRefWindow(windowName);
             this.existingWindowName = windowName;
-            return this.expFunction.apply(this);
+            return this.windowFunc.apply(this);
         }
 
 
@@ -636,7 +640,7 @@ abstract class FunctionUtils {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.anonymousWindow = anonymousWindow;
-            return this.expFunction.apply(this);
+            return this.windowFunc.apply(this);
         }
 
     }//AggregateOverClause

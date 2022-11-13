@@ -90,7 +90,7 @@ final class MySQLDialectParser extends MySQLParser {
             if (!this.asOf80) {
                 throw _Exceptions.unknownStatement(rowSet, this.dialect);
             }
-            _MySQLConsultant.assertValues((RowSet.DqlValues) rowSet);
+            _MySQLConsultant.assertValues((ValuesQuery) rowSet);
         } else {
             throw _Exceptions.unknownStatement(rowSet, this.dialect);
         }

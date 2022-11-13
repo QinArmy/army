@@ -13,6 +13,7 @@ import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ChildTableMeta;
+import io.army.sqltype.SqlType;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -604,6 +605,27 @@ abstract class CriteriaUtils {
         String m = "criteria not match.";
         return ContextStack.criteriaError(criteriaContext, m);
     }
+
+    static CriteriaException noPrecision(CriteriaContext context, SqlType type) {
+        String m = String.format("You don't specified precision for %s", type);
+        return ContextStack.criteriaError(context, m);
+    }
+
+    static CriteriaException dontSupportPrecision(CriteriaContext context, SqlType type) {
+        String m = String.format("%s don't support precision", type);
+        return ContextStack.criteriaError(context, m);
+    }
+
+    static CriteriaException dontSupportCharset(CriteriaContext context, SqlType type) {
+        String m = String.format("%s don't support charset", type);
+        return ContextStack.criteriaError(context, m);
+    }
+
+    static CriteriaException dontSupportPrecisionScale(CriteriaContext context, SqlType type) {
+        String m = String.format("%s don't support precision and scale", type);
+        return ContextStack.criteriaError(context, m);
+    }
+
 
     static CriteriaException criteriaContextNotMatch(CriteriaContext criteriaContext) {
         String m = "criteria context not match.";

@@ -12,15 +12,19 @@ public interface SqlType {
 
     Database database();
 
-    default boolean supportNoPrecision() {
+    default boolean isNoPrecision() {
         throw new UnsupportedOperationException();
     }
 
-    default boolean supportPrecision() {
+    default boolean isSupportPrecision() {
         throw new UnsupportedOperationException();
     }
 
-    default boolean supportPrecisionScale() {
+    default boolean isSupportPrecisionScale() {
+        throw new UnsupportedOperationException();
+    }
+
+    default boolean isSupportCharset() {
         throw new UnsupportedOperationException();
     }
 

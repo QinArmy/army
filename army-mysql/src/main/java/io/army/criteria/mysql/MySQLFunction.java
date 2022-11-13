@@ -50,13 +50,13 @@ public interface MySQLFunction extends SQLFunction {
 
         Item error();
 
-        Item Default(Expression value);
+        Item defaultValue(Expression value);
 
-        <T> Item Default(Function<T, Expression> valueOperator, T value);
+        <T> Item defaultValue(Function<T, Expression> valueOperator, T value);
 
-        Item Default(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        Item defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        Item Default(Supplier<Expression> supplier);
+        Item defaultValue(Supplier<Expression> supplier);
 
     }
 
@@ -77,16 +77,16 @@ public interface MySQLFunction extends SQLFunction {
         _JsonValueOnErrorClause<I> error();
 
         @Override
-        _JsonValueOnErrorClause<I> Default(Expression value);
+        _JsonValueOnErrorClause<I> defaultValue(Expression value);
 
         @Override
-        <T> _JsonValueOnErrorClause<I> Default(Function<T, Expression> valueOperator, T value);
+        <T> _JsonValueOnErrorClause<I> defaultValue(Function<T, Expression> valueOperator, T value);
 
         @Override
-        _JsonValueOnErrorClause<I> Default(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        _JsonValueOnErrorClause<I> defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
         @Override
-        _JsonValueOnErrorClause<I> Default(Supplier<Expression> supplier);
+        _JsonValueOnErrorClause<I> defaultValue(Supplier<Expression> supplier);
 
 
     }
@@ -114,17 +114,17 @@ public interface MySQLFunction extends SQLFunction {
         _JsonValueOnEmptySpec<I> error();
 
         @Override
-        _JsonValueOnEmptySpec<I> Default(Expression value);
+        _JsonValueOnEmptySpec<I> defaultValue(Expression value);
 
 
         @Override
-        <T> _JsonValueOnEmptySpec<I> Default(Function<T, Expression> valueOperator, T value);
+        <T> _JsonValueOnEmptySpec<I> defaultValue(Function<T, Expression> valueOperator, T value);
 
         @Override
-        _JsonValueOnEmptySpec<I> Default(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        _JsonValueOnEmptySpec<I> defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
         @Override
-        _JsonValueOnEmptySpec<I> Default(Supplier<Expression> supplier);
+        _JsonValueOnEmptySpec<I> defaultValue(Supplier<Expression> supplier);
 
     }
 
@@ -228,16 +228,16 @@ public interface MySQLFunction extends SQLFunction {
         _JsonTableOnErrorClause<I> error();
 
         @Override
-        _JsonTableOnErrorClause<I> Default(Expression value);
+        _JsonTableOnErrorClause<I> defaultValue(Expression value);
 
         @Override
-        <T> _JsonTableOnErrorClause<I> Default(Function<T, Expression> valueOperator, T value);
+        <T> _JsonTableOnErrorClause<I> defaultValue(Function<T, Expression> valueOperator, T value);
 
         @Override
-        _JsonTableOnErrorClause<I> Default(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        _JsonTableOnErrorClause<I> defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
         @Override
-        _JsonTableOnErrorClause<I> Default(Supplier<Expression> supplier);
+        _JsonTableOnErrorClause<I> defaultValue(Supplier<Expression> supplier);
     }
 
 
@@ -258,16 +258,16 @@ public interface MySQLFunction extends SQLFunction {
         _JsonTableOnEmptySpec<I> error();
 
         @Override
-        _JsonTableOnEmptySpec<I> Default(Expression value);
+        _JsonTableOnEmptySpec<I> defaultValue(Expression value);
 
         @Override
-        <T> _JsonTableOnEmptySpec<I> Default(Function<T, Expression> valueOperator, T value);
+        <T> _JsonTableOnEmptySpec<I> defaultValue(Function<T, Expression> valueOperator, T value);
 
         @Override
-        _JsonTableOnEmptySpec<I> Default(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        _JsonTableOnEmptySpec<I> defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
         @Override
-        _JsonTableOnEmptySpec<I> Default(Supplier<Expression> supplier);
+        _JsonTableOnEmptySpec<I> defaultValue(Supplier<Expression> supplier);
 
     }
 
