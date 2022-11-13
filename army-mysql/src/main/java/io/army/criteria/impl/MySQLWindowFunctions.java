@@ -19,6 +19,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
+@SuppressWarnings("unused")
 abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
 
     MySQLWindowFunctions() {

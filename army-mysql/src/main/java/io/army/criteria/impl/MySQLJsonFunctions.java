@@ -761,7 +761,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * The {@link MappingType} of function return type:the {@link MappingType} of jsonDoc
      * </p>
      * <p>
-     * You should use {@link #jsonMergePreserve(Expression, Expression)},if database is 8.0+.
+     * You should use {@link #jsonMergePreserve(Expression, Expression, Expression...)},if database is 8.0+.
      * </p>
      *
      * @param jsonDoc1 non-null
@@ -1016,7 +1016,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
      */
-    public static MySQLFunction._JsonTableColumnsClause<TabularItem> jsonTable() {
+    public static MySQLFunction._JsonTableColumnsClause<DerivedTable> jsonTable() {
         return MySQLFunctionUtils.jsonTable(SQLs::_identity);
     }
 

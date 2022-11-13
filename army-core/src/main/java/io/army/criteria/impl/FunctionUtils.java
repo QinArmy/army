@@ -132,6 +132,22 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, null, expList(name, argList), returnType);
     }
 
+    static Expression oneAndRestFunc(String name, TypeMeta returnType, Expression first, Expression... rest) {
+        if (first instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, first);
+        }
+        final Expression func;
+        if (rest.length == 0) {
+            func = new OneArgFuncExpression(name, (ArmyExpression) first, returnType);
+        } else {
+            final List<ArmyExpression> argList = new ArrayList<>(1 + rest.length);
+            argList.add((ArmyExpression) first);
+            addRestExp(argList, rest);
+            func = new MultiArgFunctionExpression(name, null, argList, returnType);
+        }
+        return func;
+    }
+
     static Expression multiArgFunc(String name, TypeMeta returnType, Expression firstArg, Expression... exps) {
         final List<ArmyExpression> argList = new ArrayList<>(1 + exps.length);
         argList.add((ArmyExpression) firstArg);
@@ -306,6 +322,13 @@ abstract class FunctionUtils {
             }
 
         }//for
+    }
+
+
+    static void addRestExp(List<ArmyExpression> expList, Expression... rest) {
+        for (Expression exp : rest) {
+            expList.add((ArmyExpression) exp);
+        }
     }
 
     static List<Object> twoArgList(final String name, Expression one, Expression two) {

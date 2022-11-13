@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @since 1.0
  */
-abstract class MySQLMiscellaneousFunctions extends MySQLSpecificFunctions {
+abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
 
     MySQLMiscellaneousFunctions() {
     }
@@ -642,7 +642,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpecificFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link ByteArrayType}
+     * The {@link MappingType} of function return type: {@link PrimitiveByteArrayType}
      * </p>
      *
      * @param expr non-null
@@ -650,7 +650,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpecificFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_inet6-aton">INET6_ATON(expr)</a>
      */
     public static Expression inet6Aton(final Expression expr) {
-        return FunctionUtils.oneArgFunc("INET6_ATON", expr, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("INET6_ATON", expr, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
@@ -851,26 +851,26 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpecificFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link ByteArrayType}
+     * The {@link MappingType} of function return type: {@link PrimitiveByteArrayType}
      * </p>
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin">UUID_TO_BIN(string_uuid)</a>
      */
     public static Expression uuidToBin(final Expression stringUuid) {
-        return FunctionUtils.oneArgFunc("UUID_TO_BIN", stringUuid, ByteArrayType.INSTANCE);
+        return FunctionUtils.oneArgFunc("UUID_TO_BIN", stringUuid, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link ByteArrayType}
+     * The {@link MappingType} of function return type: {@link PrimitiveByteArrayType}
      * </p>
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin">UUID_TO_BIN(string_uuid, swap_flag)</a>
      */
     public static Expression uuidToBin(final Expression stringUuid, final Expression swapFlag) {
-        return _simpleTowArgFunc("UUID_TO_BIN", stringUuid, swapFlag, ByteArrayType.INSTANCE);
+        return _simpleTowArgFunc("UUID_TO_BIN", stringUuid, swapFlag, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**

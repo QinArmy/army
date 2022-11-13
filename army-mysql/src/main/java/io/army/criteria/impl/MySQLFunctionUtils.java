@@ -143,7 +143,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         return new StatementDigestFunc("STATEMENT_DIGEST_TEXT", statement, visible, literal, StringType.INSTANCE);
     }
 
-    static <I extends Item> MySQLFunction._JsonTableColumnsClause<I> jsonTable(Function<TabularItem, I> function) {
+    static <I extends Item> MySQLFunction._JsonTableColumnsClause<I> jsonTable(Function<DerivedTable, I> function) {
         return new JsonTableFunction<>(function);
     }
 
@@ -2165,7 +2165,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         private ArmyExpression path;
 
-        private final Function<TabularItem, R> function;
+        private final Function<DerivedTable, R> function;
 
         private List<Selection> selectionList = new ArrayList<>();
 
@@ -2173,7 +2173,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         private List<String> columnAliasList;
 
-        private JsonTableFunction(Function<TabularItem, R> function) {
+        private JsonTableFunction(Function<DerivedTable, R> function) {
             super(ContextStack.peek());
             this.function = function;
         }

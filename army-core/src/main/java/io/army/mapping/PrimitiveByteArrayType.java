@@ -3,18 +3,18 @@ package io.army.mapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
-public final class ByteArrayType extends AbstractMappingType {
+public final class PrimitiveByteArrayType extends AbstractMappingType {
 
-    public static final ByteArrayType INSTANCE = new ByteArrayType();
+    public static final PrimitiveByteArrayType INSTANCE = new PrimitiveByteArrayType();
 
-    public static ByteArrayType from(final Class<?> fieldType) {
+    public static PrimitiveByteArrayType from(final Class<?> fieldType) {
         if (fieldType != byte[].class) {
-            throw errorJavaType(ByteArrayType.class, fieldType);
+            throw errorJavaType(PrimitiveByteArrayType.class, fieldType);
         }
         return INSTANCE;
     }
 
-    private ByteArrayType() {
+    private PrimitiveByteArrayType() {
     }
 
     @Override

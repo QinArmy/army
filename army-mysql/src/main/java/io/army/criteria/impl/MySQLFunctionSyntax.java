@@ -552,7 +552,7 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      * The {@link MappingType} of function return type:
      *      <ul>
      *          <li>If don't specified RETURNING clause then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#BINARY }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#BINARY }then {@link PrimitiveByteArrayType}</li>
      *          <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
@@ -566,13 +566,13 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#JSON }then {@link JsonType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Point }then {@link ByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link ByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link ByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link ByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link ByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link ByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Point }then {@link PrimitiveByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link PrimitiveByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link PrimitiveByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link PrimitiveByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link PrimitiveByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link PrimitiveByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link PrimitiveByteArrayType}</li>
      *      </ul>
      * </p>
      *

@@ -1,8 +1,8 @@
 package io.army.mapping.optional;
 
 import io.army.mapping.AbstractMappingType;
-import io.army.mapping.ByteArrayType;
 import io.army.mapping.MappingEnv;
+import io.army.mapping.PrimitiveByteArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
@@ -53,12 +53,12 @@ public final class BinaryType extends AbstractMappingType {
 
     @Override
     public byte[] beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return ByteArrayType.INSTANCE.beforeBind(sqlType, env, nonNull);
+        return PrimitiveByteArrayType.INSTANCE.beforeBind(sqlType, env, nonNull);
     }
 
     @Override
     public byte[] afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return ByteArrayType.INSTANCE.afterGet(sqlType, env, nonNull);
+        return PrimitiveByteArrayType.INSTANCE.afterGet(sqlType, env, nonNull);
     }
 
 
