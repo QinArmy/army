@@ -3,6 +3,8 @@ package io.army.criteria;
 
 import io.army.lang.Nullable;
 
+import java.util.List;
+
 /**
  * <p>
  * This interface representing row set.This interface is base interface of below:
@@ -22,6 +24,8 @@ public interface TabularItem extends Item {
 
         @Nullable
         Selection selection(String derivedAlias);
+
+        List<? extends SelectItem> selectItemList();
 
     }
 

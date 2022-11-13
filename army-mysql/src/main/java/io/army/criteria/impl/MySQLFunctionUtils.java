@@ -12,6 +12,8 @@ import io.army.dialect._SqlContext;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.mapping.IntegerType;
+import io.army.mapping.LongType;
+import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.MySQLTypes;
@@ -20,10 +22,7 @@ import io.army.stmt.SingleParam;
 import io.army.stmt.Stmt;
 import io.army.util._CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -1133,7 +1132,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
     private static final class JsonTableForOrdinalityColumn
-            implements JsonTableColumn {
+            implements JsonTableColumn, Selection {
 
         private final String name;
 
@@ -1148,6 +1147,16 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                     .append(_Constant.SPACE);
             context.parser().identifier(this.name, sqlBuilder);
             sqlBuilder.append(MySQLs.FOR_ORDINALITY.render());
+        }
+
+        @Override
+        public String alias() {
+            return this.name;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return LongType.INSTANCE;
         }
 
 
@@ -1165,9 +1174,12 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }//JsonTableOnEmptyOrErrorAction
 
 
-    private static final class JsonTablePathColumn implements JsonTableColumn {
+    private static final class JsonTablePathColumn implements JsonTableColumn
+            , Selection {
 
         private final String name;
+
+        private final MappingType typeMeta;
         private final MySQLTypes type;
 
         private final ArmyExpression n;
@@ -1188,12 +1200,14 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 , SQLWords pathWord, Expression path) {
             this.name = name;
             this.type = type;
+            this.typeMeta = type.mappingType();
             this.n = null;
-            this.d = null;
 
+            this.d = null;
             this.charset = null;
             this.collate = null;
             this.pathWord = pathWord;
+
             this.path = (ArmyExpression) path;
         }
 
@@ -1202,12 +1216,14 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 , Expression path) {
             this.name = name;
             this.type = type;
+            this.typeMeta = type.mappingType();
             this.n = (ArmyExpression) n;
-            this.d = null;
 
+            this.d = null;
             this.charset = null;
             this.collate = null;
             this.pathWord = pathWord;
+
             this.path = (ArmyExpression) path;
         }
 
@@ -1217,12 +1233,14 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 , Expression path) {
             this.name = name;
             this.type = type;
+            this.typeMeta = type.mappingType();
             this.n = (ArmyExpression) n;
-            this.d = null;
 
+            this.d = null;
             this.charset = charset;
             this.collate = collate;
             this.pathWord = pathWord;
+
             this.path = (ArmyExpression) path;
         }
 
@@ -1231,13 +1249,25 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 , SQLWords pathWord, Expression path) {
             this.name = name;
             this.type = type;
+            this.typeMeta = type.mappingType();
             this.n = (ArmyExpression) n;
-            this.d = (ArmyExpression) d;
 
+            this.d = (ArmyExpression) d;
             this.charset = null;
             this.collate = null;
             this.pathWord = pathWord;
+
             this.path = (ArmyExpression) path;
+        }
+
+        @Override
+        public String alias() {
+            return this.name;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.typeMeta;
         }
 
         @Override
@@ -1734,6 +1764,10 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         abstract R onRightParen();
 
+        void onAddSelect(Selection selection) {
+            throw new UnsupportedOperationException();
+        }
+
         private JsonTableColumnsClause<R> onAddColumn(final JsonTableColumn column) {
             List<JsonTableColumn> columnList = this.columnList;
             if (columnList == null) {
@@ -1743,6 +1777,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             columnList.add(column);
+            if (!(column instanceof JsonTableNestedColumn)) {
+                this.onAddSelect((Selection) column);
+            }
             return this;
         }
 
@@ -1829,6 +1866,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         private final Function<JsonTableNestedColumn<?>, R> function;
 
+
         private JsonTableNestedColumn(CriteriaContext context, boolean fullPathWord
                 , Function<JsonTableNestedColumn<?>, R> function) {
             super(context);
@@ -1836,10 +1874,6 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             this.function = function;
         }
 
-        @Override
-        R onRightParen() {
-            return this.function.apply(this);
-        }
 
         @Override
         public void appendSql(final _SqlContext context) {
@@ -1895,17 +1929,30 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
 
+        @Override
+        R onRightParen() {
+            return this.function.apply(this);
+        }
+
+
     }//JsonTableNestedColumn
 
     static final class JsonTableFunction<R extends Item> extends JsonTableColumnsClause<R>
             implements TabularItem, MySQLFunction, _SelfDescribed
-            , MySQLFunction._JsonTableLeftParenClause<R> {
+            , MySQLFunction._JsonTableLeftParenClause<R>
+            , ArmyDerivedTable {
 
         private ArmyExpression expr;
 
         private ArmyExpression path;
 
         private final Function<TabularItem, R> function;
+
+        private List<Selection> selectionList = new ArrayList<>();
+
+        private Map<String, Selection> selectionMap = new HashMap<>();
+
+        private List<String> columnAliasList;
 
         private JsonTableFunction(Function<TabularItem, R> function) {
             super(ContextStack.peek());
@@ -1934,14 +1981,6 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         public _JsonTableColumnsClause<R> leftParen(String expr, Function<String, Expression> valueOperator
                 , String path) {
             return this.leftParen(SQLs.param(StringType.INSTANCE, expr), valueOperator.apply(path));
-        }
-
-        @Override
-        R onRightParen() {
-            if (this.expr == null || this.path == null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return this.function.apply(this);
         }
 
         @Override
@@ -2003,6 +2042,96 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 columnListToString(columnList, sqlBuilder);
             }
             return sqlBuilder.toString();
+        }
+
+
+        @Override
+        public List<Selection> selectItemList() {
+            final List<Selection> selectionList = this.selectionList;
+            if (selectionList == null || selectionList instanceof ArrayList) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return selectionList;
+        }
+
+        @Override
+        public Selection selection(final String derivedAlias) {
+            final Map<String, Selection> selectionMap = this.selectionMap;
+            if (selectionMap == null || selectionMap instanceof HashMap) {
+                throw ContextStack.castCriteriaApi(this.context);
+            } else if (this.columnAliasList == null) {
+                this.columnAliasList = Collections.emptyList();
+            }
+            return selectionMap.get(derivedAlias);
+        }
+
+        @Override
+        public void setColumnAliasList(final List<String> aliasList) {
+            final List<Selection> selectionList = this.selectionList;
+            final int selectionSize;
+            if (this.columnAliasList != null) {
+                throw new IllegalStateException("columnAliasList non-null");
+            } else if (selectionList == null || selectionList instanceof ArrayList) {
+                throw ContextStack.castCriteriaApi(this.context);
+            } else if (aliasList.size() != (selectionSize = selectionList.size())) {
+                String m = String.format("JSON_TABLE alias list size[%s] and column list size[%s] not match."
+                        , aliasList.size(), selectionList.size());
+                throw ContextStack.criteriaError(this.context, m);
+            }
+
+            Map<String, Selection> selectionMap = new HashMap<>((int) (selectionSize / 0.75f));
+            String alias;
+            for (int i = 0; i < selectionSize; i++) {
+                alias = aliasList.get(i);
+                if (selectionMap.putIfAbsent(alias, selectionList.get(i)) != null) {
+                    String m = String.format("Duplicate column alias[%s]", alias);
+                    throw ContextStack.criteriaError(this.context, m);
+                }
+            }
+            selectionMap = _CollectionUtils.unmodifiableMap(selectionMap);
+            assert selectionMap.size() == selectionSize;
+            this.selectionMap = selectionMap;
+            this.columnAliasList = aliasList;
+        }
+
+        @Override
+        public List<String> columnAliasList() {
+            List<String> aliasList = this.columnAliasList;
+            if (aliasList == null) {
+                aliasList = Collections.emptyList();
+                this.columnAliasList = aliasList;
+            }
+            return aliasList;
+        }
+
+
+        @Override
+        void onAddSelect(final Selection selection) {
+            final List<Selection> selectionList = this.selectionList;
+            final Map<String, Selection> selectionMap = this.selectionMap;
+            if (!(selectionList instanceof ArrayList && selectionMap instanceof HashMap)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            if (selectionMap.putIfAbsent(selection.alias(), selection) != null) {
+                String m = String.format("Duplicate column name[%s]", selection.alias());
+                throw ContextStack.criteriaError(this.context, m);
+            }
+            selectionList.add(selection);
+        }
+
+        @Override
+        R onRightParen() {
+            if (this.expr == null || this.path == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            final List<Selection> selectionList = this.selectionList;
+            final Map<String, Selection> selectionMap = this.selectionMap;
+            if (!(selectionList instanceof ArrayList && selectionMap instanceof HashMap && selectionList.size() > 0)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.selectionList = _CollectionUtils.unmodifiableList(selectionList);
+            this.selectionMap = _CollectionUtils.unmodifiableMap(selectionMap);
+            return this.function.apply(this);
         }
 
 

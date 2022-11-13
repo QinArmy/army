@@ -91,6 +91,12 @@ abstract class CriteriaSupports {
         return new SimpleFieldItemPairs<>(context, updateTable, consumer);
     }
 
+    public interface ArmyDerivedSpec {
+
+        void setColumnAliasList(List<String> aliasList);
+
+    }
+
 
     static abstract class WithClause<B extends CteBuilderSpec, WE> implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
