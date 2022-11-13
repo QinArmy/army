@@ -6,6 +6,7 @@ import io.army.criteria.impl._AliasExpression;
 import io.army.criteria.standard.SQLFunction;
 import io.army.sqltype.MySQLTypes;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -203,9 +204,13 @@ public interface MySQLFunction extends SQLFunction {
 
         /*-------------------below nested -------------------*/
 
-        _JsonTableColumnsClause<_JsonTableColumnCommaSpec<R>> commaNested(Function<String, Expression> operator, String path);
+        _JsonTableColumnCommaSpec<R> commaNested(Expression path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function);
 
-        _JsonTableColumnsClause<_JsonTableColumnCommaSpec<R>> commaNestedPath(Function<String, Expression> operator, String path);
+        _JsonTableColumnCommaSpec<R> commaNested(Function<String, Expression> operator, String path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function);
+
+        _JsonTableColumnCommaSpec<R> commaNestedPath(Expression path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function);
+
+        _JsonTableColumnCommaSpec<R> commaNestedPath(Function<String, Expression> operator, String path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function);
 
     }
 
@@ -314,15 +319,21 @@ public interface MySQLFunction extends SQLFunction {
 
         /*-------------------below nested -------------------*/
 
-        _JsonTableColumnsClause<_JsonTableColumnCommaSpec<R>> leftParenNested(Function<String, Expression> operator, String path);
+        _JsonTableColumnCommaSpec<R> leftParenNested(Expression path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function);
 
-        _JsonTableColumnsClause<_JsonTableColumnCommaSpec<R>> leftParenNestedPath(Function<String, Expression> operator, String path);
+        _JsonTableColumnCommaSpec<R> leftParenNested(Function<String, Expression> operator, String path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function);
+
+        _JsonTableColumnCommaSpec<R> leftParenNestedPath(Expression path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function);
+
+        _JsonTableColumnCommaSpec<R> leftParenNestedPath(Function<String, Expression> operator, String path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function);
 
     }
 
     interface _JsonTableColumnsClause<R extends Item> {
 
         _JsonTableColumnLeftParenClause<R> columns();
+
+        R columns(Consumer<MySQLJsonColumnClause> consumer);
 
     }
 
@@ -336,6 +347,68 @@ public interface MySQLFunction extends SQLFunction {
          * @param expr wrap to parameter expression
          */
         _JsonTableColumnsClause<I> leftParen(String expr, Function<String, Expression> valueOperator, String path);
+
+    }
+
+
+    interface _JsonTableDynamicOnErrorClause extends _OnErrorClause {
+
+        @Override
+        MySQLJsonColumnClause onError();
+
+    }
+
+
+    interface _JsonTableDynamicOnErrorActionSpec extends _OnEmptyOrErrorActionClause
+            , MySQLJsonColumnClause {
+
+        @Override
+        _JsonTableDynamicOnErrorClause nullWord();
+
+        @Override
+        _JsonTableDynamicOnErrorClause error();
+
+        @Override
+        _JsonTableDynamicOnErrorClause defaultValue(Expression value);
+
+        @Override
+        <T> _JsonTableDynamicOnErrorClause defaultValue(Function<T, Expression> valueOperator, T value);
+
+        @Override
+        _JsonTableDynamicOnErrorClause defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        _JsonTableDynamicOnErrorClause defaultValue(Supplier<Expression> supplier);
+    }
+
+
+    interface _JsonTableDynamicOnEmptySpec extends _JsonTableDynamicOnErrorClause, _OnEmptyClause {
+
+        @Override
+        _JsonTableDynamicOnErrorActionSpec onEmpty();
+
+    }
+
+
+    interface _JsonTableDynamicOnEmptyActionSpec extends _JsonTableDynamicOnErrorActionSpec {
+
+        @Override
+        _JsonTableDynamicOnEmptySpec nullWord();
+
+        @Override
+        _JsonTableDynamicOnEmptySpec error();
+
+        @Override
+        _JsonTableDynamicOnEmptySpec defaultValue(Expression value);
+
+        @Override
+        <T> _JsonTableDynamicOnEmptySpec defaultValue(Function<T, Expression> valueOperator, T value);
+
+        @Override
+        _JsonTableDynamicOnEmptySpec defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        _JsonTableDynamicOnEmptySpec defaultValue(Supplier<Expression> supplier);
 
     }
 

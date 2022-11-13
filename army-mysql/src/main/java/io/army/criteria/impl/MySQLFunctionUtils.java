@@ -3,9 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.criteria.mysql.MySQLCastType;
-import io.army.criteria.mysql.MySQLCharset;
-import io.army.criteria.mysql.MySQLFunction;
+import io.army.criteria.mysql.*;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -24,6 +22,7 @@ import io.army.util._CollectionUtils;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -1387,14 +1386,27 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             , MySQLFunction._JsonTableColumnCommaSpec<R>
             , MySQLFunction._JsonTableOnEmptyActionSpec<R>
             , MySQLFunction._JsonTableColumnsClause<R>
-            , MySQLFunction._JsonTableOnEmptySpec<R> {
+            , MySQLFunction._JsonTableOnEmptySpec<R>
+            , MySQLJsonColumnClause
+            , MySQLFunction._JsonTableDynamicOnEmptyActionSpec
+            , MySQLFunction._JsonTableDynamicOnEmptySpec {
 
         final CriteriaContext context;
+
+        private final Consumer<Selection> selectionConsumer;
 
         List<JsonTableColumn> columnList;
 
         private JsonTableColumnsClause(CriteriaContext context) {
+            assert this instanceof JsonTableFunction;
             this.context = context;
+            this.selectionConsumer = this::onAddSelect;
+        }
+
+        private JsonTableColumnsClause(CriteriaContext context, Consumer<Selection> selectionConsumer) {
+            assert this instanceof JsonTableNestedColumn;
+            this.context = context;
+            this.selectionConsumer = selectionConsumer;
         }
 
 
@@ -1407,125 +1419,296 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLs.WordsForOrdinality forOrdinality) {
+        public final R columns(Consumer<MySQLJsonColumnClause> consumer) {
+            if (this.columnList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            consumer.accept(this);
+            if (this.columnList == null) {
+                throw ContextStack.criteriaError(this.context, "You don't add any column");
+            }
+            return this.rightParen();
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> column(String name, MySQLs.WordsForOrdinality forOrdinality) {
             return this.comma(name, forOrdinality);
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type
+        public final JsonTableColumnsClause<R> column(String name, MySQLTypes type, MySQLs.WordPath path
+                , Function<String, Expression> operator, String stringPath) {
+            return this.comma(name, type, path, operator, stringPath);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> column(String name, MySQLTypes type
+                , Expression n, MySQLs.WordPath path
+                , Function<String, Expression> operator, String stringPath) {
+            return this.comma(name, type, n, path, operator, stringPath);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> column(String name, MySQLTypes type
+                , int n, MySQLs.WordPath path
+                , Function<String, Expression> operator, String stringPath) {
+            return this.comma(name, type, n, path, operator, stringPath);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> column(String name, MySQLTypes type
+                , Expression n, SQLElement charset
+                , MySQLs.WordPath path, Function<String, Expression> operator
+                , String stringPath) {
+            return this.comma(name, type, n, charset, path, operator, stringPath);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> column(String name, MySQLTypes type
+                , int n, SQLElement charset, SQLIdentifier collate
+                , MySQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
+            return this.comma(name, type, n, charset, collate, path, operator, stringPath);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> column(String name, MySQLTypes type
+                , Expression n, SQLElement charset
+                , SQLIdentifier collate, MySQLs.WordPath path
+                , Function<String, Expression> operator, String stringPath) {
+            return this.comma(name, type, n, charset, collate, path, operator, stringPath);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> column(String name, MySQLTypes type
+                , int p, int m
+                , MySQLs.WordPath path, Function<String, Expression> operator
+                , String stringPath) {
+            return this.comma(name, type, p, m, path, operator, stringPath);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> column(String name, MySQLTypes type
+                , Expression p, Expression m
+                , MySQLs.WordPath path, Function<String, Expression> operator
+                , String stringPath) {
+            return this.comma(name, type, p, m, path, operator, stringPath);
+        }
+
+        @Override
+        public final MySQLJsonColumnClause column(String name, MySQLTypes type
+                , MySQLs.WordExistsPath path, Function<String, Expression> operator
+                , String stringPath) {
+            return this.comma(name, type, path, operator, stringPath);
+        }
+
+        @Override
+        public final MySQLJsonColumnClause column(String name, MySQLTypes type
+                , Expression n, MySQLs.WordExistsPath path
+                , Function<String, Expression> operator, String stringPath) {
+            return this.comma(name, type, n, path, operator, stringPath);
+        }
+
+        @Override
+        public final MySQLJsonColumnClause column(String name, MySQLTypes type
+                , int n, MySQLs.WordExistsPath path
+                , Function<String, Expression> operator, String stringPath) {
+            return this.comma(name, type, n, path, operator, stringPath);
+        }
+
+        @Override
+        public final MySQLJsonColumnClause column(String name, MySQLTypes type
+                , Expression n, SQLElement charset
+                , MySQLs.WordExistsPath path, Function<String, Expression> operator
+                , String stringPath) {
+            return this.comma(name, type, n, charset, path, operator, stringPath);
+        }
+
+        @Override
+        public final MySQLJsonColumnClause column(String name, MySQLTypes type
+                , int n, SQLElement charset
+                , SQLIdentifier collate, MySQLs.WordExistsPath path
+                , Function<String, Expression> operator, String stringPath) {
+            return this.comma(name, type, n, charset, collate, path, operator, stringPath);
+        }
+
+        @Override
+        public final MySQLJsonColumnClause column(String name, MySQLTypes type
+                , Expression n, SQLElement charset
+                , SQLIdentifier collate, MySQLs.WordExistsPath path
+                , Function<String, Expression> operator, String stringPath) {
+            return this.comma(name, type, n, charset, collate, path, operator, stringPath);
+        }
+
+        @Override
+        public final MySQLJsonColumnClause column(String name, MySQLTypes type
+                , int p, int m
+                , MySQLs.WordExistsPath path, Function<String, Expression> operator
+                , String stringPath) {
+            return this.comma(name, type, p, m, path, operator, stringPath);
+        }
+
+        @Override
+        public final MySQLJsonColumnClause column(String name, MySQLTypes type
+                , Expression p, Expression m
+                , MySQLs.WordExistsPath path, Function<String, Expression> operator
+                , String stringPath) {
+            return this.comma(name, type, p, m, path, operator, stringPath);
+        }
+
+        @Override
+        public final MySQLJsonColumnClause nested(Expression path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function) {
+            return this.commaNested(path, function);
+        }
+
+        @Override
+        public final MySQLJsonColumnClause nested(Function<String, Expression> operator, String path
+                , Function<MySQLJsonNestedClause, MySQLJsonColumns> function) {
+            return this.commaNested(operator.apply(path), function);
+        }
+
+        @Override
+        public final MySQLJsonColumnClause nestedPath(Expression path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function) {
+            return this.commaNestedPath(path, function);
+        }
+
+        @Override
+        public final MySQLJsonColumnClause nestedPath(Function<String, Expression> operator, String path
+                , Function<MySQLJsonNestedClause, MySQLJsonColumns> function) {
+            return this.commaNestedPath(operator.apply(path), function);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLs.WordsForOrdinality forOrdinality) {
+            return this.comma(name, forOrdinality);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type
                 , MySQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, Expression n
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, Expression n
                 , MySQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, n, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, int n
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, int n
                 , MySQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, n, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, Expression n
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, Expression n
                 , SQLElement charset, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, n, charset, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, int n
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, int n
                 , SQLElement charset, SQLIdentifier collate, MySQLs.WordPath path
                 , Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, n, charset, collate, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, Expression n
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, Expression n
                 , SQLElement charset, SQLIdentifier collate, MySQLs.WordPath path
                 , Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, n, charset, collate, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, int p, int m
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, int p, int m
                 , MySQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, p, m, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, Expression p
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, Expression p
                 , Expression m, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, p, m, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type
                 , MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, Expression n
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, Expression n
                 , MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, n, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, int n
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, int n
                 , MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, n, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, Expression n
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, Expression n
                 , SQLElement charset, MySQLs.WordExistsPath path, Function<String, Expression> operator
                 , String stringPath) {
             return this.comma(name, type, n, charset, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, int n
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, int n
                 , SQLElement charset, SQLIdentifier collate, MySQLs.WordExistsPath path
                 , Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, n, charset, collate, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, Expression n
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, Expression n
                 , SQLElement charset, SQLIdentifier collate, MySQLs.WordExistsPath path
                 , Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, n, charset, collate, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, int p, int m
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, int p, int m
                 , MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, p, m, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, Expression p
+        public final JsonTableColumnsClause<R> leftParen(String name, MySQLTypes type, Expression p
                 , Expression m, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, p, m, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnsClause<MySQLFunction._JsonTableColumnCommaSpec<R>> leftParenNested(
-                Function<String, Expression> operator, String path) {
-            return this.commaNested(operator, path);
+        public final JsonTableColumnsClause<R> leftParenNested(Expression path
+                , Function<MySQLJsonNestedClause, MySQLJsonColumns> function) {
+            return this.commaNested(path, function);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnsClause<MySQLFunction._JsonTableColumnCommaSpec<R>> leftParenNestedPath(
-                Function<String, Expression> operator, String path) {
-            return this.commaNestedPath(operator, path);
+        public final JsonTableColumnsClause<R> leftParenNested(Function<String, Expression> operator
+                , String path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function) {
+            return this.commaNested(operator.apply(path), function);
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> comma(String name
+        public final JsonTableColumnsClause<R> leftParenNestedPath(Expression path
+                , Function<MySQLJsonNestedClause, MySQLJsonColumns> function) {
+            return this.commaNestedPath(path, function);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> leftParenNestedPath(Function<String, Expression> operator
+                , String path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function) {
+            return this.commaNestedPath(operator.apply(path), function);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> comma(String name
                 , MySQLs.WordsForOrdinality forOrdinality) {
             assert forOrdinality == MySQLs.FOR_ORDINALITY;
             this.onAddColumn(new JsonTableForOrdinalityColumn(name));
@@ -1533,7 +1716,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type
                 , MySQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
             assert path == MySQLs.PATH;
             if (!type.isNoPrecision()) {
@@ -1545,7 +1728,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, Expression n
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type, Expression n
                 , MySQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
             assert path == MySQLs.PATH;
             if (!type.isSupportPrecision()) {
@@ -1557,20 +1740,20 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, int n
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type, int n
                 , MySQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, SQLs.literal(IntegerType.INSTANCE, n), path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, Expression n
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type, Expression n
                 , SQLElement charset, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
             assert path == MySQLs.PATH;
             return this.addColumnWithCharset(name, type, n, charset, null, path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, int n
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type, int n
                 , SQLElement charset, SQLIdentifier collate, MySQLs.WordPath path
                 , Function<String, Expression> operator, String stringPath) {
             final Expression expOfn;
@@ -1579,7 +1762,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type
                 , Expression n, SQLElement charset, @Nullable SQLIdentifier collate, MySQLs.WordPath path
                 , Function<String, Expression> operator, String stringPath) {
             assert path == MySQLs.PATH;
@@ -1590,7 +1773,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, int p, int m
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type, int p, int m
                 , MySQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
             final Expression expOfp, expOfm;
             expOfp = SQLs.literal(IntegerType.INSTANCE, p);
@@ -1599,7 +1782,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, Expression p
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type, Expression p
                 , Expression m, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
             assert path == MySQLs.PATH;
             if (!type.isSupportPrecisionScale()) {
@@ -1611,7 +1794,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type
                 , MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath) {
             assert path == MySQLs.EXISTS_PATH;
             if (!type.isNoPrecision()) {
@@ -1622,7 +1805,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, Expression n
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type, Expression n
                 , MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath) {
             assert path == MySQLs.EXISTS_PATH;
             if (!type.isSupportPrecision()) {
@@ -1634,13 +1817,13 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, int n
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type, int n
                 , MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath) {
             return this.comma(name, type, SQLs.literal(IntegerType.INSTANCE, n), path, operator, stringPath);
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, Expression n
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type, Expression n
                 , SQLElement charset, MySQLs.WordExistsPath path, Function<String, Expression> operator
                 , String stringPath) {
             assert path == MySQLs.EXISTS_PATH;
@@ -1649,7 +1832,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, int n
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type, int n
                 , SQLElement charset, SQLIdentifier collate, MySQLs.WordExistsPath path
                 , Function<String, Expression> operator, String stringPath) {
             final Expression expOfn;
@@ -1658,7 +1841,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, Expression n
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type, Expression n
                 , SQLElement charset, @Nullable SQLIdentifier collate, MySQLs.WordExistsPath path
                 , Function<String, Expression> operator, String stringPath) {
             assert path == MySQLs.EXISTS_PATH;
@@ -1669,7 +1852,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, int p, int m
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type, int p, int m
                 , MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath) {
             final Expression expOfp, expOfm;
             expOfp = SQLs.literal(IntegerType.INSTANCE, p);
@@ -1678,7 +1861,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, Expression p
+        public final JsonTableColumnsClause<R> comma(String name, MySQLTypes type, Expression p
                 , Expression m, MySQLs.WordExistsPath path
                 , Function<String, Expression> operator, String stringPath) {
             if (!type.isSupportPrecisionScale()) {
@@ -1691,61 +1874,72 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnsClause<MySQLFunction._JsonTableColumnCommaSpec<R>> commaNested(
-                Function<String, Expression> operator, String path) {
-            return new JsonTableNestedColumn<>(this.context, false, this::onAddColumn);
+        public final JsonTableColumnsClause<R> commaNested(final @Nullable Expression path
+                , Function<MySQLJsonNestedClause, MySQLJsonColumns> function) {
+            return this.handleNested(path, function, false);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> commaNested(Function<String, Expression> operator
+                , String path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function) {
+            return this.handleNested(operator.apply(path), function, false);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> commaNestedPath(Expression path
+                , Function<MySQLJsonNestedClause, MySQLJsonColumns> function) {
+            return this.handleNested(path, function, true);
+        }
+
+        @Override
+        public final JsonTableColumnsClause<R> commaNestedPath(Function<String, Expression> operator
+                , String path, Function<MySQLJsonNestedClause, MySQLJsonColumns> function) {
+            return this.handleNested(operator.apply(path), function, true);
         }
 
 
         @Override
-        public final MySQLFunction._JsonTableColumnsClause<MySQLFunction._JsonTableColumnCommaSpec<R>> commaNestedPath(
-                Function<String, Expression> operator, String path) {
-            return new JsonTableNestedColumn<>(this.context, true, this::onAddColumn);
-        }
-
-
-        @Override
-        public final MySQLFunction._JsonTableOnEmptySpec<R> nullWord() {
+        public final JsonTableColumnsClause<R> nullWord() {
             this.getActionClause().nullWord();
             return this;
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptySpec<R> error() {
+        public final JsonTableColumnsClause<R> error() {
             this.getActionClause().error();
             return this;
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptySpec<R> defaultValue(Expression value) {
+        public final JsonTableColumnsClause<R> defaultValue(Expression value) {
             this.getActionClause().defaultValue(value);
             return this;
         }
 
         @Override
-        public final <T> MySQLFunction._JsonTableOnEmptySpec<R> defaultValue(Function<T, Expression> valueOperator, T value) {
+        public final <T> JsonTableColumnsClause<R> defaultValue(Function<T, Expression> valueOperator, T value) {
             return this.defaultValue(valueOperator.apply(value));
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptySpec<R> defaultValue(Function<Object, Expression> valueOperator
+        public final JsonTableColumnsClause<R> defaultValue(Function<Object, Expression> valueOperator
                 , Function<String, ?> function, String keyName) {
             return this.defaultValue(valueOperator.apply(function.apply(keyName)));
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnEmptySpec<R> defaultValue(Supplier<Expression> supplier) {
+        public final JsonTableColumnsClause<R> defaultValue(Supplier<Expression> supplier) {
             return this.defaultValue(supplier.get());
         }
 
         @Override
-        public final MySQLFunction._JsonTableColumnCommaSpec<R> onError() {
+        public final JsonTableColumnsClause<R> onError() {
             this.getActionClause().onError();
             return this;
         }
 
         @Override
-        public final MySQLFunction._JsonTableOnErrorActionSpec<R> onEmpty() {
+        public final JsonTableColumnsClause<R> onEmpty() {
             this.getActionClause().onEmpty();
             return this;
         }
@@ -1778,7 +1972,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             }
             columnList.add(column);
             if (!(column instanceof JsonTableNestedColumn)) {
-                this.onAddSelect((Selection) column);
+                this.selectionConsumer.accept((Selection) column);
             }
             return this;
         }
@@ -1823,6 +2017,22 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             return actionClause;
         }
 
+        private JsonTableColumnsClause<R> handleNested(final @Nullable Expression path
+                , Function<MySQLJsonNestedClause, MySQLJsonColumns> function, final boolean fullWord) {
+            if (path == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            final JsonTableNestedColumn column;
+            column = new JsonTableNestedColumn(this.context, fullWord, path, this.selectionConsumer, this::onAddColumn);
+            if (function.apply(column) != column) {
+                String m = String.format("error %s", MySQLJsonColumns.class.getName());
+                throw ContextStack.criteriaError(this.context, m);
+            } else if (column.columnList == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return this;
+        }
+
 
         static void appendColumnList(List<JsonTableColumn> columnList, final _SqlContext context) {
             final StringBuilder sqlBuilder;
@@ -1858,20 +2068,25 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }//JsonTableColumnsClause
 
 
-    private static final class JsonTableNestedColumn<R extends Item>
-            extends JsonTableColumnsClause<R>
-            implements JsonTableColumn {
+    private static final class JsonTableNestedColumn
+            extends JsonTableColumnsClause<MySQLJsonColumns>
+            implements JsonTableColumn, MySQLJsonColumns
+            , MySQLJsonNestedClause {
 
         private final boolean fullPathWord;
 
-        private final Function<JsonTableNestedColumn<?>, R> function;
+        private final ArmyExpression path;
 
+        private final Consumer<JsonTableNestedColumn> consumer;
 
         private JsonTableNestedColumn(CriteriaContext context, boolean fullPathWord
-                , Function<JsonTableNestedColumn<?>, R> function) {
-            super(context);
+                , final Expression path, Consumer<Selection> selectionConsumer
+                , Consumer<JsonTableNestedColumn> consumer) {
+            super(context, selectionConsumer);
             this.fullPathWord = fullPathWord;
-            this.function = function;
+            this.path = (ArmyExpression) path;
+            this.consumer = consumer;
+
         }
 
 
@@ -1883,6 +2098,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             if (this.fullPathWord) {
                 sqlBuilder.append(" PATH");
             }
+            this.path.appendSql(context);
+
             final List<JsonTableColumn> columnList = this.columnList;
             assert columnList != null;
             appendColumnList(columnList, context);
@@ -1892,7 +2109,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.fullPathWord, this.columnList);
+            return Objects.hash(this.fullPathWord, this.path, this.columnList);
         }
 
         @Override
@@ -1901,8 +2118,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof JsonTableNestedColumn) {
-                final JsonTableNestedColumn<?> o = (JsonTableNestedColumn<?>) obj;
+                final JsonTableNestedColumn o = (JsonTableNestedColumn) obj;
                 match = o.fullPathWord == this.fullPathWord
+                        && o.path.equals(this.path)
                         && Objects.equals(o.columnList, this.columnList);
             } else {
                 match = false;
@@ -1918,7 +2136,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             if (this.fullPathWord) {
                 sqlBuilder.append(" PATH");
             }
-
+            sqlBuilder.append(this.path);
             final List<JsonTableColumn> columnList = this.columnList;
             if (columnList == null) {
                 sqlBuilder.append(" undefined");
@@ -1930,8 +2148,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
         @Override
-        R onRightParen() {
-            return this.function.apply(this);
+        MySQLJsonColumns onRightParen() {
+            this.consumer.accept(this);
+            return this;
         }
 
 
@@ -2070,6 +2289,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             final List<Selection> selectionList = this.selectionList;
             final int selectionSize;
             if (this.columnAliasList != null) {
+                //no bug,never here
                 throw new IllegalStateException("columnAliasList non-null");
             } else if (selectionList == null || selectionList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -2079,18 +2299,18 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 throw ContextStack.criteriaError(this.context, m);
             }
 
-            Map<String, Selection> selectionMap = new HashMap<>((int) (selectionSize / 0.75f));
+            Map<String, Selection> aliasToSelection = new HashMap<>((int) (selectionSize / 0.75f));
             String alias;
             for (int i = 0; i < selectionSize; i++) {
                 alias = aliasList.get(i);
-                if (selectionMap.putIfAbsent(alias, selectionList.get(i)) != null) {
+                if (aliasToSelection.putIfAbsent(alias, selectionList.get(i)) != null) {
                     String m = String.format("Duplicate column alias[%s]", alias);
                     throw ContextStack.criteriaError(this.context, m);
                 }
             }
-            selectionMap = _CollectionUtils.unmodifiableMap(selectionMap);
-            assert selectionMap.size() == selectionSize;
-            this.selectionMap = selectionMap;
+            aliasToSelection = _CollectionUtils.unmodifiableMap(aliasToSelection);
+            assert aliasToSelection.size() == selectionSize;
+            this.selectionMap = aliasToSelection;
             this.columnAliasList = aliasList;
         }
 
