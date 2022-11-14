@@ -34,14 +34,6 @@ abstract class FunctionUtils {
 
     private static final Pattern FUNC_NAME_PATTERN = Pattern.compile("^[_a-zA-Z]\\w*$");
 
-    static List<ArmyExpression> funcParamList(final List<?> argList) {
-        final List<ArmyExpression> expList = new ArrayList<>(argList.size());
-        for (Object o : argList) {
-            expList.add(SQLs._funcParam(o));
-        }
-        return expList;
-    }
-
 
     static <R extends Item, I extends Item> SQLFunction._CaseFuncWhenClause<R> caseFunction(
             final @Nullable Expression caseValue, final Function<_ItemExpression<I>, R> endFunc
@@ -148,6 +140,27 @@ abstract class FunctionUtils {
         return func;
     }
 
+
+    static Expression twoAndMaxRestForSingleExpFunc(String name, TypeMeta returnType
+            , Expression one, Expression two, final int maxRest, Expression... rest) {
+        assert maxRest > 0;
+        if (rest.length > maxRest) {
+            String m = String.format("function[%s] at most take %s argument", name, maxRest);
+            throw ContextStack.criteriaError(ContextStack.peek(), m);
+        }
+        final List<ArmyExpression> argList;
+        argList = new ArrayList<>(2 + rest.length);
+        appendTwoSingleExp(argList, name, one, two);
+        for (Expression arg : rest) {
+            if (arg instanceof SqlValueParam.MultiValue) {
+                throw CriteriaUtils.funcArgError(name, arg);
+            }
+            argList.add((ArmyExpression) arg);
+        }
+        return new MultiArgFunctionExpression(name, null, argList, returnType);
+    }
+
+
     static Expression multiArgFunc(String name, TypeMeta returnType, Expression firstArg, Expression... exps) {
         final List<ArmyExpression> argList = new ArrayList<>(1 + exps.length);
         argList.add((ArmyExpression) firstArg);
@@ -176,6 +189,25 @@ abstract class FunctionUtils {
         return new OneArgFuncPredicate(name, (ArmyExpression) argument);
     }
 
+    static IPredicate multiArgFuncPredicate(String name, List<Expression> expList) {
+        final int size = expList.size();
+        final IPredicate function;
+        switch (size) {
+            case 0:
+                throw CriteriaUtils.funcArgError(name, expList);
+            case 1:
+                function = new OneArgFuncPredicate(name, (ArmyExpression) expList.get(0));
+                break;
+            default: {
+                final List<ArmyExpression> argList = new ArrayList<>(size);
+                appendExpList(argList, expList);
+                function = new MultiArgFuncPredicate(name, null, argList);
+            }
+        }
+        return function;
+    }
+
+
     static IPredicate twoAndMultiArgFuncPredicate(final String name, final Expression exp1, Expression exp2
             , final List<Expression> expList) {
         return new MultiArgFuncPredicate(name, null, twoAndMultiExpList(name, exp1, exp2, expList));
@@ -184,6 +216,22 @@ abstract class FunctionUtils {
 
     static IPredicate complexArgPredicate(final String name, List<?> argList) {
         return new ComplexArgFuncPredicate(name, argList);
+    }
+
+    static IPredicate oneAndRestFuncPredicate(String name, Expression first, Expression... rest) {
+        if (first instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, first);
+        }
+        final IPredicate func;
+        if (rest.length == 0) {
+            func = new OneArgFuncPredicate(name, (ArmyExpression) first);
+        } else {
+            final List<ArmyExpression> argList = new ArrayList<>(1 + rest.length);
+            argList.add((ArmyExpression) first);
+            addRestExp(argList, rest);
+            func = new MultiArgFuncPredicate(name, null, argList);
+        }
+        return func;
     }
 
     static IPredicate complexArgPredicateFrom(final String name, Object firstArg, @Nullable Object... args) {
@@ -362,6 +410,40 @@ abstract class FunctionUtils {
             throw CriteriaUtils.funcArgError(name, three);
         }
         return Arrays.asList((ArmyExpression) one, (ArmyExpression) two, (ArmyExpression) three);
+    }
+
+    static void appendExpList(final List<ArmyExpression> argList, final List<Expression> expList) {
+        for (Expression exp : expList) {
+            argList.add((ArmyExpression) exp);
+        }
+    }
+
+    /**
+     * @see #twoAndMaxRestForSingleExpFunc(String, TypeMeta, Expression, Expression, int, Expression...)
+     */
+    static void appendTwoSingleExp(List<ArmyExpression> argList, String name
+            , Expression one, Expression two) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        }
+        argList.add((ArmyExpression) one);
+        argList.add((ArmyExpression) two);
+    }
+
+    static void appendThreeSingleExp(List<ArmyExpression> argList, String name
+            , Expression one, Expression two, Expression three) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (three instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, three);
+        }
+        argList.add((ArmyExpression) one);
+        argList.add((ArmyExpression) two);
+        argList.add((ArmyExpression) three);
     }
 
 
@@ -726,7 +808,7 @@ abstract class FunctionUtils {
     }//NoArgFuncExpression
 
 
-    static abstract class FunctionExpression extends OperationExpression<TypeInfer>
+    private static abstract class FunctionExpression extends OperationExpression<TypeInfer>
             implements SQLFunction, OperationExpression.MutableParamMetaSpec {
 
         final String name;

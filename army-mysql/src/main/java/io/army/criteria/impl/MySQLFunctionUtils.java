@@ -2,17 +2,17 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.mysql.*;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.mapping.IntegerType;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.MySQLTypes;
 import io.army.stmt.SimpleStmt;
@@ -128,23 +128,36 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
     static Expression statementDigest(final PrimaryStatement statement, final Visible visible, final boolean literal) {
-        return new StatementDigestFunc("STATEMENT_DIGEST", statement, visible, literal, StringType.INSTANCE);
-    }
-
-    static Expression statementDigest(final String statement, final Visible visible, final boolean literal) {
-        return new StatementDigestFunc("STATEMENT_DIGEST", statement, visible, literal, StringType.INSTANCE);
+        final String name = "STATEMENT_DIGEST";
+        assertPrimaryStatement(statement, name);
+        return new StatementDigestFunc(name, statement, visible, literal, StringType.INSTANCE);
     }
 
     static Expression statementDigestText(final PrimaryStatement statement, final Visible visible, final boolean literal) {
-        return new StatementDigestFunc("STATEMENT_DIGEST_TEXT", statement, visible, literal, StringType.INSTANCE);
+        final String name = "STATEMENT_DIGEST_TEXT";
+        assertPrimaryStatement(statement, name);
+        return new StatementDigestFunc(name, statement, visible, literal, StringType.INSTANCE);
     }
 
-    static Expression statementDigestText(final String statement, final Visible visible, final boolean literal) {
-        return new StatementDigestFunc("STATEMENT_DIGEST_TEXT", statement, visible, literal, StringType.INSTANCE);
-    }
 
     static <I extends Item> MySQLFunction._JsonTableColumnsClause<I> jsonTable(Function<DerivedTable, I> function) {
         return new JsonTableFunction<>(function);
+    }
+
+    /**
+     * @see #statementDigest(PrimaryStatement, Visible, boolean)
+     * @see #statementDigestText(PrimaryStatement, Visible, boolean)
+     */
+    private static void assertPrimaryStatement(final PrimaryStatement statement, final String funcName) {
+        if (statement instanceof _BatchDml
+                || statement instanceof _Statement._ChildStatement
+                || (statement instanceof _DomainUpdate
+                && ((_DomainUpdate) statement).table() instanceof ChildTableMeta)
+                || (statement instanceof _DomainDelete
+                && ((_DomainDelete) statement).table() instanceof ChildTableMeta)) {
+            String m = String.format("%s support only simple statement", funcName);
+            throw ContextStack.criteriaError(ContextStack.peek(), m);
+        }
     }
 
 
@@ -589,39 +602,39 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
     }//GroupConcatClause
 
-    private static final class StatementDigestFunc extends FunctionUtils.FunctionExpression {
+    private static final class StatementDigestFunc extends OperationExpression<TypeInfer> {
 
-        private final Object statement;
+        private final String name;
+
+        private final PrimaryStatement statement;
 
         private final Visible visible;
 
         private final boolean literal;
 
-        private StatementDigestFunc(String name, final Object statement, final Visible visible
+        private final TypeMeta returnType;
+
+        private StatementDigestFunc(String name, final PrimaryStatement statement, final Visible visible
                 , final boolean literal, TypeMeta returnType) {
-            super(name, returnType);
+            super(SQLs::_identity);
+            this.name = name;
             this.statement = statement;
             this.visible = visible;
             this.literal = literal;
+            this.returnType = returnType;
         }
 
         @Override
-        void appendArguments(final _SqlContext context) {
-            final Object statement = this.statement;
-            if (statement instanceof String) {
-                if (this.literal) {
-                    context.appendLiteral(StringType.INSTANCE, statement);
-                } else {
-                    context.appendParam(SingleParam.build(StringType.INSTANCE, statement));
-                }
-                return;
-            }
+        public TypeMeta typeMeta() {
+            return this.returnType;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final PrimaryStatement statement = this.statement;
 
             final Stmt stmt;
-            if (!(statement instanceof PrimaryStatement)) {
-                //no bug,never here
-                throw new IllegalStateException();
-            } else if (statement instanceof Select) {
+            if (statement instanceof Select) {
                 stmt = context.parser().select((Select) statement, this.visible);
             } else if (statement instanceof Insert) {
                 stmt = context.parser().insert((Insert) statement, this.visible);
@@ -653,30 +666,6 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         }
 
-        @Override
-        void argumentsToString(final StringBuilder builder) {
-            final Object statement = this.statement;
-            if (statement instanceof String) {
-                builder.append(_Constant.SPACE)
-                        .append(statement);
-                return;
-            }
-            if (!(statement instanceof PrimaryStatement)) {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
-            final Stmt stmt;
-            stmt = ((PrimaryStatement) statement).mockAsStmt(MySQLDialect.MySQL80, this.visible);
-
-            if (!(stmt instanceof SimpleStmt)) {
-                String m = String.format("the argument of %s must be simple statement.", this.name);
-                throw new CriteriaException(m);
-            }
-
-            builder.append(_Constant.SPACE)
-                    .append(((SimpleStmt) stmt).sql());
-
-        }
 
     }//StatementDigestFunc
 

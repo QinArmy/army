@@ -72,5 +72,9 @@ public interface _Statement {
 
     }
 
+    interface _ChildStatement {
+
+    }
+
 
 }

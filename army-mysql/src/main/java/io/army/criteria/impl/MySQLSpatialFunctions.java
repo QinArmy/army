@@ -9,7 +9,9 @@ import io.army.mapping.*;
 import java.util.List;
 
 /**
- * package class
+ * <p>
+ * Package class,this class provider MySQL spatial function.
+ * </p>
  *
  * @since 1.0
  */

@@ -83,7 +83,7 @@ public interface _Insert extends _Statement {
         Map<FieldMeta<?>, Boolean> fieldMap();
     }
 
-    interface _ChildInsert extends _Insert {
+    interface _ChildInsert extends _Insert, _Statement._ChildStatement {
 
         _Insert parentStmt();
     }

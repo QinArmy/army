@@ -13,6 +13,7 @@ import java.util.List;
  *
  * @since 1.0
  */
+@SuppressWarnings("unused")
 abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
 
     MySQLMiscellaneousFunctions() {
@@ -69,28 +70,28 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:{@link IntegerType}
+     * The {@link MappingType} of function return type:{@link BooleanType}, sql function return 0 or 1 or null.
      * </p>
      *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/locking-functions.html#function_is-free-lock">IS_FREE_LOCK(str)</a>
      */
-    public static IPredicate isFreeLock(final Expression str) {
-        return FunctionUtils.oneArgFuncPredicate("IS_FREE_LOCK", str);
+    public static Expression isFreeLock(final Expression str) {
+        return FunctionUtils.oneArgFunc("IS_FREE_LOCK", str, BooleanType.INSTANCE);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:{@link StringType}
+     * The {@link MappingType} of function return type:{@link LongType}
      * </p>
      *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/locking-functions.html#function_is-used-lock">IS_USED_LOCK(str)</a>
      */
-    public static IPredicate isUsedLock(final Expression str) {
-        return FunctionUtils.oneArgFuncPredicate("IS_USED_LOCK", str);
+    public static Expression isUsedLock(final Expression str) {
+        return FunctionUtils.oneArgFunc("IS_USED_LOCK", str, LongType.INSTANCE);
     }
 
     /**
@@ -317,15 +318,14 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param cryptStr   non-null
-     * @param keyStr     non-null
-     * @param argExpList non-null,size in [0,4]
+     * @param cryptStr non-null
+     * @param keyStr   non-null
+     * @param rest     non-null,size in [0,4]
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_aes-decrypt">AES_DECRYPT(crypt_str,key_str[,init_vector][,kdf_name][,salt][,info | iterations])</a>
      */
-    public static Expression aesDecrypt(final Expression cryptStr, final Expression keyStr
-            , final List<Expression> argExpList) {
-        return _aesEncryptOrDecrypt("AES_DECRYPT", cryptStr, keyStr, argExpList);
+    public static Expression aesDecrypt(Expression cryptStr, Expression keyStr, Expression... rest) {
+        return FunctionUtils.twoAndMaxRestForSingleExpFunc("AES_DECRYPT", StringType.INSTANCE, cryptStr, keyStr, 4, rest);
     }
 
 
@@ -334,15 +334,15 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param str        non-null
-     * @param keyStr     non-null
-     * @param argExpList non-null,size in [0,4]
+     * @param str    non-null
+     * @param keyStr non-null
+     * @param rest   non-null,size in [0,4]
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_aes-encrypt">AES_ENCRYPT(str,key_str[,init_vector][,kdf_name][,salt][,info | iterations])</a>
      */
     public static Expression aesEncrypt(final Expression str, final Expression keyStr
-            , final List<Expression> argExpList) {
-        return _aesEncryptOrDecrypt("AES_ENCRYPT", str, keyStr, argExpList);
+            , final Expression... rest) {
+        return FunctionUtils.twoAndMaxRestForSingleExpFunc("AES_ENCRYPT", StringType.INSTANCE, str, keyStr, 4, rest);
     }
 
     /**
@@ -434,11 +434,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_sha2">SHA2(str, hash_length)</a>
      */
     public static Expression sha2(final Expression str, final Expression hashLength) {
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(str);
-        argList.add(SQLSyntax.FuncWord.COMMA);
-        argList.add(hashLength);
-        return FunctionUtils.complexArgFunc("SHA2", argList, StringType.INSTANCE);
+        return FunctionUtils.twoArgFunc("SHA2", str, hashLength, StringType.INSTANCE);
     }
 
 
@@ -447,7 +443,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param stmt    non-null
+     * @param stmt    non-null,stmt must produce one one sql(couldn't be multi sql)
      * @param visible non-null
      * @param literal true:output literal
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -462,14 +458,12 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param stmt    non-null ,sql
-     * @param visible non-null
-     * @param literal true:output literal
+     * @param statement parameter or literal expression
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_statement-digest">STATEMENT_DIGEST(statement)</a>
      */
-    public static Expression statementDigest(final String stmt, final Visible visible, final boolean literal) {
-        return MySQLFunctionUtils.statementDigest(stmt, visible, literal);
+    public static Expression statementDigest(Expression statement) {
+        return FunctionUtils.oneArgFunc("STATEMENT_DIGEST", statement, StringType.INSTANCE);
     }
 
     /**
@@ -477,7 +471,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param stmt    non-null
+     * @param stmt    non-null,stmt must produce one one sql(couldn't be multi sql)
      * @param visible non-null
      * @param literal true:output literal
      * @throws CriteriaException throw when invoking this method in non-statement context.
@@ -493,14 +487,12 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param stmt    non-null,sql
-     * @param visible non-null
-     * @param literal true:output literal
+     * @param statement parameter or literal expression
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_statement-digest-text">STATEMENT_DIGEST_TEXT(statement)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_statement-digest">STATEMENT_DIGEST(statement)</a>
      */
-    public static Expression statementDigestText(final String stmt, final Visible visible, final boolean literal) {
-        return MySQLFunctionUtils.statementDigestText(stmt, visible, literal);
+    public static Expression statementDigestText(Expression statement) {
+        return FunctionUtils.oneArgFunc("STATEMENT_DIGEST_TEXT", statement, StringType.INSTANCE);
     }
 
     /**
@@ -588,31 +580,27 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * The {@link MappingType} of function return type: {@link BooleanType}
      * </p>
      *
-     * @param expr non-null
+     * @param exp non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_default">GROUPING(expr [, expr] ...)</a>
      */
-    public static IPredicate grouping(final Expression expr) {
-        return FunctionUtils.oneArgFuncPredicate("GROUPING", expr);
+    public static IPredicate grouping(final Expression exp, Expression... restExp) {
+        return FunctionUtils.oneAndRestFuncPredicate("GROUPING", exp, restExp);
     }
-
 
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link BooleanType}
      * </p>
      *
-     * @param expList size greater than one
+     * @param expList non-null,non-empty
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_default">GROUPING(expr [, expr] ...)</a>
      */
-    public static IPredicate grouping(final List<Expression> expList) {
-        final String funcName = "GROUPING";
-        if (expList.size() == 0) {
-            throw CriteriaUtils.funcArgError(funcName, expList);
-        }
-        return FunctionUtils.complexArgPredicate(funcName, _createSimpleMultiArgList(expList));
+    public static IPredicate grouping(List<Expression> expList) {
+        return FunctionUtils.multiArgFuncPredicate("GROUPING", expList);
     }
+
 
     /**
      * <p>
@@ -738,27 +726,44 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * The {@link MappingType} of function return type: {@link IntegerType}
      * </p>
      *
-     * @param expList non-null,size is 0 or in [2,4]
+     * @param logName non-null
+     * @param logPos  non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_master-pos-wait">MASTER_POS_WAIT(log_name,log_pos[,timeout][,channel])</a>
      */
-    public static Expression masterPosWait(final List<Expression> expList) {
-        final String name = "MASTER_POS_WAIT";
-        final Expression func;
-        switch (expList.size()) {
-            case 0:
-                func = FunctionUtils.noArgFunc(name, IntegerType.INSTANCE);
-                break;
-            case 2:
-            case 3:
-            case 4:
-                func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList), IntegerType.INSTANCE);
-                break;
-            default:
-                throw CriteriaUtils.funcArgError(name, expList);
-        }
-        return func;
+    public static Expression masterPosWait(final Expression logName, Expression logPos) {
+        return FunctionUtils.twoArgFunc("MASTER_POS_WAIT", logName, logPos, StringType.INSTANCE);
     }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @param logName non-null
+     * @param logPos  non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_master-pos-wait">MASTER_POS_WAIT(log_name,log_pos[,timeout][,channel])</a>
+     */
+    public static Expression masterPosWait(final Expression logName, Expression logPos, Expression timeout) {
+        return FunctionUtils.threeArgFunc("MASTER_POS_WAIT", logName, logPos, timeout, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @param logName non-null
+     * @param logPos  non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_master-pos-wait">MASTER_POS_WAIT(log_name,log_pos[,timeout][,channel])</a>
+     */
+    public static Expression masterPosWait(final Expression logName, Expression logPos, Expression timeout
+            , Expression channel) {
+        return FunctionUtils.multiArgFunc("MASTER_POS_WAIT", StringType.INSTANCE, logName, logPos, timeout, channel);
+    }
+
 
     /**
      * <p>
@@ -798,31 +803,48 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
         return FunctionUtils.oneArgFunc("SLEEP", duration, IntegerType.INSTANCE);
     }
 
+
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link IntegerType}
      * </p>
      *
-     * @param expList non-null,size is 0 or in [2,4]
+     * @param logName non-null
+     * @param logPos  non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_source-pos-wait">SOURCE_POS_WAIT(log_name,log_pos[,timeout][,channel])</a>
      */
-    public static Expression sourcePosWait(final List<Expression> expList) {
-        final String name = "SOURCE_POS_WAIT";
-        final Expression func;
-        switch (expList.size()) {
-            case 0:
-                func = FunctionUtils.noArgFunc(name, IntegerType.INSTANCE);
-                break;
-            case 2:
-            case 3:
-            case 4:
-                func = FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList), IntegerType.INSTANCE);
-                break;
-            default:
-                throw CriteriaUtils.funcArgError(name, expList);
-        }
-        return func;
+    public static Expression sourcePosWait(final Expression logName, Expression logPos) {
+        return FunctionUtils.twoArgFunc("SOURCE_POS_WAIT", logName, logPos, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @param logName non-null
+     * @param logPos  non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_source-pos-wait">SOURCE_POS_WAIT(log_name,log_pos[,timeout][,channel])</a>
+     */
+    public static Expression sourcePosWait(final Expression logName, Expression logPos, Expression timeout) {
+        return FunctionUtils.threeArgFunc("SOURCE_POS_WAIT", logName, logPos, timeout, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @param logName non-null
+     * @param logPos  non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_source-pos-wait">SOURCE_POS_WAIT(log_name,log_pos[,timeout][,channel])</a>
+     */
+    public static Expression sourcePosWait(final Expression logName, Expression logPos, Expression timeout
+            , Expression channel) {
+        return FunctionUtils.multiArgFunc("SOURCE_POS_WAIT", StringType.INSTANCE, logName, logPos, timeout, channel);
     }
 
     /**
@@ -870,7 +892,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin">UUID_TO_BIN(string_uuid, swap_flag)</a>
      */
     public static Expression uuidToBin(final Expression stringUuid, final Expression swapFlag) {
-        return _simpleTowArgFunc("UUID_TO_BIN", stringUuid, swapFlag, PrimitiveByteArrayType.INSTANCE);
+        return FunctionUtils.twoArgFunc("UUID_TO_BIN", stringUuid, swapFlag, PrimitiveByteArrayType.INSTANCE);
     }
 
     /**
