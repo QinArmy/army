@@ -1,6 +1,8 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.SQLWords;
+import io.army.dialect._Constant;
+import io.army.util._StringUtils;
 
 /**
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(expr AS type [ARRAY])</a>
@@ -47,7 +49,7 @@ public enum MySQLCastType implements SQLWords {
                 words = " UNSIGNED INTEGER";
                 break;
             default:
-                words = this.name();
+                words = _Constant.SPACE + this.name();
 
         }
         return words;
@@ -55,7 +57,7 @@ public enum MySQLCastType implements SQLWords {
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", MySQLCastType.class, this.name());
+        return _StringUtils.sqlWordsToString(this);
     }
 
 

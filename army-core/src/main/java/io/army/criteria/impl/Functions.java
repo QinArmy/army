@@ -474,6 +474,21 @@ abstract class Functions extends SQLSyntax {
         return FunctionUtils.twoArgFunc("TRUNCATE", x, d, DoubleType.INSTANCE);
     }
 
+    /**
+     * <p>
+     * This function is standard sql92 functions
+     * </p>
+     * <p>
+     * The {@link MappingType} of function return type:the {@link  MappingType} of expr1
+     * </p>
+     *
+     * @throws CriteriaException throw when any arg is multi-value expression
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_ifnull">IFNULL(expr1,expr2)</a>
+     */
+    public static Expression nullIf(final Expression expr1, final Expression expr2) {
+        return FunctionUtils.twoArgFunc("NULLIF", expr1, expr2, expr1.typeMeta());
+    }
+
 
     public SQLFunction._CaseFuncWhenClause<Expression> Case() {
         return FunctionUtils.caseFunction(null, SQLs::_asExp, SQLs::_identity);

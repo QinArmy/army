@@ -46,7 +46,7 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
 
     }
 
-    public static <I extends Item, E extends Expression> SQLFunction._CaseFuncWhenClause<E> Case(Expression exp
+    public static <I extends Item, E extends Expression> SQLFunction._CaseFuncWhenClause<E> cases(Expression exp
             , Function<_ItemExpression<I>, E> endFunc, Function<TypeInfer, I> asFunc) {
         if (!(exp instanceof ArmyExpression)) {
             throw CriteriaUtils.funcArgError("CASE", exp);

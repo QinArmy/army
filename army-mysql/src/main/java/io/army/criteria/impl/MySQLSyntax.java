@@ -62,6 +62,18 @@ abstract class MySQLSyntax extends SQLSyntax {
 
     }
 
+    public interface WordsAtTimeZone extends SQLWords {
+
+    }
+
+    public interface WordsCharacterSet extends SQLWords {
+
+    }
+
+    public interface WordsCollate extends SQLWords {
+
+    }
+
 
     public interface TrimPosition extends SQLWords {
 
@@ -283,6 +295,80 @@ abstract class MySQLSyntax extends SQLSyntax {
     }//WordTrimPosition
 
 
+    private enum KeyWordsAtTimeZone implements WordsAtTimeZone {
+
+        AT_TIME_ZONE(" AT TIME ZONE");
+
+
+        private final String spaceWord;
+
+        KeyWordsAtTimeZone(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+
+    }//KeyWordsAtTimeZone
+
+    private enum KeyWordsCharacterSet implements WordsCharacterSet {
+
+        CHARACTER_SET(" CHARACTER SET");
+
+
+        private final String spaceWord;
+
+        KeyWordsCharacterSet(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+    }//KeyWordsCharacterSet
+
+    private enum KeyWordsCollate implements WordsCollate {
+
+        COLLATE(" COLLATE");
+
+
+        private final String spaceWord;
+
+        KeyWordsCollate(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+    }//KeyWordsCollate
+
+
     public static final Modifier ALL = MySQLModifier.ALL;
     public static final WordDistinct DISTINCT = KeyWordDistinct.DISTINCT;
 
@@ -322,6 +408,12 @@ abstract class MySQLSyntax extends SQLSyntax {
     public static final WordsForOrdinality FOR_ORDINALITY = KeyWordsForOrdinality.FOR_ORDINALITY;
 
     // public static final WordNested NESTED = KeyWordNested.NESTED;
+
+    public static final WordsAtTimeZone AT_TIME_ZONE = KeyWordsAtTimeZone.AT_TIME_ZONE;
+
+    public static final WordsCharacterSet CHARACTER_SET = KeyWordsCharacterSet.CHARACTER_SET;
+
+    public static final WordsCollate COLLATE = KeyWordsCollate.COLLATE;
 
 
     public static final Expression LITERAL_one = SQLs.literal(StringType.INSTANCE, "one");

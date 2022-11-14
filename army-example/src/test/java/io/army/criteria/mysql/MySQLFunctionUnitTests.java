@@ -27,7 +27,7 @@ public class MySQLFunctionUnitTests {
     public void caseFunc() {
         final Select stmt;
         stmt = MySQLs.query()
-                .select(MySQLs::Case, PillUser_.userType)
+                .select(MySQLs::cases, PillUser_.userType)
                 .when(SQLs.literalFrom(PillUserType.NONE))
                 .then(SQLs.literalFrom(1))
 
