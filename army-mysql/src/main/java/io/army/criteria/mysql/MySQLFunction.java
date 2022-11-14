@@ -2,7 +2,6 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl._AliasExpression;
 import io.army.criteria.standard.SQLFunction;
 import io.army.sqltype.MySQLTypes;
 
@@ -13,20 +12,19 @@ import java.util.function.Supplier;
 public interface MySQLFunction extends SQLFunction {
 
 
-    interface _GroupConcatSeparatorClause extends _AliasExpression<Selection> {
+    interface _GroupConcatSeparatorClause extends Clause {
 
-        Expression separator(String strVal);
+        Clause separator(String strVal);
 
-        Expression separator(Supplier<String> supplier);
+        Clause separator(Supplier<String> supplier);
 
-        Expression ifSeparator(Supplier<String> supplier);
+        Clause ifSeparator(Supplier<String> supplier);
 
 
     }
 
 
-    interface _GroupConcatOrderBySpec extends _AliasExpression<Selection>
-            , Statement._StaticOrderByClause<_GroupConcatSeparatorClause>
+    interface _GroupConcatOrderBySpec extends Statement._StaticOrderByClause<_GroupConcatSeparatorClause>
             , Statement._DynamicOrderByClause<SortItems, _GroupConcatSeparatorClause>
             , _GroupConcatSeparatorClause {
 

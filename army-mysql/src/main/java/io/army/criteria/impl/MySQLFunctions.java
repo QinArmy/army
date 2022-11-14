@@ -9,7 +9,6 @@ import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
-import io.army.mapping.optional.JsonType;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -23,6 +22,7 @@ import java.util.Objects;
  *
  * @since 1.0
  */
+@SuppressWarnings("unused")
 public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
 
     /**
@@ -162,17 +162,17 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
             , final Expression n, MySQLs.WordsCharacterSet characterSet, SQLElement charset) {
         Objects.requireNonNull(n);
-        return _castToChar("CAST", exp, as, charType, n, characterSet, charset);
+        return _castToChar(exp, as, charType, n, characterSet, charset);
     }
 
     public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
             , final int n, MySQLs.WordsCharacterSet characterSet, SQLElement charset) {
-        return _castToChar("CAST", exp, as, charType, SQLs.literal(IntegerType.INSTANCE, n), characterSet, charset);
+        return _castToChar(exp, as, charType, SQLs.literal(IntegerType.INSTANCE, n), characterSet, charset);
     }
 
     public static Expression cast(final Expression exp, final SQLs.WordAs as, final MySQLCastType charType
             , MySQLs.WordsCharacterSet characterSet, SQLElement charset) {
-        return _castToChar("CAST", exp, as, charType, null, characterSet, charset);
+        return _castToChar(exp, as, charType, null, characterSet, charset);
     }
 
 
@@ -296,7 +296,7 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      *          <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
      *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
-     *          <li>Else if type is {@link MySQLCastType#JSON }then {@link JsonType}</li>
+     *          <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#Point }then {@link PrimitiveByteArrayType}</li>
      *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link PrimitiveByteArrayType}</li>
      *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link PrimitiveByteArrayType}</li>
@@ -385,82 +385,81 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
 
     /*-------------------below private method-------------------*/
 
+//    /**
+//     * @see #ifFunc(Expression, Expression, Expression)
+//     */
+//    private static MappingType ifFuncReturnType(final MappingType expr2Type, final MappingType expr3Type) {
+//        final MappingType returnType;
+//        if (expr2Type.getClass() == expr3Type.getClass()) {
+//            returnType = expr2Type;
+//        } else if (expr2Type instanceof _SQLStringType || expr3Type instanceof _SQLStringType) {
+//            returnType = StringType.INSTANCE;
+//        } else if (!(expr2Type instanceof _NumericType || expr3Type instanceof _NumericType)) {
+//            returnType = StringType.INSTANCE;
+//        } else if (expr2Type instanceof _NumericType._FloatNumericType
+//                || expr3Type instanceof _NumericType._FloatNumericType) {
+//            returnType = DoubleType.INSTANCE;
+//        } else if (expr2Type instanceof _NumericType._UnsignedNumeric
+//                || expr3Type instanceof _NumericType._UnsignedNumeric) {
+//            if (expr2Type instanceof UnsignedBigDecimalType || expr3Type instanceof UnsignedBigDecimalType) {
+//                returnType = UnsignedBigDecimalType.INSTANCE;
+//            } else if (expr2Type instanceof UnsignedBigIntegerType || expr3Type instanceof UnsignedBigIntegerType) {
+//                returnType = UnsignedBigIntegerType.INSTANCE;
+//            } else if (expr2Type instanceof UnsignedLongType || expr3Type instanceof UnsignedLongType) {
+//                returnType = UnsignedLongType.INSTANCE;
+//            } else {
+//                returnType = UnsignedIntegerType.INSTANCE;
+//            }
+//        } else if (expr2Type instanceof BigDecimalType || expr3Type instanceof BigDecimalType) {
+//            returnType = BigDecimalType.INSTANCE;
+//        } else if (expr2Type instanceof BigIntegerType || expr3Type instanceof BigIntegerType) {
+//            returnType = BigIntegerType.INSTANCE;
+//        } else if (expr2Type instanceof LongType || expr3Type instanceof LongType) {
+//            returnType = LongType.INSTANCE;
+//        } else {
+//            returnType = IntegerType.INSTANCE;
+//        }
+//        return returnType;
+//    }
 
-    /**
-     * @see #ifFunc(Expression, Expression, Expression)
-     */
-    private static MappingType ifFuncReturnType(final MappingType expr2Type, final MappingType expr3Type) {
-        final MappingType returnType;
-        if (expr2Type.getClass() == expr3Type.getClass()) {
-            returnType = expr2Type;
-        } else if (expr2Type instanceof _SQLStringType || expr3Type instanceof _SQLStringType) {
-            returnType = StringType.INSTANCE;
-        } else if (!(expr2Type instanceof _NumericType || expr3Type instanceof _NumericType)) {
-            returnType = StringType.INSTANCE;
-        } else if (expr2Type instanceof _NumericType._FloatNumericType
-                || expr3Type instanceof _NumericType._FloatNumericType) {
-            returnType = DoubleType.INSTANCE;
-        } else if (expr2Type instanceof _NumericType._UnsignedNumeric
-                || expr3Type instanceof _NumericType._UnsignedNumeric) {
-            if (expr2Type instanceof UnsignedBigDecimalType || expr3Type instanceof UnsignedBigDecimalType) {
-                returnType = UnsignedBigDecimalType.INSTANCE;
-            } else if (expr2Type instanceof UnsignedBigIntegerType || expr3Type instanceof UnsignedBigIntegerType) {
-                returnType = UnsignedBigIntegerType.INSTANCE;
-            } else if (expr2Type instanceof UnsignedLongType || expr3Type instanceof UnsignedLongType) {
-                returnType = UnsignedLongType.INSTANCE;
-            } else {
-                returnType = UnsignedIntegerType.INSTANCE;
-            }
-        } else if (expr2Type instanceof BigDecimalType || expr3Type instanceof BigDecimalType) {
-            returnType = BigDecimalType.INSTANCE;
-        } else if (expr2Type instanceof BigIntegerType || expr3Type instanceof BigIntegerType) {
-            returnType = BigIntegerType.INSTANCE;
-        } else if (expr2Type instanceof LongType || expr3Type instanceof LongType) {
-            returnType = LongType.INSTANCE;
-        } else {
-            returnType = IntegerType.INSTANCE;
-        }
-        return returnType;
-    }
 
-
-    /**
-     * @see #ifNull(Expression, Expression)
-     */
-    private static MappingType ifNullReturnType(final MappingType expr1Type, final MappingType expr2Type) {
-        final MappingType returnType;
-        if (expr1Type.getClass() == expr2Type.getClass()) {
-            returnType = expr1Type;
-        } else if (!(expr1Type instanceof _NumericType && expr2Type instanceof _NumericType)) {
-            returnType = StringType.INSTANCE;
-        } else if (expr1Type instanceof _NumericType._DecimalNumeric && expr2Type instanceof _NumericType._DecimalNumeric) {
-            if (expr1Type instanceof _NumericType._UnsignedNumeric
-                    && expr2Type instanceof _NumericType._UnsignedNumeric) {
-                returnType = UnsignedBigDecimalType.INSTANCE;
-            } else {
-                returnType = BigDecimalType.INSTANCE;
-            }
-        } else if (!(expr1Type instanceof _NumericType._IntegerNumeric
-                || expr2Type instanceof _NumericType._IntegerNumeric)) {
-            returnType = DoubleType.INSTANCE;
-        } else if (expr1Type instanceof _NumericType._UnsignedNumeric
-                && expr2Type instanceof _NumericType._UnsignedNumeric) {
-            if (expr1Type instanceof UnsignedBigIntegerType || expr2Type instanceof UnsignedBigIntegerType) {
-                returnType = UnsignedBigIntegerType.INSTANCE;
-            } else if (expr1Type instanceof UnsignedLongType || expr2Type instanceof UnsignedLongType) {
-                returnType = UnsignedLongType.INSTANCE;
-            } else {
-                returnType = UnsignedIntegerType.INSTANCE;
-            }
-        } else if (expr1Type instanceof BigIntegerType || expr2Type instanceof BigIntegerType) {
-            returnType = BigIntegerType.INSTANCE;
-        } else if (expr1Type instanceof LongType || expr2Type instanceof LongType) {
-            returnType = LongType.INSTANCE;
-        } else {
-            returnType = IntegerType.INSTANCE;
-        }
-        return returnType;
-    }
+//    /**
+//     * @see #ifNull(Expression, Expression)
+//     */
+//    private static MappingType ifNullReturnType(final MappingType expr1Type, final MappingType expr2Type) {
+//        final MappingType returnType;
+//        if (expr1Type.getClass() == expr2Type.getClass()) {
+//            returnType = expr1Type;
+//        } else if (!(expr1Type instanceof _NumericType && expr2Type instanceof _NumericType)) {
+//            returnType = StringType.INSTANCE;
+//        } else if (expr1Type instanceof _NumericType._DecimalNumeric && expr2Type instanceof _NumericType._DecimalNumeric) {
+//            if (expr1Type instanceof _NumericType._UnsignedNumeric
+//                    && expr2Type instanceof _NumericType._UnsignedNumeric) {
+//                returnType = UnsignedBigDecimalType.INSTANCE;
+//            } else {
+//                returnType = BigDecimalType.INSTANCE;
+//            }
+//        } else if (!(expr1Type instanceof _NumericType._IntegerNumeric
+//                || expr2Type instanceof _NumericType._IntegerNumeric)) {
+//            returnType = DoubleType.INSTANCE;
+//        } else if (expr1Type instanceof _NumericType._UnsignedNumeric
+//                && expr2Type instanceof _NumericType._UnsignedNumeric) {
+//            if (expr1Type instanceof UnsignedBigIntegerType || expr2Type instanceof UnsignedBigIntegerType) {
+//                returnType = UnsignedBigIntegerType.INSTANCE;
+//            } else if (expr1Type instanceof UnsignedLongType || expr2Type instanceof UnsignedLongType) {
+//                returnType = UnsignedLongType.INSTANCE;
+//            } else {
+//                returnType = UnsignedIntegerType.INSTANCE;
+//            }
+//        } else if (expr1Type instanceof BigIntegerType || expr2Type instanceof BigIntegerType) {
+//            returnType = BigIntegerType.INSTANCE;
+//        } else if (expr1Type instanceof LongType || expr2Type instanceof LongType) {
+//            returnType = LongType.INSTANCE;
+//        } else {
+//            returnType = IntegerType.INSTANCE;
+//        }
+//        return returnType;
+//    }
 
 
     /**
@@ -554,10 +553,12 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * @see #cast(Expression, SQLs.WordAs, MySQLCastType, MySQLs.WordsCharacterSet, SQLElement)
      * @see #cast(Expression, SQLs.WordAs, MySQLCastType, Expression, MySQLs.WordsCharacterSet, SQLElement)
      */
-    private static Expression _castToChar(final String name, final Expression exp, final SQLs.WordAs as
+    private static Expression _castToChar(final Expression exp, final SQLs.WordAs as
             , final MySQLCastType charType, final @Nullable Expression n, MySQLs.WordsCharacterSet characterSet
             , SQLElement charset) {
         assert as == SQLs.AS && characterSet == MySQLs.CHARACTER_SET;
+
+        final String name = "CAST";
         if (charType != MySQLCastType.CHAR) {
             throw new IllegalArgumentException(String.format("support only %s", MySQLCastType.CHAR));
         } else if (!(charset instanceof MySQLCharset || charset instanceof SQLs.SQLIdentifierImpl)) {

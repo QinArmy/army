@@ -19,6 +19,7 @@ import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleParam;
 import io.army.stmt.Stmt;
 import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
@@ -107,23 +108,24 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }
 
 
-    static GroupConcatClause groupConcatClause(final boolean distinct, final Object exprOrList) {
-        final List<ArmyExpression> list;
-        if (exprOrList instanceof Expression) {
-            list = Collections.singletonList((ArmyExpression) exprOrList);
-        } else if (exprOrList instanceof List) {
-            final List<?> argList = (List<?>) exprOrList;
-            list = new ArrayList<>(((argList.size() << 1) - 1));
-            for (Object arg : argList) {
-                if (!(arg instanceof Expression)) {
-                    throw CriteriaUtils.funcArgError("GROUP_CONCAT", exprOrList);
-                }
-                list.add((ArmyExpression) arg);
-            }
-        } else {
-            throw CriteriaUtils.funcArgError("GROUP_CONCAT", exprOrList);
+    static GroupConcatInnerClause groupConcatClause() {
+        return new GroupConcatInnerClause();
+    }
+
+    static Expression groupConcatFunc(final @Nullable SQLs.ArgDistinct distinct, final Expression exp
+            , @Nullable GroupConcatInnerClause clause) {
+        return new GroupConcatFunction(distinct, Collections.singletonList((ArmyExpression) exp), clause);
+    }
+
+    static Expression groupConcatFunc(final @Nullable SQLs.ArgDistinct distinct, final List<Expression> expList
+            , @Nullable GroupConcatInnerClause clause) {
+        final int expSize = expList.size();
+        if (expSize == 0) {
+            throw CriteriaUtils.funcArgError("GROUP_CONCAT", expList);
         }
-        return new GroupConcatClause(distinct, list);
+        final List<ArmyExpression> argList = new ArrayList<>(expSize);
+        appendExpList(argList, expList);
+        return new GroupConcatFunction(distinct, argList, clause);
     }
 
 
@@ -439,164 +441,144 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }//MultiArgAggregateWindowFunc
 
 
-    static final class GroupConcatClause extends OperationExpression
-            implements MySQLFunction._GroupConcatOrderBySpec {
+    /**
+     * @see #groupConcatFunc(SQLs.ArgDistinct, List, GroupConcatInnerClause)
+     */
+    private static final class GroupConcatFunction extends OperationExpression<TypeInfer> {
 
-        private final CriteriaContext criteriaContext;
+        private final SQLSyntax.ArgDistinct distinct;
 
-        private final boolean distinct;
+        private final List<ArmyExpression> expList;
 
-        private final List<ArmyExpression> exprList;
+        private final GroupConcatInnerClause clause;
 
-        private List<ArmySortItem> orderByList;
-
-        private String stringValue;
-
-        private GroupConcatClause(boolean distinct, List<ArmyExpression> exprList) {
-            this.criteriaContext = ContextStack.peek();
+        private GroupConcatFunction(@Nullable SQLSyntax.ArgDistinct distinct, List<ArmyExpression> expList
+                , @Nullable GroupConcatInnerClause clause) {
+            super(StringType.INSTANCE, SQLs::_identity);
+            assert expList.size() > 0;
             this.distinct = distinct;
-            this.exprList = exprList;
+            this.expList = expList;
+            this.clause = clause;
         }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return StringType.INSTANCE;
-        }
-
-        @Override
-        public MySQLFunction._GroupConcatSeparatorClause orderBy(Expression exp) {
-            //TODO
-            return null;
-        }
-
-        @Override
-        public MySQLFunction._GroupConcatSeparatorClause orderBy(Expression exp, Statement.AscDesc ascDesc) {
-            return null;
-        }
-
-        @Override
-        public MySQLFunction._GroupConcatSeparatorClause orderBy(Expression exp1, Expression exp2) {
-            return null;
-        }
-
-        @Override
-        public MySQLFunction._GroupConcatSeparatorClause orderBy(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2) {
-            return null;
-        }
-
-        @Override
-        public MySQLFunction._GroupConcatSeparatorClause orderBy(Expression exp1, Expression exp2, Statement.AscDesc ascDesc2) {
-            return null;
-        }
-
-        @Override
-        public MySQLFunction._GroupConcatSeparatorClause orderBy(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2, Statement.AscDesc ascDesc2) {
-            return null;
-        }
-
-        @Override
-        public Clause separator(@Nullable String strVal) {
-            if (strVal == null) {
-                throw ContextStack.nullPointer(this.criteriaContext);
-            } else if (this.stringValue != null) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            this.stringValue = strVal;
-            return this;
-        }
-
-        @Override
-        public Clause separator(Supplier<String> supplier) {
-            return this.separator(supplier.get());
-        }
-
-        @Override
-        public Clause ifSeparator(Supplier<String> supplier) {
-            final String strValue;
-            strValue = supplier.get();
-            if (strValue != null) {
-                this.separator(strValue);
-            }
-            return this;
-        }
-
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
+            final StringBuilder sqlBuidler;
+            sqlBuidler = context.sqlBuilder()
                     .append(" GROUP_CONCAT(");
 
-            if (this.distinct) {
-                sqlBuilder.append(_Constant.SPACE)
-                        .append(SQLs.DISTINCT.render());
+            if (this.distinct != null) {
+                sqlBuidler.append(this.distinct.render());
             }
-            final List<ArmyExpression> exprList = this.exprList;
-            final int exprSize = exprList.size();
-            for (int i = 0; i < exprSize; i++) {
-                if (i > 0) {
-                    sqlBuilder.append(_Constant.SPACE_COMMA);
-                }
-                exprList.get(i).appendSql(context);
-            }
+            FunctionUtils.appendArguments(this.distinct, this.expList, context);
 
-            final List<ArmySortItem> orderByList = this.orderByList;
-            final int itemSize;
-            if (orderByList != null && (itemSize = orderByList.size()) > 0) {
-                sqlBuilder.append(_Constant.SPACE_ORDER_BY);
-                for (int i = 0; i < itemSize; i++) {
-                    if (i > 0) {
-                        sqlBuilder.append(_Constant.SPACE_COMMA);
-                    }
-                    orderByList.get(i).appendSql(context);
-                }
-            }//if
-
-            final String strValue = this.stringValue;
-            if (strValue != null) {
-                sqlBuilder.append(_Constant.SPACE_SEPARATOR);
-                context.appendLiteral(StringType.INSTANCE, strValue);
+            if (this.clause != null) {
+                this.clause.appendSql(context);
             }
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            sqlBuidler.append(_Constant.SPACE_RIGHT_PAREN);
+
         }
+
 
         @Override
         public String toString() {
-            StringBuilder builder = null;
+            final StringBuilder sqlBuidler;
+            sqlBuidler = new StringBuilder()
+                    .append(" GROUP_CONCAT(");
 
-            final List<ArmySortItem> orderByList = this.orderByList;
-
-            if (orderByList != null && orderByList.size() > 0) {
-                builder = new StringBuilder();
-                builder.append(_Constant.SPACE_ORDER_BY);
-                final int itemSize = orderByList.size();
-                for (int i = 0; i < itemSize; i++) {
-                    if (i > 0) {
-                        builder.append(_Constant.SPACE_COMMA);
-                    }
-                    builder.append(orderByList.get(i));
-                }
-            }//if
-
-            final String strValue = this.stringValue;
-            if (strValue != null) {
-                if (builder == null) {
-                    builder = new StringBuilder();
-                }
-                builder.append(_Constant.SPACE_SEPARATOR)
-                        .append(_Constant.SPACE_QUOTE)
-                        .append(strValue)
-                        .append(_Constant.QUOTE);
+            if (this.distinct != null) {
+                sqlBuidler.append(this.distinct.render());
             }
-            return builder == null ? "" : builder.toString();
+            FunctionUtils.argumentsToString(this.distinct, this.expList, sqlBuidler);
+
+            if (this.clause != null) {
+                sqlBuidler.append(this.clause);
+            }
+
+            return sqlBuidler.append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
         }
 
-        private MySQLFunction._GroupConcatSeparatorClause orderByEnd(final List<ArmySortItem> itemList) {
-            if (this.orderByList != null) {
-                throw ContextStack.castCriteriaApi(this.criteriaContext);
+
+    }//GroupConcatFunction
+
+    /**
+     * @see #groupConcatClause()
+     */
+    static final class GroupConcatInnerClause
+            extends OrderByClause.OrderByClauseClause<MySQLFunction._GroupConcatSeparatorClause>
+            implements MySQLFunction._GroupConcatOrderBySpec
+            , Clause, _SelfDescribed {
+
+
+        private String stringValue;
+
+        private GroupConcatInnerClause() {
+            super(ContextStack.peek());
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final List<? extends SortItem> sortItemList = this.orderByList();
+            final int sortSize = sortItemList.size();
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            if (sortSize > 0) {
+                sqlBuilder.append(_Constant.SPACE_ORDER_BY);
+                for (int i = 0; i < sortSize; i++) {
+                    if (i > 0) {
+                        sqlBuilder.append(_Constant.SPACE_COMMA);
+                    }
+                    ((_SelfDescribed) sortItemList.get(i)).appendSql(context);
+                }
             }
-            this.orderByList = itemList;
+
+            final String stringValue = this.stringValue;
+            if (stringValue != null) {
+                sqlBuilder.append(" SEPARATOR ");
+                context.parser().identifier(stringValue, sqlBuilder);
+            }
+        }
+
+        @Override
+        public MySQLFunction._GroupConcatSeparatorClause orderBy(Consumer<SortItems> consumer) {
+            consumer.accept(new OrderBySortItems(this));
+            if (!this.hasOrderByClause()) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
+            }
+            this.endOrderByClause();
             return this;
+        }
+
+        @Override
+        public MySQLFunction._GroupConcatSeparatorClause ifOrderBy(Consumer<SortItems> consumer) {
+            consumer.accept(new OrderBySortItems(this));
+            this.endOrderByClause();
+            return this;
+        }
+
+        @Override
+        public void separator(final @Nullable String strVal) {
+            this.endOrderByClause();
+            if (this.stringValue != null) {
+                throw ContextStack.criteriaError(this.context, "duplicate separator");
+            } else if (strVal == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            this.stringValue = strVal;
+        }
+
+        @Override
+        public void separator(Supplier<String> supplier) {
+            this.separator(supplier.get());
+        }
+
+        @Override
+        public void ifSeparator(Supplier<String> supplier) {
+            this.endOrderByClause();
+            this.stringValue = supplier.get();
         }
 
 

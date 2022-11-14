@@ -2,39 +2,37 @@ package io.army.criteria.impl;
 
 import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
-import io.army.criteria.Item;
+import io.army.criteria.QualifiedField;
 import io.army.criteria.TableField;
 import io.army.criteria.TypeInfer;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._Selection;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 
-final class QualifiedFieldImpl<T, I extends Item> extends OperationDataField<I>
-        implements ItemField<T, I>, _Selection {
+final class QualifiedFieldImpl<T> extends OperationDataField<TypeInfer>
+        implements QualifiedField<T> {
 
-    static <T, I extends Item> QualifiedFieldImpl<T, I> create(final String tableAlias, final FieldMeta<T> field
-            , final Function<TypeInfer, I> function) {
-        return new QualifiedFieldImpl<>(tableAlias, field, function);
+    static <T> QualifiedFieldImpl<T> create(final String tableAlias, final FieldMeta<T> field) {
+        return new QualifiedFieldImpl<>(tableAlias, field);
     }
+
 
     private final String tableAlias;
 
     private final TableFieldMeta<T> field;
 
-    private QualifiedFieldImpl(String tableAlias, FieldMeta<T> field, Function<TypeInfer, I> function) {
-        super(function);
+    private QualifiedFieldImpl(String tableAlias, FieldMeta<T> field) {
+        super(field, SQLs::_identity);
         this.field = (TableFieldMeta<T>) field;
         this.tableAlias = tableAlias;
     }
@@ -52,11 +50,6 @@ final class QualifiedFieldImpl<T, I extends Item> extends OperationDataField<I>
     @Override
     public boolean nullable() {
         return this.field.nullable;
-    }
-
-    @Override
-    public TypeMeta typeMeta() {
-        return this.field;
     }
 
     @Override
@@ -105,7 +98,7 @@ final class QualifiedFieldImpl<T, I extends Item> extends OperationDataField<I>
         if (obj == this) {
             match = true;
         } else if (obj instanceof QualifiedFieldImpl) {
-            final QualifiedFieldImpl<?, ?> o = (QualifiedFieldImpl<?, ?>) obj;
+            final QualifiedFieldImpl<?> o = (QualifiedFieldImpl<?>) obj;
             match = o.field == this.field && o.tableAlias.equals(this.tableAlias);
         } else {
             match = false;
@@ -115,7 +108,12 @@ final class QualifiedFieldImpl<T, I extends Item> extends OperationDataField<I>
 
     @Override
     public String toString() {
-        return String.format(" %s.%s", this.tableAlias, this.field);
+        return _StringUtils.builder()
+                .append(_Constant.SPACE)
+                .append(this.tableAlias)
+                .append(_Constant.POINT)
+                .append(this.field)
+                .toString();
     }
 
     @Override

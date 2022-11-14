@@ -25,13 +25,13 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     /**
      * private constructor
      */
-    Expressions(Function<TypeInfer, I> function) {
-        super(function);
+    Expressions(TypeMeta expType, Function<TypeInfer, I> function) {
+        super(expType, function);
     }
 
     @Override
     public final Expressions<I> bracket() {
-        return this instanceof BracketsExpression ? this : new BracketsExpression<>(this);
+        return bracketExp(this);
     }
 
     static <I extends Item> OperationExpression<I> dualExp(final OperationExpression<I> left
@@ -80,17 +80,24 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
         return new CastExpression<>(expression, typeMeta);
     }
 
-    static <I extends Item> OperationExpression<I> bracketExp(OperationExpression<I> expression) {
-        return new BracketsExpression<>(expression);
+    static <I extends Item> Expressions<I> bracketExp(final OperationExpression<I> expression) {
+        final Expressions<I> bracket;
+        if (expression instanceof BracketsExpression) {
+            bracket = (BracketsExpression<I>) expression;
+        } else {
+            bracket = new BracketsExpression<>(expression);
+        }
+        return bracket;
     }
 
     static Expression scalarExpression(final SubQuery subQuery) {
         final List<? extends SelectItem> selectItemList;
         selectItemList = ((_RowSet) subQuery).selectItemList();
-        if (!(selectItemList.size() == 1 && selectItemList.get(0) instanceof Selection)) {
+        final SelectItem selectItem;
+        if (!(selectItemList.size() == 1 && (selectItem = selectItemList.get(0)) instanceof Selection)) {
             throw ContextStack.criteriaError(ContextStack.peek(), _Exceptions::nonScalarSubQuery, subQuery);
         }
-        return new ScalarExpression(subQuery);
+        return new ScalarExpression(((Selection) selectItem).typeMeta(), subQuery);
     }
 
 
@@ -155,9 +162,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
     static <I extends Item> OperationPredicate<I> bracketPredicate(final OperationPredicate<I> predicate) {
         final OperationPredicate<I> result;
-        if (predicate instanceof BracketPredicate
-                || predicate instanceof DataField
-                || predicate instanceof SqlValueParam.SingleValue) {
+        if (predicate instanceof BracketPredicate) {
             result = predicate;
         } else {
             result = new BracketPredicate<>(predicate);
@@ -278,17 +283,12 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
 
         private DualExpression(OperationExpression<I> left, DualOperator operator, ArmyExpression right) {
-            super(left.function);
+            super(left.expType, left.function);
             this.left = left;
             this.operator = operator;
             this.right = right;
         }
 
-
-        @Override
-        public TypeMeta typeMeta() {
-            return this.left.typeMeta();
-        }
 
         @Override
         public void appendSql(final _SqlContext context) {
@@ -402,15 +402,11 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
         private final UnaryOperator operator;
 
         private UnaryExpression(OperationExpression<I> expression, UnaryOperator operator) {
-            super(expression.function);
+            super(expression.expType, expression.function);
             this.expression = expression;
             this.operator = operator;
         }
 
-        @Override
-        public TypeMeta typeMeta() {
-            return this.expression.typeMeta();
-        }
 
         @Override
         public void appendSql(final _SqlContext context) {
@@ -506,7 +502,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
         private final ArmyExpression expression;
 
         private BracketsExpression(OperationExpression<I> expression) {
-            super(expression.function);
+            super(expression.expType, expression.function);
             this.expression = expression;
         }
 
@@ -522,11 +518,6 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
 
         @Override
-        public TypeMeta typeMeta() {
-            return this.expression.typeMeta();
-        }
-
-        @Override
         public String toString() {
             return String.format(" (%s )", this.expression);
         }
@@ -538,16 +529,10 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
         private final SubQuery subQuery;
 
-        private ScalarExpression(SubQuery subQuery) {
-            super(SQLs::_identity);
+        private ScalarExpression(TypeMeta expType, SubQuery subQuery) {
+            super(expType, SQLs::_identity);
             this.subQuery = subQuery;
         }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return ((Selection) ((_RowSet) this.subQuery).selectItemList().get(0)).typeMeta();
-        }
-
 
         @Override
         public void appendSql(final _SqlContext context) {
@@ -945,12 +930,10 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
         private final _Expression expression;
 
-        private final TypeMeta typeMeta;
 
         private CastExpression(OperationExpression<I> expression, TypeMeta typeMeta) {
-            super(expression.function);
+            super(typeMeta, expression.function);
             this.expression = expression;
-            this.typeMeta = typeMeta;
         }
 
         @Override
@@ -958,20 +941,11 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             this.expression.appendSql(context);
         }
 
-
-        @Override
-        public TypeMeta typeMeta() {
-            return this.typeMeta;
-        }
-
-
         @Override
         public final String toString() {
             return _StringUtils.builder()
                     .append(_Constant.SPACE)
                     .append(this.expression)
-                    .append(" typeMeta:")
-                    .append(this.typeMeta)
                     .toString();
         }
 

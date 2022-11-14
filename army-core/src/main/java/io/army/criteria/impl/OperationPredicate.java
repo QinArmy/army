@@ -5,7 +5,10 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.function.*;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.PrimaryFieldMeta;
+import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 
 import java.util.ArrayList;
@@ -20,13 +23,9 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
         implements AliasPredicate<I>, _Predicate, ParenPredicate<I>, SpacePredicate<I> {
 
     OperationPredicate(Function<TypeInfer, I> function) {
-        super(function);
+        super(BooleanType.INSTANCE, function);
     }
 
-    @Override
-    public final TypeMeta typeMeta() {
-        return BooleanType.INSTANCE;
-    }
 
     @Override
     public final OperationPredicate<I> bracket() {

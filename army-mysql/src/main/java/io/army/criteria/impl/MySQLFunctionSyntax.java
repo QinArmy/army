@@ -9,7 +9,6 @@ import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.JsonListType;
 import io.army.mapping.optional.JsonMapType;
-import io.army.mapping.optional.JsonType;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
@@ -116,18 +115,6 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
         return MySQLFunctionUtils.oneArgAggregateWindow("COUNT", exp, LongType.INSTANCE, endFunction, asFunction);
     }
 
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link LongType}
-     * </p>
-     *
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
-     */
-    public static <W extends Item, I extends Item> _AggregateWindowFunc<W, I> count(@Nullable SQLSyntax.ArgDistinct distinct
-            , List<Expression> argList, Function<_ItemWindow<I>, W> endFunction, Function<TypeInfer, I> asFunction) {
-        return MySQLFunctionUtils.multiArgAggregateWindowFunc("COUNT", distinct, argList, LongType.INSTANCE, endFunction, asFunction);
-    }
 
 
     /**
@@ -565,7 +552,7 @@ abstract class MySQLFunctionSyntax extends MySQLSyntax {
      *          <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
      *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
-     *          <li>Else if type is {@link MySQLCastType#JSON }then {@link JsonType}</li>
+     *          <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#Point }then {@link PrimitiveByteArrayType}</li>
      *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link PrimitiveByteArrayType}</li>
      *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link PrimitiveByteArrayType}</li>

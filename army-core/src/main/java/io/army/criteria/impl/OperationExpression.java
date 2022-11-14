@@ -7,6 +7,7 @@ import io.army.function.BiAsExpFunction;
 import io.army.function.BiAsFunction;
 import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 
 import java.util.Collection;
@@ -22,13 +23,26 @@ import java.util.function.Supplier;
 abstract class OperationExpression<I extends Item> implements ArmyExpression, _AliasExpression<I>
         , _ParenExpression<I>, _SpacePredicateExp<I> {
 
+    final TypeMeta expType;
 
     final Function<TypeInfer, I> function;
 
     OperationExpression(Function<TypeInfer, I> function) {
+        assert this instanceof FieldMeta;
+        this.function = function;
+        this.expType = (TypeMeta) this;
+    }
+
+    OperationExpression(TypeMeta expType, Function<TypeInfer, I> function) {
+        this.expType = expType;
         this.function = function;
     }
 
+    @Override
+    public final TypeMeta typeMeta() {
+        final TypeMeta expType = this.expType;//TODO field codec
+        return expType;
+    }
 
     @Override
     public final boolean isNullValue() {
@@ -442,14 +456,7 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, _A
         if (typeMeta == null) {
             throw ContextStack.nullPointer(ContextStack.peek());
         }
-        final OperationExpression<I> expression;
-        if (this instanceof MutableParamMetaSpec) {
-            ((MutableParamMetaSpec) this).updateParamMeta(typeMeta);
-            expression = this;
-        } else {
-            expression = Expressions.castExp(this, typeMeta);
-        }
-        return expression;
+        return Expressions.castExp(this, typeMeta);
     }
 
     @Override
@@ -472,6 +479,7 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, _A
         return this.function.apply(selection);
     }
 
+    @Deprecated
     interface MutableParamMetaSpec {
 
         void updateParamMeta(TypeMeta typeMeta);

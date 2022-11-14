@@ -348,8 +348,32 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         }
 
 
-
     }//UnionSubRowSet
+
+
+    static abstract class OrderByClauseClause<OR> extends OrderByClause<OR> {
+
+        OrderByClauseClause(CriteriaContext context) {
+            super(context);
+        }
+
+        @Override
+        public final void prepared() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+        @Override
+        final Dialect statementDialect() {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+
+    } //OrderByClauseClause
 
 
 }

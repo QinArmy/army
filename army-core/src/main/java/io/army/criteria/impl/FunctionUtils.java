@@ -12,7 +12,6 @@ import io.army.function.BetweenOperator;
 import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.mapping.VoidType;
 import io.army.meta.TypeMeta;
@@ -24,7 +23,6 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 
 abstract class FunctionUtils {
 
@@ -32,7 +30,6 @@ abstract class FunctionUtils {
         throw new UnsupportedOperationException();
     }
 
-    private static final Pattern FUNC_NAME_PATTERN = Pattern.compile("^[_a-zA-Z]\\w*$");
 
 
     static <R extends Item, I extends Item> SQLFunction._CaseFuncWhenClause<R> caseFunction(
@@ -41,11 +38,6 @@ abstract class FunctionUtils {
         return new CaseFunction<>((ArmyExpression) caseValue, endFunc, asFunc);
     }
 
-    @Deprecated
-    static Expression oneArgOptionFunc(String name, @Nullable SQLWords option
-            , @Nullable Object expr, @Nullable Clause clause, TypeMeta returnType) {
-        return new OneArgOptionFunc(name, option, SQLs._funcParam(expr), clause, returnType);
-    }
 
     static Expression oneArgFunc(String name, Expression expr, TypeMeta returnType) {
         if (expr instanceof SqlValueParam.MultiValue) {
@@ -257,11 +249,7 @@ abstract class FunctionUtils {
 
     static Expression complexArgFunc(String name, TypeMeta returnType, Object... args) {
         final List<Object> argList = new ArrayList<>(args.length);
-        for (Object arg : args) {
-            if (arg != null) {
-                argList.add(arg);
-            }
-        }
+        argList.addAll(Arrays.asList(args));
         return new ComplexArgFuncExpression(name, argList, returnType);
     }
 
@@ -273,11 +261,6 @@ abstract class FunctionUtils {
         return new JsonObjectFunc(name, expMap, returnType);
     }
 
-
-    static Functions._FuncConditionTowClause conditionTwoFunc(final String name
-            , BiFunction<MappingType, MappingType, MappingType> function) {
-        return new ConditionTwoFunc(name, function);
-    }
 
 
     static void appendArguments(final @Nullable SQLWords option, final List<ArmyExpression> argList
@@ -607,7 +590,7 @@ abstract class FunctionUtils {
 
         WindowFunction(String name, TypeMeta returnType, Function<_ItemWindow<I>, OE> windowFunc
                 , Function<TypeInfer, I> endFunc) {
-            super(endFunc);
+            super(returnType, endFunc);
             this.context = ContextStack.peek();
             this.name = name;
             this.windowFunc = windowFunc;
@@ -619,10 +602,6 @@ abstract class FunctionUtils {
             return this.context;
         }
 
-        @Override
-        public final TypeMeta typeMeta() {
-            return this.returnType;
-        }
 
         @Override
         public final void updateParamMeta(final TypeMeta typeMeta) {
@@ -755,17 +734,9 @@ abstract class FunctionUtils {
 
         private final String name;
 
-        private final TypeMeta returnType;
-
         private NoArgFuncExpression(String name, TypeMeta returnType) {
-            super(SQLs::_identity);
+            super(returnType, SQLs::_identity);
             this.name = name;
-            this.returnType = returnType;
-        }
-
-        @Override
-        public final TypeMeta typeMeta() {
-            return this.returnType;
         }
 
         @Override
@@ -778,7 +749,7 @@ abstract class FunctionUtils {
 
         @Override
         public final int hashCode() {
-            return Objects.hash(this.name, this.returnType);
+            return Objects.hash(this.name, this.expType);
         }
 
         @Override
@@ -788,7 +759,7 @@ abstract class FunctionUtils {
                 match = true;
             } else if (obj instanceof NoArgFuncExpression) {
                 final NoArgFuncExpression o = (NoArgFuncExpression) obj;
-                match = o.name.equals(this.name) && o.returnType == this.returnType;
+                match = o.name.equals(this.name) && o.expType == this.expType;
             } else {
                 match = false;
             }
@@ -809,16 +780,13 @@ abstract class FunctionUtils {
 
 
     private static abstract class FunctionExpression extends OperationExpression<TypeInfer>
-            implements SQLFunction, OperationExpression.MutableParamMetaSpec {
+            implements SQLFunction {
 
         final String name;
 
-        private TypeMeta returnType;
-
         FunctionExpression(String name, TypeMeta returnType) {
-            super(SQLs::_identity);
+            super(returnType, SQLs::_identity);
             this.name = name;
-            this.returnType = returnType;
         }
 
         @Override
@@ -827,15 +795,6 @@ abstract class FunctionUtils {
             return this;
         }
 
-        @Override
-        public final TypeMeta typeMeta() {
-            return this.returnType;
-        }
-
-        @Override
-        public void updateParamMeta(final TypeMeta typeMeta) {
-            this.returnType = typeMeta;
-        }
 
         @Override
         public final void appendSql(final _SqlContext context) {
@@ -880,7 +839,7 @@ abstract class FunctionUtils {
 
     }//FunctionExpression
 
-    private static final class OneArgFuncExpression extends FunctionExpression {
+    private static class OneArgFuncExpression extends FunctionExpression {
 
         private final ArmyExpression argument;
 
@@ -1173,32 +1132,19 @@ abstract class FunctionUtils {
      * @see ComplexArgFuncPredicate
      */
     private static class ComplexArgFuncExpression extends OperationExpression<TypeInfer>
-            implements OperationExpression.MutableParamMetaSpec, SQLFunction {
+            implements SQLFunction {
 
         private final String name;
         private final List<?> argList;
-
-        private TypeMeta returnType;
 
         /**
          * @see #complexArgFunc(String, TypeMeta, Object...)
          */
         private ComplexArgFuncExpression(String name, List<?> argList, TypeMeta returnType) {
-            super(SQLs::_identity);
+            super(returnType, SQLs::_identity);
             assert argList.size() > 0;
             this.name = name;
             this.argList = argList;
-            this.returnType = returnType;
-        }
-
-        @Override
-        public final TypeMeta typeMeta() {
-            return this.returnType;
-        }
-
-        @Override
-        public final void updateParamMeta(final TypeMeta typeMeta) {
-            this.returnType = typeMeta;
         }
 
         @Override
@@ -1231,18 +1177,34 @@ abstract class FunctionUtils {
 
     }//ComplexArgFuncExpression
 
-    private static final class JsonObjectFunc extends FunctionExpression {
+    private static final class JsonObjectFunc extends OperationExpression<TypeInfer>
+            implements SQLFunction {
+
+        private final String name;
 
         private final Map<String, Expression> expMap;
 
         private JsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
-            super(name, returnType);
+            super(returnType, SQLs::_identity);
+            assert expMap.size() > 0;
+            this.name = name;
             this.expMap = new HashMap<>(expMap);
         }
 
         @Override
-        void appendArguments(final _SqlContext context) {
-            final StringBuilder sqlBuilder = context.sqlBuilder();
+        public OperationExpression<TypeInfer> bracket() {
+            //return this,don't create new instance
+            return this;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN);
+
             int index = 0;
             for (Map.Entry<String, Expression> e : this.expMap.entrySet()) {
                 if (index > 0) {
@@ -1254,20 +1216,32 @@ abstract class FunctionUtils {
                 index++;
             }
 
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
         }
 
         @Override
-        void argumentsToString(final StringBuilder builder) {
+        public String toString() {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = new StringBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN);
+
             int index = 0;
             for (Map.Entry<String, Expression> e : this.expMap.entrySet()) {
                 if (index > 0) {
-                    builder.append(_Constant.SPACE_COMMA);
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                builder.append(e.getKey())
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(e.getKey())
                         .append(_Constant.SPACE_COMMA)
                         .append(e.getValue());
                 index++;
             }
+
+            return sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
 
         }
 
@@ -1298,10 +1272,9 @@ abstract class FunctionUtils {
             , SQLFunction._CaseThenClause<R>
             , FunctionSpec, CriteriaContextSpec
             , CaseWhens
-            , SQLFunction._DynamicCaseThenClause
-            , OperationExpression.MutableParamMetaSpec {
+            , SQLFunction._DynamicCaseThenClause {
 
-        private final Function<_AliasExpression<I>, R> endFunc;
+        private final Function<_ItemExpression<I>, R> endFunc;
 
         private final ArmyExpression caseValue;
 
@@ -1313,11 +1286,9 @@ abstract class FunctionUtils {
 
         private ArmyExpression elseExpression;
 
-        private TypeMeta returnType;
-
         private CaseFunction(@Nullable ArmyExpression caseValue, Function<_ItemExpression<I>, R> endFunc
                 , Function<TypeInfer, I> asFunc) {
-            super(asFunc);
+            super(StringType.INSTANCE, asFunc);
             this.caseValue = caseValue;
             this.endFunc = endFunc;
             this.context = ContextStack.peek();
@@ -1326,20 +1297,6 @@ abstract class FunctionUtils {
         @Override
         public CriteriaContext getContext() {
             return this.context;
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            final TypeMeta returnType = this.returnType;
-            if (returnType == null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return returnType;
-        }
-
-        @Override
-        public void updateParamMeta(final TypeMeta typeMeta) {
-            this.returnType = typeMeta;
         }
 
         @Override
@@ -1662,25 +1619,15 @@ abstract class FunctionUtils {
 
         @Override
         public R end() {
-            if (this.returnType != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.returnType = StringType.INSTANCE;
             return this.endFunc.apply(this);
         }
 
         @Override
         public R end(final @Nullable TypeInfer type) {
-            if (this.returnType != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            } else if (type == null) {
+            if (type == null) {
                 throw ContextStack.nullPointer(this.context);
-            } else if (type instanceof TypeMeta) {
-                this.returnType = (TypeMeta) type;
-            } else {
-                this.returnType = type.typeMeta();
             }
-            return this.endFunc.apply(this);
+            return this.endFunc.apply(this.mapTo(type.typeMeta()));
         }
 
 
@@ -1711,274 +1658,6 @@ abstract class FunctionUtils {
 
     }//GlobalWindow
 
-
-    private static abstract class ConditionFunc<LR> extends OperationExpression
-            implements Functions._FuncConditionClause<LR>
-            , FunctionSpec
-            , Functions._FuncLastArgClause
-            , Statement._RightParenClause<Expression>
-            , OperationExpression.MutableParamMetaSpec {
-
-        final CriteriaContext context;
-        private final String name;
-
-        private final Function<List<ArmyExpression>, TypeMeta> function;
-        private TypeMeta returnType;
-
-        private List<ArmyExpression> argList;
-
-        private ConditionFunc(String name, @Nullable TypeMeta returnType) {
-            this.context = ContextStack.peek();
-            this.name = name;
-            this.returnType = returnType;
-            this.function = this::inferReturnType;
-        }
-
-        private ConditionFunc(String name, Function<List<ArmyExpression>, TypeMeta> function) {
-            this.context = ContextStack.peek();
-            this.name = name;
-            this.returnType = null;
-            this.function = function;
-        }
-
-        @Override
-        public final TypeMeta typeMeta() {
-            TypeMeta returnType = this.returnType;
-            if (returnType == null) {
-                final List<ArmyExpression> argList = this.argList;
-                if (argList == null || argList instanceof ArrayList) {
-                    throw ContextStack.castCriteriaApi(this.context);
-                }
-                this.returnType = returnType = this.function.apply(argList);
-            }
-            return returnType;
-        }
-
-        @Override
-        public final void updateParamMeta(final TypeMeta typeMeta) {
-            this.returnType = typeMeta;
-        }
-
-        @Override
-        public final void appendSql(final _SqlContext context) {
-            final List<ArmyExpression> argList = this.argList;
-            if (!(argList instanceof ArrayList) || argList.size() < 2) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name)
-                    .append(_Constant.LEFT_PAREN);
-
-            FunctionUtils.appendArguments(null, argList, null, context);
-
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
-        }
-
-        @Override
-        public final LR leftParen(final @Nullable IPredicate condition) {
-            if (condition == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            if (this.argList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            final List<ArmyExpression> argList = new ArrayList<>();
-            argList.add((OperationPredicate) condition);
-            this.argList = argList;
-            return this.leftParenEnd();
-        }
-
-        @Override
-        public final LR leftParen(Supplier<? extends IPredicate> supplier) {
-            return this.leftParen(supplier.get());
-        }
-
-        @Override
-        public final LR leftParen(Function<Object, ? extends IPredicate> operator, Supplier<?> supplier) {
-            return this.leftParen(operator.apply(supplier.get()));
-        }
-
-        @Override
-        public final LR leftParen(Function<Object, ? extends IPredicate> operator, Function<String, ?> function
-                , String keyName) {
-            return this.leftParen(operator.apply(function.apply(keyName)));
-        }
-
-        @Override
-        public final LR leftParen(BiFunction<Object, Object, ? extends IPredicate> operator, Supplier<?> firstOperand
-                , Supplier<?> secondOperand) {
-            return this.leftParen(operator.apply(firstOperand.get(), secondOperand.get()));
-        }
-
-        @Override
-        public final LR leftParen(BiFunction<Object, Object, ? extends IPredicate> operator, Function<String, ?> function
-                , String firstKey, String secondKey) {
-            return this.leftParen(operator.apply(function.apply(firstKey), function.apply(secondKey)));
-        }
-
-        @Override
-        public final Statement._RightParenClause<Expression> comma(final @Nullable Expression expression) {
-            if (expression == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            final List<ArmyExpression> argList = this.argList;
-            if (!(argList instanceof ArrayList) || argList.size() == 0) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            argList.add((ArmyExpression) expression);
-            return this;
-        }
-
-        @Override
-        public final Statement._RightParenClause<Expression> comma(Supplier<? extends Expression> supplier) {
-            return this.comma(supplier.get());
-        }
-
-        @Override
-        public final Statement._RightParenClause<Expression> comma(Function<Object, ? extends Expression> operator
-                , Supplier<?> supplier) {
-            return this.comma(operator.apply(supplier.get()));
-        }
-
-        @Override
-        public final Statement._RightParenClause<Expression> comma(Function<Object, ? extends Expression> operator
-                , Function<String, ?> function, String keyName) {
-            return this.comma(operator.apply(function.apply(keyName)));
-        }
-
-        @Override
-        public final Statement._RightParenClause<Expression> comma(BiFunction<Object, Object, ? extends Expression> operator
-                , Supplier<?> firstOperand, Supplier<?> secondOperand) {
-            return this.comma(operator.apply(firstOperand.get(), secondOperand.get()));
-        }
-
-        @Override
-        public final Statement._RightParenClause<Expression> comma(BiFunction<Object, Object, ? extends Expression> operator
-                , Function<String, ?> function, String firstKey, String secondKey) {
-            return this.comma(operator.apply(function.apply(firstKey), function.apply(secondKey)));
-        }
-
-        @Override
-        public final Expression rightParen() {
-            final List<ArmyExpression> argList = this.argList;
-            if (!(argList instanceof ArrayList) || argList.size() < 2) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.argList = Collections.unmodifiableList(argList);
-            return this;
-        }
-
-        abstract LR leftParenEnd();
-
-        final Functions._FuncLastArgClause argBeforeLastEnd(final ArmyExpression arg) {
-            final List<ArmyExpression> argList = this.argList;
-            if (!(argList instanceof ArrayList) || argList.size() == 0) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            argList.add(arg);
-            return this;
-        }
-
-
-        /**
-         * @param argList a unmodified list
-         */
-        TypeMeta inferReturnType(List<ArmyExpression> argList) {
-            throw new UnsupportedOperationException();
-        }
-
-
-    }//ConditionFunc
-
-
-    private static class FuncCommaClause<CR> implements Functions._FuncCommaClause<CR> {
-
-        final CriteriaContext context;
-
-        private Function<ArmyExpression, CR> function;
-
-        private FuncCommaClause(CriteriaContext context, Function<ArmyExpression, CR> function) {
-            this.context = context;
-            this.function = function;
-        }
-
-        @Override
-        public final CR comma(final @Nullable Expression expression) {
-            if (expression == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            return this.function.apply((ArmyExpression) expression);
-        }
-
-        @Override
-        public final CR comma(Supplier<? extends Expression> supplier) {
-            return this.comma(supplier.get());
-        }
-
-        @Override
-        public final CR comma(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
-            return this.comma(operator.apply(supplier.get()));
-        }
-
-        @Override
-        public final CR comma(Function<Object, ? extends Expression> operator, Function<String, ?> function
-                , String keyName) {
-            return this.comma(operator.apply(function.apply(keyName)));
-        }
-
-        @Override
-        public final CR comma(BiFunction<Object, Object, ? extends Expression> operator, Supplier<?> firstOperand
-                , Supplier<?> secondOperand) {
-            return this.comma(operator.apply(firstOperand.get(), secondOperand.get()));
-        }
-
-        @Override
-        public final CR comma(BiFunction<Object, Object, ? extends Expression> operator, Function<String, ?> function
-                , String firstKey, String secondKey) {
-            return this.comma(operator.apply(function.apply(firstKey), function.apply(secondKey)));
-        }
-
-
-    }//FuncCommaClause
-
-
-    private static final class FuncSecondArgcClause extends FuncCommaClause<Functions._FuncLastArgClause>
-            implements Functions._FuncSecondArgClause {
-
-        private FuncSecondArgcClause(CriteriaContext context
-                , Function<ArmyExpression, Functions._FuncLastArgClause> function) {
-            super(context, function);
-        }
-
-    }//FuncSecondArgcClause
-
-    private static final class ConditionTwoFunc extends ConditionFunc<Functions._FuncSecondArgClause>
-            implements Functions._FuncConditionTowClause {
-
-        private final BiFunction<MappingType, MappingType, MappingType> function;
-
-        private ConditionTwoFunc(String name, BiFunction<MappingType, MappingType, MappingType> function) {
-            super(name, (TypeMeta) null);
-            this.function = function;
-        }
-
-        @Override
-        TypeMeta inferReturnType(final List<ArmyExpression> argList) {
-            if (argList.size() != 3) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return Functions._returnType(argList.get(1), argList.get(2), this.function);
-        }
-
-        @Override
-        Functions._FuncSecondArgClause leftParenEnd() {
-            return new FuncSecondArgcClause(this.context, this::argBeforeLastEnd);
-        }
-
-    }//ThreeConditionFunc
 
 
 }

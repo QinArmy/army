@@ -81,19 +81,10 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
     }
 
 
-    final TypeMeta typeMeta;
-
-
-    private LiteralExpression(TypeMeta typeMeta) {
-        super(SQLs::_identity);
-        this.typeMeta = typeMeta;
+    private LiteralExpression(TypeMeta expType) {
+        super(expType, SQLs::_identity);
     }
 
-
-    @Override
-    public final TypeMeta typeMeta() {
-        return this.typeMeta;
-    }
 
     @Override
     public final LiteralExpression bracket() {
@@ -118,7 +109,7 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
             if (value == null) {
                 context.sqlBuilder().append(_Constant.SPACE_NULL);
             } else {
-                context.appendLiteral(this.typeMeta, value);
+                context.appendLiteral(this.expType, value);
             }
 
         }
@@ -131,7 +122,7 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.typeMeta, this.value);
+            return Objects.hash(this.expType, this.value);
         }
 
         @Override
@@ -141,7 +132,7 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
                 match = true;
             } else if (obj instanceof SingleLiteral) {
                 final SingleLiteral o = (SingleLiteral) obj;
-                match = o.typeMeta == this.typeMeta && Objects.equals(o.value, this.value);
+                match = o.expType == this.expType && Objects.equals(o.value, this.value);
             } else {
                 match = false;
             }
@@ -187,14 +178,14 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            appendMultiLiteral(context, this.typeMeta, this.valueList);
+            appendMultiLiteral(context, this.expType, this.valueList);
         }
 
         @Override
         public void appendSqlWithParens(final _SqlContext context) {
             final StringBuilder sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE_LEFT_PAREN);
-            appendMultiLiteral(context, this.typeMeta, this.valueList);
+            appendMultiLiteral(context, this.expType, this.valueList);
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
@@ -205,7 +196,7 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.typeMeta, this.valueList);
+            return Objects.hash(this.expType, this.valueList);
         }
 
         @Override
@@ -215,7 +206,7 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
                 match = true;
             } else if (obj instanceof MultiLiteralExpression) {
                 final MultiLiteralExpression o = (MultiLiteralExpression) obj;
-                match = o.typeMeta == this.typeMeta && o.valueList.equals(this.valueList);
+                match = o.expType == this.expType && o.valueList.equals(this.valueList);
             } else {
                 match = false;
             }
@@ -255,7 +246,7 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
 
         @Override
         public final int hashCode() {
-            return Objects.hash(this.typeMeta, this.name);
+            return Objects.hash(this.expType, this.name);
         }
 
         @Override
@@ -265,7 +256,7 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
                 match = true;
             } else if (obj instanceof NamedSingleLiteral) {
                 final NamedSingleLiteral o = (NamedSingleLiteral) obj;
-                match = o.typeMeta == this.typeMeta && o.name.equals(this.name);
+                match = o.expType == this.expType && o.name.equals(this.name);
             } else {
                 match = false;
             }
@@ -330,7 +321,7 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.typeMeta, this.name, this.valueSize);
+            return Objects.hash(this.expType, this.name, this.valueSize);
         }
 
         @Override
@@ -340,7 +331,7 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
                 match = true;
             } else if (obj instanceof NamedMultiLiteral) {
                 final NamedMultiLiteral o = (NamedMultiLiteral) obj;
-                match = o.typeMeta == this.typeMeta
+                match = o.expType == this.expType
                         && o.name.equals(this.name)
                         && o.valueSize == this.valueSize;
             } else {

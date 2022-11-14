@@ -633,34 +633,13 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public <I extends Item> ItemDerivedField<I> ref(String derivedTable, String fieldName
-                , Function<TypeInfer, I> function) {
-            String m = "current context don't support ref(derivedTable,fieldName)";
-            throw ContextStack.criteriaError(this, m);
-        }
-
-        @Override
         public DerivedField refThis(String derivedTable, String fieldName) {
             String m = "current context don't support refThis(derivedTable,fieldName)";
             throw ContextStack.criteriaError(this, m);
         }
 
         @Override
-        public <I extends Item> ItemDerivedField<I> refThis(String derivedTable, String fieldName
-                , Function<TypeInfer, I> function) {
-            String m = "current context don't support refThis(derivedTable,fieldName,function)";
-            throw ContextStack.criteriaError(this, m);
-        }
-
-        @Override
         public <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
-            String m = "current context don't support field(tableAlias,field)";
-            throw ContextStack.criteriaError(this, m);
-        }
-
-        @Override
-        public <T, I extends Item> ItemField<T, I> field(String tableAlias, FieldMeta<T> field
-                , Function<TypeInfer, I> function) {
             String m = "current context don't support field(tableAlias,field)";
             throw ContextStack.criteriaError(this, m);
         }
@@ -784,7 +763,7 @@ abstract class CriteriaContexts {
 
         private Map<String, Map<String, DerivedField>> aliasToDerivedField;
 
-        private Map<String, Map<FieldMeta<?>, ItemField<?, ?>>> aliasFieldMap;
+        private Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasFieldMap;
 
         private JoinableContext(@Nullable CriteriaContext outerContext) {
             super(outerContext);
@@ -864,21 +843,19 @@ abstract class CriteriaContexts {
             return table;
         }
 
-
         @SuppressWarnings("unchecked")
         @Override
-        public final <T, I extends Item> ItemField<T, I> field(final String tableAlias, final FieldMeta<T> field
-                , final Function<TypeInfer, I> function) {
+        public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
             if (!(this.aliasToBlock instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this);
             }
-            Map<String, Map<FieldMeta<?>, ItemField<?, ?>>> aliasFieldMap = this.aliasFieldMap;
+            Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasFieldMap = this.aliasFieldMap;
             if (aliasFieldMap == null) {
                 aliasFieldMap = new HashMap<>();
                 this.aliasFieldMap = aliasFieldMap;
             }
-            return (ItemField<T, I>) aliasFieldMap.computeIfAbsent(tableAlias, k -> new HashMap<>())
-                    .computeIfAbsent(field, k -> QualifiedFieldImpl.create(tableAlias, field, function));
+            return (QualifiedField<T>) aliasFieldMap.computeIfAbsent(tableAlias, k -> new HashMap<>())
+                    .computeIfAbsent(field, alias -> QualifiedFieldImpl.create(tableAlias, field));
         }
 
         @Override
@@ -909,20 +886,8 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final <I extends Item> ItemDerivedField<I> ref(String derivedTable, String fieldName
-                , Function<TypeInfer, I> function) {
-            return super.ref(derivedTable, fieldName, function);
-        }
-
-        @Override
         public final DerivedField refThis(String derivedTable, String fieldName) {
             throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public final <I extends Item> ItemDerivedField<I> refThis(String derivedTable, String fieldName
-                , Function<TypeInfer, I> function) {
-            return super.refThis(derivedTable, fieldName, function);
         }
 
         @Override
@@ -1038,8 +1003,9 @@ abstract class CriteriaContexts {
                 if (selection == null) {
                     throw invalidRef(this, alias, field.fieldName);
                 }
-                if (field.paramMeta.selection == null) {
-                    field.paramMeta.selection = selection;
+
+                if (field.isDelay()) {
+                    field.setSelection(selection);
                     derivedFieldMap.putIfAbsent(field.fieldName, field);
                 }
             }
@@ -1490,7 +1456,7 @@ abstract class CriteriaContexts {
         private final Selection selection;
 
         private DerivedSelection(String tableName, Selection selection, Function<TypeInfer, I> function) {
-            super(function);
+            super(selection.typeMeta(), function);
             this.tableName = tableName;
             this.selection = selection;
         }
@@ -1520,10 +1486,6 @@ abstract class CriteriaContexts {
             return this.selection.alias();
         }
 
-        @Override
-        public TypeMeta typeMeta() {
-            return this.selection.typeMeta();
-        }
 
         @Override
         public void appendSelection(final _SqlContext context) {
@@ -1590,18 +1552,15 @@ abstract class CriteriaContexts {
 
         final String fieldName;
 
-        final DelaySelection paramMeta;
-
         private RefDerivedField(String tableName, String fieldName, Function<TypeInfer, I> function) {
-            super(function);
+            super(new DelaySelection(), function);
             this.tableName = tableName;
             this.fieldName = fieldName;
-            this.paramMeta = new DelaySelection();
         }
 
         @Override
         public TableField tableField() {
-            final Selection selection = this.paramMeta.selection;
+            final Selection selection = ((DelaySelection) this.expType).selection;
             if (selection == null) {
                 throw new IllegalStateException(String.format("No actual %s", Selection.class.getName()));
             }
@@ -1626,11 +1585,6 @@ abstract class CriteriaContexts {
         @Override
         public String alias() {
             return this.fieldName;
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return this.paramMeta;
         }
 
         @Override
@@ -1667,6 +1621,16 @@ abstract class CriteriaContexts {
             return String.format(" %s.%s", this.tableName, this.fieldName);
         }
 
+        private void setSelection(final Selection selection) {
+            final DelaySelection delaySelection = (DelaySelection) this.expType;
+            assert delaySelection.selection == null;
+            delaySelection.selection = selection;
+        }
+
+        private boolean isDelay() {
+            return ((DelaySelection) this.expType).selection == null;
+        }
+
 
     }//DerivedFieldImpl
 
@@ -1699,7 +1663,7 @@ abstract class CriteriaContexts {
         private final Selection selection;
 
         private RefSelection(Selection selection, Function<TypeInfer, I> function) {
-            super(function);
+            super(selection.typeMeta(), function);
             this.selection = selection;
         }
 
@@ -1708,11 +1672,6 @@ abstract class CriteriaContexts {
         public RefSelection<I> bracket() {
             //return this ,don't create new instance
             return this;
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return this.selection.typeMeta();
         }
 
         @Override

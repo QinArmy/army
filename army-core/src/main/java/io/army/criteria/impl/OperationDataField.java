@@ -1,7 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Selection;
 import io.army.function.TeNamedOperator;
+import io.army.meta.TypeMeta;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -17,10 +19,14 @@ import java.util.function.Function;
  *     </ul>
  * </p>
  */
-abstract class OperationDataField<I extends Item> extends OperationExpression<I> implements DataField {
+abstract class OperationDataField<I extends Item> extends OperationExpression<I> implements DataField, _Selection {
 
     OperationDataField(Function<TypeInfer, I> function) {
         super(function);
+    }
+
+    OperationDataField(TypeMeta expType, Function<TypeInfer, I> function) {
+        super(expType, function);
     }
 
     @Override

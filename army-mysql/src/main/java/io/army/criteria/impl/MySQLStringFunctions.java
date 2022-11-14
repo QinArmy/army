@@ -7,7 +7,6 @@ import io.army.criteria.SQLElement;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLLocale;
-import io.army.criteria.mysql.MySQLWords;
 import io.army.lang.Nullable;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
@@ -92,7 +91,7 @@ abstract class MySQLStringFunctions extends Functions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static Expression Char(final List<Expression> list) {
+    public static Expression charFunc(final List<Expression> list) {
         return FunctionUtils.multiArgFunc("CHAR", list, StringType.INSTANCE);
     }
 
@@ -108,7 +107,7 @@ abstract class MySQLStringFunctions extends Functions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static Expression Char(final Expression n, final MySQLs.WordUsing using, final SQLElement charsetName) {
+    public static Expression charFunc(final Expression n, final MySQLs.WordUsing using, final SQLElement charsetName) {
         assert using == MySQLs.USING;
         final String funcName = "CHAR";
         if (!(charsetName instanceof MySQLCharset || charsetName instanceof SQLs.SQLIdentifierImpl)) {
@@ -133,8 +132,8 @@ abstract class MySQLStringFunctions extends Functions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static Expression Char(final List<Expression> list, final MySQLs.WordUsing using
-            , final SQLElement charsetName) {
+    public static Expression charFunc(final List<Expression> list, final MySQLs.WordUsing using
+            , final SQLElement charsetName) {//TODO 优化方法定义
         assert using == MySQLs.USING;
         final String name = "CHAR";
         if (!(charsetName instanceof MySQLCharset || charsetName instanceof SQLs.SQLIdentifierImpl)) {
@@ -868,9 +867,9 @@ abstract class MySQLStringFunctions extends Functions {
      *
      * @param position non-null,should be below:
      *                 <ul>
-     *                      <li>{@link MySQLWords#BOTH}</li>
-     *                      <li>{@link MySQLWords#LEADING}</li>
-     *                      <li>{@link MySQLWords#TRAILING}</li>
+     *                      <li>{@link MySQLs#BOTH}</li>
+     *                      <li>{@link MySQLs#LEADING}</li>
+     *                      <li>{@link MySQLs#TRAILING}</li>
      *                 </ul>
      * @param remstr   nullable parameter or {@link Expression}
      * @param str      nullable parameter or {@link Expression}
@@ -878,7 +877,7 @@ abstract class MySQLStringFunctions extends Functions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM([BOTH | LEADING | TRAILING] remstr FROM str), TRIM([remstr FROM] str),TRIM(remstr FROM str)</a>
      */
     public static Expression trim(final @Nullable MySQLs.TrimPosition position, final @Nullable Expression remstr
-            , final @Nullable SQLs.WordFrom from, final Expression str) {
+            , final @Nullable SQLs.WordFrom from, final Expression str) {//TODO 优化方法定义
         final String name = "TRIM";
         if (!(str instanceof ArmyExpression)) {
             throw CriteriaUtils.funcArgError(name, str);
@@ -938,9 +937,15 @@ abstract class MySQLStringFunctions extends Functions {
     }
 
 
+    /*-------------------below package method-------------------*/
+
+
+    static void assertDistinct(@Nullable SQLSyntax.ArgDistinct distinct) {
+        assert distinct == null || distinct == SQLs.DISTINCT || distinct == MySQLs.DISTINCT;
+    }
+
 
     /*-------------------below private method -------------------*/
-
 
 
 }

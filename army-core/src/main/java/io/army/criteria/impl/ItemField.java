@@ -9,6 +9,7 @@ import io.army.criteria.QualifiedField;
  *
  * @since 1.0
  */
+@Deprecated
 interface ItemField<T, I extends Item> extends QualifiedField<T>, _AliasExpression<I> {
 
 

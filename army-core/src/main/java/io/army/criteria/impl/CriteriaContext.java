@@ -10,7 +10,6 @@ import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 
 import java.util.List;
-import java.util.function.Function;
 
 interface CriteriaContext {
 
@@ -63,16 +62,10 @@ interface CriteriaContext {
     @Deprecated
     DerivedField ref(String derivedTable, String derivedFieldName);
 
-    <I extends Item> ItemDerivedField<I> ref(String derivedTable, String fieldName, Function<TypeInfer, I> function);
-
     DerivedField refThis(String derivedTable, String fieldName);
 
-    <I extends Item> ItemDerivedField<I> refThis(String derivedTable, String fieldName, Function<TypeInfer, I> function);
 
-    @Deprecated
     <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field);
-
-    <T, I extends Item> ItemField<T, I> field(String tableAlias, FieldMeta<T> field, Function<TypeInfer, I> function);
 
     DerivedField outerRef(String derivedTable, String derivedFieldName);
 
