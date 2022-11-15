@@ -255,6 +255,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
+
     interface _StaticCteLeftParenSpec<I extends Item>
             extends _LeftParenStringQuadraOptionalSpec<_StaticCteAsClause<I>>
             , _StaticCteAsClause<I> {

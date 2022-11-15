@@ -35,23 +35,23 @@ public interface SQLFunction {
 
     interface _CaseElseClause<I extends Item> extends _CaseEndClause<I> {
 
-        _CaseEndClause<I> Else(Expression expression);
+        _CaseEndClause<I> elseValue(Expression expression);
 
-        _CaseEndClause<I> Else(Supplier<Expression> supplier);
+        _CaseEndClause<I> elseValue(Supplier<Expression> supplier);
 
-        <T> _CaseEndClause<I> Else(Function<T, Expression> valueOperator, Supplier<T> getter);
+        <T> _CaseEndClause<I> elseValue(Function<T, Expression> valueOperator, Supplier<T> getter);
 
-        _CaseEndClause<I> Else(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        _CaseEndClause<I> elseValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        <T> _CaseEndClause<I> Else(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
+        <T> _CaseEndClause<I> elseValue(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand);
 
-        _CaseEndClause<I> Else(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        _CaseEndClause<I> elseValue(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        <T> _CaseEndClause<I> Else(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
+        <T> _CaseEndClause<I> elseValue(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
-        _CaseEndClause<I> Else(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+        _CaseEndClause<I> elseValue(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
-        _CaseEndClause<I> Else(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
+        _CaseEndClause<I> elseValue(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
 
         _CaseEndClause<I> ifElse(Supplier<Expression> supplier);
 

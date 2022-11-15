@@ -22,7 +22,6 @@ public interface Window extends Item {
 
     interface Builder extends Item {
 
-        Item window(String name);
 
     }
 
@@ -39,6 +38,7 @@ public interface Window extends Item {
      * @param <WR> next clause java type
      * @since 1.0
      */
+    @Deprecated
     interface _StaticWindowClause<WR> {
 
         WR window(String windowName);
@@ -100,6 +100,7 @@ public interface Window extends Item {
      * @param <NR> next clause java type
      * @since 1.0
      */
+    @Deprecated
     interface _LeftParenNameClause<NR> extends Item {
 
         NR leftParen();
@@ -268,6 +269,7 @@ public interface Window extends Item {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
+     *
      * @since 1.0
      */
     interface _FrameNonExpBoundClause {
@@ -289,6 +291,7 @@ public interface Window extends Item {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
+     *
      * @since 1.0
      */
     interface _FrameExpBoundClause {
@@ -300,11 +303,22 @@ public interface Window extends Item {
     }
 
 
-    interface _OverClause<OR, OE extends Item> {
+    interface _OverClause {
 
-        OE over(String windowName);
+        Expression over(String windowName);
 
-        OR over();
+        Expression over();
+
+    }
+
+
+    interface _OverWindowClause<E extends Expression> extends _OverClause {
+
+        @Override
+        E over(String windowName);
+
+        @Override
+        E over();
     }
 
 
@@ -318,17 +332,10 @@ public interface Window extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <I> {@link Statement._RightParenClause#rightParen()} return java typ
      * @since 1.0
      */
-    interface _SimpleFrameEndExpBoundClause<I extends Item>
-            extends _FrameExpBoundClause {
+    interface _SimpleFrameEndExpBoundClause extends _FrameExpBoundClause {
 
-        @Override
-        Statement._RightParenClause<I> preceding();
-
-        @Override
-        Statement._RightParenClause<I> following();
 
     }
 
@@ -342,72 +349,59 @@ public interface Window extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <I> {@link Statement._RightParenClause#rightParen()} return java typ
      * @since 1.0
      */
-    interface _SimpleFrameEndNonExpBoundClause<I extends Item>
+    interface _SimpleFrameEndNonExpBoundClause extends _FrameNonExpBoundClause {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause for simple window.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @since 1.0
+     */
+    interface _SimpleFrameExpBoundClause extends _FrameExpBoundClause {
+
+
+        @Override
+        _SimpleFrameBetweenAndClause preceding();
+
+        @Override
+        _SimpleFrameBetweenAndClause following();
+
+
+    }
+
+    /**
+     * <p>
+     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause for simple window.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @since 1.0
+     */
+    interface _SimpleFrameNonExpBoundClause
             extends _FrameNonExpBoundClause {
 
         @Override
-        Statement._RightParenClause<I> currentRow();
+        _SimpleFrameBetweenAndClause currentRow();
 
         @Override
-        Statement._RightParenClause<I> unboundedPreceding();
+        _SimpleFrameBetweenAndClause unboundedPreceding();
 
         @Override
-        Statement._RightParenClause<I> unboundedFollowing();
-    }
-
-    /**
-     * <p>
-     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause for simple window.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <R> {@link Statement._RightParenClause#rightParen()} return java typ
-     * @since 1.0
-     */
-    interface _SimpleFrameExpBoundClause<R extends Item>
-            extends _FrameExpBoundClause {
-
-
-        @Override
-        _SimpleFrameBetweenAndClause<R> preceding();
-
-        @Override
-        _SimpleFrameBetweenAndClause<R> following();
-
-
-    }
-
-    /**
-     * <p>
-     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause for simple window.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <I> {@link Statement._RightParenClause#rightParen()} return java typ
-     * @since 1.0
-     */
-    interface _SimpleFrameNonExpBoundClause<I extends Item>
-            extends _FrameNonExpBoundClause {
-
-        @Override
-        _SimpleFrameBetweenAndClause<I> currentRow();
-
-        @Override
-        _SimpleFrameBetweenAndClause<I> unboundedPreceding();
-
-        @Override
-        _SimpleFrameBetweenAndClause<I> unboundedFollowing();
+        _SimpleFrameBetweenAndClause unboundedFollowing();
 
     }
 
@@ -421,12 +415,11 @@ public interface Window extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <I> {@link Statement._RightParenClause#rightParen()} return java typ
      * @since 1.0
      */
-    interface _SimpleFrameBetweenAndClause<I extends Item>
-            extends _FrameBetweenAndExpClause<_SimpleFrameEndExpBoundClause<I>>
-            , Statement._StaticAndClause<_SimpleFrameEndNonExpBoundClause<I>> {
+    interface _SimpleFrameBetweenAndClause
+            extends _FrameBetweenAndExpClause<_SimpleFrameEndExpBoundClause>
+            , Statement._StaticAndClause<_SimpleFrameEndNonExpBoundClause> {
 
     }
 
@@ -440,13 +433,12 @@ public interface Window extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <I> {@link Statement._RightParenClause#rightParen()} return java typ
      * @since 1.0
      */
-    interface _SimpleFrameBetweenSpec<I extends Item>
-            extends _FrameBetweenExpClause<_SimpleFrameExpBoundClause<I>>
-            , Statement._StaticBetweenClause<_SimpleFrameNonExpBoundClause<I>>
-            , _SimpleFrameNonExpBoundClause<I> {
+    interface _SimpleFrameBetweenSpec
+            extends _FrameBetweenExpClause<_SimpleFrameExpBoundClause>
+            , Statement._StaticBetweenClause<_SimpleFrameNonExpBoundClause>
+            , _SimpleFrameNonExpBoundClause {
 
     }
 
@@ -464,13 +456,11 @@ public interface Window extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <I> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
-    interface _SimpleFrameUnitsSpec<I extends Item>
-            extends _FrameUnitExpClause<_SimpleFrameEndExpBoundClause<I>>
-            , _FrameUnitNoExpClause<_SimpleFrameBetweenSpec<I>>
-            , Statement._RightParenClause<I> {
+    interface _SimpleFrameUnitsSpec
+            extends _FrameUnitExpClause<_SimpleFrameEndExpBoundClause>
+            , _FrameUnitNoExpClause<_SimpleFrameBetweenSpec> {
 
     }
 
@@ -489,11 +479,10 @@ public interface Window extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <I> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
-    interface _SimpleOrderBySpec<I extends Item> extends Statement._StaticOrderByClause<_SimpleFrameUnitsSpec<I>>
-            , _SimpleFrameUnitsSpec<I> {
+    interface _SimpleOrderBySpec extends Statement._StaticOrderByClause<_SimpleFrameUnitsSpec>
+            , _SimpleFrameUnitsSpec {
 
     }
 
@@ -511,11 +500,10 @@ public interface Window extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <I> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
-    interface _SimplePartitionBySpec<I extends Item> extends _PartitionByExpClause<_SimpleOrderBySpec<I>>
-            , _SimpleOrderBySpec<I> {
+    interface _SimplePartitionBySpec extends _PartitionByExpClause<_SimpleOrderBySpec>
+            , _SimpleOrderBySpec {
 
     }
 
@@ -532,7 +520,8 @@ public interface Window extends Item {
      * @param <I> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
-    interface _SimpleLeftParenClause<I extends Item> extends _LeftParenNameClause<_SimplePartitionBySpec<I>> {
+    @Deprecated
+    interface _SimpleLeftParenClause<I extends Item> extends _LeftParenNameClause<_SimplePartitionBySpec> {
 
     }
 
@@ -550,6 +539,7 @@ public interface Window extends Item {
      * @param <I> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
+    @Deprecated
     interface _SimpleAsClause<I extends Item> extends Statement._StaticAsClaus<_SimpleLeftParenClause<I>> {
 
 

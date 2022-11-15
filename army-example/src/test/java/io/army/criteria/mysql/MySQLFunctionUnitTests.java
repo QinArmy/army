@@ -37,7 +37,7 @@ public class MySQLFunctionUnitTests {
                 .when(SQLs.literalFrom(PillUserType.ENTERPRISE))
                 .then(SQLs.literalFrom(3))
 
-                .Else(SQLs.literalFrom(0))
+                .elseValue(SQLs.literalFrom(0))
 
                 .end()
                 .plus(SQLs::literal, 1)

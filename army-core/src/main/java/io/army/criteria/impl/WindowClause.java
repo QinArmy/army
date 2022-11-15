@@ -1,12 +1,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.criteria.Item;
 import io.army.criteria.SQLWords;
 import io.army.criteria.Statement;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._Window;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
@@ -30,26 +28,25 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
+abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
         extends OrderByClause<OR>
-        implements _Window
-        , Statement._StaticAsClaus<AR>, Window._LeftParenNameClause<LR>, Window._PartitionByExpClause<PR>
+        implements Window._PartitionByExpClause<PR>
         , Statement._StaticOrderByClause<OR>, Window._FrameUnitExpClause<FE>, Window._FrameUnitNoExpClause<FB>
         , Window._FrameBetweenExpClause<BE>, Statement._StaticBetweenClause<BN>
         , Window._FrameBetweenAndExpClause<FE>, Statement._StaticAndClause<NN>
         , Window._FrameExpBoundClause, Window._FrameNonExpBoundClause
-        , Statement._RightParenClause<I>, CriteriaContextSpec, Window {
+        , CriteriaContextSpec, ArmyWindow {
 
 
-    static <I extends Item> Window._SimpleAsClause<I> namedWindow(String windowName, CriteriaContext context
-            , Function<_Window, I> function) {
-        return new SimpleWindow<>(windowName, context, function);
+    static Window._SimplePartitionBySpec namedWindow(String windowName, CriteriaContext context
+            , @Nullable String existingWindowName) {
+        return new SimpleWindow(windowName, context, existingWindowName);
     }
 
 
-    static <I extends Item> Window._SimpleLeftParenClause<I> anonymousWindow(CriteriaContext context
-            , Function<_Window, I> function) {
-        return new SimpleWindow<>(context, function);
+    static Window._SimplePartitionBySpec anonymousWindow(CriteriaContext context
+            , @Nullable String existingWindowName) {
+        return new SimpleWindow(context, existingWindowName);
     }
 
 
@@ -57,14 +54,11 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
         return window instanceof WindowClause.SimpleWindow;
     }
 
-
     private final String windowName;
-
-    private final Function<_Window, I> function;
 
     final CriteriaContext context;
 
-    private String refWindowName;
+    private final String refWindowName;
 
     private List<_Expression> partitionByList;
 
@@ -90,12 +84,16 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
      * Constructor for named {@link  Window}
      * </p>
      */
-    WindowClause(String windowName, CriteriaContext context, Function<_Window, I> function) {
+    WindowClause(String windowName, CriteriaContext context, @Nullable String existingWindowName) {
         super(context);
-        assert _StringUtils.hasText(windowName);
+        if (!_StringUtils.hasText(windowName)) {
+            throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
+        } else if (existingWindowName != null && !_StringUtils.hasText(existingWindowName)) {
+            throw ContextStack.criteriaError(context, "existingWindowName must be null or non-empty");
+        }
         this.windowName = windowName;
         this.context = context;
-        this.function = function;
+        this.refWindowName = existingWindowName;
     }
 
 
@@ -104,51 +102,14 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
      * Constructor for anonymous {@link  Window}
      * </p>
      */
-    WindowClause(CriteriaContext context, Function<_Window, I> function) {
+    WindowClause(CriteriaContext context, @Nullable String existingWindowName) {
         super(context);
+        if (existingWindowName != null && !_StringUtils.hasText(existingWindowName)) {
+            throw ContextStack.criteriaError(context, "existingWindowName must be null or non-empty");
+        }
         this.windowName = null;
-        this.function = function;
         this.context = context;
-    }
-
-    @Override
-    public final AR as() {
-        return (AR) this;
-    }
-
-    @Override
-    public final LR leftParen() {
-        return (LR) this;
-    }
-
-    @Override
-    public final LR leftParen(final @Nullable String windowName) {
-        if (windowName == null) {
-            throw ContextStack.nullPointer(this.context);
-        } else if (this.refWindowName != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        } else if (this.windowName == null) {//anonymous window for over clause
-            this.context.onRefWindow(windowName);
-        } else if (!this.context.isExistWindow(windowName)) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::windowNotExists, windowName);
-        }
-        this.refWindowName = windowName;
-        return (LR) this;
-    }
-
-    @Override
-    public final LR leftParen(Supplier<String> supplier) {
-        return this.leftParen(supplier.get());
-    }
-
-    @Override
-    public final LR leftParenIf(Supplier<String> supplier) {
-        final String windowName;
-        windowName = supplier.get();
-        if (windowName != null) {
-            this.leftParen(windowName);
-        }
-        return (LR) this;
+        this.refWindowName = existingWindowName;
     }
 
     @Override
@@ -427,10 +388,10 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
     }
 
     @Override
-    public final I rightParen() {
+    public final ArmyWindow endWindowClause() {
         _Assert.nonPrepared(this.prepared);
         this.prepared = Boolean.TRUE;
-        return this.function.apply(this);
+        return this;
     }
 
     @Override
@@ -516,6 +477,15 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
 
 
     @Override
+    public final String windowName() {
+        final String name = this.windowName;
+        if (name == null) {
+            throw new IllegalStateException("this is anonymous window");
+        }
+        return name;
+    }
+
+    @Override
     public final void prepared() {
         _Assert.prepared(this.prepared);
     }
@@ -528,7 +498,6 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
 
     @Override
     public final void clear() {
-        this.refWindowName = null;
         this.partitionByList = null;
         this.orderByList = null;
         this.frameUnits = null;
@@ -731,58 +700,54 @@ abstract class WindowClause<I extends Item, AR, LR, PR, OR, FB, FE, BN, BE, NN>
     }//FrameBound
 
 
-    private static class SimpleWindow<I extends Item> extends WindowClause<
-            I,
-            _SimpleLeftParenClause<I>,
-            _SimplePartitionBySpec<I>,
-            _SimpleOrderBySpec<I>,
-            _SimpleFrameUnitsSpec<I>,
-            _SimpleFrameBetweenSpec<I>,
-            _SimpleFrameEndExpBoundClause<I>,
-            _SimpleFrameNonExpBoundClause<I>,
-            _SimpleFrameExpBoundClause<I>,
-            _SimpleFrameEndNonExpBoundClause<I>>
-            implements Window._SimpleAsClause<I>, Window._SimpleLeftParenClause<I>
-            , Window._SimplePartitionBySpec<I>, _SimpleFrameBetweenSpec<I>,
-            Window._SimpleFrameEndNonExpBoundClause<I>, Window._SimpleFrameNonExpBoundClause<I>
-            , Window._SimpleFrameExpBoundClause<I>, Window._SimpleFrameEndExpBoundClause<I>
-            , Window._SimpleFrameBetweenAndClause<I> {
+    private static class SimpleWindow extends WindowClause<
+            _SimpleOrderBySpec,
+            _SimpleFrameUnitsSpec,
+            _SimpleFrameBetweenSpec,
+            _SimpleFrameEndExpBoundClause,
+            _SimpleFrameNonExpBoundClause,
+            _SimpleFrameExpBoundClause,
+            _SimpleFrameEndNonExpBoundClause>
+            implements Window._SimplePartitionBySpec, _SimpleFrameBetweenSpec,
+            Window._SimpleFrameEndNonExpBoundClause, Window._SimpleFrameNonExpBoundClause
+            , Window._SimpleFrameExpBoundClause, Window._SimpleFrameEndExpBoundClause
+            , Window._SimpleFrameBetweenAndClause {
 
 
-        private SimpleWindow(String windowName, CriteriaContext context, Function<_Window, I> function) {
-            super(windowName, context, function);
+        private SimpleWindow(String windowName, CriteriaContext context, @Nullable String existingWindowName) {
+            super(windowName, context, existingWindowName);
         }
 
-        private SimpleWindow(CriteriaContext context, Function<_Window, I> function) {
-            super(context, function);
+        private SimpleWindow(CriteriaContext context, @Nullable String existingWindowName) {
+            super(context, existingWindowName);
         }
 
         @Override
-        public final SimpleWindow<I> currentRow() {
+        public final SimpleWindow currentRow() {
             this.bound(FrameBound.CURRENT_ROW);
             return this;
         }
 
         @Override
-        public final SimpleWindow<I> unboundedPreceding() {
+        public final SimpleWindow unboundedPreceding() {
             this.bound(FrameBound.UNBOUNDED_PRECEDING);
             return this;
         }
 
         @Override
-        public final SimpleWindow<I> unboundedFollowing() {
+        public final SimpleWindow unboundedFollowing() {
             this.bound(FrameBound.UNBOUNDED_FOLLOWING);
             return this;
         }
 
         @Override
-        public final SimpleWindow<I> preceding() {
+        public final SimpleWindow preceding() {
             this.bound(FrameBound.PRECEDING);
             return this;
         }
 
         @Override
-        public final SimpleWindow<I> following() {
+        public final SimpleWindow following() {
             this.bound(FrameBound.FOLLOWING);
             return this;
         }

@@ -295,33 +295,40 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final _OrderBySpec<I> window(Consumer<MySQLWindows> consumer) {
-        consumer.accept(new MySQLWindowBuilderImpl(this));
-        if (this.windowList == null) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::windowListIsEmpty);
-        }
-        return this;
+        return this.dynamicWindow(true, consumer);
     }
 
     @Override
     public final _OrderBySpec<I> ifWindow(Consumer<MySQLWindows> consumer) {
-        consumer.accept(new MySQLWindowBuilderImpl(this));
-        return this;
+        return this.dynamicWindow(false, consumer);
+    }
+
+
+    @Override
+    public final _WindowCommaSpec<I> window(String name, SQLsSyntax.WordAs as
+            , Consumer<Window._SimplePartitionBySpec> consumer) {
+        return this.window(name, as, null, consumer);
     }
 
     @Override
-    public final Window._SimpleAsClause<_WindowCommaSpec<I>> window(String windowName) {
-        if (!_StringUtils.hasText(windowName)) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::namedWindowNoText);
-        }
-        return WindowClause.namedWindow(windowName, this.context, this::onAddWindow);
+    public final _WindowCommaSpec<I> window(String name, SQLsSyntax.WordAs as
+            , @Nullable String existingWindowName, Consumer<Window._SimplePartitionBySpec> consumer) {
+        final Window._SimplePartitionBySpec clause;
+        clause = WindowClause.namedWindow(name, this.context, existingWindowName);
+        consumer.accept(clause);
+        return this.onAddWindow((ArmyWindow) clause);
     }
 
     @Override
-    public final Window._SimpleAsClause<_WindowCommaSpec<I>> comma(final String windowName) {
-        if (!_StringUtils.hasText(windowName)) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::namedWindowNoText);
-        }
-        return WindowClause.namedWindow(windowName, this.context, this::onAddWindow);
+    public final _WindowCommaSpec<I> comma(String name, SQLsSyntax.WordAs as
+            , Consumer<Window._SimplePartitionBySpec> consumer) {
+        return this.window(name, as, null, consumer);
+    }
+
+    @Override
+    public final _WindowCommaSpec<I> comma(String name, SQLsSyntax.WordAs as
+            , @Nullable String existingWindowName, Consumer<Window._SimplePartitionBySpec> consumer) {
+        return this.window(name, as, existingWindowName, consumer);
     }
 
     @Override
@@ -695,10 +702,14 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     /**
-     * @see #window(String)
-     * @see #comma(String)
+     * @see #window(String, SQLsSyntax.WordAs, Consumer)
+     * @see #window(String, SQLsSyntax.WordAs, String, Consumer)
+     * @see #comma(String, SQLsSyntax.WordAs, Consumer)
+     * @see #comma(String, SQLsSyntax.WordAs, String, Consumer)
      */
-    private _WindowCommaSpec<I> onAddWindow(final _Window window) {
+    private _WindowCommaSpec<I> onAddWindow(final ArmyWindow window) {
+        window.endWindowClause();
+        this.context.onAddWindow(window.windowName());
         List<_Window> windowList = this.windowList;
         if (windowList == null) {
             windowList = new ArrayList<>();
@@ -707,6 +718,24 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             throw ContextStack.castCriteriaApi(this.context);
         }
         windowList.add(window);
+        return this;
+    }
+
+    /**
+     * @see #window(Consumer)
+     * @see #ifWindow(Consumer)
+     */
+    private _OrderBySpec<I> dynamicWindow(final boolean required, final Consumer<MySQLWindows> consumer) {
+        final MySQLWindowBuilderImpl builder = new MySQLWindowBuilderImpl(this);
+        consumer.accept(builder);
+        final ArmyWindow lastWindow = builder.lastWindow;
+        if (lastWindow != null) {
+            builder.lastWindow = null;
+            this.onAddWindow(lastWindow);
+        }
+        if (required && this.windowList == null) {
+            throw ContextStack.criteriaError(this.context, _Exceptions::windowListIsEmpty);
+        }
         return this;
     }
 
@@ -837,23 +866,32 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         private final MySQLQueries<?> stmt;
 
+        private ArmyWindow lastWindow;
+
         private MySQLWindowBuilderImpl(MySQLQueries<?> stmt) {
             this.stmt = stmt;
         }
 
         @Override
-        public Window._SimpleAsClause<MySQLWindows> window(final String windowName) {
-            if (!_StringUtils.hasText(windowName)) {
-                throw ContextStack.criteriaError(this.stmt.context, _Exceptions::namedWindowNoText);
+        public Window._SimplePartitionBySpec window(String windowName, SQLs.WordAs as) {
+            return this.window(windowName, as, null);
+        }
+
+        @Override
+        public Window._SimplePartitionBySpec window(String windowName, SQLs.WordAs as
+                , @Nullable String existingWindowName) {
+
+            final ArmyWindow lastWindow = this.lastWindow;
+            if (lastWindow != null) {
+                this.stmt.onAddWindow(lastWindow);
             }
-            return WindowClause.namedWindow(windowName, this.stmt.context, this::windowClauseEnd);
+
+            final Window._SimplePartitionBySpec clause;
+            clause = WindowClause.namedWindow(windowName, this.stmt.context, existingWindowName);
+            this.lastWindow = (ArmyWindow) clause;
+            return clause;
         }
 
-
-        private MySQLWindows windowClauseEnd(final _Window window) {
-            this.stmt.onAddWindow(window);
-            return this;
-        }
 
     }//MySQLWindowBuilderImpl
 

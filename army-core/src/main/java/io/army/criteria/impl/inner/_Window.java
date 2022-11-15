@@ -12,6 +12,7 @@ import io.army.dialect.DialectParser;
  */
 public interface _Window extends _SelfDescribed, Window {
 
+
     void prepared();
 
     void clear();

@@ -6,13 +6,11 @@ import io.army.criteria.Query;
 import io.army.criteria.Statement;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.Postgres;
+import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 
-import java.util.function.BiFunction;
-import java.util.function.BooleanSupplier;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 
 /**
@@ -43,128 +41,129 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _FrameExclusionSpec<I extends Item> extends _RightParenClause<I> {
+    interface _FrameExclusionSpec extends Item {
 
-        _RightParenClause<I> excludeCurrentRow();
+        Item excludeCurrentRow();
 
-        _RightParenClause<I> excludeGroup();
+        Item excludeGroup();
 
-        _RightParenClause<I> excludeTies();
+        Item excludeTies();
 
-        _RightParenClause<I> excludeNoOthers();
+        Item excludeNoOthers();
 
-        _RightParenClause<I> ifExcludeCurrentRow(BooleanSupplier predicate);
+        Item ifExcludeCurrentRow(BooleanSupplier predicate);
 
-        _RightParenClause<I> ifExcludeGroup(BooleanSupplier predicate);
+        Item ifExcludeGroup(BooleanSupplier predicate);
 
-        _RightParenClause<I> ifExcludeTies(BooleanSupplier predicate);
+        Item ifExcludeTies(BooleanSupplier predicate);
 
-        _RightParenClause<I> ifExcludeNoOthers(BooleanSupplier predicate);
-
-    }
-
-    interface _PostgreFrameEndNonExpBoundClause<I extends Item> extends Window._FrameNonExpBoundClause {
-
-        @Override
-        _FrameExclusionSpec<I> currentRow();
-
-        @Override
-        _FrameExclusionSpec<I> unboundedPreceding();
-
-        @Override
-        _FrameExclusionSpec<I> unboundedFollowing();
-    }
-
-    interface _PostgreFrameEndExpBoundClause<I extends Item> extends Window._FrameExpBoundClause {
-
-        @Override
-        _FrameExclusionSpec<I> preceding();
-
-        @Override
-        _FrameExclusionSpec<I> following();
-    }
-
-    interface _PostgreFrameBetweenAndClause<I extends Item>
-            extends Window._FrameBetweenAndExpClause<_PostgreFrameEndExpBoundClause<I>>
-            , _StaticAndClause<_PostgreFrameEndNonExpBoundClause<I>> {
+        Item ifExcludeNoOthers(BooleanSupplier predicate);
 
     }
 
-
-    interface _PostgreFrameStartNonExpBoundClause<I extends Item> extends Window._FrameNonExpBoundClause {
-
-        @Override
-        _PostgreFrameBetweenAndClause<I> currentRow();
+    interface _PostgreFrameEndNonExpBoundClause extends Window._FrameNonExpBoundClause {
 
         @Override
-        _PostgreFrameBetweenAndClause<I> unboundedPreceding();
+        _FrameExclusionSpec currentRow();
 
         @Override
-        _PostgreFrameBetweenAndClause<I> unboundedFollowing();
-    }
-
-    interface _PostgreFrameStartExpBoundClause<I extends Item> extends Window._FrameExpBoundClause {
+        _FrameExclusionSpec unboundedPreceding();
 
         @Override
-        _PostgreFrameBetweenAndClause<I> preceding();
+        _FrameExclusionSpec unboundedFollowing();
+    }
+
+    interface _PostgreFrameEndExpBoundClause extends Window._FrameExpBoundClause {
 
         @Override
-        _PostgreFrameBetweenAndClause<I> following();
+        _FrameExclusionSpec preceding();
+
+        @Override
+        _FrameExclusionSpec following();
+    }
+
+    interface _PostgreFrameBetweenAndClause
+            extends Window._FrameBetweenAndExpClause<_PostgreFrameEndExpBoundClause>
+            , _StaticAndClause<_PostgreFrameEndNonExpBoundClause> {
 
     }
 
-    interface _PostgreFrameBetweenSpec<I extends Item>
-            extends Window._FrameBetweenExpClause<_PostgreFrameStartExpBoundClause<I>>
-            , _StaticBetweenClause<_PostgreFrameStartNonExpBoundClause<I>>
-            , _PostgreFrameStartNonExpBoundClause<I> {
+
+    interface _PostgreFrameStartNonExpBoundClause extends Window._FrameNonExpBoundClause {
+
+        @Override
+        _PostgreFrameBetweenAndClause currentRow();
+
+        @Override
+        _PostgreFrameBetweenAndClause unboundedPreceding();
+
+        @Override
+        _PostgreFrameBetweenAndClause unboundedFollowing();
+    }
+
+    interface _PostgreFrameStartExpBoundClause extends Window._FrameExpBoundClause {
+
+        @Override
+        _PostgreFrameBetweenAndClause preceding();
+
+        @Override
+        _PostgreFrameBetweenAndClause following();
 
     }
 
-    interface _PostgreFrameUnitSpec<I extends Item>
-            extends Window._FrameUnitExpClause<_PostgreFrameEndExpBoundClause<I>>
-            , Window._FrameUnitNoExpClause<_PostgreFrameBetweenSpec<I>>
-            , Statement._RightParenClause<I> {
+    interface _PostgreFrameBetweenSpec
+            extends Window._FrameBetweenExpClause<_PostgreFrameStartExpBoundClause>
+            , _StaticBetweenClause<_PostgreFrameStartNonExpBoundClause>
+            , _PostgreFrameStartNonExpBoundClause {
 
-        _PostgreFrameBetweenSpec<I> groups();
+    }
 
-        _PostgreFrameBetweenSpec<I> ifGroups(BooleanSupplier predicate);
+    interface _PostgreFrameUnitSpec
+            extends Window._FrameUnitExpClause<_PostgreFrameEndExpBoundClause>
+            , Window._FrameUnitNoExpClause<_PostgreFrameBetweenSpec> {
 
-        _PostgreFrameEndExpBoundClause<I> groups(Expression expression);
+        _PostgreFrameBetweenSpec groups();
 
-        _PostgreFrameEndExpBoundClause<I> groups(Supplier<Expression> supplier);
+        _PostgreFrameBetweenSpec ifGroups(BooleanSupplier predicate);
 
-        <E> _PostgreFrameEndExpBoundClause<I> groups(Function<E, Expression> valueOperator, @Nullable E value);
+        _PostgreFrameEndExpBoundClause groups(Expression expression);
 
-        <E> _PostgreFrameEndExpBoundClause<I> groups(Function<E, Expression> valueOperator, Supplier<E> supplier);
+        _PostgreFrameEndExpBoundClause groups(Supplier<Expression> supplier);
 
-        _PostgreFrameEndExpBoundClause<I> groups(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        <E> _PostgreFrameEndExpBoundClause groups(Function<E, Expression> valueOperator, @Nullable E value);
 
-        _PostgreFrameEndExpBoundClause<I> ifGroups(Supplier<Expression> supplier);
+        <E> _PostgreFrameEndExpBoundClause groups(Function<E, Expression> valueOperator, Supplier<E> supplier);
 
-        <E> _PostgreFrameEndExpBoundClause<I> ifGroups(Function<E, Expression> valueOperator, @Nullable E value);
+        _PostgreFrameEndExpBoundClause groups(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
-        <E> _PostgreFrameEndExpBoundClause<I> ifGroups(Function<E, Expression> valueOperator, Supplier<E> supplier);
+        _PostgreFrameEndExpBoundClause ifGroups(Supplier<Expression> supplier);
 
-        _PostgreFrameEndExpBoundClause<I> ifGroups(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        <E> _PostgreFrameEndExpBoundClause ifGroups(Function<E, Expression> valueOperator, @Nullable E value);
+
+        <E> _PostgreFrameEndExpBoundClause ifGroups(Function<E, Expression> valueOperator, Supplier<E> supplier);
+
+        _PostgreFrameEndExpBoundClause ifGroups(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
 
     }
 
-    interface _WindowOrderBySpec<I extends Item> extends _PostgreOrderByClause<_PostgreFrameUnitSpec<I>>
-            , _PostgreFrameUnitSpec<I> {
+    interface _WindowOrderBySpec extends _PostgreOrderByClause<_PostgreFrameUnitSpec>
+            , _PostgreFrameUnitSpec {
 
     }
 
-    interface _WindowPartitionBySpec<I extends Item> extends Window._PartitionByExpClause<_WindowOrderBySpec<I>>
-            , _WindowOrderBySpec<I> {
+    interface _WindowPartitionBySpec extends Window._PartitionByExpClause<_WindowOrderBySpec>
+            , _WindowOrderBySpec {
 
     }
 
+    @Deprecated
     interface _WindowLeftParenClause<I extends Item>
             extends Window._LeftParenNameClause<_WindowPartitionBySpec<I>> {
 
     }
 
+    @Deprecated
     interface _WindowAsClause<I extends Item> extends Statement._StaticAsClaus<_WindowLeftParenClause<I>> {
 
     }
@@ -262,11 +261,18 @@ public interface PostgreQuery extends Query, PostgreStatement {
             extends Window._StaticWindowCommaClause<_WindowAsClause<_WindowCommaSpec<I>>>
             , _OrderBySpec<I> {
 
+        _WindowCommaSpec<I> comma(String name, SQLs.WordAs as, Consumer<_WindowPartitionBySpec> consumer);
+
+        _WindowCommaSpec<I> comma(String name, SQLs.WordAs as, @Nullable String existingWindowName, Consumer<_WindowPartitionBySpec> consumer);
     }
 
     interface _WindowSpec<I extends Item> extends Window._DynamicWindowClause<PostgreWindows, _OrderBySpec<I>>
-            , Window._StaticWindowClause<_WindowAsClause<_WindowCommaSpec<I>>>
             , _OrderBySpec<I> {
+
+        _WindowCommaSpec<I> window(String name, SQLs.WordAs as, Consumer<_WindowPartitionBySpec> consumer);
+
+        _WindowCommaSpec<I> window(String name, SQLs.WordAs as, @Nullable String existingWindowName, Consumer<_WindowPartitionBySpec> consumer);
+
 
     }
 

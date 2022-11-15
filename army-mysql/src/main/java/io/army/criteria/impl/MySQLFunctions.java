@@ -466,7 +466,7 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * @see #cast(Expression, SQLs.WordAs, MySQLCastType)
      * @see #convert(Expression, MySQLs.WordUsing, SQLElement)
      */
-    private static MappingType _castReturnType(final MySQLCastType type) {
+    static MappingType _castReturnType(final MySQLCastType type) {
         final MappingType returnType;
         switch (type) {
             case BINARY:

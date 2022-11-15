@@ -111,7 +111,7 @@ public class MySQLCriteriaUnitTests {
         stmt = MySQLs.batchSingleUpdate()
                 .update(ChinaRegion_.T, AS, "t")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
-                .set(ChinaRegion_.name, SQLs::namedNullableParam)
+                .set(ChinaRegion_.name, SQLs::namedParam)
                 .where(ChinaRegion_.id::equal, SQLs::literal, paramMap::get, ChinaRegion_.ID)
                 .limit(SQLs::param, 10)
                 .paramList(paramList)

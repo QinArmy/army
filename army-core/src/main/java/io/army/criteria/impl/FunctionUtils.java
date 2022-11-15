@@ -570,42 +570,31 @@ abstract class FunctionUtils {
 
 
     static abstract class WindowFunction<OR, OE extends Item, I extends Item> extends Expressions<I>
-            implements Window._OverClause<OR, OE>
-            , OperationExpression.MutableParamMetaSpec
+            implements Window._OverWindowClause<OR, OE>
             , CriteriaContextSpec
-            , SQLFunction
-            , _ItemWindow<I> {
+            , SQLFunction {
 
         final CriteriaContext context;
 
         final String name;
 
-        private final Function<_ItemWindow<I>, OE> windowFunc;
-
-        private TypeMeta returnType;
+        private final Function<_ItemExpression<I>, OE> windowFunc;
 
         private String existingWindowName;
 
         private _Window anonymousWindow;
 
-        WindowFunction(String name, TypeMeta returnType, Function<_ItemWindow<I>, OE> windowFunc
+        WindowFunction(String name, TypeMeta returnType, Function<_ItemExpression<I>, OE> windowFunc
                 , Function<TypeInfer, I> endFunc) {
             super(returnType, endFunc);
             this.context = ContextStack.peek();
             this.name = name;
             this.windowFunc = windowFunc;
-            this.returnType = returnType;
         }
 
         @Override
         public final CriteriaContext getContext() {
             return this.context;
-        }
-
-
-        @Override
-        public final void updateParamMeta(final TypeMeta typeMeta) {
-            this.returnType = typeMeta;
         }
 
         @Override
@@ -1521,54 +1510,54 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public SQLFunction._CaseEndClause<R> Else(Expression expression) {
+        public SQLFunction._CaseEndClause<R> elseValue(Expression expression) {
             return null;
         }
 
         @Override
-        public SQLFunction._CaseEndClause<R> Else(Supplier<Expression> supplier) {
+        public SQLFunction._CaseEndClause<R> elseValue(Supplier<Expression> supplier) {
             return null;
         }
 
         @Override
-        public <T> SQLFunction._CaseEndClause<R> Else(Function<T, Expression> valueOperator
+        public <T> SQLFunction._CaseEndClause<R> elseValue(Function<T, Expression> valueOperator
                 , Supplier<T> getter) {
             return null;
         }
 
         @Override
-        public SQLFunction._CaseEndClause<R> Else(Function<Object, Expression> valueOperator
+        public SQLFunction._CaseEndClause<R> elseValue(Function<Object, Expression> valueOperator
                 , Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public <T> SQLFunction._CaseEndClause<R> Else(ExpressionOperator<Expression, T, Expression> expOperator
+        public <T> SQLFunction._CaseEndClause<R> elseValue(ExpressionOperator<Expression, T, Expression> expOperator
                 , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> operand) {
             return null;
         }
 
         @Override
-        public SQLFunction._CaseEndClause<R> Else(ExpressionOperator<Expression, Object, Expression> expOperator
+        public SQLFunction._CaseEndClause<R> elseValue(ExpressionOperator<Expression, Object, Expression> expOperator
                 , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public <T> SQLFunction._CaseEndClause<R> Else(BetweenValueOperator<T> expOperator
+        public <T> SQLFunction._CaseEndClause<R> elseValue(BetweenValueOperator<T> expOperator
                 , BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and
                 , Supplier<T> secondGetter) {
             return null;
         }
 
         @Override
-        public SQLFunction._CaseEndClause<R> Else(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator
+        public SQLFunction._CaseEndClause<R> elseValue(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator
                 , Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey) {
             return null;
         }
 
         @Override
-        public SQLFunction._CaseEndClause<R> Else(BetweenOperator expOperator, Expression first
+        public SQLFunction._CaseEndClause<R> elseValue(BetweenOperator expOperator, Expression first
                 , SQLs.WordAnd and, Expression second) {
             return null;
         }
@@ -1634,7 +1623,7 @@ abstract class FunctionUtils {
     }//CaseFunc
 
 
-    private static final class GlobalWindow implements _Window {
+    private static final class GlobalWindow implements ArmyWindow {
 
         private static final GlobalWindow INSTANCE = new GlobalWindow();
 
@@ -1644,6 +1633,16 @@ abstract class FunctionUtils {
         @Override
         public void appendSql(final _SqlContext context) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ArmyWindow endWindowClause() {
+            return this;
+        }
+
+        @Override
+        public String windowName() {
+            throw new IllegalStateException("this is global window");
         }
 
         @Override

@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.postgre._PostgreCteStatement;
 import io.army.criteria.impl.inner.postgre._PostgreTableBlock;
 import io.army.criteria.postgre.*;
@@ -35,14 +34,14 @@ abstract class PostgreSupports extends CriteriaSupports {
         return new PostgreCteBuilderImpl(recursive, context);
     }
 
-    static <I extends Item> PostgreQuery._WindowAsClause<I> postgreNamedWindow(String name, CriteriaContext context
-            , Function<_Window, I> function) {
-        return new PostgreWindow<>(name, context, function);
+    static PostgreQuery._WindowPartitionBySpec postgreNamedWindow(String name, CriteriaContext context
+            , @Nullable String existingWindowName) {
+        return new PostgreWindow(name, context, existingWindowName);
     }
 
-    static <I extends Item> PostgreQuery._WindowAsClause<I> postgreAnonymousWindow(CriteriaContext context
-            , Function<_Window, I> function) {
-        return new PostgreWindow<>(context, function);
+    static PostgreQuery._WindowPartitionBySpec postgreAnonymousWindow(CriteriaContext context
+            , @Nullable String existingWindowName) {
+        return new PostgreWindow(context, existingWindowName);
     }
 
 
@@ -983,79 +982,80 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//FrameExclusion
 
 
-    private static final class PostgreWindow<I extends Item> extends WindowClause<
-            I,
-            PostgreQuery._WindowLeftParenClause<I>,
-            PostgreQuery._WindowPartitionBySpec<I>,
-            PostgreQuery._WindowOrderBySpec<I>,
-            PostgreQuery._PostgreFrameUnitSpec<I>,
-            PostgreQuery._PostgreFrameBetweenSpec<I>,
-            PostgreQuery._PostgreFrameEndExpBoundClause<I>,
-            PostgreQuery._PostgreFrameStartNonExpBoundClause<I>,
-            PostgreQuery._PostgreFrameStartExpBoundClause<I>,
-            PostgreQuery._PostgreFrameEndNonExpBoundClause<I>>
-            implements PostgreQuery._WindowAsClause<I>
-            , PostgreQuery._WindowLeftParenClause<I>
-            , PostgreQuery._WindowPartitionBySpec<I>
-            , PostgreQuery._PostgreFrameBetweenSpec<I>
-            , PostgreQuery._PostgreFrameStartExpBoundClause<I>
-            , PostgreQuery._PostgreFrameStartNonExpBoundClause<I>
-            , PostgreQuery._PostgreFrameEndExpBoundClause<I>
-            , PostgreQuery._PostgreFrameEndNonExpBoundClause<I>
-            , PostgreQuery._PostgreFrameBetweenAndClause<I>
-            , PostgreQuery._FrameExclusionSpec<I>
+    private static final class PostgreWindow extends WindowClause<
+            PostgreQuery._WindowOrderBySpec,
+            PostgreQuery._PostgreFrameUnitSpec,
+            PostgreQuery._PostgreFrameBetweenSpec,
+            PostgreQuery._PostgreFrameEndExpBoundClause,
+            PostgreQuery._PostgreFrameStartNonExpBoundClause,
+            PostgreQuery._PostgreFrameStartExpBoundClause,
+            PostgreQuery._PostgreFrameEndNonExpBoundClause>
+            implements PostgreQuery._WindowPartitionBySpec
+            , PostgreQuery._PostgreFrameBetweenSpec
+            , PostgreQuery._PostgreFrameStartExpBoundClause
+            , PostgreQuery._PostgreFrameStartNonExpBoundClause
+            , PostgreQuery._PostgreFrameEndExpBoundClause
+            , PostgreQuery._PostgreFrameEndNonExpBoundClause
+            , PostgreQuery._PostgreFrameBetweenAndClause
+            , PostgreQuery._FrameExclusionSpec
             , WindowClause.FrameExclusionSpec {
 
         private FrameExclusion frameExclusion;
 
-        private PostgreWindow(String windowName, CriteriaContext context, Function<_Window, I> function) {
-            super(windowName, context, function);
+        /**
+         * @see #postgreNamedWindow(String, CriteriaContext, String)
+         */
+        private PostgreWindow(String windowName, CriteriaContext context, @Nullable String existingWindowName) {
+            super(windowName, context, existingWindowName);
         }
 
-        private PostgreWindow(CriteriaContext context, Function<_Window, I> function) {
-            super(context, function);
+        /**
+         * @see #postgreAnonymousWindow(CriteriaContext, String)
+         */
+        private PostgreWindow(CriteriaContext context, @Nullable String existingWindowName) {
+            super(context, existingWindowName);
         }
 
         @Override
-        public PostgreQuery._PostgreFrameBetweenSpec<I> groups() {
+        public PostgreQuery._PostgreFrameBetweenSpec groups() {
             return this.frameUnit(FrameUnits.GROUPS);
         }
 
         @Override
-        public PostgreQuery._PostgreFrameBetweenSpec<I> ifGroups(BooleanSupplier predicate) {
+        public PostgreQuery._PostgreFrameBetweenSpec ifGroups(BooleanSupplier predicate) {
             return this.ifFrameUnit(predicate, FrameUnits.GROUPS);
         }
 
         @Override
-        public PostgreQuery._PostgreFrameEndExpBoundClause<I> groups(Expression expression) {
+        public PostgreQuery._PostgreFrameEndExpBoundClause groups(Expression expression) {
             return this.frameUnit(FrameUnits.GROUPS, expression);
         }
 
         @Override
-        public PostgreQuery._PostgreFrameEndExpBoundClause<I> groups(Supplier<Expression> supplier) {
+        public PostgreQuery._PostgreFrameEndExpBoundClause groups(Supplier<Expression> supplier) {
             return this.frameUnit(FrameUnits.GROUPS, supplier.get());
         }
 
         @Override
-        public <E> PostgreQuery._PostgreFrameEndExpBoundClause<I> groups(Function<E, Expression> valueOperator
+        public <E> PostgreQuery._PostgreFrameEndExpBoundClause groups(Function<E, Expression> valueOperator
                 , @Nullable E value) {
             return this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(value));
         }
 
         @Override
-        public <E> PostgreQuery._PostgreFrameEndExpBoundClause<I> groups(Function<E, Expression> valueOperator
+        public <E> PostgreQuery._PostgreFrameEndExpBoundClause groups(Function<E, Expression> valueOperator
                 , Supplier<E> supplier) {
             return this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(supplier.get()));
         }
 
         @Override
-        public PostgreQuery._PostgreFrameEndExpBoundClause<I> groups(Function<Object, Expression> valueOperator
+        public PostgreQuery._PostgreFrameEndExpBoundClause groups(Function<Object, Expression> valueOperator
                 , Function<String, ?> function, String keyName) {
             return this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(function.apply(keyName)));
         }
 
         @Override
-        public PostgreQuery._PostgreFrameEndExpBoundClause<I> ifGroups(Supplier<Expression> supplier) {
+        public PostgreQuery._PostgreFrameEndExpBoundClause ifGroups(Supplier<Expression> supplier) {
             final Expression expression;
             if ((expression = supplier.get()) != null) {
                 this.frameUnit(FrameUnits.GROUPS, expression);
@@ -1064,7 +1064,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public <E> PostgreQuery._PostgreFrameEndExpBoundClause<I> ifGroups(Function<E, Expression> valueOperator
+        public <E> PostgreQuery._PostgreFrameEndExpBoundClause ifGroups(Function<E, Expression> valueOperator
                 , @Nullable E value) {
             if (value != null) {
                 this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(value));
@@ -1073,7 +1073,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public <E> PostgreQuery._PostgreFrameEndExpBoundClause<I> ifGroups(Function<E, Expression> valueOperator
+        public <E> PostgreQuery._PostgreFrameEndExpBoundClause ifGroups(Function<E, Expression> valueOperator
                 , Supplier<E> supplier) {
             final E value;
             if ((value = supplier.get()) != null) {
@@ -1083,7 +1083,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public PostgreQuery._PostgreFrameEndExpBoundClause<I> ifGroups(Function<Object, Expression> valueOperator
+        public PostgreQuery._PostgreFrameEndExpBoundClause ifGroups(Function<Object, Expression> valueOperator
                 , Function<String, ?> function, String keyName) {
             final Object value;
             if ((value = function.apply(keyName)) != null) {
@@ -1093,61 +1093,61 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public PostgreWindow<I> currentRow() {
+        public PostgreWindow currentRow() {
             this.bound(FrameBound.CURRENT_ROW);
             return this;
         }
 
         @Override
-        public PostgreWindow<I> unboundedPreceding() {
+        public PostgreWindow unboundedPreceding() {
             this.bound(FrameBound.UNBOUNDED_PRECEDING);
             return this;
         }
 
         @Override
-        public PostgreWindow<I> unboundedFollowing() {
+        public PostgreWindow unboundedFollowing() {
             this.bound(FrameBound.UNBOUNDED_FOLLOWING);
             return this;
         }
 
         @Override
-        public PostgreWindow<I> preceding() {
+        public PostgreWindow preceding() {
             this.bound(FrameBound.PRECEDING);
             return this;
         }
 
         @Override
-        public PostgreWindow<I> following() {
+        public PostgreWindow following() {
             this.bound(FrameBound.FOLLOWING);
             return this;
         }
 
         @Override
-        public Statement._RightParenClause<I> excludeCurrentRow() {
+        public PostgreWindow excludeCurrentRow() {
             this.frameExclusion = FrameExclusion.EXCLUDE_CURRENT_ROW;
             return this;
         }
 
         @Override
-        public Statement._RightParenClause<I> excludeGroup() {
+        public PostgreWindow excludeGroup() {
             this.frameExclusion = FrameExclusion.EXCLUDE_GROUP;
             return this;
         }
 
         @Override
-        public Statement._RightParenClause<I> excludeTies() {
+        public PostgreWindow excludeTies() {
             this.frameExclusion = FrameExclusion.EXCLUDE_TIES;
             return this;
         }
 
         @Override
-        public Statement._RightParenClause<I> excludeNoOthers() {
+        public PostgreWindow excludeNoOthers() {
             this.frameExclusion = FrameExclusion.EXCLUDE_NO_OTHERS;
             return this;
         }
 
         @Override
-        public Statement._RightParenClause<I> ifExcludeCurrentRow(BooleanSupplier predicate) {
+        public PostgreWindow ifExcludeCurrentRow(BooleanSupplier predicate) {
             if (predicate.getAsBoolean()) {
                 this.frameExclusion = FrameExclusion.EXCLUDE_CURRENT_ROW;
             } else {
@@ -1157,7 +1157,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public Statement._RightParenClause<I> ifExcludeGroup(BooleanSupplier predicate) {
+        public PostgreWindow ifExcludeGroup(BooleanSupplier predicate) {
             if (predicate.getAsBoolean()) {
                 this.frameExclusion = FrameExclusion.EXCLUDE_GROUP;
             } else {
@@ -1167,7 +1167,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public Statement._RightParenClause<I> ifExcludeTies(BooleanSupplier predicate) {
+        public PostgreWindow ifExcludeTies(BooleanSupplier predicate) {
             if (predicate.getAsBoolean()) {
                 this.frameExclusion = FrameExclusion.EXCLUDE_TIES;
             } else {
@@ -1177,7 +1177,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public Statement._RightParenClause<I> ifExcludeNoOthers(BooleanSupplier predicate) {
+        public PostgreWindow ifExcludeNoOthers(BooleanSupplier predicate) {
             if (predicate.getAsBoolean()) {
                 this.frameExclusion = FrameExclusion.EXCLUDE_NO_OTHERS;
             } else {
