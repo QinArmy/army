@@ -6,9 +6,6 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._AliasExpression;
 import io.army.function.ExpressionOperator;
-import io.army.function.SqlFunction;
-import io.army.function.SqlOneFunction;
-import io.army.function.SqlTwoFunction;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
@@ -97,19 +94,14 @@ public interface Query extends RowSet {
         SR select(NamedExpression exp);
 
 
-        _AsClause<SR> select(Supplier<Expression> supplier);
-
-        <I extends Item> I select(SqlFunction<_AliasExpression<SR>, SR, I> sqlFunction);
-
+        _AliasExpression<SR> select(Supplier<Expression> supplier);
 
         //below two argument method
 
         SR select(FieldMeta<?> field1, FieldMeta<?> field2);
 
 
-        <E extends RightOperand> _AsClause<SR> select(Function<E, Expression> expOperator, Supplier<E> supplier);
-
-        <I extends Item> I select(SqlOneFunction<_AliasExpression<SR>, SR, I> sqlFunction, Expression exp);
+        <E extends RightOperand> _AliasExpression<SR> select(Function<E, Expression> expOperator, Supplier<E> supplier);
 
         //below three argument method
 
@@ -126,8 +118,6 @@ public interface Query extends RowSet {
         SR select(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field);
 
         SR select(Supplier<Expression> funcRef, SQLs.WordAs as, String alias);
-
-        <I extends Item> I select(SqlTwoFunction<_AliasExpression<SR>, SR, I> sqlFunction, Expression arg1, Expression arg2);
 
         //below four argument method
 

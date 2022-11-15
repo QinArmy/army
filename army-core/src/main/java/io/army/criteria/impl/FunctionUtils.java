@@ -569,8 +569,8 @@ abstract class FunctionUtils {
     }//FromFirstLast
 
 
-    static abstract class WindowFunction<OR, OE extends Item, I extends Item> extends Expressions<I>
-            implements Window._OverWindowClause<OR, OE>
+    static abstract class WindowFunction<E, I extends Item> extends Expressions<I>
+            implements Window._OverWindowClause<E>
             , CriteriaContextSpec
             , SQLFunction {
 
@@ -578,13 +578,13 @@ abstract class FunctionUtils {
 
         final String name;
 
-        private final Function<_ItemExpression<I>, OE> windowFunc;
+        private final Function<_ItemExpression<I>, E> windowFunc;
 
         private String existingWindowName;
 
         private _Window anonymousWindow;
 
-        WindowFunction(String name, TypeMeta returnType, Function<_ItemExpression<I>, OE> windowFunc
+        WindowFunction(String name, TypeMeta returnType, Function<_ItemExpression<I>, E> windowFunc
                 , Function<TypeInfer, I> endFunc) {
             super(returnType, endFunc);
             this.context = ContextStack.peek();
@@ -598,7 +598,7 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final OE over(final String windowName) {
+        public final E over(final String windowName) {
             if (this.existingWindowName != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }

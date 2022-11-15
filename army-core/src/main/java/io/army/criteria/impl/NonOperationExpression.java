@@ -1,18 +1,12 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.AliasPredicate;
-import io.army.criteria.Expression;
-import io.army.criteria.Selection;
-import io.army.criteria.SqlValueParam;
+import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
-import io.army.function.BiAsExpFunction;
-import io.army.function.BiAsFunction;
 import io.army.function.TeNamedOperator;
 import io.army.meta.TypeMeta;
 
 import java.util.Collection;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 /**
  * <p>
@@ -23,7 +17,7 @@ import java.util.function.Supplier;
  *     </ul>
  * </p>
  */
-abstract class NonOperationExpression implements ArmyExpression, _AliasExpression<Selection> {
+abstract class NonOperationExpression implements ArmyExpression {
 
 
     NonOperationExpression() {
@@ -41,208 +35,179 @@ abstract class NonOperationExpression implements ArmyExpression, _AliasExpressio
         return nullable;
     }
 
+
     @Override
-    public final OperationPredicate<Selection> equal(Expression operand) {
+    public final IPredicate equal(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationPredicate<Selection> equal(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> IPredicate equal(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> equal(Supplier<Expression> supplier) {
+    public final OperationPredicate equalAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <R> R equal(BiAsFunction<AliasPredicate<Selection>, Selection, R> function) {
+    public final OperationPredicate equalSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <R> R equal(BiAsExpFunction<AliasPredicate<Selection>, Selection, R> function) {
+    public final OperationPredicate less(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <R> R equal(BiAsExpFunction<AliasPredicate<Selection>, Selection, R> function, Expression operand) {
+    public final <T> OperationPredicate less(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> equalAny(SubQuery subQuery) {
+    public final OperationPredicate lessAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> equalSome(SubQuery subQuery) {
+    public final OperationPredicate lessSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> equalAny(Supplier<SubQuery> supplier) {
+    public final OperationPredicate lessAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> equalSome(Supplier<SubQuery> supplier) {
+    public final OperationPredicate lessEqual(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> less(Expression operand) {
+    public final <T> OperationPredicate lessEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationPredicate<Selection> less(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final OperationPredicate lessEqualAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> lessAny(SubQuery subQuery) {
+    public final OperationPredicate lessEqualSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> lessSome(SubQuery subQuery) {
+    public final OperationPredicate lessEqualAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> lessAll(SubQuery subQuery) {
+    public final OperationPredicate great(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> lessEqual(Expression operand) {
+    public final <T> OperationPredicate great(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationPredicate<Selection> lessEqual(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final OperationPredicate greatAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> lessEqualAny(SubQuery subQuery) {
+    public final OperationPredicate greatSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> lessEqualSome(SubQuery subQuery) {
+    public final OperationPredicate greatAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> lessEqualAll(SubQuery subQuery) {
+    public final OperationPredicate greatEqual(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> great(Expression operand) {
+    public final <T> OperationPredicate greatEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationPredicate<Selection> great(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final OperationPredicate greatEqualAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> greatAny(SubQuery subQuery) {
+    public final OperationPredicate greatEqualSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> greatSome(SubQuery subQuery) {
+    public final OperationPredicate greatEqualAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> greatAll(SubQuery subQuery) {
+    public final OperationPredicate notEqual(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> greatEqual(Expression operand) {
+    public final <T> OperationPredicate notEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationPredicate<Selection> greatEqual(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final OperationPredicate notEqualAny(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> greatEqualAny(SubQuery subQuery) {
+    public final OperationPredicate notEqualSome(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> greatEqualSome(SubQuery subQuery) {
+    public final OperationPredicate notEqualAll(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> greatEqualAll(SubQuery subQuery) {
+    public final OperationPredicate between(Expression first, SQLsSyntax.WordAnd and, Expression second) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> notEqual(Expression operand) {
+    public final <T> OperationPredicate between(BiFunction<Expression, T, Expression> operator, T first, SQLsSyntax.WordAnd and, T second) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationPredicate<Selection> notEqual(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final OperationPredicate isNull() {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> notEqualAny(SubQuery subQuery) {
+    public final OperationPredicate isNotNull() {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> notEqualSome(SubQuery subQuery) {
+    public final OperationPredicate in(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> notEqualAll(SubQuery subQuery) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final OperationPredicate<Selection> between(Expression first, SQLsSyntax.WordAnd and, Expression second) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <T> OperationPredicate<Selection> between(BiFunction<Expression, T, Expression> operator, T first, SQLsSyntax.WordAnd and, T second) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final OperationPredicate<Selection> isNull() {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final OperationPredicate<Selection> isNotNull() {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final OperationPredicate<Selection> in(Expression operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final OperationPredicate<Selection> in(SubQuery subQuery) {
+    public final OperationPredicate in(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
@@ -253,178 +218,171 @@ abstract class NonOperationExpression implements ArmyExpression, _AliasExpressio
     }
 
     @Override
-    public final OperationPredicate<Selection> in(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
+    public final OperationPredicate in(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> notIn(Expression operand) {
+    public final OperationPredicate notIn(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> notIn(SubQuery subQuery) {
+    public final OperationPredicate notIn(SubQuery subQuery) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T, O extends Collection<T>> OperationPredicate<Selection> notIn(BiFunction<Expression, O, Expression> operator
+    public final <T, O extends Collection<T>> OperationPredicate notIn(BiFunction<Expression, O, Expression> operator
             , O operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> notIn(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
+    public final OperationPredicate notIn(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> like(Expression pattern) {
+    public final OperationPredicate like(Expression pattern) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationPredicate<Selection> like(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate like(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate<Selection> notLike(Expression pattern) {
+    public final OperationPredicate notLike(Expression pattern) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationPredicate<Selection> notLike(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate notLike(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> mod(Expression operand) {
+    public final OperationExpression mod(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationExpression<Selection> mod(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression mod(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> times(Expression operand) {
+    public final OperationExpression times(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationExpression<Selection> times(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression times(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> plus(Expression operand) {
+    public final OperationExpression plus(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationExpression<Selection> plus(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression plus(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> minus(Expression minuend) {
+    public final OperationExpression minus(Expression minuend) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationExpression<Selection> minus(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression minus(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> divide(Expression divisor) {
+    public final OperationExpression divide(Expression divisor) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationExpression<Selection> divide(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression divide(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> negate() {
+    public final OperationExpression negate() {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> bitwiseAnd(Expression operand) {
+    public final OperationExpression bitwiseAnd(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationExpression<Selection> bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> bitwiseOr(Expression operand) {
+    public final OperationExpression bitwiseOr(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationExpression<Selection> bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> xor(Expression operand) {
+    public final OperationExpression xor(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationExpression<Selection> xor(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression xor(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> invert() {
+    public final OperationExpression invert() {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> rightShift(Expression bitNumber) {
+    public final OperationExpression rightShift(Expression bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationExpression<Selection> rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> leftShift(Expression bitNumber) {
+    public final OperationExpression leftShift(Expression bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationExpression<Selection> leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> mapTo(TypeMeta typeMeta) {
+    public final OperationExpression mapTo(TypeMeta typeMeta) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationExpression<Selection> bracket() {
+    public final OperationExpression bracket() {
         throw unsupportedOperation();
     }
 
-    @Override
-    public final Selection as(String alias) {
-        if (this instanceof NonSelectionExpression) {
-            throw unsupportedOperation();
-        }
-        return ArmySelections.forExp(this, alias);
-    }
 
     static abstract class NonSelectionExpression extends NonOperationExpression {
 

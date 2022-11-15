@@ -33,8 +33,7 @@ public class StandardQueryUnitTests {
                 .then(SQLs::literalFrom, () -> PillUserType.PARTNER)
                 .elseValue(SQLs.literalFrom(PillUserType.NONE))
                 .end()
-                .plus(SQLs::literal, 1).times(SQLs::literal, 5)
-                .as("a")
+                .plus(SQLs::literal, 1).times(SQLs::literal, 5).as("a")
                 .asQuery();
 
         printStmt(stmt);

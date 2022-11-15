@@ -1,48 +1,23 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.*;
+import io.army.criteria.Expression;
+import io.army.criteria.SqlValueParam;
 import io.army.criteria.dialect.SubQuery;
-import io.army.function.BiAsExpFunction;
-import io.army.function.BiAsFunction;
 import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 
 import java.util.Collection;
 import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * this class is base class of most implementation of {@link Expression}
  *
  * @since 1.0
  */
-abstract class OperationExpression<I extends Item> implements ArmyExpression, _AliasExpression<I>
-        , _ParenExpression<I>, _SpacePredicateExp<I> {
+abstract class OperationExpression implements ArmyExpression {
 
-    final TypeMeta expType;
-
-    final Function<TypeInfer, I> function;
-
-    OperationExpression(Function<TypeInfer, I> function) {
-        assert this instanceof FieldMeta;
-        this.function = function;
-        this.expType = (TypeMeta) this;
-    }
-
-    OperationExpression(TypeMeta expType, Function<TypeInfer, I> function) {
-        this.expType = expType;
-        this.function = function;
-    }
-
-    @Override
-    public final TypeMeta typeMeta() {
-        final TypeMeta expType = this.expType;//TODO field codec
-        return expType;
-    }
 
     @Override
     public final boolean isNullValue() {
@@ -51,408 +26,374 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, _A
     }
 
     @Override
-    public final OperationPredicate<I> equal(Expression operand) {
+    public final OperationPredicate equal(Expression operand) {
         return Expressions.dualPredicate(this, DualOperator.EQUAL, operand);
     }
 
     @Override
-    public final <T> OperationPredicate<I> equal(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate equal(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualPredicate(this, DualOperator.EQUAL, operator.apply(this, operand));
     }
 
     @Override
-    public final OperationPredicate<I> equal(Supplier<Expression> supplier) {
-        return Expressions.dualPredicate(this, DualOperator.EQUAL, supplier.get());
-    }
-
-
-    @Override
-    public final <R> R equal(BiAsFunction<AliasPredicate<I>, I, R> function) {
-        return function.apply(this::equal, this::onOuterEnd);
-    }
-
-    @Override
-    public final <R> R equal(BiAsExpFunction<AliasPredicate<I>, I, R> function) {
-        return function.apply(null, this::equal, this::onOuterEnd);
-    }
-
-    @Override
-    public final <R> R equal(BiAsExpFunction<AliasPredicate<I>, I, R> function, @Nullable Expression operand) {
-        if (operand == null) {
-            throw ContextStack.nullPointer(ContextStack.peek());
-        }
-        return function.apply(operand, this::equal, this::onOuterEnd);
-    }
-
-    @Override
-    public final OperationPredicate<I> equalAny(SubQuery subQuery) {
+    public final OperationPredicate equalAny(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.EQUAL, QueryOperator.ANY, subQuery);
     }
 
     @Override
-    public final OperationPredicate<I> equalSome(SubQuery subQuery) {
+    public final OperationPredicate equalSome(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.EQUAL, QueryOperator.SOME, subQuery);
     }
 
     @Override
-    public final OperationPredicate<I> equalAny(Supplier<SubQuery> supplier) {
-        return Expressions.compareQueryPredicate(this, DualOperator.EQUAL, QueryOperator.ANY, supplier.get());
-    }
-
-    @Override
-    public final OperationPredicate<I> equalSome(Supplier<SubQuery> supplier) {
-        return Expressions.compareQueryPredicate(this, DualOperator.EQUAL, QueryOperator.SOME, supplier.get());
-    }
-
-    @Override
-    public final OperationPredicate<I> less(Expression operand) {
+    public final OperationPredicate less(Expression operand) {
         return Expressions.dualPredicate(this, DualOperator.LESS, operand);
     }
 
     @Override
-    public final <T> OperationPredicate<I> less(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate less(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualPredicate(this, DualOperator.LESS, operator.apply(this, operand));
     }
 
 
     @Override
-    public final OperationPredicate<I> lessAny(SubQuery subQuery) {
+    public final OperationPredicate lessAny(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.LESS, QueryOperator.ANY, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate<I> lessSome(SubQuery subQuery) {
+    public final OperationPredicate lessSome(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.LESS, QueryOperator.SOME, subQuery);
     }
 
     @Override
-    public final OperationPredicate<I> lessAll(SubQuery subQuery) {
+    public final OperationPredicate lessAll(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.LESS, QueryOperator.ALL, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate<I> lessEqual(Expression operand) {
+    public final OperationPredicate lessEqual(Expression operand) {
         return Expressions.dualPredicate(this, DualOperator.LESS_EQUAL, operand);
     }
 
     @Override
-    public final <T> OperationPredicate<I> lessEqual(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate lessEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualPredicate(this, DualOperator.LESS_EQUAL, operator.apply(this, operand));
     }
 
 
     @Override
-    public final OperationPredicate<I> lessEqualAny(SubQuery subQuery) {
+    public final OperationPredicate lessEqualAny(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.LESS_EQUAL, QueryOperator.ANY, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate<I> lessEqualSome(SubQuery subQuery) {
+    public final OperationPredicate lessEqualSome(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.LESS_EQUAL, QueryOperator.SOME, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate<I> lessEqualAll(SubQuery subQuery) {
+    public final OperationPredicate lessEqualAll(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.LESS_EQUAL, QueryOperator.ALL, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate<I> great(Expression operand) {
+    public final OperationPredicate great(Expression operand) {
         return Expressions.dualPredicate(this, DualOperator.GREAT, operand);
     }
 
     @Override
-    public final <T> OperationPredicate<I> great(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate great(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualPredicate(this, DualOperator.GREAT, operator.apply(this, operand));
     }
 
 
     @Override
-    public final OperationPredicate<I> greatAny(SubQuery subQuery) {
+    public final OperationPredicate greatAny(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.GREAT, QueryOperator.ANY, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate<I> greatSome(SubQuery subQuery) {
+    public final OperationPredicate greatSome(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.GREAT, QueryOperator.SOME, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate<I> greatAll(SubQuery subQuery) {
+    public final OperationPredicate greatAll(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.GREAT, QueryOperator.ALL, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate<I> greatEqual(Expression operand) {
+    public final OperationPredicate greatEqual(Expression operand) {
         return Expressions.dualPredicate(this, DualOperator.GREAT_EQUAL, operand);
     }
 
 
     @Override
-    public final <T> OperationPredicate<I> greatEqual(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate greatEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualPredicate(this, DualOperator.GREAT_EQUAL, operator.apply(this, operand));
     }
 
 
     @Override
-    public final OperationPredicate<I> greatEqualAny(SubQuery subQuery) {
+    public final OperationPredicate greatEqualAny(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.GREAT_EQUAL, QueryOperator.ANY, subQuery);
     }
 
     @Override
-    public final OperationPredicate<I> greatEqualSome(SubQuery subQuery) {
+    public final OperationPredicate greatEqualSome(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.GREAT_EQUAL, QueryOperator.SOME, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate<I> greatEqualAll(SubQuery subQuery) {
+    public final OperationPredicate greatEqualAll(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.GREAT_EQUAL, QueryOperator.ALL, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate<I> notEqual(Expression operand) {
+    public final OperationPredicate notEqual(Expression operand) {
         return Expressions.dualPredicate(this, DualOperator.NOT_EQUAL, operand);
     }
 
 
     @Override
-    public final <T> OperationPredicate<I> notEqual(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate notEqual(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualPredicate(this, DualOperator.NOT_EQUAL, operator.apply(this, operand));
     }
 
     @Override
-    public final OperationPredicate<I> notEqualAny(SubQuery subQuery) {
+    public final OperationPredicate notEqualAny(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.NOT_EQUAL, QueryOperator.ANY, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate<I> notEqualSome(SubQuery subQuery) {
+    public final OperationPredicate notEqualSome(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.NOT_EQUAL, QueryOperator.SOME, subQuery);
     }
 
     @Override
-    public final OperationPredicate<I> notEqualAll(SubQuery subQuery) {
+    public final OperationPredicate notEqualAll(SubQuery subQuery) {
         return Expressions.compareQueryPredicate(this, DualOperator.NOT_EQUAL, QueryOperator.ALL, subQuery);
     }
 
     @Override
-    public final OperationPredicate<I> between(Expression first, SQLs.WordAnd and, Expression second) {
+    public final OperationPredicate between(Expression first, SQLs.WordAnd and, Expression second) {
         assert and == SQLs.AND;
         return Expressions.betweenPredicate(this, first, second);
     }
 
     @Override
-    public final <T> OperationPredicate<I> between(BiFunction<Expression, T, Expression> operator, T first
+    public final <T> OperationPredicate between(BiFunction<Expression, T, Expression> operator, T first
             , SQLs.WordAnd and, T second) {
         assert and == SQLs.AND;
         return Expressions.betweenPredicate(this, operator.apply(this, first), operator.apply(this, second));
     }
 
     @Override
-    public final OperationPredicate<I> isNull() {
+    public final OperationPredicate isNull() {
         return Expressions.unaryPredicate(UnaryOperator.IS_NULL, this);
     }
 
     @Override
-    public final OperationPredicate<I> isNotNull() {
+    public final OperationPredicate isNotNull() {
         return Expressions.unaryPredicate(UnaryOperator.IS_NOT_NULL, this);
     }
 
 
     @Override
-    public final OperationPredicate<I> in(Expression operand) {
+    public final OperationPredicate in(Expression operand) {
         return Expressions.dualPredicate(this, DualOperator.IN, operand);
     }
 
     @Override
-    public final OperationPredicate<I> in(SubQuery subQuery) {
+    public final OperationPredicate in(SubQuery subQuery) {
         return Expressions.inOperator(this, DualOperator.IN, subQuery);
     }
 
     @Override
-    public final <T, O extends Collection<T>> OperationPredicate<I> in(BiFunction<Expression, O, Expression> operator, O operand) {
+    public final <T, O extends Collection<T>> OperationPredicate in(BiFunction<Expression, O, Expression> operator, O operand) {
         return Expressions.dualPredicate(this, DualOperator.IN, operator.apply(this, operand));
     }
 
 
     @Override
-    public final OperationPredicate<I> in(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
+    public final OperationPredicate in(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
         return Expressions.dualPredicate(this, DualOperator.IN, namedOperator.apply(this, paramName, size));
     }
 
     @Override
-    public final OperationPredicate<I> notIn(Expression operand) {
+    public final OperationPredicate notIn(Expression operand) {
         return Expressions.dualPredicate(this, DualOperator.NOT_IN, operand);
     }
 
     @Override
-    public final OperationPredicate<I> notIn(SubQuery subQuery) {
+    public final OperationPredicate notIn(SubQuery subQuery) {
         return Expressions.inOperator(this, DualOperator.NOT_IN, subQuery);
     }
 
     @Override
-    public final <T, O extends Collection<T>> OperationPredicate<I> notIn(BiFunction<Expression, O, Expression> operator, O operand) {
+    public final <T, O extends Collection<T>> OperationPredicate notIn(BiFunction<Expression, O, Expression> operator, O operand) {
         return Expressions.dualPredicate(this, DualOperator.NOT_IN, operator.apply(this, operand));
     }
 
     @Override
-    public final OperationPredicate<I> notIn(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
+    public final OperationPredicate notIn(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
         return Expressions.dualPredicate(this, DualOperator.NOT_IN, namedOperator.apply(this, paramName, size));
     }
 
     @Override
-    public final OperationPredicate<I> like(Expression operand) {
+    public final OperationPredicate like(Expression operand) {
         return Expressions.dualPredicate(this, DualOperator.LIKE, operand);
     }
 
     @Override
-    public final <T> OperationPredicate<I> like(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate like(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualPredicate(this, DualOperator.LIKE, operator.apply(this, operand));
     }
 
     @Override
-    public final OperationPredicate<I> notLike(Expression operand) {
+    public final OperationPredicate notLike(Expression operand) {
         return Expressions.dualPredicate(this, DualOperator.NOT_LIKE, operand);
     }
 
     @Override
-    public final <T> OperationPredicate<I> notLike(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate notLike(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualPredicate(this, DualOperator.NOT_LIKE, operator.apply(this, operand));
     }
 
     @Override
-    public final OperationExpression<I> mod(Expression operand) {
+    public final OperationExpression mod(Expression operand) {
         return Expressions.dualExp(this, DualOperator.MOD, operand);
     }
 
     @Override
-    public final <T> OperationExpression<I> mod(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression mod(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.MOD, operator.apply(this, operand));
     }
 
     @Override
-    public final OperationExpression<I> times(Expression operand) {
+    public final OperationExpression times(Expression operand) {
         return Expressions.dualExp(this, DualOperator.TIMES, operand);
     }
 
     @Override
-    public final <T> OperationExpression<I> times(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression times(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.TIMES, operator.apply(this, operand));
     }
 
 
     @Override
-    public final OperationExpression<I> plus(Expression operand) {
+    public final OperationExpression plus(Expression operand) {
         return Expressions.dualExp(this, DualOperator.PLUS, operand);
     }
 
     @Override
-    public final <T> OperationExpression<I> plus(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression plus(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.PLUS, operator.apply(this, operand));
     }
 
     @Override
-    public final OperationExpression<I> minus(Expression operand) {
+    public final OperationExpression minus(Expression operand) {
         return Expressions.dualExp(this, DualOperator.MINUS, operand);
     }
 
     @Override
-    public final <T> OperationExpression<I> minus(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression minus(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.MINUS, operator.apply(this, operand));
     }
 
     @Override
-    public final OperationExpression<I> divide(Expression operand) {
+    public final OperationExpression divide(Expression operand) {
         return Expressions.dualExp(this, DualOperator.DIVIDE, operand);
     }
 
     @Override
-    public final <T> OperationExpression<I> divide(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression divide(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.DIVIDE, operator.apply(this, operand));
     }
 
 
     @Override
-    public final OperationExpression<I> negate() {
+    public final OperationExpression negate() {
         return Expressions.unaryExp(this, UnaryOperator.NEGATE);
     }
 
     @Override
-    public final OperationExpression<I> bitwiseAnd(Expression operand) {
+    public final OperationExpression bitwiseAnd(Expression operand) {
         return Expressions.dualExp(this, DualOperator.BITWISE_AND, operand);
     }
 
     @Override
-    public final <T> OperationExpression<I> bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression bitwiseAnd(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.BITWISE_AND, operator.apply(this, operand));
     }
 
 
     @Override
-    public final OperationExpression<I> bitwiseOr(Expression operand) {
+    public final OperationExpression bitwiseOr(Expression operand) {
         return Expressions.dualExp(this, DualOperator.BITWISE_OR, operand);
     }
 
 
     @Override
-    public final <T> OperationExpression<I> bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression bitwiseOr(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.BITWISE_OR, operator.apply(this, operand));
     }
 
 
     @Override
-    public final OperationExpression<I> xor(Expression operand) {
+    public final OperationExpression xor(Expression operand) {
         return Expressions.dualExp(this, DualOperator.XOR, operand);
     }
 
 
     @Override
-    public final <T> OperationExpression<I> xor(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression xor(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.XOR, operator.apply(this, operand));
     }
 
 
     @Override
-    public final OperationExpression<I> invert() {
+    public final OperationExpression invert() {
         return Expressions.unaryExp(this, UnaryOperator.INVERT);
     }
 
     @Override
-    public final OperationExpression<I> rightShift(Expression operand) {
+    public final OperationExpression rightShift(Expression operand) {
         return Expressions.dualExp(this, DualOperator.RIGHT_SHIFT, operand);
     }
 
     @Override
-    public final <T> OperationExpression<I> rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression rightShift(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.RIGHT_SHIFT, operator.apply(this, operand));
     }
 
 
     @Override
-    public final OperationExpression<I> leftShift(Expression operand) {
+    public final OperationExpression leftShift(Expression operand) {
         return Expressions.dualExp(this, DualOperator.LEFT_SHIFT, operand);
     }
 
 
     @Override
-    public final <T> OperationExpression<I> leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.LEFT_SHIFT, operator.apply(this, operand));
     }
 
 
     @Override
-    public final OperationExpression<I> mapTo(final @Nullable TypeMeta typeMeta) {
+    public final OperationExpression mapTo(final @Nullable TypeMeta typeMeta) {
         if (typeMeta == null) {
             throw ContextStack.nullPointer(ContextStack.peek());
         }
@@ -460,30 +401,10 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, _A
     }
 
     @Override
-    public OperationExpression<I> bracket() {
+    public OperationExpression bracket() {
         return Expressions.bracketExp(this);
     }
 
-    @Override
-    public final I as(final String alias) {
-        return this.function.apply(ArmySelections.forExp(this, alias));
-    }
-
-
-    @Override
-    public final I rightParen() {
-        return this.function.apply(this.bracket());
-    }
-
-    final I onOuterEnd(Selection selection) {
-        return this.function.apply(selection);
-    }
-
-    @Deprecated
-    interface MutableParamMetaSpec {
-
-        void updateParamMeta(TypeMeta typeMeta);
-    }
 
 
 }

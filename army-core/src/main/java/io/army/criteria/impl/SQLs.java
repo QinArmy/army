@@ -41,6 +41,8 @@ public abstract class SQLs extends SQLsSyntax {
     private SQLs() {
     }
 
+    static final Function<Selection, Selection> _IDENTITY = SQLs::_identity;
+
 
     public static StandardInsert._PrimaryOptionSpec singleInsert() {
         return StandardInserts.primaryInsert();

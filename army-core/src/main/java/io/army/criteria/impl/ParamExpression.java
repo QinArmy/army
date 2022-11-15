@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.NamedParam;
 import io.army.criteria.SQLParam;
 import io.army.criteria.SqlValueParam;
-import io.army.criteria.TypeInfer;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -13,7 +12,7 @@ import io.army.stmt.SingleParam;
 
 import java.util.*;
 
-abstract class ParamExpression extends OperationExpression<TypeInfer> implements SQLParam {
+abstract class ParamExpression extends OperationExpression implements SQLParam {
 
 
     static ParamExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object value) {
@@ -38,14 +37,21 @@ abstract class ParamExpression extends OperationExpression<TypeInfer> implements
     }
 
 
+    final TypeMeta paramType;
+
     private ParamExpression(TypeMeta paramType) {
-        super(paramType, SQLs::_identity);
+        this.paramType = paramType;
     }
 
     @Override
     public final ParamExpression bracket() {
         //return this,don't create new instance.
         return this;
+    }
+
+    @Override
+    public final TypeMeta typeMeta() {
+        return this.paramType;
     }
 
     static final class SingleParamExpression extends ParamExpression
@@ -70,7 +76,7 @@ abstract class ParamExpression extends OperationExpression<TypeInfer> implements
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.expType, this.value);
+            return Objects.hash(this.paramType, this.value);
         }
 
         @Override
@@ -80,7 +86,7 @@ abstract class ParamExpression extends OperationExpression<TypeInfer> implements
                 match = true;
             } else if (obj instanceof SingleParamExpression) {
                 final SingleParamExpression o = (SingleParamExpression) obj;
-                match = o.expType == this.expType && Objects.equals(o.value, this.value);
+                match = o.paramType == this.paramType && Objects.equals(o.value, this.value);
             } else {
                 match = false;
             }
@@ -132,7 +138,7 @@ abstract class ParamExpression extends OperationExpression<TypeInfer> implements
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.expType, this.valueList);
+            return Objects.hash(this.paramType, this.valueList);
         }
 
         @Override
@@ -142,7 +148,7 @@ abstract class ParamExpression extends OperationExpression<TypeInfer> implements
                 match = true;
             } else if (obj instanceof MultiParamExpression) {
                 final MultiParamExpression o = (MultiParamExpression) obj;
-                match = o.expType == this.expType
+                match = o.paramType == this.paramType
                         && o.valueList.equals(this.valueList);
             } else {
                 match = false;
@@ -190,7 +196,7 @@ abstract class ParamExpression extends OperationExpression<TypeInfer> implements
 
         @Override
         public final int hashCode() {
-            return Objects.hash(this.expType, this.name);
+            return Objects.hash(this.paramType, this.name);
         }
 
         @Override
@@ -200,7 +206,7 @@ abstract class ParamExpression extends OperationExpression<TypeInfer> implements
                 match = true;
             } else if (obj instanceof NamedSingleParam) {
                 final NamedSingleParam o = (NamedSingleParam) obj;
-                match = o.expType == this.expType && o.name.equals(this.name);
+                match = o.paramType == this.paramType && o.name.equals(this.name);
             } else {
                 match = false;
             }
@@ -264,7 +270,7 @@ abstract class ParamExpression extends OperationExpression<TypeInfer> implements
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.expType, this.name, this.valueSize);
+            return Objects.hash(this.paramType, this.name, this.valueSize);
         }
 
         @Override
@@ -274,7 +280,7 @@ abstract class ParamExpression extends OperationExpression<TypeInfer> implements
                 match = true;
             } else if (obj instanceof NamedMultiParam) {
                 final NamedMultiParam o = (NamedMultiParam) obj;
-                match = o.expType == this.expType
+                match = o.paramType == this.paramType
                         && o.name.equals(this.name)
                         && o.valueSize == this.valueSize;
             } else {

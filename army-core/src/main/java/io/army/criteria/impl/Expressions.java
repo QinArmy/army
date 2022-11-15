@@ -17,24 +17,33 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
-abstract class Expressions<I extends Item> extends OperationExpression<I> {
+abstract class Expressions extends OperationExpression {
 
 
-    /**
-     * private constructor
-     */
-    Expressions(TypeMeta expType, Function<TypeInfer, I> function) {
-        super(expType, function);
+    final TypeMeta expType;
+
+
+    Expressions(final OperationExpression expression) {
+        if (expression instanceof Expressions) {
+            this.expType = ((Expressions) expression).expType;
+        } else {
+            this.expType = expression.typeMeta();//TODO field codec
+        }
+
     }
 
     @Override
-    public final Expressions<I> bracket() {
+    public final TypeMeta typeMeta() {
+        return this.expType;
+    }
+
+    @Override
+    public final Expressions bracket() {
         return bracketExp(this);
     }
 
-    static <I extends Item> OperationExpression<I> dualExp(final OperationExpression<I> left
+    static OperationExpression dualExp(final OperationExpression left
             , final DualOperator operator, final Expression right) {
         final ArmyExpression rightExp = (ArmyExpression) right;
         switch (operator) {
@@ -56,10 +65,10 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new DualExpression<>(left, operator, rightExp);
+        return new DualExpression(left, operator, rightExp);
     }
 
-    static <I extends Item> OperationExpression<I> unaryExp(final OperationExpression<I> expression
+    static OperationExpression unaryExp(final OperationExpression expression
             , final UnaryOperator operator) {
         switch (operator) {
             case INVERT:
@@ -73,19 +82,19 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
                 throw _Exceptions.unexpectedEnum(operator);
 
         }
-        return new UnaryExpression<>(expression, operator);
+        return new UnaryExpression(expression, operator);
     }
 
-    static <I extends Item> OperationExpression<I> castExp(OperationExpression<I> expression, TypeMeta typeMeta) {
-        return new CastExpression<>(expression, typeMeta);
+    static OperationExpression castExp(OperationExpression expression, TypeMeta typeMeta) {
+        return new CastExpression(expression, typeMeta);
     }
 
-    static <I extends Item> Expressions<I> bracketExp(final OperationExpression<I> expression) {
-        final Expressions<I> bracket;
+    static Expressions bracketExp(final OperationExpression expression) {
+        final Expressions bracket;
         if (expression instanceof BracketsExpression) {
-            bracket = (BracketsExpression<I>) expression;
+            bracket = (BracketsExpression) expression;
         } else {
-            bracket = new BracketsExpression<>(expression);
+            bracket = new BracketsExpression(expression);
         }
         return bracket;
     }
@@ -101,7 +110,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     }
 
 
-    static OperationPredicate<TypeInfer> existsPredicate(UnaryOperator operator, @Nullable SubQuery subQuery) {
+    static OperationPredicate existsPredicate(UnaryOperator operator, @Nullable SubQuery subQuery) {
         assert subQuery != null;
         switch (operator) {
             case NOT_EXISTS:
@@ -110,11 +119,11 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new UnaryPredicate<>(subQuery, operator, SQLs::_identity);
+        return new UnaryPredicate(subQuery, operator);
     }
 
-    static <I extends Item> OperationPredicate<I> unaryPredicate(final UnaryOperator operator
-            , final OperationExpression<I> expression) {
+    static OperationPredicate unaryPredicate(final UnaryOperator operator
+            , final OperationExpression expression) {
         if (expression instanceof SubQuery) {
             throw new IllegalArgumentException("expression couldn't be sub query.");
         }
@@ -125,10 +134,10 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new UnaryPredicate<>(operator, expression);
+        return new UnaryPredicate(operator, expression);
     }
 
-    static <I extends Item> OperationPredicate<I> dualPredicate(final OperationExpression<I> left
+    static OperationPredicate dualPredicate(final OperationExpression left
             , final DualOperator operator, final Expression right) {
         switch (operator) {
             case EQUAL:
@@ -156,55 +165,55 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
                 throw _Exceptions.unexpectedEnum(operator);
 
         }
-        return new DualPredicate<>(left, operator, right);
+        return new DualPredicate(left, operator, right);
     }
 
 
-    static <I extends Item> OperationPredicate<I> bracketPredicate(final OperationPredicate<I> predicate) {
-        final OperationPredicate<I> result;
+    static OperationPredicate bracketPredicate(final OperationPredicate predicate) {
+        final OperationPredicate result;
         if (predicate instanceof BracketPredicate) {
             result = predicate;
         } else {
-            result = new BracketPredicate<>(predicate);
+            result = new BracketPredicate(predicate);
         }
         return result;
     }
 
-    static <I extends Item> OperationPredicate<I> orPredicate(OperationPredicate<I> left, IPredicate right) {
-        return new OrPredicate<>(left, Collections.singletonList((OperationPredicate<?>) right));
+    static OperationPredicate orPredicate(OperationPredicate left, IPredicate right) {
+        return new OrPredicate(left, Collections.singletonList((OperationPredicate) right));
     }
 
-    static <I extends Item> OperationPredicate<I> orPredicate(OperationPredicate<I> left, List<IPredicate> rightList) {
+    static OperationPredicate orPredicate(OperationPredicate left, List<IPredicate> rightList) {
         final int size = rightList.size();
         assert size > 0;
-        final List<OperationPredicate<?>> list = new ArrayList<>(size);
+        final List<OperationPredicate> list = new ArrayList<>(size);
         for (IPredicate right : rightList) {
-            list.add((OperationPredicate<?>) right);
+            list.add((OperationPredicate) right);
         }
-        return new OrPredicate<>(left, Collections.unmodifiableList(list));
+        return new OrPredicate(left, Collections.unmodifiableList(list));
     }
 
-    static <I extends Item> AndPredicate<I> andPredicate(OperationPredicate<I> left, @Nullable IPredicate right) {
+    static AndPredicate andPredicate(OperationPredicate left, @Nullable IPredicate right) {
         assert right != null;
-        return new AndPredicate<>(left, (OperationPredicate<?>) right);
+        return new AndPredicate(left, (OperationPredicate) right);
     }
 
-    static <I extends Item> OperationPredicate<I> betweenPredicate(OperationExpression<I> left, Expression center
+    static OperationPredicate betweenPredicate(OperationExpression left, Expression center
             , Expression right) {
-        return new BetweenPredicate<>(left, center, right);
+        return new BetweenPredicate(left, center, right);
     }
 
-    static <I extends Item> OperationPredicate<I> notPredicate(final OperationPredicate<I> predicate) {
-        final OperationPredicate<I> notPredicate;
+    static OperationPredicate notPredicate(final OperationPredicate predicate) {
+        final OperationPredicate notPredicate;
         if (predicate instanceof NotPredicate) {
-            notPredicate = ((NotPredicate<I>) predicate).predicate;
+            notPredicate = ((NotPredicate) predicate).predicate;
         } else {
-            notPredicate = new NotPredicate<>(predicate);
+            notPredicate = new NotPredicate(predicate);
         }
         return notPredicate;
     }
 
-    static <I extends Item> OperationPredicate<I> compareQueryPredicate(OperationExpression<I> left
+    static OperationPredicate compareQueryPredicate(OperationExpression left
             , DualOperator operator, QueryOperator queryOperator, SubQuery subQuery) {
         switch (operator) {
             case LESS:
@@ -227,10 +236,10 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new SubQueryPredicate<>(left, operator, queryOperator, subQuery);
+        return new SubQueryPredicate(left, operator, queryOperator, subQuery);
     }
 
-    static <I extends Item> OperationPredicate<I> inOperator(final OperationExpression<I> left
+    static OperationPredicate inOperator(final OperationExpression left
             , final DualOperator operator, final SubQuery subQuery) {
         switch (operator) {
             case IN:
@@ -240,7 +249,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new SubQueryPredicate<>(left, operator, null, subQuery);
+        return new SubQueryPredicate(left, operator, null, subQuery);
 
     }
 
@@ -272,7 +281,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
      *
      * @since 1.0
      */
-    private static final class DualExpression<I extends Item> extends Expressions<I> {
+    private static final class DualExpression extends Expressions {
 
 
         private final ArmyExpression left;
@@ -282,8 +291,8 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
         private final ArmyExpression right;
 
 
-        private DualExpression(OperationExpression<I> left, DualOperator operator, ArmyExpression right) {
-            super(left.expType, left.function);
+        private DualExpression(OperationExpression left, DualOperator operator, ArmyExpression right) {
+            super(left);
             this.left = left;
             this.operator = operator;
             this.right = right;
@@ -370,7 +379,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof DualExpression) {
-                DualExpression<?> o = (DualExpression<?>) obj;
+                DualExpression o = (DualExpression) obj;
                 match = o.left.equals(this.left)
                         && o.operator == this.operator
                         && o.right.equals(this.right);
@@ -395,14 +404,14 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
      * This class is a implementation of {@link Expression}.
      * The expression consist of a  {@link Expression} and a {@link UnaryOperator}.
      */
-    private static final class UnaryExpression<I extends Item> extends Expressions<I> {
+    private static final class UnaryExpression extends Expressions {
 
         final ArmyExpression expression;
 
         private final UnaryOperator operator;
 
-        private UnaryExpression(OperationExpression<I> expression, UnaryOperator operator) {
-            super(expression.expType, expression.function);
+        private UnaryExpression(OperationExpression expression, UnaryOperator operator) {
+            super(expression);
             this.expression = expression;
             this.operator = operator;
         }
@@ -497,14 +506,16 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     }//UnaryExpression
 
 
-    private static final class BracketsExpression<I extends Item> extends Expressions<I> {
+    private static final class BracketsExpression extends Expressions {
 
-        private final ArmyExpression expression;
+        private final OperationExpression expression;
 
-        private BracketsExpression(OperationExpression<I> expression) {
-            super(expression.expType, expression.function);
+
+        private BracketsExpression(OperationExpression expression) {
+            super(expression);
             this.expression = expression;
         }
+
 
         @Override
         public void appendSql(final _SqlContext context) {
@@ -519,19 +530,36 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
         @Override
         public String toString() {
-            return String.format(" (%s )", this.expression);
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE_LEFT_PAREN)
+                    .append(this.expression)
+                    .append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
         }
 
 
     }//BracketsExpression
 
-    private static final class ScalarExpression extends Expressions<TypeInfer> {
+    private static final class ScalarExpression extends OperationExpression {
+
+        private final TypeMeta expType;
 
         private final SubQuery subQuery;
 
         private ScalarExpression(TypeMeta expType, SubQuery subQuery) {
-            super(expType, SQLs::_identity);
+            this.expType = expType;
             this.subQuery = subQuery;
+        }
+
+        @Override
+        public OperationExpression bracket() {
+            // return this ,don't create new instance
+            return this;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.expType;
         }
 
         @Override
@@ -544,20 +572,18 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
     /*-------------------below predicate class-------------------*/
 
-    static final class UnaryPredicate<I extends Item> extends OperationPredicate<I> {
+    static final class UnaryPredicate extends OperationPredicate {
 
         private final UnaryOperator operator;
 
         private final _SelfDescribed expressionOrSubQuery;
 
-        private UnaryPredicate(UnaryOperator operator, OperationExpression<I> expression) {
-            super(expression.function);
+        private UnaryPredicate(UnaryOperator operator, OperationExpression expression) {
             this.operator = operator;
             this.expressionOrSubQuery = expression;
         }
 
-        private UnaryPredicate(SubQuery query, UnaryOperator operator, Function<TypeInfer, I> function) {
-            super(function);
+        private UnaryPredicate(SubQuery query, UnaryOperator operator) {
             this.operator = operator;
             this.expressionOrSubQuery = (_SelfDescribed) query;
         }
@@ -607,7 +633,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof UnaryPredicate) {
-                final UnaryPredicate<?> o = (UnaryPredicate<?>) obj;
+                final UnaryPredicate o = (UnaryPredicate) obj;
                 match = o.operator == this.operator
                         && o.expressionOrSubQuery.equals(this.expressionOrSubQuery);
             } else {
@@ -642,7 +668,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     }//UnaryPredicate
 
 
-    static final class DualPredicate<I extends Item> extends OperationPredicate<I> {
+    static final class DualPredicate extends OperationPredicate {
 
 
         final ArmyExpression left;
@@ -651,8 +677,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
         final ArmyExpression right;
 
-        private DualPredicate(OperationExpression<I> left, DualOperator operator, Expression right) {
-            super(left.function);
+        private DualPredicate(OperationExpression left, DualOperator operator, Expression right) {
             this.left = left;
             this.operator = operator;
             this.right = (ArmyExpression) right;
@@ -694,7 +719,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof DualPredicate) {
-                final DualPredicate<?> p = (DualPredicate<?>) obj;
+                final DualPredicate p = (DualPredicate) obj;
                 match = p.operator == this.operator
                         && p.left.equals(this.left)
                         && p.right.equals(this.right);
@@ -718,12 +743,11 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     }//DualPredicate
 
 
-    private static final class BracketPredicate<I extends Item> extends OperationPredicate<I> {
+    private static final class BracketPredicate extends OperationPredicate {
 
-        private final OperationPredicate<I> predicate;
+        private final OperationPredicate predicate;
 
-        private BracketPredicate(OperationPredicate<I> predicate) {
-            super(predicate.function);
+        private BracketPredicate(OperationPredicate predicate) {
             this.predicate = predicate;
         }
 
@@ -743,14 +767,13 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     }//BracketPredicate
 
 
-    private static final class OrPredicate<I extends Item> extends OperationPredicate<I> {
+    private static final class OrPredicate extends OperationPredicate {
 
-        private final OperationPredicate<I> left;
+        private final OperationPredicate left;
 
-        private final List<OperationPredicate<?>> rightList;
+        private final List<OperationPredicate> rightList;
 
-        private OrPredicate(OperationPredicate<I> left, List<OperationPredicate<?>> rightList) {
-            super(left.function);
+        private OrPredicate(OperationPredicate left, List<OperationPredicate> rightList) {
             this.left = left;
             this.rightList = rightList;
         }
@@ -773,7 +796,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof OrPredicate) {
-                final OrPredicate<?> o = (OrPredicate<?>) obj;
+                final OrPredicate o = (OrPredicate) obj;
                 match = o.left.equals(this.left) && o.rightList.equals(this.rightList);
             } else {
                 match = false;
@@ -792,7 +815,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
         private void appendOrPredicate(final StringBuilder builder, final @Nullable _SqlContext context) {
             builder.append(_Constant.SPACE_LEFT_PAREN);// outer left paren
 
-            final OperationPredicate<?> left = this.left;
+            final OperationPredicate left = this.left;
 
             if (left instanceof AndPredicate) {
                 builder.append(_Constant.SPACE_LEFT_PAREN); //left inner left bracket
@@ -807,7 +830,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             }
 
             boolean rightInnerParen;
-            for (OperationPredicate<?> right : this.rightList) {
+            for (OperationPredicate right : this.rightList) {
 
                 builder.append(_Constant.SPACE_OR);
                 rightInnerParen = right instanceof AndPredicate;
@@ -833,14 +856,13 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     }//OrPredicate
 
 
-    static final class AndPredicate<I extends Item> extends OperationPredicate<I> {
+    static final class AndPredicate extends OperationPredicate {
 
-        final OperationPredicate<I> left;
+        final OperationPredicate left;
 
-        final OperationPredicate<?> right;
+        final OperationPredicate right;
 
-        private AndPredicate(OperationPredicate<I> left, OperationPredicate<?> right) {
-            super(left.function);
+        private AndPredicate(OperationPredicate left, OperationPredicate right) {
             this.left = left;
             this.right = right;
         }
@@ -870,7 +892,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     }//AndPredicate
 
 
-    private static class BetweenPredicate<I extends Item> extends OperationPredicate<I> {
+    private static class BetweenPredicate extends OperationPredicate {
 
         final ArmyExpression left;
 
@@ -878,8 +900,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
         final ArmyExpression right;
 
-        private BetweenPredicate(OperationExpression<I> left, Expression center, Expression right) {
-            super(left.function);
+        private BetweenPredicate(OperationExpression left, Expression center, Expression right) {
             this.left = left;
             this.center = (ArmyExpression) center;
             this.right = (ArmyExpression) right;
@@ -907,7 +928,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof BetweenPredicate) {
-                final BetweenPredicate<?> o = (BetweenPredicate<?>) obj;
+                final BetweenPredicate o = (BetweenPredicate) obj;
                 match = o.left.equals(this.left)
                         && o.center.equals(this.center)
                         && o.right.equals(this.right);
@@ -926,14 +947,31 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     }//BetweenPredicate
 
 
-    private static class CastExpression<I extends Item> extends Expressions<I> {
+    private static class CastExpression extends OperationExpression {
 
-        private final _Expression expression;
+        private final ArmyExpression expression;
+
+        private final TypeMeta castType;
 
 
-        private CastExpression(OperationExpression<I> expression, TypeMeta typeMeta) {
-            super(typeMeta, expression.function);
+        private CastExpression(OperationExpression expression, TypeMeta castType) {
             this.expression = expression;
+            if (castType instanceof TableField) {
+                this.castType = castType.mappingType();
+            } else {
+                this.castType = castType;
+            }
+
+        }
+
+        @Override
+        public OperationExpression bracket() {
+            return bracketExp(this);
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.castType;
         }
 
         @Override
@@ -953,12 +991,11 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     }//CastExpression
 
 
-    private static final class NotPredicate<I extends Item> extends OperationPredicate<I> {
+    private static final class NotPredicate extends OperationPredicate {
 
-        private final OperationPredicate<I> predicate;
+        private final OperationPredicate predicate;
 
-        private NotPredicate(OperationPredicate<I> predicate) {
-            super(predicate.function);
+        private NotPredicate(OperationPredicate predicate) {
             this.predicate = predicate;
 
         }
@@ -994,7 +1031,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof NotPredicate) {
-                final NotPredicate<?> o = (NotPredicate<?>) obj;
+                final NotPredicate o = (NotPredicate) obj;
                 match = o.predicate.equals(this.predicate);
             } else {
                 match = false;
@@ -1026,7 +1063,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     }//NotPredicate
 
 
-    private static final class SubQueryPredicate<I extends Item> extends OperationPredicate<I> {
+    private static final class SubQueryPredicate extends OperationPredicate {
         private final ArmyExpression left;
 
         private final DualOperator operator;
@@ -1035,9 +1072,8 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
         private final SubQuery subQuery;
 
-        private SubQueryPredicate(OperationExpression<I> left, DualOperator operator
+        private SubQueryPredicate(OperationExpression left, DualOperator operator
                 , @Nullable QueryOperator queryOperator, SubQuery subQuery) {
-            super(left.function);
             this.left = left;
             this.operator = operator;
             this.queryOperator = queryOperator;

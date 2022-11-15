@@ -580,12 +580,11 @@ abstract class SQLsSyntax extends SQLSyntax {
      * @see #TRUE
      * @see #FALSE
      */
-    private static final class BooleanWord extends OperationPredicate<TypeInfer> {
+    private static final class BooleanWord extends OperationPredicate {
 
         private final boolean value;
 
         private BooleanWord(boolean value) {
-            super(SQLs::_identity);
             this.value = value;
         }
 

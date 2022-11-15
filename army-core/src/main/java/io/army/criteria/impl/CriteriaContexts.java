@@ -1448,17 +1448,21 @@ abstract class CriteriaContexts {
     }//OtherPrimaryContext
 
 
-    static final class DerivedSelection<I extends Item> extends OperationDataField<I>
-            implements ItemDerivedField<I>, _Selection {
+    static final class DerivedSelection extends OperationDataField
+            implements _Selection, DerivedField {
 
         private final String tableName;
 
         private final Selection selection;
 
-        private DerivedSelection(String tableName, Selection selection, Function<TypeInfer, I> function) {
-            super(selection.typeMeta(), function);
+        private DerivedSelection(String tableName, Selection selection) {
             this.tableName = tableName;
             this.selection = selection;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.selection.typeMeta();
         }
 
         @Override
@@ -1528,7 +1532,7 @@ abstract class CriteriaContexts {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof DerivedSelection) {
-                final DerivedSelection<?> selection = (DerivedSelection<?>) obj;
+                final DerivedSelection selection = (DerivedSelection) obj;
                 match = selection.tableName.equals(this.tableName)
                         && selection.selection.equals(this.selection);
             } else {
@@ -1545,22 +1549,29 @@ abstract class CriteriaContexts {
     }//DerivedSelection
 
 
-    static final class RefDerivedField<I extends Item> extends OperationDataField<I>
-            implements ItemDerivedField<I>, _Selection {
+    static final class RefDerivedField extends OperationDataField
+            implements DerivedField, _Selection {
 
         final String tableName;
 
         final String fieldName;
 
-        private RefDerivedField(String tableName, String fieldName, Function<TypeInfer, I> function) {
-            super(new DelaySelection(), function);
+        private final DelaySelection expType;
+
+        private RefDerivedField(String tableName, String fieldName) {
             this.tableName = tableName;
             this.fieldName = fieldName;
+            this.expType = new DelaySelection();
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.expType;
         }
 
         @Override
         public TableField tableField() {
-            final Selection selection = ((DelaySelection) this.expType).selection;
+            final Selection selection = this.expType.selection;
             if (selection == null) {
                 throw new IllegalStateException(String.format("No actual %s", Selection.class.getName()));
             }
@@ -1622,13 +1633,13 @@ abstract class CriteriaContexts {
         }
 
         private void setSelection(final Selection selection) {
-            final DelaySelection delaySelection = (DelaySelection) this.expType;
+            final DelaySelection delaySelection = this.expType;
             assert delaySelection.selection == null;
             delaySelection.selection = selection;
         }
 
         private boolean isDelay() {
-            return ((DelaySelection) this.expType).selection == null;
+            return this.expType.selection == null;
         }
 
 
@@ -1658,18 +1669,17 @@ abstract class CriteriaContexts {
     /**
      * @see UnionQueryContext#ref(String)
      */
-    static final class RefSelection<I extends Item> extends OperationExpression<I> {
+    static final class RefSelection extends OperationExpression {
 
         private final Selection selection;
 
-        private RefSelection(Selection selection, Function<TypeInfer, I> function) {
-            super(selection.typeMeta(), function);
+        private RefSelection(Selection selection) {
             this.selection = selection;
         }
 
 
         @Override
-        public RefSelection<I> bracket() {
+        public RefSelection bracket() {
             //return this ,don't create new instance
             return this;
         }

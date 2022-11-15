@@ -1,12 +1,11 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.DataField;
+import io.army.criteria.Expression;
 import io.army.criteria.impl.inner._Selection;
 import io.army.function.TeNamedOperator;
-import io.army.meta.TypeMeta;
 
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * <p>
@@ -19,118 +18,115 @@ import java.util.function.Function;
  *     </ul>
  * </p>
  */
-abstract class OperationDataField<I extends Item> extends OperationExpression<I> implements DataField, _Selection {
+abstract class OperationDataField extends OperationExpression implements DataField, _Selection {
 
-    OperationDataField(Function<TypeInfer, I> function) {
-        super(function);
+    OperationDataField() {
+
     }
 
-    OperationDataField(TypeMeta expType, Function<TypeInfer, I> function) {
-        super(expType, function);
-    }
 
     @Override
-    public final AliasPredicate<I> equal(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationPredicate equal(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualOperator.EQUAL, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final AliasPredicate<I> less(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationPredicate less(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualOperator.LESS, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final AliasPredicate<I> lessEqual(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationPredicate lessEqual(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualOperator.LESS_EQUAL, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final AliasPredicate<I> great(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationPredicate great(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualOperator.GREAT, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final AliasPredicate<I> greatEqual(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationPredicate greatEqual(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualOperator.GREAT_EQUAL, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final AliasPredicate<I> notEqual(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationPredicate notEqual(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualOperator.NOT_EQUAL, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final AliasPredicate<I> like(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationPredicate like(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualOperator.LIKE, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final AliasPredicate<I> notLike(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationPredicate notLike(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualPredicate(this, DualOperator.NOT_LIKE, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final AliasPredicate<I> in(TeNamedOperator<DataField> namedOperator, int size) {
+    public final OperationPredicate in(TeNamedOperator<DataField> namedOperator, int size) {
         return Expressions.dualPredicate(this, DualOperator.IN, namedOperator.apply(this, this.fieldName(), size));
     }
 
     @Override
-    public final AliasPredicate<I> notIn(TeNamedOperator<DataField> namedOperator, int size) {
+    public final OperationPredicate notIn(TeNamedOperator<DataField> namedOperator, int size) {
         return Expressions.dualPredicate(this, DualOperator.NOT_IN, namedOperator.apply(this, this.fieldName(), size));
     }
 
     @Override
-    public final _AliasExpression<I> mod(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationExpression mod(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.MOD, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final _AliasExpression<I> plus(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationExpression plus(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.PLUS, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final _AliasExpression<I> minus(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationExpression minus(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.MINUS, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final _AliasExpression<I> times(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationExpression times(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.TIMES, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final _AliasExpression<I> divide(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationExpression divide(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.DIVIDE, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final _AliasExpression<I> bitwiseAnd(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationExpression bitwiseAnd(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.BITWISE_AND, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final _AliasExpression<I> bitwiseOr(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationExpression bitwiseOr(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.BITWISE_OR, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final _AliasExpression<I> xor(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationExpression xor(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.XOR, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final _AliasExpression<I> rightShift(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationExpression rightShift(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.RIGHT_SHIFT, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final _AliasExpression<I> leftShift(BiFunction<DataField, String, Expression> namedOperator) {
+    public final OperationExpression leftShift(BiFunction<DataField, String, Expression> namedOperator) {
         return Expressions.dualExp(this, DualOperator.LEFT_SHIFT, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
-    public final OperationDataField<I> bracket() {
+    public final OperationDataField bracket() {
         //return this ,don't create new instance
         return this;
     }

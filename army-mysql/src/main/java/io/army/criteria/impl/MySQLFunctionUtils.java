@@ -66,17 +66,18 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }
 
 
-    static <W extends Item, I extends Item> MySQLFunctionSyntax._AggregateWindowFunc<W, I> oneArgAggregateWindow(
-            String name, Expression arg, TypeMeta returnType, Function<TypeInfer, I> asFunction) {
+    static <E extends Expression, I extends Item> MySQLFunctionSyntax._AggregateWindowFunc<E> oneArgAggregateWindow(
+            String name, Expression arg, TypeMeta returnType,
+            , Function<_ItemWindow<I>, E> expFunc, Function<TypeInfer, I> asFunction) {
         if (arg instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, arg);
         }
-        return new OneArgAggregateWindowFunc<>(name, (ArmyExpression) arg, returnType, asFunction);
+        return new OneArgAggregateWindowFunc<>(name, (ArmyExpression) arg, returnType, expFunc, asFunction);
     }
 
-    static <W extends Item, I extends Item> MySQLFunctionSyntax._AggregateWindowFunc<W, I> oneArgAggregate(
+    static <E extends Expression, I extends Item> MySQLFunctionSyntax._AggregateWindowFunc<E> oneArgAggregate(
             String name, @Nullable SQLWords option, Expression arg, TypeMeta returnType
-            , Function<TypeInfer, I> asFunction) {
+            , Function<_ItemWindow<I>, E> expFunc, Function<TypeInfer, I> asFunction) {
         assert option == null || option == SQLs.DISTINCT || option == MySQLs.DISTINCT;
         if (arg instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, arg);
@@ -157,9 +158,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }
 
 
-    private static abstract class MySQLWindowFunction<W extends Item, I extends Item> extends WindowFunction<
-            Window._SimpleLeftParenClause<W>,
-            W,
+    private static abstract class MySQLWindowFunction<E extends Item, I extends Item> extends WindowFunction<
+            Window._SimpleLeftParenClause<E>,
             I> implements MySQLFunctionSyntax._OverSpec<W, I>
             , MySQLFunction {
 

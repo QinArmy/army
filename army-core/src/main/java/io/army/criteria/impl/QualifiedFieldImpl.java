@@ -4,7 +4,6 @@ import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.QualifiedField;
 import io.army.criteria.TableField;
-import io.army.criteria.TypeInfer;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._Constant;
@@ -12,6 +11,7 @@ import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -19,8 +19,7 @@ import io.army.util._StringUtils;
 import java.util.Objects;
 
 
-final class QualifiedFieldImpl<T> extends OperationDataField<TypeInfer>
-        implements QualifiedField<T> {
+final class QualifiedFieldImpl<T> extends OperationDataField implements QualifiedField<T> {
 
     static <T> QualifiedFieldImpl<T> create(final String tableAlias, final FieldMeta<T> field) {
         return new QualifiedFieldImpl<>(tableAlias, field);
@@ -32,7 +31,6 @@ final class QualifiedFieldImpl<T> extends OperationDataField<TypeInfer>
     private final TableFieldMeta<T> field;
 
     private QualifiedFieldImpl(String tableAlias, FieldMeta<T> field) {
-        super(field, SQLs::_identity);
         this.field = (TableFieldMeta<T>) field;
         this.tableAlias = tableAlias;
     }
@@ -50,6 +48,11 @@ final class QualifiedFieldImpl<T> extends OperationDataField<TypeInfer>
     @Override
     public boolean nullable() {
         return this.field.nullable;
+    }
+
+    @Override
+    public TypeMeta typeMeta() {
+        return this.field;
     }
 
     @Override

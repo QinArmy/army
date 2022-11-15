@@ -4,7 +4,6 @@ import io.army.ArmyException;
 import io.army.annotation.*;
 import io.army.criteria.Expression;
 import io.army.criteria.TableField;
-import io.army.criteria.TypeInfer;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
 import io.army.dialect._Constant;
@@ -29,7 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @since 1.0
  */
-abstract class TableFieldMeta<T> extends OperationDataField<TypeInfer> implements FieldMeta<T>, _Selection {
+abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta<T>, _Selection {
 
     private static final String ID = _MetaBridge.ID;
 
@@ -165,7 +164,6 @@ abstract class TableFieldMeta<T> extends OperationDataField<TypeInfer> implement
     private final boolean codec;
 
     private TableFieldMeta(final TableMeta<T> table, final Field field) throws MetaException {
-        super(SQLs::_identity);
         Objects.requireNonNull(table);
         Objects.requireNonNull(field);
 
@@ -243,6 +241,11 @@ abstract class TableFieldMeta<T> extends OperationDataField<TypeInfer> implement
 
     @Override
     public final FieldMeta<?> fieldMeta() {
+        return this;
+    }
+
+    @Override
+    public final TypeMeta typeMeta() {
         return this;
     }
 
@@ -336,12 +339,6 @@ abstract class TableFieldMeta<T> extends OperationDataField<TypeInfer> implement
     @Override
     public final TableField tableField() {
         //return this
-        return this;
-    }
-
-    @Override
-    public final TypeMeta typeMeta() {
-        // always this
         return this;
     }
 
