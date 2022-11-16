@@ -17,18 +17,16 @@ import java.util.Objects;
 
 /**
  * <p>
- * This class is MySQL function utils for application developer.
+ * Package class ,This class is MySQL function utils for application developer.
  * </p>
  *
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
+abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
 
-    /**
-     * private constructor
-     */
-    private MySQLFunctions() {
+
+    MySQLFunctions() {
     }
 
 
@@ -350,8 +348,11 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html">Flow Control Functions</a>
      */
-    public static SQLFunction._CaseFuncWhenClause<Expression> cases(Expression exp) {
-        return MySQLs.cases(exp, SQLs::_asExp, SQLs::_identity);
+    public static SQLFunction._CaseFuncWhenClause cases(Expression exp) {
+        if (!(exp instanceof ArmyExpression)) {
+            throw CriteriaUtils.funcArgError("CASE", exp);
+        }
+        return FunctionUtils.caseFunction(exp);
     }
 
 

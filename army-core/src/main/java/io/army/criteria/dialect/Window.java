@@ -312,6 +312,7 @@ public interface Window extends Item {
     }
 
 
+    @Deprecated
     interface _OverWindowClause<E extends Expression> extends _OverClause {
 
         @Override

@@ -60,100 +60,90 @@ public interface MySQLFunction extends SQLFunction {
     }
 
 
-    interface _JsonValueOnErrorClause<I extends Item> extends _OnErrorClause {
-
-        Statement._RightParenClause<I> onError();
-
-    }
-
-
-    interface _JsonValueOptionClause<I extends Item> extends Statement._RightParenClause<I>, _OnEmptyOrErrorActionClause {
-
-        @Override
-        _JsonValueOnErrorClause<I> nullWord();
-
-        @Override
-        _JsonValueOnErrorClause<I> error();
-
-        @Override
-        _JsonValueOnErrorClause<I> defaultValue(Expression value);
-
-        @Override
-        <T> _JsonValueOnErrorClause<I> defaultValue(Function<T, Expression> valueOperator, T value);
-
-        @Override
-        _JsonValueOnErrorClause<I> defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        @Override
-        _JsonValueOnErrorClause<I> defaultValue(Supplier<Expression> supplier);
+    interface _JsonValueOnErrorClause extends _OnErrorClause {
 
 
     }
 
-    interface _JsonValueOptionSpec<I extends Item> extends _JsonValueOptionClause<I> {
+
+    interface _JsonValueOptionClause extends _OnEmptyOrErrorActionClause {
+
+        @Override
+        _JsonValueOnErrorClause nullWord();
+
+        @Override
+        _JsonValueOnErrorClause error();
+
+        @Override
+        _JsonValueOnErrorClause defaultValue(Expression value);
+
+        @Override
+        <T> _JsonValueOnErrorClause defaultValue(Function<T, Expression> valueOperator, T value);
+
+        @Override
+        _JsonValueOnErrorClause defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        @Override
+        _JsonValueOnErrorClause defaultValue(Supplier<Expression> supplier);
+
+
+    }
+
+    interface _JsonValueOptionSpec extends _JsonValueOptionClause {
 
     }
 
 
-    interface _JsonValueOnEmptySpec<I extends Item> extends _JsonValueOnErrorClause<I>, _OnEmptyClause {
+    interface _JsonValueOnEmptySpec extends _JsonValueOnErrorClause, _OnEmptyClause {
 
         @Override
-        _JsonValueOptionSpec<I> onEmpty();
+        _JsonValueOptionSpec onEmpty();
 
     }
 
 
-    interface _JsonValueOptionOnEmptySpec<I extends Item> extends _JsonValueOptionSpec<I> {
+    interface _JsonValueOptionOnEmptySpec extends _JsonValueOptionSpec {
 
 
         @Override
-        _JsonValueOnEmptySpec<I> nullWord();
+        _JsonValueOnEmptySpec nullWord();
 
         @Override
-        _JsonValueOnEmptySpec<I> error();
+        _JsonValueOnEmptySpec error();
 
         @Override
-        _JsonValueOnEmptySpec<I> defaultValue(Expression value);
+        _JsonValueOnEmptySpec defaultValue(Expression value);
 
 
         @Override
-        <T> _JsonValueOnEmptySpec<I> defaultValue(Function<T, Expression> valueOperator, T value);
+        <T> _JsonValueOnEmptySpec defaultValue(Function<T, Expression> valueOperator, T value);
 
         @Override
-        _JsonValueOnEmptySpec<I> defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        _JsonValueOnEmptySpec defaultValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
         @Override
-        _JsonValueOnEmptySpec<I> defaultValue(Supplier<Expression> supplier);
+        _JsonValueOnEmptySpec defaultValue(Supplier<Expression> supplier);
 
     }
 
 
-    interface _JsonValueReturningSpec<I extends Expression> extends _JsonValueOptionOnEmptySpec<I> {
+    interface _JsonValueReturningSpec extends _JsonValueOptionOnEmptySpec {
 
-        _JsonValueOptionOnEmptySpec<I> returning(MySQLCastType type);
+        _JsonValueOptionOnEmptySpec returning(MySQLCastType type);
 
-        _JsonValueOptionOnEmptySpec<I> returning(MySQLCastType type, Expression n);
+        _JsonValueOptionOnEmptySpec returning(MySQLCastType type, Expression n);
 
-        _JsonValueOptionOnEmptySpec<I> returning(MySQLCastType type, int n);
+        _JsonValueOptionOnEmptySpec returning(MySQLCastType type, int n);
 
-        _JsonValueOptionOnEmptySpec<I> returning(MySQLCastType type, Expression n, SQLElement charset);
+        _JsonValueOptionOnEmptySpec returning(MySQLCastType type, Expression n, SQLElement charset);
 
-        _JsonValueOptionOnEmptySpec<I> returning(MySQLCastType type, Expression m, Expression d);
+        _JsonValueOptionOnEmptySpec returning(MySQLCastType type, Expression m, Expression d);
 
-        _JsonValueOptionOnEmptySpec<I> returning(MySQLCastType type, int m, int d);
-
-    }
-
-
-    interface _JsonValueLeftParenClause<I extends Expression> {
-
-        _JsonValueReturningSpec<I> leftParen(Expression jsonDoc, Expression path);
-
-        _JsonValueReturningSpec<I> leftParen(Expression jsonDoc, String path);
-
-        _JsonValueReturningSpec<I> leftParen(String jsonDoc, String path);
+        _JsonValueOptionOnEmptySpec returning(MySQLCastType type, int m, int d);
 
     }
+
+
 
 
 

@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.standard.SQLFunction;
+import io.army.dialect._SqlContext;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 
@@ -490,9 +491,30 @@ abstract class Functions extends SQLSyntax {
     }
 
 
-    public SQLFunction._CaseFuncWhenClause<Expression> Case() {
-        return FunctionUtils.caseFunction(null, SQLs::_asExp, SQLs::_identity);
+    public SQLFunction._CaseFuncWhenClause cases() {
+        return FunctionUtils.caseFunction(null);
     }
+
+
+    /*-------------------below Aggregate Function-------------------*/
+
+    public static Expression countStar() {
+        return CountStartFunction.INSTANCE;
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  LongType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
+     */
+    public static Expression count(Expression expr) {
+        return FunctionUtils.oneArgFunc("COUNT", expr, LongType.INSTANCE);
+    }
+
+
 
 
     /*################################## blow date time function method ##################################*/
@@ -743,6 +765,39 @@ abstract class Functions extends SQLSyntax {
 
 
     /*-------------------below private method -------------------*/
+
+
+    /**
+     * private class, standard count(*) function expression
+     *
+     * @see #countStar()
+     * @since 1.0
+     */
+    private static final class CountStartFunction extends OperationExpression implements SQLFunction {
+
+        private static final CountStartFunction INSTANCE = new CountStartFunction();
+
+        private CountStartFunction() {
+        }
+
+        @Override
+        public CountStartFunction bracket() {
+            //return this,don't create new instance
+            return this;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return LongType.INSTANCE;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder().append(" COUNT(*)");
+        }
+
+
+    }//CountStartFunction
 
 
 }

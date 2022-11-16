@@ -6,6 +6,7 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._RowSet;
 import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -33,13 +34,17 @@ abstract class Expressions extends OperationExpression {
 
     }
 
+    Expressions(final TypeMeta expType) {
+        this.expType = expType;
+    }
+
     @Override
     public final TypeMeta typeMeta() {
         return this.expType;
     }
 
     @Override
-    public final Expressions bracket() {
+    public final OperationExpression bracket() {
         return bracketExp(this);
     }
 
@@ -89,10 +94,11 @@ abstract class Expressions extends OperationExpression {
         return new CastExpression(expression, typeMeta);
     }
 
-    static Expressions bracketExp(final OperationExpression expression) {
-        final Expressions bracket;
-        if (expression instanceof BracketsExpression) {
-            bracket = (BracketsExpression) expression;
+    static OperationExpression bracketExp(final OperationExpression expression) {
+        final OperationExpression bracket;
+        if (expression instanceof BracketsExpression
+                || expression instanceof SQLFunction) {
+            bracket = expression;
         } else {
             bracket = new BracketsExpression(expression);
         }
