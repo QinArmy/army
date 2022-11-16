@@ -36,6 +36,16 @@ public class StandardQueryUnitTests {
                 .plus(SQLs::literal, 1).times(SQLs::literal, 5).as("a")
                 .asQuery();
 
+        SQLs.query()
+                .select(() ->
+                        SQLs.cases()
+                                .when(PillUser_.userType::equal, SQLs::literal, () -> PillUserType.PARTNER)
+                                .then(SQLs::literalFrom, () -> PillUserType.PARTNER)
+                                .elseValue(SQLs.literalFrom(PillUserType.NONE))
+                                .end()
+                                .plus(SQLs::literal, 1).times(SQLs::literal, 5))
+                .as("a")
+                .asQuery();
         printStmt(stmt);
     }
 

@@ -124,5 +124,9 @@
 
 25. 为什么 INSERT 语句中的 defaultValue 子句保留 T value 相关方法而删除 Supplier getter 相关方法 ? 这与其它语句的取舍不同.
     * 因为 defaultValue 子句的场景更多的来源于 简单值而不是 pojo.
+
+26. 为什么一定要支持 AliasExpression 和 复杂 sql function 引用 ?
+    * 见图 ![Alt text](AliasExpression.png)
+
     
 

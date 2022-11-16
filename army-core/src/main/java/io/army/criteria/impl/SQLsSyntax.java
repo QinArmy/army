@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -17,7 +16,6 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -28,7 +26,7 @@ import java.util.function.Supplier;
  * @see SQLs
  * @since 1.0
  */
-abstract class SQLsSyntax extends SQLSyntax {
+abstract class SQLsSyntax extends Functions {
 
     /**
      * package constructor
@@ -1066,10 +1064,10 @@ abstract class SQLsSyntax extends SQLSyntax {
     }
 
 
-    public static <I extends Item, R extends Expression> SQLFunction._CaseFuncWhenClause<R> Case(
-            Function<_ItemExpression<I>, R> endFunc, Function<TypeInfer, I> asFunc) {
-        return FunctionUtils.caseFunction(null, endFunc, asFunc);
-    }
+//    public static <I extends Item, R extends Expression> SQLFunction._CaseFuncWhenClause<R> Case(
+//            Function<_ItemExpression<I>, R> endFunc, Function<TypeInfer, I> asFunc) {
+//        return FunctionUtils.caseFunction(null, endFunc, asFunc);
+//    }
 
 
 

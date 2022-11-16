@@ -491,7 +491,7 @@ abstract class Functions extends SQLSyntax {
     }
 
 
-    public SQLFunction._CaseFuncWhenClause cases() {
+    public static SQLFunction._CaseFuncWhenClause cases() {
         return FunctionUtils.caseFunction(null);
     }
 
