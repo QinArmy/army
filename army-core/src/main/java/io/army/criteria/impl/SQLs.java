@@ -41,7 +41,7 @@ public abstract class SQLs extends SQLsSyntax {
     private SQLs() {
     }
 
-    static final Function<Selection, Selection> _IDENTITY = SQLs::_identity;
+    static final Function<TypeInfer, TypeInfer> _IDENTITY = SQLs::_identity;
 
 
     public static StandardInsert._PrimaryOptionSpec singleInsert() {
@@ -186,6 +186,10 @@ public abstract class SQLs extends SQLsSyntax {
 
     static Expression _asExp(_ItemExpression<?> expression) {
         return expression;
+    }
+
+    static <I extends Item> Function<_ItemExpression<I>, Expression> _getAsExpFunc() {
+        return SQLs::_asExp;
     }
 
 

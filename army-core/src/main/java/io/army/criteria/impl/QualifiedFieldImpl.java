@@ -2,9 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
-import io.army.criteria.QualifiedField;
-import io.army.criteria.TableField;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -17,12 +15,14 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 
-final class QualifiedFieldImpl<T> extends OperationDataField implements QualifiedField<T> {
+final class QualifiedFieldImpl<T, I extends Item> extends OperationDataField<I> implements QualifiedField<T> {
 
-    static <T> QualifiedFieldImpl<T> create(final String tableAlias, final FieldMeta<T> field) {
-        return new QualifiedFieldImpl<>(tableAlias, field);
+    static <T, I extends Item> QualifiedFieldImpl<T, I> create(final String tableAlias, final FieldMeta<T> field
+            , Function<TypeInfer, I> function) {
+        return new QualifiedFieldImpl<>(tableAlias, field, function);
     }
 
 
@@ -30,7 +30,8 @@ final class QualifiedFieldImpl<T> extends OperationDataField implements Qualifie
 
     private final TableFieldMeta<T> field;
 
-    private QualifiedFieldImpl(String tableAlias, FieldMeta<T> field) {
+    private QualifiedFieldImpl(String tableAlias, FieldMeta<T> field, Function<TypeInfer, I> function) {
+        super(function);
         this.field = (TableFieldMeta<T>) field;
         this.tableAlias = tableAlias;
     }
@@ -101,7 +102,7 @@ final class QualifiedFieldImpl<T> extends OperationDataField implements Qualifie
         if (obj == this) {
             match = true;
         } else if (obj instanceof QualifiedFieldImpl) {
-            final QualifiedFieldImpl<?> o = (QualifiedFieldImpl<?>) obj;
+            final QualifiedFieldImpl<?, ?> o = (QualifiedFieldImpl<?, ?>) obj;
             match = o.field == this.field && o.tableAlias.equals(this.tableAlias);
         } else {
             match = false;

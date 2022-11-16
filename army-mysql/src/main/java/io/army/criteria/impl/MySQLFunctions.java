@@ -23,10 +23,12 @@ import java.util.Objects;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
+public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
 
-
-    MySQLFunctions() {
+    /**
+     * private constructor
+     */
+    private MySQLFunctions() {
     }
 
 

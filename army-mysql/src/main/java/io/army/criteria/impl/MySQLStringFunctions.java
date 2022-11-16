@@ -23,7 +23,7 @@ import java.util.List;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-abstract class MySQLStringFunctions extends Functions {
+abstract class MySQLStringFunctions extends MySQLNumberFunctions {
 
     MySQLStringFunctions() {
         throw new UnsupportedOperationException();
@@ -934,14 +934,6 @@ abstract class MySQLStringFunctions extends Functions {
         }
         return FunctionUtils.complexArgFunc(name, StringType.INSTANCE
                 , str, as, type, SQLSyntax.FuncWord.LEFT_PAREN, n, SQLSyntax.FuncWord.RIGHT_PAREN);
-    }
-
-
-    /*-------------------below package method-------------------*/
-
-
-    static void assertDistinct(@Nullable SQLSyntax.ArgDistinct distinct) {
-        assert distinct == null || distinct == SQLs.DISTINCT || distinct == MySQLs.DISTINCT;
     }
 
 

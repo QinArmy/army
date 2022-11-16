@@ -7,7 +7,7 @@ package io.army.criteria.impl;
  *
  * @since 1.0
  */
-@Deprecated
+
 public abstract class SQLFunctions extends Functions {
 
     /**

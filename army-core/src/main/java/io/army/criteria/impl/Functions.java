@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 /**
@@ -26,6 +25,7 @@ import java.util.regex.Pattern;
  *
  * @see SQLs
  */
+@SuppressWarnings("unused")
 abstract class Functions extends SQLSyntax {
 
     /**
@@ -60,49 +60,6 @@ abstract class Functions extends SQLSyntax {
     }
 
 
-    public interface _FuncCommaClause<CR> {
-
-        CR comma(Expression expression);
-
-        CR comma(Supplier<? extends Expression> supplier);
-
-        CR comma(Function<Object, ? extends Expression> operator, Supplier<?> supplier);
-
-        CR comma(Function<Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
-
-        CR comma(BiFunction<Object, Object, ? extends Expression> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
-
-        CR comma(BiFunction<Object, Object, ? extends Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
-
-    }
-
-    public interface _FuncLastArgClause extends Functions._FuncCommaClause<Statement._RightParenClause<Expression>> {
-
-    }
-
-    public interface _FuncSecondArgClause extends Functions._FuncCommaClause<_FuncLastArgClause> {
-
-    }
-
-    public interface _FuncConditionClause<LR> {
-
-        LR leftParen(IPredicate condition);
-
-        LR leftParen(Supplier<? extends IPredicate> supplier);
-
-        LR leftParen(Function<Object, ? extends IPredicate> operator, Supplier<?> supplier);
-
-        LR leftParen(Function<Object, ? extends IPredicate> operator, Function<String, ?> function, String keyName);
-
-        LR leftParen(BiFunction<Object, Object, ? extends IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
-
-        LR leftParen(BiFunction<Object, Object, ? extends IPredicate> operator, Function<String, ?> function, String firstKey, String secondKey);
-
-    }
-
-    public interface _FuncConditionTowClause extends _FuncConditionClause<_FuncSecondArgClause> {
-
-    }
 
 
 
@@ -773,11 +730,12 @@ abstract class Functions extends SQLSyntax {
      * @see #countStar()
      * @since 1.0
      */
-    private static final class CountStartFunction extends OperationExpression implements SQLFunction {
+    private static final class CountStartFunction extends OperationExpression<TypeInfer> implements SQLFunction {
 
         private static final CountStartFunction INSTANCE = new CountStartFunction();
 
         private CountStartFunction() {
+            super(SQLs._IDENTITY);
         }
 
         @Override

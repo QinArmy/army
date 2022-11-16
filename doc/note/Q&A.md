@@ -127,6 +127,7 @@
 
 26. 为什么一定要支持 AliasExpression 和 复杂 sql function 引用 ?
     * 见图 ![Alt text](AliasExpression.png)
+    * 所以下定决心一定要支持
 
     
 
