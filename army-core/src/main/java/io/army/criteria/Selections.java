@@ -1,7 +1,8 @@
 package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
-import io.army.function.ExpressionOperator;
+import io.army.criteria.impl._AliasExpression;
+import io.army.function.*;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
@@ -11,95 +12,92 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface Selections {
+public interface Selections extends Item {
 
     //below one argument method
 
-    Query._SelectionsCommaSpec selection(FieldMeta<?> field);
+    Selections selection(NamedExpression exp);
 
 
-    Statement._AsClause<Query._SelectionsCommaSpec> selection(Supplier<Expression> supplier);
+    _AliasExpression<Selections> selection(Supplier<Expression> supplier);
 
-    <I extends Item> I selection(Function<Function<Expression, Statement._AsClause<Query._SelectionsCommaSpec>>, I> sqlFunc);
+
+    <R extends Item> R selection(SqlFunction<_AliasExpression<Selections>, Selections, R> function);
 
     //below two argument method
 
-    Query._SelectionsCommaSpec selection(FieldMeta<?> field1, FieldMeta<?> field2);
+    Selections selection(NamedExpression exp1, NamedExpression exp2);
 
-    <I extends Item> I selection(BiFunction<Expression, Function<Expression, Statement._AsClause<Query._SelectionsCommaSpec>>, I> sqlFunc, Expression expression);
+    <T> _AliasExpression<Selections> selection(Function<T, Expression> operator, Supplier<T> supplier);
 
-    <E extends RightOperand> Statement._AsClause<Query._SelectionsCommaSpec> selection(Function<E, Expression> expOperator, Supplier<E> supplier);
+    _AliasExpression<Selections> selection(Function<Expression, Expression> operator, Expression exp);
+
+    _AliasExpression<Selections> selection(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
+                                           BiFunction<DataField, String, Expression> namedOperator);
+
+    <R extends Item> R selection(SqlOneFunction<_AliasExpression<Selections>, Selections, R> function, Expression exp);
+
+    <R extends Item> R selection(SqlOneFunction<_AliasExpression<Selections>, Selections, R> function, Supplier<Expression> supplier);
 
     //below three argument method
 
-    Query._SelectionsCommaSpec selection(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3);
+    Selections selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3);
 
-    Query._SelectionsCommaSpec selection(Expression exp, SQLs.WordAs as, String alias);
+    Selections selection(Expression exp, SQLs.WordAs as, String alias);
 
-    Query._SelectionsCommaSpec selection(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+    Selections selection(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
 
-    Query._SelectionsCommaSpec selection(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias);
+    Selections selection(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 
-    Query._SelectionsCommaSpec selection(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+    Selections selection(Supplier<Expression> supplier, SQLs.WordAs as, String alias);
 
-    Query._SelectionsCommaSpec selection(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field);
+    <T> _AliasExpression<Selections> selection(ExpressionOperator<Expression, T, Expression> expOperator,
+                                               BiFunction<Expression, T, Expression> operator, Supplier<T> operand);
 
-    Query._SelectionsCommaSpec selection(Supplier<Expression> funcRef, SQLs.WordAs as, String alias);
+    <R extends Item> R selection(SqlTwoFunction<_AliasExpression<Selections>, Selections, R> function, Expression exp1,
+                                 Expression exp2);
 
     //below four argument method
 
-    Query._SelectionsCommaSpec selection(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3, FieldMeta<?> field4);
+    Selections selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4);
 
-    <T> Query._SelectionsCommaSpec selection(Function<T, Expression> valueOperator, T value, SQLs.WordAs as, String alias);
+    <T> Selections selection(Function<T, Expression> operator, Supplier<T> supplier, SQLs.WordAs as, String alias);
 
-    Query._SelectionsCommaSpec selection(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
-            , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias);
+    Selections selection(Function<Expression, Expression> operator, Expression exp, SQLs.WordAs as, String alias);
+
+    Selections selection(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
+                         BiFunction<DataField, String, Expression> namedOperator,
+                         SQLs.WordAs as, String alias);
+
+    _AliasExpression<Selections> selection(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                           BiFunction<Expression, Object, Expression> operator,
+                                           Function<String, ?> function, String keyName);
+
+
+    <R extends Item> R selection(SqlThreeFunction<_AliasExpression<Selections>, Selections, R> function, Expression exp1,
+                                 Expression exp2, Expression exp3);
+
 
     //below five argument method
-
-    Query._SelectionsCommaSpec selection(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias);
-
-    Query._SelectionsCommaSpec selection(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias);
-
-    <T> Query._SelectionsCommaSpec selection(ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias);
 
 
     //below six argument method
 
-    Query._SelectionsCommaSpec selection(FieldMeta<?> field1, SQLs.WordAs as1, String alias1
-            , FieldMeta<?> field2, SQLs.WordAs as2, String alias2);
+    Selections selection(NamedExpression exp1, SQLs.WordAs as1, String alias1,
+                         NamedExpression exp2, SQLs.WordAs as2, String alias2);
 
-    Query._SelectionsCommaSpec selection(String derivedAlias1, SQLs.SymbolPeriod period1, String fieldAlias1
-            , String derivedAlias2, SQLs.SymbolPeriod period2, String fieldAlias2);
+    <P> Selections selection(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                             String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
 
-    <P> Query._SelectionsCommaSpec selection(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent
-            , String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
+    Selections selection(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1,
+                         String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2);
 
-    Query._SelectionsCommaSpec selection(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1
-            , String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2);
+    Selections selection(Supplier<Expression> function1, SQLs.WordAs as1, String alias1,
+                         Supplier<Expression> function2, SQLs.WordAs as2, String alias2);
 
-    Query._SelectionsCommaSpec selection(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period
-            , FieldMeta<?> field, SQLs.WordAs as, String alias);
-
-    Query._SelectionsCommaSpec selection(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period
-            , String fieldAlias, SQLs.WordAs as, String alias);
-
-    Query._SelectionsCommaSpec selection(Supplier<Expression> funcRef1, SQLs.WordAs as1, String alias1
-            , Supplier<Expression> funcRef2, SQLs.WordAs as2, String alias2);
-
-    Query._SelectionsCommaSpec selection(ExpressionOperator<Expression, Object, Expression> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-            , String keyName, SQLs.WordAs as, String alias);
-
-    <I extends Item, T> I selection(BiFunction<Expression, Function<Expression, Statement._AsClause<Query._SelectionsCommaSpec>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, T operand);
-
-    <I extends Item, T> I selection(BiFunction<Expression, Function<Expression, Statement._AsClause<Query._SelectionsCommaSpec>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, Function<String, ?> function
-            , String keyName);
+    Selections selection(ExpressionOperator<Expression, Object, Expression> expOperator,
+                         BiFunction<Expression, Object, Expression> operator, Function<String, ?> function,
+                         String keyName, SQLs.WordAs as, String alias);
 
 
 }

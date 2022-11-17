@@ -1,5 +1,6 @@
 package io.army.function;
 
+
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.criteria.SpacePredicate;
@@ -13,8 +14,8 @@ import java.util.function.Function;
 
 /**
  * <p>
- * This interface representing the sql function method that take two argument method
- * ,eg:{@code  MySQLs#nthValue(Expression, Expression, Function, Function)}
+ * This interface representing the sql function method that take three argument method
+ * ,eg:{@code  MySQLs#lag(Expression, Expression, Expression,Function, Function)}
  * </p>
  *
  * @param <E> below type:
@@ -34,8 +35,10 @@ import java.util.function.Function;
  * @since 1.0
  */
 @FunctionalInterface
-public interface SqlTwoFunction<E extends Item, I extends Item, R extends Item> {
+public interface SqlThreeFunction<E extends Item, I extends Item, R extends Item> {
 
-    R apply(Expression exp1, Expression ex2, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc);
+    R apply(Expression exp1, Expression ex2, Expression exp3, Function<_ItemExpression<I>, E> expFunc,
+            Function<TypeInfer, I> endFunc);
+
 
 }

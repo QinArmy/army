@@ -123,6 +123,37 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
         return new ScalarExpression<>(((Selection) selectItem).typeMeta(), subQuery, endFunc);
     }
 
+    static <I extends Item> OperationExpression<I> wrapExpression(final OperationExpression<?> expression,
+                                                                  final Function<TypeInfer, I> function) {
+        return new OperationExpressionWrapper<>(expression, function);
+    }
+
+    private static final class OperationExpressionWrapper<I extends Item> extends Expressions<I> {
+
+        private final ArmyExpression expression;
+
+        /**
+         * @see #wrapExpression(OperationExpression, Function)
+         */
+        private OperationExpressionWrapper(OperationExpression<?> expression, Function<TypeInfer, I> function) {
+            super(expression.typeMeta(), function);
+            this.expression = expression;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            this.expression.appendSql(context);
+        }
+
+
+    }//OperationExpressionWrapper
+
+
+    static <I extends Item> OperationPredicate<I> wrapPredicate(final OperationPredicate<?> predicate,
+                                                                final Function<TypeInfer, I> function) {
+        return new OperationPredicateWrapper<>(predicate, function);
+    }
+
 
     static OperationPredicate<TypeInfer> existsPredicate(UnaryOperator operator, @Nullable SubQuery subQuery) {
         assert subQuery != null;
@@ -1129,6 +1160,26 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
 
     }//SubQueryPredicate
+
+    private static final class OperationPredicateWrapper<I extends Item> extends OperationPredicate<I> {
+
+        private final OperationPredicate<?> predicate;
+
+        /**
+         * @see #wrapPredicate(OperationPredicate, Function)
+         */
+        private OperationPredicateWrapper(OperationPredicate<?> predicate, Function<TypeInfer, I> function) {
+            super(function);
+            this.predicate = predicate;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            this.predicate.appendSql(context);
+        }
+
+
+    }//OperationPredicateWrapper
 
 
 }

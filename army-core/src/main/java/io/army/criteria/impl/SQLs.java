@@ -199,6 +199,11 @@ public abstract class SQLs extends SQLsSyntax {
         return SQLs::_asExp;
     }
 
+    @SuppressWarnings("unchecked")
+    static <T1 extends TypeInfer, T2 extends TypeInfer> Function<T1, T2> _getIdentity() {
+        return (Function<T1, T2>) _IDENTITY;
+    }
+
 
     static <I extends Item> Function<TypeInfer, I> _toSelection(final Function<Selection, I> function) {
         return t -> {

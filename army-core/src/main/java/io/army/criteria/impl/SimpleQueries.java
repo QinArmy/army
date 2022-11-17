@@ -5,7 +5,7 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect._Constant;
-import io.army.function.ExpressionOperator;
+import io.army.function.*;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.util.ArrayUtils;
@@ -42,6 +42,10 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         , Query._QueryMinusClause<SP>, Query
         , _Query {
 
+    private final Function<TypeInfer, SR> asFunc;
+
+    private final Function<_ItemExpression<SR>, _AliasExpression<SR>> expFunc;
+
 
     private List<Hint> hintList;
 
@@ -62,6 +66,9 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     SimpleQueries(CriteriaContext context) {
         super(context);
         ContextStack.push(this.context);
+        this.asFunc = this::onAsSelection;
+        this.expFunc = SQLs._getIdentity();
+        CriteriaContexts.setAliasEventFunction(this.context, this.asFunc);
     }
 
     /*-------------------below _StaticSelectClause method-------------------*/
@@ -69,191 +76,154 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     //below one argument method
 
     @Override
-    public final SR select(FieldMeta<?> field) {
-        this.context.onAddSelectItem(field);
+    public final SR select(NamedExpression exp) {
+        this.context.onAddSelectItem(exp);
         return (SR) this;
     }
 
     @Override
-    public final _AsClause<SR> select(Supplier<Expression> supplier) {
+    public final _AliasExpression<SR> select(Supplier<Expression> supplier) {
         return this.onSelectExpression(supplier.get());
     }
 
     @Override
-    public final <I extends Item> I select(Function<Function<Expression, _AsClause<SR>>, I> sqlFunc) {
-        return sqlFunc.apply(this::onSelectExpression);
+    public final <R extends Item> R select(SqlFunction<_AliasExpression<SR>, SR, R> function) {
+        return function.apply(this.expFunc, this.asFunc);
     }
 
-    //below two argument method
-
     @Override
-    public final SR select(FieldMeta<?> field1, FieldMeta<?> field2) {
-        this.context.onAddSelectItem(field1)
-                .onAddSelectItem(field2);
+    public final SR select(NamedExpression exp1, NamedExpression exp2) {
+        this.context.onAddSelectItem(exp1)
+                .onAddSelectItem(exp2);
         return (SR) this;
     }
 
     @Override
-    public final <I extends Item> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , Expression expression) {
-        return sqlFunc.apply(expression, this::onSelectExpression);
+    public final <T> _AliasExpression<SR> select(Function<T, Expression> operator, Supplier<T> supplier) {
+        return this.onSelectExpression(operator.apply(supplier.get()));
     }
 
     @Override
-    public final <E extends RightOperand> _AsClause<SR> select(Function<E, Expression> expOperator
-            , Supplier<E> supplier) {
-        return this.onSelectExpression(expOperator.apply(supplier.get()));
+    public final _AliasExpression<SR> select(Function<Expression, Expression> operator, Expression exp) {
+        return this.onSelectExpression(operator.apply(exp));
     }
 
-    //below three argument method
+    @Override
+    public final _AliasExpression<SR> select(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
+                                             BiFunction<DataField, String, Expression> namedOperator) {
+        return this.onSelectExpression(fieldOperator.apply(namedOperator));
+    }
 
     @Override
-    public final SR select(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3) {
-        this.context.onAddSelectItem(field1)
-                .onAddSelectItem(field2)
-                .onAddSelectItem(field3);
+    public final <R extends Item> R select(SqlOneFunction<_AliasExpression<SR>, SR, R> function, Expression exp) {
+        return function.apply(exp, this.expFunc, this.asFunc);
+    }
+
+    @Override
+    public final <R extends Item> R select(SqlOneFunction<_AliasExpression<SR>, SR, R> function,
+                                           Supplier<Expression> supplier) {
+        return function.apply(supplier.get(), this.expFunc, this.asFunc);
+    }
+
+    @Override
+    public final SR select(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3) {
+        this.context.onAddSelectItem(exp1)
+                .onAddSelectItem(exp2)
+                .onAddSelectItem(exp3);
         return (SR) this;
     }
 
     @Override
     public final SR select(Expression exp, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
         this.context.onAddSelectItem(ArmySelections.forExp(exp, alias));
         return (SR) this;
     }
 
     @Override
     public final SR select(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
-        assert period == SQLs.PERIOD && star == SQLs.START;
         this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias) {
-        assert period == SQLs.PERIOD;
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(context.refThis(derivedAlias, fieldAlias));
         return (SR) this;
     }
 
     @Override
     public final SR select(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
-        assert period == SQLs.PERIOD;
         this.context.onAddSelectItem(SelectionGroups.singleGroup(table, tableAlias));
         return (SR) this;
     }
 
     @Override
-    public final SR select(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field) {
-        assert period == SQLs.PERIOD;
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(context.field(tableAlias, field));
+    public final SR select(Supplier<Expression> supplier, SQLs.WordAs as, String alias) {
+        this.context.onAddSelectItem(ArmySelections.forExp(supplier.get(), alias));
         return (SR) this;
     }
 
     @Override
-    public final SR select(Supplier<Expression> funcRef, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.context.onAddSelectItem(ArmySelections.forExp(funcRef.get(), alias));
-        return (SR) this;
-    }
-
-    //below four argument method
-
-    @Override
-    public final SR select(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3, FieldMeta<?> field4) {
-        this.context.onAddSelectItem(field1)
-                .onAddSelectItem(field2)
-                .onAddSelectItem(field3)
-                .onAddSelectItem(field4);
-        return (SR) this;
+    public final <T> _AliasExpression<SR> select(ExpressionOperator<Expression, T, Expression> expOperator,
+                                                 BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
+        return this.onSelectExpression(expOperator.apply(operator, getter.get()));
     }
 
     @Override
-    public final <T> SR select(Function<T, Expression> valueOperator, T value, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.context.onAddSelectItem(ArmySelections.forExp(valueOperator.apply(value), alias));
+    public final <R extends Item> R select(SqlTwoFunction<_AliasExpression<SR>, SR, R> function,
+                                           Expression exp1, Expression exp2) {
+        return function.apply(exp1, exp2, this.expFunc, this.asFunc);
+    }
+
+    @Override
+    public final SR select(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4) {
+        this.context.onAddSelectItem(exp1)
+                .onAddSelectItem(exp2)
+                .onAddSelectItem(exp3)
+                .onAddSelectItem(exp4);
         return (SR) this;
     }
 
     @Override
-    public final SR select(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
-            , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
+    public final <T> SR select(Function<T, Expression> operator, Supplier<T> supplier, SQLs.WordAs as, String alias) {
+        this.context.onAddSelectItem(ArmySelections.forExp(operator.apply(supplier.get()), alias));
+        return (SR) this;
+    }
+
+    @Override
+    public final SR select(Function<Expression, Expression> operator, Expression exp, SQLs.WordAs as, String alias) {
+        this.context.onAddSelectItem(ArmySelections.forExp(operator.apply(exp), alias));
+        return (SR) this;
+    }
+
+    @Override
+    public final SR select(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
+                           BiFunction<DataField, String, Expression> namedOperator,
+                           SQLs.WordAs as, String alias) {
+
         this.context.onAddSelectItem(ArmySelections.forExp(fieldOperator.apply(namedOperator), alias));
         return (SR) this;
     }
 
     @Override
-    public final <I extends Item, T> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, T operand) {
-        return sqlFunc.apply(expOperator.apply(operator, operand), this::onSelectExpression);
+    public final _AliasExpression<SR> select(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                             BiFunction<Expression, Object, Expression> operator,
+                                             Function<String, ?> function, String keyName) {
+        return this.onSelectExpression(expOperator.apply(operator, function.apply(keyName)));
     }
 
-
-    //below five argument method
+    @Override
+    public final <R extends Item> R select(SqlThreeFunction<_AliasExpression<SR>, SR, R> function, Expression exp1,
+                                           Expression exp2, Expression exp3) {
+        return function.apply(exp1, exp2, exp3, this.expFunc, this.asFunc);
+    }
 
     @Override
-    public final SR select(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field
-            , SQLs.WordAs as, String alias) {
-        assert period == SQLs.PERIOD && as == SQLs.AS;
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(context.field(tableAlias, field), alias));
+    public final SR select(NamedExpression exp1, SQLs.WordAs as1, String alias1, NamedExpression exp2, SQLs.WordAs as2,
+                           String alias2) {
+        this.context.onAddSelectItem(ArmySelections.forExp(exp1, alias1))
+                .onAddSelectItem(ArmySelections.forExp(exp2, alias2));
         return (SR) this;
     }
 
     @Override
-    public final SR select(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias
-            , SQLs.WordAs as, String alias) {
-        assert period == SQLs.PERIOD && as == SQLs.AS;
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(context.refThis(derivedAlias, fieldAlias), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final <T> SR select(ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.context.onAddSelectItem(ArmySelections.forExp(expOperator.apply(operator, operand), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final <I extends Item> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, Object, Expression> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        return sqlFunc.apply(expOperator.apply(operator, function.apply(keyName)), this::onSelectExpression);
-    }
-
-    //below six argument method
-
-    @Override
-    public final SR select(FieldMeta<?> field1, SQLs.WordAs as1, String alias1, FieldMeta<?> field2
-            , SQLs.WordAs as2, String alias2) {
-        assert as1 == SQLs.AS && as2 == SQLs.AS;
-        this.context.onAddSelectItem(ArmySelections.forExp(field1, alias1))
-                .onAddSelectItem(ArmySelections.forExp(field2, alias2));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(String derivedAlias1, SQLs.SymbolPeriod period1, String fieldAlias1
-            , String derivedAlias2, SQLs.SymbolPeriod period2, String fieldAlias2) {
-        assert period1 == SQLs.PERIOD && period2 == period1;
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(context.refThis(derivedAlias1, fieldAlias1), fieldAlias1))
-                .onAddSelectItem(ArmySelections.forExp(context.refThis(derivedAlias2, fieldAlias2), fieldAlias2));
-        return (SR) this;
-    }
-
-    @Override
-    public final <P> SR select(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent
-            , String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
-        assert period1 == SQLs.PERIOD && period2 == period1;
-        if (parent != child.parentMeta()) {
+    public final <P> SR select(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                               String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+        if (child.parentMeta() != parent) {
             throw childParentNotMatch(parent, child);
         }
         this.context.onAddSelectItem(SelectionGroups.childGroup(child, childAlias, parenAlias));
@@ -261,595 +231,43 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR select(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1
-            , String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2) {
-        assert period1 == SQLs.PERIOD && period2 == period1;
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(context.field(tableAlias1, field1))
-                .onAddSelectItem(context.field(tableAlias2, field2));
+    public final SR select(Supplier<Expression> function1, SQLs.WordAs as1, String alias1,
+                           Supplier<Expression> function2, SQLs.WordAs as2, String alias2) {
+
+        this.context.onAddSelectItem(ArmySelections.forExp(function1.get(), alias1))
+                .onAddSelectItem(ArmySelections.forExp(function2.get(), alias2));
         return (SR) this;
     }
 
     @Override
-    public final SR select(Function<Expression, Expression> funcRef, String tableAlias
-            , SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(funcRef.apply(context.field(tableAlias, field)), alias));
-        return (SR) this;
-    }
+    public final SR select(ExpressionOperator<Expression, Object, Expression> expOperator,
+                           BiFunction<Expression, Object, Expression> operator, Function<String, ?> function,
+                           String keyName, SQLs.WordAs as, String alias) {
 
-    @Override
-    public final SR select(Function<Expression, Expression> funcRef, String tableAlias
-            , SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(funcRef.apply(context.refThis(tableAlias, fieldAlias)), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(Supplier<Expression> funcRef1, SQLs.WordAs as1, String alias1
-            , Supplier<Expression> funcRef2, SQLs.WordAs as2, String alias2) {
-        assert as1 == SQLs.AS && as2 == as1;
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(funcRef1.get(), alias1))
-                .onAddSelectItem(ArmySelections.forExp(funcRef2.get(), alias2));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(ExpressionOperator<Expression, Object, Expression> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-            , String keyName, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
         this.context.onAddSelectItem(ArmySelections.forExp(expOperator.apply(operator, function.apply(keyName)), alias));
         return (SR) this;
     }
 
-
-
-    /*-------------------below _ModifierSelectClause method-------------------*/
-
-    //below two argument method
-
     @Override
-    public final SR select(W modifier, FieldMeta<?> field) {
+    public final _StaticSelectSpaceClause<SR> select(W modifier) {
         this.modifierList = this.asSingleModifier(modifier);
-        this.context.onAddSelectItem(field);
-        return (SR) this;
+        return this;
     }
 
     @Override
-    public final _AsClause<SR> select(W modifier, Supplier<Expression> supplier) {
-        this.modifierList = this.asSingleModifier(modifier);
-        return this.onSelectExpression(supplier.get());
+    public final _StaticSelectSpaceClause<SR> select(List<W> modifiers) {
+        this.modifierList = this.asModifierList(modifiers);
+        return this;
     }
 
     @Override
-    public final <I extends Item> I select(W modifier, Function<Function<Expression, _AsClause<SR>>, I> sqlFunc) {
-        this.modifierList = this.asSingleModifier(modifier);
-        return sqlFunc.apply(this::onSelectExpression);
-    }
-
-    //below four argument method
-
-    @Override
-    public final SR select(W modifier, Expression exp, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.modifierList = this.asSingleModifier(modifier);
-        this.context.onAddSelectItem(ArmySelections.forExp(exp, alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(W modifier, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
-        assert star == SQLs.START;
-        this.modifierList = this.asSingleModifier(modifier);
-        this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(W modifier, String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias) {
-        assert period == SQLs.PERIOD;
-        this.modifierList = this.asSingleModifier(modifier);
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(context.refThis(derivedAlias, fieldAlias), fieldAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(W modifier, String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
-        assert period == SQLs.PERIOD;
-        this.modifierList = this.asSingleModifier(modifier);
-        this.context.onAddSelectItem(SelectionGroups.singleGroup(table, tableAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(W modifier, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field) {
-        assert period == SQLs.PERIOD;
-        this.modifierList = this.asSingleModifier(modifier);
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(context.field(tableAlias, field), field.fieldName()));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(W modifier, Supplier<Expression> funcRef, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.modifierList = this.asSingleModifier(modifier);
-        this.context.onAddSelectItem(ArmySelections.forExp(funcRef.get(), alias));
-        return (SR) this;
-    }
-
-    //below five argument method
-
-    @Override
-    public final <T> SR select(W modifier, Function<T, Expression> valueOperator, T value
-            , SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.modifierList = this.asSingleModifier(modifier);
-        this.context.onAddSelectItem(ArmySelections.forExp(valueOperator.apply(value), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(W modifier, Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
-            , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.modifierList = this.asSingleModifier(modifier);
-        this.context.onAddSelectItem(ArmySelections.forExp(fieldOperator.apply(namedOperator), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final <I extends Item, T> I select(W modifier
-            , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, T operand) {
-        this.modifierList = this.asSingleModifier(modifier);
-        return sqlFunc.apply(expOperator.apply(operator, operand), this::onSelectExpression);
-    }
-
-    //below six argument method
-
-    @Override
-    public final SR select(W modifier, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field
-            , SQLs.WordAs as, String alias) {
-        assert period == SQLs.PERIOD && as == SQLs.AS;
-        this.modifierList = this.asSingleModifier(modifier);
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(context.field(tableAlias, field), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(W modifier, String derivedAlias, SQLs.SymbolPeriod period
-            , String fieldAlias, SQLs.WordAs as, String alias) {
-        assert period == SQLs.PERIOD && as == SQLs.AS;
-        this.modifierList = this.asSingleModifier(modifier);
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(context.refThis(derivedAlias, fieldAlias), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final <I extends Item> I select(W modifier, BiFunction<Expression
-            , Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, Object, Expression> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        this.modifierList = this.asSingleModifier(modifier);
-        return sqlFunc.apply(expOperator.apply(operator, function.apply(keyName)), this::onSelectExpression);
-    }
-
-    //below seven argument method
-
-    @Override
-    public final <P> SR select(W modifier, String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent
-            , String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
-        assert period1 == SQLs.PERIOD && period1 == period2;
-        this.modifierList = this.asSingleModifier(modifier);
-        if (parent != child.parentMeta()) {
-            throw childParentNotMatch(parent, child);
-        }
-        this.context.onAddSelectItem(SelectionGroups.childGroup(child, childAlias, parenAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(W modifier, ExpressionOperator<Expression, Object, Expression> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-            , String keyName, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.modifierList = this.asSingleModifier(modifier);
-        this.context.onAddSelectItem(ArmySelections.forExp(expOperator.apply(operator, function.apply(keyName)), alias));
-        return (SR) this;
-    }
-
-    /*-------------------below _ModifierListSelectClause-------------------*/
-
-    //below two argument method
-
-    @Override
-    public final SR select(List<W> modifierList, FieldMeta<?> field) {
-        this.modifierList = this.asModifierList(modifierList);
-        this.context.onAddSelectItem(field);
-        return (SR) this;
-    }
-
-    @Override
-    public final _AsClause<SR> select(List<W> modifierList, Supplier<Expression> supplier) {
-        this.modifierList = this.asModifierList(modifierList);
-        return this.onSelectExpression(supplier.get());
-    }
-
-    @Override
-    public final <I extends Item> I select(List<W> modifierList
-            , Function<Function<Expression, _AsClause<SR>>, I> sqlFunc) {
-        this.modifierList = this.asModifierList(modifierList);
-        return sqlFunc.apply(this::onSelectExpression);
-    }
-
-    //below four argument method
-
-    @Override
-    public final SR select(List<W> modifierList, Expression exp, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.modifierList = this.asModifierList(modifierList);
-        this.context.onAddSelectItem(ArmySelections.forExp(exp, alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(List<W> modifierList, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
-        assert period == SQLs.PERIOD && star == SQLs.START;
-        this.modifierList = this.asModifierList(modifierList);
-        this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(List<W> modifierList, String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias) {
-        assert period == SQLs.PERIOD;
-        this.modifierList = this.asModifierList(modifierList);
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(context.refThis(derivedAlias, fieldAlias), fieldAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(List<W> modifierList, String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
-        assert period == SQLs.PERIOD;
-        this.modifierList = this.asModifierList(modifierList);
-        this.context.onAddSelectItem(SelectionGroups.singleGroup(table, tableAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(List<W> modifierList, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field) {
-        assert period == SQLs.PERIOD;
-        this.modifierList = this.asModifierList(modifierList);
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(context.field(tableAlias, field));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(List<W> modifierList, Supplier<Expression> funcRef, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.modifierList = this.asModifierList(modifierList);
-        this.context.onAddSelectItem(ArmySelections.forExp(funcRef.get(), alias));
-        return (SR) this;
-    }
-
-    //below five argument method
-
-    @Override
-    public final <T> SR select(List<W> modifierList, Function<T, Expression> valueOperator
-            , T value, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.modifierList = this.asModifierList(modifierList);
-        this.context.onAddSelectItem(ArmySelections.forExp(valueOperator.apply(value), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(List<W> modifierList
-            , Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
-            , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.modifierList = this.asModifierList(modifierList);
-        this.context.onAddSelectItem(ArmySelections.forExp(fieldOperator.apply(namedOperator), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final <I extends Item, T> I select(List<W> modifierList
-            , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, T operand) {
-        this.modifierList = this.asModifierList(modifierList);
-        return sqlFunc.apply(expOperator.apply(operator, operand), this::onSelectExpression);
-    }
-
-
-    //below six argument method
-
-    @Override
-    public final SR select(List<W> modifierList, String tableAlias, SQLs.SymbolPeriod period
-            , FieldMeta<?> field, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.modifierList = this.asModifierList(modifierList);
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(context.field(tableAlias, field), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(List<W> modifierList, String derivedAlias, SQLs.SymbolPeriod period
-            , String fieldAlias, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.modifierList = this.asModifierList(modifierList);
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(context.refThis(derivedAlias, fieldAlias), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final <I extends Item> I select(List<W> modifierList
-            , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, Object, Expression> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        this.modifierList = this.asModifierList(modifierList);
-        return sqlFunc.apply(expOperator.apply(operator, function.apply(keyName)), this::onSelectExpression);
-    }
-
-    @Override
-    public final <P> SR select(List<W> modifierList, String parenAlias, SQLs.SymbolPeriod period1
-            , ParentTableMeta<P> parent, String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
-        assert period1 == SQLs.PERIOD && period2 == period1;
-        if (parent != child.parentMeta()) {
-            throw childParentNotMatch(parent, child);
-        }
-        this.modifierList = this.asModifierList(modifierList);
-        this.context.onAddSelectItem(SelectionGroups.childGroup(child, childAlias, parenAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(List<W> modifierList, ExpressionOperator<Expression, Object, Expression> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-            , String keyName, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.modifierList = this.asModifierList(modifierList);
-        this.context.onAddSelectItem(ArmySelections.forExp(expOperator.apply(operator, function.apply(keyName)), alias));
-        return (SR) this;
-    }
-
-
-
-    /*-------------------below _HintsModifiersListSelectClause-------------------*/
-
-    //below three argument method
-
-    @Override
-    public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, FieldMeta<?> field) {
+    public final _StaticSelectSpaceClause<SR> select(Supplier<List<Hint>> hints, List<W> modifiers) {
         this.hintList = this.asHintList(hints.get());
         this.modifierList = this.asModifierList(modifiers);
-        this.context.onAddSelectItem(field);
-        return (SR) this;
+        return this;
     }
 
-    @Override
-    public final _AsClause<SR> select(Supplier<List<Hint>> hints, List<W> modifiers, Supplier<Expression> supplier) {
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        return this.onSelectExpression(supplier.get());
-    }
-
-    @Override
-    public final <I extends Item> I select(Supplier<List<Hint>> hints, List<W> modifiers
-            , Function<Function<Expression, _AsClause<SR>>, I> sqlFunc) {
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        return sqlFunc.apply(this::onSelectExpression);
-    }
-
-    //below five argument method
-
-    @Override
-    public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, Expression exp
-            , SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        this.context.onAddSelectItem(ArmySelections.forExp(exp, alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, String derivedAlias
-            , SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
-        assert period == SQLs.PERIOD && star == SQLs.START;
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, String derivedAlias
-            , SQLs.SymbolPeriod period, String fieldAlias) {
-        assert period == SQLs.PERIOD;
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(context.refThis(derivedAlias, fieldAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, String tableAlias
-            , SQLs.SymbolPeriod period, TableMeta<?> table) {
-        assert period == SQLs.PERIOD;
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        this.context.onAddSelectItem(SelectionGroups.singleGroup(table, tableAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, String tableAlias
-            , SQLs.SymbolPeriod period, FieldMeta<?> field) {
-        assert period == SQLs.PERIOD;
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(context.field(tableAlias, field));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(Supplier<List<Hint>> hints, List<W> modifiers
-            , Supplier<Expression> funcRef, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(funcRef.get(), alias));
-        return (SR) this;
-    }
-
-    //below six argument method
-
-    @Override
-    public final <T> SR select(Supplier<List<Hint>> hints, List<W> modifiers
-            , Function<T, Expression> valueOperator, T value, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        this.context.onAddSelectItem(ArmySelections.forExp(valueOperator.apply(value), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(Supplier<List<Hint>> hints, List<W> modifiers
-            , Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
-            , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        this.context.onAddSelectItem(ArmySelections.forExp(fieldOperator.apply(namedOperator), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers
-            , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, T operand) {
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        return sqlFunc.apply(expOperator.apply(operator, operand), this::onSelectExpression);
-    }
-
-
-    //below seven argument method
-
-    @Override
-    public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, String tableAlias
-            , SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias) {
-        assert period == SQLs.PERIOD && as == SQLs.AS;
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(context.field(tableAlias, field), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, String derivedAlias
-            , SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias) {
-        assert period == SQLs.PERIOD && as == SQLs.AS;
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(ArmySelections.forExp(context.refThis(derivedAlias, fieldAlias), alias));
-        return (SR) this;
-    }
-
-    @Override
-    public final <I extends Item> I select(Supplier<List<Hint>> hints, List<W> modifiers
-            , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, Object, Expression> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        return sqlFunc.apply(expOperator.apply(operator, function.apply(keyName)), this::onSelectExpression);
-    }
-
-    //below eight argument method
-
-    @Override
-    public final <P> SR select(Supplier<List<Hint>> hints, List<W> modifiers
-            , String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent
-            , String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
-        if (parent != child.parentMeta()) {
-            throw childParentNotMatch(parent, child);
-        }
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        this.context.onAddSelectItem(SelectionGroups.childGroup(child, childAlias, parenAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR select(Supplier<List<Hint>> hints, List<W> modifiers
-            , ExpressionOperator<Expression, Object, Expression> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-            , String keyName, SQLs.WordAs as, String alias) {
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        this.context.onAddSelectItem(ArmySelections.forExp(expOperator.apply(operator, function.apply(keyName)), alias));
-        return (SR) this;
-    }
-
-
-    /*-------------------below dynamic select method -------------------*/
-
-    @Override
-    public final SD select(SQLs.SymbolStar star) {
-        assert star == SQLs.START;
-        this.context.onAddSelectItem((SelectItem) star);
-        return (SD) this;
-    }
-
-    @Override
-    public final SD select(W modifier, SQLs.SymbolStar star) {
-        assert star == SQLs.START;
-        this.modifierList = this.asSingleModifier(modifier);
-        this.context.onAddSelectItem((SelectItem) star);
-        return (SD) this;
-    }
-
-    @Override
-    public final SD select(List<W> modifierList, SQLs.SymbolStar star) {
-        assert star == SQLs.START;
-        this.modifierList = this.asModifierList(modifierList);
-        this.context.onAddSelectItem((SelectItem) star);
-        return (SD) this;
-    }
-
-    @Override
-    public final SD select(Supplier<List<Hint>> hints, List<W> modifiers, SQLs.SymbolStar star) {
-        assert star == SQLs.START;
-        this.hintList = this.asHintList(hints.get());
-        this.modifierList = this.asModifierList(modifiers);
-        this.context.onAddSelectItem((SelectItem) star);
-        return (SD) this;
-    }
+    /*-------------------below dynamic select clause method -------------------*/
 
     @Override
     public final SD selects(Consumer<Selections> consumer) {
@@ -879,206 +297,301 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         return (SD) this;
     }
 
-    /*-------------------below _StaticSelectCommaClause-------------------*/
-    //below one argument method
+
+
+    /*-------------------below select space clause method -------------------*/
 
     @Override
-    public final SR comma(FieldMeta<?> field) {
-        this.context.onAddSelectItem(field);
+    public final SR space(NamedExpression exp) {
+        return null;
+    }
+
+    @Override
+    public final _AliasExpression<SR> space(Supplier<Expression> supplier) {
+        return null;
+    }
+
+    @Override
+    public final <R extends Item> R space(SqlFunction<_AliasExpression<SR>, SR, R> function) {
+        return null;
+    }
+
+    @Override
+    public final SR space(NamedExpression exp1, NamedExpression exp2) {
+        return null;
+    }
+
+    @Override
+    public final <T> _AliasExpression<SR> space(Function<T, Expression> operator, Supplier<T> supplier) {
+        return null;
+    }
+
+    @Override
+    public final _AliasExpression<SR> space(Function<Expression, Expression> operator, Expression exp) {
+        return null;
+    }
+
+    @Override
+    public final _AliasExpression<SR> space(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
+                                            BiFunction<DataField, String, Expression> namedOperator) {
+        return null;
+    }
+
+    @Override
+    public final <R extends Item> R space(SqlOneFunction<_AliasExpression<SR>, SR, R> function, Expression exp) {
+        return null;
+    }
+
+    @Override
+    public final <R extends Item> R space(SqlOneFunction<_AliasExpression<SR>, SR, R> function,
+                                          Supplier<Expression> supplier) {
+        return null;
+    }
+
+    @Override
+    public final SR space(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3) {
+        return null;
+    }
+
+    @Override
+    public final SR space(Expression exp, SQLs.WordAs as, String alias) {
+        return null;
+    }
+
+    @Override
+    public final SR space(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
+        return null;
+    }
+
+    @Override
+    public final SR space(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+        return null;
+    }
+
+    @Override
+    public final SR space(Supplier<Expression> supplier, SQLs.WordAs as, String alias) {
+        return null;
+    }
+
+    @Override
+    public final <T> _AliasExpression<SR> space(ExpressionOperator<Expression, T, Expression> expOperator,
+                                                BiFunction<Expression, T, Expression> operator, Supplier<T> operand) {
+        return null;
+    }
+
+    @Override
+    public final <R extends Item> R space(SqlTwoFunction<_AliasExpression<SR>, SR, R> function,
+                                          Expression exp1, Expression exp2) {
+        return null;
+    }
+
+    @Override
+    public final SR space(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4) {
+        return null;
+    }
+
+    @Override
+    public final <T> SR space(Function<T, Expression> operator, Supplier<T> supplier, SQLs.WordAs as,
+                              String alias) {
+        return null;
+    }
+
+    @Override
+    public final SR space(Function<Expression, Expression> operator, Expression exp, SQLs.WordAs as,
+                          String alias) {
+        return null;
+    }
+
+    @Override
+    public final _AliasExpression<SR> space(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
+                                            BiFunction<DataField, String, Expression> namedOperator,
+                                            SQLs.WordAs as, String alias) {
+        return null;
+    }
+
+    @Override
+    public final _AliasExpression<SR> space(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                            BiFunction<Expression, Object, Expression> operator,
+                                            Function<String, ?> function, String keyName) {
+        return null;
+    }
+
+    @Override
+    public final <R extends Item> R space(SqlThreeFunction<_AliasExpression<SR>, SR, R> function, Expression exp1,
+                                          Expression exp2, Expression exp3) {
+        return null;
+    }
+
+    @Override
+    public final SR space(NamedExpression exp1, SQLs.WordAs as1, String alias1, NamedExpression exp2,
+                          SQLs.WordAs as2, String alias2) {
+        return null;
+    }
+
+    @Override
+    public final <P> SR space(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                              String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+        return null;
+    }
+
+    @Override
+    public final SR space(Supplier<Expression> function1, SQLs.WordAs as1, String alias1,
+                          Supplier<Expression> function2, SQLs.WordAs as2, String alias2) {
+        return null;
+    }
+
+    @Override
+    public final SR space(ExpressionOperator<Expression, Object, Expression> expOperator,
+                          BiFunction<Expression, Object, Expression> operator, Function<String, ?> function,
+                          String keyName, SQLs.WordAs as, String alias) {
+        return null;
+    }
+
+
+    /*-------------------below select comma -------------------*/
+
+    @Override
+    public final SR comma(NamedExpression exp) {
+        this.context.onAddSelectItem(exp);
         return (SR) this;
     }
 
     @Override
-    public final _AsClause<SR> comma(Supplier<Expression> supplier) {
-        return this.onSelectExpression(supplier.get());
+    public final _AliasExpression<SR> comma(Supplier<Expression> supplier) {
+        return null;
     }
 
     @Override
-    public final <I extends Item> I comma(Function<Function<Expression, _AsClause<SR>>, I> sqlFunc) {
-        return sqlFunc.apply(this::onSelectExpression);
-    }
-
-    //below two argument method
-
-    @Override
-    public final SR comma(FieldMeta<?> field1, FieldMeta<?> field2) {
-        this.context.onAddSelectItem(field1)
-                .onAddSelectItem(field2);
-        return (SR) this;
+    public final <R extends Item> R comma(SqlFunction<_AliasExpression<SR>, SR, R> function) {
+        return null;
     }
 
     @Override
-    public final <I extends Item> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , Expression expression) {
-        return sqlFunc.apply(expression, this::onSelectExpression);
+    public final SR comma(NamedExpression exp1, NamedExpression exp2) {
+        return null;
     }
 
     @Override
-    public final <E extends RightOperand> _AsClause<SR> comma(Function<E, Expression> expOperator
-            , Supplier<E> supplier) {
-        return this.onSelectExpression(expOperator.apply(supplier.get()));
+    public final <T> _AliasExpression<SR> comma(Function<T, Expression> operator, Supplier<T> supplier) {
+        return null;
     }
 
-    //below three argument method
+    @Override
+    public final _AliasExpression<SR> comma(Function<Expression, Expression> operator, Expression exp) {
+        return null;
+    }
 
     @Override
-    public final SR comma(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3) {
-        this.context.onAddSelectItem(field1)
-                .onAddSelectItem(field2)
-                .onAddSelectItem(field3);
-        return (SR) this;
+    public final _AliasExpression<SR> comma(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
+                                            BiFunction<DataField, String, Expression> namedOperator) {
+        return null;
+    }
+
+    @Override
+    public final <R extends Item> R comma(SqlOneFunction<_AliasExpression<SR>, SR, R> function, Expression exp) {
+        return null;
+    }
+
+    @Override
+    public final <R extends Item> R comma(SqlOneFunction<_AliasExpression<SR>, SR, R> function,
+                                          Supplier<Expression> supplier) {
+        return null;
+    }
+
+    @Override
+    public final SR comma(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3) {
+        return null;
     }
 
     @Override
     public final SR comma(Expression exp, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.context.onAddSelectItem(ArmySelections.forExp(exp, alias));
-        return (SR) this;
+        return null;
     }
 
     @Override
     public final SR comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
-        assert period == SQLs.PERIOD && star == SQLs.START;
-        this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR comma(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias) {
-        assert period == SQLs.PERIOD;
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(context.refThis(derivedAlias, fieldAlias));
-        return (SR) this;
+        return null;
     }
 
     @Override
     public final SR comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
-        assert period == SQLs.PERIOD;
-        this.context.onAddSelectItem(SelectionGroups.singleGroup(table, tableAlias));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR comma(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field) {
-        assert period == SQLs.PERIOD;
-        final CriteriaContext context = this.context;
-        context.onAddSelectItem(context.field(tableAlias, field));
-        return (SR) this;
-    }
-
-    @Override
-    public final SR comma(Supplier<Expression> funcRef, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        this.context.onAddSelectItem(ArmySelections.forExp(funcRef.get(), alias));
-        return (SR) this;
-    }
-
-    //below four argument method
-
-    @Override
-    public final SR comma(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3, FieldMeta<?> field4) {
-        this.context.onAddSelectItem(field1)
-                .onAddSelectItem(field2)
-                .onAddSelectItem(field3)
-                .onAddSelectItem(field4);
-        return (SR) this;
-    }
-
-    @Override
-    public final <T> SR comma(Function<T, Expression> valueOperator, T value, SQLs.WordAs as, String alias) {
-        return null;
-    }
-
-
-    @Override
-    public final SR comma(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
-            , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias) {
-        return null;
-    }
-
-    //below five argument method
-
-    @Override
-    public final SR comma(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field
-            , SQLs.WordAs as, String alias) {
         return null;
     }
 
     @Override
-    public final SR comma(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias
-            , SQLs.WordAs as, String alias) {
+    public final SR comma(Supplier<Expression> supplier, SQLs.WordAs as, String alias) {
         return null;
     }
 
     @Override
-    public final <T> SR comma(ExpressionOperator<Expression, T, Expression> expOperator
-            , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias) {
-        return null;
-    }
-
-
-    //below six argument method
-
-    @Override
-    public final SR comma(FieldMeta<?> field1, SQLs.WordAs as1, String alias1
-            , FieldMeta<?> field2, SQLs.WordAs as2, String alias2) {
+    public final <T> _AliasExpression<SR> comma(ExpressionOperator<Expression, T, Expression> expOperator,
+                                                BiFunction<Expression, T, Expression> operator, Supplier<T> operand) {
         return null;
     }
 
     @Override
-    public final SR comma(String derivedAlias1, SQLs.SymbolPeriod period1, String fieldAlias1
-            , String derivedAlias2, SQLs.SymbolPeriod period2, String fieldAlias2) {
+    public final <R extends Item> R comma(SqlTwoFunction<_AliasExpression<SR>, SR, R> function, Expression exp1,
+                                          Expression exp2) {
         return null;
     }
 
     @Override
-    public final <P> SR comma(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent
-            , String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+    public final SR comma(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4) {
         return null;
     }
 
     @Override
-    public final SR comma(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1
-            , String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2) {
+    public final <T> SR comma(Function<T, Expression> operator, Supplier<T> supplier, SQLs.WordAs as, String alias) {
         return null;
     }
 
     @Override
-    public final SR comma(Function<Expression, Expression> funcRef, String tableAlias
-            , SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias) {
+    public final SR comma(Function<Expression, Expression> operator, Expression exp, SQLs.WordAs as, String alias) {
         return null;
     }
 
     @Override
-    public final SR comma(Function<Expression, Expression> funcRef, String tableAlias, SQLs.SymbolPeriod period
-            , String fieldAlias, SQLs.WordAs as, String alias) {
+    public final _AliasExpression<SR> comma(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
+                                            BiFunction<DataField, String, Expression> namedOperator,
+                                            SQLs.WordAs as, String alias) {
         return null;
     }
 
     @Override
-    public final SR comma(Supplier<Expression> funcRef1, SQLs.WordAs as1, String alias1
-            , Supplier<Expression> funcRef2, SQLs.WordAs as2, String alias2) {
+    public final _AliasExpression<SR> comma(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                            BiFunction<Expression, Object, Expression> operator,
+                                            Function<String, ?> function, String keyName) {
         return null;
     }
 
     @Override
-    public final SR comma(ExpressionOperator<Expression, Object, Expression> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-            , String keyName, SQLs.WordAs as, String alias) {
+    public final <R extends Item> R comma(SqlThreeFunction<_AliasExpression<SR>, SR, R> function, Expression exp1,
+                                          Expression exp2, Expression exp3) {
         return null;
     }
 
     @Override
-    public final <I extends Item, T> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator
-            , Supplier<T> getter) {
+    public final SR comma(NamedExpression exp1, SQLs.WordAs as1, String alias1, NamedExpression exp2,
+                          SQLs.WordAs as2, String alias2) {
         return null;
     }
 
     @Override
-    public final <I extends Item> I comma(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-            , ExpressionOperator<Expression, Object, Expression> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+    public final <P> SR comma(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                              String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+        return null;
+    }
+
+    @Override
+    public final SR comma(Supplier<Expression> function1, SQLs.WordAs as1, String alias1,
+                          Supplier<Expression> function2, SQLs.WordAs as2, String alias2) {
+        return null;
+    }
+
+    @Override
+    public final SR comma(ExpressionOperator<Expression, Object, Expression> expOperator,
+                          BiFunction<Expression, Object, Expression> operator, Function<String, ?> function,
+                          String keyName, SQLs.WordAs as, String alias) {
         return null;
     }
 
@@ -1137,7 +650,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (predicate == null) {
                 throw ContextStack.nullPointer(this.context);
             }
-            this.havingList = Collections.singletonList((OperationPredicate) predicate);
+            this.havingList = Collections.singletonList((OperationPredicate<?>) predicate);
         }
         return (HR) this;
     }
@@ -1149,8 +662,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
                 throw ContextStack.nullPointer(this.context);
             }
             this.havingList = ArrayUtils.asUnmodifiableList(
-                    (OperationPredicate) predicate1
-                    , (OperationPredicate) predicate2
+                    (OperationPredicate<?>) predicate1
+                    , (OperationPredicate<?>) predicate2
             );
         }
         return (HR) this;
@@ -1410,6 +923,15 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
 
+    private SR onAsSelection(final TypeInfer selection) {
+        if (!(selection instanceof ArmySelections)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        this.context.onAddSelectItem((Selection) selection);
+        return (SR) this;
+    }
+
+
     private void endQueryStatement() {
         _Assert.nonPrepared(this.prepared);
         // hint list
@@ -1445,13 +967,23 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     }
 
-    private _AsClause<SR> onSelectExpression(final Expression expression) {
-        final _AsClause<SR> asClause;
-        asClause = alias -> {
-            this.context.onAddSelectItem(ArmySelections.forExp(expression, alias));
-            return (SR) this;
-        };
-        return asClause;
+    private _AliasExpression<SR> onSelectExpression(final @Nullable Expression expression) {
+        final _AliasExpression<SR> wrap;
+        if (expression == null) {
+            throw ContextStack.nullPointer(this.context);
+        } else if (expression instanceof NonOperationExpression) {
+            String m = String.format("error expression[%s]", expression);
+            throw ContextStack.criteriaError(this.context, m);
+        } else if (!(expression instanceof OperationExpression)) {
+            throw ContextStack.nonArmyExp(this.context);
+        } else if (((OperationExpression<?>) expression).function == this.asFunc) {
+            wrap = (OperationExpression<SR>) expression;
+        } else if (expression instanceof OperationPredicate) {
+            wrap = Expressions.wrapPredicate((OperationPredicate<?>) expression, this.asFunc);
+        } else {
+            wrap = Expressions.wrapExpression((OperationExpression<?>) expression, this.asFunc);
+        }
+        return wrap;
     }
 
     private void addGroupByItem(final @Nullable SortItem sortItem) {
@@ -1522,7 +1054,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
 
-    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
             extends SimpleQueries<Q, W, SR, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
             implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec
@@ -1637,7 +1169,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }//LockWaitOption
 
 
-    static abstract class SelectClauseDispatcher<W extends Query.SelectModifier, SR, SD>
+    static abstract class SelectClauseDispatcher<W extends Query.SelectModifier, SR extends Item, SD>
             implements Query._SelectDispatcher<W, SR, SD> {
 
         SelectClauseDispatcher() {
@@ -1645,548 +1177,148 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         /*-------------------below _StaticSelectClause method-------------------*/
 
-        //below one argument method
-
-        @Override
-        public final SR select(FieldMeta<?> field) {
-            return null;
-        }
-
-        @Override
-        public final _AsClause<SR> select(Supplier<Expression> supplier) {
-            return null;
-        }
-
-        @Override
-        public final <I extends Item> I select(Function<Function<Expression, _AsClause<SR>>, I> sqlFunc) {
-            return null;
-        }
-
-        //below two argument method
-
-        @Override
-        public final SR select(FieldMeta<?> field1, FieldMeta<?> field2) {
-            return null;
-        }
-
-        @Override
-        public final <I extends Item> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , Expression expression) {
-            return null;
-        }
-
-        @Override
-        public final <E extends RightOperand> _AsClause<SR> select(Function<E, Expression> expOperator
-                , Supplier<E> supplier) {
-            return null;
-        }
-
-        //below three argument method
-
-        @Override
-        public final SR select(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3) {
-            return null;
-        }
-
-        @Override
-        public final SR select(Expression exp, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final SR select(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
-            return null;
-        }
-
-        @Override
-        public final SR select(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias) {
-            return null;
-        }
-
-        @Override
-        public final SR select(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
-            return null;
-        }
-
-        @Override
-        public final SR select(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field) {
-            return null;
-        }
-
-        @Override
-        public final SR select(Supplier<Expression> funcRef, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        //below four argument method
-
-        @Override
-        public final SR select(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3, FieldMeta<?> field4) {
-            return null;
-        }
-
-        @Override
-        public final <T> SR select(Function<T, Expression> valueOperator, T value, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final SR select(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
-                , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        //below five argument method
-
-        @Override
-        public final SR select(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field
-                , SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final SR select(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias
-                , SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final <T> SR select(ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        //below six argument method
-
-        @Override
-        public final SR select(FieldMeta<?> field1, SQLs.WordAs as1, String alias1, FieldMeta<?> field2
-                , SQLs.WordAs as2, String alias2) {
-            return null;
-        }
-
-        @Override
-        public final SR select(String derivedAlias1, SQLs.SymbolPeriod period1, String fieldAlias1
-                , String derivedAlias2, SQLs.SymbolPeriod period2, String fieldAlias2) {
-            return null;
-        }
-
-        @Override
-        public final <P> SR select(String parenAlias, SQLs.SymbolPeriod period1
-                , ParentTableMeta<P> parent, String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
-            return null;
-        }
-
-        @Override
-        public final SR select(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1
-                , String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2) {
-            return null;
-        }
-
-        @Override
-        public final SR select(Function<Expression, Expression> funcRef, String tableAlias
-                , SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final SR select(Function<Expression, Expression> funcRef, String tableAlias
-                , SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final SR select(Supplier<Expression> funcRef1, SQLs.WordAs as1, String alias1
-                , Supplier<Expression> funcRef2, SQLs.WordAs as2, String alias2) {
-            return null;
-        }
-
-        @Override
-        public final SR select(ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-                , String keyName, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final <I extends Item, T> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand) {
-            return null;
-        }
-
-
-        @Override
-        public final <I extends Item> I select(BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-            return null;
-        }
-
-        /*-------------------below _ModifierSelectClause method-------------------*/
-
-        //below two argument method
-
-        @Override
-        public final SR select(W modifier, FieldMeta<?> field) {
-            return null;
-        }
-
-        @Override
-        public final _AsClause<SR> select(W modifier, Supplier<Expression> supplier) {
-            return null;
-        }
-
-        @Override
-        public final <I extends Item> I select(W modifier, Function<Function<Expression, _AsClause<SR>>, I> sqlFunc) {
-            return null;
-        }
-
-        //below four argument method
-
-        @Override
-        public final SR select(W modifier, Expression exp, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final SR select(W modifier, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
-            return null;
-        }
-
-        @Override
-        public final SR select(W modifier, String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias) {
-            return null;
-        }
-
-        @Override
-        public final SR select(W modifier, String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
-            return null;
-        }
-
-        @Override
-        public final SR select(W modifier, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field) {
-            return null;
-        }
-
-        @Override
-        public final SR select(W modifier, Supplier<Expression> funcRef, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        //below five argument method
-
-        @Override
-        public final <T> SR select(W modifier, Function<T, Expression> valueOperator, T value
-                , SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final SR select(W modifier, Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
-                , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        //below six argument method
-
-        @Override
-        public final SR select(W modifier, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field
-                , SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final SR select(W modifier, String derivedAlias, SQLs.SymbolPeriod period
-                , String fieldAlias, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        //below seven argument method
-
-        @Override
-        public final <P> SR select(W modifier, String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent
-                , String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
-            return null;
-        }
-
-        @Override
-        public final SR select(W modifier, ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-                , String keyName, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final <I extends Item, T> I select(W modifier
-                , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand) {
-            return null;
-        }
-
-        //below eight argument method
-
-        @Override
-        public final <I extends Item> I select(W modifier, BiFunction<Expression
-                , Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-            return null;
-        }
-
-        /*-------------------below _ModifierListSelectClause-------------------*/
-
-        //below two argument method
-
-        @Override
-        public final SR select(List<W> modifierList, FieldMeta<?> field) {
-            return null;
-        }
-
-        @Override
-        public final _AsClause<SR> select(List<W> modifierList, Supplier<Expression> supplier) {
-            return null;
-        }
-
-        @Override
-        public final <I extends Item> I select(List<W> modifierList
-                , Function<Function<Expression, _AsClause<SR>>, I> sqlFunc) {
-            return null;
-        }
-
-        //below four argument method
-
-        @Override
-        public final SR select(List<W> modifierList, Expression exp, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
         @Override
-        public final SR select(List<W> modifierList, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
+        public final SR select(NamedExpression exp) {
             return null;
         }
 
         @Override
-        public final SR select(List<W> modifierList, String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias) {
+        public final _AliasExpression<SR> select(Supplier<Expression> supplier) {
             return null;
         }
 
         @Override
-        public final SR select(List<W> modifierList, String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+        public final <R extends Item> R select(SqlFunction<_AliasExpression<SR>, SR, R> function) {
             return null;
         }
 
         @Override
-        public final SR select(List<W> modifierList, String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field) {
+        public final SR select(NamedExpression exp1, NamedExpression exp2) {
             return null;
         }
 
         @Override
-        public final SR select(List<W> modifierList, Supplier<Expression> funcRef, SQLs.WordAs as, String alias) {
+        public final <T> _AliasExpression<SR> select(Function<T, Expression> operator, Supplier<T> supplier) {
             return null;
         }
 
-        //below five argument method
-
-        @Override
-        public final <T> SR select(List<W> modifierList, Function<T, Expression> valueOperator
-                , T value, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final SR select(List<W> modifierList
-                , Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
-                , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        //below six argument method
-
-        @Override
-        public final SR select(List<W> modifierList, String tableAlias, SQLs.SymbolPeriod period
-                , FieldMeta<?> field, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public final SR select(List<W> modifierList, String derivedAlias, SQLs.SymbolPeriod period
-                , String fieldAlias, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        //below seven argument method
-
-        @Override
-        public final <P> SR select(List<W> modifierList, String parenAlias, SQLs.SymbolPeriod period1
-                , ParentTableMeta<P> parent, String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
-            return null;
-        }
-
         @Override
-        public final SR select(List<W> modifierList, ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-                , String keyName, SQLs.WordAs as, String alias) {
+        public final _AliasExpression<SR> select(Function<Expression, Expression> operator, Expression exp) {
             return null;
         }
 
         @Override
-        public final <I extends Item, T> I select(List<W> modifierList
-                , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand) {
+        public final _AliasExpression<SR> select(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator, BiFunction<DataField, String, Expression> namedOperator) {
             return null;
         }
 
         @Override
-        public final <I extends Item> I select(List<W> modifierList
-                , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+        public final <R extends Item> R select(SqlOneFunction<_AliasExpression<SR>, SR, R> function, Expression exp) {
             return null;
         }
 
-        /*-------------------below _HintsModifiersListSelectClause-------------------*/
-
-        //below three argument method
-
         @Override
-        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, FieldMeta<?> field) {
+        public final <R extends Item> R select(SqlOneFunction<_AliasExpression<SR>, SR, R> function, Supplier<Expression> supplier) {
             return null;
         }
 
         @Override
-        public final _AsClause<SR> select(Supplier<List<Hint>> hints, List<W> modifiers, Supplier<Expression> supplier) {
+        public final SR select(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3) {
             return null;
         }
 
         @Override
-        public final <I extends Item> I select(Supplier<List<Hint>> hints, List<W> modifiers
-                , Function<Function<Expression, _AsClause<SR>>, I> sqlFunc) {
+        public final SR select(Expression exp, SQLsSyntax.WordAs as, String alias) {
             return null;
         }
 
-        //below five argument method
-
         @Override
-        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, Expression exp
-                , SQLs.WordAs as, String alias) {
+        public final SR select(String derivedAlias, SQLsSyntax.SymbolPeriod period, SQLsSyntax.SymbolStar star) {
             return null;
         }
 
         @Override
-        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, String derivedAlias
-                , SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
+        public final SR select(String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
             return null;
         }
 
         @Override
-        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, String derivedAlias
-                , SQLs.SymbolPeriod period, String fieldAlias) {
+        public final SR select(Supplier<Expression> supplier, SQLsSyntax.WordAs as, String alias) {
             return null;
         }
 
         @Override
-        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, String tableAlias
-                , SQLs.SymbolPeriod period, TableMeta<?> table) {
+        public final <T> _AliasExpression<SR> select(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
             return null;
         }
 
         @Override
-        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, String tableAlias
-                , SQLs.SymbolPeriod period, FieldMeta<?> field) {
+        public final <R extends Item> R select(SqlTwoFunction<_AliasExpression<SR>, SR, R> function, Expression exp1, Expression exp2) {
             return null;
         }
 
         @Override
-        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers
-                , Supplier<Expression> funcRef, SQLs.WordAs as, String alias) {
+        public final SR select(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4) {
             return null;
         }
-
-        //below six argument method
 
         @Override
-        public final <T> SR select(Supplier<List<Hint>> hints, List<W> modifiers
-                , Function<T, Expression> valueOperator, T value, SQLs.WordAs as, String alias) {
+        public final <T> SR select(Function<T, Expression> operator, Supplier<T> supplier, SQLsSyntax.WordAs as, String alias) {
             return null;
         }
 
         @Override
-        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers
-                , Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
-                , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias) {
+        public final SR select(Function<Expression, Expression> operator, Expression exp, SQLsSyntax.WordAs as, String alias) {
             return null;
         }
 
-        //below seven argument method
-
         @Override
-        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, String tableAlias
-                , SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias) {
+        public final SR select(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator, BiFunction<DataField, String, Expression> namedOperator, SQLsSyntax.WordAs as, String alias) {
             return null;
         }
 
         @Override
-        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers, String derivedAlias
-                , SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias) {
+        public final _AliasExpression<SR> select(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
             return null;
         }
-
-        //below eight argument method
 
         @Override
-        public final <P> SR select(Supplier<List<Hint>> hints, List<W> modifiers
-                , String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent
-                , String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+        public final <R extends Item> R select(SqlThreeFunction<_AliasExpression<SR>, SR, R> function, Expression exp1, Expression exp2, Expression exp3) {
             return null;
         }
 
         @Override
-        public final SR select(Supplier<List<Hint>> hints, List<W> modifiers
-                , ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-                , String keyName, SQLs.WordAs as, String alias) {
+        public final SR select(NamedExpression exp1, SQLsSyntax.WordAs as1, String alias1, NamedExpression exp2, SQLsSyntax.WordAs as2, String alias2) {
             return null;
         }
 
         @Override
-        public final <I extends Item, T> I select(Supplier<List<Hint>> hints, List<W> modifiers
-                , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand) {
+        public final <P> SR select(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
             return null;
         }
 
-        //below nine argument method
-
         @Override
-        public final <I extends Item> I select(Supplier<List<Hint>> hints, List<W> modifiers
-                , BiFunction<Expression, Function<Expression, _AsClause<SR>>, I> sqlFunc
-                , ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
+        public final SR select(Supplier<Expression> function1, SQLsSyntax.WordAs as1, String alias1, Supplier<Expression> function2, SQLsSyntax.WordAs as2, String alias2) {
             return null;
         }
-
-        /*-------------------below dynamic select method -------------------*/
 
         @Override
-        public final SD select(SQLs.SymbolStar star) {
+        public final SR select(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName, SQLsSyntax.WordAs as, String alias) {
             return null;
         }
 
         @Override
-        public final SD select(W modifier, SQLs.SymbolStar star) {
+        public final _StaticSelectSpaceClause<SR> select(W modifier) {
             return null;
         }
 
         @Override
-        public final SD select(List<W> modifierList, SQLs.SymbolStar star) {
+        public final _StaticSelectSpaceClause<SR> select(List<W> modifiers) {
             return null;
         }
 
         @Override
-        public final SD select(Supplier<List<Hint>> hints, List<W> modifiers, SQLs.SymbolStar star) {
+        public final _StaticSelectSpaceClause<SR> select(Supplier<List<Hint>> hints, List<W> modifiers) {
             return null;
         }
 
@@ -2210,14 +1342,13 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             return null;
         }
 
-
         abstract Query._SelectDispatcher<W, SR, SD> createSelectClause();
 
 
     }//SelectClauseDispatcher
 
 
-    static abstract class WithBuilderSelectClauseDispatcher<B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR, SD>
+    static abstract class WithBuilderSelectClauseDispatcher<B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR extends Item, SD>
             extends SelectClauseDispatcher<W, SR, SD>
             implements DialectStatement._DynamicWithClause<B, WE>
             , _WithClauseSpec {
@@ -2339,7 +1470,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }//WithBuilderSelectClauseDispatcher
 
 
-    static abstract class ComplexSelectCommand<W extends Query.SelectModifier, SR, SD, RR>
+    static abstract class ComplexSelectCommand<W extends Query.SelectModifier, SR extends Item, SD, RR>
             extends SelectClauseDispatcher<W, SR, SD>
             implements Statement._LeftParenStringQuadraOptionalSpec<RR>
             , _RightParenClause<RR> {
@@ -2423,360 +1554,151 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }//UnionSelect
 
 
-    private static final class SelectionsImpl implements Selections, _SelectionsCommaSpec {
+    private static final class SelectionsImpl implements Selections {
 
-        private final _SelectAndCommaDispatcher<?> clause;
+        private final _StaticSelectClause<?> clause;
 
-        private SelectionsImpl(_SelectAndCommaDispatcher<?> clause) {
+        /**
+         * @see #selects(Consumer)
+         */
+        private SelectionsImpl(_StaticSelectClause<?> clause) {
             this.clause = clause;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(FieldMeta<?> field) {
+        public Selections selection(NamedExpression exp) {
             return null;
         }
 
         @Override
-        public _AsClause<_SelectionsCommaSpec> selection(Supplier<Expression> supplier) {
+        public _AliasExpression<Selections> selection(Supplier<Expression> supplier) {
             return null;
         }
 
         @Override
-        public <I extends Item> I selection(Function<Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc) {
+        public <R extends Item> R selection(SqlFunction<_AliasExpression<Selections>, Selections, R> function) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(FieldMeta<?> field1, FieldMeta<?> field2) {
+        public Selections selection(NamedExpression exp1, NamedExpression exp2) {
             return null;
         }
 
         @Override
-        public <I extends Item> I selection(BiFunction<Expression, Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc
-                , Expression expression) {
+        public <T> _AliasExpression<Selections> selection(Function<T, Expression> operator, Supplier<T> supplier) {
             return null;
         }
 
         @Override
-        public <E extends RightOperand> _AsClause<_SelectionsCommaSpec> selection(Function<E, Expression> expOperator
-                , Supplier<E> supplier) {
+        public _AliasExpression<Selections> selection(Function<Expression, Expression> operator, Expression exp) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3) {
+        public _AliasExpression<Selections> selection(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator, BiFunction<DataField, String, Expression> namedOperator) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(Expression exp, SQLs.WordAs as, String alias) {
+        public <R extends Item> R selection(SqlOneFunction<_AliasExpression<Selections>, Selections, R> function, Expression exp) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
+        public <R extends Item> R selection(SqlOneFunction<_AliasExpression<Selections>, Selections, R> function, Supplier<Expression> supplier) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias) {
+        public Selections selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+        public Selections selection(Expression exp, SQLs.WordAs as, String alias) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field) {
+        public Selections selection(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(Supplier<Expression> funcRef, SQLs.WordAs as, String alias) {
+        public Selections selection(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3
-                , FieldMeta<?> field4) {
+        public Selections selection(Supplier<Expression> supplier, SQLs.WordAs as, String alias) {
             return null;
         }
 
         @Override
-        public <T> _SelectionsCommaSpec selection(Function<T, Expression> valueOperator, T value
-                , SQLs.WordAs as, String alias) {
+        public <T> _AliasExpression<Selections> selection(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> operand) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
-                , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias) {
+        public <R extends Item> R selection(SqlTwoFunction<_AliasExpression<Selections>, Selections, R> function, Expression exp1, Expression exp2) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field
-                , SQLs.WordAs as, String alias) {
+        public Selections selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias
-                , SQLs.WordAs as, String alias) {
+        public <T> Selections selection(Function<T, Expression> operator, Supplier<T> supplier, SQLsSyntax.WordAs as, String alias) {
             return null;
         }
 
         @Override
-        public <T> _SelectionsCommaSpec selection(ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-
-        @Override
-        public _SelectionsCommaSpec selection(FieldMeta<?> field1, SQLs.WordAs as1, String alias1, FieldMeta<?> field2
-                , SQLs.WordAs as2, String alias2) {
+        public Selections selection(Function<Expression, Expression> operator, Expression exp, SQLs.WordAs as, String alias) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(String derivedAlias1, SQLs.SymbolPeriod period1, String fieldAlias1
-                , String derivedAlias2, SQLs.SymbolPeriod period2, String fieldAlias2) {
+        public Selections selection(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator, BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias) {
             return null;
         }
 
         @Override
-        public <P> _SelectionsCommaSpec selection(String parenAlias, SQLs.SymbolPeriod period1
-                , ParentTableMeta<P> parent, String childAlias, SQLs.SymbolPeriod period2
-                , ComplexTableMeta<P, ?> child) {
+        public _AliasExpression<Selections> selection(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1
-                , String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2) {
+        public <R extends Item> R selection(SqlThreeFunction<_AliasExpression<Selections>, Selections, R> function, Expression exp1, Expression exp2, Expression exp3) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(Function<Expression, Expression> funcRef, String tableAlias
-                , SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias) {
+        public Selections selection(NamedExpression exp1, SQLs.WordAs as1, String alias1, NamedExpression exp2, SQLs.WordAs as2, String alias2) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(Function<Expression, Expression> funcRef, String tableAlias
-                , SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias) {
+        public <P> Selections selection(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(Supplier<Expression> funcRef1, SQLs.WordAs as1, String alias1
-                , Supplier<Expression> funcRef2, SQLs.WordAs as2, String alias2) {
+        public Selections selection(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1, String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2) {
             return null;
         }
 
         @Override
-        public _SelectionsCommaSpec selection(ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-                , String keyName, SQLs.WordAs as, String alias) {
+        public Selections selection(Supplier<Expression> function1, SQLs.WordAs as1, String alias1, Supplier<Expression> function2, SQLs.WordAs as2, String alias2) {
             return null;
         }
 
         @Override
-        public <I extends Item, T> I selection(BiFunction<Expression, Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> operator, T operand) {
+        public Selections selection(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName, SQLs.WordAs as, String alias) {
             return null;
         }
-
-
-        @Override
-        public <I extends Item, T> I selection(BiFunction<Expression, Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Function<String, ?> function, String keyName) {
-            return null;
-        }
-
-        /*-------------------below -------------------*/
-
-        @Override
-        public _SelectionsCommaSpec comma(FieldMeta<?> field) {
-            return null;
-        }
-
-        @Override
-        public _AsClause<_SelectionsCommaSpec> comma(Supplier<Expression> supplier) {
-            return null;
-        }
-
-        @Override
-        public <I extends Item> I comma(Function<Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(FieldMeta<?> field1, FieldMeta<?> field2) {
-            return null;
-        }
-
-        @Override
-        public <I extends Item> I comma(BiFunction<Expression, Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc
-                , Expression expression) {
-            return null;
-        }
-
-        @Override
-        public <E extends RightOperand> _AsClause<_SelectionsCommaSpec> comma(Function<E, Expression> expOperator
-                , Supplier<E> supplier) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(Expression exp, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(Supplier<Expression> funcRef, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(FieldMeta<?> field1, FieldMeta<?> field2, FieldMeta<?> field3
-                , FieldMeta<?> field4) {
-            return null;
-        }
-
-        @Override
-        public <T> _SelectionsCommaSpec comma(Function<T, Expression> valueOperator, T value
-                , SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator
-                , BiFunction<DataField, String, Expression> namedOperator, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(String tableAlias, SQLs.SymbolPeriod period, FieldMeta<?> field
-                , SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(String derivedAlias, SQLs.SymbolPeriod period, String fieldAlias
-                , SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public <T> _SelectionsCommaSpec comma(ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, T operand, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(FieldMeta<?> field1, SQLs.WordAs as1, String alias1, FieldMeta<?> field2
-                , SQLs.WordAs as2, String alias2) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(String derivedAlias1, SQLs.SymbolPeriod period1, String fieldAlias1
-                , String derivedAlias2, SQLs.SymbolPeriod period2, String fieldAlias2) {
-            return null;
-        }
-
-        @Override
-        public <P> _SelectionsCommaSpec comma(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent
-                , String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1
-                , String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(Function<Expression, Expression> funcRef, String tableAlias
-                , SQLs.SymbolPeriod period, FieldMeta<?> field, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(Function<Expression, Expression> funcRef, String tableAlias
-                , SQLs.SymbolPeriod period, String fieldAlias, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(Supplier<Expression> funcRef1, SQLs.WordAs as1, String alias1
-                , Supplier<Expression> funcRef2, SQLs.WordAs as2, String alias2) {
-            return null;
-        }
-
-        @Override
-        public _SelectionsCommaSpec comma(ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-                , String keyName, SQLs.WordAs as, String alias) {
-            return null;
-        }
-
-        @Override
-        public <I extends Item, T> I comma(BiFunction<Expression, Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc
-                , ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
-            return null;
-        }
-
-        @Override
-        public <I extends Item> I comma(BiFunction<Expression, Function<Expression, _AsClause<_SelectionsCommaSpec>>, I> sqlFunc
-                , ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-            return null;
-        }
-
-        private _AsClause<_SelectionsCommaSpec> onSelectExpression(final Expression expression) {
-            final _AsClause<_SelectionsCommaSpec> asClause;
-            asClause = alias -> {
-                this.clause.select(expression, SQLs.AS, alias);
-                return this;
-            };
-            return asClause;
-        }
-
-
     }//SelectionsImpl
 
 

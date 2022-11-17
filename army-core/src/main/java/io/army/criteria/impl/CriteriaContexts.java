@@ -48,6 +48,10 @@ abstract class CriteriaContexts {
         return new SimpleQueryContext(outerContext);
     }
 
+    static void setAliasEventFunction(CriteriaContext queryContext, Function<TypeInfer, ? extends Item> function) {
+
+    }
+
     static CriteriaContext unionSelectContext(final CriteriaContext leftContext) {
         throw new UnsupportedOperationException();
     }

@@ -9,6 +9,7 @@ import io.army.criteria.impl._ItemExpression;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+@Deprecated
 @FunctionalInterface
 public interface ScalarFunction<E extends Expression, I extends Item, R extends Query._SelectClauseOfQuery>
         extends BiFunction<Function<TypeInfer, I>, Function<_ItemExpression<I>, E>, R> {
