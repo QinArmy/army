@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -16,6 +17,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -26,7 +28,7 @@ import java.util.function.Supplier;
  * @see SQLs
  * @since 1.0
  */
-abstract class SQLsSyntax extends Functions {
+abstract class SQLsSyntax extends SQLSyntax {
 
     /**
      * package constructor
@@ -578,11 +580,12 @@ abstract class SQLsSyntax extends Functions {
      * @see #TRUE
      * @see #FALSE
      */
-    private static final class BooleanWord extends OperationPredicate {
+    private static final class BooleanWord extends OperationPredicate<TypeInfer> {
 
         private final boolean value;
 
         private BooleanWord(boolean value) {
+            super(SQLs._IDENTITY);
             this.value = value;
         }
 
@@ -947,7 +950,7 @@ abstract class SQLsSyntax extends Functions {
      */
     public static <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
         final ItemField<T, TypeInfer> qualifiedField;
-        qualifiedField = ContextStack.peek().field(tableAlias, field, SQLs::_identity);
+        qualifiedField = ContextStack.peek().field(tableAlias, field);
         return qualifiedField;
     }
 
@@ -997,10 +1000,12 @@ abstract class SQLsSyntax extends Functions {
         return ContextStack.peek().refCte(cteName);
     }
 
+    @Deprecated
     public static <T> SelectionGroup group(TableMeta<T> table, String alias) {
         return SelectionGroups.singleGroup(table, alias);
     }
 
+    @Deprecated
     public static <T> SelectionGroup group(String tableAlias, List<FieldMeta<T>> fieldList) {
         return SelectionGroups.singleGroup(tableAlias, fieldList);
     }
@@ -1008,20 +1013,23 @@ abstract class SQLsSyntax extends Functions {
     /**
      * @return a group that no {@link ParentTableMeta#id()} column
      */
+    @Deprecated
     public static <T> SelectionGroup groupWithoutId(TableMeta<T> table, String alias) {
         return SelectionGroups.groupWithoutId(table, alias);
     }
 
+    @Deprecated
     public static <T> SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias
             , String parentAlias) {
         return SelectionGroups.childGroup(child, childAlias, parentAlias);
     }
 
-
+    @Deprecated
     public static SelectionGroup derivedGroup(String alias) {
         return SelectionGroups.derivedGroup(alias);
     }
 
+    @Deprecated
     public static SelectionGroup derivedGroup(String alias, List<String> derivedFieldNameList) {
         if (derivedFieldNameList.size() == 0) {
             throw new CriteriaException("derivedFieldNameList must not empty");
@@ -1029,14 +1037,21 @@ abstract class SQLsSyntax extends Functions {
         return SelectionGroups.derivedGroup(alias, derivedFieldNameList);
     }
 
+    @Deprecated
     public static _Cte cte(String name, SubStatement subStatement) {
         return new SQLs.CteImpl(name, subStatement);
     }
 
+    @Deprecated
     public static _Cte cte(String name, List<String> aliasLst, SubStatement subStatement) {
         return new SQLs.CteImpl(name, aliasLst, subStatement);
     }
 
+
+    public static <I extends Item, E extends Expression> SQLFunction._CaseFuncWhenClause<E> cases(
+            Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
+        return FunctionUtils.caseFunction(null, expFunc, endFunc);
+    }
 
 
     /*################################## blow sql key word operate method ##################################*/

@@ -6,6 +6,9 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._AliasExpression;
 import io.army.function.ExpressionOperator;
+import io.army.function.ScalarFunction;
+import io.army.function.SqlFunction;
+import io.army.function.SqlOneFunction;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
@@ -86,8 +89,12 @@ public interface Query extends RowSet {
 
     /*################################## blow select clause  interfaces ##################################*/
 
+    interface _SelectClauseOfQuery extends Item {
 
-    interface _StaticSelectClause<SR extends Item> extends Item {
+    }
+
+
+    interface _StaticSelectClause<SR extends Item> extends _SelectClauseOfQuery {
 
         //below one argument method
 
@@ -96,10 +103,15 @@ public interface Query extends RowSet {
 
         _AliasExpression<SR> select(Supplier<Expression> supplier);
 
+        <S extends Query._SelectClauseOfQuery> _AliasExpression<SR> select(ScalarFunction<_AliasExpression<SR>, SR, S> function, Consumer<S> consumer);
+
+        <R extends Item> R select(SqlFunction<_AliasExpression<SR>, SR, R> function);
+
         //below two argument method
 
         SR select(FieldMeta<?> field1, FieldMeta<?> field2);
 
+        <R extends Item> R select(SqlOneFunction<_AliasExpression<SR>, SR, R> function, Expression exp);
 
         <E extends RightOperand> _AliasExpression<SR> select(Function<E, Expression> expOperator, Supplier<E> supplier);
 

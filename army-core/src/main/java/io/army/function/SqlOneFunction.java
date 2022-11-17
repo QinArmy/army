@@ -29,7 +29,7 @@ import java.util.function.Function;
  *                 <li>{@link _ParenExpression#rightParen()}</li>
  *                 <li>{@link SpacePredicate#space()}</li>
  *            </ul>
- * @param <R> the interface type of sql function method returning,eg: {@link SQLs#Case(Function, Function)} returning type.
+ * @param <R> the interface type of sql function method returning,eg: {@link SQLs#cases(Function, Function)} returning type.
  * @since 1.0
  */
 @FunctionalInterface

@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 /**
  * <p>
- * This interface representing the sql function method that take zero argument method,eg: {@link SQLs#Case(Function, Function)}
+ * This interface representing the sql function method that take zero argument method,eg: {@link SQLs#cases(Function, Function)}
  * </p>
  *
  * @param <E> below type:
@@ -30,11 +30,11 @@ import java.util.function.Function;
  *                 <li>{@link _ParenExpression#rightParen()}</li>
  *                 <li>{@link SpacePredicate#space()}</li>
  *            </ul>
- * @param <R> the interface type of sql function method returning,eg: {@link SQLs#Case(Function, Function)} returning type.
+ * @param <R> the interface type of sql function method returning,eg: {@link SQLs#cases(Function, Function)} returning type.
  * @since 1.0
  */
 @FunctionalInterface
-public interface SqlFunction<E extends Item, I extends Item, R extends Item>
+public interface SqlFunction<E extends Expression, I extends Item, R extends Item>
         extends BiFunction<Function<_ItemExpression<I>, E>, Function<TypeInfer, I>, R> {
 
 

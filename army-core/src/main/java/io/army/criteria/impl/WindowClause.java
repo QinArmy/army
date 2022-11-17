@@ -222,82 +222,6 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
     }
 
     @Override
-    public final FE ifRows(Supplier<Expression> supplier) {
-        final Expression expression;
-        expression = supplier.get();
-        if (expression != null) {
-            this.rows(expression);
-        }
-        return (FE) this;
-    }
-
-    @Override
-    public final <E> FE ifRows(Function<E, Expression> valueOperator, @Nullable E value) {
-        if (value != null) {
-            this.rows(valueOperator.apply(value));
-        }
-        return (FE) this;
-    }
-
-    @Override
-    public final <E> FE ifRows(Function<E, Expression> valueOperator, Supplier<E> supplier) {
-        final E value;
-        value = supplier.get();
-        if (value != null) {
-            this.rows(valueOperator.apply(value));
-        }
-        return (FE) this;
-    }
-
-    @Override
-    public final FE ifRows(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (value != null) {
-            this.rows(valueOperator.apply(value));
-        }
-        return (FE) this;
-    }
-
-    @Override
-    public final FE ifRange(Supplier<Expression> supplier) {
-        final Expression expression;
-        expression = supplier.get();
-        if (expression != null) {
-            this.range(expression);
-        }
-        return (FE) this;
-    }
-
-    @Override
-    public final <E> FE ifRange(Function<E, Expression> valueOperator, @Nullable E value) {
-        if (value != null) {
-            this.range(valueOperator.apply(value));
-        }
-        return (FE) this;
-    }
-
-    @Override
-    public final <E> FE ifRange(Function<E, Expression> valueOperator, Supplier<E> supplier) {
-        final E value;
-        value = supplier.get();
-        if (value != null) {
-            this.range(valueOperator.apply(value));
-        }
-        return (FE) this;
-    }
-
-    @Override
-    public final FE ifRange(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (value != null) {
-            this.range(valueOperator.apply(value));
-        }
-        return (FE) this;
-    }
-
-    @Override
     public final BN between() {
         if (this.frameUnits != null) {
             if (this.betweenExtent != Boolean.TRUE) {
@@ -390,6 +314,7 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
     @Override
     public final ArmyWindow endWindowClause() {
         _Assert.nonPrepared(this.prepared);
+        this.endOrderByClause();
         this.prepared = Boolean.TRUE;
         return this;
     }
@@ -398,24 +323,26 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
     public final void appendSql(final _SqlContext context) {
         _Assert.prepared(this.prepared);
 
-        final StringBuilder sqlBuilder = context.sqlBuilder();
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
 
-        final DialectParser dialect = context.parser();
+        final DialectParser parser;
+        parser = context.parser();
 
         //1.window name
         final String windowName = this.windowName;
         if (windowName != null) {
             sqlBuilder.append(_Constant.SPACE);
-            dialect.identifier(windowName, sqlBuilder)
-                    .append(_Constant.SPACE_AS);
-        }
-        //2.(
-        sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            parser.identifier(windowName, sqlBuilder)
+                    .append(_Constant.SPACE_AS)
+                    .append(_Constant.SPACE_LEFT_PAREN);
+        }// anonymous window no parens
+
         //3.reference window name
         final String refWindowName = this.refWindowName;
         if (refWindowName != null) {
             sqlBuilder.append(_Constant.SPACE);
-            dialect.identifier(refWindowName, sqlBuilder);
+            parser.identifier(refWindowName, sqlBuilder);
         }
         //4.partition_clause
         final List<_Expression> partitionByList = this.partitionByList;

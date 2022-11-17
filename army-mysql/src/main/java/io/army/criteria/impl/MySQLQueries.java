@@ -55,17 +55,19 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         Object,
         Object,
         MySQLQuery._QueryWithComplexSpec<I>>
-        implements _MySQLQuery, MySQLQuery
-        , MySQLQuery._WithSpec<I>
-        , MySQLQuery._MySQLSelectCommaSpec<I>
-        , MySQLQuery._IndexHintJoinSpec<I>
-        , MySQLQuery._WhereAndSpec<I>
-        , MySQLQuery._GroupByWithRollupSpec<I>
-        , MySQLQuery._HavingSpec<I>
-        , MySQLQuery._WindowCommaSpec<I>
-        , MySQLQuery._OrderByWithRollupSpec<I>
-        , MySQLQuery._LockOfTableSpec<I>
-        , OrderByClause.OrderByEventListener {
+        implements _MySQLQuery, MySQLQuery,
+        MySQLQuery._WithSpec<I>,
+        MySQLQuery._MySQLSelectCommaSpec<I>,
+        MySQLQuery._IndexHintJoinSpec<I>,
+        MySQLQuery._WhereAndSpec<I>,
+        MySQLQuery._GroupByWithRollupSpec<I>,
+        MySQLQuery._HavingSpec<I>,
+        MySQLQuery._WindowCommaSpec<I>,
+        MySQLQuery._WindowAsClause<I>,
+        MySQLQuery._OrderByWithRollupSpec<I>,
+        MySQLQuery._LockOfTableSpec<I>,
+        OrderByClause.OrderByEventListener {
+
 
     static <I extends Item> MySQLQueries<I> primaryQuery(@Nullable _WithClauseSpec spec
             , @Nullable CriteriaContext outerContext, Function<Select, I> function) {

@@ -63,6 +63,13 @@ public interface Window extends Item {
         CR comma(String windowName);
     }
 
+    interface _StaticWindowAsClause<R> {
+
+        R as();
+
+        R as(@Nullable String windowName);
+    }
+
     /**
      * <p>
      * This interface representing dynamic WINDOW clause.
@@ -87,31 +94,6 @@ public interface Window extends Item {
     }
 
 
-    /**
-     * <p>
-     * This interface representing LEFT PAREN clause in WINDOW clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <NR> next clause java type
-     * @since 1.0
-     */
-    @Deprecated
-    interface _LeftParenNameClause<NR> extends Item {
-
-        NR leftParen();
-
-        NR leftParen(String existingWindowName);
-
-        NR leftParen(Supplier<String> supplier);
-
-        NR leftParenIf(Supplier<String> supplier);
-
-    }
 
     /**
      * <p>
@@ -186,22 +168,6 @@ public interface Window extends Item {
         <E> FC range(Function<E, Expression> valueOperator, Supplier<E> supplier);
 
         FC range(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        FC ifRows(Supplier<Expression> supplier);
-
-        <E> FC ifRows(Function<E, Expression> valueOperator, @Nullable E value);
-
-        <E> FC ifRows(Function<E, Expression> valueOperator, Supplier<E> supplier);
-
-        FC ifRows(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        FC ifRange(Supplier<Expression> supplier);
-
-        <E> FC ifRange(Function<E, Expression> valueOperator, @Nullable E value);
-
-        <E> FC ifRange(Function<E, Expression> valueOperator, Supplier<E> supplier);
-
-        FC ifRange(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
 
     }
@@ -303,21 +269,10 @@ public interface Window extends Item {
     }
 
 
-    interface _OverClause {
+    interface _OverWindowClause<E extends Expression> extends Item {
 
-        Expression over(String windowName);
-
-        Expression over();
-
-    }
-
-
-    interface _OverWindowClause<E extends Expression> extends _OverClause {
-
-        @Override
         E over(String windowName);
 
-        @Override
         E over();
     }
 
@@ -438,7 +393,7 @@ public interface Window extends Item {
     interface _SimpleFrameBetweenSpec
             extends _FrameBetweenExpClause<_SimpleFrameExpBoundClause>
             , Statement._StaticBetweenClause<_SimpleFrameNonExpBoundClause>
-            , _SimpleFrameNonExpBoundClause {
+            , _SimpleFrameEndNonExpBoundClause {
 
     }
 
@@ -507,43 +462,8 @@ public interface Window extends Item {
 
     }
 
-    /**
-     * <p>
-     * This interface representing LEFT BRACKET clause in WINDOW clause for simple window.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <I> {@link Statement._RightParenClause#rightParen()} return java type
-     * @since 1.0
-     */
-    @Deprecated
-    interface _SimpleLeftParenClause<I extends Item> extends _LeftParenNameClause<_SimplePartitionBySpec> {
-
-    }
 
 
-    /**
-     * <p>
-     * This interface representing AS clause in WINDOW clause for simple window.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <I> {@link Statement._RightParenClause#rightParen()} return java type
-     * @since 1.0
-     */
-    @Deprecated
-    interface _SimpleAsClause<I extends Item> extends Statement._StaticAsClaus<_SimpleLeftParenClause<I>> {
-
-
-    }
 
 
 }

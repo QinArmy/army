@@ -113,6 +113,13 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardQueries.subQuery(ContextStack.peek(), Expressions::scalarExpression);
     }
 
+    public static <I extends Item, E extends Expression> StandardQuery._SelectSpec<E> scalarSubQuery(
+            final Function<TypeInfer, I> endFunc, final Function<_ItemExpression<I>, E> expFunc) {
+        final Function<SubQuery, E> function;
+        function = subQuery -> expFunc.apply(Expressions.scalarExpression(subQuery, endFunc));
+        return StandardQueries.subQuery(ContextStack.peek(), function);
+    }
+
 
     /**
      * <p>
@@ -242,7 +249,7 @@ public abstract class SQLs extends SQLsSyntax {
     }//ArmyItemPair
 
     /**
-     * @see #itemPair(DataField, Object)
+     * @see #_itemPair(DataField, AssignOperator, Object)
      */
     static class FieldItemPair extends ArmyItemPair implements _ItemPair._FieldItemPair {
 
@@ -423,9 +430,7 @@ public abstract class SQLs extends SQLsSyntax {
 
     }//StringTypeNull
 
-    /**
-     * @see #expPair(Expression, Expression)
-     */
+
     @Deprecated
     static final class ExpressionPairImpl implements ExpressionPair {
 

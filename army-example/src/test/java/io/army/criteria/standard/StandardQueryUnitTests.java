@@ -26,25 +26,30 @@ public class StandardQueryUnitTests {
 
     @Test
     public void selectCaseFunc() {
-        final Select stmt;
+        Select stmt;
         stmt = SQLs.query()
-                .select(SQLs::Case)
+                .select(SQLs::cases)
                 .when(PillUser_.userType::equal, SQLs::literal, () -> PillUserType.PARTNER)
                 .then(SQLs::literalFrom, () -> PillUserType.PARTNER)
                 .elseValue(SQLs.literalFrom(PillUserType.NONE))
                 .end()
                 .plus(SQLs::literal, 1).times(SQLs::literal, 5).as("a")
-                .asQuery();
 
-        SQLs.query()
+                .asQuery();
+        printStmt(stmt);
+    }
+
+    @Test
+    public void selectScalarQuery() {
+        Select stmt;
+        stmt = SQLs.query()
                 .select(() ->
-                        SQLs.cases()
-                                .when(PillUser_.userType::equal, SQLs::literal, () -> PillUserType.PARTNER)
-                                .then(SQLs::literalFrom, () -> PillUserType.PARTNER)
-                                .elseValue(SQLs.literalFrom(PillUserType.NONE))
-                                .end()
-                                .plus(SQLs::literal, 1).times(SQLs::literal, 5))
-                .as("a")
+                        SQLs.scalarSubQuery()
+                                .select(PillUser_.nickName)
+                                .from(PillUser_.T, AS, "u")
+                                .where(PillPerson_.id::equal, SQLs::param, () -> 1)
+                                .asQuery()
+                ).as("")
                 .asQuery();
         printStmt(stmt);
     }

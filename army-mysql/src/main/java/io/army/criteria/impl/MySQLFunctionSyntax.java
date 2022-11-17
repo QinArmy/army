@@ -37,7 +37,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
 
     public interface _OverSpec<E extends Expression> extends Window._OverWindowClause<E> {
 
-        E over(Consumer<Window._SimplePartitionBySpec> consumer);
+       E over(Consumer<Window._SimplePartitionBySpec> consumer);
 
         E over(@Nullable String windowName, Consumer<Window._SimplePartitionBySpec> consumer);
 
@@ -47,6 +47,12 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
             , SQLFunction.AggregateFunction, Expression {
 
     }
+
+    public interface _ItemAggregateWindowFunc<I extends Item, E extends Expression> extends _AggregateWindowFunc<E>
+            , _AliasExpression<I> {
+
+    }
+
 
     public interface _NullTreatmentOverSpec<E extends Expression>
             extends Functions._NullTreatmentClause<_OverSpec<E>>, _OverSpec<E> {
@@ -73,7 +79,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> avg(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> avg(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("AVG", exp, DoubleType.INSTANCE, expFunc, endFunc);
     }
@@ -87,7 +93,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param distinct nullable,{@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> avg(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> avg(
             @Nullable SQLSyntax.ArgDistinct distinct, Expression exp
             , Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("AVG", distinct, exp, DoubleType.INSTANCE, expFunc, endFunc);
@@ -96,7 +102,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-and">BIT_AND(expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> bitAnd(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> bitAnd(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("BIT_AND", exp, _bitwiseFuncType(exp), expFunc, endFunc);
     }
@@ -105,7 +111,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-or">BIT_OR(expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> bitOr(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> bitOr(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("BIT_OR", exp, _bitwiseFuncType(exp), expFunc, endFunc);
     }
@@ -113,7 +119,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-xor">BIT_XOR(expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> bitXor(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> bitXor(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("BIT_XOR", exp, _bitwiseFuncType(exp), expFunc, endFunc);
     }
@@ -125,7 +131,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> countStar(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> countStar(
             Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return count(SQLs._START_EXP, expFunc, endFunc);
     }
@@ -137,7 +143,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> count(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> count(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("COUNT", exp, LongType.INSTANCE, expFunc, endFunc);
     }
@@ -151,7 +157,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_json-arrayagg">JSON_ARRAYAGG(col_or_expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> jsonArrayAgg(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> jsonArrayAgg(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         final TypeMeta returnType;//TODO validate JsonListType
         returnType = Functions._returnType((ArmyExpression) exp, JsonListType::from);
@@ -167,7 +173,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param value non-null parameter or {@link Expression},but couldn't be null.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_json-objectagg">JSON_OBJECTAGG(key, value) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> jsonObjectAgg(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> jsonObjectAgg(
             Expression key, Expression value
             , Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         final TypeMeta returnType;//TODO validate JsonMapType
@@ -186,7 +192,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> max(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> max(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("MAX", exp, exp.typeMeta(), expFunc, endFunc);
     }
@@ -199,7 +205,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> max(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> max(
             @Nullable SQLSyntax.ArgDistinct distinct, Expression exp
             , Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("MAX", distinct, exp, exp.typeMeta(), expFunc, endFunc);
@@ -214,7 +220,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp non-null parameter or {@link Expression},but couldn't be {@link SQLs#NULL}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> min(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> min(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("MIN", exp, exp.typeMeta(), expFunc, endFunc);
     }
@@ -228,7 +234,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp non-null parameter or {@link Expression},but couldn't be {@link SQLs#NULL}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> min(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> min(
             @Nullable SQLSyntax.ArgDistinct distinct, Expression exp
             , Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("MIN", distinct, exp, exp.typeMeta(), expFunc, endFunc);
@@ -242,7 +248,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_std">STD(xpr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> std(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> std(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("STD", exp, DoubleType.INSTANCE, expFunc, endFunc);
     }
@@ -255,7 +261,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev">STDDEV(xpr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> stdDev(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> stdDev(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("STDDEV", exp, DoubleType.INSTANCE, expFunc, endFunc);
     }
@@ -268,7 +274,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-pop">STDDEV_POP(xpr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> stdDevPop(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> stdDevPop(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("STDDEV_POP", exp, DoubleType.INSTANCE, expFunc, endFunc);
     }
@@ -281,7 +287,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_stddev-samp">STDDEV_SAMP(xpr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> stdDevSamp(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> stdDevSamp(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("STDDEV_SAMP", exp, DoubleType.INSTANCE, expFunc, endFunc);
     }
@@ -294,7 +300,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">SUM([DISTINCT] expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> sum(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> sum(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("SUM", exp, exp.typeMeta(), expFunc, endFunc);
     }
@@ -307,7 +313,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">SUM([DISTINCT] expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> sum(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> sum(
             @Nullable SQLSyntax.ArgDistinct distinct, Expression exp
             , Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("SUM", distinct, exp, exp.typeMeta(), expFunc, endFunc);
@@ -321,7 +327,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-pop">VAR_POP(xpr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> varPop(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> varPop(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("VAR_POP", exp, DoubleType.INSTANCE, expFunc, endFunc);
     }
@@ -334,7 +340,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-samp">VAR_SAMP(xpr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> varSamp(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> varSamp(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("VAR_SAMP", exp, DoubleType.INSTANCE, expFunc, endFunc);
     }
@@ -347,7 +353,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
      * @param exp null or parameter or {@link Expression}.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_var-samp">VARIANCE(expr) [over_clause]</a>
      */
-    public static <I extends Item, E extends Expression> MySQLFunctionSyntax._AggregateWindowFunc<E> variance(
+    public static <I extends Item, E extends Expression> _ItemAggregateWindowFunc<I, E> variance(
             Expression exp, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.oneArgAggregate("VARIANCE", exp, DoubleType.INSTANCE, expFunc, endFunc);
     }
@@ -599,6 +605,20 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
     public static <I extends Item, E extends Expression> MySQLFunctionSyntax._OverSpec<E> rowNumber(
             Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
         return MySQLFunctionUtils.noArgWindowFunc("ROW_NUMBER", LongType.INSTANCE, expFunc, endFunc);
+    }
+
+
+    /*-------------------below Flow Control Functions-------------------*/
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html">Flow Control Functions</a>
+     */
+    public static <I extends Item, E extends Expression> SQLFunction._CaseFuncWhenClause<E> cases(Expression exp
+            , Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
+        if (!(exp instanceof ArmyExpression)) {
+            throw CriteriaUtils.funcArgError("CASE", exp);
+        }
+        return FunctionUtils.caseFunction(exp, expFunc, endFunc);
     }
 
 

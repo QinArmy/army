@@ -448,8 +448,8 @@ abstract class Functions extends SQLSyntax {
     }
 
 
-    public static SQLFunction._CaseFuncWhenClause cases() {
-        return FunctionUtils.caseFunction(null);
+    public static SQLFunction._CaseFuncWhenClause<Expression> cases() {
+        return FunctionUtils.caseFunction(null, SQLs._getAsExpFunc(), SQLs._IDENTITY);
     }
 
 
