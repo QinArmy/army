@@ -63,7 +63,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         MySQLQuery._GroupByWithRollupSpec<I>,
         MySQLQuery._HavingSpec<I>,
         MySQLQuery._WindowCommaSpec<I>,
-        MySQLQuery._WindowAsClause<I>,
         MySQLQuery._OrderByWithRollupSpec<I>,
         MySQLQuery._LockOfTableSpec<I>,
         OrderByClause.OrderByEventListener {
@@ -305,33 +304,16 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         return this.dynamicWindow(false, consumer);
     }
 
-
     @Override
-    public final _WindowCommaSpec<I> window(String name, SQLsSyntax.WordAs as
-            , Consumer<Window._SimplePartitionBySpec> consumer) {
-        return this.window(name, as, null, consumer);
+    public final _WindowAsClause<I> window(String windowName) {
+        return new NamedWindowAsClause<>(this, windowName);
     }
 
     @Override
-    public final _WindowCommaSpec<I> window(String name, SQLsSyntax.WordAs as
-            , @Nullable String existingWindowName, Consumer<Window._SimplePartitionBySpec> consumer) {
-        final Window._SimplePartitionBySpec clause;
-        clause = WindowClause.namedWindow(name, this.context, existingWindowName);
-        consumer.accept(clause);
-        return this.onAddWindow((ArmyWindow) clause);
+    public final _WindowAsClause<I> comma(String windowName) {
+        return new NamedWindowAsClause<>(this, windowName);
     }
 
-    @Override
-    public final _WindowCommaSpec<I> comma(String name, SQLsSyntax.WordAs as
-            , Consumer<Window._SimplePartitionBySpec> consumer) {
-        return this.window(name, as, null, consumer);
-    }
-
-    @Override
-    public final _WindowCommaSpec<I> comma(String name, SQLsSyntax.WordAs as
-            , @Nullable String existingWindowName, Consumer<Window._SimplePartitionBySpec> consumer) {
-        return this.window(name, as, existingWindowName, consumer);
-    }
 
     @Override
     public final _LockOfTableSpec<I> forUpdate() {
@@ -704,10 +686,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     /**
-     * @see #window(String, SQLsSyntax.WordAs, Consumer)
-     * @see #window(String, SQLsSyntax.WordAs, String, Consumer)
-     * @see #comma(String, SQLsSyntax.WordAs, Consumer)
-     * @see #comma(String, SQLsSyntax.WordAs, String, Consumer)
+     * @see #window(Consumer)
+     * @see #window(String)
      */
     private _WindowCommaSpec<I> onAddWindow(final ArmyWindow window) {
         window.endWindowClause();
@@ -858,6 +838,58 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
     }//MySQLLock
+
+
+    private static final class NamedWindowAsClause<I extends Item> implements MySQLQuery._WindowAsClause<I> {
+
+        private final MySQLQueries<I> stmt;
+
+        private final String windowName;
+
+        /**
+         * @see #window(String)
+         * @see #comma(String)
+         */
+        private NamedWindowAsClause(MySQLQueries<I> stmt, String windowName) {
+            if (!_StringUtils.hasText(windowName)) {
+                throw ContextStack.criteriaError(stmt.context, _Exceptions::namedWindowNoText);
+            }
+            this.stmt = stmt;
+            this.windowName = windowName;
+        }
+
+        @Override
+        public _WindowCommaSpec<I> as() {
+            return this.stmt.onAddWindow(WindowClause.namedGlobalWindow(this.stmt.context, this.windowName));
+        }
+
+        @Override
+        public _WindowCommaSpec<I> as(@Nullable String existingWindowName) {
+
+            return this.stmt.onAddWindow(
+                    WindowClause.namedRefWindow(this.stmt.context, this.windowName, existingWindowName)
+            );
+        }
+
+        @Override
+        public _WindowCommaSpec<I> as(@Nullable String existingWindowName,
+                                      Consumer<Window._SimplePartitionBySpec> consumer) {
+            final Window._SimplePartitionBySpec clause;
+            clause = WindowClause.namedWindow(this.windowName, this.stmt.context, existingWindowName);
+            consumer.accept(clause);
+            return this.stmt.onAddWindow((ArmyWindow) clause);
+        }
+
+        @Override
+        public _WindowCommaSpec<I> as(Consumer<Window._SimplePartitionBySpec> consumer) {
+            final Window._SimplePartitionBySpec clause;
+            clause = WindowClause.namedWindow(this.windowName, this.stmt.context, null);
+            consumer.accept(clause);
+            return this.stmt.onAddWindow((ArmyWindow) clause);
+        }
+
+
+    }//NamedWindowAsClause
 
 
     /**

@@ -5,7 +5,6 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._RowSet;
-import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -167,20 +166,20 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
         return new UnaryPredicate<>(subQuery, operator, SQLs._IDENTITY);
     }
 
-    static <I extends Item> OperationPredicate<I> unaryPredicate(final OperationExpression<I> expression
-            , final UnaryOperator operator) {
-        if (expression instanceof SubQuery) {
-            throw new IllegalArgumentException("expression couldn't be sub query.");
+
+    static <I extends Item> OperationPredicate<I> booleanTestPredicate(final OperationExpression<I> expression,
+                                                                       boolean not, SQLs.BooleanTestOperand operand) {
+        if (!(operand == SQLs.NULL
+                || operand == SQLs.TRUE
+                || operand == SQLs.FALSE
+                || operand == SQLs.UNKNOWN
+                || operand instanceof BooleanTestOperand)) {
+            String m = String.format("unknown operand[%s]", operand);
+            throw ContextStack.criteriaError(ContextStack.peek(), m);
         }
-        switch (operator) {
-            case IS_NULL:
-            case IS_NOT_NULL:
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(operator);
-        }
-        return new UnaryPredicate<>(expression, operator);
+        return new BooleanTestPredicate<>(expression, not, operand);
     }
+
 
     static <I extends Item> OperationPredicate<I> dualPredicate(final OperationExpression<I> left
             , final DualOperator operator, final Expression right) {
@@ -243,9 +242,9 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
         return new AndPredicate<>(left, (OperationPredicate<?>) right);
     }
 
-    static <I extends Item> OperationPredicate<I> betweenPredicate(OperationExpression<I> left, Expression center
-            , Expression right) {
-        return new BetweenPredicate<>(left, center, right);
+    static <I extends Item> OperationPredicate<I> betweenPredicate(boolean not, OperationExpression<I> left,
+                                                                   Expression center, Expression right) {
+        return new BetweenPredicate<>(not, left, center, right);
     }
 
     static <I extends Item> OperationPredicate<I> notPredicate(final OperationPredicate<I> predicate) {
@@ -481,7 +480,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
             }
 
-            builder.append(this.operator.rendered());
+            builder.append(this.operator.render());
 
             final _Expression expression = this.expression;
             final boolean innerBracket = !(expression instanceof SqlValueParam.SingleValue
@@ -524,7 +523,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
             }
             builder.append(_Constant.SPACE)
-                    .append(this.operator.rendered());
+                    .append(this.operator.render());
 
             final _Expression expression = this.expression;
             final boolean innerBracket = !(expression instanceof SqlValueParam.SingleValue
@@ -614,7 +613,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            context.parser().scalarSubQuery(this.subQuery, context);
+            context.parser().subQuery(this.subQuery, context);
         }
 
 
@@ -626,46 +625,23 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
         private final UnaryOperator operator;
 
-        private final _SelfDescribed expressionOrSubQuery;
+        private final SubQuery subQuery;
 
-        private UnaryPredicate(OperationExpression<I> expression, UnaryOperator operator) {
-            super(expression.function);
-            this.expressionOrSubQuery = expression;
-            this.operator = operator;
-        }
 
         private UnaryPredicate(SubQuery query, UnaryOperator operator, Function<TypeInfer, I> function) {
             super(function);
             this.operator = operator;
-            this.expressionOrSubQuery = (_SelfDescribed) query;
+            this.subQuery = query;
         }
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final _SelfDescribed expressionOrSubQuery = this.expressionOrSubQuery;
             switch (this.operator) {
-                case IS_NOT_NULL:
-                case IS_NULL: {
-                    final boolean innerBracket;
-                    innerBracket = !(expressionOrSubQuery instanceof DataField
-                            || expressionOrSubQuery instanceof SqlValueParam.SingleValue);
-
-                    final StringBuilder sqlBuilder = context.sqlBuilder();
-                    if (innerBracket) {
-                        sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
-                    }
-                    expressionOrSubQuery.appendSql(context);
-                    if (innerBracket) {
-                        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-                    }
-                    sqlBuilder.append(this.operator.rendered());
-                }
-                break;
                 case EXISTS:
                 case NOT_EXISTS: {
                     context.sqlBuilder()
-                            .append(this.operator.rendered());
-                    expressionOrSubQuery.appendSql(context);
+                            .append(this.operator.render());
+                    context.parser().subQuery(this.subQuery, context);
                 }
                 break;
                 default:
@@ -676,38 +652,22 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.operator, this.expressionOrSubQuery);
+            return super.hashCode();
         }
 
         @Override
         public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof UnaryPredicate) {
-                final UnaryPredicate<?> o = (UnaryPredicate<?>) obj;
-                match = o.operator == this.operator
-                        && o.expressionOrSubQuery.equals(this.expressionOrSubQuery);
-            } else {
-                match = false;
-            }
-            return match;
+            return obj == this;
         }
 
         @Override
         public String toString() {
             final StringBuilder builder = new StringBuilder();
             switch (this.operator) {
-                case IS_NOT_NULL:
-                case IS_NULL: {
-                    builder.append(this.expressionOrSubQuery)
-                            .append(this.operator.rendered());
-                }
-                break;
                 case EXISTS:
                 case NOT_EXISTS: {
-                    builder.append(this.operator.rendered())
-                            .append(this.expressionOrSubQuery);
+                    builder.append(this.operator.render())
+                            .append(this.subQuery);
                 }
                 break;
                 default:
@@ -950,14 +910,20 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
     private static class BetweenPredicate<I extends Item> extends OperationPredicate<I> {
 
+        final boolean not;
+
         final ArmyExpression left;
 
         final ArmyExpression center;
 
         final ArmyExpression right;
 
-        private BetweenPredicate(OperationExpression<I> left, Expression center, Expression right) {
+        /**
+         * @see #betweenPredicate(boolean, OperationExpression, Expression, Expression)
+         */
+        private BetweenPredicate(boolean not, OperationExpression<I> left, Expression center, Expression right) {
             super(left.function);
+            this.not = not;
             this.left = left;
             this.center = (ArmyExpression) center;
             this.right = (ArmyExpression) right;
@@ -966,8 +932,12 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
         @Override
         public void appendSql(final _SqlContext context) {
             this.left.appendSql(context);
-            final StringBuilder builder = context.sqlBuilder()
-                    .append(" BETWEEN");
+            final StringBuilder builder;
+            builder = context.sqlBuilder();
+            if (this.not) {
+                builder.append(" NOT");
+            }
+            builder.append(" BETWEEN");
             this.center.appendSql(context);
             builder.append(" AND");
             this.right.appendSql(context);
@@ -1140,7 +1110,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
             if (queryOperator != null) {
                 sqlBuilder.append(this.queryOperator.rendered());
             }
-            context.parser().scalarSubQuery(this.subQuery, context);
+            context.parser().subQuery(this.subQuery, context);
         }
 
         @Override
@@ -1160,6 +1130,80 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
 
 
     }//SubQueryPredicate
+
+
+    private static final class BooleanTestPredicate<I extends Item> extends OperationPredicate<I> {
+
+        private final OperationExpression<I> expression;
+
+        private final boolean not;
+
+
+        private final SQLs.BooleanTestOperand operand;
+
+        /**
+         * @see #booleanTestPredicate(OperationExpression, boolean, SQLs.BooleanTestOperand)
+         */
+        private BooleanTestPredicate(OperationExpression<I> expression, boolean not, SQLs.BooleanTestOperand operand) {
+            super(expression.function);
+            this.expression = expression;
+            this.not = not;
+            this.operand = operand;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            this.expression.appendSql(context);
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+            if (this.not) {
+                sqlBuilder.append(" IS NOT");
+            } else {
+                sqlBuilder.append(" IS");
+            }
+            sqlBuilder.append(this.operand.render());
+        }
+
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.expression, this.not, this.operand);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof BooleanTestPredicate) {
+                final BooleanTestPredicate<?> o = (BooleanTestPredicate<?>) obj;
+                match = o.expression.equals(this.expression)
+                        && o.not == this.not
+                        && o.operand == this.operand;
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = new StringBuilder()
+                    .append(this.expression);
+            if (this.not) {
+                sqlBuilder.append(" IS NOT");
+            } else {
+                sqlBuilder.append(" IS");
+            }
+
+            return sqlBuilder.append(this.operand.render())
+                    .toString();
+        }
+
+
+    }//BooleanTestPredicate
 
     private static final class OperationPredicateWrapper<I extends Item> extends OperationPredicate<I> {
 

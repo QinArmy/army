@@ -139,7 +139,9 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     interface _WindowAsClause<I extends Item> extends Window._StaticWindowAsClause<_WindowCommaSpec<I>> {
 
-        _WindowCommaSpec<I> as(@Nullable String windowName, Consumer<Window._SimplePartitionBySpec> consumer);
+        _WindowCommaSpec<I> as(@Nullable String existingWindowName, Consumer<Window._SimplePartitionBySpec> consumer);
+
+        _WindowCommaSpec<I> as(Consumer<Window._SimplePartitionBySpec> consumer);
     }
 
 

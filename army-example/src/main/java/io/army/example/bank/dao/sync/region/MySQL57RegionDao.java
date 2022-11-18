@@ -27,11 +27,7 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
     public List<Map<String, Object>> findAllCity() {
         final Select stmt;
         stmt = MySQLs.query()
-                .select(consumer -> {
-                    consumer.accept(SQLs.field("p_of_city", ChinaRegion_.name));
-                    consumer.accept(ChinaCity_.mayorName);
-                    consumer.accept(SQLs.field("province", ChinaRegion_.name).as("province"));
-                })
+                .select(SQLs.field("p_of_city", ChinaRegion_.name), ChinaCity_.mayorName, SQLs.field("province", ChinaRegion_.name))
                 .from(ChinaCity_.T, AS,"city")
                 .join(ChinaRegion_.T,AS, "p_of_city")
                 .on(ChinaCity_.id.equal(SQLs.field("p_of_city", ChinaRegion_.id)))
@@ -47,9 +43,9 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
         final Supplier<Expression> provinceIdSubQuery;
         provinceIdSubQuery = () -> MySQLs.scalarSubQuery()
                 .select(ChinaProvince_.id)
-                .from(ChinaProvince_.T,AS, "p")
-                .join(ChinaRegion_.T,AS, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
-                .where(ChinaProvince_.provincialCapital::equal,SQLs::literal,ChinaRegion_.NAME)
+                .from(ChinaProvince_.T, AS, "p")
+                .join(ChinaRegion_.T, AS, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
+                .where(ChinaProvince_.provincialCapital::equal, SQLs::literal, () -> ChinaRegion_.NAME)
                 .asQuery();
 
         final Insert stmt;
@@ -72,9 +68,9 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
         final Select stmt;
         stmt = MySQLs.query()
                 .select(ChinaRegion_.id)
-                .from(ChinaRegion_.T, AS,"t")
-                .where(ChinaRegion_.name::equal,SQLs::param,regionName)
-                .and(ChinaRegion_.regionType::equal,SQLs::literal,regionType)
+                .from(ChinaRegion_.T, AS, "t")
+                .where(ChinaRegion_.name.equal(SQLs::param, regionName))
+                .and(ChinaRegion_.regionType::equal, SQLs::literal, () -> regionType)
                 .asQuery();
         return this.sessionContext.currentSession().queryOne(stmt, Long.class);
     }

@@ -2,12 +2,10 @@ package io.army.function;
 
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
-import io.army.criteria.SpacePredicate;
 import io.army.criteria.TypeInfer;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._AliasExpression;
 import io.army.criteria.impl._ItemExpression;
-import io.army.criteria.impl._ParenExpression;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;

@@ -1,29 +1,28 @@
 package io.army.criteria.impl;
 
-
-import io.army.criteria.SQLWords;
-
 /**
- * representing Unary SQL Operator
+ * <p>
+ * package enum
+ * </p>
+ *
+ * @since 1.0
  */
-enum UnaryOperator implements SQLWords {
+enum BooleanTestOperand implements SQLs.BooleanTestOperand, SQLsSyntax.ArmyKeyWord {
 
-    EXISTS(" EXISTS"),
-    NOT_EXISTS(" NOT EXISTS"),
-    NEGATE(" -"),
-    POSITIVE(" +"),
-    INVERT(" ~");
+    JSON(" JSON");
 
     final String spaceOperator;
 
-    UnaryOperator(String spaceOperator) {
+    BooleanTestOperand(String spaceOperator) {
         this.spaceOperator = spaceOperator;
     }
+
 
     @Override
     public final String render() {
         return this.spaceOperator;
     }
+
 
     @Override
     public final String toString() {

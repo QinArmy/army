@@ -67,7 +67,7 @@ public interface Window extends Item {
 
         R as();
 
-        R as(@Nullable String windowName);
+        R as(@Nullable String existingWindowName);
     }
 
     /**

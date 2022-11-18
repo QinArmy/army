@@ -66,8 +66,8 @@ public class MySQLInsertUnitTests {
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(this::createReginList)
                 .onDuplicateKey()
-                .set(ChinaRegion_.name,SQLs::param, "光明顶")
-                .set(ChinaRegion_.regionGdp, SQLs::param,"6666.88")
+                .set(ChinaRegion_.name, SQLs::param, "光明顶")
+                .set(ChinaRegion_.regionGdp, SQLs::param, "6666.88")
                 .asInsert();
 
         printStmt(stmt);
@@ -132,12 +132,12 @@ public class MySQLInsertUnitTests {
                 .partition()
                 .leftParen("p1")
                 .rightParen()
-                .set(ChinaRegion_.name, SQLs::param,"光明顶")
-                .set(ChinaRegion_.regionGdp,SQLs::param, "6666.88")
-                .set(ChinaRegion_.parentId,SQLs::literal, 0)
+                .set(ChinaRegion_.name, SQLs::param, "光明顶")
+                .set(ChinaRegion_.regionGdp, SQLs::param, "6666.88")
+                .set(ChinaRegion_.parentId, SQLs::literal, 0)
                 .onDuplicateKey()
-                .set(ChinaRegion_.name,SQLs::param, "光明顶")
-                .set(ChinaRegion_.regionGdp,SQLs::param, "6666.88")
+                .set(ChinaRegion_.name, SQLs::param, "光明顶")
+                .set(ChinaRegion_.regionGdp, SQLs::param, "6666.88")
                 .asInsert();
 
         printStmt(stmt);
@@ -171,21 +171,11 @@ public class MySQLInsertUnitTests {
                 .comma(ChinaRegion_.parentId)
                 .rightParen()
                 .space()
-                .select(consumer -> {
-                    consumer.accept(ChinaRegion_.id);
-                    consumer.accept(ChinaRegion_.createTime);
-                    consumer.accept(ChinaRegion_.updateTime);
-                    consumer.accept(ChinaRegion_.version);
-
-                    consumer.accept(ChinaRegion_.visible);
-                    consumer.accept(ChinaRegion_.regionType);
-                    consumer.accept(ChinaRegion_.name);
-                    consumer.accept(ChinaRegion_.regionGdp);
-
-                    consumer.accept(ChinaRegion_.parentId);
-                })
-                .from(ChinaRegion_.T, AS,"c")
-                .limit(SQLs::param,10)
+                .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
+                .comma(ChinaRegion_.visible, ChinaRegion_.regionType, ChinaRegion_.name, ChinaRegion_.regionGdp)
+                .comma(ChinaRegion_.parentId)
+                .from(ChinaRegion_.T, AS, "c")
+                .limit(SQLs::param, 10)
                 .asQuery()
                 .asInsert();
 

@@ -186,7 +186,7 @@ public class StandardQueryUnitTests {
 
         final Select stmt;
         stmt = SQLs.query()
-                .select("us", PERIOD, "one")
+                .select(SQLs.refThis("us", "one"))
                 .comma("us", PERIOD, START)
                 .from(() -> SQLs.subQuery()
                         .select(SQLs.literalFrom(1), AS, "one")
@@ -194,9 +194,10 @@ public class StandardQueryUnitTests {
                         .from(PillUser_.T, AS, "u")
                         .where(PillUser_.createTime::equal, SQLs::literal, LocalDateTime::now)
                         .limit(SQLs::literal, criteria::get, "offset", "rowCount")
-                        .asQuery())
+                        .asQuery()
+                )
                 .as("us")
-                .where(SQLs.ref("us", "one")::equal, SQLs::param, () -> "1")
+                .where(SQLs.refThis("us", "one")::equal, SQLs::param, () -> "1")
                 .asQuery();
 
         printStmt(stmt);
@@ -214,7 +215,7 @@ public class StandardQueryUnitTests {
                 // below sub query is test case,not real.
                 .space()
                 .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.regionGdp)
-                .comma(SQLs::literalFrom, RegionType.CITY, AS, ChinaRegion_.REGION_TYPE)
+                .comma(SQLs::literalFrom, () -> RegionType.CITY, AS, ChinaRegion_.REGION_TYPE)
                 .from(ChinaRegion_.T, AS, "r")
                 .asQuery()
                 .asInsert()

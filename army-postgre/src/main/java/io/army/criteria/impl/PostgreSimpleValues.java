@@ -278,6 +278,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
             PostgreCtes,
             _QueryComplexSpec<I>,
             Postgres.Modifier,
+            PostgreQuery._PostgreSelectCommaSpec<I>,
             PostgreQuery._FromSpec<I>>
             implements _QueryWithComplexSpec<I> {
 

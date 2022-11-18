@@ -3,6 +3,7 @@ package io.army.criteria.mysql;
 import io.army.criteria.PrimaryStatement;
 import io.army.criteria.Select;
 import io.army.criteria.Visible;
+import io.army.criteria.impl.MySQLFunctions;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.mysql.MySQLDialect;
@@ -28,7 +29,7 @@ public class MySQLFunctionUnitTests {
         final Select stmt;
         stmt = MySQLs.query()
                 .select(() ->
-                        MySQLs.cases(PillUser_.userType)
+                        MySQLFunctions.cases(PillUser_.userType)
                                 .when(SQLs.literalFrom(PillUserType.NONE))
                                 .then(SQLs.literalFrom(1))
 

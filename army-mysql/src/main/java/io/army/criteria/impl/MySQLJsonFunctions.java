@@ -1054,7 +1054,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-table-functions.html#function_json-table">JSON_TABLE(expr, path COLUMNS (column_list) [AS] alias)</a>
      */
-    public static MySQLFunction._JsonTableColumnsClause<DerivedTable> jsonTable() {
+    public static MySQLFunction._JsonTableLeftParenClause<DerivedTable> jsonTable() {
         return MySQLFunctionUtils.jsonTable(SQLs::_identity);
     }
 

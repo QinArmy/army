@@ -19,8 +19,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static io.army.criteria.impl.SQLs.AND;
-import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.impl.SQLs.*;
 
 public class MySQLCriteriaUnitTests {
 
@@ -35,7 +34,7 @@ public class MySQLCriteriaUnitTests {
         stmt = MySQLs.singleUpdate()
                 .update(ChinaRegion_.T, AS, "t")
                 .set(ChinaRegion_.name, SQLs::param, "五指礁")
-                .where(ChinaRegion_.name::equal, SQLs::param, "")
+                .where(ChinaRegion_.name::equal, SQLs::param, () -> "")
                 .and(ChinaRegion_.regionType.equal(SQLs::literal, RegionType.CITY).or(ChinaRegion_.regionGdp.greatEqual(SQLs::literal, "3333")))
                 .orderBy(ChinaRegion_.id)
                 .limit(SQLs::param, criteria::getRowCount)
@@ -78,7 +77,7 @@ public class MySQLCriteriaUnitTests {
 
                 .set(ChinaRegion_.name, SQLs::param, "五指礁")
                 .set(ChinaRegion_.regionGdp, SQLs::literal, 100)
-                .where(ChinaRegion_.name::equal, SQLs::literal, "")
+                .where(ChinaRegion_.name.equal(SQLs::literal, ""))
                 .and(ChinaRegion_.parentId.equal(SQLs::param, map.get("parentId")).or(ChinaRegion_.regionType.equal(SQLs::literal, RegionType.CITY)))
                 .and(ChinaRegion_.regionGdp::plus, SQLs::literal, 100, Expression::greatEqual, 0)
                 .orderBy(ChinaRegion_.name, SQLs.DESC)
@@ -564,14 +563,16 @@ public class MySQLCriteriaUnitTests {
     public void singleSelect() {
 
         final Consumer<Map<String, Object>> mockDaoMethod = criteria -> {
-            List<Long> idList = new ArrayList<>();
+            List<Long> idList = Arrays.asList(1L, 2L);
             final Select stmt;
             stmt = MySQLs.query()
-                    .select(SQLs.group(Captcha_.T, "c"))
+                    .select("c", SQLs.PERIOD, Captcha_.T)
                     .from(Captcha_.T, AS, "c")
-                    .where(Captcha_.id::in, SQLs::multiLiterals, idList)
+                    .where(Captcha_.id::in, SQLs::multiLiterals, () -> idList)
+                    .and(Captcha_.id.in(SQLs::multiLiterals, idList))
+                    .and(Captcha_.id::equal, SQLs::namedParam, () -> "")
                     .and(Captcha_.createTime::between, SQLs::literal, criteria::get, "startTime", AND, "endTime")
-                    .and(Captcha_.deadline::greatEqual, SQLs::literal, LocalDateTime.now())
+                    .and(Captcha_.deadline::greatEqual, SQLs::literal, LocalDateTime::now)
                     .asQuery();
 
             printStmt(stmt);
@@ -596,12 +597,12 @@ public class MySQLCriteriaUnitTests {
         final Consumer<Map<String, Object>> mockDaoMethod = criteria -> {
             final Select stmt;
             stmt = MySQLs.query()
-                    .select(SQLs.group(BankUser_.T, "u"))
+                    .select("u", PERIOD, BankUser_.T)
                     .from(BankUser_.T, AS, "u")
                     .join(BankAccount_.T, AS, "a").on(BankUser_.id::equal, BankAccount_.id)
-                    .where(BankUser_.id::in, SQLs::multiLiterals, (Collection<?>) criteria.get("ids"))
+                    .where(BankUser_.id::in, SQLs::multiLiterals, () -> (Collection<?>) criteria.get("ids"))
                     .and(BankAccount_.createTime::between, SQLs::literal, criteria::get, "startTime", AND, "endTime")
-                    .and(BankUser_.updateTime::greatEqual, SQLs::literal, LocalDateTime.now())
+                    .and(BankUser_.updateTime::greatEqual, SQLs::literal, LocalDateTime::now)
                     .and(SQLs::exists, () -> MySQLs.subQuery()
                             .select(RegisterRecord_.id)
                             .from(RegisterRecord_.T,AS, "r")

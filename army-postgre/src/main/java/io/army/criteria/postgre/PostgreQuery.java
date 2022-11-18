@@ -158,8 +158,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
     @Deprecated
-    interface _WindowLeftParenClause<I extends Item>
-            extends Window._LeftParenNameClause<_WindowPartitionBySpec<I>> {
+    interface _WindowLeftParenClause<I extends Item> {
 
     }
 

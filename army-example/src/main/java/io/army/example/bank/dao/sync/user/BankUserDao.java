@@ -12,7 +12,7 @@ public interface BankUserDao extends SyncBaseDao {
     boolean isExists(String certificateNo, CertificateType certificateType, BankUserType userType);
 
     @Nullable
-    <T extends Certificate<T>> T getCertificate(String certificateNo, CertificateType certificateType
+    <P, T extends Certificate<T>> T getCertificate(String certificateNo, CertificateType certificateType
             , Class<T> domainType);
 
     @Nullable

@@ -78,30 +78,10 @@ public interface OracleQuery extends Query, OracleStatement {
     }
 
 
-    interface _WindowOrderByCommaSpec<I extends Item>
-            extends _StaticOrderByCommaClause<_WindowOrderByCommaSpec<I>>
-            , Window._SimpleFrameUnitsSpec<I> {
-
-    }
-
-    interface _WindowOrderBySpec<I extends Item> extends _OracleStaticOrderByClause<_WindowOrderByCommaSpec<I>>
-            , _OracleDynamicOrderByClause<Window._SimpleFrameUnitsSpec<I>>
-            , Window._SimpleFrameUnitsSpec<I> {
-
-    }
-
-    interface _WindowPartitionBySpec<I extends Item> extends Window._PartitionByExpClause<_WindowOrderBySpec<I>>
-            , _WindowOrderBySpec<I> {
-
-    }
 
 
-    interface _WindowLeftParenSpec<I extends Item> extends Window._LeftParenNameClause<_WindowPartitionBySpec<I>>
-            , _WindowPartitionBySpec<I> {
 
-    }
-
-    interface _WindowAsClause<I extends Item> extends _StaticAsClaus<_WindowLeftParenSpec<I>> {
+    interface _WindowAsClause<I extends Item> {
 
     }
 

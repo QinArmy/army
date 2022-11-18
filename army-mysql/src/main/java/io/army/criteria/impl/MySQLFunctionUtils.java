@@ -154,7 +154,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }
 
 
-    static <I extends Item> MySQLFunction._JsonTableColumnsClause<I> jsonTable(Function<DerivedTable, I> function) {
+    static <I extends Item> MySQLFunction._JsonTableLeftParenClause<I> jsonTable(Function<DerivedTable, I> function) {
         return new JsonTableFunction<>(function);
     }
 

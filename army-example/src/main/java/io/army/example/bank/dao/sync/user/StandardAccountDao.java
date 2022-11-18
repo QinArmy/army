@@ -24,25 +24,25 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
 
         final Select stmt;
         stmt = SQLs.query()
-                .select(consumer -> {
+                .selects(s -> {
                     // due to SQLs.field("u", BankUser_.userNo) need criteria context,so couldn't create selection list
                     // before SQLs.query().
-                    consumer.accept(SQLs.field("u", BankUser_.userNo));
-                    consumer.accept(SQLs.field("u", BankUser_.userType));
-                    consumer.accept(BankAccount_.accountNo);
-                    consumer.accept(BankAccount_.accountType);
+                    s.selection(SQLs.field("u", BankUser_.userNo))
+                            .selection(SQLs.field("u", BankUser_.userType))
+                            .selection(BankAccount_.accountNo)
+                            .selection(BankAccount_.accountType)
 
-                    consumer.accept(SQLs.field("pu", BankUser_.userNo));
-                    consumer.accept(RegisterRecord_.createTime.as("requestTime"));
-                    consumer.accept(RegisterRecord_.handleTime);
-                    consumer.accept(RegisterRecord_.completionTime);
+                            .selection(SQLs.field("pu", BankUser_.userNo))
+                            .selection(RegisterRecord_.createTime)
+                            .selection(RegisterRecord_.handleTime)
+                            .selection(RegisterRecord_.completionTime);
 
                 })
-                .from(RegisterRecord_.T, AS,"r")
-                .join(BankUser_.T,AS, "pu").on(RegisterRecord_.partnerId.equal(SQLs.field("pu", BankUser_.id)))
-                .join(BankUser_.T, AS,"u").on(RegisterRecord_.userId.equal(SQLs.field("u", BankUser_.id)))
-                .join(BankAccount_.T,AS, "a").on(BankAccount_.userId.equal(SQLs.field("u", BankUser_.id)))
-                .where(RegisterRecord_.requestNo::equal,SQLs::param,requestNo)
+                .from(RegisterRecord_.T, AS, "r")
+                .join(BankUser_.T, AS, "pu").on(RegisterRecord_.partnerId.equal(SQLs.field("pu", BankUser_.id)))
+                .join(BankUser_.T, AS, "u").on(RegisterRecord_.userId.equal(SQLs.field("u", BankUser_.id)))
+                .join(BankAccount_.T, AS, "a").on(BankAccount_.userId.equal(SQLs.field("u", BankUser_.id)))
+                .where(RegisterRecord_.requestNo::equal, SQLs::param, () -> requestNo)
                 .and(RegisterRecord_.id.equal(SQLs.field("u", BankUser_.registerRecordId)))
                 .and(RegisterRecord_.id.equal(BankAccount_.registerRecordId))
                 .asQuery();
@@ -56,24 +56,18 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
 
         final Select stmt;
         stmt = SQLs.query()
-                .select(consumer -> {
-                    consumer.accept(RegisterRecord_.requestNo);
-                    consumer.accept(BankUser_.userNo);
-                    consumer.accept(BankUser_.userType);
-                    consumer.accept(BankAccount_.accountNo);
-
-                    consumer.accept(BankAccount_.accountType);
-                })
-                .from(RegisterRecord_.T,AS, "r")
-                .join(BankUser_.T,AS, "u").on(BankUser_.id.equal(RegisterRecord_.userId))
-                .join(BankAccount_.T, AS,"a").on(BankUser_.id.equal(BankAccount_.userId))
-                .join(Certificate_.T, AS,"c").on(Certificate_.id.equal(BankUser_.certificateId))
-                .where(RegisterRecord_.requestNo::equal,SQLs::param,requestNo)
-                .and(Certificate_.certificateNo::equal,SQLs::param,certificateNo)
-                .and(Certificate_.certificateType::equal,SQLs::literal,certificateType)
-                .and(BankUser_.userType::equal,SQLs::literal,BankUserType.PARTNER)
-                .and(BankUser_.registerRecordId::equal,RegisterRecord_.id)
-                .and(BankAccount_.registerRecordId::equal,RegisterRecord_.id)
+                .select(RegisterRecord_.requestNo, BankUser_.userNo, BankUser_.userType, BankAccount_.accountNo)
+                .comma(BankAccount_.accountType)
+                .from(RegisterRecord_.T, AS, "r")
+                .join(BankUser_.T, AS, "u").on(BankUser_.id::equal, RegisterRecord_.userId)
+                .join(BankAccount_.T, AS, "a").on(BankUser_.id::equal, BankAccount_.userId)
+                .join(Certificate_.T, AS, "c").on(Certificate_.id::equal, BankUser_.certificateId)
+                .where(RegisterRecord_.requestNo.equal(SQLs::param, requestNo))
+                .and(Certificate_.certificateNo.equal(SQLs::literal, certificateNo))
+                .and(Certificate_.certificateType::equal, SQLs::literal, () -> certificateType)
+                .and(BankUser_.userType::equal, SQLs::literal, () -> BankUserType.PARTNER)
+                .and(BankUser_.registerRecordId::equal, RegisterRecord_.id)
+                .and(BankAccount_.registerRecordId::equal, RegisterRecord_.id)
                 .asQuery();
         return this.sessionContext.currentSession().queryOneAsMap(stmt);
     }

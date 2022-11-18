@@ -81,14 +81,20 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
 
 
     @Override
-    public final <T> WA where(ExpressionOperator<Expression, T, IPredicate> expOperator
-            , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter) {
+    public final <T> WA where(ExpressionOperator<Expression, T, IPredicate> expOperator,
+                              BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter) {
         final T operand;
         operand = getter.get();
         if (operand == null) {
             throw ContextStack.nullPointer(this.context);
         }
         return this.and(expOperator.apply(valueOperator, operand));
+    }
+
+    @Override
+    public final WA where(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
+                          TeNamedOperator<DataField> namedOperator, int size) {
+        return this.and(expOperator.apply(namedOperator, size));
     }
 
     @Override
@@ -109,12 +115,6 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
     }
 
     @Override
-    public final WA where(UnaryOperator<IPredicate> predicateOperator, BetweenOperator expOperator, Expression first
-            , SQLsSyntax.WordAnd and, Expression second) {
-        return this.and(predicateOperator.apply(expOperator.apply(first, and, second)));
-    }
-
-    @Override
     public final WA where(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator
             , Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey) {
         final Object first, second;
@@ -124,21 +124,6 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
         return this.and(expOperator.apply(operator, first, and, second));
     }
 
-    @Override
-    public final <T> WA where(UnaryOperator<IPredicate> predicateOperator, BetweenValueOperator<T> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLsSyntax.WordAnd and
-            , Supplier<T> secondGetter) {
-        return this.and(predicateOperator.apply(expOperator.apply(operator, firstGetter.get(), and, secondGetter.get())));
-    }
-
-    @Override
-    public final WA where(UnaryOperator<IPredicate> predicateOperator, BetweenValueOperator<Object> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
-            , SQLsSyntax.WordAnd and, String secondKey) {
-        final IPredicate predicate;
-        predicate = expOperator.apply(operator, function.apply(firstKey), and, function.apply(secondKey));
-        return this.and(predicateOperator.apply(predicate));
-    }
 
     @Override
     public final WA where(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second) {
@@ -164,9 +149,15 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
     }
 
     @Override
-    public final <T> WA whereIf(ExpressionOperator<Expression, T, IPredicate> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
+    public final <T> WA whereIf(ExpressionOperator<Expression, T, IPredicate> expOperator,
+                                BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
         return this.ifAnd(expOperator, operator, getter);
+    }
+
+    @Override
+    public final WA whereIf(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
+                            TeNamedOperator<DataField> namedOperator, @Nullable Integer size) {
+        return this.ifAnd(expOperator, namedOperator, size);
     }
 
     @Override
@@ -181,12 +172,6 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
         return this.ifAnd(expOperator, operator, firstGetter, and, secondGetter);
     }
 
-    @Override
-    public final <T> WA whereIf(UnaryOperator<IPredicate> predicateOperator, BetweenValueOperator<T> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter
-            , SQLsSyntax.WordAnd and, Supplier<T> secondGetter) {
-        return this.ifAnd(predicateOperator, expOperator, operator, firstGetter, and, secondGetter);
-    }
 
     @Override
     public final WA whereIf(BetweenValueOperator<Object> expOperator
@@ -195,12 +180,6 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
         return this.ifAnd(expOperator, operator, function, firstKey, and, secondKey);
     }
 
-    @Override
-    public final WA whereIf(UnaryOperator<IPredicate> predicateOperator, BetweenValueOperator<Object> expOperator
-            , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey
-            , SQLsSyntax.WordAnd and, String secondKey) {
-        return this.ifAnd(predicateOperator, expOperator, operator, function, firstKey, and, secondKey);
-    }
 
     @Override
     public final WA whereIf(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator
@@ -228,6 +207,10 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
         return this.and(expOperator.apply(operand));
     }
 
+    @Override
+    public final WA and(UnaryOperator<IPredicate> expOperator, IPredicate operand) {
+        return this.and(expOperator.apply(operand));
+    }
 
     @Override
     public final <E extends RightOperand> WA and(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
@@ -242,25 +225,21 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
     }
 
     @Override
-    public final <T> WA and(ExpressionOperator<Expression, T, IPredicate> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
-        final T operand;
-        operand = getter.get();
-        if (operand == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(operator, operand));
+    public final <T> WA and(ExpressionOperator<Expression, T, IPredicate> expOperator,
+                            BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
+        return this.and(expOperator.apply(operator, getter.get()));
+    }
+
+    @Override
+    public final WA and(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
+                        TeNamedOperator<DataField> namedOperator, int size) {
+        return this.and(expOperator.apply(namedOperator, size));
     }
 
     @Override
     public final WA and(ExpressionOperator<Expression, Object, IPredicate> expOperator
             , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
-        final Object operand;
-        operand = function.apply(keyName);
-        if (operand == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return this.and(expOperator.apply(operator, operand));
+        return this.and(expOperator.apply(operator, function.apply(keyName)));
     }
 
     @Override
@@ -309,12 +288,13 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
         return this.and(expOperator2.apply(expression, SQLs.literalFrom(numberOperand)));
     }
 
+
     @Override
     public final WA ifAnd(Supplier<IPredicate> supplier) {
         final IPredicate predicate;
         predicate = supplier.get();
         if (predicate != null) {
-            this.predicateList.add((OperationPredicate) predicate);
+            this.predicateList.add((OperationPredicate<?>) predicate);
         }
         return (WA) this;
     }
@@ -331,12 +311,21 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
     }
 
     @Override
-    public final <T> WA ifAnd(ExpressionOperator<Expression, T, IPredicate> expOperator
-            , BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
+    public final <T> WA ifAnd(ExpressionOperator<Expression, T, IPredicate> expOperator,
+                              BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
         final T operand;
         operand = getter.get();
         if (operand != null) {
             this.and(expOperator.apply(operator, operand));
+        }
+        return (WA) this;
+    }
+
+    @Override
+    public final WA ifAnd(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
+                          TeNamedOperator<DataField> namedOperator, @Nullable Integer size) {
+        if (size != null) {
+            this.and(expOperator.apply(namedOperator, size));
         }
         return (WA) this;
     }

@@ -46,6 +46,14 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     }
 
+    public interface BooleanTestOperand extends SQLWords, RightOperand {
+
+    }
+
+    public interface WordNull extends BooleanTestOperand, Expression {
+
+    }
+
 
     public interface WordAll extends Modifier {
 
@@ -108,7 +116,19 @@ abstract class SQLsSyntax extends SQLSyntax {
     }
 
 
+    public interface WordBooleans extends BooleanTestOperand, IPredicate {
+
+    }
+
+
     public interface SymbolPeriod {
+
+    }
+
+    /**
+     * package interface,this interface only is implemented by class or enum,couldn't is extended by interface.
+     */
+    interface ArmyKeyWord {
 
     }
 
@@ -236,6 +256,28 @@ abstract class SQLsSyntax extends SQLSyntax {
         }
 
     }//KeyWordAnd
+
+    private enum KeyWordUnknown implements BooleanTestOperand, ArmyKeyWord {
+
+        UNKNOWN(" UNKNOWN");
+
+        private final String spaceWord;
+
+        KeyWordUnknown(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+    } //KeyWordUnknown
 
     enum KeyWordAscDesc implements Statement.AscDesc, SQLWords {
 
@@ -520,12 +562,19 @@ abstract class SQLsSyntax extends SQLSyntax {
      * <p>
      * This class representing sql {@code NULL} key word.
      * </p>
+     *
+     * @see #NULL
      */
     private static final class NullWord extends NonOperationExpression
-            implements SqlValueParam.SingleNonNamedValue {
+            implements SqlValueParam.SingleNonNamedValue, WordNull {
 
 
         private NullWord() {
+        }
+
+        @Override
+        public String render() {
+            return _Constant.SPACE_NULL;
         }
 
         @Override
@@ -580,24 +629,29 @@ abstract class SQLsSyntax extends SQLSyntax {
      * @see #TRUE
      * @see #FALSE
      */
-    private static final class BooleanWord extends OperationPredicate<TypeInfer> {
+    private static final class BooleanWord extends OperationPredicate<TypeInfer>
+            implements WordBooleans, ArmyKeyWord {
 
-        private final boolean value;
+        private final String spaceWord;
 
         private BooleanWord(boolean value) {
             super(SQLs._IDENTITY);
-            this.value = value;
+            this.spaceWord = value ? " TRUE" : " FALSE";
         }
 
+        @Override
+        public String render() {
+            return this.spaceWord;
+        }
 
         @Override
         public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(this.value ? " TRUE" : " FALSE");
+            context.sqlBuilder().append(this.spaceWord);
         }
 
         @Override
         public String toString() {
-            return this.value ? " TRUE" : " FALSE";
+            return this.spaceWord;
         }
 
 
@@ -643,13 +697,15 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     public static final SymbolStar START = SQLSymbolStar.STAR;
 
-    public static final IPredicate TRUE = new BooleanWord(true);
+    public static final WordBooleans TRUE = new BooleanWord(true);
 
-    public static final IPredicate FALSE = new BooleanWord(false);
+    public static final WordBooleans FALSE = new BooleanWord(false);
+
+    public static final BooleanTestOperand UNKNOWN = KeyWordUnknown.UNKNOWN;
 
     public static final WordDefault DEFAULT = new DefaultWord();
 
-    public static final Expression NULL = new NullWord();
+    public static final WordNull NULL = new NullWord();
 
     /**
      * package field
@@ -949,13 +1005,11 @@ abstract class SQLsSyntax extends SQLSyntax {
      * </p>
      */
     public static <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
-        final ItemField<T, TypeInfer> qualifiedField;
-        qualifiedField = ContextStack.peek().field(tableAlias, field);
-        return qualifiedField;
+        return ContextStack.peek().field(tableAlias, field);
     }
 
-    public static DerivedField ref(String derivedTable, String derivedFieldName) {
-        return ContextStack.peek().ref(derivedTable, derivedFieldName);
+    public static DerivedField refThis(String derivedTable, String derivedFieldName) {
+        return ContextStack.peek().refThis(derivedTable, derivedFieldName);
     }
 
     public static DerivedField outerRef(String derivedTable, String derivedFieldName) {

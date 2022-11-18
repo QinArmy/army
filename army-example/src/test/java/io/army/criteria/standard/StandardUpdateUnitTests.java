@@ -42,7 +42,7 @@ public class StandardUpdateUnitTests {
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
                 .set(ChinaRegion_.regionGdp, SQLs::param, addGdp)
                 .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", AND, "secondId")
-                .and(ChinaRegion_.name::equal, SQLs::literal, "江湖")
+                .and(ChinaRegion_.name.equal(SQLs::literal, "江湖"))
                 .and(ChinaRegion_.regionGdp::plus, SQLs::param, addGdp, Expression::greatEqual, BigDecimal.ZERO)
                 .asUpdate();
 
@@ -59,14 +59,14 @@ public class StandardUpdateUnitTests {
                 .set(ChinaProvince_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
                 .set(ChinaProvince_.provincialCapital, SQLs::param, "光明顶")
                 .set(ChinaProvince_.governor, SQLs::param, "张无忌")
-                .where(ChinaProvince_.id::equal, SQLs::literal, "")
-                .and(ChinaProvince_.name::equal, SQLs::param, "江湖")
+                .where(ChinaProvince_.id.equal(SQLs::literal, 1))
+                .and(ChinaProvince_.name::equal, SQLs::param, () -> "江湖")
                 .and(ChinaProvince_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greatEqual, BigDecimal.ZERO)
                 .and(() ->
                         ChinaProvince_.governor.equal(SQLs::param, "石教主")
-                                .or(ChinaProvince_.governor::equal, SQLs::param, "钟教主")
-                                .or(ChinaProvince_.governor::equal, SQLs::param, "老钟")
-                                .or(ChinaProvince_.governor::equal, SQLs::param, "方腊")
+                                .or(ChinaProvince_.governor::equal, SQLs::param, () -> "钟教主")
+                                .or(ChinaProvince_.governor::equal, SQLs::param, () -> "老钟")
+                                .or(ChinaProvince_.governor::equal, SQLs::param, () -> "方腊")
                 )
                 .asUpdate();
 
@@ -80,10 +80,10 @@ public class StandardUpdateUnitTests {
         stmt = SQLs.batchDomainUpdate()
                 .update(ChinaProvince_.T, "p")
                 .set(ChinaProvince_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
-                .set(ChinaProvince_.governor, SQLs::namedNullableParam)
+                .set(ChinaProvince_.governor, SQLs::namedParam)
                 .where(ChinaProvince_.id::equal, SQLs::namedParam)
                 .and(ChinaProvince_.regionGdp::plus, SQLs::namedParam, ChinaProvince_.REGION_GDP, Expression::greatEqual, BigDecimal.ZERO)
-                .and(ChinaProvince_.version::equal, SQLs::literal, "0")
+                .and(ChinaProvince_.version::equal, SQLs::literal, () -> "0")
                 .paramList(this::createProvinceList)
                 .asUpdate();
 
@@ -103,8 +103,8 @@ public class StandardUpdateUnitTests {
                 .set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
                 .set(PillUser_.identityId, SQLs::literal, 888)
                 .set(PillUser_.nickName, SQLs::param, "令狐冲")
-                .where(PillUser_.id::equal, SQLs::literal, "1")
-                .and(PillUser_.nickName::equal, SQLs::param, "zoro")
+                .where(PillUser_.id::equal, SQLs::literal, () -> "1")
+                .and(PillUser_.nickName::equal, SQLs::param, () -> "zoro")
                 .asUpdate();
 
         printStmt(stmt);

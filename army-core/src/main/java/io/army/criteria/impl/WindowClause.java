@@ -15,6 +15,7 @@ import io.army.util.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -41,6 +42,28 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
     static Window._SimplePartitionBySpec namedWindow(String windowName, CriteriaContext context
             , @Nullable String existingWindowName) {
         return new SimpleWindow(windowName, context, existingWindowName);
+    }
+
+    static ArmyWindow namedGlobalWindow(CriteriaContext context, String windowName) {
+        if (!_StringUtils.hasText(windowName)) {
+            throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
+        }
+        return new SimpleWindowSpec(windowName);
+    }
+
+    static ArmyWindow namedRefWindow(CriteriaContext context, String windowName, @Nullable String refWindowName) {
+        if (!_StringUtils.hasText(windowName)) {
+            throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
+        } else if (refWindowName != null && !_StringUtils.hasText(refWindowName)) {
+            throw ContextStack.criteriaError(context, "exists window name must be null or has text.");
+        }
+        final ArmyWindow window;
+        if (refWindowName == null) {
+            window = new SimpleWindowSpec(windowName);
+        } else {
+            window = new SimpleWindowSpec(windowName, refWindowName);
+        }
+        return window;
     }
 
 
@@ -681,6 +704,111 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
 
 
     }//StandardSimpleWindow
+
+
+    private static final class SimpleWindowSpec implements ArmyWindow {
+
+        private final String windowName;
+
+        private final String refWindowName;
+
+        private SimpleWindowSpec(String windowName) {
+            this.windowName = windowName;
+            this.refWindowName = null;
+        }
+
+        private SimpleWindowSpec(String windowName, String refWindowName) {
+            this.windowName = windowName;
+            this.refWindowName = refWindowName;
+        }
+
+        @Override
+        public String windowName() {
+            return this.windowName;
+        }
+
+        @Override
+        public ArmyWindow endWindowClause() {
+            //no-op
+            return this;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+
+            final DialectParser parser;
+            parser = context.parser();
+
+            parser.identifier(this.windowName, sqlBuilder)
+                    .append(_Constant.SPACE_AS);
+
+            final String refWindowName = this.refWindowName;
+            if (refWindowName == null) {
+                sqlBuilder.append(_Constant.PARENS);
+            } else {
+                sqlBuilder.append(_Constant.LEFT_PAREN)
+                        .append(_Constant.SPACE);
+                parser.identifier(refWindowName, sqlBuilder)
+                        .append(_Constant.SPACE_RIGHT_PAREN);
+            }
+
+        }
+
+
+        @Override
+        public void prepared() {
+            //no-op
+        }
+
+        @Override
+        public void clear() {
+            //no-op
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.windowName, this.refWindowName);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof SimpleWindowSpec) {
+                final SimpleWindowSpec o = (SimpleWindowSpec) obj;
+                match = o.windowName.equals(this.windowName)
+                        && Objects.equals(o.refWindowName, this.refWindowName);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder builder;
+            builder = new StringBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.windowName)
+                    .append(_Constant.SPACE_AS);
+
+            if (this.refWindowName == null) {
+                builder.append(_Constant.PARENS);
+            } else {
+                builder.append(_Constant.LEFT_PAREN)
+                        .append(_Constant.SPACE)
+                        .append(this.refWindowName)
+                        .append(_Constant.SPACE_RIGHT_PAREN);
+            }
+            return builder.toString();
+        }
+
+
+    }//SimpleWindowSpec
 
 
 }

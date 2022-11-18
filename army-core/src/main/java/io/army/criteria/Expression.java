@@ -128,15 +128,48 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
      */
     <T> IPredicate between(BiFunction<Expression, T, Expression> operator, T first, SQLs.WordAnd and, T second);
 
+    /**
+     * @param and {@link SQLs#AND}
+     */
+    IPredicate notBetween(Expression first, SQLs.WordAnd and, Expression second);
+
+    /**
+     * @param and {@link SQLs#AND}
+     */
+    <T> IPredicate notBetween(BiFunction<Expression, T, Expression> operator, T first, SQLs.WordAnd and, T second);
+
+    /**
+     * @param operand <ul>
+     *                <li>{@link SQLs#TRUE}</li>
+     *                <li>{@link SQLs#FALSE}</li>
+     *                <li>{@link SQLs#UNKNOWN}</li>
+     *                <li>{@link SQLs#NULL}</li>
+     *                <li>other</li>
+     *                </ul>
+     */
+    IPredicate is(SQLs.BooleanTestOperand operand);
+
+    /**
+     * @param operand <ul>
+     *                <li>{@link SQLs#TRUE}</li>
+     *                <li>{@link SQLs#FALSE}</li>
+     *                <li>{@link SQLs#UNKNOWN}</li>
+     *                <li>{@link SQLs#NULL}</li>
+     *                <li>other</li>
+     *                </ul>
+     */
+    IPredicate isNot(SQLs.BooleanTestOperand operand);
+
     IPredicate isNull();
 
     IPredicate isNotNull();
 
+
     IPredicate in(Expression operand);
 
-    IPredicate in(SubQuery subQuery);
+    IPredicate in(SubQuery operand);
 
-    <T, O extends Collection<T>> IPredicate in(BiFunction<Expression, O, Expression> operator, O operand);
+    <T extends Collection<?>> IPredicate in(BiFunction<Expression, T, Expression> operator, T operand);
 
     IPredicate in(TeNamedOperator<Expression> namedOperator, String paramName, int size);
 
@@ -145,7 +178,7 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
 
     IPredicate notIn(SubQuery subQuery);
 
-    <T, O extends Collection<T>> IPredicate notIn(BiFunction<Expression, O, Expression> operator, O operand);
+    <T extends Collection<?>> IPredicate notIn(BiFunction<Expression, T, Expression> operator, T operand);
 
     IPredicate notIn(TeNamedOperator<Expression> namedOperator, String paramName, int size);
 
@@ -162,7 +195,9 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
     <T> Expression mod(BiFunction<Expression, T, Expression> operator, T operand);
 
     Expression times(Expression operand);
+
     <T> Expression times(BiFunction<Expression, T, Expression> operator, T operand);
+
     Expression plus(Expression operand);
 
     <T> Expression plus(BiFunction<Expression, T, Expression> operator, T operand);
@@ -234,7 +269,6 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
     Expression mapTo(TypeMeta typeMeta);
 
     Expression bracket();
-
 
 
 }

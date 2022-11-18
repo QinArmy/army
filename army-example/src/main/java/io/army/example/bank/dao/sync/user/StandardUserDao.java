@@ -7,12 +7,13 @@ import io.army.example.bank.domain.user.*;
 import io.army.example.common.BaseService;
 import io.army.example.common.BeanUtils;
 import io.army.example.common.Pair;
-import io.army.meta.ChildTableMeta;
+import io.army.meta.ComplexTableMeta;
 import io.army.sync.SyncSession;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.impl.SQLs.PERIOD;
 
 @Repository("bankSyncStandardUserDao")
 @Profile({BaseService.SYNC, BeanUtils.STANDARD})
@@ -24,18 +25,18 @@ public class StandardUserDao extends BankSyncBaseDao implements BankUserDao {
         final Select stmt;
         stmt = SQLs.query()
                 .select(BankUser_.id)
-                .from(Certificate_.T,AS, "c")
-                .join(BankUser_.T,AS, "u").on(Certificate_.id::equal,BankUser_.certificateId)
-                .where(Certificate_.certificateNo::equal,SQLs::param,certificateNo)
-                .and(Certificate_.certificateType::equal,SQLs::literal,certificateType)
-                .and(BankUser_.userType::equal,SQLs::literal,userType)
+                .from(Certificate_.T, AS, "c")
+                .join(BankUser_.T, AS, "u").on(Certificate_.id::equal, BankUser_.certificateId)
+                .where(Certificate_.certificateNo.equal(SQLs::param, certificateNo))
+                .and(Certificate_.certificateType::equal, SQLs::literal, () -> certificateType)
+                .and(BankUser_.userType::equal, SQLs::literal, () -> userType)
                 .limit(SQLs::literal,1)
                 .asQuery();
         return this.sessionContext.currentSession().queryOne(stmt, Long.class) != null;
     }
 
     @Override
-    public <T extends Certificate<T>> T getCertificate(String certificateNo
+    public <P, T extends Certificate<T>> T getCertificate(String certificateNo
             , CertificateType certificateType, Class<T> domainType) {
         final SyncSession session;
         session = this.sessionContext.currentSession();
@@ -43,19 +44,19 @@ public class StandardUserDao extends BankSyncBaseDao implements BankUserDao {
         final Select stmt;
         if (Certificate.class.equals(domainType)) {
             stmt = SQLs.query()
-                    .select(SQLs.group(Certificate_.T, "t"))
-                    .from(Certificate_.T, AS,"t")
-                    .where(Certificate_.certificateNo::equal,SQLs::param,certificateNo)
-                    .and(Certificate_.certificateType::equal,SQLs::literal,certificateType)
+                    .select("t", PERIOD, Certificate_.T)
+                    .from(Certificate_.T, AS, "t")
+                    .where(Certificate_.certificateNo.equal(SQLs::param, certificateNo))
+                    .and(Certificate_.certificateType::equal, SQLs::literal, () -> certificateType)
                     .asQuery();
         } else {
-            final ChildTableMeta<T> child = (ChildTableMeta<T>) session.tableMeta(domainType);
+            final ComplexTableMeta<P, T> child = (ComplexTableMeta<P, T>) session.tableMeta(domainType);
             stmt = SQLs.query()
-                    .select(SQLs.childGroup(child, "c", "p"))
-                    .from(child,AS, "c")
-                    .join(Certificate_.T, AS,"p").on(child.id()::equal,Certificate_.id)
-                    .where(Certificate_.certificateNo::equal,SQLs::param,certificateNo)
-                    .and(Certificate_.certificateType::equal,SQLs::literal,certificateType)
+                    .select("p", PERIOD, child.parentMeta(), "c", PERIOD, child)
+                    .from(child, AS, "c")
+                    .join(Certificate_.T, AS, "p").on(child.id()::equal, Certificate_.id)
+                    .where(Certificate_.certificateNo.equal(SQLs::param, certificateNo))
+                    .and(Certificate_.certificateType::equal, SQLs::literal, () -> certificateType)
                     .asQuery();
         }
         return session.queryOne(stmt, domainType);
@@ -66,8 +67,8 @@ public class StandardUserDao extends BankSyncBaseDao implements BankUserDao {
         final Select stmt;
         stmt = SQLs.query()
                 .select(BankUser_.id, BankUser_.userType)
-                .from(BankUser_.T, AS,"t")
-                .where(BankUser_.userNo::equal,SQLs::param,userNo)
+                .from(BankUser_.T, AS, "t")
+                .where(BankUser_.userNo.equal(SQLs::param, userNo))
                 .asQuery();
         return selectAsPair(this.sessionContext.currentSession(), stmt);
     }

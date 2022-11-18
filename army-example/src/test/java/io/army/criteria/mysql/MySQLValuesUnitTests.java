@@ -14,7 +14,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.function.Supplier;
 
-import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.impl.SQLs.*;
 
 public class MySQLValuesUnitTests {
 
@@ -47,12 +47,12 @@ public class MySQLValuesUnitTests {
     public void simpleSubValues() {
         Select stmt;
         stmt = MySQLs.query()
-                .select(SQLs.derivedGroup("s"))
+                .select("s", PERIOD, START)
                 .from(() -> this.createSimpleValues(MySQLs::subValues)
                         .asValues())
                 .as("c")
-                .join(ChinaRegion_.T, AS, "c").on(SQLs.ref("s", "column_0")::equal, ChinaRegion_.id)
-                .where(ChinaRegion_.id::equal, SQLs::literal, "1")
+                .join(ChinaRegion_.T, AS, "c").on(SQLs.refThis("s", "column_0")::equal, ChinaRegion_.id)
+                .where(ChinaRegion_.id::equal, SQLs::literal, () -> "1")
                 .asQuery();
 
         printStmt(stmt);
@@ -63,12 +63,12 @@ public class MySQLValuesUnitTests {
     public void unionSubValues() {
         Select stmt;
         stmt = MySQLs.query()
-                .select(SQLs.derivedGroup("s"))
+                .select("s", PERIOD, START)
                 .from(() -> this.createSimpleValues(MySQLs::subValues)
                         .asValues())
                 .as("s")
-                .join(ChinaRegion_.T, AS, "c").on(SQLs.ref("s", "column_0")::equal, ChinaRegion_.id)
-                .where(ChinaRegion_.id::equal, SQLs::literal, "1")
+                .join(ChinaRegion_.T, AS, "c").on(SQLs.refThis("s", "column_0")::equal, ChinaRegion_.id)
+                .where(ChinaRegion_.id::equal, SQLs::literal, () -> "1")
                 .asQuery();
 
         printStmt(stmt);

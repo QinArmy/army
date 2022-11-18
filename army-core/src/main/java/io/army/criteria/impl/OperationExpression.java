@@ -200,25 +200,44 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, _A
 
     @Override
     public final OperationPredicate<I> between(Expression first, SQLs.WordAnd and, Expression second) {
-        assert and == SQLs.AND;
-        return Expressions.betweenPredicate(this, first, second);
+        return Expressions.betweenPredicate(false, this, first, second);
     }
 
     @Override
-    public final <T> OperationPredicate<I> between(BiFunction<Expression, T, Expression> operator, T first
-            , SQLs.WordAnd and, T second) {
-        assert and == SQLs.AND;
-        return Expressions.betweenPredicate(this, operator.apply(this, first), operator.apply(this, second));
+    public final <T> OperationPredicate<I> between(BiFunction<Expression, T, Expression> operator, T first,
+                                                   SQLs.WordAnd and, T second) {
+        return Expressions.betweenPredicate(false, this, operator.apply(this, first), operator.apply(this, second));
+    }
+
+    @Override
+    public final OperationPredicate<I> notBetween(Expression first, SQLs.WordAnd and, Expression second) {
+        return Expressions.betweenPredicate(true, this, first, second);
+    }
+
+    @Override
+    public final <T> OperationPredicate<I> notBetween(BiFunction<Expression, T, Expression> operator, T first,
+                                                      SQLs.WordAnd and, T second) {
+        return Expressions.betweenPredicate(true, this, operator.apply(this, first), operator.apply(this, second));
+    }
+
+    @Override
+    public final OperationPredicate<I> is(SQLs.BooleanTestOperand operand) {
+        return Expressions.booleanTestPredicate(this, false, operand);
+    }
+
+    @Override
+    public final OperationPredicate<I> isNot(SQLs.BooleanTestOperand operand) {
+        return Expressions.booleanTestPredicate(this, true, operand);
     }
 
     @Override
     public final OperationPredicate<I> isNull() {
-        return Expressions.unaryPredicate(this, UnaryOperator.IS_NULL);
+        return Expressions.booleanTestPredicate(this, false, SQLs.NULL);
     }
 
     @Override
     public final OperationPredicate<I> isNotNull() {
-        return Expressions.unaryPredicate(this, UnaryOperator.IS_NOT_NULL);
+        return Expressions.booleanTestPredicate(this, true, SQLs.NULL);
     }
 
 
@@ -233,10 +252,10 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, _A
     }
 
     @Override
-    public final <T, O extends Collection<T>> OperationPredicate<I> in(BiFunction<Expression, O, Expression> operator, O operand) {
+    public final <T extends Collection<?>> OperationPredicate<I> in(BiFunction<Expression, T, Expression> operator,
+                                                                    T operand) {
         return Expressions.dualPredicate(this, DualOperator.IN, operator.apply(this, operand));
     }
-
 
     @Override
     public final OperationPredicate<I> in(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
@@ -254,7 +273,8 @@ abstract class OperationExpression<I extends Item> implements ArmyExpression, _A
     }
 
     @Override
-    public final <T, O extends Collection<T>> OperationPredicate<I> notIn(BiFunction<Expression, O, Expression> operator, O operand) {
+    public final <T extends Collection<?>> OperationPredicate<I> notIn(BiFunction<Expression, T, Expression> operator,
+                                                                       T operand) {
         return Expressions.dualPredicate(this, DualOperator.NOT_IN, operator.apply(this, operand));
     }
 

@@ -185,12 +185,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     @Override
-    public final void scalarSubQuery(final SubQuery query, final _SqlContext original) {
-        final List<? extends SelectItem> selectItemList;
-        selectItemList = ((_RowSet) query).selectItemList();
-        if (!(selectItemList.size() == 1 && selectItemList.get(0) instanceof Selection)) {
-            throw _Exceptions.nonScalarSubQuery(query);
-        }
+    public final void subQuery(final SubQuery query, final _SqlContext original) {
         this.handleSubQuery(query, original);
     }
 
@@ -552,7 +547,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #scalarSubQuery(SubQuery, _SqlContext)
+     * @see #subQuery(SubQuery, _SqlContext)
      * @see #standardTableReferences(List, _MultiTableStmtContext, boolean)
      */
     protected final void handleSubQuery(final SubQuery query, final _SqlContext original) {
@@ -757,7 +752,7 @@ abstract class ArmyParser implements DialectParser {
 
     /**
      * @see #handleRowSet(RowSet, _SqlContext)
-     * @see #scalarSubQuery(SubQuery, _SqlContext)
+     * @see #subQuery(SubQuery, _SqlContext)
      * @see #withSubQuery(boolean, List, _SqlContext, Consumer)
      */
     protected final void handleQuery(final Query query, final _SqlContext original) {

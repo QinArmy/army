@@ -544,16 +544,22 @@ public interface Statement extends Item {
 
         <E extends RightOperand> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
-        WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator, BiFunction<DataField, String, Expression> operator);
+        WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator,
+                 BiFunction<DataField, String, Expression> operator);
 
         //below three argument method
 
-        <T> WA where(ExpressionOperator<Expression, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter);
+        <T> WA where(ExpressionOperator<Expression, T, IPredicate> expOperator,
+                     BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter);
+
+        WA where(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
+                 TeNamedOperator<DataField> namedOperator, int size);
 
         //below four argument method
 
 
-        WA where(ExpressionOperator<Expression, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        WA where(ExpressionOperator<Expression, Object, IPredicate> expOperator,
+                 BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
         WA where(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
 
@@ -561,51 +567,46 @@ public interface Statement extends Item {
 
         //below five argument method
 
-        <T> WA where(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
-
-        WA where(UnaryOperator<IPredicate> predicateOperator, BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
+        <T> WA where(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator,
+                     Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
         //below six argument method
 
-        WA where(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+        WA where(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator,
+                 Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
-
-        <T> WA where(UnaryOperator<IPredicate> predicateOperator, BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
-
-
-        //below seven argument method
-        WA where(UnaryOperator<IPredicate> predicateOperator, BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
         //below two argument method
 
         <E extends RightOperand> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
         //below three argument method
-        <T> WA whereIf(ExpressionOperator<Expression, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+        <T> WA whereIf(ExpressionOperator<Expression, T, IPredicate> expOperator,
+                       BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+
+        WA whereIf(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
+                   TeNamedOperator<DataField> namedOperator, @Nullable Integer size);
 
         //below four argument method
 
-        WA whereIf(ExpressionOperator<Expression, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+        WA whereIf(ExpressionOperator<Expression, Object, IPredicate> expOperator,
+                   BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
-        WA whereIf(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, @Nullable Integer size);
+        WA whereIf(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName,
+                   @Nullable Integer size);
 
         //below five argument method
 
-        <T> WA whereIf(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
+        <T> WA whereIf(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator,
+                       Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
 
         //below six argument method
 
-        <T> WA whereIf(UnaryOperator<IPredicate> predicateOperator, BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
-
-
         //below seven argument method
 
-        WA whereIf(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
-
-        WA whereIf(UnaryOperator<IPredicate> predicateOperator, BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
-
-
+        WA whereIf(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator,
+                   Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
     }
 
     /**
@@ -665,7 +666,11 @@ public interface Statement extends Item {
 
         //three argument method
 
-        <T> WA and(ExpressionOperator<Expression, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+        <T> WA and(ExpressionOperator<Expression, T, IPredicate> expOperator,
+                   BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+
+        WA and(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
+               TeNamedOperator<DataField> namedOperator, int size);
 
         //four argument method
 
@@ -678,8 +683,6 @@ public interface Statement extends Item {
 
         //five argument method
 
-        WA and(UnaryOperator<IPredicate> predicateOperator, BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
-
         <T> WA and(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
 
@@ -687,13 +690,13 @@ public interface Statement extends Item {
 
         WA and(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
-        <T> WA and(UnaryOperator<IPredicate> predicateOperator, BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
-
-        WA and(UnaryOperator<IPredicate> predicateOperator, BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
-
         <E extends RightOperand> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
-        <T> WA ifAnd(ExpressionOperator<Expression, T, IPredicate> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+        <T> WA ifAnd(ExpressionOperator<Expression, T, IPredicate> expOperator,
+                     BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+
+        WA ifAnd(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
+                 TeNamedOperator<DataField> namedOperator, @Nullable Integer size);
 
         WA ifAnd(ExpressionOperator<Expression, Object, IPredicate> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
 
@@ -702,10 +705,6 @@ public interface Statement extends Item {
         WA ifAnd(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
         WA ifAnd(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, @Nullable Integer size);
-
-        <T> WA ifAnd(UnaryOperator<IPredicate> predicateOperator, BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
-
-        WA ifAnd(UnaryOperator<IPredicate> predicateOperator, BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
 
     }
@@ -824,8 +823,8 @@ public interface Statement extends Item {
         /**
          * @param operator the method reference of below:
          *                 <ul>
-         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                 </ul>
          * @param start    non-negative integer
          * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
@@ -836,8 +835,8 @@ public interface Statement extends Item {
         /**
          * @param operator the method reference of below:
          *                 <ul>
-         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                 </ul>
          * @param supplier return non-negative integer
          * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
@@ -848,8 +847,8 @@ public interface Statement extends Item {
         /**
          * @param operator the method reference of below:
          *                 <ul>
-         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                 </ul>
          * @param function {@link Function#apply(Object)} return non-negative integer
          * @param keyName  keyName that is passed to function
@@ -861,8 +860,8 @@ public interface Statement extends Item {
         /**
          * @param operator the method reference of below:
          *                 <ul>
-         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                 </ul>
          * @param start    non-negative integer
          * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
@@ -872,8 +871,8 @@ public interface Statement extends Item {
         /**
          * @param operator the method reference of below:
          *                 <ul>
-         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                 </ul>
          * @param supplier return non-negative integer
          * @param row      {@link SQLs#ROW} or {@link SQLs#ROWS}
@@ -884,8 +883,8 @@ public interface Statement extends Item {
         /**
          * @param operator the method reference of below:
          *                 <ul>
-         *                      <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                      <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                 </ul>
          * @param function {@link Function#apply(Object)} return non-negative integer
          * @param keyName  keyName that is passed to function
@@ -912,8 +911,8 @@ public interface Statement extends Item {
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
          * @param operator     the method reference of below:
          *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                          <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                     </ul>
          * @param count        non-negative
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
@@ -926,8 +925,8 @@ public interface Statement extends Item {
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
          * @param operator     the method reference of below:
          *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                          <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                     </ul>
          * @param supplier     return non-negative integer
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
@@ -940,8 +939,8 @@ public interface Statement extends Item {
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
          * @param operator     the method reference of below:
          *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                          <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                     </ul>
          * @param function     {@link Function#apply(Object)} return non-negative integer
          * @param keyName      keyName that is passed to function
@@ -955,8 +954,8 @@ public interface Statement extends Item {
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
          * @param operator     the method reference of below:
          *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                          <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                     </ul>
          * @param count        non-negative
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
@@ -969,8 +968,8 @@ public interface Statement extends Item {
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
          * @param operator     the method reference of below:
          *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                          <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                     </ul>
          * @param supplier     return non-negative integer
          * @param row          {@link SQLs#ROW} or {@link SQLs#ROWS}
@@ -983,8 +982,8 @@ public interface Statement extends Item {
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
          * @param operator     the method reference of below:
          *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                          <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                     </ul>
          * @param function     {@link Function#apply(Object)} return non-negative integer
          * @param keyName      keyName that is passed to function
@@ -1033,8 +1032,8 @@ public interface Statement extends Item {
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
          * @param operator     the method reference of below:
          *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                          <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                     </ul>
          * @param percent      non-null,the percentage of the total number of selected rows
          * @param wordPercent  {@link SQLs#PERCENT}
@@ -1048,8 +1047,8 @@ public interface Statement extends Item {
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
          * @param operator     the method reference of below:
          *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                          <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                     </ul>
          * @param supplier     {@link  Supplier#get()} return non-null percent
          * @param wordPercent  {@link SQLs#PERCENT}
@@ -1064,8 +1063,8 @@ public interface Statement extends Item {
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
          * @param operator     the method reference of below:
          *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                          <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                     </ul>
          * @param function     {@link Function#apply(Object)} return non-null percent
          * @param keyName      keyName that is passed to function
@@ -1081,8 +1080,8 @@ public interface Statement extends Item {
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
          * @param operator     the method reference of below:
          *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                          <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                     </ul>
          * @param percent      nullable,percent
          * @param wordPercent  {@link SQLs#PERCENT}
@@ -1097,8 +1096,8 @@ public interface Statement extends Item {
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
          * @param operator     the method reference of below:
          *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                          <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                     </ul>
          * @param supplier     return nullable percent
          * @param wordPercent  {@link SQLs#PERCENT}
@@ -1113,8 +1112,8 @@ public interface Statement extends Item {
          * @param firstOrNext  {@link SQLs#FIRST} or {@link SQLs#NEXT}
          * @param operator     the method reference of below:
          *                     <ul>
-         *                          <li>{@link SQLs#literal(MappingType, Object)}</li>
-         *                          <li>{@link SQLs#param(MappingType, Object)}</li>
+         *                          <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+         *                          <li>{@link SQLs#param(TypeInfer, Object)}</li>
          *                     </ul>
          * @param function     {@link Function#apply(Object)} return nullable percent
          * @param keyName      keyName that is passed to function

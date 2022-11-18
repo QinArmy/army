@@ -822,27 +822,24 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final DR defaultValue(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+        public final DR defaultValue(FieldMeta<T> field, Supplier<Expression> supplier) {
             return this.defaultValue(field, supplier.get());
         }
 
         @Override
-        public final DR defaultValue(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
+        public final DR defaultValue(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function) {
             return this.defaultValue(field, function.apply(field));
         }
 
         @Override
-        public final <E> DR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value) {
+        public final <E> DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator,
+                                         @Nullable E value) {
             return this.defaultValue(field, operator.apply(field, value));
         }
 
         @Override
-        public final <E> DR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
-            return this.defaultValue(field, operator.apply(field, supplier.get()));
-        }
-
-        @Override
-        public final DR defaultValue(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+        public final DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator,
+                                     Function<String, ?> function, String keyName) {
             return this.defaultValue(field, operator.apply(field, function.apply(keyName)));
         }
 

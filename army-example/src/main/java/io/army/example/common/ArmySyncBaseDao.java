@@ -1,9 +1,12 @@
 package io.army.example.common;
 
+import io.army.criteria.Expression;
 import io.army.criteria.NullMode;
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
+import io.army.criteria.standard.StandardQuery;
 import io.army.meta.ChildTableMeta;
+import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.sync.SessionContext;
@@ -11,6 +14,7 @@ import io.army.sync.SyncSession;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import static io.army.criteria.impl.SQLs.AS;
 
@@ -51,7 +55,9 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
     public <T extends Domain> T findById(Class<T> domainClass, Object id) {
         final SyncSession session;
         session = this.sessionContext.currentSession();
-        return session.queryOne(createFindByIdStmt(session, domainClass, id), domainClass);
+        final Select stmt;
+        stmt = createFindByIdStmt(session, domainClass, SQLs::param, id).asQuery();
+        return session.queryOne(stmt, domainClass);
     }
 
     @Override
@@ -59,7 +65,7 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
         final SyncSession session;
         session = this.sessionContext.currentSession();
         final Select stmt;
-        stmt = createFindByIdStmt(session, domainClass, id);
+        stmt = createFindByIdStmt(session, domainClass, SQLs::param, id).asQuery();
         return session.queryOneAsMap(stmt);
     }
 
@@ -69,28 +75,28 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
     }
 
 
-    protected <T> Select createFindByIdStmt(SyncSession session, Class<T> domainClass, Object id) {
+    protected final <P, T> StandardQuery._WhereAndSpec<Select> createFindByIdStmt(
+            SyncSession session, Class<T> domainClass,
+            BiFunction<Expression, Object, Expression> valueOperator, Object id) {
         final TableMeta<T> table;
         table = session.tableMeta(domainClass);
 
-        final Select stmt;
+        final StandardQuery._WhereAndSpec<Select> clause;
         if (table instanceof ChildTableMeta) {
-            final ChildTableMeta<T> child = (ChildTableMeta<T>) table;
-            final ParentTableMeta<?> parent = child.parentMeta();
-            stmt = SQLs.query()
-                    .select(SQLs.childGroup(child, "c", "p"))
-                    .from(table, AS,"c")
-                    .join(parent, AS,"p").on(table.id().equal(parent.id()))
-                    .where(table.id()::equal,SQLs::param,id)
-                    .asQuery();
+            final ComplexTableMeta<P, T> child = (ComplexTableMeta<P, T>) table;
+            final ParentTableMeta<P> parent = child.parentMeta();
+            clause = SQLs.query()
+                    .select("p", SQLs.PERIOD, parent, "c", SQLs.PERIOD, child)
+                    .from(child, AS, "c")
+                    .join(parent, AS, "p").on(table.id().equal(parent.id()))
+                    .where(child.id().equal(valueOperator, id));
         } else {
-            stmt = SQLs.query()
-                    .select(SQLs.group(table, "t"))
-                    .from(table, AS,"t")
-                    .where(table.id()::equal,SQLs::param,id)
-                    .asQuery();
+            clause = SQLs.query()
+                    .select("t", SQLs.PERIOD, table)
+                    .from(table, AS, "t")
+                    .where(table.id().equal(valueOperator, id));
         }
-        return stmt;
+        return clause;
     }
 
 

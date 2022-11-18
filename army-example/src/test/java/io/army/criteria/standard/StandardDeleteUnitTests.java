@@ -28,9 +28,9 @@ public class StandardDeleteUnitTests {
         final Delete stmt;
         stmt = SQLs.singleDelete()
                 .deleteFrom(ChinaRegion_.T, AS, "r")
-                .where(ChinaRegion_.id::equal, SQLs::param, 1)
-                .and(ChinaRegion_.name::equal, SQLs::param, "马鱼腮角")
-                .and(ChinaProvince_.version::equal, SQLs::param, 2)
+                .where(ChinaRegion_.id::equal, SQLs::param, () -> 1)
+                .and(ChinaRegion_.name.equal(SQLs::param, "马鱼腮角"))
+                .and(ChinaProvince_.version::equal, SQLs::param, () -> 2)
                 .asDelete();
 
         printStmt(stmt);
@@ -42,9 +42,9 @@ public class StandardDeleteUnitTests {
         final Delete stmt;
         stmt = SQLs.domainDelete()
                 .deleteFrom(ChinaRegion_.T, AS, "r")
-                .where(ChinaRegion_.id::equal, SQLs::param, 1)
-                .and(ChinaRegion_.name::equal, SQLs::param, "马鱼腮角")
-                .and(ChinaProvince_.version::equal, SQLs::param, 2)
+                .where(ChinaRegion_.id::equal, SQLs::param, () -> 1)
+                .and(ChinaRegion_.name.equal(SQLs::param, "马鱼腮角"))
+                .and(ChinaRegion_.version.equal(SQLs::param, 2))
                 .asDelete();
 
         printStmt(stmt);
@@ -56,10 +56,10 @@ public class StandardDeleteUnitTests {
         final Delete stmt;
         stmt = SQLs.domainDelete()
                 .deleteFrom(ChinaProvince_.T, AS, "p")
-                .where(ChinaProvince_.id::equal, SQLs::param, 1)
-                .and(ChinaProvince_.name::equal, SQLs::param, "江南省")
-                .and(ChinaProvince_.governor::equal, SQLs::param, "无名")
-                .and(ChinaProvince_.version::equal, SQLs::param, 2)
+                .where(ChinaProvince_.id::equal, SQLs::param, () -> 1)
+                .and(ChinaRegion_.name.equal(SQLs::param, "江南省"))
+                .and(ChinaProvince_.governor::equal, SQLs::param, () -> "无名")
+                .and(ChinaRegion_.version.equal(SQLs::param, 2))
                 .asDelete();
 
         printStmt(stmt);
@@ -75,7 +75,7 @@ public class StandardDeleteUnitTests {
                 .and(ChinaProvince_.name::equal, SQLs::namedParam)
                 .and(ChinaProvince_.governor::equal, SQLs::namedParam)
                 .and(ChinaProvince_.regionGdp.plus(SQLs::namedParam).less(SQLs::literal, "6666.66"))
-                .and(ChinaProvince_.version::equal, SQLs::param, 2)
+                .and(ChinaRegion_.version.equal(SQLs::param, 2))
                 .paramList(this::createProvinceList)
                 .asDelete();
 

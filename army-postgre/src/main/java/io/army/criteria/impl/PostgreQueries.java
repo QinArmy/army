@@ -301,8 +301,23 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
     @Override
-    public final _WindowAsClause<_WindowCommaSpec<I>> window(String windowName) {
-        return PostgreSupports.postgreNamedWindow(windowName, this.context, this::onAddWindow);
+    public _WindowCommaSpec<I> comma(String name, SQLsSyntax.WordAs as, Consumer<_WindowPartitionBySpec> consumer) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public _WindowCommaSpec<I> comma(String name, SQLsSyntax.WordAs as, String existingWindowName, Consumer<_WindowPartitionBySpec> consumer) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public _WindowCommaSpec<I> window(String name, SQLsSyntax.WordAs as, Consumer<_WindowPartitionBySpec> consumer) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public _WindowCommaSpec<I> window(String name, SQLsSyntax.WordAs as, String existingWindowName, Consumer<_WindowPartitionBySpec> consumer) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -322,7 +337,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
     @Override
     public final _WindowAsClause<_WindowCommaSpec<I>> comma(String windowName) {
-        return PostgreSupports.postgreNamedWindow(windowName, this.context, this::onAddWindow);
+        throw new UnsupportedOperationException();
     }
 
 
@@ -606,7 +621,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
     /**
-     * @see #window(String)
      * @see #comma(String)
      */
     private _WindowCommaSpec<I> onAddWindow(final _Window window) {
@@ -629,9 +643,10 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
             this.statement = statement;
         }
 
+
         @Override
         public _WindowAsClause<PostgreWindows> window(String name) {
-            return PostgreSupports.postgreNamedWindow(name, this.statement.context, this::windowEnd);
+            throw new UnsupportedOperationException();
         }
 
         private PostgreWindows windowEnd(_Window window) {

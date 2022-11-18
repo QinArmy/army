@@ -371,7 +371,7 @@ public abstract class SQLs extends SQLsSyntax {
             sqlBuilder.append(_Constant.SPACE_EQUAL);
 
             //5. append sub query
-            context.parser().scalarSubQuery((SubQuery) this.right, context);
+            context.parser().subQuery((SubQuery) this.right, context);
 
         }
 

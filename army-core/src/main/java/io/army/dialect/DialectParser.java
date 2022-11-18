@@ -34,13 +34,14 @@ public interface DialectParser {
     SimpleStmt values(Values values, Visible visible);
 
 
-    void scalarSubQuery(SubQuery query, _SqlContext original);
+    void subQuery(SubQuery query, _SqlContext original);
 
-    default Stmt dialectDml(DmlStatement statement,Visible visible){
+
+    default Stmt dialectDml(DmlStatement statement, Visible visible) {
         throw new UnsupportedOperationException();
     }
 
-    default Stmt dialectDql(DqlStatement statement,Visible visible){
+    default Stmt dialectDql(DqlStatement statement, Visible visible) {
         throw new UnsupportedOperationException();
     }
 
