@@ -217,7 +217,7 @@ public interface Query extends RowSet {
         SR space(Supplier<Expression> supplier, SQLs.WordAs as, String alias);
 
         <T> _AliasExpression<SR> space(ExpressionOperator<Expression, T, Expression> expOperator,
-                                       BiFunction<Expression, T, Expression> operator, Supplier<T> operand);
+                                       BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
 
         <R extends Item> R space(SqlTwoFunction<_AliasExpression<SR>, SR, R> function, Expression exp1,
                                  Expression exp2);
@@ -230,9 +230,9 @@ public interface Query extends RowSet {
 
         SR space(Function<Expression, Expression> operator, Expression exp, SQLs.WordAs as, String alias);
 
-        _AliasExpression<SR> space(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
-                                   BiFunction<DataField, String, Expression> namedOperator,
-                                   SQLs.WordAs as, String alias);
+        SR space(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
+                 BiFunction<DataField, String, Expression> namedOperator,
+                 SQLs.WordAs as, String alias);
 
         _AliasExpression<SR> space(ExpressionOperator<Expression, Object, Expression> expOperator,
                                    BiFunction<Expression, Object, Expression> operator,
@@ -323,7 +323,7 @@ public interface Query extends RowSet {
         SR comma(Supplier<Expression> supplier, SQLs.WordAs as, String alias);
 
         <T> _AliasExpression<SR> comma(ExpressionOperator<Expression, T, Expression> expOperator,
-                                       BiFunction<Expression, T, Expression> operator, Supplier<T> operand);
+                                       BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
 
         <R extends Item> R comma(SqlTwoFunction<_AliasExpression<SR>, SR, R> function, Expression exp1,
                                  Expression exp2);
@@ -336,9 +336,9 @@ public interface Query extends RowSet {
 
         SR comma(Function<Expression, Expression> operator, Expression exp, SQLs.WordAs as, String alias);
 
-        _AliasExpression<SR> comma(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
-                                   BiFunction<DataField, String, Expression> namedOperator,
-                                   SQLs.WordAs as, String alias);
+        SR comma(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
+                 BiFunction<DataField, String, Expression> namedOperator,
+                 SQLs.WordAs as, String alias);
 
         _AliasExpression<SR> comma(ExpressionOperator<Expression, Object, Expression> expOperator,
                                    BiFunction<Expression, Object, Expression> operator,

@@ -18,7 +18,8 @@ import java.util.function.Consumer;
  */
 @SuppressWarnings("unused")
 abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
-
+    //TODO 加上 JSON Schema Validation Functions https://dev.mysql.com/doc/refman/8.0/en/json-validation-functions.html
+    //TODO 加上 JSON Utility Functions
 
     MySQLJsonFunctions() {
     }

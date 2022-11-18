@@ -4,7 +4,6 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._AliasExpression;
 import io.army.function.*;
 import io.army.meta.ComplexTableMeta;
-import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 
@@ -52,7 +51,7 @@ public interface Selections extends Item {
     Selections selection(Supplier<Expression> supplier, SQLs.WordAs as, String alias);
 
     <T> _AliasExpression<Selections> selection(ExpressionOperator<Expression, T, Expression> expOperator,
-                                               BiFunction<Expression, T, Expression> operator, Supplier<T> operand);
+                                               BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
 
     <R extends Item> R selection(SqlTwoFunction<_AliasExpression<Selections>, Selections, R> function, Expression exp1,
                                  Expression exp2);
@@ -89,8 +88,6 @@ public interface Selections extends Item {
     <P> Selections selection(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
                              String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
 
-    Selections selection(String tableAlias1, SQLs.SymbolPeriod period1, FieldMeta<?> field1,
-                         String tableAlias2, SQLs.SymbolPeriod period2, FieldMeta<?> field2);
 
     Selections selection(Supplier<Expression> function1, SQLs.WordAs as1, String alias1,
                          Supplier<Expression> function2, SQLs.WordAs as2, String alias2);
