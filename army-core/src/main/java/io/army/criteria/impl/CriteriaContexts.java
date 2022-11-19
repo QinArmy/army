@@ -43,9 +43,17 @@ abstract class CriteriaContexts {
         return new SimpleQueryContext(outerContext);
     }
 
-    static CriteriaContext primaryQuery(@Nullable _Statement._WithClauseSpec spec
-            , @Nullable CriteriaContext outerContext) {
-        return new SimpleQueryContext(outerContext);
+    static CriteriaContext primaryQuery(final @Nullable _Statement._WithClauseSpec spec,
+                                        final @Nullable CriteriaContext outerContext) {
+        final StatementContext context;
+        context = new SelectContext(outerContext);
+        if (spec != null) {
+            final WithClauseContext withClauseContext;
+            withClauseContext = ((StatementContext) ((CriteriaContextSpec) spec).getContext()).withClauseContext;
+            assert withClauseContext != null;
+            context.withClauseContext = withClauseContext;
+        }
+        return context;
     }
 
     static void setAliasEventFunction(CriteriaContext queryContext, Function<TypeInfer, ? extends Item> function) {
@@ -370,17 +378,6 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void onAddDerivedGroup(DerivedGroup group) {
-            throw new UnsupportedOperationException("current context don't support onAddDerivedGroup(group)");
-        }
-
-        @Override
-        public void selectList(List<? extends SelectItem> selectItemList) {
-            //no bug,never here
-            throw new UnsupportedOperationException("current context don't support selectList(selectItemList)");
-        }
-
-        @Override
         public final void contextEndEvent() {
             final List<Runnable> endListenerList = this.endListenerList;
             if (endListenerList != null) {
@@ -651,8 +648,8 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public DerivedField outerRef(String derivedTable, String derivedFieldName) {
-            String m = "current context don't support lateralRef(derivedTable,derivedFieldName)";
+        public DerivedField refOuter(String derivedTable, String fieldName) {
+            String m = "current context don't support lateralRef(derivedTable,fieldName)";
             throw ContextStack.criteriaError(this, m);
         }
 
@@ -755,7 +752,12 @@ abstract class CriteriaContexts {
         }
 
 
-    }//AbstractContext
+    }//StatementContext
+
+
+    private interface PrimaryContext {
+
+    }
 
 
     private static abstract class JoinableContext extends StatementContext {
@@ -770,6 +772,8 @@ abstract class CriteriaContexts {
         private Map<String, Map<String, DerivedField>> aliasToDerivedField;
 
         private Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasFieldMap;
+
+        private boolean refOuter;
 
         private JoinableContext(@Nullable CriteriaContext outerContext) {
             super(outerContext);
@@ -866,7 +870,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final DerivedField ref(final String derivedTable, final String fieldName) {
+        public final DerivedField refThis(String derivedTable, String fieldName) {
             final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
             if (!(aliasToBlock instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this);
@@ -893,8 +897,14 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final DerivedField refThis(String derivedTable, String fieldName) {
-            throw new UnsupportedOperationException();
+        public final DerivedField refOuter(final String derivedTable, final String fieldName) {
+            final CriteriaContext outerContext = this.outerContext;
+            if (outerContext == null || this instanceof PrimaryContext) {
+                String m = String.format("current context[%s] no outer context", this.getClass().getSimpleName());
+                throw ContextStack.criteriaError(this, m);
+            }
+            this.refOuter = true;
+            return outerContext.refThis(derivedTable, fieldName);
         }
 
         @Override
@@ -938,8 +948,8 @@ abstract class CriteriaContexts {
                 final SimpleQueryContext context = (SimpleQueryContext) this;
                 //validate DerivedGroup list
                 final List<DerivedGroup> groupList;
-                groupList = context.groupList;
-                context.groupList = null;
+                groupList = context.derivedGroupList;
+                context.derivedGroupList = null;
                 if (groupList != null && groupList.size() > 0) {
                     throw notFoundDerivedGroup(this, groupList);
                 }
@@ -977,7 +987,7 @@ abstract class CriteriaContexts {
 
             final List<DerivedGroup> groupList;
             if (this instanceof SimpleQueryContext
-                    && (groupList = ((SimpleQueryContext) this).groupList) != null
+                    && (groupList = ((SimpleQueryContext) this).derivedGroupList) != null
                     && groupList.size() > 0) {
                 final Iterator<DerivedGroup> iterator = groupList.listIterator();
                 DerivedGroup group;
@@ -1200,9 +1210,9 @@ abstract class CriteriaContexts {
         /**
          * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
          */
-        private List<? extends SelectItem> selectItemList;
+        private List<SelectItem> selectItemList = new ArrayList<>();
 
-        private List<DerivedGroup> groupList;
+        private List<DerivedGroup> derivedGroupList;
 
         /**
          * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
@@ -1224,33 +1234,30 @@ abstract class CriteriaContexts {
             super(outerContext);
         }
 
-        @Override
-        public final DerivedField outerRef(String derivedTable, String derivedFieldName) {
-            final CriteriaContext outerContext = this.outerContext;
-            if (outerContext == null) {
-                throw ContextStack.criteriaError(this, "No outer context for current context.");
-            }
-            this.refOuterField = true;
-            return outerContext.ref(derivedTable, derivedFieldName);
-        }
 
         @Override
-        public final void onAddDerivedGroup(final DerivedGroup group) {
-            List<DerivedGroup> groupList = this.groupList;
-            if (groupList == null) {
-                groupList = new LinkedList<>();
-                this.groupList = groupList;
+        public final CriteriaContext onAddSelectItem(final @Nullable SelectItem selectItem) {
+            if (selectItem == null) {
+                throw ContextStack.nullPointer(this);
             }
-            groupList.add(group);
+            final List<SelectItem> selectItemList = this.selectItemList;
+            if (!(selectItemList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this);
+            }
+
+            selectItemList.add(selectItem);
+
+            if (selectItem instanceof DerivedGroup) {
+                List<DerivedGroup> derivedGroupList = this.derivedGroupList;
+                if (derivedGroupList == null) {
+                    derivedGroupList = new ArrayList<>();
+                    this.derivedGroupList = derivedGroupList;
+                }
+                derivedGroupList.add((DerivedGroup) selectItem);
+            }
+            return this;
         }
 
-        @Override
-        public final void selectList(List<? extends SelectItem> selectItemList) {
-            if (this.selectItemList != null) {
-                throw _Exceptions.castCriteriaApi();
-            }
-            this.selectItemList = selectItemList;
-        }
 
         @Override
         public final Expression ref(final String selectionAlias) {
@@ -1293,6 +1300,18 @@ abstract class CriteriaContexts {
             refWindowNameMap.putIfAbsent(windowName, Boolean.TRUE);
         }
 
+
+        @Override
+        public final List<SelectItem> endSelectClause() {
+            List<SelectItem> selectItemList = this.selectItemList;
+            if (!(selectItemList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this);
+            }
+            selectItemList = _CollectionUtils.unmodifiableList(selectItemList);
+            this.selectItemList = selectItemList;
+            return selectItemList;
+        }
+
         private RefSelection createRefSelection(final String selectionAlias) {
             Map<String, Selection> selectionMap = this.selectionMap;
             if (selectionMap == null) {
@@ -1313,6 +1332,19 @@ abstract class CriteriaContexts {
 
 
     }//SimpleQueryContext
+
+    private static final class SelectContext extends SimpleQueryContext {
+
+
+        /**
+         * @see #primaryQuery(_Statement._WithClauseSpec, CriteriaContext)
+         */
+        private SelectContext(@Nullable CriteriaContext outerContext) {
+            super(outerContext);
+        }
+
+
+    }//SelectContext
 
 
     /**
@@ -1418,15 +1450,6 @@ abstract class CriteriaContexts {
 
         private ValuesContext(@Nullable CriteriaContext outerContext) {
             super(outerContext);
-        }
-
-        @Override
-        public void selectList(List<? extends SelectItem> selectItemList) {
-            if (this.selectItemList != null) {
-                //no bug,never here
-                throw new IllegalStateException("duplication");
-            }
-            this.selectItemList = selectItemList;
         }
 
 
@@ -1555,7 +1578,7 @@ abstract class CriteriaContexts {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof DerivedSelection) {
-                final DerivedSelection selection = (DerivedSelection) obj;
+                final DerivedSelection<?> selection = (DerivedSelection<?>) obj;
                 match = selection.tableName.equals(this.tableName)
                         && selection.selection.equals(this.selection);
             } else {

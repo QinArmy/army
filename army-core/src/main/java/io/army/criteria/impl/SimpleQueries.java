@@ -33,7 +33,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP, UR>
         extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         implements Query._SelectDispatcher<W, SR, SD>,
         Query._StaticSelectCommaClause<SR>,
@@ -47,6 +47,10 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         Query._QueryIntersectClause<SP>,
         Query._QueryExceptClause<SP>,
         Query._QueryMinusClause<SP>,
+        Query._RowSetUnionClause<UR>,
+        Query._RowSetIntersectClause<UR>,
+        Query._RowSetExceptClause<UR>,
+        Query._RowSetMinusClause<UR>,
         Query,
         _Query {
 
@@ -850,6 +854,66 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         return this.onUnion(UnionType.MINUS_DISTINCT);
     }
 
+    @Override
+    public final <S extends RowSet> UR union(Supplier<S> supplier) {
+        return this.unionRowSet(UnionType.UNION, supplier);
+    }
+
+    @Override
+    public final <S extends RowSet> UR unionAll(Supplier<S> supplier) {
+        return this.unionRowSet(UnionType.UNION_ALL, supplier);
+    }
+
+    @Override
+    public final <S extends RowSet> UR unionDistinct(Supplier<S> supplier) {
+        return this.unionRowSet(UnionType.UNION_DISTINCT, supplier);
+    }
+
+    @Override
+    public final <S extends RowSet> UR except(Supplier<S> supplier) {
+        return this.unionRowSet(UnionType.EXCEPT, supplier);
+    }
+
+    @Override
+    public final <S extends RowSet> UR exceptAll(Supplier<S> supplier) {
+        return this.unionRowSet(UnionType.EXCEPT_ALL, supplier);
+    }
+
+    @Override
+    public final <S extends RowSet> UR exceptDistinct(Supplier<S> supplier) {
+        return this.unionRowSet(UnionType.EXCEPT_DISTINCT, supplier);
+    }
+
+    @Override
+    public final <S extends RowSet> UR intersect(Supplier<S> supplier) {
+        return this.unionRowSet(UnionType.INTERSECT, supplier);
+    }
+
+    @Override
+    public final <S extends RowSet> UR intersectAll(Supplier<S> supplier) {
+        return this.unionRowSet(UnionType.INTERSECT_ALL, supplier);
+    }
+
+    @Override
+    public final <S extends RowSet> UR intersectDistinct(Supplier<S> supplier) {
+        return this.unionRowSet(UnionType.INTERSECT_DISTINCT, supplier);
+    }
+
+    @Override
+    public final <S extends RowSet> UR minus(Supplier<S> supplier) {
+        return this.unionRowSet(UnionType.MINUS, supplier);
+    }
+
+    @Override
+    public final <S extends RowSet> UR minusAll(Supplier<S> supplier) {
+        return this.unionRowSet(UnionType.MINUS_ALL, supplier);
+    }
+
+    @Override
+    public final <S extends RowSet> UR minusDistinct(Supplier<S> supplier) {
+        return this.unionRowSet(UnionType.MINUS_DISTINCT, supplier);
+    }
+
     /*################################## blow _Query method ##################################*/
 
     @Override
@@ -972,6 +1036,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         this.endQueryStatement();
         return this.createQueryUnion(unionType);
     }
+
+    private UR unionRowSet(UnionType unionType, Supplier<? extends RowSet> supplier) {
+        ContextStack.pop(this.context).endContextBeforeSelect();
+        return null;
+    }
+
 
     private List<W> asSingleModifier(final @Nullable W modifier) {
         if (modifier == null || this.isErrorModifier(modifier)) {

@@ -1,4 +1,4 @@
-package io.army.criteria.standard;
+package io.army.criteria.standard.unit;
 
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;

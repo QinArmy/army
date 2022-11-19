@@ -54,12 +54,6 @@ interface CriteriaContext {
     void addEndEventListener(Runnable listener);
 
     @Deprecated
-    void onAddDerivedGroup(DerivedGroup group);
-
-    @Deprecated
-    void selectList(List<? extends SelectItem> selectItemList);
-
-    @Deprecated
     DerivedField ref(String derivedTable, String derivedFieldName);
 
     DerivedField refThis(String derivedTable, String fieldName);
@@ -67,7 +61,7 @@ interface CriteriaContext {
 
     <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field);
 
-    DerivedField outerRef(String derivedTable, String derivedFieldName);
+    DerivedField refOuter(String derivedTable, String fieldName);
 
     Expression ref(String selectionAlias);
 

@@ -546,40 +546,40 @@ public interface Query extends RowSet {
         SP minusDistinct();
     }
 
-    interface _RowSetUnionClause<S extends RowSet, UR> {
+    interface _RowSetUnionClause<UR> {
 
-        UR union(Supplier<S> supplier);
+        <S extends RowSet> UR union(Supplier<S> supplier);
 
-        UR unionAll(Supplier<S> supplier);
+        <S extends RowSet> UR unionAll(Supplier<S> supplier);
 
-        UR unionDistinct(Supplier<S> supplier);
+        <S extends RowSet> UR unionDistinct(Supplier<S> supplier);
     }
 
-    interface _RowSetIntersectClause<S extends RowSet, UR> {
+    interface _RowSetIntersectClause<UR> {
 
-        UR intersect(Supplier<S> supplier);
+        <S extends RowSet> UR intersect(Supplier<S> supplier);
 
-        UR intersectAll(Supplier<S> supplier);
+        <S extends RowSet> UR intersectAll(Supplier<S> supplier);
 
-        UR intersectDistinct(Supplier<S> supplier);
+        <S extends RowSet> UR intersectDistinct(Supplier<S> supplier);
     }
 
-    interface _RowSetExceptClause<S extends RowSet, UR> {
+    interface _RowSetExceptClause<UR> {
 
-        UR except(Supplier<S> supplier);
+        <S extends RowSet> UR except(Supplier<S> supplier);
 
-        UR exceptAll(Supplier<S> supplier);
+        <S extends RowSet> UR exceptAll(Supplier<S> supplier);
 
-        UR exceptDistinct(Supplier<S> supplier);
+        <S extends RowSet> UR exceptDistinct(Supplier<S> supplier);
     }
 
-    interface _RowSetMinusClause<S extends RowSet, UR> {
+    interface _RowSetMinusClause<UR> {
 
-        UR minus(Supplier<S> supplier);
+        <S extends RowSet> UR minus(Supplier<S> supplier);
 
-        UR minusAll(Supplier<S> supplier);
+        <S extends RowSet> UR minusAll(Supplier<S> supplier);
 
-        UR minusDistinct(Supplier<S> supplier);
+        <S extends RowSet> UR minusDistinct(Supplier<S> supplier);
     }
 
 

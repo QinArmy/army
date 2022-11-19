@@ -30,8 +30,7 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _UnionSpec<I extends Item> extends _AsQueryClause<I>
-            , _QueryUnionClause<_SelectSpec<I>> {
+    interface _UnionSpec<I extends Item> extends _AsQueryClause<I>, _QueryUnionClause<_SelectSpec<I>> {
 
     }
 
@@ -291,7 +290,7 @@ public interface StandardQuery extends Query, StandardStatement {
 
     }
 
-    interface _StandardSelectComma<I extends Item> extends _StaticSelectCommaClause<_StandardSelectComma<I>>
+    interface _StandardSelectCommaClause<I extends Item> extends _StaticSelectCommaClause<_StandardSelectCommaClause<I>>
             , _FromSpec<I> {
 
     }
@@ -310,13 +309,18 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _StandardSelectClause<I extends Item>
-            extends _ModifierSelectClause<SQLs.Modifier, _StandardSelectComma<I>>
-            , _DynamicModifierSelectClause<SQLs.Modifier, _FromSpec<I>> {
+            extends _ModifierSelectClause<SQLs.Modifier, _StandardSelectCommaClause<I>>,
+            _DynamicModifierSelectClause<SQLs.Modifier, _FromSpec<I>> {
 
     }
 
-    interface _SelectSpec<I extends Item> extends _StandardSelectClause<I>
-            , _LeftParenClause<_SelectSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+    interface _SelectSpec<I extends Item> extends _StandardSelectClause<I>,
+            _LeftParenClause<_SelectComplexUnionSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+
+    }
+
+    interface _SelectComplexUnionSpec<I extends Item> extends _SelectSpec<I>,
+            _RowSetUnionClause<_RightParenClause<_UnionOrderBySpec<I>>> {
 
     }
 

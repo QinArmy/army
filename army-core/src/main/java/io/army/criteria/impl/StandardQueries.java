@@ -29,7 +29,7 @@ import java.util.function.Function;
 abstract class StandardQueries<I extends Item> extends SimpleQueries<
         I,
         SQLsSyntax.Modifier,
-        StandardQuery._StandardSelectComma<I>, // SR
+        StandardQuery._StandardSelectCommaClause<I>, // SR
         StandardQuery._FromSpec<I>, // SD
         StandardQuery._JoinSpec<I>,// FT
         StandardQuery._JoinSpec<I>,// FS
@@ -47,9 +47,13 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         Object,
         StandardQuery._SelectSpec<I>> // SP
 
-        implements StandardQuery, StandardQuery._SelectSpec<I>, StandardQuery._StandardSelectComma<I>
-        , StandardQuery._JoinSpec<I>, StandardQuery._WhereAndSpec<I>, StandardQuery._HavingSpec<I>
-        , _StandardQuery {
+        implements StandardQuery,
+        StandardQuery._SelectSpec<I>,
+        StandardQuery._StandardSelectCommaClause<I>,
+        StandardQuery._JoinSpec<I>,
+        StandardQuery._WhereAndSpec<I>,
+        StandardQuery._HavingSpec<I>,
+        _StandardQuery {
 
 
     static <I extends Item> _SelectSpec<I> primaryQuery(Function<Select, I> function) {
@@ -303,7 +307,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        public _SelectSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+        public _SelectComplexUnionSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this.context, this::bracketEnd);
             return new SimpleSelect<>(bracket.context, bracket::parenRowSetEnd);

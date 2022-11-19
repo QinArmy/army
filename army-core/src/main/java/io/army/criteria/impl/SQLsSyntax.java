@@ -1013,7 +1013,7 @@ abstract class SQLsSyntax extends SQLSyntax {
     }
 
     public static DerivedField outerRef(String derivedTable, String derivedFieldName) {
-        return ContextStack.peek().outerRef(derivedTable, derivedFieldName);
+        return ContextStack.peek().refOuter(derivedTable, derivedFieldName);
     }
 
 

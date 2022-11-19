@@ -1,4 +1,4 @@
-package io.army.criteria.standard;
+package io.army.criteria.standard.unit;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
@@ -29,7 +29,7 @@ public class StandardQueryUnitTests {
         Select stmt;
         stmt = SQLs.query()
                 .select(SQLs::cases)
-                .when(PillUser_.userType::equal, SQLs::literal, () -> PillUserType.PARTNER)
+                .when(SQLs.literalFrom(1).is(TRUE))
                 .then(SQLs::literalFrom, () -> PillUserType.PARTNER)
                 .elseValue(SQLs.literalFrom(PillUserType.NONE))
                 .end()

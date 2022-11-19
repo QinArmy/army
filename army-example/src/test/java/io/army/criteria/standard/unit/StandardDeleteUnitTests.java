@@ -1,4 +1,4 @@
-package io.army.criteria.standard;
+package io.army.criteria.standard.unit;
 
 import io.army.criteria.Delete;
 import io.army.criteria.PrimaryStatement;
