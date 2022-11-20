@@ -1,9 +1,8 @@
 package io.army.criteria.standard.unit;
 
-import io.army.criteria.*;
+import io.army.criteria.Insert;
+import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
-import io.army.dialect.Database;
-import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillPerson_;
 import io.army.example.pill.domain.PillUser;
@@ -19,7 +18,7 @@ import java.util.*;
 
 import static io.army.criteria.impl.SQLs.*;
 
-public class StandardQueryUnitTests {
+public class StandardQueryUnitTests extends StandardUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(StandardQueryUnitTests.class);
 
@@ -33,25 +32,25 @@ public class StandardQueryUnitTests {
                 .then(SQLs::literalFrom, () -> PillUserType.PARTNER)
                 .elseValue(SQLs.literalFrom(PillUserType.NONE))
                 .end()
-                .plus(SQLs::literal, 1).times(SQLs::literal, 5).as("a")
+                .plus(SQLs.literalFrom(1)).times(SQLs::literal, 5).as("a")
 
                 .asQuery();
-        printStmt(stmt);
+        printStmt(LOG, stmt);
     }
 
     @Test
     public void selectScalarQuery() {
         Select stmt;
         stmt = SQLs.query()
-                .select(() ->
-                        SQLs.scalarSubQuery()
-                                .select(PillUser_.nickName)
-                                .from(PillUser_.T, AS, "u")
-                                .where(PillPerson_.id::equal, SQLs::param, () -> 1)
-                                .asQuery()
-                ).as("")
+                .select(() -> SQLs.scalarSubQuery()
+                        .select(PillUser_.nickName)
+                        .from(PillUser_.T, AS, "u")
+                        .where(PillUser_.id::equal, SQLs::param, () -> 1)
+                        .asQuery()
+                ).as("r")
                 .asQuery();
-        printStmt(stmt);
+
+        printStmt(LOG, stmt);
     }
 
 
@@ -62,14 +61,12 @@ public class StandardQueryUnitTests {
         stmt = SQLs.query()
                 .select("u", PERIOD, PillUser_.T)
                 .from(PillUser_.T, AS, "u")
-                .groupBy(PillUser_.userType)
-                .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))// group by is empty ,so having clause no action
-                .orderBy(PillUser_.id, SQLs.DESC)
+                .orderBy(PillUser_.id, DESC)
                 .limit(SQLs::literal, 0, 10)
                 .forUpdate()
                 .asQuery();
 
-        printStmt(stmt);
+        printStmt(LOG, stmt);
     }
 
     @Test
@@ -78,10 +75,10 @@ public class StandardQueryUnitTests {
         stmt = SQLs.query()
                 .select("u", PERIOD, PillUser_.T, "p", PERIOD, PillPerson_.T)
                 .from(PillPerson_.T, SQLs.AS, "p")
-                .join(PillUser_.T, SQLs.AS, "u").on(PillPerson_.id.equal(PillUser_.id))
+                .join(PillUser_.T, SQLs.AS, "u").on(PillUser_.id::equal, PillPerson_.id)
                 .where(PillPerson_.id.equal(SQLs::literal, 1))
                 .and(PillUser_.nickName::equal, SQLs::param, () -> "脉兽秀秀")
-                .and(IPredicate::not, PillUser_.createTime.between(SQLs::literal, LocalDateTime.now().minusDays(1), AND, LocalDateTime.now()))
+                .and(PillUser_.createTime.notBetween(SQLs::literal, LocalDateTime.now().minusDays(1), AND, LocalDateTime.now()))
                 .and(PillUser_.id::in, () -> SQLs.subQuery()
                         .select(RegisterRecord_.userId)
                         .from(RegisterRecord_.T, AS, "r")
@@ -96,7 +93,7 @@ public class StandardQueryUnitTests {
                 .forUpdate()
                 .asQuery();
 
-        printStmt(stmt);
+        printStmt(LOG, stmt);
 
     }
 
@@ -105,6 +102,7 @@ public class StandardQueryUnitTests {
         final Select stmt;
 
         stmt = SQLs.query()
+
                 .leftParen()
                 .select(PillUser_.id)
                 .from(PillUser_.T, SQLs.AS, "p")
@@ -116,13 +114,11 @@ public class StandardQueryUnitTests {
                 .orderBy(PillUser_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
                 .asQuery()
-
                 .rightParen()
 
                 .unionAll()
 
                 .leftParen()
-
                 .select(PillUser_.id)
                 .from(PillUser_.T, SQLs.AS, "p")
                 .where(PillUser_.id.equal(SQLs::param, "2"))
@@ -133,7 +129,6 @@ public class StandardQueryUnitTests {
                 .orderBy(PillUser_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
                 .asQuery()
-
                 .rightParen()
 
                 .unionAll()
@@ -149,10 +144,9 @@ public class StandardQueryUnitTests {
                 .orderBy(PillUser_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
 
-
                 .asQuery();
 
-        printStmt(stmt);
+        printStmt(LOG, stmt);
     }
 
     @Test
@@ -175,7 +169,7 @@ public class StandardQueryUnitTests {
                 )
                 .asQuery();
 
-        printStmt(stmt);
+        printStmt(LOG, stmt);
     }
 
     @Test
@@ -200,7 +194,7 @@ public class StandardQueryUnitTests {
                 .where(SQLs.refThis("us", "one")::equal, SQLs::param, () -> "1")
                 .asQuery();
 
-        printStmt(stmt);
+        printStmt(LOG, stmt);
     }
 
     @Test
@@ -231,7 +225,7 @@ public class StandardQueryUnitTests {
                 .asQuery()
                 .asInsert();
 
-        printStmt(stmt);
+        printStmt(LOG, stmt);
     }
 
     @Test
@@ -263,7 +257,7 @@ public class StandardQueryUnitTests {
                 .asQuery()
                 .asInsert();
 
-        printStmt(stmt);
+        printStmt(LOG, stmt);
     }
 
 
@@ -280,16 +274,6 @@ public class StandardQueryUnitTests {
             domainList.add(p);
         }
         return domainList;
-    }
-
-
-    private static void printStmt(final PrimaryStatement statement) {
-        for (Database database : Database.values()) {
-            for (Dialect dialect : database.dialects()) {
-                LOG.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
-            }
-        }
-
     }
 
 

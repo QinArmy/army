@@ -113,13 +113,6 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardQueries.subQuery(ContextStack.peek(), Expressions::scalarExpression);
     }
 
-    public static <I extends Item, E extends Expression> StandardQuery._SelectSpec<E> scalarSubQuery(
-            final Function<TypeInfer, I> endFunc, final Function<_ItemExpression<I>, E> expFunc) {
-        final Function<SubQuery, E> function;
-        function = subQuery -> expFunc.apply(Expressions.scalarExpression(subQuery, endFunc));
-        return StandardQueries.subQuery(ContextStack.peek(), function);
-    }
-
 
     /**
      * <p>

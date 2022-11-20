@@ -94,6 +94,9 @@ public interface _Constant {
 
     String SPACE_SET_SPACE = " SET ";
 
+
+    String SPACE_LIMIT = " LIMIT";
+
     String SPACE_LIMIT_SPACE = " LIMIT ";
 
     String SPACE_FETCH_SPACE = " FETCH ";

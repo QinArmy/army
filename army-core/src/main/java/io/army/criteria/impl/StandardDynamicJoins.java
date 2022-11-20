@@ -38,22 +38,22 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinClause<
     }
 
     @Override
-    public final StandardStatement._NestedLeftParenSpec<_OnClause<StandardStatement._DynamicJoinSpec>> leftJoin() {
+    public final StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>> leftJoin() {
         return StandardNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::nestedJoinEnd);
     }
 
     @Override
-    public final StandardStatement._NestedLeftParenSpec<_OnClause<StandardStatement._DynamicJoinSpec>> join() {
+    public final StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>> join() {
         return StandardNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::nestedJoinEnd);
     }
 
     @Override
-    public final StandardStatement._NestedLeftParenSpec<_OnClause<StandardStatement._DynamicJoinSpec>> rightJoin() {
+    public final StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>> rightJoin() {
         return StandardNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::nestedJoinEnd);
     }
 
     @Override
-    public final StandardStatement._NestedLeftParenSpec<_OnClause<StandardStatement._DynamicJoinSpec>> fullJoin() {
+    public final StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>> fullJoin() {
         return StandardNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::nestedJoinEnd);
     }
 
@@ -111,7 +111,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinClause<
     }
 
     @Override
-    final _OnClause<StandardStatement._DynamicJoinSpec> createTableBlock(_JoinType joinType
+    final Statement._OnClause<StandardStatement._DynamicJoinSpec> createTableBlock(_JoinType joinType
             , @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
         if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
@@ -120,7 +120,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinClause<
     }
 
     @Override
-    final _OnClause<StandardStatement._DynamicJoinSpec> createItemBlock(_JoinType joinType
+    final Statement._OnClause<StandardStatement._DynamicJoinSpec> createItemBlock(_JoinType joinType
             , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
         if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
@@ -129,7 +129,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinClause<
     }
 
     @Override
-    final _OnClause<StandardStatement._DynamicJoinSpec> createCteBlock(_JoinType joinType
+    final Statement._OnClause<StandardStatement._DynamicJoinSpec> createCteBlock(_JoinType joinType
             , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
         //standard query don't support cte
         throw ContextStack.castCriteriaApi(this.context);
@@ -165,7 +165,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinClause<
         }
 
         @Override
-        public _OnClause<StandardStatement._DynamicJoinSpec> tabular(TableMeta<?> table, SQLs.WordAs wordAs
+        public Statement._OnClause<StandardStatement._DynamicJoinSpec> tabular(TableMeta<?> table, SQLs.WordAs wordAs
                 , String alias) {
             if (this.started) {
                 throw CriteriaUtils.duplicateTabularMethod(this.context);
@@ -179,7 +179,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinClause<
         }
 
         @Override
-        public <T extends TabularItem> _AsClause<_OnClause<StandardStatement._DynamicJoinSpec>> tabular(Supplier<T> supplier) {
+        public <T extends TabularItem> Statement._AsClause<Statement._OnClause<StandardStatement._DynamicJoinSpec>> tabular(Supplier<T> supplier) {
             if (this.started) {
                 throw CriteriaUtils.duplicateTabularMethod(this.context);
             }
@@ -226,7 +226,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinClause<
         }
 
         @Override
-        public <T extends TabularItem> _AsClause<StandardStatement._DynamicJoinSpec> tabular(Supplier<T> supplier) {
+        public <T extends TabularItem> Statement._AsClause<StandardStatement._DynamicJoinSpec> tabular(Supplier<T> supplier) {
             if (this.started) {
                 throw CriteriaUtils.duplicateTabularMethod(this.context);
             }

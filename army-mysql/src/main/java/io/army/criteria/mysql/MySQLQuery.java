@@ -242,13 +242,14 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _SelectSpec<I extends Item> extends _MySQLSelectClause<I>
-            , _LeftParenClause<_MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+    interface _SelectSpec<I extends Item> extends _MySQLSelectClause<I>,
+            _LeftParenClause<_MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 
     interface _MinWithSpec<I extends Item> extends _MySQLDynamicWithClause<_SelectSpec<I>>
             , _SelectSpec<I> {
+
 
     }
 
@@ -275,9 +276,9 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _QueryComplexSpec<I extends Item> extends _MySQLSelectClause<I>
-            , MySQLValues._MySQLValuesClause<I>
-            , _LeftParenClause<_QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+    interface _QueryComplexSpec<I extends Item> extends _MySQLSelectClause<I>,
+            MySQLValues._MySQLValuesClause<I>,
+            _LeftParenClause<_QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 

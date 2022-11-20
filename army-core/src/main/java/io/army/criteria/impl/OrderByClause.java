@@ -154,6 +154,9 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         if (orderByList == null) {
             orderByList = new ArrayList<>();
             this.orderByList = orderByList;
+            if (this instanceof Statement) {
+                this.context.onOrderByStart();
+            }
         } else if (!(orderByList instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -183,7 +186,7 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         }
 
         @Override
-        public SortItems sortItem(Expression exp, AscDesc ascDesc) {
+        public SortItems sortItem(Expression exp, Statement.AscDesc ascDesc) {
             this.clause.onAddOrderBy(ArmySortItems.create(exp, ascDesc));
             return this;
         }
@@ -196,26 +199,26 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         }
 
         @Override
-        public SortItems sortItem(Expression exp1, AscDesc ascDesc1, Expression exp2) {
+        public SortItems sortItem(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2) {
             this.clause.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
                     .add((ArmySortItem) exp2);
             return this;
         }
 
         @Override
-        public SortItems sortItem(Expression exp1, Expression exp2, AscDesc ascDesc2) {
+        public SortItems sortItem(Expression exp1, Expression exp2, Statement.AscDesc ascDesc2) {
             this.clause.onAddOrderBy(exp1)
                     .add(ArmySortItems.create(exp2, ascDesc2));
             return this;
         }
 
         @Override
-        public SortItems sortItem(Expression exp1, AscDesc ascDesc1, Expression exp2, AscDesc ascDesc2) {
+        public SortItems sortItem(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2,
+                                  Statement.AscDesc ascDesc2) {
             this.clause.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
                     .add(ArmySortItems.create(exp2, ascDesc2));
             return this;
         }
-
 
     }//OrderBySortItems
 
@@ -357,15 +360,6 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
             super(context);
         }
 
-        @Override
-        public final void prepared() {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-
-        @Override
-        public final boolean isPrepared() {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
 
         @Override
         final Dialect statementDialect() {

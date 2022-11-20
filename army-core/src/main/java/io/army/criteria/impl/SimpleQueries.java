@@ -33,7 +33,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP, UR>
+abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
         extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         implements Query._SelectDispatcher<W, SR, SD>,
         Query._StaticSelectCommaClause<SR>,
@@ -47,16 +47,15 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         Query._QueryIntersectClause<SP>,
         Query._QueryExceptClause<SP>,
         Query._QueryMinusClause<SP>,
-        Query._RowSetUnionClause<UR>,
-        Query._RowSetIntersectClause<UR>,
-        Query._RowSetExceptClause<UR>,
-        Query._RowSetMinusClause<UR>,
         Query,
         _Query {
 
     private final Function<TypeInfer, SR> asFunc;
 
     private final Function<_ItemExpression<SR>, _AliasExpression<SR>> expFunc;
+
+
+    private _ParensRowSet parenQuery;
 
 
     private List<Hint> hintList;
@@ -854,67 +853,13 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         return this.onUnion(UnionType.MINUS_DISTINCT);
     }
 
-    @Override
-    public final <S extends RowSet> UR union(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.UNION, supplier);
-    }
-
-    @Override
-    public final <S extends RowSet> UR unionAll(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.UNION_ALL, supplier);
-    }
-
-    @Override
-    public final <S extends RowSet> UR unionDistinct(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.UNION_DISTINCT, supplier);
-    }
-
-    @Override
-    public final <S extends RowSet> UR except(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.EXCEPT, supplier);
-    }
-
-    @Override
-    public final <S extends RowSet> UR exceptAll(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.EXCEPT_ALL, supplier);
-    }
-
-    @Override
-    public final <S extends RowSet> UR exceptDistinct(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.EXCEPT_DISTINCT, supplier);
-    }
-
-    @Override
-    public final <S extends RowSet> UR intersect(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.INTERSECT, supplier);
-    }
-
-    @Override
-    public final <S extends RowSet> UR intersectAll(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.INTERSECT_ALL, supplier);
-    }
-
-    @Override
-    public final <S extends RowSet> UR intersectDistinct(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.INTERSECT_DISTINCT, supplier);
-    }
-
-    @Override
-    public final <S extends RowSet> UR minus(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.MINUS, supplier);
-    }
-
-    @Override
-    public final <S extends RowSet> UR minusAll(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.MINUS_ALL, supplier);
-    }
-
-    @Override
-    public final <S extends RowSet> UR minusDistinct(Supplier<S> supplier) {
-        return this.unionRowSet(UnionType.MINUS_DISTINCT, supplier);
-    }
 
     /*################################## blow _Query method ##################################*/
+
+    @Override
+    public final _ParensRowSet parenQuery() {
+        return this.parenQuery;
+    }
 
     @Override
     public final List<Hint> hintList() {
@@ -991,7 +936,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     @Override
     public final Q asQuery() {
-        this.endQueryStatement();
+        this.endQueryStatement(null);
         return this.onAsQuery();
     }
 
@@ -1033,13 +978,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
 
     private SP onUnion(UnionType unionType) {
-        this.endQueryStatement();
+        this.endQueryStatement(null);
         return this.createQueryUnion(unionType);
-    }
-
-    private UR unionRowSet(UnionType unionType, Supplier<? extends RowSet> supplier) {
-        ContextStack.pop(this.context).endContextBeforeSelect();
-        return null;
     }
 
 
@@ -1061,7 +1001,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
 
-    private void endQueryStatement() {
+    final void endQueryBeforeSelect(final _ParensRowSet parenQuery) {
+        this.endQueryStatement(parenQuery);
+    }
+
+
+    private void endQueryStatement(final @Nullable _ParensRowSet parenQuery) {
         _Assert.nonPrepared(this.prepared);
         // hint list
         if (this.hintList == null) {
@@ -1071,10 +1016,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         if (this.modifierList == null) {
             this.modifierList = Collections.emptyList();
         }
-
-        final CriteriaContext context = this.context;
-        // selection list
-        this.selectItemList = context.endSelectClause();
 
         this.endWhereClause();
 
@@ -1088,9 +1029,21 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         this.endOrderByClause();
 
-        this.onEndQuery();
-
-        this.tableBlockList = context.endContext();
+        final CriteriaContext context = this.context;
+        if (parenQuery == null) {
+            // selection list
+            this.selectItemList = context.endSelectClause();
+            this.onEndQuery();
+            this.tableBlockList = context.endContext();
+            this.parenQuery = null;
+        } else {
+            assert (this instanceof Select && parenQuery instanceof Select)
+                    || (this instanceof SubQuery && parenQuery instanceof SubQuery);
+            this.selectItemList = Collections.emptyList();
+            context.endContextBeforeSelect();
+            this.tableBlockList = Collections.emptyList();
+            this.parenQuery = parenQuery;
+        }
         ContextStack.pop(context);
         this.prepared = Boolean.TRUE;
 

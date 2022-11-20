@@ -38,15 +38,18 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
+
     @Deprecated
-    static CriteriaContext primaryQuery(@Nullable CriteriaContext outerContext) {
-        return new SimpleQueryContext(outerContext);
+    static CriteriaContext primaryQuery(final @Nullable _Statement._WithClauseSpec spec,
+                                        final @Nullable CriteriaContext outerContext) {
+        throw new UnsupportedOperationException();
     }
 
     static CriteriaContext primaryQuery(final @Nullable _Statement._WithClauseSpec spec,
-                                        final @Nullable CriteriaContext outerContext) {
+                                        final @Nullable CriteriaContext outerContext,
+                                        final @Nullable CriteriaContext leftContext) {
         final StatementContext context;
-        context = new SelectContext(outerContext);
+        context = new SelectContext(outerContext, leftContext);
         if (spec != null) {
             final WithClauseContext withClauseContext;
             withClauseContext = ((StatementContext) ((CriteriaContextSpec) spec).getContext()).withClauseContext;
@@ -62,55 +65,51 @@ abstract class CriteriaContexts {
         ((SimpleQueryContext) queryContext).function = function;
     }
 
-    static CriteriaContext unionSelectContext(final CriteriaContext leftContext) {
+    @Deprecated
+
+    static CriteriaContext subQueryContext(final @Nullable _Statement._WithClauseSpec spec,
+                                           final CriteriaContext outerContext) {
         throw new UnsupportedOperationException();
     }
 
-    static CriteriaContext primaryQueryContextFrom(final Query query) {
-        final StatementContext leftContext;
-        leftContext = (StatementContext) ((CriteriaContextSpec) query).getContext();
-
-        final SimpleQueryContext context;
-        context = new SimpleQueryContext(null);
-        ((StatementContext) context).varMap = leftContext.varMap;
-        return context;
-    }
-
-    /**
-     * @see #unionSubQueryContext(CriteriaContext)
-     */
-    static CriteriaContext subQueryContext(final CriteriaContext outerContext) {
-        assert outerContext == ContextStack.peek();
+    static CriteriaContext subQueryContext(final @Nullable _Statement._WithClauseSpec spec,
+                                           final CriteriaContext outerContext,
+                                           final @Nullable CriteriaContext leftContext) {
         final StatementContext context;
-        context = new SimpleQueryContext(outerContext);
-        context.varMap = ((StatementContext) outerContext).varMap;
+        context = new SubQueryContext(outerContext, leftContext);
+        if (spec != null) {
+            final WithClauseContext withClauseContext;
+            withClauseContext = ((StatementContext) ((CriteriaContextSpec) spec).getContext()).withClauseContext;
+            assert withClauseContext != null;
+            context.withClauseContext = withClauseContext;
+        }
         return context;
     }
 
-    static CriteriaContext subQueryContext(@Nullable _Statement._WithClauseSpec withSpec
-            , final CriteriaContext outerContext) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @see #subQueryContext(CriteriaContext)
-     */
-    static CriteriaContext unionSubQueryContext(final CriteriaContext leftContext) {
-        throw new UnsupportedOperationException();
-    }
-
-    static CriteriaContext unionBracketContext(final CriteriaContext leftContext) {
-        throw new UnsupportedOperationException();
-    }
 
     @Deprecated
     static CriteriaContext bracketContext(@Nullable final CriteriaContext outerContext) {
         throw new UnsupportedOperationException();
     }
 
+    @Deprecated
     static CriteriaContext bracketContext(@Nullable _Statement._WithClauseSpec withSpec
             , @Nullable final CriteriaContext outerContext) {
         throw new UnsupportedOperationException();
+    }
+
+    static CriteriaContext bracketContext(final @Nullable _Statement._WithClauseSpec spec,
+                                          final @Nullable CriteriaContext outerContext,
+                                          final @Nullable CriteriaContext leftContext) {
+        final StatementContext context;
+        context = new BracketQueryContext(outerContext, leftContext);
+        if (spec != null) {
+            final WithClauseContext withClauseContext;
+            withClauseContext = ((StatementContext) ((CriteriaContextSpec) spec).getContext()).withClauseContext;
+            assert withClauseContext != null;
+            context.withClauseContext = withClauseContext;
+        }
+        return context;
     }
 
     @Deprecated
@@ -121,53 +120,6 @@ abstract class CriteriaContexts {
     @Deprecated
     static CriteriaContext bracketContext(@Nullable _Statement._WithClauseSpec withSpec) {
         throw new UnsupportedOperationException();
-    }
-
-    static CriteriaContext bracketContext(@Nullable CriteriaContext outerContext
-            , @Nullable _Statement._WithClauseSpec withSpec) {
-        throw new UnsupportedOperationException();
-    }
-
-    static CriteriaContext subQueryContextFrom(final Query query) {
-        final StatementContext leftContext;
-        leftContext = (StatementContext) ((CriteriaContextSpec) query).getContext();
-
-        final SimpleQueryContext context;
-        context = new SimpleQueryContext(ContextStack.peek());
-        ((StatementContext) context).varMap = leftContext.varMap;
-        return context;
-    }
-
-
-    static CriteriaContext noActionContext(final RowSet rowSet) {
-        final StatementContext leftContext;
-        leftContext = (StatementContext) ((CriteriaContextSpec) rowSet).getContext();
-        final CriteriaContext outerContext;
-        if (rowSet instanceof SubStatement) {
-            outerContext = ContextStack.peek();
-        } else {
-            outerContext = null;
-        }
-        final NoActionQueryContext context;
-        context = new NoActionQueryContext(outerContext, leftContext);
-        ((StatementContext) context).varMap = leftContext.varMap;
-        return context;
-    }
-
-    static CriteriaContext unionContext(final RowSet left, final RowSet right) {
-        final StatementContext leftContext;
-        leftContext = (StatementContext) ((CriteriaContextSpec) left).getContext();
-        final CriteriaContext outerContext;
-        if (left instanceof SubStatement) {
-            outerContext = ContextStack.peek();
-        } else {
-            outerContext = null;
-        }
-        final UnionQueryContext context;
-        context = new UnionQueryContext(outerContext, leftContext
-                , ((CriteriaContextSpec) right).getContext());
-        ((StatementContext) context).varMap = leftContext.varMap;
-        return context;
     }
 
 
@@ -339,10 +291,7 @@ abstract class CriteriaContexts {
     }//WithClauseContext
 
 
-    private static abstract class StatementContext implements CriteriaContext, CriteriaContext.OuterContextSpec {
-
-        Object criteria;
-
+    private static abstract class StatementContext implements CriteriaContext {
 
         private Map<String, VarExpression> varMap;
 
@@ -561,18 +510,6 @@ abstract class CriteriaContexts {
             throw new UnsupportedOperationException();
         }
 
-        @SuppressWarnings("unchecked")
-        @Override
-        public final <C> C criteria() {
-            try {
-                return (C) this.criteria;
-            } catch (ClassCastException e) {
-                String m = String.format("Criteria cast failure,please check %s method parameter type."
-                        , Function.class.getName());
-                throw ContextStack.criteriaError(this, m);
-            }
-        }
-
         @Override
         public List<_TableBlock> endContext() {
             final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
@@ -585,7 +522,7 @@ abstract class CriteriaContexts {
                 refCteMap.clear();
                 this.refCteMap = null;
             }
-            return Collections.emptyList();
+            return this.onEndContext();
         }
 
         @Override
@@ -654,8 +591,20 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public void onOrderByStart() {
+            //no-op
+        }
+
+        @Override
         public Expression ref(String selectionAlias) {
             String m = "current context don't support ref(selectionAlias)";
+            throw ContextStack.criteriaError(this, m);
+        }
+
+
+        @Override
+        public void onSetInnerContext(CriteriaContext innerContext) {
+            String m = "current context don't support onSetInnerContext(innerContext)";
             throw ContextStack.criteriaError(this, m);
         }
 
@@ -676,6 +625,12 @@ abstract class CriteriaContexts {
             String m = "current context don't support endContextBeforeSelect()";
             throw ContextStack.criteriaError(this, m);
         }
+
+
+        List<_TableBlock> onEndContext() {
+            return Collections.emptyList();
+        }
+
 
         private void addCte(final _Cte cte) {
             final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
@@ -701,8 +656,7 @@ abstract class CriteriaContexts {
                 final CriteriaContext context;
                 context = ((CriteriaContextSpec) cteImpl.subStatement).getContext();
                 if (this.recursive
-                        && context instanceof UnionOperationContext
-                        && ((UnionOperationContext) context).isRecursive(cteImpl.name)) {
+                        && context instanceof BracketQueryContext) {
                     refCte.actualCte = cteImpl;
                     refCteMap.remove(cteImpl.name);
                 } else {
@@ -1202,25 +1156,28 @@ abstract class CriteriaContexts {
     }// MultiDmlContext
 
 
-    private static class SimpleQueryContext extends JoinableContext {
+    private static abstract class SimpleQueryContext extends JoinableContext {
+
+
+        private final CriteriaContext leftContext;
 
         private Function<TypeInfer, ? extends Item> function;
 
 
         /**
-         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
+         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketQueryContext#ref(String)}
          */
-        private List<SelectItem> selectItemList = new ArrayList<>();
+        private List<SelectItem> selectItemList;
 
         private List<DerivedGroup> derivedGroupList;
 
         /**
-         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
+         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketQueryContext#ref(String)}
          */
         private Map<String, Selection> selectionMap;
 
         /**
-         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
+         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketQueryContext#ref(String)}
          */
         private Map<String, RefSelection> refSelectionMap;
 
@@ -1228,10 +1185,14 @@ abstract class CriteriaContexts {
 
         private Map<String, Boolean> refWindowNameMap;
 
+        private boolean orderByStart;
+
         private boolean refOuterField;
 
-        private SimpleQueryContext(@Nullable CriteriaContext outerContext) {
+        private SimpleQueryContext(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
             super(outerContext);
+            assert leftContext == null || leftContext.getOuterContext() == outerContext;
+            this.leftContext = leftContext;
         }
 
 
@@ -1240,8 +1201,11 @@ abstract class CriteriaContexts {
             if (selectItem == null) {
                 throw ContextStack.nullPointer(this);
             }
-            final List<SelectItem> selectItemList = this.selectItemList;
-            if (!(selectItemList instanceof ArrayList)) {
+            List<SelectItem> selectItemList = this.selectItemList;
+            if (selectItemList == null) {
+                selectItemList = new ArrayList<>();
+                this.selectItemList = selectItemList;
+            } else if (!(selectItemList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this);
             }
 
@@ -1260,13 +1224,28 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final Expression ref(final String selectionAlias) {
-            Map<String, RefSelection> refSelectionMap = this.refSelectionMap;
-            if (refSelectionMap == null) {
-                refSelectionMap = new HashMap<>();
-                this.refSelectionMap = refSelectionMap;
+        public final void onOrderByStart() {
+            if (this.orderByStart) {
+                throw ContextStack.castCriteriaApi(this);
             }
-            return refSelectionMap.computeIfAbsent(selectionAlias, this::createRefSelection);
+            this.orderByStart = true;
+        }
+
+        @Override
+        public final Expression ref(final String selectionAlias) {
+            final CriteriaContext leftContext = this.leftContext;
+            final Expression selection;
+            if (leftContext == null || !this.orderByStart) {
+                Map<String, RefSelection> refSelectionMap = this.refSelectionMap;
+                if (refSelectionMap == null) {
+                    refSelectionMap = new HashMap<>();
+                    this.refSelectionMap = refSelectionMap;
+                }
+                selection = refSelectionMap.computeIfAbsent(selectionAlias, this::createRefSelection);
+            } else {
+                selection = leftContext.ref(selectionAlias);
+            }
+            return selection;
         }
 
         @Override
@@ -1279,7 +1258,8 @@ abstract class CriteriaContexts {
         public final void onAddWindow(final String windowName) {
             Map<String, Boolean> windowNameMap = this.windowNameMap;
             if (windowNameMap == null) {
-                this.windowNameMap = windowNameMap = new HashMap<>();
+                windowNameMap = new HashMap<>();
+                this.windowNameMap = windowNameMap;
             }
             if (windowNameMap.putIfAbsent(windowName, Boolean.TRUE) != null) {
                 String m = String.format("window[%s] duplication.", windowName);
@@ -1295,7 +1275,8 @@ abstract class CriteriaContexts {
         public final void onRefWindow(final String windowName) {
             Map<String, Boolean> refWindowNameMap = this.refWindowNameMap;
             if (refWindowNameMap == null) {
-                this.refWindowNameMap = refWindowNameMap = new HashMap<>();
+                refWindowNameMap = new HashMap<>();
+                this.refWindowNameMap = refWindowNameMap;
             }
             refWindowNameMap.putIfAbsent(windowName, Boolean.TRUE);
         }
@@ -1312,10 +1293,22 @@ abstract class CriteriaContexts {
             return selectItemList;
         }
 
+        @Override
+        public final CriteriaContext endContextBeforeSelect() {
+            if (this.selectItemList != null) {
+                throw ContextStack.castCriteriaApi(this);
+            }
+            this.selectItemList = Collections.emptyList();
+            return this;
+        }
+
+        /**
+         * @see #ref(String)
+         */
         private RefSelection createRefSelection(final String selectionAlias) {
             Map<String, Selection> selectionMap = this.selectionMap;
             if (selectionMap == null) {
-                final List<? extends SelectItem> selectItemList = this.selectItemList;
+                final List<SelectItem> selectItemList = this.selectItemList;
                 if (selectItemList == null) {
                     throw currentlyCannotRefSelection(this, selectionAlias);
                 }
@@ -1333,118 +1326,110 @@ abstract class CriteriaContexts {
 
     }//SimpleQueryContext
 
-    private static final class SelectContext extends SimpleQueryContext {
+    private static final class SelectContext extends SimpleQueryContext implements PrimaryContext {
 
 
         /**
-         * @see #primaryQuery(_Statement._WithClauseSpec, CriteriaContext)
+         * @see #primaryQuery(_Statement._WithClauseSpec, CriteriaContext, CriteriaContext)
          */
-        private SelectContext(@Nullable CriteriaContext outerContext) {
-            super(outerContext);
+        private SelectContext(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
+            super(outerContext, leftContext);
         }
-
 
     }//SelectContext
 
 
-    /**
-     * <p>
-     * This class is base class of below :
-     *     <ul>
-     *         <li>{@link BracketQueryContext}</li>
-     *         <li>{@link UnionQueryContext}</li>
-     *     </ul>
-     * </p>
-     */
-    private static abstract class UnionOperationContext extends StatementContext {
+    private static final class SubQueryContext extends SimpleQueryContext {
+
+        /**
+         * @see #subQueryContext(_Statement._WithClauseSpec, CriteriaContext, CriteriaContext)
+         */
+        SubQueryContext(CriteriaContext outerContext, final @Nullable CriteriaContext leftContext) {
+            super(outerContext, leftContext);
+            Objects.requireNonNull(outerContext);
+        }
+
+    }//SubQueryContext
+
+
+    private static final class BracketQueryContext extends StatementContext {
 
         private final CriteriaContext leftContext;
 
-        private UnionOperationContext(@Nullable CriteriaContext outerContext, CriteriaContext leftContext) {
+        private CriteriaContext innerContext;
+
+        private boolean orderByStart;
+
+        /**
+         * @see #bracketContext(_Statement._WithClauseSpec, CriteriaContext, CriteriaContext)
+         */
+        private BracketQueryContext(final @Nullable CriteriaContext outerContext,
+                                    final @Nullable CriteriaContext leftContext) {
             super(outerContext);
             this.leftContext = leftContext;
         }
 
-
         @Override
-        public final Expression ref(final String selectionAlias) {
-            return this.leftContext.ref(selectionAlias);
-        }
-
-
-        private boolean isRecursive(final String cteName) {
-            final boolean match;
-            final CriteriaContext targetContext;
-            if (this instanceof BracketQueryContext) {
-                targetContext = this.leftContext;
-            } else if (this instanceof UnionQueryContext) {
-                targetContext = ((UnionQueryContext) this).rightContext;
-            } else {
-                throw new IllegalStateException("Unknown type context");
+        public void onOrderByStart() {
+            if (this.innerContext == null || this.orderByStart) {
+                throw ContextStack.castCriteriaApi(this);
             }
-            if (targetContext instanceof JoinableContext) {
-                match = ((JoinableContext) targetContext).containCte(cteName);
-            } else {
-                match = ((UnionOperationContext) targetContext).isRecursive(cteName);
-            }
-            return match;
-        }
-
-
-    }//UnionOperationContext
-
-
-    private static final class BracketQueryContext extends UnionOperationContext {
-
-        private BracketQueryContext(@Nullable CriteriaContext outerContext, CriteriaContext leftContext) {
-            super(outerContext, leftContext);
-        }
-
-    }//BracketQueryContext
-
-
-    private static final class NoActionQueryContext extends UnionOperationContext {
-
-        private NoActionQueryContext(@Nullable CriteriaContext outerContext, CriteriaContext leftContext) {
-            super(outerContext, leftContext);
-        }
-
-    }//NoActionQueryContext
-
-
-    private static final class UnionQueryContext extends UnionOperationContext {
-
-        private final CriteriaContext rightContext;
-
-        private UnionQueryContext(@Nullable CriteriaContext outerContext, CriteriaContext leftContext
-                , CriteriaContext rightContext) {
-            super(outerContext, leftContext);
-            this.rightContext = rightContext;
+            this.orderByStart = true;
         }
 
         @Override
-        public List<_TableBlock> endContext() {
-            super.endContext();
+        public Expression ref(final String selectionAlias) {
+            final CriteriaContext leftContext = this.leftContext, innerContext = this.innerContext;
+            final Expression selection;
+            if (innerContext == null || !this.orderByStart) {
+                throw ContextStack.castCriteriaApi(this);
+            } else if (leftContext == null) {
+                selection = innerContext.ref(selectionAlias);
+            } else {
+                selection = leftContext.ref(selectionAlias);
+            }
+            return selection;
+        }
+
+        @Override
+        public void onSetInnerContext(final @Nullable CriteriaContext innerContext) {
+            if (this.innerContext != null) {
+                throw ContextStack.castCriteriaApi(this);
+            } else if (innerContext == null) {
+                throw ContextStack.nullPointer(this);
+            } else if (innerContext.getOuterContext() != this) {
+                //no bug,never here
+                throw ContextStack.criteriaError(this, "innerContext not match");
+            }
+            this.innerContext = innerContext;
+        }
+
+
+        @Override
+        List<_TableBlock> onEndContext() {
+            if (innerContext == null) {
+                throw ContextStack.castCriteriaApi(this);
+            }
             return Collections.emptyList();
         }
 
 
-    }//UnionQueryContext
+    }//BracketQueryContext
 
     private static final class ValuesContext extends StatementContext {
 
         /**
-         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
+         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketQueryContext#ref(String)}
          */
         private List<? extends SelectItem> selectItemList;
 
         /**
-         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
+         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketQueryContext#ref(String)}
          */
         private Map<String, Selection> selectionMap;
 
         /**
-         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
+         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketQueryContext#ref(String)}
          */
         private Map<String, RefSelection> refSelectionMap;
 
@@ -1713,9 +1698,7 @@ abstract class CriteriaContexts {
 
     }//DelaySelection
 
-    /**
-     * @see UnionQueryContext#ref(String)
-     */
+
     static final class RefSelection extends OperationExpression<TypeInfer> {
 
         private final Selection selection;

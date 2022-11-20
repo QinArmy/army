@@ -272,15 +272,23 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
         if (offset != null && rowCount != null) {
             final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE);
+            sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LIMIT);
             offset.appendSql(context);
-            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
             rowCount.appendSql(context);
         } else if (rowCount != null) {
-            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE);
+            context.sqlBuilder().append(_Constant.SPACE_LIMIT);
             rowCount.appendSql(context);
         }
 
+    }
+
+    @Override
+    protected final void standardLockClause(final SQLWords lockMode, final _SqlContext context) {
+        if (!_Constant.SPACE_FOR_UPDATE.equals(lockMode.render())) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        context.sqlBuilder().append(_Constant.SPACE_FOR_UPDATE);
     }
 
     /**
@@ -359,15 +367,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
         }
     }
 
-    @Override
-    protected final void standardLockClause(final SQLWords lockMode, final _SqlContext context) {
-        if (!_Constant.SPACE_FOR_UPDATE.equals(lockMode.render())) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        context.sqlBuilder()
-                .append(_Constant.SPACE)
-                .append(_Constant.SPACE_FOR_UPDATE);
-    }
+
 
     /*################################## blow properties template method ##################################*/
 

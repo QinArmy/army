@@ -192,7 +192,14 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
         if (predicate == null) {
             throw ContextStack.nullPointer(this.context);
         }
-        this.predicateList.add((OperationPredicate<?>) predicate);
+        List<_Predicate> predicateList = this.predicateList;
+        if (predicateList == null) {
+            predicateList = new ArrayList<>();
+            this.predicateList = predicateList;
+        } else if (!(predicateList instanceof ArrayList)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        predicateList.add((OperationPredicate<?>) predicate);
         return (WA) this;
     }
 
@@ -425,15 +432,6 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
             super(context);
         }
 
-        @Override
-        public final void prepared() {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-
-        @Override
-        public final boolean isPrepared() {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
 
         @Override
         final Dialect statementDialect() {

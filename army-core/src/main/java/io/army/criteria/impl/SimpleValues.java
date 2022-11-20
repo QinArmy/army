@@ -14,15 +14,16 @@ import java.util.function.Function;
 
 
 abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends LimitRowOrderByClause<OR, LR, LO, LF>
-        implements Values._StaticValueLeftParenClause<RR>
-        , Values._StaticValueRowCommaDualSpec<RR>
-        , Values._StaticValueRowCommaQuadraSpec<RR>
-        , _Values, Statement._AsValuesClause<I>
-        , Query._QueryUnionClause<SP>
-        , Query._QueryExceptClause<SP>
-        , Query._QueryIntersectClause<SP>
-        , Query._QueryMinusClause<SP>
-        , TabularItem.DerivedTableSpec {
+        implements Values, _Values,
+        Values._StaticValueLeftParenClause<RR>,
+        Values._StaticValueRowCommaDualSpec<RR>,
+        Values._StaticValueRowCommaQuadraSpec<RR>,
+        Statement._AsValuesClause<I>,
+        Query._QueryUnionClause<SP>,
+        Query._QueryExceptClause<SP>,
+        Query._QueryIntersectClause<SP>,
+        Query._QueryMinusClause<SP>,
+        TabularItem.DerivedTableSpec {
 
     private List<_Expression> columnList;
 
@@ -571,7 +572,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
 
     static final class UnionValues extends UnionRowSet implements Values {
 
-        UnionValues( RowSet left, UnionType unionType, RowSet right) {
+        UnionValues(RowSet left, UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
 

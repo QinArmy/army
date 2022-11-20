@@ -296,16 +296,6 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
         }
 
         @Override
-        public final void prepared() {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-
-        @Override
-        public final boolean isPrepared() {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-
-        @Override
         final Dialect statementDialect() {
             throw ContextStack.castCriteriaApi(this.context);
         }

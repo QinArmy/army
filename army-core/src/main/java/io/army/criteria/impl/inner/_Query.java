@@ -3,10 +3,14 @@ package io.army.criteria.impl.inner;
 import io.army.criteria.SQLWords;
 import io.army.criteria.SortItem;
 import io.army.criteria.dialect.Hint;
+import io.army.lang.Nullable;
 
 import java.util.List;
 
 public interface _Query extends _PartRowSet {
+
+    @Nullable
+    _ParensRowSet parenQuery();
 
     List<Hint> hintList();
 

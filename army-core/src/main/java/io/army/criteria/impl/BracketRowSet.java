@@ -153,6 +153,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
             throw ContextStack.castCriteriaApi(this.context);
         }
         this.rowSet = parenRowSet;
+        this.context.onSetInnerContext(((CriteriaContextSpec) parenRowSet).getContext());
         return this;
     }
 
@@ -175,12 +176,15 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
 
     private void endQueryStatement() {
         _Assert.nonPrepared(this.prepared);
+        final CriteriaContext context = this.context;
         if (this.rowSet == null) {
-            throw ContextStack.castCriteriaApi(this.context);
+            throw ContextStack.castCriteriaApi(context);
         }
         this.endOrderByClause();
         this.onEndQuery();
-        ContextStack.pop(this.context);
+
+        context.endContext();
+        ContextStack.pop(context);
         this.prepared = Boolean.TRUE;
     }
 

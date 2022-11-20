@@ -552,15 +552,15 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
     private static final class DefaultParentTable<T> extends DefaultTableMeta<T>
             implements ParentTableMeta<T> {
 
-        private final FieldMeta<T> discriminator;
+        private final TableFieldMeta<T> discriminator;
 
         private final CodeEnum discriminatorEnum;
 
         private DefaultParentTable(final Class<T> domainClass) {
             super(domainClass);
-            this.discriminator = TableMetaUtils.discriminator(this.fieldNameToFields, domainClass);
+            this.discriminator = (TableFieldMeta<T>) TableMetaUtils.discriminator(this.fieldNameToFields, domainClass);
             final CodeEnum codeEnum;
-            codeEnum = CodeEnum.resolve(this.javaType, 0);   //parent  always 0
+            codeEnum = CodeEnum.resolve(this.discriminator.javaType(), 0);   //parent  always 0
             if (codeEnum == null) {
                 throw _Exceptions.discriminatorNoMapping(this);
             }
@@ -623,7 +623,7 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
             TableMetaUtils.assertParentTableMeta(parent, domainClass);
             this.parent = (DefaultParentTable<P>) parent;
             final CodeEnum codeEnum;
-            codeEnum = CodeEnum.resolve(this.javaType, TableMetaUtils.discriminatorValue(domainClass));
+            codeEnum = CodeEnum.resolve(this.parent.discriminator.javaType, TableMetaUtils.discriminatorValue(domainClass));
             if (codeEnum == null) {
                 throw _Exceptions.discriminatorNoMapping(this);
             }

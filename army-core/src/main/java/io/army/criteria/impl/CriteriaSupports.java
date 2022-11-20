@@ -187,7 +187,7 @@ abstract class CriteriaSupports {
 
     }//WithClause
 
-    static abstract class StatementMockSupport implements Statement.StatementMockSpec, Statement {
+    static abstract class StatementMockSupport implements Statement.StatementMockSpec {
 
         final CriteriaContext context;
 
@@ -212,7 +212,7 @@ abstract class CriteriaSupports {
         @Override
         public final String toString() {
             final String s;
-            if (this instanceof PrimaryStatement && this.isPrepared()) {
+            if (this instanceof PrimaryStatement && ((PrimaryStatement) this).isPrepared()) {
                 s = this.mockAsString(this.statementDialect(), Visible.ONLY_VISIBLE, true);
             } else {
                 s = super.toString();

@@ -546,58 +546,27 @@ public interface Query extends RowSet {
         SP minusDistinct();
     }
 
-    interface _RowSetUnionClause<UR> {
+    interface _LeftParenRowSetClause<R> {
 
-        <S extends RowSet> UR union(Supplier<S> supplier);
 
-        <S extends RowSet> UR unionAll(Supplier<S> supplier);
+        <S extends RowSet> R leftParen(Supplier<S> supplier);
 
-        <S extends RowSet> UR unionDistinct(Supplier<S> supplier);
-    }
-
-    interface _RowSetIntersectClause<UR> {
-
-        <S extends RowSet> UR intersect(Supplier<S> supplier);
-
-        <S extends RowSet> UR intersectAll(Supplier<S> supplier);
-
-        <S extends RowSet> UR intersectDistinct(Supplier<S> supplier);
-    }
-
-    interface _RowSetExceptClause<UR> {
-
-        <S extends RowSet> UR except(Supplier<S> supplier);
-
-        <S extends RowSet> UR exceptAll(Supplier<S> supplier);
-
-        <S extends RowSet> UR exceptDistinct(Supplier<S> supplier);
-    }
-
-    interface _RowSetMinusClause<UR> {
-
-        <S extends RowSet> UR minus(Supplier<S> supplier);
-
-        <S extends RowSet> UR minusAll(Supplier<S> supplier);
-
-        <S extends RowSet> UR minusDistinct(Supplier<S> supplier);
     }
 
 
     interface _SelectDispatcher<W extends SelectModifier, SR extends Item, SD>
-            extends _HintsModifiersListSelectClause<W, SR>
-            , _DynamicHintModifierSelectClause<W, SD> {
+            extends _HintsModifiersListSelectClause<W, SR>, _DynamicHintModifierSelectClause<W, SD> {
 
     }
 
-    interface _SelectAndCommaDispatcher<SR extends Item> extends _StaticSelectClause<SR>
-            , _StaticSelectCommaClause<SR> {
+    interface _SelectAndCommaDispatcher<SR extends Item> extends _StaticSelectClause<SR>,
+            _StaticSelectCommaClause<SR> {
 
     }
 
 
     interface _WithSelectDispatcher<B extends CteBuilderSpec, WE, W extends SelectModifier, SR extends Item, SD>
-            extends DialectStatement._DynamicWithClause<B, WE>
-            , _SelectDispatcher<W, SR, SD> {
+            extends DialectStatement._DynamicWithClause<B, WE>, _SelectDispatcher<W, SR, SD> {
 
     }
 

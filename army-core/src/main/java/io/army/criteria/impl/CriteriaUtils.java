@@ -2,8 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.dialect.SubQuery;
-import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._Predicate;
@@ -11,7 +9,6 @@ import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
-import io.army.mapping._MappingFactory;
 import io.army.meta.ChildTableMeta;
 import io.army.sqltype.SqlType;
 import io.army.util._ClassUtils;
@@ -21,7 +18,6 @@ import io.army.util._StringUtils;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract class CriteriaUtils {
@@ -50,147 +46,6 @@ abstract class CriteriaUtils {
     }
 
 
-    static ArmyExpression constantLiteral(final CriteriaContext criteriaContext, final @Nullable Object value) {
-        if (value == null) {
-            throw ContextStack.nullPointer(criteriaContext);
-        }
-        if (value instanceof DataField) {
-            String m = "constant must be non-field";
-            throw ContextStack.criteriaError(criteriaContext, m);
-        }
-        final ArmyExpression expression;
-        if (value instanceof Expression) {
-            if (value instanceof ParamExpression) {
-                throw ContextStack.criteriaError(criteriaContext, _Exceptions::valuesStatementDontSupportParam);
-            }
-            if (!(value instanceof ArmyExpression)) {
-                throw ContextStack.nonArmyExp(criteriaContext);
-            }
-            expression = (ArmyExpression) value;
-        } else {
-            final MappingType type;
-            type = _MappingFactory.getDefaultIfMatch(value.getClass());
-            if (type == null) {
-                throw noDefaultMappingType(criteriaContext, value);
-            }
-            expression = (ArmyExpression) SQLs.literal(type, value);
-        }
-        return expression;
-    }
-
-    static void withClause(final boolean recursive, final _Cte cte, final CriteriaContext context
-            , BiConsumer<Boolean, List<_Cte>> subClassConsumer) {
-
-        final CriteriaContext.CteConsumer cteConsumer;
-        cteConsumer = context.onBeforeWithClause(recursive);
-        cteConsumer.addCte(cte);
-
-        final List<_Cte> cteList;
-        cteList = cteConsumer.end();
-        if (cteList.size() == 0) {
-            throw _Exceptions.cteListIsEmpty();
-        }
-        subClassConsumer.accept(recursive, cteList);
-    }
-
-
-    static <C> void withClause(final boolean recursive, final BiConsumer<C, Consumer<_Cte>> consumer
-            , final CriteriaContext context, BiConsumer<Boolean, List<_Cte>> subClassConsumer) {
-
-        final CriteriaContext.CteConsumer cteConsumer;
-        cteConsumer = context.onBeforeWithClause(recursive);
-        consumer.accept(context.criteria(), cteConsumer::addCte);
-
-        final List<_Cte> cteList;
-        cteList = cteConsumer.end();
-        if (cteList.size() == 0) {
-            throw _Exceptions.cteListIsEmpty();
-        }
-        subClassConsumer.accept(recursive, cteList);
-    }
-
-    static void withClause(final boolean recursive, final Consumer<Consumer<_Cte>> consumer
-            , final CriteriaContext context, BiConsumer<Boolean, List<_Cte>> subClassConsumer) {
-
-        final CriteriaContext.CteConsumer cteConsumer;
-        cteConsumer = context.onBeforeWithClause(recursive);
-        consumer.accept(cteConsumer::addCte);
-
-        final List<_Cte> cteList;
-        cteList = cteConsumer.end();
-        if (cteList.size() == 0) {
-            throw _Exceptions.cteListIsEmpty();
-        }
-        subClassConsumer.accept(recursive, cteList);
-    }
-
-    static <C> void ifWithClause(final boolean recursive, final BiConsumer<C, Consumer<_Cte>> consumer
-            , final CriteriaContext context, BiConsumer<Boolean, List<_Cte>> subClassConsumer) {
-
-        final CriteriaContext.CteConsumer cteConsumer;
-        cteConsumer = context.onBeforeWithClause(recursive);
-        consumer.accept(context.criteria(), cteConsumer::addCte);
-
-        final List<_Cte> cteList;
-        cteList = cteConsumer.end();
-        if (cteList.size() > 0) {
-            subClassConsumer.accept(recursive, cteList);
-        }
-
-    }
-
-    static void ifWithClause(final boolean recursive, final Consumer<Consumer<_Cte>> consumer
-            , final CriteriaContext context, BiConsumer<Boolean, List<_Cte>> subClassConsumer) {
-
-        final CriteriaContext.CteConsumer cteConsumer;
-        cteConsumer = context.onBeforeWithClause(recursive);
-        consumer.accept(cteConsumer::addCte);
-
-        final List<_Cte> cteList;
-        cteList = cteConsumer.end();
-        if (cteList.size() > 0) {
-            subClassConsumer.accept(recursive, cteList);
-        }
-    }
-
-
-    static void assertSelectionSize(final RowSet left, final RowSet right) {
-        final int leftSize, rightSize;
-        leftSize = ((_PartRowSet) left).selectionSize();
-        rightSize = ((_PartRowSet) right).selectionSize();
-
-        if (leftSize != rightSize) {
-            String m = String.format("left row set column count[%s] and right row set column count[%s] not match"
-                    , leftSize, rightSize);
-            throw unionTypeError(left, m);
-        }
-    }
-
-    static void assertTypeMatch(final RowSet left, final RowSet right, final Function<RowSet, String> function) {
-        if (left instanceof Select || left instanceof Values) {
-            if (!(right instanceof Select || right instanceof Values)) {
-                String m = String.format("union right item isn't %s or %s"
-                        , Select.class.getName(), Values.class.getName());
-                throw unionTypeError(left, m);
-            }
-        } else if (left instanceof SubQuery || left instanceof SubValues) {
-            if (!(right instanceof SubQuery || right instanceof SubValues)) {
-                String m = String.format("union right item isn't %s or %s"
-                        , SubQuery.class.getName(), SubValues.class.getName());
-                throw unionTypeError(left, m);
-            }
-        } else {
-            //no bug,never here
-            throw new IllegalStateException();
-        }
-
-        final String message;
-        message = function.apply(right);
-        if (message != null) {
-            throw unionTypeError(left, message);
-        }
-
-    }
 
 
     static List<_Predicate> asPredicateList(CriteriaContext context, final List<IPredicate> list) {
@@ -200,12 +55,12 @@ abstract class CriteriaUtils {
             case 0:
                 throw ContextStack.criteriaError(context, _Exceptions::predicateListIsEmpty);
             case 1:
-                predicateList = Collections.singletonList((OperationPredicate) list.get(0));
+                predicateList = Collections.singletonList((OperationPredicate<?>) list.get(0));
                 break;
             default: {
                 final List<_Predicate> tempList = new ArrayList<>(size);
                 for (IPredicate predicate : list) {
-                    tempList.add((OperationPredicate) predicate);
+                    tempList.add((OperationPredicate<?>) predicate);
                 }
                 predicateList = Collections.unmodifiableList(tempList);
             }
@@ -213,10 +68,6 @@ abstract class CriteriaUtils {
         return predicateList;
     }
 
-
-    static CriteriaException unsupportedUnionType(final RowSet left, final UnionType unionType) {
-        return unionTypeError(left, String.format("unsupported %s", unionType));
-    }
 
     static CriteriaException unionTypeError(final RowSet left, final String message) {
         final CriteriaContext leftContext, outerContext;

@@ -48,7 +48,11 @@ abstract class ContextStack {
         if (stack == null) {
             throw noContextStack();
         }
-        stack.pop(context);
+        if (context.getOuterContext() == null) {
+            stack.clear(context);
+        } else {
+            stack.pop(context);
+        }
         context.contextEndEvent();
         if (LOG.isTraceEnabled()) {
             LOG.trace("pop {},hash:{}", context.getClass().getName(), System.identityHashCode(context));
@@ -91,23 +95,6 @@ abstract class ContextStack {
         return stack.rootContext();
     }
 
-    @Nullable
-    static <C> C getTopCriteria() {
-        final Stack stack = HOLDER.get();
-        if (stack == null) {
-            throw noContextStack();
-        }
-        return stack.peek().criteria();
-    }
-
-    static <C> CriteriaContext getCurrentContext(final @Nullable C criteria) {
-        final CriteriaContext currentContext;
-        currentContext = io.army.criteria.impl.ContextStack.peek();
-        if (criteria != currentContext.criteria()) {
-            throw CriteriaUtils.criteriaNotMatch(currentContext);
-        }
-        return currentContext;
-    }
 
 
     private static CriteriaException noContextStack() {

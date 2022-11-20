@@ -108,18 +108,13 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     }
 
     static Expression scalarExpression(final SubQuery subQuery) {
-        return scalarExpression(subQuery, SQLs._IDENTITY);
-    }
-
-    static <I extends Item> _ItemExpression<I> scalarExpression(final SubQuery subQuery
-            , final Function<TypeInfer, I> endFunc) {
         final List<? extends SelectItem> selectItemList;
         selectItemList = ((_RowSet) subQuery).selectItemList();
         final SelectItem selectItem;
         if (!(selectItemList.size() == 1 && (selectItem = selectItemList.get(0)) instanceof Selection)) {
             throw ContextStack.criteriaError(ContextStack.peek(), _Exceptions::nonScalarSubQuery, subQuery);
         }
-        return new ScalarExpression<>(((Selection) selectItem).typeMeta(), subQuery, endFunc);
+        return new ScalarExpression<>(((Selection) selectItem).typeMeta(), subQuery, SQLs._IDENTITY);
     }
 
     static <I extends Item> OperationExpression<I> wrapExpression(final OperationExpression<?> expression,

@@ -441,12 +441,6 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
     }
 
     @Override
-    public final boolean isPrepared() {
-        final Boolean prepared = this.prepared;
-        return prepared != null && prepared;
-    }
-
-    @Override
     public final void clear() {
         this.partitionByList = null;
         this.orderByList = null;

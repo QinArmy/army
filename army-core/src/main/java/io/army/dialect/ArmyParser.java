@@ -496,12 +496,12 @@ abstract class ArmyParser implements DialectParser {
 
     protected final _OtherDmlContext createOtherDmlContext(final @Nullable _SqlContext outerContext
             , final Predicate<FieldMeta<?>> predicate, final Visible visible) {
-        return OtherDmlContext.create(outerContext,predicate,this,visible);
+        return OtherDmlContext.create(outerContext, predicate, this, visible);
     }
 
     protected final _OtherDmlContext createOtherDmlContext(final @Nullable _SqlContext outerContext
             , final Predicate<FieldMeta<?>> predicate, final _OtherDmlContext parentContext) {
-        return OtherDmlContext.forChild(outerContext,predicate,(OtherDmlContext) parentContext);
+        return OtherDmlContext.forChild(outerContext, predicate, (OtherDmlContext) parentContext);
     }
 
     /**
@@ -956,12 +956,10 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #parseStandardQuery(_StandardQuery, _SimpleQueryContext)
      */
-    protected final void standardTableReferences(final List<_TableBlock> tableBlockList
-            , final _MultiTableStmtContext context, final boolean nested) {
+    protected final void standardTableReferences(final List<_TableBlock> tableBlockList,
+                                                 final _MultiTableStmtContext context, final boolean nested) {
         final int blockSize = tableBlockList.size();
-        if (blockSize == 0) {
-            throw _Exceptions.tableBlockListIsEmpty(nested);
-        }
+        assert blockSize > 0;
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
         _TableBlock block;
@@ -998,7 +996,9 @@ abstract class ArmyParser implements DialectParser {
                 if (_StringUtils.hasText(block.alias())) {
                     throw _Exceptions.nestedItemsAliasHasText(block.alias());
                 }
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
                 this.standardTableReferences(((_NestedItems) tableItem).tableBlockList(), context, true);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             } else {
                 throw _Exceptions.dontSupportTableItem(tableItem, block.alias(), null);
             }
@@ -1012,8 +1012,8 @@ abstract class ArmyParser implements DialectParser {
                     predicateList = block.onClauseList();
                     if (predicateList.size() > 0) {
                         this.onClause(predicateList, context);
-                    } else {
-                        assert nested;
+                    } else if (!nested) {
+                        throw _Exceptions.castCriteriaApi();
                     }
                 }
                 break;
@@ -1953,26 +1953,25 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
-    private void standardSelectClause(List<? extends SQLWords> modifierList, _SqlContext context) {
-        final StringBuilder builder = context.sqlBuilder()
-                .append(_Constant.SELECT);
+    /**
+     * @see #parseStandardQuery(_StandardQuery, _SimpleQueryContext)
+     */
+    private void standardSelectClause(final List<? extends SQLWords> modifierList, final StringBuilder sqlBuilder) {
         switch (modifierList.size()) {
             case 0:
                 //no-op
                 break;
             case 1: {
                 final SQLWords modifier = modifierList.get(0);
-                if (!(modifier instanceof SQLs.WordAll)) {
-                    String m = String.format("Standard query api support only %s", SQLs.WordAll.class.getName());
+                if (!(modifier == SQLs.DISTINCT || modifier == SQLs.ALL)) {
+                    String m = String.format("Standard query api support only %s or %s", SQLs.DISTINCT, SQLs.ALL);
                     throw new CriteriaException(m);
                 }
-                builder.append(_Constant.SPACE)
-                        .append(modifier.render());
+                sqlBuilder.append(modifier.render());
             }
             break;
             default:
-                String m = String.format("Standard query api support only %s", SQLs.WordAll.class.getName());
-                throw new CriteriaException(m);
+                throw new CriteriaException("Standard query api support one modifier.");
         }
 
     }
@@ -2117,16 +2116,32 @@ abstract class ArmyParser implements DialectParser {
      */
     private void parseStandardQuery(final _StandardQuery query, final _SimpleQueryContext context) {
         _SQLConsultant.assertStandardQuery((Query) query);
-
+        final _ParensRowSet parenQuery;
+        parenQuery = query.parenQuery();
+        if (parenQuery != null) {
+            if (query.selectItemList().size() > 0) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            this.handleQuery((Query) parenQuery, context);
+            return;
+        }
+        final StringBuilder builder;
+        if ((builder = context.sqlBuilder()).length() > 0) {
+            builder.append(_Constant.SPACE);
+        }
+        builder.append(_Constant.SELECT);
         //1. select clause
-        this.standardSelectClause(query.modifierList(), context);
+        this.standardSelectClause(query.modifierList(), builder);
         //2. select list clause
         this.selectListClause(query.selectItemList(), context);
         //3. from clause
-        context.sqlBuilder()
-                .append(_Constant.SPACE_FROM);
-        final List<_TableBlock> blockList = query.tableBlockList();
-        this.standardTableReferences(blockList, context, false);
+        final List<_TableBlock> blockList;
+        blockList = query.tableBlockList();
+        if (blockList.size() > 0) {
+            context.sqlBuilder()
+                    .append(_Constant.SPACE_FROM);
+            this.standardTableReferences(blockList, context, false);
+        }
         //4. where clause
         this.queryWhereClause(blockList, query.wherePredicateList(), context);
 

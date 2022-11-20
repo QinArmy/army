@@ -63,7 +63,11 @@ interface CriteriaContext {
 
     DerivedField refOuter(String derivedTable, String fieldName);
 
+    void onOrderByStart();
+
     Expression ref(String selectionAlias);
+
+    void onSetInnerContext(CriteriaContext innerContext);
 
     /**
      * @throws CriteriaException when var exists.
@@ -90,11 +94,12 @@ interface CriteriaContext {
     @Nullable
     TableMeta<?> getTable(String tableAlias);
 
-    @Deprecated
 
-    @Nullable
-    <C> C criteria();
-
+    /**
+     * <p>
+     * should be invoked before {@link ContextStack#pop(CriteriaContext)}
+     * </p>
+     */
     List<_TableBlock> endContext();
 
     /**

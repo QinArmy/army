@@ -315,12 +315,12 @@ public interface StandardQuery extends Query, StandardStatement {
     }
 
     interface _SelectSpec<I extends Item> extends _StandardSelectClause<I>,
-            _LeftParenClause<_SelectComplexUnionSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+            _LeftParenClause<_SelectSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 
     interface _SelectComplexUnionSpec<I extends Item> extends _SelectSpec<I>,
-            _RowSetUnionClause<_RightParenClause<_UnionOrderBySpec<I>>> {
+            _LeftParenRowSetClause<_RightParenClause<_UnionOrderBySpec<I>>> {
 
     }
 
