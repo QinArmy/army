@@ -88,6 +88,29 @@ public interface Insert extends DmlStatement, Statement.DmlInsert {
     }
 
 
+    interface _StaticColumnDualClause<T, IR> extends Statement._RightParenClause<IR> {
+
+        Statement._RightParenClause<IR> comma(FieldMeta<T> field);
+
+        _StaticColumnDualClause<T, IR> comma(FieldMeta<T> field1, FieldMeta<T> field2);
+
+    }
+
+
+    interface _StaticColumnQuadraClause<T, IR> extends Statement._RightParenClause<IR> {
+
+        Statement._RightParenClause<IR> comma(FieldMeta<T> field);
+
+        Statement._RightParenClause<IR> comma(FieldMeta<T> field1, FieldMeta<T> field2);
+
+        Statement._RightParenClause<IR> comma(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3);
+
+        _StaticColumnQuadraClause<T, IR> comma(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3,
+                                               FieldMeta<T> field4);
+
+    }
+
+
     interface _ColumnListClause<T, RR> {
 
         Statement._RightParenClause<RR> leftParen(Consumer<Consumer<FieldMeta<T>>> consumer);
@@ -96,16 +119,15 @@ public interface Insert extends DmlStatement, Statement.DmlInsert {
 
         _StaticColumnDualClause<T, RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2);
 
-    }
+        Statement._RightParenClause<RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3);
 
-
-    interface _StaticColumnDualClause<T, IR> extends Statement._RightParenClause<IR> {
-
-        Statement._RightParenClause<IR> comma(FieldMeta<T> field);
-
-        _StaticColumnDualClause<T, IR> comma(FieldMeta<T> field1, FieldMeta<T> field2);
+        _StaticColumnQuadraClause<T, RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3,
+                                                   FieldMeta<T> field4);
 
     }
+
+
+
 
 
     /**
@@ -121,7 +143,8 @@ public interface Insert extends DmlStatement, Statement.DmlInsert {
 
         <E> CR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, @Nullable E value);
 
-        CR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator, Function<String, ?> function, String keyName);
+        CR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator,
+                        Function<String, ?> function, String keyName);
 
     }
 

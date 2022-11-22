@@ -1111,7 +1111,6 @@ abstract class CriteriaContexts {
         }
 
 
-
     }//JoinableContext
 
 
@@ -1252,12 +1251,12 @@ abstract class CriteriaContexts {
             if (!(this instanceof SubQueryContext)) {
                 throw ContextStack.castCriteriaApi(this);
             }
-            Map<String, Selection> selectionMap = this.selectionMap;
-            if (selectionMap == null) {
-                selectionMap = this.createSelectionMap();
-                this.selectionMap = selectionMap;
-            }
-            return selectionMap.get(alias);
+            return this.getSelectionMap().get(alias);
+        }
+
+        @Override
+        public final int selectionSize() {
+            return this.getSelectionMap().size();
         }
 
         @Override
@@ -1310,25 +1309,25 @@ abstract class CriteriaContexts {
          * @see #ref(String)
          */
         private RefSelection createRefSelection(final String selectionAlias) {
-            Map<String, Selection> selectionMap = this.selectionMap;
-            if (selectionMap == null) {
-                selectionMap = this.createSelectionMap();
-                this.selectionMap = selectionMap;
-            }
             final Selection selection;
-            selection = selectionMap.get(selectionAlias);
+            selection = this.getSelectionMap().get(selectionAlias);
             if (selection == null) {
                 throw CriteriaUtils.unknownSelection(this, selectionAlias);
             }
             return new RefSelection(selection);//TODO
         }
 
-        private Map<String, Selection> createSelectionMap() {
-            final List<SelectItem> selectItemList = this.selectItemList;
-            if (selectItemList == null) {
-                throw ContextStack.castCriteriaApi(this);
+        private Map<String, Selection> getSelectionMap() {
+            Map<String, Selection> selectionMap = this.selectionMap;
+            if (selectionMap == null) {
+                final List<SelectItem> selectItemList = this.selectItemList;
+                if (selectItemList == null) {
+                    throw ContextStack.castCriteriaApi(this);
+                }
+                selectionMap = CriteriaUtils.createSelectionMap(selectItemList);
+                this.selectionMap = selectionMap;
             }
-            return CriteriaUtils.createSelectionMap(selectItemList);
+            return selectionMap;
         }
 
 

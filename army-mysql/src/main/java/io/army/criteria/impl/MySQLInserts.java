@@ -415,7 +415,6 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public MySQLInsert._MySQLStaticValuesLeftParenClause<I, T> values() {
-            this.endColumnListClause(InsertMode.VALUES);
             return new MySQLStaticValuesClause<>(this);
         }
 
@@ -562,7 +561,7 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     static abstract class DomainInsertStatement<I extends Statement.DmlInsert> extends MySQLValueSyntaxStatement<I>
-            implements _MySQLInsert._MySQLDomainInsert {
+            implements _MySQLInsert._MySQLDomainInsert, Insert {
 
         private DomainInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
@@ -581,7 +580,7 @@ abstract class MySQLInserts extends InsertSupport {
         private PrimarySimpleDomainInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
             assert clause.insertTable instanceof SimpleTableMeta;
-            this.domainList = clause.domainListForNonParent();
+            this.domainList = clause.domainListForSingle();
         }
 
         @Override

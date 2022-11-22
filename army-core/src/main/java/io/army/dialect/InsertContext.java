@@ -71,6 +71,10 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         if (domainStmt instanceof _Insert._ChildInsert) {
             nonChildStmt = ((_Insert._ChildInsert) domainStmt).parentStmt();
         } else {
+            if (domainStmt instanceof _Insert._QueryInsert) {
+                //validate,because criteria implementation can't do this
+                ((_Insert._QueryInsert) domainStmt).validateOnlyParen();
+            }
             nonChildStmt = domainStmt;
         }
         this.insertTable = nonChildStmt.table();
@@ -102,7 +106,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         } else if (nonChildStmt instanceof _Insert._AssignmentInsert) {
             final Map<FieldMeta<?>, _Expression> fieldMap;
             fieldMap = ((_Insert._AssignmentInsert) nonChildStmt).assignmentMap();
-            this.fieldList = createNonChildFieldList((SingleTableMeta<?>) this.insertTable,fieldMap::containsKey);
+            this.fieldList = createNonChildFieldList((SingleTableMeta<?>) this.insertTable, fieldMap::containsKey);
         } else {
             assert !(nonChildStmt instanceof _Insert._QueryInsert);
             this.fieldList = castFieldList(this.insertTable);
@@ -329,7 +333,8 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
     @Override
     public List<Selection> selectionList() {
-        return super.selectionList();
+        //TODO optimize for postgre
+        return Collections.emptyList();
     }
 
     @Override
@@ -422,7 +427,6 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         list = table.fieldList();
         return (List<FieldMeta<?>>) list;
     }
-
 
 
     private static List<FieldMeta<?>> createNonChildFieldList(final SingleTableMeta<?> insertTable

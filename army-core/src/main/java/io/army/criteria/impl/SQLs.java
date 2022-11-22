@@ -44,8 +44,8 @@ public abstract class SQLs extends SQLsSyntax {
     static final Function<TypeInfer, TypeInfer> _IDENTITY = SQLs::_identity;
 
 
-    public static StandardInsert._PrimaryOptionSpec singleInsert() {
-        return StandardInserts.primaryInsert();
+    public static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
+        return StandardInserts.primaryInsert(SQLs::_identity);
     }
 
     public static StandardUpdate._DomainUpdateClause domainUpdate() {

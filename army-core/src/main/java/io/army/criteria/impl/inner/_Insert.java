@@ -150,6 +150,13 @@ public interface _Insert extends _Statement {
 
     interface _QueryInsert extends _ColumnListInsert {
 
+        /**
+         * <p>
+         * This method is invoked by {@link io.army.dialect._QueryInsertContext} for validate parent discriminator.
+         * </p>
+         */
+        void validateOnlyParen();
+
         SubQuery subQuery();
 
     }

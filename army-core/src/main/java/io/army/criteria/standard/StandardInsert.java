@@ -5,7 +5,7 @@ import io.army.criteria.Insert;
 import io.army.criteria.Item;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
-import io.army.meta.SimpleTableMeta;
+import io.army.meta.SingleTableMeta;
 
 /**
  * <p>
@@ -47,32 +47,32 @@ public interface StandardInsert extends StandardStatement {
 
     }
 
-    interface _ChildInsertIntoClause<P> extends Item {
+    interface _ChildInsertIntoClause<I extends Item, P> extends Item {
 
-        <T> _ColumnListSpec<T, Insert> insertInto(ComplexTableMeta<P, T> table);
-
-    }
-
-
-    interface _PrimaryInsertIntoClause {
-
-        <T> _ColumnListSpec<T, Insert> insertInto(SimpleTableMeta<T> table);
-
-        <P> _ColumnListSpec<P, Insert._ParentInsert<_ChildInsertIntoClause<P>>> insertInto(ParentTableMeta<P> table);
-    }
-
-    interface _PrimaryPreferLiteralSpec extends Insert._PreferLiteralClause<_PrimaryInsertIntoClause>
-            , _PrimaryInsertIntoClause {
+        <T> _ColumnListSpec<T, I> insertInto(ComplexTableMeta<P, T> table);
 
     }
 
-    interface _PrimaryNullOptionSpec extends Insert._NullOptionClause<_PrimaryPreferLiteralSpec>
-            , _PrimaryPreferLiteralSpec {
+
+    interface _PrimaryInsertIntoClause<I extends Item> {
+
+        <T> _ColumnListSpec<T, I> insertInto(SingleTableMeta<T> table);
+
+        <P> _ColumnListSpec<P, Insert._ParentInsert<_ChildInsertIntoClause<I, P>>> insertInto(ParentTableMeta<P> table);
+    }
+
+    interface _PrimaryPreferLiteralSpec<I extends Item>
+            extends Insert._PreferLiteralClause<_PrimaryInsertIntoClause<I>>, _PrimaryInsertIntoClause<I> {
 
     }
 
-    interface _PrimaryOptionSpec extends Insert._MigrationOptionClause<_PrimaryNullOptionSpec>
-            , _PrimaryNullOptionSpec {
+    interface _PrimaryNullOptionSpec<I extends Item> extends Insert._NullOptionClause<_PrimaryPreferLiteralSpec<I>>,
+            _PrimaryPreferLiteralSpec<I> {
+
+    }
+
+    interface _PrimaryOptionSpec<I extends Item> extends Insert._MigrationOptionClause<_PrimaryNullOptionSpec<I>>,
+            _PrimaryNullOptionSpec<I> {
 
     }
 

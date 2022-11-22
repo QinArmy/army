@@ -333,7 +333,7 @@ abstract class MySQLReplaces extends InsertSupport {
         private PrimarySimpleDomainReplaceStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
             assert clause.insertTable instanceof SimpleTableMeta;
-            this.domainList = clause.domainListForNonParent();
+            this.domainList = clause.domainListForSingle();
         }
 
         @Override

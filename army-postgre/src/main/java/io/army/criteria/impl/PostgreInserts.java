@@ -1036,7 +1036,6 @@ abstract class PostgreInserts extends InsertSupport {
 
         @Override
         public PostgreInsert._ValuesLeftParenClause<T, I, Q> values() {
-            this.endColumnListClause(InsertMode.VALUES);
             return new StaticValuesLeftParenClause<>(this);
         }
 
@@ -1397,7 +1396,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         private PrimaryDomainInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
-            this.domainList = clause.domainListForNonParent();
+            this.domainList = clause.domainListForSingle();
         }
 
         @Override
@@ -1494,7 +1493,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         private PrimaryDomainReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
-            this.domainList = clause.domainListForNonParent();
+            this.domainList = clause.domainListForSingle();
         }
 
         @Override
@@ -1592,7 +1591,7 @@ abstract class PostgreInserts extends InsertSupport {
             if (clause.insertTable instanceof ParentTableMeta) {
                 this.domainList = _CollectionUtils.asUnmodifiableList(clause.originalDomainList());
             } else {
-                this.domainList = clause.domainListForNonParent();
+                this.domainList = clause.domainListForSingle();
             }
         }
 
@@ -1614,7 +1613,7 @@ abstract class PostgreInserts extends InsertSupport {
             if (clause.insertTable instanceof ParentTableMeta) {
                 this.domainList = _CollectionUtils.asUnmodifiableList(clause.originalDomainList());
             } else {
-                this.domainList = clause.domainListForNonParent();
+                this.domainList = clause.domainListForSingle();
             }
         }
 

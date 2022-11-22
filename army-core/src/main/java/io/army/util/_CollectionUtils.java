@@ -6,6 +6,7 @@ import java.util.*;
 
 public abstract class _CollectionUtils extends io.qinarmy.util.CollectionUtils {
 
+
     public static <T> List<T> safeUnmodifiableList(@Nullable List<T> list) {
         if (list == null) {
             return Collections.emptyList();

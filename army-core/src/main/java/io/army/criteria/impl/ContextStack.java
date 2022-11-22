@@ -50,6 +50,7 @@ abstract class ContextStack {
         }
         if (context.getOuterContext() == null) {
             stack.clear(context);
+            HOLDER.remove();
         } else {
             stack.pop(context);
         }
@@ -96,14 +97,6 @@ abstract class ContextStack {
     }
 
 
-
-    private static CriteriaException noContextStack() {
-        String m;
-        m = "Not found any primary query context, so context stack of sub query ( or with clause ) have cleared.";
-        return new CriteriaException(m);
-    }
-
-
     static CriteriaException criteriaError(CriteriaContext criteriaContext, Supplier<CriteriaException> supplier) {
         clearStackOnError(criteriaContext);
         return supplier.get();
@@ -122,13 +115,6 @@ abstract class ContextStack {
         }
     }
 
-    @Deprecated
-    static void assertFunctionExp(CriteriaContext criteriaContext, @Nullable Expression expression) {
-        if (!(expression instanceof ArmyExpression)) {
-            clearStackOnError(criteriaContext);
-            throw new CriteriaException("function must return non-null army expression");
-        }
-    }
 
     static CriteriaException castCriteriaApi(CriteriaContext criteriaContext) {
         clearStackOnError(criteriaContext);
@@ -151,14 +137,15 @@ abstract class ContextStack {
         return function.apply(input);
     }
 
-    static <T> CriteriaException criteriaError(CriteriaContext criteriaContext, Function<T, CriteriaException> function
-            , @Nullable T input) {
+    static <T> CriteriaException criteriaError(CriteriaContext criteriaContext,
+                                               Function<T, CriteriaException> function, @Nullable T input) {
         clearStackOnError(criteriaContext);
         return function.apply(input);
     }
 
-    static <T, U> CriteriaException criteriaError(CriteriaContext criteriaContext, BiFunction<T, U, CriteriaException> function
-            , @Nullable T input, @Nullable U input2) {
+    static <T, U> CriteriaException criteriaError(CriteriaContext criteriaContext,
+                                                  BiFunction<T, U, CriteriaException> function,
+                                                  @Nullable T input, @Nullable U input2) {
         clearStackOnError(criteriaContext);
         return function.apply(input, input2);
     }
@@ -182,6 +169,13 @@ abstract class ContextStack {
             stack.clearOnError();
         }
 
+    }
+
+
+    private static CriteriaException noContextStack() {
+        String m;
+        m = "Not found any primary query context, so context stack of sub query ( or with clause ) have cleared.";
+        return new CriteriaException(m);
     }
 
 

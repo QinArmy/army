@@ -1,11 +1,9 @@
 package io.army.criteria.standard.unit;
 
+import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.SQLs;
-import io.army.dialect.Database;
-import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,22 +20,23 @@ public class StandardInsertUnitTests extends StandardUnitTests {
     private static final Logger LOG = LoggerFactory.getLogger(StandardInsertUnitTests.class);
 
 
-    @Test
+    @Test//(invocationCount = 100)
     public void domainInsertParent() {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
         final Insert stmt;
         stmt = SQLs.singleInsert()
 //                .migration(true)
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
-                .leftParen(ChinaRegion_.regionGdp, ChinaRegion_.parentId)
-                .rightParen()
+                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .defaultValue(ChinaRegion_.parentId, SQLs::literal, 0)
                 .values(this::createRegionList)
                 .asInsert();
 
-        printStmt(stmt);
+        printStmt(LOG, stmt);
 
     }
 
@@ -52,12 +51,14 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .insertInto(ChinaRegion_.T)
                 .values(provinceList)
                 .asInsert()
+
                 .child()
+
                 .insertInto(ChinaProvince_.T)
                 .values(provinceList)
                 .asInsert();
 
-        printStmt(stmt);
+        printStmt(LOG, stmt);
 
     }
 
@@ -82,7 +83,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .rightParen()
                 .asInsert();
 
-        printStmt(stmt);
+        printStmt(LOG, stmt);
     }
 
     @Test
@@ -103,7 +104,9 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .leftParen(ChinaRegion_.name, SQLs::literal, "光明顶")
                 .comma(ChinaRegion_.parentId, SQLs::param, 0)
                 .rightParen()
+
                 .asInsert()
+
                 .child()
 
                 .insertInto(ChinaCity_.T)
@@ -118,25 +121,27 @@ public class StandardInsertUnitTests extends StandardUnitTests {
 
                 .asInsert();
 
-        printStmt(stmt);
+        printStmt(LOG, stmt);
     }
 
     @Test
     public void queryInsertParent() {
         final Insert stmt;
         stmt = SQLs.singleInsert()
+                .migration(true)
                 .insertInto(ChinaRegion_.T)
-                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
+                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
+                .comma(ChinaRegion_.visible, ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.regionType)
                 .rightParen()
-
                 .space()
-
-                .select(ChinaRegion_.id, ChinaRegion_.createTime)
+                .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
+                .comma(ChinaRegion_.visible, ChinaRegion_.name, ChinaRegion_.regionGdp)
+                .comma(SQLs.literalFrom(RegionType.NONE), AS, ChinaRegion_.REGION_TYPE)
                 .from(ChinaRegion_.T, AS, "r")
                 .asQuery()
                 .asInsert();
 
-        printStmt(stmt);
+        printStmt(LOG, stmt);
 
     }
 
@@ -145,16 +150,15 @@ public class StandardInsertUnitTests extends StandardUnitTests {
     public void singleTableSubQueryInsert() {
         final Insert stmt;
         stmt = SQLs.singleInsert()
+                .migration(true)
                 .insertInto(ChinaRegion_.T)
-                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
-                .comma(ChinaRegion_.updateTime, ChinaRegion_.version)
-                .comma(ChinaRegion_.regionType, ChinaRegion_.regionGdp)
+                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
+                .comma(ChinaRegion_.visible, ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.regionType)
                 .rightParen()
-                // below sub query is test case,not real.
                 .space()
                 .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
-                .comma(ChinaRegion_.regionGdp)
-                .comma(SQLs::literalFrom, () -> RegionType.CITY, AS, ChinaRegion_.REGION_TYPE)
+                .comma(ChinaRegion_.visible, ChinaRegion_.name, ChinaRegion_.regionGdp)
+                .comma(SQLs.literalFrom(RegionType.PROVINCE), AS, ChinaRegion_.REGION_TYPE)
                 .from(ChinaRegion_.T, AS, "r")
                 .asQuery()
                 .asInsert()
@@ -167,38 +171,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .space()
                 .select(ChinaProvince_.id, ChinaProvince_.governor)
                 .from(ChinaProvince_.T, AS, "c")
-                .asQuery()
-                .asInsert();
-
-        printStmt(LOG, stmt);
-    }
-
-    @Test
-    public void childTableSubQueryInsert() {
-        final Insert stmt;
-        stmt = SQLs.singleInsert()
-                .insertInto(ChinaRegion_.T)
-
-                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
-                .comma(ChinaRegion_.updateTime, ChinaRegion_.regionType)
-                .comma(ChinaRegion_.regionGdp)
-                .rightParen()
-                // below sub query is test case,not real.
-                .space()
-                .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.regionGdp)
-                .comma(SQLs.literalFrom(RegionType.CITY), AS, ChinaRegion_.REGION_TYPE)
-                .from(ChinaRegion_.T, SQLs.AS, "r")
-                .asQuery()
-                .asInsert()
-                .child()
-
-                .insertInto(ChinaCity_.T)
-                .leftParen(ChinaCity_.id, ChinaCity_.mayorName)
-                .rightParen()
-                // below sub query is test case,not real.
-                .space()
-                .select(ChinaCity_.id, ChinaCity_.mayorName)
-                .from(ChinaCity_.T, AS, "r")
+                .join(ChinaRegion_.T, AS, "p").on(ChinaProvince_.id::equal, ChinaRegion_.id)
                 .asQuery()
                 .asInsert();
 
@@ -232,21 +205,6 @@ public class StandardInsertUnitTests extends StandardUnitTests {
             domainList.add(p);
         }
         return domainList;
-    }
-
-
-    private static void printStmt(final Insert insert) {
-        String sql;
-        for (Database database : Database.values()) {
-            for (Dialect dialect : database.dialects()) {
-                sql = insert.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
-                // sql = insert.toString();
-                //insert.mockAsStmt(dialect, Visible.ONLY_VISIBLE);
-                LOG.debug("{}:\n{}", dialect.name(), sql);
-            }
-        }
-
-
     }
 
 

@@ -5,7 +5,6 @@ import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillPerson_;
-import io.army.example.pill.domain.PillUser;
 import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.PillUserType;
 import org.slf4j.Logger;
@@ -14,7 +13,10 @@ import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static io.army.criteria.impl.SQLs.*;
 
@@ -150,14 +152,14 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     @Test
     public void simpleSubQuery() {
 
-        final PillUser u = new PillUser();
-        final Map<String, Object> map = Collections.emptyMap();
+        final Map<String, Object> map = new HashMap<>();
+        map.put("nickName", "蛮吉");
+
         final Select stmt;
         stmt = SQLs.query()
                 .select(PillUser_.nickName)
                 .from(PillUser_.T, AS, "u")
-                .where(PillUser_.nickName.equal(SQLs::param, "蛮吉"))
-                .and(PillUser_.nickName::equal, SQLs::param, () -> "蛮吉")
+                .where(PillUser_.nickName::equal, SQLs::param, map::get, "nickName")
                 .and(SQLs::exists, () -> SQLs.subQuery()
                         .select(ChinaProvince_.id)
                         .from(ChinaProvince_.T, AS, "p")
@@ -248,7 +250,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
     }
 
-    @Test
+    @Test(invocationCount = 10)
     public void bracketQuery() {
         final Select stmt;
         stmt = SQLs.query()

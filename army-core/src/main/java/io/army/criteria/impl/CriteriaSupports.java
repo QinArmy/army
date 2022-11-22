@@ -229,6 +229,8 @@ abstract class CriteriaSupports {
             final Stmt stmt;
             if (this instanceof Select) {
                 stmt = parser.select((Select) this, visible);
+            } else if (this instanceof Insert) {
+                stmt = parser.insert((Insert) this, visible);
             } else if (this instanceof Update) {
                 stmt = parser.update((Update) this, visible);
             } else if (this instanceof Delete) {
@@ -239,14 +241,13 @@ abstract class CriteriaSupports {
                 stmt = parser.dialectDql((DqlStatement) this, visible);
             } else if (this instanceof DmlStatement) {
                 stmt = parser.dialectDml((DmlStatement) this, visible);
-            }else {
+            } else {
                 throw new IllegalStateException("unknown statement");
             }
             return stmt;
         }
 
     }//StatementMockSupport
-
 
 
     static class ParenStringConsumerClause<RR>
