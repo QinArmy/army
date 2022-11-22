@@ -23,6 +23,7 @@ abstract class CodeEnumHelper {
 
     @SuppressWarnings("unchecked")
     static <T extends Enum<T> & CodeEnum> Map<Integer, T> getMap(final Class<T> enumClass) {
+
         return (Map<Integer, T>) CODE_MAP_HOLDER.computeIfAbsent(enumClass, CodeEnumHelper::createCodeMap);
     }
 

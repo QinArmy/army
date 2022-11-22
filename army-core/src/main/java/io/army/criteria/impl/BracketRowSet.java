@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._ParensRowSet;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.util._Assert;
 
@@ -8,14 +9,16 @@ import java.util.List;
 
 @SuppressWarnings("unchecked")
 abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
-        extends LimitRowOrderByClause<OR, LR, LO, LF> implements _PartRowSet
-        , Query._QueryUnionClause<SP>
-        , Query._QueryIntersectClause<SP>
-        , Query._QueryExceptClause<SP>
-        , Query._QueryMinusClause<SP>
-        , TabularItem.DerivedTableSpec
-        , Query._AsQueryClause<I>, Statement._RightParenClause<RR>
-        , RowSet{
+        extends LimitRowOrderByClause<OR, LR, LO, LF>
+        implements _ParensRowSet,
+        Query._QueryUnionClause<SP>,
+        Query._QueryIntersectClause<SP>,
+        Query._QueryExceptClause<SP>,
+        Query._QueryMinusClause<SP>,
+        TabularItem.DerivedTableSpec,
+        Query._AsQueryClause<I>,
+        Statement._RightParenClause<RR>,
+        RowSet {
 
 
     private RowSet rowSet;
@@ -99,6 +102,15 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         return this.onAsQuery();
     }
 
+
+    @Override
+    public final RowSet innerRowSet() {
+        final RowSet rowSet = this.rowSet;
+        if (rowSet == null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return rowSet;
+    }
 
     @Override
     public final int selectionSize() {

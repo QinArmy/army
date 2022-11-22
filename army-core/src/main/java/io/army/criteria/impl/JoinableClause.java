@@ -2,9 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._DialectTableBlock;
+import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
-import io.army.criteria.impl.inner._TableItemGroup;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -530,7 +530,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
 
     static abstract class NestedLeftParenClause<I extends Item>
-            implements _TableItemGroup, NestedItems {
+            implements _NestedItems {
 
         final CriteriaContext context;
 
@@ -547,16 +547,14 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
             this.function = function;
         }
 
-
         @Override
-        public final List<? extends _TableBlock> tableGroup() {
+        public final List<_TableBlock> tableBlockList() {
             final List<_TableBlock> blockList = this.blockList;
             if (blockList == null || blockList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             return blockList;
         }
-
 
         final void onAddTableBlock(final _TableBlock block) {
             final List<_TableBlock> blockList = this.blockList;

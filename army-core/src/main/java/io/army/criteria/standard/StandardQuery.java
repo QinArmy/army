@@ -30,7 +30,7 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _UnionSpec<I extends Item> extends _AsQueryClause<I>, _QueryUnionClause<_SelectSpec<I>> {
+    interface _UnionSpec<I extends Item> extends _AsQueryClause<I>, _QueryUnionClause<_SelectComplexUnionSpec<I>> {
 
     }
 

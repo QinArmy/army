@@ -969,9 +969,6 @@ abstract class ArmyParser implements DialectParser {
         final boolean tableOnlyModifier = this.tableOnlyModifier;
         for (int i = 0; i < blockSize; i++) {
             block = tableBlockList.get(i);
-            if (block instanceof _DialectTableBlock) {
-                throw _Exceptions.nonStandardTableBlock(block);
-            }
             joinType = block.jointType();
             if (i > 0) {
                 sqlBuilder.append(joinType.render());
@@ -1057,29 +1054,19 @@ abstract class ArmyParser implements DialectParser {
 
         }
 
-        if (context.visible() == Visible.BOTH) {
-            return;
-        }
+        if (predicateSize == 0) {
+            final int startIndex, endIndex;
 
-        TabularItem tableItem;
-        String safeTableAlias;
-        SingleTableMeta<?> table;
-        int count = 0;
-        for (_TableBlock block : tableBlockList) {
-            tableItem = block.tableItem();
-            if (!(tableItem instanceof SingleTableMeta)) {
-                continue;
+            startIndex = builder.length();
+            builder.append(_Constant.SPACE_WHERE);
+            endIndex = builder.length();
+
+            multiTableVisible(tableBlockList, context, true);
+            if (builder.length() == endIndex) {
+                builder.setLength(startIndex);
             }
-            table = (SingleTableMeta<?>) tableItem;
-            if (!table.containField(_MetaBridge.VISIBLE)) {
-                continue;
-            }
-            safeTableAlias = context.safeTableAlias(block.alias());
-            if (count == 0 && predicateSize == 0) {
-                builder.append(_Constant.SPACE_WHERE);
-            }
-            this.visiblePredicate(table, safeTableAlias, context, count == 0 && predicateSize == 0);
-            count++;
+        } else {
+            multiTableVisible(tableBlockList, context, false);
         }
 
     }
@@ -1248,9 +1235,11 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
+     * @return the number of appending visible
      * @see #parseStandardQuery(_StandardQuery, _SimpleQueryContext)
+     * @see #queryWhereClause(List, List, _MultiTableStmtContext)
      */
-    protected final void multiTableVisible(final List<_TableBlock> blockList, final _MultiTableStmtContext context
+    protected final int multiTableVisible(final List<_TableBlock> blockList, final _MultiTableStmtContext context
             , final boolean firstPredicate) {
         TabularItem tableItem;
         String safeTableAlias;
@@ -1258,6 +1247,12 @@ abstract class ArmyParser implements DialectParser {
         int count = 0;
         for (_TableBlock block : blockList) {
             tableItem = block.tableItem();
+            if (tableItem instanceof NestedItems) {
+                count += multiTableVisible(((_NestedItems) tableItem).tableBlockList(), context,
+                        firstPredicate && count == 0);
+                continue;
+            }
+
             if (!(tableItem instanceof SingleTableMeta)) {
                 continue;
             }
@@ -1269,7 +1264,7 @@ abstract class ArmyParser implements DialectParser {
             this.visiblePredicate(table, safeTableAlias, context, firstPredicate && count == 0);
             count++;
         }
-
+        return count;
     }
 
 

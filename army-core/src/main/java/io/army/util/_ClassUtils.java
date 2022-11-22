@@ -36,5 +36,16 @@ public abstract class _ClassUtils {
         return value == null ? null : value.getClass().getName();
     }
 
+    public static Class<?> getEnumClass(Class<?> clazz) {
+        if (!Enum.class.isAssignableFrom(clazz)) {
+            String m = String.format("%s isn't enum", clazz.getName());
+            throw new IllegalArgumentException(m);
+        }
+        if (clazz.isAnonymousClass()) {
+            clazz = clazz.getSuperclass();
+        }
+        return clazz;
+    }
+
 
 }

@@ -1,8 +1,8 @@
 package io.army.criteria.standard.unit;
 
-import io.army.criteria.Insert;
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
+import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillPerson_;
 import io.army.example.pill.domain.PillUser;
@@ -23,8 +23,8 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     private static final Logger LOG = LoggerFactory.getLogger(StandardQueryUnitTests.class);
 
 
-    @Test
-    public void selectCaseFunc() {
+    @Test//(invocationCount = 10)
+    public void caseFunction() {
         Select stmt;
         stmt = SQLs.query()
                 .select(SQLs::cases)
@@ -39,7 +39,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     }
 
     @Test
-    public void selectScalarQuery() {
+    public void scalarSubQuery() {
         Select stmt;
         stmt = SQLs.query()
                 .select(() -> SQLs.scalarSubQuery()
@@ -55,7 +55,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
 
     @Test
-    public void simpleSingleSelect() {
+    public void singleDomain() {
         final Select stmt;
 
         stmt = SQLs.query()
@@ -70,7 +70,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     }
 
     @Test
-    public void simpleChildSelect() {
+    public void complexDomain() {
         final Select stmt;
         stmt = SQLs.query()
                 .select("u", PERIOD, PillUser_.T, "p", PERIOD, PillPerson_.T)
@@ -86,8 +86,6 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .asQuery()
                 )
                 //.and(User_.visible.equal(false))
-                .groupBy(PillPerson_.birthday)
-                .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
                 .orderBy(PillPerson_.id, SQLs.DESC)
                 .limit(SQLs::literal, 0, 10)
                 .forUpdate()
@@ -191,73 +189,81 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .asQuery()
                 )
                 .as("us")
-                .where(SQLs.refThis("us", "one")::equal, SQLs::param, () -> "1")
+                .where(refThis("us", "one")::equal, SQLs::param, () -> "1")
                 .asQuery();
 
         printStmt(LOG, stmt);
     }
 
     @Test
-    public void singleTableSubQueryInsert() {
-        final Insert stmt;
-        stmt = SQLs.singleInsert()
-                .insertInto(ChinaRegion_.T)
-                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
-                .comma(ChinaRegion_.updateTime, ChinaRegion_.regionType)
-                .comma(ChinaRegion_.regionGdp)
-                .rightParen()
-                // below sub query is test case,not real.
-                .space()
-                .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.regionGdp)
-                .comma(SQLs::literalFrom, () -> RegionType.CITY, AS, ChinaRegion_.REGION_TYPE)
-                .from(ChinaRegion_.T, AS, "r")
-                .asQuery()
-                .asInsert()
+    public void nestedJoin() {
+        final Select stmt;
+        stmt = SQLs.query()
+                .select(BankPerson_.id, AS, "userId", SQLs.refThis("cr", "id"), AS, "regionId")
+                .comma(SQLs.refThis("cr", "name"), AS, "regionName")
+                .from()
 
-                .child()
-
-                .insertInto(ChinaProvince_.T)
-                .leftParen(ChinaProvince_.id, ChinaProvince_.governor)
+                .leftParen(BankPerson_.T, AS, "up")
+                .join(BankUser_.T, AS, "u").on(BankPerson_.id::equal, BankUser_.id)
                 .rightParen()
-                .space()
-                .select(ChinaProvince_.id, ChinaProvince_.governor)
-                .from(ChinaProvince_.T, AS, "c")
-                .asQuery()
-                .asInsert();
+
+                .join(BankAccount_.T, AS, "a").on(BankPerson_.id::equal, BankAccount_.userId)
+                .crossJoin(() -> SQLs.subQuery()
+                        .select(ChinaRegion_.id, ChinaRegion_.name)
+                        .from(ChinaRegion_.T, AS, "c")
+                        .where(ChinaRegion_.name::equal, SQLs::literal, () -> "荒''''\n\032'海")
+                        .asQuery()
+                ).as("cr")
+                .asQuery();
 
         printStmt(LOG, stmt);
+
     }
 
     @Test
-    public void childTableSubQueryInsert() {
-        final Insert stmt;
-        stmt = SQLs.singleInsert()
-                .insertInto(ChinaRegion_.T)
+    public void dynamicJoin() {
+        final Select stmt;
+        stmt = SQLs.query()
+                .select(BankPerson_.id, AS, "userId", SQLs.refThis("cr", "id"), AS, "regionId")
+                .comma(SQLs.refThis("cr", "name"), AS, "regionName")
+                .from()
 
-                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
-                .comma(ChinaRegion_.updateTime, ChinaRegion_.regionType)
-                .comma(ChinaRegion_.regionGdp)
+                .leftParen(BankPerson_.T, AS, "up")
+                .join(BankUser_.T, AS, "u").on(BankPerson_.id::equal, BankUser_.id)
                 .rightParen()
-                // below sub query is test case,not real.
-                .space()
-                .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.regionGdp)
-                .comma(SQLs.literalFrom(RegionType.CITY), AS, ChinaRegion_.REGION_TYPE)
-                .from(ChinaRegion_.T, SQLs.AS, "r")
-                .asQuery()
-                .asInsert()
-                .child()
 
-                .insertInto(ChinaCity_.T)
-                .leftParen(ChinaCity_.id, ChinaCity_.mayorName)
-                .rightParen()
-                // below sub query is test case,not real.
-                .space()
-                .select(ChinaCity_.id, ChinaCity_.mayorName)
-                .from(ChinaCity_.T, AS, "r")
-                .asQuery()
-                .asInsert();
+                .join(BankAccount_.T, AS, "a").on(BankPerson_.id::equal, BankAccount_.userId)
+                .ifCrossJoin(s -> s.tabular((() -> SQLs.subQuery()
+                                                .select(ChinaRegion_.id, ChinaRegion_.name)
+                                                .from(ChinaRegion_.T, AS, "c")
+                                                .where(ChinaRegion_.name::equal, SQLs::literal, () -> "荒''''\n\032'海")
+                                                .asQuery()
+                                        )
+                                )
+                                .as("cr")
+                )
+                .asQuery();
 
         printStmt(LOG, stmt);
+
+    }
+
+    @Test
+    public void bracketQuery() {
+        final Select stmt;
+        stmt = SQLs.query()
+
+                .leftParen()
+                .select(ChinaRegion_.id, ChinaRegion_.name)
+                .from(ChinaRegion_.T, AS, "r")
+                .where(ChinaRegion_.name.equal(SQLs::literal, "万诗之海"))
+                .asQuery()
+                .rightParen()
+
+                .asQuery();
+
+        printStmt(LOG, stmt);
+
     }
 
 

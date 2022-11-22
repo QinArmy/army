@@ -668,13 +668,13 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
 
     @Override
-    public final GR groupBy(SortItem sortItem) {
+    public final GR groupBy(Expression sortItem) {
         this.groupByList = Collections.singletonList((ArmySortItem) sortItem);
         return (GR) this;
     }
 
     @Override
-    public final GR groupBy(SortItem sortItem1, SortItem sortItem2) {
+    public final GR groupBy(Expression sortItem1, Expression sortItem2) {
         this.groupByList = ArrayUtils.asUnmodifiableList(
                 (ArmySortItem) sortItem1,
                 (ArmySortItem) sortItem2
@@ -683,7 +683,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final GR groupBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
+    public final GR groupBy(Expression sortItem1, Expression sortItem2, Expression sortItem3) {
         this.groupByList = ArrayUtils.asUnmodifiableList(
                 (ArmySortItem) sortItem1,
                 (ArmySortItem) sortItem2,
@@ -694,14 +694,14 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
 
     @Override
-    public final GR groupBy(Consumer<Consumer<SortItem>> consumer) {
+    public final GR groupBy(Consumer<Consumer<Expression>> consumer) {
         consumer.accept(this::addGroupByItem);
         return this.endGroupBy(true);
     }
 
 
     @Override
-    public final GR ifGroupBy(Consumer<Consumer<SortItem>> consumer) {
+    public final GR ifGroupBy(Consumer<Consumer<Expression>> consumer) {
         consumer.accept(this::addGroupByItem);
         return this.endGroupBy(false);
     }
@@ -757,7 +757,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final HR having(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand) {
+    public final HR having(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand,
+                           Supplier<?> secondOperand) {
         if (this.groupByList != null) {
             this.having(operator.apply(firstOperand.get(), secondOperand.get()));
         }
@@ -765,7 +766,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final HR having(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey) {
+    public final HR having(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand,
+                           String firstKey, String secondKey) {
         if (this.groupByList != null) {
             this.having(operator.apply(operand.apply(firstKey), operand.apply(secondKey)));
         }

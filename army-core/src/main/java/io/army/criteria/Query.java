@@ -427,15 +427,15 @@ public interface Query extends RowSet {
 
     interface _GroupByClause<GR> {
 
-        GR groupBy(SortItem sortItem);
+        GR groupBy(Expression sortItem);
 
-        GR groupBy(SortItem sortItem1, SortItem sortItem2);
+        GR groupBy(Expression sortItem1, Expression sortItem2);
 
-        GR groupBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3);
+        GR groupBy(Expression sortItem1, Expression sortItem2, Expression sortItem3);
 
-        GR groupBy(Consumer<Consumer<SortItem>> consumer);
+        GR groupBy(Consumer<Consumer<Expression>> consumer);
 
-        GR ifGroupBy(Consumer<Consumer<SortItem>> consumer);
+        GR ifGroupBy(Consumer<Consumer<Expression>> consumer);
 
     }
 

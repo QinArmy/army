@@ -43,9 +43,9 @@ public abstract class _MappingFactory {
     }
 
     @Nullable
-    public static MappingType getDefaultIfMatch(Class<?> javaType) {
+    public static MappingType getDefaultIfMatch(final Class<?> javaType) {
         final MappingType type;
-        if (!javaType.isEnum()) {
+        if (!Enum.class.isAssignableFrom(javaType)) {
             final Function<Class<?>, MappingType> function;
             function = DEFAULT_MAPPING_MAP.get(javaType);
             if (function == null) {

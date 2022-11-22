@@ -46,7 +46,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._LockSpec<I>, // LR
         Object,
         Object,
-        StandardQuery._SelectSpec<I>> // SP
+        StandardQuery._SelectComplexUnionSpec<I>> // SP
 
         implements StandardQuery,
         StandardQuery._SelectComplexUnionSpec<I>,//standard query no with clause,no values statement,so extends _SelectComplexUnionSpec
@@ -339,10 +339,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createQueryUnion(final UnionType unionType) {
-            UnionType.standardUnionType(this.context, unionType);
+        _SelectComplexUnionSpec<I> createQueryUnion(final UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
+            UnionType.standardUnionType(this.context, unionType);
             return new SimpleSelect<>(this.context.getOuterContext(), unionFunc, this.context);
         }
 
@@ -397,10 +397,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createQueryUnion(final UnionType unionType) {
-            UnionType.standardUnionType(this.context, unionType);
+        _SelectComplexUnionSpec<I> createQueryUnion(final UnionType unionType) {
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
+            UnionType.standardUnionType(this.context, unionType);
             return new SimpleSubQuery<>(this.context.getNonNullOuterContext(), unionFunc, this.context);
         }
 
@@ -422,7 +422,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             _AsQueryClause<I>,
             Object,
             Object,
-            _SelectSpec<I>> implements StandardQuery._UnionOrderBySpec<I> {
+            _SelectComplexUnionSpec<I>> implements StandardQuery._UnionOrderBySpec<I>,
+            StandardQuery {
 
 
         private StandardBracketQueries(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
@@ -456,7 +457,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createUnionRowSet(final UnionType unionType) {
+        _SelectComplexUnionSpec<I> createUnionRowSet(final UnionType unionType) {
             UnionType.standardUnionType(this.context, unionType);
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
@@ -484,7 +485,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createUnionRowSet(final UnionType unionType) {
+        _SelectComplexUnionSpec<I> createUnionRowSet(final UnionType unionType) {
             UnionType.standardUnionType(this.context, unionType);
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));

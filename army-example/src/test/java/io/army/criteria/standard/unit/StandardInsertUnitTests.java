@@ -17,7 +17,7 @@ import java.util.List;
 
 import static io.army.criteria.impl.SQLs.AS;
 
-public class StandardInsertUnitTests {
+public class StandardInsertUnitTests extends StandardUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(StandardInsertUnitTests.class);
 
@@ -132,12 +132,77 @@ public class StandardInsertUnitTests {
                 .space()
 
                 .select(ChinaRegion_.id, ChinaRegion_.createTime)
-                .from(ChinaRegion_.T, AS,"r")
+                .from(ChinaRegion_.T, AS, "r")
                 .asQuery()
                 .asInsert();
 
         printStmt(stmt);
 
+    }
+
+
+    @Test
+    public void singleTableSubQueryInsert() {
+        final Insert stmt;
+        stmt = SQLs.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
+                .comma(ChinaRegion_.updateTime, ChinaRegion_.version)
+                .comma(ChinaRegion_.regionType, ChinaRegion_.regionGdp)
+                .rightParen()
+                // below sub query is test case,not real.
+                .space()
+                .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
+                .comma(ChinaRegion_.regionGdp)
+                .comma(SQLs::literalFrom, () -> RegionType.CITY, AS, ChinaRegion_.REGION_TYPE)
+                .from(ChinaRegion_.T, AS, "r")
+                .asQuery()
+                .asInsert()
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .leftParen(ChinaProvince_.id, ChinaProvince_.governor)
+                .rightParen()
+                .space()
+                .select(ChinaProvince_.id, ChinaProvince_.governor)
+                .from(ChinaProvince_.T, AS, "c")
+                .asQuery()
+                .asInsert();
+
+        printStmt(LOG, stmt);
+    }
+
+    @Test
+    public void childTableSubQueryInsert() {
+        final Insert stmt;
+        stmt = SQLs.singleInsert()
+                .insertInto(ChinaRegion_.T)
+
+                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
+                .comma(ChinaRegion_.updateTime, ChinaRegion_.regionType)
+                .comma(ChinaRegion_.regionGdp)
+                .rightParen()
+                // below sub query is test case,not real.
+                .space()
+                .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.regionGdp)
+                .comma(SQLs.literalFrom(RegionType.CITY), AS, ChinaRegion_.REGION_TYPE)
+                .from(ChinaRegion_.T, SQLs.AS, "r")
+                .asQuery()
+                .asInsert()
+                .child()
+
+                .insertInto(ChinaCity_.T)
+                .leftParen(ChinaCity_.id, ChinaCity_.mayorName)
+                .rightParen()
+                // below sub query is test case,not real.
+                .space()
+                .select(ChinaCity_.id, ChinaCity_.mayorName)
+                .from(ChinaCity_.T, AS, "r")
+                .asQuery()
+                .asInsert();
+
+        printStmt(LOG, stmt);
     }
 
 

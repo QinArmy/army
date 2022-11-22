@@ -6,6 +6,7 @@ import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
+import io.army.util._ClassUtils;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,10 +22,10 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
 
     public static CodeEnumType from(final Class<?> fieldType) {
-        if (!fieldType.isEnum() || !CodeEnum.class.isAssignableFrom(fieldType)) {
+        if (!(Enum.class.isAssignableFrom(fieldType) && CodeEnum.class.isAssignableFrom(fieldType))) {
             throw errorJavaType(CodeEnumType.class, fieldType);
         }
-        return INSTANCE_MAP.computeIfAbsent(fieldType, CodeEnumType::new);
+        return INSTANCE_MAP.computeIfAbsent(_ClassUtils.getEnumClass(fieldType), CodeEnumType::new);
     }
 
     private final Class<?> enumClass;

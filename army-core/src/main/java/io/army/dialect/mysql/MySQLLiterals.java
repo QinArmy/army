@@ -29,6 +29,12 @@ abstract class MySQLLiterals extends _Literals {
                 }
                 break;
                 case _Constant.BACK_SLASH:
+                case _Constant.EMPTY_CHAR:
+                case '\b':
+                case '\n':
+                case '\r':
+                case '\t':
+                case '\032':
                     //army couldn't safely escapes
                     // ,because army don't known the current value of @@SESSION.sql_mode for (NO_BACKSLASH_ESCAPES).
                     existBackSlash = true;
@@ -39,8 +45,8 @@ abstract class MySQLLiterals extends _Literals {
         }
 
         if (existBackSlash) {
-            sqlBuilder.delete(startIndex, sqlBuilder.length())
-                    .append("_utf8mb4 0x")
+            sqlBuilder.setLength(startIndex);
+            sqlBuilder.append("_utf8mb4 0x")
                     .append(_Literals.hexEscapes(nonNull.getBytes(StandardCharsets.UTF_8)));
         } else {
             if (lastWritten < charArray.length) {

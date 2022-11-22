@@ -43,8 +43,18 @@ public interface CodeEnum {
 
     @SuppressWarnings("unchecked")
     @Nullable
-    static <T extends Enum<T> & CodeEnum> T resolve(Class<?> enumClass, int code) {
-        return CodeEnumHelper.getMap((Class<T>) enumClass).get(code);
+    static <T extends Enum<T> & CodeEnum> T resolve(final Class<?> enumClass, final int code) {
+        if (!(Enum.class.isAssignableFrom(enumClass) && CodeEnum.class.isAssignableFrom(enumClass))) {
+            String m = String.format("%s isn't %s type", enumClass, CodeEnum.class.getName());
+            throw new IllegalArgumentException(m);
+        }
+        final Class<T> actualClass;
+        if (enumClass.isAnonymousClass()) {
+            actualClass = (Class<T>) enumClass.getSuperclass();
+        } else {
+            actualClass = (Class<T>) enumClass;
+        }
+        return CodeEnumHelper.getMap(actualClass).get(code);
     }
 
 

@@ -61,8 +61,8 @@ abstract class CriteriaContexts {
 
     static void setAliasEventFunction(CriteriaContext queryContext, Function<TypeInfer, ? extends Item> function) {
         assert queryContext instanceof SimpleQueryContext;
-        assert ((SimpleQueryContext) queryContext).function == null;
-        ((SimpleQueryContext) queryContext).function = function;
+        assert ((JoinableContext) queryContext).function == SQLs._IDENTITY;
+        ((JoinableContext) queryContext).function = function;
     }
 
     @Deprecated
@@ -542,7 +542,8 @@ abstract class CriteriaContexts {
 
         @Override
         public Selection selection(String alias) {
-            throw ContextStack.criteriaError(this, "current context don't support selection(alias)");
+            String m = String.format("current context don't support selection(alias[%s])", alias);
+            throw ContextStack.criteriaError(this, m);
         }
 
         @Override
@@ -716,16 +717,17 @@ abstract class CriteriaContexts {
 
     private static abstract class JoinableContext extends StatementContext {
 
+        private List<_TableBlock> tableBlockList;
 
-        private List<_TableBlock> tableBlockList = new ArrayList<>();
-
-        private Map<String, _TableBlock> aliasToBlock = new HashMap<>();
+        private Map<String, _TableBlock> aliasToBlock;
 
         private Map<String, Map<String, RefDerivedField<?>>> aliasToRefDerivedField;
 
         private Map<String, Map<String, DerivedField>> aliasToDerivedField;
 
         private Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasFieldMap;
+
+        private Function<TypeInfer, ? extends Item> function = SQLs._IDENTITY;
 
         private boolean refOuter;
 
@@ -736,12 +738,17 @@ abstract class CriteriaContexts {
 
         @Override
         public final void onAddBlock(final _TableBlock block) {
-            final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
+            Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
+            List<_TableBlock> tableBlockList = this.tableBlockList;
             if (aliasToBlock == null) {
+                assert tableBlockList == null;
+                aliasToBlock = new HashMap<>();
+                this.aliasToBlock = aliasToBlock;
+                tableBlockList = new ArrayList<>();
+                this.tableBlockList = tableBlockList;
+            } else if (!(aliasToBlock instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this);
             }
-            final List<_TableBlock> tableBlockList = this.tableBlockList;
-            final int oldBlockSize = tableBlockList.size();
 
             final TabularItem tableItem = block.tableItem();
             String alias = block.alias();
@@ -763,34 +770,22 @@ abstract class CriteriaContexts {
             } else if (aliasToBlock.putIfAbsent(alias, block) != null) {
                 throw ContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
             } else if (tableItem instanceof DerivedTable) {
-                this.doOnAddDerived((DerivedTable) tableItem, alias);
+                this.doOnAddDerived(block, (DerivedTable) tableItem, alias);
             }
 
-            if (tableBlockList.size() != oldBlockSize) {
-                // no bug,never here
-                throw new IllegalStateException("addNestedItems error");
-            }
             tableBlockList.add(block); //add to list
 
         }
 
-
         @Override
         public final _TableBlock lastBlock() {
             final List<_TableBlock> tableBlockList = this.tableBlockList;
-            if (tableBlockList.size() == 0) {
-                throw _Exceptions.castCriteriaApi();
+            final int size;
+            size = tableBlockList.size();
+            if (size == 0) {
+                throw ContextStack.castCriteriaApi(this);
             }
-            final _TableBlock block;
-            block = tableBlockList.get(tableBlockList.size() - 1);
-            switch (block.jointType()) {
-                case NONE:
-                case CROSS_JOIN:
-                    break;
-                default:
-                    throw _Exceptions.castCriteriaApi();
-            }
-            return block;
+            return tableBlockList.get(size - 1);
         }
 
         @Override
@@ -810,7 +805,8 @@ abstract class CriteriaContexts {
         @SuppressWarnings("unchecked")
         @Override
         public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
-            if (!(this.aliasToBlock instanceof HashMap)) {
+            final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
+            if (aliasToBlock != null && !(aliasToBlock instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this);
             }
             Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasFieldMap = this.aliasFieldMap;
@@ -818,18 +814,24 @@ abstract class CriteriaContexts {
                 aliasFieldMap = new HashMap<>();
                 this.aliasFieldMap = aliasFieldMap;
             }
+            final Function<TypeInfer, ? extends Item> function = this.function;
+            assert function != null;
             return (QualifiedField<T>) aliasFieldMap.computeIfAbsent(tableAlias, k -> new HashMap<>())
                     .computeIfAbsent(field,
-                            alias -> QualifiedFieldImpl.create(tableAlias, field, this.getAsFunction()));
+                            alias -> QualifiedFieldImpl.create(tableAlias, field, function));
         }
 
         @Override
-        public final DerivedField refThis(String derivedTable, String fieldName) {
+        public final DerivedField refThis(final String derivedTable, final String fieldName) {
+            final _TableBlock block;
             final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
-            if (!(aliasToBlock instanceof HashMap)) {
+            if (aliasToBlock == null) {
+                block = null;
+            } else if (aliasToBlock instanceof HashMap) {
+                block = aliasToBlock.get(derivedTable);
+            } else {
                 throw ContextStack.castCriteriaApi(this);
             }
-            final _TableBlock block = aliasToBlock.get(derivedTable);
             final TabularItem tableItem;
             final DerivedField field;
             if (block == null) {
@@ -862,27 +864,35 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final List<_TableBlock> endContext() {
-            final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
-            if (!(aliasToBlock instanceof HashMap)) {
-                //no bug,never here
-                throw new IllegalStateException("duplication clear");
-            }
-            //1. clear super
-            super.endContext();
-            //2. validate aliasToBlock
-            final List<_TableBlock> blockList = _CollectionUtils.unmodifiableList(this.tableBlockList);
-            this.tableBlockList = blockList;//store for recursive checking
-            final int blockSize = blockList.size();
-            if (blockSize == 0 && !(this instanceof SimpleQueryContext)) {
+        public final CriteriaContext endContextBeforeSelect() {
+            assert this instanceof SimpleQueryContext;
+            if (this.aliasToBlock != null
+                    || this.tableBlockList != null
+                    || this.aliasToRefDerivedField != null
+                    || ((SimpleQueryContext) this).selectItemList != null) {
                 throw ContextStack.castCriteriaApi(this);
             }
-            if (aliasToBlock.size() < blockSize) {// probably NestedItems
-                //no bug,never here
-                throw new IllegalStateException("block size  match.");
-            }
-            this.aliasToBlock = Collections.unmodifiableMap(aliasToBlock);// unmodifiable
+            ((SimpleQueryContext) this).selectItemList = Collections.emptyList();
+            return this;
+        }
 
+        @Override
+        final List<_TableBlock> onEndContext() {
+            final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
+            if (aliasToBlock != null && !(aliasToBlock instanceof HashMap)) {
+                //no bug,never here
+                throw ContextStack.castCriteriaApi(this);
+            }
+            final List<_TableBlock> blockList;
+            blockList = _CollectionUtils.safeUnmodifiableList(this.tableBlockList);
+            //2. validate aliasToBlock
+            final int blockSize = blockList.size();
+            if (blockSize == 0 && !(this instanceof SimpleQueryContext)) {//TODO optimize for postgre
+                throw ContextStack.castCriteriaApi(this);
+            }
+            assert aliasToBlock == null || aliasToBlock.size() >= blockSize;
+            this.tableBlockList = blockList;//store for recursive checking
+            this.aliasToBlock = _CollectionUtils.safeUnmodifiableMap(aliasToBlock);// unmodifiable
 
             //3. validate aliasToRefSelection
             final Map<String, Map<String, RefDerivedField<?>>> aliasToRefSelection = this.aliasToRefDerivedField;
@@ -917,12 +927,17 @@ abstract class CriteriaContexts {
             return blockList;
         }
 
-
-        private void doOnAddDerived(final DerivedTable derivedTable, final String alias) {
+        /**
+         * @see #onAddBlock(_TableBlock)
+         * @see #addNestedItems(NestedItems)
+         */
+        private void doOnAddDerived(final _TableBlock block, final DerivedTable derivedTable, final String alias) {
             if (derivedTable instanceof SubQuery) {
                 final CriteriaContext context = ((CriteriaContextSpec) derivedTable).getContext();
-                if (((SimpleQueryContext) context).refOuterField) {
-                    String m = String.format("SubQuery %s isn't lateral,couldn't reference outer field.", alias);
+                if (((JoinableContext) context).refOuter
+                        && (!(block instanceof _DialectTableBlock)
+                        || ((_DialectTableBlock) block).modifier() != SQLs.LATERAL)) {
+                    String m = String.format("DerivedTable[%s] isn't lateral,couldn't reference outer field.", alias);
                     throw ContextStack.criteriaError(this, m);
                 }
             }
@@ -958,9 +973,10 @@ abstract class CriteriaContexts {
 
 
         /**
-         * @see #doOnAddDerived(DerivedTable, String)
+         * @see #doOnAddDerived(_TableBlock, DerivedTable, String)
          */
-        private void finishRefSelections(DerivedTable derivedTable, String alias, Map<String, RefDerivedField<?>> fieldMap) {
+        private void finishRefSelections(final DerivedTable derivedTable, final String alias,
+                                         final Map<String, RefDerivedField<?>> fieldMap) {
             Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
             if (aliasToSelection == null) {
                 aliasToSelection = new HashMap<>();
@@ -975,8 +991,8 @@ abstract class CriteriaContexts {
                     throw invalidRef(this, alias, field.fieldName);
                 }
 
-                if (field.isDelay()) {
-                    field.setSelection(selection);
+                if (field.expType.selection == null) {
+                    field.expType.selection = selection;
                     derivedFieldMap.putIfAbsent(field.fieldName, field);
                 }
             }
@@ -999,9 +1015,11 @@ abstract class CriteriaContexts {
             if (aliasToRefDerivedField == null) {
                 field = null;
             } else if (create) {
+                final Function<TypeInfer, ? extends Item> function = this.function;
+                assert function != null;
                 fieldMap = aliasToRefDerivedField.computeIfAbsent(derivedTableAlias, k -> new HashMap<>());
                 field = fieldMap.computeIfAbsent(fieldName,
-                        k -> new RefDerivedField<>(derivedTableAlias, fieldName, this.getAsFunction()));
+                        k -> new RefDerivedField<>(derivedTableAlias, fieldName, function));
             } else {
                 fieldMap = aliasToRefDerivedField.get(derivedTableAlias);
                 if (fieldMap == null) {
@@ -1031,13 +1049,11 @@ abstract class CriteriaContexts {
                         if (selection == null) {
                             throw invalidRef(this, tableAlias, fieldName);
                         }
-                        return new DerivedSelection<>(tableAlias, selection, this.getAsFunction());//TODO
+                        final Function<TypeInfer, ? extends Item> function = this.function;
+                        assert function != null;
+                        return new DerivedSelection<>(tableAlias, selection, function);//TODO
                     });
             return field;
-        }
-
-        private boolean containCte(final String cteName) {
-            return this.doContainCte(cteName, this.tableBlockList);
         }
 
         private boolean doContainCte(final String cteName, final List<? extends _TableBlock> blockList) {
@@ -1086,7 +1102,7 @@ abstract class CriteriaContexts {
                     throw ContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
                 } else if (tableItem instanceof DerivedTable) {
                     // note ,no tableBlockList.
-                    this.doOnAddDerived((DerivedTable) tableItem, alias);
+                    this.doOnAddDerived(block, (DerivedTable) tableItem, alias);
                 }
 
             }
@@ -1094,17 +1110,6 @@ abstract class CriteriaContexts {
 
         }
 
-
-        private Function<TypeInfer, ? extends Item> getAsFunction() {
-            final Function<TypeInfer, ? extends Item> function;
-            if (this instanceof SimpleQueryContext && this.tableBlockList.size() == 0) {
-                function = ((SimpleQueryContext) this).function;
-                assert function != null;
-            } else {
-                function = SQLs._IDENTITY;
-            }
-            return function;
-        }
 
 
     }//JoinableContext
@@ -1158,11 +1163,7 @@ abstract class CriteriaContexts {
 
     private static abstract class SimpleQueryContext extends JoinableContext {
 
-
         private final CriteriaContext leftContext;
-
-        private Function<TypeInfer, ? extends Item> function;
-
 
         /**
          * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketQueryContext#ref(String)}
@@ -1186,8 +1187,6 @@ abstract class CriteriaContexts {
         private Map<String, Boolean> refWindowNameMap;
 
         private boolean orderByStart;
-
-        private boolean refOuterField;
 
         private SimpleQueryContext(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
             super(outerContext);
@@ -1214,7 +1213,7 @@ abstract class CriteriaContexts {
             if (selectItem instanceof DerivedGroup) {
                 List<DerivedGroup> derivedGroupList = this.derivedGroupList;
                 if (derivedGroupList == null) {
-                    derivedGroupList = new ArrayList<>();
+                    derivedGroupList = new LinkedList<>();
                     this.derivedGroupList = derivedGroupList;
                 }
                 derivedGroupList.add((DerivedGroup) selectItem);
@@ -1246,6 +1245,19 @@ abstract class CriteriaContexts {
                 selection = leftContext.ref(selectionAlias);
             }
             return selection;
+        }
+
+        @Override
+        public final Selection selection(final String alias) {
+            if (!(this instanceof SubQueryContext)) {
+                throw ContextStack.castCriteriaApi(this);
+            }
+            Map<String, Selection> selectionMap = this.selectionMap;
+            if (selectionMap == null) {
+                selectionMap = this.createSelectionMap();
+                this.selectionMap = selectionMap;
+            }
+            return selectionMap.get(alias);
         }
 
         @Override
@@ -1293,14 +1305,6 @@ abstract class CriteriaContexts {
             return selectItemList;
         }
 
-        @Override
-        public final CriteriaContext endContextBeforeSelect() {
-            if (this.selectItemList != null) {
-                throw ContextStack.castCriteriaApi(this);
-            }
-            this.selectItemList = Collections.emptyList();
-            return this;
-        }
 
         /**
          * @see #ref(String)
@@ -1308,11 +1312,7 @@ abstract class CriteriaContexts {
         private RefSelection createRefSelection(final String selectionAlias) {
             Map<String, Selection> selectionMap = this.selectionMap;
             if (selectionMap == null) {
-                final List<SelectItem> selectItemList = this.selectItemList;
-                if (selectItemList == null) {
-                    throw currentlyCannotRefSelection(this, selectionAlias);
-                }
-                selectionMap = CriteriaUtils.createSelectionMap(selectItemList);
+                selectionMap = this.createSelectionMap();
                 this.selectionMap = selectionMap;
             }
             final Selection selection;
@@ -1321,6 +1321,14 @@ abstract class CriteriaContexts {
                 throw CriteriaUtils.unknownSelection(this, selectionAlias);
             }
             return new RefSelection(selection);//TODO
+        }
+
+        private Map<String, Selection> createSelectionMap() {
+            final List<SelectItem> selectItemList = this.selectItemList;
+            if (selectItemList == null) {
+                throw ContextStack.castCriteriaApi(this);
+            }
+            return CriteriaUtils.createSelectionMap(selectItemList);
         }
 
 
