@@ -7,10 +7,7 @@ import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.standard.StandardUpdate;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.meta.ComplexTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.SingleTableMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
@@ -111,7 +108,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        public _StandardWhereClause<I> set(Consumer<ItemPairs<F>> consumer) {
+        public final _StandardWhereClause<I> set(Consumer<ItemPairs<F>> consumer) {
             consumer.accept(CriteriaSupports.itemPairs(this::onAddItemPair));
             return this;
         }
@@ -160,15 +157,13 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
+        boolean isNoChildItemPair() {
+            final List<_ItemPair> childItemPairList = this.childItemPairList;
+            return childItemPairList == null || childItemPairList.size() == 0;
+        }
+
+        @Override
         Update onAsStandardUpdate() {
-            final List<_ItemPair> list = this.childItemPairList;
-            if (list == null) {
-                this.childItemPairList = Collections.emptyList();
-            } else if (list instanceof ArrayList) {
-                this.childItemPairList = _CollectionUtils.unmodifiableList(list);
-            } else {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
             return this;
         }
 
@@ -324,6 +319,16 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
 
         @Override
         public _StandardSetClause<Update, FieldMeta<?>> update(TableMeta<?> table, String tableAlias) {
+            return new SimpleDomainUpdate<>(this.context, table, tableAlias);
+        }
+
+        @Override
+        public <T> _StandardSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias) {
+            return new SimpleDomainUpdate<>(this.context, table, tableAlias);
+        }
+
+        @Override
+        public <T> _StandardSetClause<Update, FieldMeta<? super T>> update(ChildTableMeta<T> table, String tableAlias) {
             return new SimpleDomainUpdate<>(this.context, table, tableAlias);
         }
 

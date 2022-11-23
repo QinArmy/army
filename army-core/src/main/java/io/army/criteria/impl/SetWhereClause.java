@@ -13,10 +13,7 @@ import io.army.meta.TableMeta;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -35,7 +32,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
 
     final TableMeta<?> updateTable;
 
-     final String tableAlias;
+    final String tableAlias;
 
     /**
      * @param tableAlias for {@link SingleUpdate} non-null and  non-empty,for other non-null
@@ -237,10 +234,18 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
         throw new UnsupportedOperationException();
     }
 
+    boolean isNoChildItemPair() {
+        throw new UnsupportedOperationException();
+    }
+
     final List<_ItemPair> endUpdateSetClause() {
         List<_ItemPair> itemPairList = this.itemPairList;
         if (itemPairList == null || itemPairList.size() == 0) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::setClauseNotExists);
+            if (!(this instanceof _DomainUpdate) || this.isNoChildItemPair()) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::setClauseNotExists);
+            }
+            itemPairList = Collections.emptyList();
+            this.itemPairList = itemPairList;
         } else if (itemPairList instanceof ArrayList) {
             itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
             this.itemPairList = itemPairList;
@@ -279,7 +284,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
             itemPairList.add(fieldPair);
         } else if (!this.updateTable.isComplexField(field.fieldMeta())) {
             throw ContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
-        } else if (this.updateTable instanceof ChildTableMeta) {
+        } else if (field.tableMeta() instanceof ChildTableMeta) {
             this.onAddChildItemPair(fieldPair);
         } else {
             itemPairList.add(fieldPair);

@@ -461,25 +461,30 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
     }
 
     @Override
-    public final boolean isIdPredicate() {
-        final Expressions.DualPredicate<?> predicate;
+    public final OperationPredicate<?> getIdPredicate() {
+        OperationPredicate<?> predicate = this;
+        while (predicate instanceof Expressions.AndPredicate) {
+            predicate = ((Expressions.AndPredicate<?>) predicate).left;
+        }
+
+        final Expressions.DualPredicate<?> dualPredicate;
         final boolean match;
-        if (!(this instanceof Expressions.DualPredicate)) {
+        if (!(predicate instanceof Expressions.DualPredicate)) {
             match = false;
-        } else if (!((predicate = (Expressions.DualPredicate<?>) this).left instanceof PrimaryFieldMeta)) {
+        } else if (!((dualPredicate = (Expressions.DualPredicate<?>) predicate).left instanceof PrimaryFieldMeta)) {
             match = false;
-        } else if (predicate.operator == DualOperator.EQUAL) {
-            match = predicate.right instanceof SqlValueParam.SingleValue
-                    && (predicate.right instanceof ParamExpression
-                    || predicate.right instanceof LiteralExpression);
-        } else if (predicate.operator == DualOperator.IN) {
-            match = predicate.right instanceof MultiValueExpression
-                    && (predicate.right instanceof ParamExpression
-                    || predicate.right instanceof LiteralExpression);
+        } else if (dualPredicate.operator == DualOperator.EQUAL) {
+            match = dualPredicate.right instanceof SqlValueParam.SingleValue
+                    && (dualPredicate.right instanceof ParamExpression
+                    || dualPredicate.right instanceof LiteralExpression);
+        } else if (dualPredicate.operator == DualOperator.IN) {
+            match = dualPredicate.right instanceof MultiValueExpression
+                    && (dualPredicate.right instanceof ParamExpression
+                    || dualPredicate.right instanceof LiteralExpression);
         } else {
             match = false;
         }
-        return match;
+        return match ? predicate : null;
     }
 
 

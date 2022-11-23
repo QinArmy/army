@@ -999,12 +999,12 @@ final class MySQLDialectParser extends MySQLParser {
             parentLoad = ((_MySQLLoadData._ChildLoadData) loadData).parentLoadData();
 
             final _OtherDmlContext parentContext;
-            parentContext = this.createOtherDmlContext(outerContext,parentLoad.table()::isField, visible);
+            parentContext = this.createOtherDmlContext(outerContext, parentLoad.table()::isThisField, visible);
             this.parseLoadData(parentLoad, parentContext);
 
-            context =this.createOtherDmlContext(outerContext,loadData.table()::isField,parentContext);
+            context = this.createOtherDmlContext(outerContext, loadData.table()::isThisField, parentContext);
         } else {
-            context = this.createOtherDmlContext(outerContext,loadData.table()::isField, visible);
+            context = this.createOtherDmlContext(outerContext, loadData.table()::isThisField, visible);
         }
         this.parseLoadData(loadData, context);
         return context;

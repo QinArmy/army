@@ -12,6 +12,7 @@ import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,7 +47,7 @@ abstract class NarrowDmlStmtContext extends StatementContext implements NarrowDm
 
         this.versionPredicate = _DialectUtils.hasOptimistic(stmt.wherePredicateList());
 
-        this.selectionList = null;
+        this.selectionList = Collections.emptyList();//TODO optimize for postgre
 
         if (stmt instanceof _BatchDml) {
             this.paramList = ((_BatchDml) stmt).paramList();

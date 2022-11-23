@@ -425,7 +425,7 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
     }
 
     @Override
-    public final boolean isField(final FieldMeta<?> field) {
+    public final boolean isThisField(final FieldMeta<?> field) {
         return field.tableMeta() == this;
     }
 

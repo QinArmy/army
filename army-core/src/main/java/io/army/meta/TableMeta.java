@@ -61,7 +61,7 @@ public interface TableMeta<T> extends TabularItem, DatabaseObject {
 
     boolean containComplexField(String fieldName);
 
-    boolean isField(FieldMeta<?> field);
+    boolean isThisField(FieldMeta<?> field);
 
     boolean isComplexField(FieldMeta<?> field);
 

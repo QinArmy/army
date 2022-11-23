@@ -125,7 +125,7 @@ public abstract class _DialectUtils {
     }
 
     static void appendConditionFields(final _SingleUpdateContext context
-            , final @Nullable List<TableField> conditionFieldList) {
+            , final @Nullable List<? extends TableField> conditionFieldList) {
         if (conditionFieldList == null || conditionFieldList.size() == 0) {
             return;
         }

@@ -43,27 +43,41 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
      * This Constructor is invoked the implementation of {@link  _ValueInsertContext}.
      * </p>
      */
+    @Deprecated
     protected StatementContext(ArmyParser dialect, boolean queryInsert, Visible visible) {
         this(null, dialect, visible);
     }
 
+    @Deprecated
     protected StatementContext(StatementContext outerContext) {
         this(outerContext, outerContext.parser, outerContext.visible);
     }
 
-    protected StatementContext(@Nullable StatementContext outerContext
-            , ArmyParser parser, Visible visible) {
+    protected StatementContext(@Nullable StatementContext outerContext, ArmyParser parser, Visible visible) {
         if (outerContext == null) {
             this.parser = parser;
             this.visible = visible;
             this.sqlBuilder = new StringBuilder(128);
-            this.paramConsumer = new ParamConsumer(this::currentRowNamedValue);
         } else {
             this.parser = outerContext.parser;
             this.visible = outerContext.visible;
             this.sqlBuilder = outerContext.sqlBuilder;
+        }
+
+        if (this instanceof _InsertContext && !(this instanceof _QueryInsertContext)) {
+            if (outerContext == null) {
+                this.paramConsumer = new ParamConsumer(this::currentRowNamedValue);
+            } else {
+                this.paramConsumer = new ParamConsumerWithOuter(outerContext.paramConsumer, this::currentRowNamedValue);
+            }
+        } else if (outerContext instanceof _MultiStatementContext && this instanceof NarrowDmlContext) {
+            this.paramConsumer = new ParamConsumerWithOuter(outerContext.paramConsumer, this::currentRowNamedValue);
+        } else if (outerContext == null) {
+            this.paramConsumer = new ParamConsumer(null);
+        } else {
             this.paramConsumer = outerContext.paramConsumer;
         }
+
     }
 
 
@@ -94,7 +108,9 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
             this.sqlBuilder.append(SPACE_PLACEHOLDER);
             if (this.paramConsumer.function == null) {
                 paramList.add(sqlParam);
-                this.paramConsumer.hasNamedParam = true;
+                if (!this.paramConsumer.hasNamedParam) {
+                    this.paramConsumer.setHasNamedParam();
+                }
             } else {
                 paramList.add(SingleParam.build(sqlParam.typeMeta(), readNamedValue((NamedParam) sqlParam)));
             }
@@ -102,7 +118,9 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
             appendMultiParamPlaceholder(this.sqlBuilder, (SqlValueParam.MultiValue) sqlParam);
             if (this.paramConsumer.function == null) {
                 paramList.add(sqlParam);
-                this.paramConsumer.hasNamedParam = true;
+                if (!this.paramConsumer.hasNamedParam) {
+                    this.paramConsumer.setHasNamedParam();
+                }
             } else {
                 final NamedParam.NamedMulti namedMulti = (NamedParam.NamedMulti) sqlParam;
                 paramList.add(MultiParam.build(namedMulti, readNamedMulti(namedMulti)));
@@ -261,19 +279,45 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
     }
 
 
-    private static final class ParamConsumer {
+    private static class ParamConsumer {
 
-        private final ArrayList<SQLParam> paramList = new ArrayList<>();
+        private final ArrayList<SQLParam> paramList;
 
         private final Function<String, Object> function;
 
         private boolean hasNamedParam;
 
         private ParamConsumer(@Nullable Function<String, Object> function) {
+            this.paramList = new ArrayList<>();
             this.function = function;
         }
 
-    }
+        private ParamConsumer(ParamConsumer outerConsumer, Function<String, Object> function) {
+            this.paramList = outerConsumer.paramList;
+            this.hasNamedParam = outerConsumer.hasNamedParam;
+            this.function = function;
+        }
+
+        final void setHasNamedParam() {
+            this.hasNamedParam = true;
+            if (this instanceof ParamConsumerWithOuter) {
+                ((ParamConsumerWithOuter) this).outerConsumer.setHasNamedParam();
+            }
+        }
+
+    }//ParamConsumer
+
+
+    private static final class ParamConsumerWithOuter extends ParamConsumer {
+
+        private final ParamConsumer outerConsumer;
+
+        private ParamConsumerWithOuter(ParamConsumer outerConsumer, Function<String, Object> function) {
+            super(outerConsumer, function);
+            this.outerConsumer = outerConsumer;
+        }
+
+    }//ParamConsumerWithOuter
 
 
 }

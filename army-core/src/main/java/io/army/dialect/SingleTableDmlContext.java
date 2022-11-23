@@ -5,7 +5,9 @@ import io.army.criteria.DataField;
 import io.army.criteria.QualifiedField;
 import io.army.criteria.TableField;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._Delete;
+import io.army.criteria.impl.inner._SingleDml;
+import io.army.criteria.impl.inner._Update;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.SingleTableMeta;
@@ -38,26 +40,21 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
     final boolean supportAlias;
 
 
-    SingleTableDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser
-            , Visible visible) {
+    SingleTableDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser,
+                          Visible visible) {
         super(outerContext, stmt, parser, visible);
 
         this.domainTable = stmt.table();
-        if (!(stmt instanceof _SingleUpdate) || !(this.domainTable instanceof ChildTableMeta)) {
-            this.targetTable = this.domainTable;
-        } else if (!(stmt instanceof _DomainUpdate) || ((_DomainUpdate) stmt).childItemPairList().size() == 0) {
-            this.targetTable = ((ChildTableMeta<?>) this.domainTable).parentMeta();
-        } else {
-            this.targetTable = this.domainTable;
-        }
 
-        if (this.targetTable == this.domainTable) {
-            this.tableAlias = stmt.tableAlias();
-        } else {
+        if (parser.childUpdateMode != _ChildUpdateMode.CTE
+                && this.domainTable instanceof ChildTableMeta) {
+            this.targetTable = ((ChildTableMeta<?>) this.domainTable).parentMeta();
             this.tableAlias = _DialectUtils.parentAlias(stmt.tableAlias());
+        } else {
+            this.targetTable = this.domainTable;
+            this.tableAlias = stmt.tableAlias();
         }
         this.safeTableAlias = parser.identifier(this.tableAlias);
-
         this.supportAlias = (stmt instanceof _Update && parser.supportSingleUpdateAlias)
                 || (stmt instanceof _Delete && parser.supportSingleDeleteAlias);
     }
@@ -71,7 +68,8 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
         this.safeTableAlias = this.parser.identifier(this.tableAlias);
 
         assert this.domainTable instanceof ChildTableMeta;
-        assert parentContext.domainTable == ((ChildTableMeta<?>) this.domainTable).parentMeta();
+        assert parentContext.targetTable == ((ChildTableMeta<?>) this.domainTable).parentMeta()
+                && parentContext.domainTable == this.domainTable;
 
         this.supportAlias = (stmt instanceof _Update && parser.supportSingleUpdateAlias)
                 || (stmt instanceof _Delete && parser.supportSingleDeleteAlias);
@@ -105,7 +103,7 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
         }
         final TableField field = (TableField) dataField;
         final UpdateMode updateMode;
-        if (field.tableMeta() != this.domainTable) {
+        if (field.tableMeta() != this.targetTable) {
             throw _Exceptions.unknownColumn(field);
         } else if ((updateMode = field.updateMode()) == UpdateMode.IMMUTABLE) {
             throw _Exceptions.immutableField(field);
@@ -120,9 +118,9 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
         }
 
         final StringBuilder sqlBuilder = this.sqlBuilder;
+        sqlBuilder.append(_Constant.SPACE);
         if (this.supportAlias) {
-            sqlBuilder.append(_Constant.SPACE)
-                    .append(this.safeTableAlias)
+            sqlBuilder.append(this.safeTableAlias)
                     .append(_Constant.POINT);
         }
         this.parser.safeObjectName(field, sqlBuilder);

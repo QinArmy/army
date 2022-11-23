@@ -73,6 +73,8 @@ abstract class ArmyParser implements DialectParser {
 
     final boolean singleDmlAliasAfterAs;
 
+    final boolean aliasAfterAs;
+
     private final boolean tableOnlyModifier;
 
     final boolean supportZone;
@@ -99,13 +101,14 @@ abstract class ArmyParser implements DialectParser {
         this.identifierQuote = identifierQuote();
         this.identifierCaseSensitivity = this.isIdentifierCaseSensitivity();
         this.childUpdateMode = this.childUpdateMode();
-        this.singleDmlAliasAfterAs = this.isTableAliasAfterAs();
+        this.aliasAfterAs = this.isTableAliasAfterAs();
 
+        this.singleDmlAliasAfterAs = this.aliasAfterAs;
         this.supportSingleUpdateAlias = this.isSupportSingleUpdateAlias();
         this.supportSingleDeleteAlias = this.isSupportSingleDeleteAlias();
         this.supportZone = this.isSupportZone();
-        this.tableOnlyModifier = this.isSupportTableOnly();
 
+        this.tableOnlyModifier = this.isSupportTableOnly();
         this.setClauseTableAlias = this.isSetClauseTableAlias();
         this.supportUpdateRow = this.isSupportUpdateRow();
         this.supportUpdateDerivedField = this.isSupportUpdateDerivedField();
@@ -1609,8 +1612,7 @@ abstract class ArmyParser implements DialectParser {
             , final Visible visible) {
         final _UpdateContext context;
         final _ChildUpdateMode mode = this.childUpdateMode;
-        if (!(stmt.table() instanceof ChildTableMeta)
-                || (mode == _ChildUpdateMode.WITH_ID && stmt.childItemPairList().size() == 0)) {
+        if (!(stmt.table() instanceof ChildTableMeta) || stmt.childItemPairList().size() == 0) {
             context = DomainUpdateContext.create(outerContext, stmt, this, visible);
             this.parseStandardSingleUpdate(stmt, (_SingleUpdateContext) context);
             if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
@@ -1664,8 +1666,8 @@ abstract class ArmyParser implements DialectParser {
         whereList = stmt.wherePredicateList();
         //check first predicate
         final _Predicate firstPredicate;
-        firstPredicate = whereList.get(0);
-        if (!firstPredicate.isIdPredicate()) {
+        firstPredicate = whereList.get(0).getIdPredicate();
+        if (firstPredicate == null) {
             throw _Exceptions.notFondIdPredicate(this.dialect);
         }
         this.dmlWhereClause(whereList, context);
@@ -1697,7 +1699,7 @@ abstract class ArmyParser implements DialectParser {
     private void parseDomainParentUpdateWithId(final _DomainUpdate stmt, final _Predicate idPredicate
             , final DomainUpdateContext context) {
 
-        assert idPredicate.isIdPredicate()
+        assert idPredicate.getIdPredicate() != null
                 && context.parentContext == null
                 && context.domainTable instanceof ChildTableMeta;
 
@@ -1887,7 +1889,7 @@ abstract class ArmyParser implements DialectParser {
         whereList = stmt.wherePredicateList();
         //check first predicate
         final _Predicate firstPredicate;
-        if (!(firstPredicate = whereList.get(0)).isIdPredicate()) {
+        if ((firstPredicate = whereList.get(0).getIdPredicate()) == null) {
             throw _Exceptions.notFondIdPredicate(this.dialect);
         }
         this.dmlWhereClause(whereList, childContext);
@@ -1910,7 +1912,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleDomainDelete(_SqlContext, _DomainDelete, Visible)
      */
     private void parseDomainParentDeleteWithId(final _Predicate idPredicate, final DomainDeleteContext context) {
-        assert idPredicate.isIdPredicate()
+        assert idPredicate.getIdPredicate() != null
                 && context.parentContext == null
                 && context.targetTable instanceof ParentTableMeta
                 && context.domainTable instanceof ChildTableMeta;
