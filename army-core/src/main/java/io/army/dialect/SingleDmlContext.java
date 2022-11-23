@@ -33,10 +33,10 @@ abstract class SingleDmlContext extends SingleTableDmlContext {
         }
         final StringBuilder sqlBuilder = this.sqlBuilder;
         sqlBuilder.append(_Constant.SPACE);
-        if (this.supportAlias) {
+        if (this.safeTargetTableName == null) {
             sqlBuilder.append(this.safeTableAlias);
         } else {
-            this.parser.safeObjectName(this.targetTable, sqlBuilder);
+            sqlBuilder.append(this.safeTargetTableName);
         }
         sqlBuilder.append(_Constant.POINT);
         this.parser.safeObjectName(field, sqlBuilder);

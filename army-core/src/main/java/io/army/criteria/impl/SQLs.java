@@ -43,6 +43,13 @@ public abstract class SQLs extends SQLsSyntax {
 
     static final Function<TypeInfer, TypeInfer> _IDENTITY = SQLs::_identity;
 
+    static final Function<Insert, Insert> _INSERT_IDENTITY = SQLs::_identity;
+    static final Function<Select, Select> _SELECT_IDENTITY = SQLs::_identity;
+
+    static final Function<Update, Update> _UPDATE_IDENTITY = SQLs::_identity;
+    static final Function<Delete, Delete> _DELETE_IDENTITY = SQLs::_identity;
+
+    static final Function<SubQuery, SubQuery> _SUB_QUERY_IDENTITY = SQLs::_identity;
 
     public static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
         return StandardInserts.primaryInsert(SQLs::_identity);
@@ -79,11 +86,11 @@ public abstract class SQLs extends SQLsSyntax {
 
 
     public static StandardDelete._StandardDeleteClause<Delete> singleDelete() {
-        return StandardDeletes.singleDelete(SQLs::_identity);
+        return StandardDeletes.singleDelete(SQLs._DELETE_IDENTITY);
     }
 
-    public static StandardDelete._SimpleDomainDeleteClause domainDelete() {
-        throw new UnsupportedOperationException();
+    public static StandardDelete._DomainDeleteClause domainDelete() {
+        return StandardDeletes.domainDelete();
     }
 
     /**
@@ -92,20 +99,20 @@ public abstract class SQLs extends SQLsSyntax {
      * </p>
      */
     public static StandardDelete._BatchDeleteClause<Delete> batchSingleDelete() {
-        return StandardDeletes.batchSingleDelete(SQLs::_identity);
+        return StandardDeletes.batchSingleDelete(SQLs._DELETE_IDENTITY);
     }
 
     public static StandardDelete._BatchDomainDeleteClause batchDomainDelete() {
-        throw new UnsupportedOperationException();
+        return StandardDeletes.batchDomainDelete();
     }
 
 
     public static StandardQuery._SelectSpec<Select> query() {
-        return StandardQueries.primaryQuery(SQLs::_identity);
+        return StandardQueries.primaryQuery(SQLs._SELECT_IDENTITY);
     }
 
     public static StandardQuery._SelectSpec<SubQuery> subQuery() {
-        return StandardQueries.subQuery(ContextStack.peek(), SQLs::_identity);
+        return StandardQueries.subQuery(ContextStack.peek(), SQLs._SUB_QUERY_IDENTITY);
     }
 
 

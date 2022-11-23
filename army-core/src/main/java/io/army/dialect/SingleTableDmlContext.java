@@ -37,7 +37,7 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
 
     final String safeTableAlias;
 
-    final boolean supportAlias;
+    final String safeTargetTableName;
 
 
     SingleTableDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser,
@@ -55,8 +55,14 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
             this.tableAlias = stmt.tableAlias();
         }
         this.safeTableAlias = parser.identifier(this.tableAlias);
-        this.supportAlias = (stmt instanceof _Update && parser.supportSingleUpdateAlias)
-                || (stmt instanceof _Delete && parser.supportSingleDeleteAlias);
+
+        if ((stmt instanceof _Update && parser.supportSingleUpdateAlias)
+                || (stmt instanceof _Delete && parser.supportSingleDeleteAlias)) {
+            this.safeTargetTableName = null;
+        } else {
+            this.safeTargetTableName = parser.safeObjectName(this.targetTable);
+        }
+
     }
 
     SingleTableDmlContext(_SingleDml stmt, SingleTableDmlContext parentContext) {
@@ -71,8 +77,12 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
         assert parentContext.targetTable == ((ChildTableMeta<?>) this.domainTable).parentMeta()
                 && parentContext.domainTable == this.domainTable;
 
-        this.supportAlias = (stmt instanceof _Update && parser.supportSingleUpdateAlias)
-                || (stmt instanceof _Delete && parser.supportSingleDeleteAlias);
+        if ((stmt instanceof _Update && parser.supportSingleUpdateAlias)
+                || (stmt instanceof _Delete && parser.supportSingleDeleteAlias)) {
+            this.safeTargetTableName = null;
+        } else {
+            this.safeTargetTableName = parser.safeObjectName(this.targetTable);
+        }
     }
 
     @Override
@@ -110,19 +120,21 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
         } else if (field instanceof QualifiedField
                 && !this.tableAlias.equals(((QualifiedField<?>) field).tableAlias())) {
             throw _Exceptions.unknownColumn(field);
-        } else if (this.domainTable instanceof SingleTableMeta) {
+        } else if (this.targetTable instanceof SingleTableMeta) {
             final String fieldName = field.fieldName();
             if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
                 throw _Exceptions.armyManageField(field);
             }
         }
 
-        final StringBuilder sqlBuilder = this.sqlBuilder;
-        sqlBuilder.append(_Constant.SPACE);
-        if (this.supportAlias) {
-            sqlBuilder.append(this.safeTableAlias)
-                    .append(_Constant.POINT);
+        final StringBuilder sqlBuilder;
+        sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
+        if (this.safeTargetTableName == null) {
+            sqlBuilder.append(this.safeTableAlias);
+        } else {
+            sqlBuilder.append(this.safeTargetTableName);
         }
+        sqlBuilder.append(_Constant.POINT);
         this.parser.safeObjectName(field, sqlBuilder);
 
         switch (updateMode) {

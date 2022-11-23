@@ -26,6 +26,7 @@ abstract class SingleDelete<I extends Item, WR, WA, OR, LR, LO, LF>
 
     SingleDelete(CriteriaContext context) {
         super(context);
+        ContextStack.push(this.context);
     }
 
     @Override

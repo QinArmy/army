@@ -1,8 +1,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
+import io.army.criteria.DmlStatement;
 import io.army.criteria.Item;
 import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._DomainDelete;
 import io.army.criteria.standard.StandardDelete;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
@@ -23,8 +25,7 @@ import java.util.function.Supplier;
  */
 abstract class StandardDeletes<I extends Item, DR, WR, WA>
         extends SingleDelete<I, WR, WA, Object, Object, Object, Object>
-        implements StandardDelete, Delete
-        , StandardDelete._DeleteFromClause<DR> {
+        implements StandardDelete, Delete {
 
     static <I extends Item> _StandardDeleteClause<I> singleDelete(Function<Delete, I> function) {
         return new SimpleSingleDelete<>(function);
@@ -34,21 +35,26 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
         return new BatchSingleDelete<>(function);
     }
 
+    static _DomainDeleteClause domainDelete() {
+        return new SimpleDomainDelete();
+    }
+
+    static _BatchDomainDeleteClause batchDomainDelete() {
+        return new BatchDomainDelete();
+    }
+
 
     private TableMeta<?> deleteTable;
 
     private String tableAlias;
 
-    StandardDeletes() {
-        super(CriteriaContexts.primarySingleDmlContext(null));
+    private StandardDeletes() {
+        super(CriteriaContexts.primarySingleDmlContext(null, null));
     }
 
 
     @SuppressWarnings("unchecked")
-    @Override
-    public final DR deleteFrom(final @Nullable SingleTableMeta<?> table,SQLs.WordAs as
-            , final @Nullable String tableAlias) {
-        assert  as == SQLs.AS;
+    final DR deleteFrom(final @Nullable TableMeta<?> table, final @Nullable String tableAlias) {
         if (this.deleteTable != null) {
             throw ContextStack.castCriteriaApi(this.context);
         } else if (table == null) {
@@ -79,11 +85,10 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
         return tableAlias;
     }
 
-
     @Override
     final void onClear() {
-        if (this instanceof BatchSingleDelete) {
-            ((BatchSingleDelete<?>) this).paramList = null;
+        if (this instanceof StandardDeletes.BatchDelete) {
+            ((BatchDelete<?>) this).paramList = null;
         }
     }
 
@@ -100,16 +105,23 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
             _WhereSpec<I>,
             _DmlDeleteSpec<I>,
             _WhereAndSpec<I>>
-            implements _StandardDeleteClause<I>
-            , _WhereSpec<I>
-            , _WhereAndSpec<I> {
+            implements _WhereSpec<I>,
+            _WhereAndSpec<I>,
+            StandardDelete._StandardDeleteClause<I> {
 
         private final Function<Delete, I> function;
+
 
         private SimpleSingleDelete(Function<Delete, I> function) {
             this.function = function;
         }
 
+
+        @Override
+        public _WhereSpec<I> deleteFrom(final @Nullable SingleTableMeta<?> table, SQLs.WordAs as,
+                                        final @Nullable String tableAlias) {
+            return this.deleteFrom(table, tableAlias);
+        }
 
         @Override
         I onAsDelete() {
@@ -119,44 +131,72 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
 
     }//SimpleSingleDelete
 
+    private static final class SimpleDomainDelete extends StandardDeletes<
+            Delete,
+            _WhereSpec<Delete>,
+            _DmlDeleteSpec<Delete>,
+            _WhereAndSpec<Delete>>
+            implements _DomainDeleteClause,
+            _WhereSpec<Delete>,
+            _WhereAndSpec<Delete>,
+            _DomainDelete {
 
-    private static final class BatchSingleDelete<I extends Item> extends StandardDeletes<
+
+        private SimpleDomainDelete() {
+        }
+
+
+        @Override
+        public _WhereSpec<Delete> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
+            return this.deleteFrom(table, tableAlias);
+        }
+
+        @Override
+        Delete onAsDelete() {
+            return this;
+        }
+
+    }//SimpleDomainDelete
+
+
+    private static abstract class BatchDelete<I extends Item> extends StandardDeletes<
             I,
             _BatchWhereSpec<I>,
             _BatchParamClause<_DmlDeleteSpec<I>>,
-            _BatchWhereAndSpec<I>> implements
-            _BatchDeleteClause<I>
-            , _BatchWhereSpec<I>
-            , _BatchWhereAndSpec<I>, _BatchDml {
+            _BatchWhereAndSpec<I>>
+            implements _BatchWhereSpec<I>,
+            _BatchWhereAndSpec<I>,
+            _BatchDml
+            , DmlStatement {
 
         private final Function<Delete, I> function;
-
 
         private List<?> paramList;
 
 
-        private BatchSingleDelete(Function<Delete, I> function) {
+        private BatchDelete(Function<Delete, I> function) {
             this.function = function;
         }
 
+
         @Override
-        public <P> _DmlDeleteSpec<I> paramList(List<P> paramList) {
+        public final <P> _DmlDeleteSpec<I> paramList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
         }
 
         @Override
-        public <P> _DmlDeleteSpec<I> paramList(Supplier<List<P>> supplier) {
+        public final <P> _DmlDeleteSpec<I> paramList(Supplier<List<P>> supplier) {
             return this.paramList(supplier.get());
         }
 
         @Override
-        public _DmlDeleteSpec<I> paramList(Function<String, ?> function, String keyName) {
+        public final _DmlDeleteSpec<I> paramList(Function<String, ?> function, String keyName) {
             return this.paramList((List<?>) function.apply(keyName));
         }
 
         @Override
-        public List<?> paramList() {
+        public final List<?> paramList() {
             final List<?> list = this.paramList;
             if (list == null) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -165,7 +205,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
         }
 
         @Override
-        I onAsDelete() {
+        final I onAsDelete() {
             if (this.paramList == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -173,9 +213,39 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
         }
 
 
+    }//BatchDelete
+
+
+    private static final class BatchSingleDelete<I extends Item> extends BatchDelete<I>
+            implements _BatchDeleteClause<I> {
+
+        private BatchSingleDelete(Function<Delete, I> function) {
+            super(function);
+        }
+
+        @Override
+        public _BatchWhereSpec<I> deleteFrom(SingleTableMeta<?> table, SQLsSyntax.WordAs as, String tableAlias) {
+            return this.deleteFrom(table, tableAlias);
+        }
+
     }//BatchSingleDelete
 
 
+    private static final class BatchDomainDelete extends BatchDelete<Delete>
+            implements _DomainDelete,
+            _BatchDomainDeleteClause {
+
+        private BatchDomainDelete() {
+            super(SQLs._DELETE_IDENTITY);
+        }
+
+        @Override
+        public _BatchWhereSpec<Delete> deleteFrom(TableMeta<?> table, SQLsSyntax.WordAs as, String tableAlias) {
+            return this.deleteFrom(table, tableAlias);
+        }
+
+
+    }//BatchDomainDelete
 
 
 }

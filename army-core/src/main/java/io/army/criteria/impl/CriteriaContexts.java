@@ -145,7 +145,13 @@ abstract class CriteriaContexts {
         return new SingleDmlContext(null);
     }
 
+    @Deprecated
     static CriteriaContext primarySingleDmlContext(@Nullable _Statement._WithClauseSpec spec) {
+        return new SingleDmlContext(null);
+    }
+
+    static CriteriaContext primarySingleDmlContext(@Nullable _Statement._WithClauseSpec spec,
+                                                   @Nullable CriteriaContext outerContext) {
         return new SingleDmlContext(null);
     }
 

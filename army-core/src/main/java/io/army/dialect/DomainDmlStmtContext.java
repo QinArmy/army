@@ -15,7 +15,11 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
     DomainDmlStmtContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
         if (this.targetTable instanceof ParentTableMeta && this.domainTable instanceof ChildTableMeta) {
-            this.safeRelatedAlias = parser.identifier(stmt.tableAlias());
+            if (this.safeTargetTableName == null) {
+                this.safeRelatedAlias = parser.identifier(stmt.tableAlias());
+            } else {
+                this.safeRelatedAlias = parser.safeObjectName(this.domainTable);
+            }
         } else {
             this.safeRelatedAlias = null;
         }
@@ -24,7 +28,11 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
 
     DomainDmlStmtContext(_SingleDml stmt, DomainDmlStmtContext parentContext) {
         super(stmt, parentContext);
-        this.safeRelatedAlias = this.parser.identifier(_DialectUtils.parentAlias(this.tableAlias));
+        if (this.safeTargetTableName == null) {
+            this.safeRelatedAlias = parentContext.safeTableAlias;
+        } else {
+            this.safeRelatedAlias = this.parser.safeObjectName(parentContext.targetTable);
+        }
     }
 
     @Override
@@ -43,10 +51,10 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
         if (fieldTable == targetTable
                 || (fieldTable == this.domainTable && field instanceof PrimaryFieldMeta)) {
             sqlBuilder.append(_Constant.SPACE);
-            if (this.supportAlias) {
-                sqlBuilder.append(this.safeTableAlias);
+            if (this.safeTargetTableName != null) {
+                sqlBuilder.append(this.safeTargetTableName);
             } else {
-                this.parser.safeObjectName(targetTable, sqlBuilder);
+                sqlBuilder.append(this.safeTableAlias);
             }
             sqlBuilder.append(_Constant.POINT);
             this.parser.safeObjectName(field, sqlBuilder);

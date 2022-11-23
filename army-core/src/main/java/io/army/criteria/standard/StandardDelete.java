@@ -14,6 +14,11 @@ public interface StandardDelete extends StandardStatement {
 
     }
 
+    interface _DomainDeleteFromClause<DR> {
+
+        DR deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
+    }
+
 
     interface _WhereAndSpec<I extends Item> extends _WhereAndClause<_WhereAndSpec<I>>
             , _DmlDeleteSpec<I> {
@@ -30,15 +35,13 @@ public interface StandardDelete extends StandardStatement {
 
     }
 
-    interface _DomainDeleteClause<DR> {
 
-        DR deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
-    }
+    interface _DomainDeleteClause {
 
-    interface _SimpleDomainDeleteClause extends _DomainDeleteClause<_WhereSpec<Delete>>{
-
+        _WhereSpec<Delete> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
 
     }
+
 
 
     interface _BatchWhereAndSpec<I extends Item> extends _WhereAndClause<_BatchWhereAndSpec<I>>
@@ -51,13 +54,13 @@ public interface StandardDelete extends StandardStatement {
 
     }
 
-
     interface _BatchDeleteClause<I extends Item> extends _DeleteFromClause<_BatchWhereSpec<I>> {
 
     }
 
-    interface _BatchDomainDeleteClause extends _DomainDeleteClause<_BatchWhereSpec<Delete>>{
+    interface _BatchDomainDeleteClause {
 
+        _BatchWhereSpec<Delete> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
 
     }
 

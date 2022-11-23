@@ -2013,7 +2013,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleDomainDelete(_SqlContext, _DomainDelete, Visible)
      */
     private void parseStandardSingleDelete(final _SingleDelete stmt, final _SingleDeleteContext context) {
-        assert stmt instanceof StandardUpdate;
+        assert stmt instanceof StandardDelete;
 
         final SingleTableMeta<?> targetTable;
         targetTable = (SingleTableMeta<?>) context.targetTable();
@@ -2029,7 +2029,7 @@ abstract class ArmyParser implements DialectParser {
 
         //2. table name
         final String safeTableAlias;
-        if (this.supportSingleUpdateAlias) {
+        if (this.supportSingleDeleteAlias) {
             if (this.singleDmlAliasAfterAs) {
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE);
             } else {

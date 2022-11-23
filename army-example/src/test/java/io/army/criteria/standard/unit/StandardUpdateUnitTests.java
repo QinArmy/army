@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static io.army.criteria.impl.SQLs.AND;
+import static io.army.criteria.impl.SQLs.AS;
 
 public class StandardUpdateUnitTests extends StandardUnitTests {
 
@@ -35,7 +36,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
 
         final Update stmt;
         stmt = SQLs.singleUpdate()
-                .update(ChinaRegion_.T, "c")
+                .update(ChinaRegion_.T, AS, "c")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, addGdp)
                 .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", AND, "secondId")
@@ -51,7 +52,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
         final BigDecimal gdpAmount = new BigDecimal("888.8");
         final Update stmt;
         stmt = SQLs.singleUpdate()
-                .update(ChinaProvince_.T, "p")
+                .update(ChinaProvince_.T, AS, "p")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
                 .where(ChinaRegion_.id.equal(SQLs::literal, 1))
@@ -67,7 +68,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
     public void batchUpdateParent() {
         final Update stmt;
         stmt = SQLs.batchSingleUpdate()
-                .update(ChinaProvince_.T, "p")
+                .update(ChinaProvince_.T, AS, "p")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
                 .where(ChinaRegion_.id::equal, SQLs::namedParam)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greatEqual, BigDecimal.ZERO)
@@ -85,7 +86,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
 
         final Update stmt;
         stmt = SQLs.batchSingleUpdate()
-                .update(ChinaProvince_.T, "p")
+                .update(ChinaProvince_.T, AS, "p")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
                 .where(ChinaRegion_.id.equal(SQLs::namedParam, ChinaRegion_.ID))
@@ -107,7 +108,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
         assert PillUser_.identityId.updateMode() == UpdateMode.ONLY_NULL;
         final Update stmt;
         stmt = SQLs.singleUpdate()
-                .update(PillUser_.T, "u")
+                .update(PillUser_.T, AS, "u")
                 .set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
                 .set(PillUser_.identityId, SQLs::literal, 888)
                 .set(PillUser_.nickName, SQLs::param, "令狐冲")
@@ -122,7 +123,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
     public void updateOnlyParentField() {
         final Update stmt;
         stmt = SQLs.singleUpdate()
-                .update(PillPerson_.T, "up")
+                .update(PillPerson_.T, AS, "up")
                 .set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
                 .set(PillUser_.identityId, SQLs::literal, 888)
                 .set(PillUser_.nickName, SQLs::param, "令狐冲")
@@ -137,7 +138,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
     public void dynamicSetUpdateOnlyParentField() {
         final Update stmt;
         stmt = SQLs.singleUpdate()
-                .update(PillPerson_.T, "up")
+                .update(PillPerson_.T, AS, "up")
                 .set(s -> s.set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
                         .set(PillUser_.identityId, SQLs::literal, 888)
                         .set(PillUser_.nickName, SQLs::param, "令狐冲"))
@@ -153,7 +154,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
     public void existsChildFieldError() {
         final Update stmt;
         stmt = SQLs.singleUpdate()
-                .update(PillPerson_.T, "up")
+                .update(PillPerson_.T, AS, "up")
                 .set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
                 .set(PillUser_.identityId, SQLs::literal, 888)
                 .set(PillUser_.nickName, SQLs::param, "令狐冲")

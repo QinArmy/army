@@ -1,6 +1,7 @@
 package io.army.criteria.standard;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.SQLs;
 import io.army.meta.*;
 
 public interface StandardUpdate extends StandardStatement {
@@ -30,9 +31,9 @@ public interface StandardUpdate extends StandardStatement {
 
     interface _SingleUpdateClause<I extends Item> {
 
-        <T> _StandardSetClause<I, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias);
+        <T> _StandardSetClause<I, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
-        <P> _StandardSetClause<I, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias);
+        <P> _StandardSetClause<I, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, SQLs.WordAs as, String tableAlias);
 
 
     }
@@ -41,13 +42,9 @@ public interface StandardUpdate extends StandardStatement {
 
         _StandardSetClause<Update, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
 
-        default <T>  _StandardSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias){
-            throw new UnsupportedOperationException();
-        }
+        <T> _StandardSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
-        default <T>  _StandardSetClause<Update, FieldMeta<? super T>> update(ChildTableMeta<T> table, String tableAlias){
-            throw new UnsupportedOperationException();
-        }
+        <T> _StandardSetClause<Update, FieldMeta<? super T>> update(ChildTableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
     }
 
@@ -76,15 +73,19 @@ public interface StandardUpdate extends StandardStatement {
 
     interface _BatchSingleUpdateClause {
 
-        <T> _BatchSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias);
+        <T> _BatchSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
-        <P> _BatchSetClause<Update, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias);
+        <P> _BatchSetClause<Update, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, SQLs.WordAs as, String tableAlias);
 
     }
 
     interface _BatchDomainUpdateClause {
 
-        <T> _BatchSetClause<Update, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias);
+        _BatchSetClause<Update, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
+
+        <T> _BatchSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
+
+        <T> _BatchSetClause<Update, FieldMeta<? super T>> update(ChildTableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
     }
 
