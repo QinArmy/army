@@ -28,19 +28,20 @@ abstract class SingleDmlContext extends SingleTableDmlContext {
 
     @Override
     public final void appendField(final FieldMeta<?> field) {
-        if (field.tableMeta() != this.domainTable) {
-            throw _Exceptions.unknownColumn(tableAlias, field);
+        if (field.tableMeta() != this.targetTable) {
+            throw _Exceptions.unknownColumn(field);
         }
         final StringBuilder sqlBuilder = this.sqlBuilder;
         sqlBuilder.append(_Constant.SPACE);
         if (this.supportAlias) {
-            sqlBuilder.append(this.safeTableAlias)
-                    .append(_Constant.POINT);
+            sqlBuilder.append(this.safeTableAlias);
+        } else {
+            this.parser.safeObjectName(this.targetTable, sqlBuilder);
         }
+        sqlBuilder.append(_Constant.POINT);
         this.parser.safeObjectName(field, sqlBuilder);
 
     }
-
 
 
 }

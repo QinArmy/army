@@ -32,7 +32,6 @@ abstract class ContextStack {
     private static final ThreadLocal<Stack> HOLDER = new ThreadLocal<>();
 
 
-
     static CriteriaContext peek() {
         final Stack stack = HOLDER.get();
         if (stack == null) {
@@ -131,6 +130,21 @@ abstract class ContextStack {
         return new NullPointerException();
     }
 
+    static NullPointerException clearStackAndNullPointer() {
+        final Stack stack = HOLDER.get();
+        if (stack != null) {
+            HOLDER.remove();
+        }
+        return new NullPointerException();
+    }
+
+    static CriteriaException clearStackAndCriteriaError(String msg) {
+        final Stack stack = HOLDER.get();
+        if (stack != null) {
+            HOLDER.remove();
+        }
+        return new CriteriaException(msg);
+    }
 
     @Deprecated
     static <T> CriteriaException criteriaError(Function<T, CriteriaException> function, T input) {

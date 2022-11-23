@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -188,21 +187,6 @@ public class StandardInsertUnitTests extends StandardUnitTests {
             region.setId((long) i);
             region.setName("江湖" + i);
             domainList.add(region);
-        }
-        return domainList;
-    }
-
-    private List<ChinaProvince> createProvinceList() {
-        List<ChinaProvince> domainList = new ArrayList<>();
-        ChinaProvince p;
-        for (int i = 0; i < 3; i++) {
-            p = new ChinaProvince();
-            p.setId((long) i);
-            p.setName("江湖" + i);
-            p.setGovernor("盟主");
-            p.setRegionGdp(new BigDecimal("6666.88"));
-            p.setProvincialCapital("总堂");
-            domainList.add(p);
         }
         return domainList;
     }

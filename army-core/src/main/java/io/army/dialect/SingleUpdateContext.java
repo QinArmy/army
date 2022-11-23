@@ -48,7 +48,11 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
 
     @Override
     public void appendConditionFields() {
-        _DialectUtils.appendConditionFields(this, this.conditionFieldList);
+        final List<TableField> conditionFieldList = this.conditionFieldList;
+        if (conditionFieldList != null) {
+            _DialectUtils.appendConditionFields(this, conditionFieldList);
+        }
+
     }
 
 

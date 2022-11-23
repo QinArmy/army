@@ -11,11 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static io.army.criteria.impl.SQLs.*;
@@ -268,21 +265,6 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
     }
 
-
-    private List<ChinaProvince> createProvinceList() {
-        List<ChinaProvince> domainList = new ArrayList<>();
-        ChinaProvince p;
-        for (int i = 0; i < 2; i++) {
-            p = new ChinaProvince();
-            p.setId((long) i);
-            p.setName("江湖" + i);
-            p.setGovernor("盟主");
-            p.setRegionGdp(new BigDecimal("8888.88"));
-            p.setProvincialCapital("总堂");
-            domainList.add(p);
-        }
-        return domainList;
-    }
 
 
 }

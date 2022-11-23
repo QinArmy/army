@@ -76,7 +76,7 @@ final class SourceCodeCreator {
         simpleClassName = MetaUtils.getSimpleClassName(element);
 
         //3. class definition
-        appendClassDefinition(element, simpleClassName, parentElement, mode, builder);
+        appendClassDefinition(element, simpleClassName, mode, builder);
 
         //4. static block
         domainName = appendStaticBlock(element, simpleClassName, parentElement, fieldCount, builder);
@@ -194,11 +194,11 @@ final class SourceCodeCreator {
     /**
      * debugSQL meta source code class definition part
      */
-    private void appendClassDefinition(final TypeElement element, final String simpleClassName
-            , @Nullable final TypeElement parentElement, final MappingMode mode, final StringBuilder builder) {
+    private void appendClassDefinition(final TypeElement element, final String simpleClassName,
+                                       final MappingMode mode, final StringBuilder builder) {
 
 
-        builder.append("\n\n@Generated(value = \"")
+        builder.append("\n\n//Army static metamodel class\n\n@Generated(value = \"")
                 .append(ArmyMetaModelDomainProcessor.class.getName())
                 .append("\"\n")
                 .append(ANNOTATION_PRE)

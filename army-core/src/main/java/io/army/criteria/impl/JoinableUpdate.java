@@ -68,11 +68,6 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
     }
 
     @Override
-    public final <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
-        return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, supplier.get())));
-    }
-
-    @Override
     public final SR set(F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function
             , String keyName) {
         return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, function.apply(keyName))));
@@ -82,12 +77,6 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
     public final <E> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
             , BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
         return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
-    }
-
-    @Override
-    public final <E> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
-            , BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
-        return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, supplier.get())));
     }
 
     @Override
@@ -124,15 +113,6 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
         return (SR) this;
     }
 
-    @Override
-    public final <E> SR ifSet(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
-        final E value;
-        value = supplier.get();
-        if (value != null) {
-            this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
-        }
-        return (SR) this;
-    }
 
     @Override
     public final SR ifSet(F field, BiFunction<F, Object, Expression> valueOperator
@@ -148,17 +128,6 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
     @Override
     public final <E> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator
             , BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
-        if (value != null) {
-            this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
-        }
-        return (SR) this;
-    }
-
-    @Override
-    public final <E> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator
-            , BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
-        final E value;
-        value = supplier.get();
         if (value != null) {
             this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
         }

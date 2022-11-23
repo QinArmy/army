@@ -25,29 +25,48 @@ import java.util.Objects;
 abstract class LiteralExpression extends OperationExpression<TypeInfer> {
 
     static LiteralExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object constant) {
-        assert paramMeta != null;
+        if (paramMeta == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
         return new SingleLiteral(paramMeta, constant);
     }
 
-    static LiteralExpression multi(final @Nullable TypeMeta paramMeta, final Collection<?> values) {
-        assert paramMeta != null && values.size() > 0;
+    static LiteralExpression multi(final @Nullable TypeMeta paramMeta, final @Nullable Collection<?> values) {
+        if (paramMeta == null || values == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (values.size() == 0) {
+            throw ContextStack.clearStackAndCriteriaError("values must non-empty");
+        }
         return new MultiLiteralExpression(paramMeta, values);
     }
 
 
-    static LiteralExpression safeMulti(TypeMeta typeMeta, List<?> values) {
+    static LiteralExpression safeMulti(final TypeMeta typeMeta, final List<?> values) {
         assert values.size() > 0;
         return new MultiLiteralExpression(values, typeMeta);
     }
 
 
     static LiteralExpression namedSingle(final @Nullable TypeMeta paramMeta, final @Nullable String name) {
-        assert paramMeta != null && name != null;
+        if (paramMeta == null || name == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
         return new NonNullNamedSingleLiteral(paramMeta, name);
     }
 
+    static LiteralExpression namedNullableSingle(final @Nullable TypeMeta paramMeta, final @Nullable String name) {
+        if (paramMeta == null || name == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return new NamedSingleLiteral(paramMeta, name);
+    }
+
     static LiteralExpression namedMulti(final @Nullable TypeMeta paramMeta, final @Nullable String name, int size) {
-        assert paramMeta != null && name != null && size > 0;
+        if (paramMeta == null || name == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (size < 1) {
+            throw ContextStack.clearStackAndCriteriaError("size must great than zero.");
+        }
         return new NamedMultiLiteral(paramMeta, name, size);
     }
 
@@ -160,7 +179,7 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
         }
 
 
-     }//SingleLiteralExpression
+    }//SingleLiteralExpression
 
 
     static final class MultiLiteralExpression extends LiteralExpression

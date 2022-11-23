@@ -14,7 +14,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
 
     DomainDmlStmtContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
-        if (this.targetTable instanceof ParentTableMeta) {
+        if (this.targetTable instanceof ParentTableMeta && this.domainTable instanceof ChildTableMeta) {
             this.safeRelatedAlias = parser.identifier(stmt.tableAlias());
         } else {
             this.safeRelatedAlias = null;

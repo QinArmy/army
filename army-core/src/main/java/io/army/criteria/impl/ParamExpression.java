@@ -25,23 +25,42 @@ abstract class ParamExpression extends OperationExpression<TypeInfer> implements
 
 
     static ParamExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object value) {
-        assert paramMeta != null;
+        if (paramMeta == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
         return new SingleParamExpression(paramMeta, value);
     }
 
-    static ParamExpression multi(final @Nullable TypeMeta paramMeta, Collection<?> values) {
-        assert paramMeta != null && values.size() > 0;
+    static ParamExpression multi(final @Nullable TypeMeta paramMeta, final @Nullable Collection<?> values) {
+        if (paramMeta == null || values == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (values.size() == 0) {
+            throw ContextStack.clearStackAndCriteriaError("values must non-empty");
+        }
         return new MultiParamExpression(paramMeta, values);
     }
 
 
     static ParamExpression namedSingle(@Nullable TypeMeta paramMeta, @Nullable String name) {
-        assert paramMeta != null && name != null;
+        if (paramMeta == null || name == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
         return new NameNonNullSingleParam(paramMeta, name);
     }
 
-    static ParamExpression namedMulti(@Nullable TypeMeta paramMeta, @Nullable String name, int size) {
-        assert paramMeta != null && name != null && size > 0;
+    static ParamExpression namedNullableSingle(@Nullable TypeMeta paramMeta, @Nullable String name) {
+        if (paramMeta == null || name == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return new NamedSingleParam(paramMeta, name);
+    }
+
+    static ParamExpression namedMulti(@Nullable TypeMeta paramMeta, @Nullable String name, final int size) {
+        if (paramMeta == null || name == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (size < 1) {
+            throw ContextStack.clearStackAndCriteriaError("size must great than zero.");
+        }
         return new NamedMultiParam(paramMeta, name, size);
     }
 
