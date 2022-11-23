@@ -58,13 +58,13 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
         final Update stmt;
         stmt = SQLs.domainUpdate()
                 .update(ChinaProvince_.T, "p")
-                .set(ChinaProvince_.name, SQLs::param, "武侠江湖")
-                .set(ChinaProvince_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
+                .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
+                .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
                 .set(ChinaProvince_.provincialCapital, SQLs::param, "光明顶")
                 .set(ChinaProvince_.governor, SQLs::param, "张无忌")
                 .where(ChinaProvince_.id.equal(SQLs::literal, 1))
-                .and(ChinaProvince_.name::equal, SQLs::param, () -> "江湖")
-                .and(ChinaProvince_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greatEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.name::equal, SQLs::param, () -> "江湖")
+                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greatEqual, BigDecimal.ZERO)
                 .and(() ->
                         ChinaProvince_.governor.equal(SQLs::param, "石教主")
                                 .or(ChinaProvince_.governor::equal, SQLs::param, () -> "钟教主")
@@ -82,11 +82,11 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
         final Update stmt;
         stmt = SQLs.batchDomainUpdate()
                 .update(ChinaProvince_.T, "p")
-                .set(ChinaProvince_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
+                .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
                 .set(ChinaProvince_.governor, SQLs::namedParam)
                 .where(ChinaProvince_.id::equal, SQLs::namedParam)
-                .and(ChinaProvince_.regionGdp::plus, SQLs::namedParam, ChinaProvince_.REGION_GDP, Expression::greatEqual, BigDecimal.ZERO)
-                .and(ChinaProvince_.version::equal, SQLs::param, () -> "0")
+                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greatEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.version::equal, SQLs::param, () -> "0")
                 .paramList(this::createProvinceList)
                 .asUpdate();
 

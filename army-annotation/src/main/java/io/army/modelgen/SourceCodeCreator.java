@@ -213,22 +213,13 @@ final class SourceCodeCreator {
                 .append("public abstract class ")
                 .append(simpleClassName)
                 .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
-        ;
-
-        if (parentElement != null) {
-            builder.append(" extends ");
-            if (isSameClassName(element, parentElement)) {
-                builder.append(MetaUtils.getClassName(parentElement));
-            } else {
-                builder.append(MetaUtils.getSimpleClassName(parentElement));
-            }
-            builder.append(_MetaBridge.META_CLASS_NAME_SUFFIX);
-        }
-        builder.append(" {\n\n");
+                .append(" {\n\n")
+                .append(MEMBER_PRE);
 
         // append default Constructor
-        builder.append(MEMBER_PRE);
         switch (mode) {
+            case PARENT:
+            case CHILD:
             case SIMPLE: {
                 // simple domain
                 builder.append("private ").
@@ -237,28 +228,6 @@ final class SourceCodeCreator {
                         .append("(){\n")
                         .append(MEMBER_PRE)
                         .append("\tthrow new UnsupportedOperationException();\n")
-                        .append(MEMBER_PRE)
-                        .append('}');
-            }
-            break;
-            case PARENT: {
-                // parent domain
-                builder.append("protected ").
-                        append(simpleClassName)
-                        .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
-                        .append("(){\n")
-                        .append(MEMBER_PRE)
-                        .append("\tthrow new UnsupportedOperationException();\n")
-                        .append(MEMBER_PRE)
-                        .append('}');
-            }
-            break;
-            case CHILD: {
-                // child domain
-                builder.append("private ").
-                        append(simpleClassName)
-                        .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
-                        .append("(){\n")
                         .append(MEMBER_PRE)
                         .append('}');
             }

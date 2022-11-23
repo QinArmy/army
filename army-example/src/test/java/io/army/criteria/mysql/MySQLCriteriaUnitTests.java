@@ -640,7 +640,7 @@ public class MySQLCriteriaUnitTests {
                 .rightParen()
                 .value(new ChinaRegion<>())
                 .onDuplicateKey()
-                .set(ChinaCity_.name, SQLs::param, "荒海")
+                .set(ChinaRegion_.name, SQLs::param, "荒海")
                 .asInsert();
 
         printStmt(stmt);
