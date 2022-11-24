@@ -146,8 +146,12 @@ abstract class ContextStack {
         return new CriteriaException(msg);
     }
 
-    @Deprecated
-    static <T> CriteriaException criteriaError(Function<T, CriteriaException> function, T input) {
+
+    static <T> CriteriaException clearStackAndCriteriaError(Function<T, CriteriaException> function, T input) {
+        final Stack stack = HOLDER.get();
+        if (stack != null) {
+            HOLDER.remove();
+        }
         return function.apply(input);
     }
 

@@ -127,40 +127,19 @@ public abstract class SQLs extends SQLsSyntax {
      * </p>
      *
      * @param value {@link Expression} or parameter.
+     * @see #plusEqual(DataField, Expression)
      */
-    static SQLs.ArmyItemPair _itemPair(final DataField field, final @Nullable AssignOperator operator
-            , final @Nullable Object value) {
-        if (operator != null && value == null) {
-            throw _Exceptions.expressionIsNull();
+    static SQLs.ArmyItemPair _itemPair(final @Nullable DataField field, final @Nullable AssignOperator operator,
+                                       final @Nullable Expression value) {
+        if (field == null || value == null) {
+            throw ContextStack.clearStackAndNullPointer();
         }
-        if (field instanceof TableField) {
-            final TableField f = (TableField) field;
-            if (f.updateMode() == UpdateMode.IMMUTABLE) {
-                throw _Exceptions.immutableField(field);
-            }
-            final String fieldName = field.fieldName();
-            if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
-                throw _Exceptions.armyManageField(f);
-            }
-
-            if (!f.nullable()
-                    && (value == null
-                    || (value instanceof Expression && ((ArmyExpression) value).isNullValue()))) {
-                throw _Exceptions.nonNullField(f);
-            }
-        }
-
-        final Expression valueExp;
-        if (value instanceof Expression) {
-            valueExp = (Expression) value;
-        } else {
-            valueExp = SQLs.param(field, value);
-        }
+        //TODO right operand non-null validate
         final SQLs.ArmyItemPair itemPair;
         if (operator == null) {
-            itemPair = new SQLs.FieldItemPair(field, (ArmyExpression) valueExp);
+            itemPair = new SQLs.FieldItemPair(field, (ArmyExpression) value);
         } else {
-            itemPair = new SQLs.OperatorItemPair(field, operator, (ArmyExpression) valueExp);
+            itemPair = new SQLs.OperatorItemPair(field, operator, (ArmyExpression) value);
         }
         return itemPair;
     }
@@ -254,7 +233,7 @@ public abstract class SQLs extends SQLsSyntax {
     }//ArmyItemPair
 
     /**
-     * @see #_itemPair(DataField, AssignOperator, Object)
+     * @see #_itemPair(DataField, AssignOperator, Expression)
      */
     static class FieldItemPair extends ArmyItemPair implements _ItemPair._FieldItemPair {
 

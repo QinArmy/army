@@ -364,7 +364,7 @@ public class MySQLCriteriaUnitTests {
                     .rightParen()
                     .on(BankUser_.id::equal, BankAccount_.id)
                     .ifSet(BankUser_.nickName, SQLs::param, map::get, "newNickName")
-                    .ifSet(BankAccount_.balance, SQLs::plusEqual, SQLs::literal, amount)
+                    .ifSet(BankAccount_.balance, SQLs::plusEqual, SQLs::literal, () -> amount)
                     .where(BankUser_.partnerUserId::equal, SQLs::literal, map::get, "identityId")
                     .ifAnd(BankUser_.nickName::equal, SQLs::param, map::get, "oldNickName")
                     .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTime")
@@ -407,7 +407,7 @@ public class MySQLCriteriaUnitTests {
                     .join(PartnerUser_.T, AS, "up").on(BankUser_.id::equal, PartnerUser_.id)
                     .join(BankAccount_.T, AS, "a").on(BankUser_.id::equal, BankAccount_.userId)
                     .set(BankUser_.nickName, SQLs::param, map.get("newNickName"))
-                    .ifSet(BankAccount_.balance, SQLs::plusEqual, SQLs::literal, amount)
+                    .ifSet(BankAccount_.balance, SQLs::plusEqual, SQLs::literal, () -> amount)
                     .where(BankUser_.partnerUserId::equal, SQLs::literal, map::get, "identityId")
                     .ifAnd(BankUser_.nickName::equal, SQLs::param, map::get, "oldNickName")
                     .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTime")
@@ -635,12 +635,10 @@ public class MySQLCriteriaUnitTests {
                 .insert(Collections::emptyList, Collections.singletonList(MySQLs.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 //.insertInto(ChinaCity_.T)
-                .partition()
-                .leftParen("P1", "P2")
-                .rightParen()
+                .partition("P1", "P2")
                 .value(new ChinaRegion<>())
                 .onDuplicateKey()
-                .set(ChinaRegion_.name, SQLs::param, "荒海")
+                .update(ChinaRegion_.name, SQLs::param, "荒海")
                 .asInsert();
 
         printStmt(stmt);

@@ -123,8 +123,8 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext primaryInsertContext() {
-        return new InsertContext();
+    static CriteriaContext primaryInsertContext(@Nullable _Statement._WithClauseSpec withSpec) {
+        return new PrimaryInsertContext();
     }
 
     static CriteriaContext cteInsertContext(CriteriaContext outContext) {
@@ -553,7 +553,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public boolean isExistWindow(String windowName) {
+        public boolean isNotExistWindow(String windowName) {
             throw ContextStack.criteriaError(this, "current context don't support isExistWindow(windowName)");
         }
 
@@ -570,6 +570,12 @@ abstract class CriteriaContexts {
         @Override
         public TableMeta<?> getTable(String tableAlias) {
             String m = "current context don't support containTableAlias(tableAlias)";
+            throw ContextStack.criteriaError(this, m);
+        }
+
+        @Override
+        public void onInsertRowAlias(String rowAlias) {
+            String m = "current context don't support onInsertRowAlias(rowAlias)";
             throw ContextStack.criteriaError(this, m);
         }
 
@@ -1120,16 +1126,72 @@ abstract class CriteriaContexts {
     }//JoinableContext
 
 
+    private static abstract class InsertContext extends StatementContext {
+
+        private String rowAlias;
+
+        private Map<FieldMeta<?>, QualifiedField<?>> qualifiedFieldMap;
+
+        private InsertContext(@Nullable CriteriaContext outerContext) {
+            super(outerContext);
+        }
+
+
+        @Override
+        public final void onInsertRowAlias(final @Nullable String rowAlias) {
+            if (this.rowAlias != null) {
+                throw ContextStack.castCriteriaApi(this);
+            } else if (rowAlias == null) {
+                throw ContextStack.nullPointer(this);
+            } else if (!_StringUtils.hasText(rowAlias)) {
+                throw ContextStack.criteriaError(this, "row alias no text.");
+            }
+            this.rowAlias = rowAlias;
+        }
+
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
+            final String rowAlias = this.rowAlias;
+            if (rowAlias == null) {
+                throw ContextStack.criteriaError(this, "current insert statement have no row alias.");
+            } else if (!rowAlias.equals(tableAlias)) {
+                String m = String.format("row alias[%s] and insert statement row alias[%s] not match.",
+                        tableAlias, rowAlias);
+                throw ContextStack.criteriaError(this, m);
+            }
+            Map<FieldMeta<?>, QualifiedField<?>> qualifiedFieldMap = this.qualifiedFieldMap;
+            if (qualifiedFieldMap == null) {
+                qualifiedFieldMap = new HashMap<>();
+                this.qualifiedFieldMap = qualifiedFieldMap;
+            } else if (!(qualifiedFieldMap instanceof HashMap)) {
+                throw ContextStack.castCriteriaApi(this);
+            }
+            QualifiedField<?> qualifiedField;
+            qualifiedField = qualifiedFieldMap.get(field);
+            if (qualifiedField == null) {
+                qualifiedField = QualifiedFieldImpl.create(rowAlias, field, SQLs._IDENTITY);
+                qualifiedFieldMap.put(field, qualifiedField);
+            }
+            return (QualifiedField<T>) qualifiedField;
+        }
+
+
+    }//InsertContext
+
+
     /**
      * @see #primaryInsertContext()
      */
-    private static final class InsertContext extends StatementContext {
+    private static final class PrimaryInsertContext extends InsertContext {
 
-        private InsertContext() {
+        private PrimaryInsertContext() {
             super(null);
         }
 
-    }// InsertContext
+
+    }// PrimaryInsertContext
 
 
     /**
@@ -1266,9 +1328,9 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final boolean isExistWindow(final String windowName) {
+        public final boolean isNotExistWindow(final String windowName) {
             final Map<String, Boolean> windowNameMap = this.windowNameMap;
-            return windowNameMap != null && windowNameMap.containsKey(windowName);
+            return windowNameMap == null || windowNameMap.get(windowName) == null;
         }
 
         @Override

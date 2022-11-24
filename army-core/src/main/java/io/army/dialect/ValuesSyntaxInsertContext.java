@@ -12,22 +12,27 @@ abstract class ValuesSyntaxInsertContext extends InsertContext implements _Value
     final NullMode nullMode;
 
 
-    ValuesSyntaxInsertContext(@Nullable StatementContext outerContext, _Insert._ValuesSyntaxInsert stmt
-            , ArmyParser parser, Visible visible) {
+    ValuesSyntaxInsertContext(@Nullable StatementContext outerContext, final _Insert._ValuesSyntaxInsert stmt,
+                              ArmyParser parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
+
+        final _Insert._ValuesSyntaxInsert targetStmt;
         if (stmt instanceof _Insert._ChildInsert) {
-            this.nullMode = ((_Insert._ValuesSyntaxInsert) ((_Insert._ChildInsert) stmt).parentStmt()).nullHandle();
+            targetStmt = (_Insert._ValuesSyntaxInsert) ((_Insert._ChildInsert) stmt).parentStmt();
         } else {
-            this.nullMode = stmt.nullHandle();
+            targetStmt = stmt;
         }
+        this.nullMode = targetStmt.nullHandle();
+
     }
 
 
-    ValuesSyntaxInsertContext(@Nullable StatementContext outerContext,_Insert._ChildInsert stmt
+    ValuesSyntaxInsertContext(@Nullable StatementContext outerContext, _Insert._ChildInsert stmt
             , ValuesSyntaxInsertContext parentContext) {
         super(outerContext, stmt, parentContext);
         this.nullMode = ((_Insert._ValuesSyntaxInsert) stmt).nullHandle();
         assert this.nullMode == parentContext.nullMode;
+
     }
 
 

@@ -65,6 +65,22 @@ public abstract class ArrayUtils {
     @SafeVarargs
     @SuppressWarnings("varargs")
     @NonNull
+    public static <T> List<T> unmodifiableListOf(T first, T... rest) {
+        final List<T> list;
+        if (rest.length == 0) {
+            list = Collections.singletonList(first);
+        } else {
+            final List<T> temp = new ArrayList<>(1 + rest.length);
+            temp.add(first);
+            Collections.addAll(temp, rest);
+            list = Collections.unmodifiableList(temp);
+        }
+        return list;
+    }
+
+    @SafeVarargs
+    @SuppressWarnings("varargs")
+    @NonNull
     public static <T> List<T> asList(@NonNull Collection<T> collection, @Nullable T... addElements) {
         List<T> list;
         int size = collection.size();

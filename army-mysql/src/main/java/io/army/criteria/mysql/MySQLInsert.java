@@ -4,10 +4,13 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLFunctions;
 import io.army.criteria.impl.MySQLs;
+import io.army.lang.Nullable;
 import io.army.meta.*;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -23,15 +26,111 @@ public interface MySQLInsert extends MySQLStatement {
     }
 
 
-    interface _StaticOnDuplicateKeySetClause<I extends Item, F extends TableField>
-            extends Update._StaticSetClause<F, _StaticOnDuplicateKeySetSpec<I, F>> {
+    interface _StaticConflictUpdateCommaClause<I extends Item, F extends TableField> extends _DmlInsertClause<I> {
+
+        _StaticConflictUpdateCommaClause<I, F> comma(F field, Expression value);
+
+        _StaticConflictUpdateCommaClause<I, F> comma(F field, Supplier<Expression> supplier);
+
+        _StaticConflictUpdateCommaClause<I, F> comma(F field, Function<F, Expression> function);
+
+        _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Expression, Expression> valueOperator,
+                                                     Expression expression);
+
+        _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Object, Expression> valueOperator,
+                                                     @Nullable Object expression);
+
+        <E> _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, E, Expression> valueOperator,
+                                                         Supplier<E> supplier);
+
+        _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Object, Expression> valueOperator,
+                                                     Function<String, ?> function, String keyName);
+
+        _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                                                     BiFunction<F, Expression, Expression> valueOperator,
+                                                     Expression expression);
+
+        _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                                                     BiFunction<F, Object, Expression> valueOperator,
+                                                     Object value);
+
+        <E> _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                                                         BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier);
+
+        _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                                                     BiFunction<F, Object, Expression> valueOperator,
+                                                     Function<String, ?> function, String keyName);
+
+        _StaticConflictUpdateCommaClause<I, F> ifComma(F field, Supplier<Expression> supplier);
+
+        _StaticConflictUpdateCommaClause<I, F> ifComma(F field, Function<F, Expression> function);
+
+        <E> _StaticConflictUpdateCommaClause<I, F> ifComma(F field, BiFunction<F, E, Expression> valueOperator,
+                                                           Supplier<E> getter);
+
+        _StaticConflictUpdateCommaClause<I, F> ifComma(F field, BiFunction<F, Object, Expression> valueOperator,
+                                                       Function<String, ?> function, String keyName);
+
+        <E> _StaticConflictUpdateCommaClause<I, F> ifComma(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                                                           BiFunction<F, E, Expression> valueOperator, Supplier<E> getter);
+
+        _StaticConflictUpdateCommaClause<I, F> ifComma(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                                                       BiFunction<F, Object, Expression> valueOperator,
+                                                       Function<String, ?> function, String keyName);
 
     }
 
-    interface _StaticOnDuplicateKeySetSpec<I extends Item, F extends TableField>
-            extends _StaticOnDuplicateKeySetClause<I, F>
-            , _DmlInsertClause<I> {
+    interface _StaticConflictUpdateClause<I extends Item, F extends TableField> {
 
+        _StaticConflictUpdateCommaClause<I, F> update(F field, Expression value);
+
+        _StaticConflictUpdateCommaClause<I, F> update(F field, Supplier<Expression> supplier);
+
+        _StaticConflictUpdateCommaClause<I, F> update(F field, Function<F, Expression> function);
+
+        _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Expression, Expression> valueOperator,
+                                                      Expression expression);
+
+        _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Object, Expression> valueOperator,
+                                                      @Nullable Object value);
+
+        <E> _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, E, Expression> valueOperator,
+                                                          Supplier<E> supplier);
+
+        _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Object, Expression> valueOperator,
+                                                      Function<String, ?> function, String keyName);
+
+        _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                                                      BiFunction<F, Expression, Expression> valueOperator,
+                                                      Expression expression);
+
+        _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                                                      BiFunction<F, Object, Expression> valueOperator,
+                                                      Object value);
+
+        <E> _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                                                          BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier);
+
+        _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                                                      BiFunction<F, Object, Expression> valueOperator,
+                                                      Function<String, ?> function, String keyName);
+
+        _StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, Supplier<Expression> supplier);
+
+        _StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, Function<F, Expression> function);
+
+        <E> _StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, BiFunction<F, E, Expression> valueOperator,
+                                                            Supplier<E> getter);
+
+        _StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, BiFunction<F, Object, Expression> valueOperator,
+                                                        Function<String, ?> function, String keyName);
+
+        <E> _StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                                                            BiFunction<F, E, Expression> valueOperator, Supplier<E> getter);
+
+        _StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                                                        BiFunction<F, Object, Expression> valueOperator,
+                                                        Function<String, ?> function, String keyName);
     }
 
 
@@ -40,11 +139,11 @@ public interface MySQLInsert extends MySQLStatement {
      */
     interface _OnDuplicateKeyUpdateSpec<I extends Item, F extends TableField> extends _DmlInsertClause<I> {
         //TODO MySQLFunctions#values(FieldMeta)
-        _StaticOnDuplicateKeySetClause<I, F> onDuplicateKey();
+        _StaticConflictUpdateClause<I, F> onDuplicateKey();
 
-        _DmlInsertClause<I> onDuplicateKey(Consumer<ItemPairs<F>> consumer);
+        _DmlInsertClause<I> onDuplicateKeyUpdate(Consumer<ItemPairs<F>> consumer);
 
-        _DmlInsertClause<I> ifOnDuplicateKey(Consumer<ItemPairs<F>> consumer);
+        _DmlInsertClause<I> ifOnDuplicateKeyUpdate(Consumer<ItemPairs<F>> consumer);
     }
 
 
@@ -98,91 +197,56 @@ public interface MySQLInsert extends MySQLStatement {
 
     }
 
-    interface _PartitionSpec<I extends Item, T> extends MySQLQuery._PartitionClause<_ColumnListSpec<I, T>>
+    interface _PartitionSpec<I extends Item, T> extends _PartitionClause<_ColumnListSpec<I, T>>
             , _ColumnListSpec<I, T> {
 
     }
 
 
+    interface _ChildIntoClause<I extends Item, P> {
 
-    interface _ChildIntoClause<P> {
-
-        <T> _PartitionSpec<Insert, T> into(ComplexTableMeta<P, T> table);
-
-    }
-
-    interface _ChildInsertIntoSpec<P> extends _InsertClause<_ChildIntoClause<P>> {
-
-        <T> _PartitionSpec<Insert, T> insertInto(ComplexTableMeta<P, T> table);
-    }
-
-
-
-    interface _PrimaryIntoClause {
-
-        <T> _PartitionSpec<Insert, T> into(SimpleTableMeta<T> table);
-
-
-        <P> _PartitionSpec<Insert._ParentInsert<_ChildInsertIntoSpec<P>>, P> into(ParentTableMeta<P> table);
+        <T> _PartitionSpec<I, T> into(ComplexTableMeta<P, T> table);
 
     }
 
+    interface _ChildInsertIntoSpec<I extends Item, P> extends _InsertClause<_ChildIntoClause<I, P>> {
 
-    interface _PrimaryInsertIntoSpec extends _InsertClause<_PrimaryIntoClause>, Item {
-
-        <T> _PartitionSpec<Insert, T> insertInto(SimpleTableMeta<T> table);
-
-
-        <P> _PartitionSpec<Insert._ParentInsert<_ChildInsertIntoSpec<P>>, P> insertInto(ParentTableMeta<P> table);
-
+        <T> _PartitionSpec<I, T> insertInto(ComplexTableMeta<P, T> table);
     }
 
 
-    interface _PrimaryPreferLiteralSpec extends Insert._PreferLiteralClause<_PrimaryInsertIntoSpec>
-            , _PrimaryInsertIntoSpec {
-
-    }
-
-    interface _PrimaryNullOptionSpec extends Insert._NullOptionClause<_PrimaryPreferLiteralSpec>
-            , _PrimaryPreferLiteralSpec {
-
-    }
-
-    interface _PrimaryOptionSpec extends Insert._MigrationOptionClause<_PrimaryNullOptionSpec>
-            , _PrimaryNullOptionSpec {
-
-    }
-
-
-    interface _PrimaryIntoSingleClause<I extends Item> {
+    interface _PrimaryIntoClause<I extends Item> {
 
         <T> _PartitionSpec<I, T> into(SingleTableMeta<T> table);
 
-    }
 
-
-    interface _PrimaryInsertIntoSingleSpec<I extends Item> extends _InsertClause<_PrimaryIntoSingleClause<I>>, Item {
-
-        <T> _PartitionSpec<I, T> insertInto(SingleTableMeta<T> table);
+        <P> _PartitionSpec<Insert._ParentInsert<_ChildInsertIntoSpec<I, P>>, P> into(ParentTableMeta<P> table);
 
     }
 
 
-    interface _PrimaryPreferLiteralSingleSpec<I extends Item>
-            extends Insert._PreferLiteralClause<_PrimaryInsertIntoSingleSpec<I>>
-            , _PrimaryInsertIntoSingleSpec<I> {
+    interface _PrimaryInsertIntoSpec<I extends Item> extends _InsertClause<_PrimaryIntoClause<I>>, Item {
+
+        <T> _PartitionSpec<I, T> insertInto(SimpleTableMeta<T> table);
+
+
+        <P> _PartitionSpec<Insert._ParentInsert<_ChildInsertIntoSpec<I, P>>, P> insertInto(ParentTableMeta<P> table);
 
     }
 
-    interface _PrimaryNullOptionSingleSpec<I extends Item>
-            extends Insert._NullOptionClause<_PrimaryPreferLiteralSingleSpec<I>>
-            , _PrimaryPreferLiteralSingleSpec<I> {
+
+    interface _PrimaryPreferLiteralSpec<I extends Item> extends Insert._PreferLiteralClause<_PrimaryInsertIntoSpec<I>>
+            , _PrimaryInsertIntoSpec<I> {
 
     }
 
-    interface _PrimaryOptionSingleSpec<I extends Item>
-            extends Insert._MigrationOptionClause<_PrimaryNullOptionSingleSpec<I>>
-            , _PrimaryNullOptionSingleSpec<I> {
+    interface _PrimaryNullOptionSpec<I extends Item> extends Insert._NullOptionClause<_PrimaryPreferLiteralSpec<I>>
+            , _PrimaryPreferLiteralSpec<I> {
+
+    }
+
+    interface _PrimaryOptionSpec<I extends Item> extends Insert._MigrationOptionClause<_PrimaryNullOptionSpec<I>>
+            , _PrimaryNullOptionSpec<I> {
 
     }
 

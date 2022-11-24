@@ -167,7 +167,7 @@ public interface MySQLLoadData extends MySQLStatement, SQLCommand {
 
     }
 
-    interface _PartitionSpec<I extends Item, T> extends MySQLQuery._PartitionClause<_CharsetSpec<I, T>>
+    interface _PartitionSpec<I extends Item, T> extends _PartitionClause_0<_CharsetSpec<I, T>>
             , _CharsetSpec<I, T> {
 
     }

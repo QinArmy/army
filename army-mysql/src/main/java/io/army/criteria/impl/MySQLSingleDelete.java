@@ -9,6 +9,7 @@ import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
 import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLQuery;
+import io.army.criteria.mysql.MySQLStatement;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
@@ -36,7 +37,7 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         extends SingleDelete.WithSingleDelete<I, MySQLCtes, WE, WR, WA, OR, LR, Object, Object>
         implements MySQLDelete, _MySQLSingleDelete, Delete
         , MySQLDelete._SingleDeleteClause<DT>
-        , MySQLQuery._PartitionClause<PR>
+        , MySQLStatement._PartitionClause_0<PR>
         , Delete._SingleDeleteFromClause<DT> {
 
 

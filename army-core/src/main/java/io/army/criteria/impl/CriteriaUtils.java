@@ -554,6 +554,11 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, "RETURNING list is empty");
     }
 
+    static CriteriaException illegalItemPair(CriteriaContext context, @Nullable ItemPair pair) {
+        String m = String.format("ItemPair %s is illegal.", _ClassUtils.safeClassName(pair));
+        return ContextStack.criteriaError(context, m);
+    }
+
     static CriteriaException funDontSupportMultiValue(String name) {
         String m = String.format("function[%s] don't support multi-value", name);
         return ContextStack.criteriaError(ContextStack.peek(), m);

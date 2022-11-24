@@ -110,8 +110,10 @@ final class MySQLDialectParser extends MySQLParser {
         context.appendFieldList();
         //3. values clause
         context.appendValueList();
+
         //4. on duplicate key update clause
         this.appendMySqlConflictClause(context, stmt);
+
     }
 
 
@@ -1220,7 +1222,8 @@ final class MySQLDialectParser extends MySQLParser {
         itemPairList = stmt.updateSetClauseList();
         if (itemPairList.size() > 0) {
             final String safeRowAlias;
-            if (!(stmt instanceof _Insert._QueryInsert) && (safeRowAlias = context.safeRowAlias()) != null) {
+            safeRowAlias = context.safeRowAlias();
+            if (safeRowAlias != null) {
                 context.sqlBuilder()
                         .append(_Constant.SPACE_AS_SPACE)
                         .append(safeRowAlias);

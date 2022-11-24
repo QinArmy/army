@@ -1622,9 +1622,19 @@ abstract class FunctionUtils {
             return this.elseValue(supplier.get());
         }
 
+
         @Override
-        public <T> CaseFunction<I, E> elseValue(Function<T, Expression> valueOperator
-                , Supplier<T> getter) {
+        public CaseFunction<I, E> elseValue(Function<Expression, Expression> valueOperator, Expression expression) {
+            return this.elseValue(valueOperator.apply(expression));
+        }
+
+        @Override
+        public CaseFunction<I, E> elseValue(Function<Object, Expression> valueOperator, @Nullable Object value) {
+            return this.elseValue(valueOperator.apply(value));
+        }
+
+        @Override
+        public <T> CaseFunction<I, E> elseValue(Function<T, Expression> valueOperator, Supplier<T> getter) {
             return this.elseValue(valueOperator.apply(getter.get()));
         }
 
@@ -1635,8 +1645,22 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public <T> CaseFunction<I, E> elseValue(ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter) {
+        public _CaseEndClause<E> elseValue(ExpressionOperator<Expression, Expression, Expression> expOperator,
+                                           BiFunction<Expression, Expression, Expression> valueOperator,
+                                           Expression expression) {
+            return this.elseValue(expOperator.apply(valueOperator, expression));
+        }
+
+        @Override
+        public _CaseEndClause<E> elseValue(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                           BiFunction<Expression, Object, Expression> valueOperator, Object value) {
+            return this.elseValue(expOperator.apply(valueOperator, value));
+        }
+
+        @Override
+        public <T> CaseFunction<I, E> elseValue(ExpressionOperator<Expression, T, Expression> expOperator,
+                                                BiFunction<Expression, T, Expression> valueOperator,
+                                                Supplier<T> getter) {
             return this.elseValue(expOperator.apply(valueOperator, getter.get()));
         }
 

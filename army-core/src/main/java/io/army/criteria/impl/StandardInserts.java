@@ -48,7 +48,7 @@ abstract class StandardInserts extends InsertSupport {
         private final Function<Insert, I> function;
 
         private PrimaryInsertIntoClause(Function<Insert, I> function) {
-            super(CriteriaContexts.primaryInsertContext());
+            super(CriteriaContexts.primaryInsertContext(null));
             ContextStack.push(this.context);
             this.function = function;
         }
@@ -120,7 +120,7 @@ abstract class StandardInserts extends InsertSupport {
 
         private ChildInsertIntoClause(ValueSyntaxOptions options,
                                       Function<StandardComplexValuesClause<?, ?>, I> dmlFunction) {
-            super(options, CriteriaContexts.primaryInsertContext());
+            super(options, CriteriaContexts.primaryInsertContext(null));
             ContextStack.push(this.context);
             this.dmlFunction = dmlFunction;
         }

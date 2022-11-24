@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +65,12 @@ public class StandardInsertUnitTests extends StandardUnitTests {
 
     @Test
     public void valueInsertParent() {
+        final ChinaRegion<?> r;
+        r = new ChinaRegion<>()
+                .setName("雪谷海沟")
+                .setRegionGdp(new BigDecimal("666.88"))
+                .setParentId(2343L);
+
         final Insert stmt;
         stmt = SQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
@@ -72,8 +79,8 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
 
-                .leftParen(ChinaRegion_.name, SQLs::param, "武当山")
-                .comma(ChinaRegion_.regionGdp, SQLs::literal, "6666.66")
+                .leftParen(ChinaRegion_.name, SQLs::param, r::getName)
+                .comma(ChinaRegion_.regionGdp, SQLs::literal, r::getRegionGdp)
                 .comma(ChinaRegion_.parentId, SQLs::literal, 0)
                 .rightParen()
 
@@ -95,13 +102,13 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
 
-                .leftParen(ChinaRegion_.name, SQLs::literal, "武当山")
-                .comma(ChinaRegion_.regionGdp, SQLs::literal, "6666.66")
-                .comma(ChinaRegion_.parentId, SQLs::param, 0)
+                .leftParen(ChinaRegion_.name, SQLs::literal, () -> "武当山")
+                .comma(ChinaRegion_.regionGdp, SQLs::literal, () -> "6666.66")
+                .comma(ChinaRegion_.parentId, SQLs::param, () -> 0)
                 .rightParen()
 
-                .leftParen(ChinaRegion_.name, SQLs::literal, "光明顶")
-                .comma(ChinaRegion_.parentId, SQLs::param, 0)
+                .leftParen(ChinaRegion_.name, SQLs::literal, () -> "光明顶")
+                .comma(ChinaRegion_.parentId, SQLs::param, () -> 0)
                 .rightParen()
 
                 .asInsert()

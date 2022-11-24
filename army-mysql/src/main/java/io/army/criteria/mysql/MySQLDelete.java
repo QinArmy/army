@@ -117,7 +117,7 @@ public interface MySQLDelete extends MySQLStatement {
     }
 
 
-    interface _SinglePartitionSpec<I extends Item> extends MySQLQuery._PartitionClause<_SingleWhereClause<I>>
+    interface _SinglePartitionSpec<I extends Item> extends _PartitionClause_0<_SingleWhereClause<I>>
             , _SingleWhereClause<I> {
 
     }
@@ -257,7 +257,7 @@ public interface MySQLDelete extends MySQLStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link MySQLQuery._PartitionClause}</li>
+     *          <li>{@link _PartitionClause_0}</li>
      *          <li>{@link MySQLDelete._BatchSingleWhereClause}</li>
      *     </ul>
      * </p>
@@ -270,7 +270,7 @@ public interface MySQLDelete extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchSinglePartitionSpec<I extends Item>
-            extends MySQLQuery._PartitionClause<_BatchSingleWhereClause<I>>
+            extends _PartitionClause_0<_BatchSingleWhereClause<I>>
             , _BatchSingleWhereClause<I> {
 
     }

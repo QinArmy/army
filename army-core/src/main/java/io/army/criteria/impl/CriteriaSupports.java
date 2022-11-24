@@ -543,8 +543,20 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public final <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
+        public final SR set(F field, BiFunction<F, Expression, Expression> valueOperator, Expression expression) {
+            this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, expression)));
+            return (SR) this;
+        }
+
+        @Override
+        public final SR set(F field, BiFunction<F, Object, Expression> valueOperator, @Nullable Object value) {
             this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+            return (SR) this;
+        }
+
+        @Override
+        public final <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
+            this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, supplier.get())));
             return (SR) this;
         }
 
@@ -556,15 +568,30 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public final <E> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
-                , BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
+        public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                            BiFunction<F, Object, Expression> valueOperator, Expression expression) {
+            this.consumer.accept(fieldOperator.apply(field, valueOperator.apply(field, expression)));
+            return (SR) this;
+        }
+
+        @Override
+        public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                            BiFunction<F, Object, Expression> valueOperator, Object value) {
             this.consumer.accept(fieldOperator.apply(field, valueOperator.apply(field, value)));
             return (SR) this;
         }
 
         @Override
-        public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
-                , BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        public final <E> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                                BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
+            this.consumer.accept(fieldOperator.apply(field, valueOperator.apply(field, supplier.get())));
+            return (SR) this;
+        }
+
+        @Override
+        public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                            BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function,
+                            String keyName) {
             this.consumer.accept(fieldOperator.apply(field, valueOperator.apply(field, function.apply(keyName))));
             return (SR) this;
         }
@@ -590,8 +617,9 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public final <E> SR ifSet(F field, BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
-            if (value != null) {
+        public final <E> SR ifSet(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
+            final E value;
+            if ((value = supplier.get()) != null) {
                 this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
             }
             return (SR) this;
@@ -611,8 +639,9 @@ abstract class CriteriaSupports {
 
         @Override
         public final <E> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator
-                , BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
-            if (value != null) {
+                , BiFunction<F, E, Expression> valueOperator, Supplier<E> getter) {
+            final E value;
+            if ((value = getter.get()) != null) {
                 this.consumer.accept(fieldOperator.apply(field, valueOperator.apply(field, value)));
             }
             return (SR) this;

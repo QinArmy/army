@@ -56,6 +56,17 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
         return this.or(expOperator.apply(supplier.get()));
     }
 
+    @Override
+    public final OperationPredicate<I> or(ExpressionOperator<Expression, Expression, IPredicate> expOperator,
+                                          BiFunction<Expression, Expression, Expression> operator, Expression expression) {
+        return this.or(expOperator.apply(operator, expression));
+    }
+
+    @Override
+    public final OperationPredicate<I> or(ExpressionOperator<Expression, Object, IPredicate> expOperator,
+                                          BiFunction<Expression, Object, Expression> operator, Object value) {
+        return this.or(expOperator.apply(operator, value));
+    }
 
     @Override
     public final <T> OperationPredicate<I> or(ExpressionOperator<Expression, T, IPredicate> expOperator
@@ -98,6 +109,14 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
             , String paramName, int size) {
         return this.or(expOperator.apply(namedOperator, paramName, size));
     }
+
+    @Override
+    public final OperationPredicate<I> or(BetweenValueOperator<Object> expOperator,
+                                          BiFunction<Expression, Object, Expression> operator, Object firstValue,
+                                          SQLsSyntax.WordAnd and, Object secondValue) {
+        return this.or(expOperator.apply(operator, firstValue, and, secondValue));
+    }
+
 
     @Override
     public final OperationPredicate<I> or(Consumer<Consumer<IPredicate>> consumer) {
@@ -158,9 +177,10 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
 
     @Override
     public final OperationPredicate<I> ifOr(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                                            TeNamedOperator<DataField> namedOperator, @Nullable Integer size) {
+                                            TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier) {
         final OperationPredicate<I> predicate;
-        if (size == null) {
+        final Integer size;
+        if ((size = supplier.get()) == null) {
             predicate = this;
         } else {
             predicate = this.or(expOperator.apply(namedOperator, size));
@@ -211,9 +231,10 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
 
     @Override
     public final OperationPredicate<I> ifOr(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator
-            , String paramName, @Nullable Integer size) {
+            , String paramName, Supplier<Integer> supplier) {
         final OperationPredicate<I> predicate;
-        if (size == null) {
+        final Integer size;
+        if ((size = supplier.get()) == null) {
             predicate = this;
         } else {
             predicate = this.or(expOperator.apply(namedOperator, paramName, size));
@@ -263,8 +284,21 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
     }
 
     @Override
-    public final <E extends RightOperand> OperationPredicate<I> and(Function<E, IPredicate> expOperator, Supplier<E> supplier) {
+    public final <E extends RightOperand> OperationPredicate<I> and(Function<E, IPredicate> expOperator,
+                                                                    Supplier<E> supplier) {
         return this.and(expOperator.apply(supplier.get()));
+    }
+
+    @Override
+    public final OperationPredicate<I> and(ExpressionOperator<Expression, Expression, IPredicate> expOperator,
+                                           BiFunction<Expression, Expression, Expression> valueOperator, Expression expression) {
+        return this.and(expOperator.apply(valueOperator, expression));
+    }
+
+    @Override
+    public final OperationPredicate<I> and(ExpressionOperator<Expression, Object, IPredicate> expOperator,
+                                           BiFunction<Expression, Object, Expression> valueOperator, Object value) {
+        return this.and(expOperator.apply(valueOperator, value));
     }
 
     @Override
@@ -283,6 +317,13 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
     public final OperationPredicate<I> and(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
                                            TeNamedOperator<DataField> namedOperator, int size) {
         return this.and(expOperator.apply(namedOperator, size));
+    }
+
+    @Override
+    public final OperationPredicate<I> and(BetweenValueOperator<Object> expOperator,
+                                           BiFunction<Expression, Object, Expression> operator, Object firstValue,
+                                           SQLsSyntax.WordAnd and, Object secondValue) {
+        return this.and(expOperator.apply(operator, firstValue, and, secondValue));
     }
 
     @Override
@@ -358,9 +399,10 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
 
     @Override
     public final OperationPredicate<I> ifAnd(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                                             TeNamedOperator<DataField> namedOperator, @Nullable Integer size) {
+                                             TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier) {
         final OperationPredicate<I> predicate;
-        if (size == null) {
+        final Integer size;
+        if ((size = supplier.get()) == null) {
             predicate = this;
         } else {
             predicate = this.and(expOperator.apply(namedOperator, size));
@@ -412,9 +454,10 @@ abstract class OperationPredicate<I extends Item> extends OperationExpression<I>
 
     @Override
     public final OperationPredicate<I> ifAnd(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator
-            , String paramName, @Nullable Integer size) {
+            , String paramName, Supplier<Integer> supplier) {
         final OperationPredicate<I> predicate;
-        if (size == null) {
+        final Integer size;
+        if ((size = supplier.get()) == null) {
             predicate = this;
         } else {
             predicate = this.and(expOperator.apply(namedOperator, paramName, size));

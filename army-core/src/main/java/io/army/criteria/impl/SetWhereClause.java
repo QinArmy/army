@@ -62,25 +62,48 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
+    public final SR set(F field, BiFunction<F, Expression, Expression> valueOperator, Expression expression) {
+        return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, expression)));
+    }
+
+    @Override
+    public final SR set(F field, BiFunction<F, Object, Expression> valueOperator, @Nullable Object value) {
         return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
     }
 
     @Override
-    public final SR set(F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function
-            , String keyName) {
-        return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, function.apply(keyName))));
+    public final <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
+        return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, supplier.get())));
     }
 
     @Override
-    public final <E> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
-            , BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
+    public final SR set(F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function,
+                        String keyName) {
+        return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, function.apply(keyName))));
+    }
+
+
+    @Override
+    public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                        BiFunction<F, Object, Expression> valueOperator, Expression expression) {
+        return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, expression)));
+    }
+
+    @Override
+    public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                        BiFunction<F, Object, Expression> valueOperator, Object value) {
         return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
     }
 
     @Override
-    public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
-            , BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+    public final <E> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                            BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
+        return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, supplier.get())));
+    }
+
+    @Override
+    public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                        BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
         return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, function.apply(keyName))));
     }
 
@@ -106,8 +129,9 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final <E> SR ifSet(F field, BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
-        if (value != null) {
+    public final <E> SR ifSet(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
+        final E value;
+        if ((value = supplier.get()) != null) {
             this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
         }
         return (SR) this;
@@ -127,8 +151,9 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
 
     @Override
     public final <E> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator
-            , BiFunction<F, E, Expression> valueOperator, @Nullable E value) {
-        if (value != null) {
+            , BiFunction<F, E, Expression> valueOperator, Supplier<E> getter) {
+        final E value;
+        if ((value = getter.get()) != null) {
             this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
         }
         return (SR) this;

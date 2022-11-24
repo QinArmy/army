@@ -87,12 +87,15 @@ interface CriteriaContext {
 
     void onAddWindow(String windowName);
 
-    boolean isExistWindow(String windowName);
+    boolean isNotExistWindow(String windowName);
 
     void onRefWindow(String windowName);
 
     @Nullable
     TableMeta<?> getTable(String tableAlias);
+
+
+    void onInsertRowAlias(String rowAlias);
 
 
     /**

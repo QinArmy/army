@@ -12,6 +12,9 @@ public interface _InsertContext extends _DmlContext {
     LiteralMode literalMode();
 
     @Nullable
+    String rowAlias();
+
+    @Nullable
     String safeRowAlias();
 
     @Override

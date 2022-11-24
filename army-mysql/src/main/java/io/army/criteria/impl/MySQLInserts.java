@@ -9,14 +9,17 @@ import io.army.criteria.mysql.MySQLInsert;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
+import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
-import io.army.util._StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -38,69 +41,19 @@ abstract class MySQLInserts extends InsertSupport {
         throw new UnsupportedOperationException();
     }
 
-    static MySQLInsert._PrimaryOptionSpec primaryInsert() {
-        return new PrimaryInsertIntoClause();
-    }
-
-    static <I extends Item> MySQLInsert._PrimaryIntoSingleClause<I> insertSingle(Function<Insert, I> function) {
-        return new PrimaryInsertIntoSingleClause<>(function);
+    static <I extends Item> MySQLInsert._PrimaryOptionSpec<I> primaryInsert(Function<Insert, I> function) {
+        return new PrimaryInsertIntoClause<>(function);
     }
 
 
-    private static Insert createSimpleInsert(final MySQLComplexValuesClause<?, ?> clause) {
-        final InsertMode mode;
-        mode = clause.getInsertMode();
-        final Statement._DmlInsertClause<Insert> spec;
-        switch (mode) {
-            case DOMAIN:
-                spec = new PrimarySimpleDomainInsertStatement(clause);
-                break;
-            case VALUES:
-                spec = new PrimarySimpleValueInsertStatement(clause);
-                break;
-            case ASSIGNMENT:
-                spec = new PrimarySimpleAssignmentInsertStatement(clause);
-                break;
-            case QUERY:
-                spec = new PrimarySimpleQueryInsertStatement(clause);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(mode);
-        }
-        return spec.asInsert();
-    }
-
-    private static <P> Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>> createParentInsert(
-            final MySQLComplexValuesClause<?, ?> clause) {
-        final InsertMode mode;
-        mode = clause.getInsertMode();
-        final Statement._DmlInsertClause<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>> spec;
-        switch (mode) {
-            case DOMAIN:
-                spec = new PrimaryParentDomainInsertStatement<>(clause);
-                break;
-            case VALUES:
-                spec = new PrimaryParentValueInsertStatement<>(clause);
-                break;
-            case ASSIGNMENT:
-                spec = new PrimaryParentAssignmentInsertStatement<>(clause);
-                break;
-            case QUERY:
-                spec = new PrimaryParentQueryInsertStatement<>(clause);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(mode);
-        }
-        return spec.asInsert();
-    }
-
-    private static final class PrimaryInsertIntoSingleClause<I extends Item>
+    private static final class PrimaryInsertIntoClause<I extends Item>
             extends InsertSupport.NonQueryInsertOptionsImpl<
-            MySQLInsert._PrimaryNullOptionSingleSpec<I>,
-            MySQLInsert._PrimaryPreferLiteralSingleSpec<I>,
-            MySQLInsert._PrimaryInsertIntoSingleSpec<I>>
-            implements MySQLInsert._PrimaryOptionSingleSpec<I>
-            , MySQLInsert._PrimaryIntoSingleClause<I> {
+            MySQLInsert._PrimaryNullOptionSpec<I>,
+            MySQLInsert._PrimaryPreferLiteralSpec<I>,
+            MySQLInsert._PrimaryInsertIntoSpec<I>>
+            implements MySQLInsert._PrimaryOptionSpec<I>,
+            MySQLInsert._PrimaryIntoClause<I> {
+
 
         private final Function<Insert, I> function;
 
@@ -108,15 +61,15 @@ abstract class MySQLInserts extends InsertSupport {
 
         private List<MySQLs.Modifier> modifierList;
 
-        private PrimaryInsertIntoSingleClause(Function<Insert, I> function) {
-            super(CriteriaContexts.primaryInsertContext());
+        private PrimaryInsertIntoClause(Function<Insert, I> function) {
+            super(CriteriaContexts.primaryInsertContext(null));
             ContextStack.push(this.context);
             this.function = function;
         }
 
+
         @Override
-        public MySQLInsert._PrimaryIntoSingleClause<I> insert(Supplier<List<Hint>> supplier
-                , List<MySQLSyntax.Modifier> modifiers) {
+        public MySQLInsert._PrimaryIntoClause<I> insert(Supplier<List<Hint>> supplier, List<MySQLs.Modifier> modifiers) {
             this.hintList = CriteriaUtils.asHintList(this.context, supplier.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::insertModifier);
             return this;
@@ -124,104 +77,112 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public <T> MySQLInsert._PartitionSpec<I, T> into(SingleTableMeta<T> table) {
-            return this.insertInto(table);
+            return new MySQLComplexValuesClause<>(this, table, this::createSingleInsert);
+        }
+
+
+        @Override
+        public <P> MySQLInsert._PartitionSpec<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<I, P>>, P> into(ParentTableMeta<P> table) {
+            return new MySQLComplexValuesClause<>(this, table, this::createParentInsert);
         }
 
         @Override
-        public <T> MySQLInsert._PartitionSpec<I, T> insertInto(SingleTableMeta<T> table) {
-            final Function<MySQLComplexValuesClause<?, ?>, I> composeFunction;
-            if (table instanceof ParentTableMeta) {
-                composeFunction = this.function.compose(MySQLInserts::createParentInsert);
-            } else {
-                composeFunction = this.function.compose(MySQLInserts::createSimpleInsert);
+        public <T> MySQLInsert._PartitionSpec<I, T> insertInto(SimpleTableMeta<T> table) {
+            return new MySQLComplexValuesClause<>(this, table, this::createSingleInsert);
+        }
+
+        @Override
+        public <P> MySQLInsert._PartitionSpec<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<I, P>>, P> insertInto(ParentTableMeta<P> table) {
+            return new MySQLComplexValuesClause<>(this, table, this::createParentInsert);
+        }
+
+
+        private I createSingleInsert(final MySQLComplexValuesClause<?, ?> clause) {
+            final InsertMode mode;
+            mode = clause.getInsertMode();
+            final Statement._DmlInsertClause<Insert> spec;
+            switch (mode) {
+                case DOMAIN:
+                    spec = new PrimarySingleDomainInsertStatement(clause);
+                    break;
+                case VALUES:
+                    spec = new PrimarySimpleValueInsertStatement(clause);
+                    break;
+                case ASSIGNMENT:
+                    spec = new PrimarySimpleAssignmentInsertStatement(clause);
+                    break;
+                case QUERY:
+                    spec = new PrimarySimpleQueryInsertStatement(clause);
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(mode);
             }
-            return new MySQLComplexValuesClause<>(this, table, composeFunction);
+            return this.function.apply(spec.asInsert());
         }
 
-    }//PrimaryInsertIntoMultiClause
-
-
-    private static final class PrimaryInsertIntoClause extends InsertSupport.NonQueryInsertOptionsImpl<
-            MySQLInsert._PrimaryNullOptionSpec,
-            MySQLInsert._PrimaryPreferLiteralSpec,
-            MySQLInsert._PrimaryInsertIntoSpec>
-            implements MySQLInsert._PrimaryOptionSpec
-            , MySQLInsert._PrimaryIntoClause {
-
-        private List<Hint> hintList;
-
-        private List<MySQLs.Modifier> modifierList;
-
-        private PrimaryInsertIntoClause() {
-            super(CriteriaContexts.primaryInsertContext());
-            ContextStack.push(this.context);
+        private <P> Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<I, P>> createParentInsert(
+                final MySQLComplexValuesClause<?, ?> clause) {
+            final InsertMode mode;
+            mode = clause.getInsertMode();
+            final Statement._DmlInsertClause<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<I, P>>> spec;
+            switch (mode) {
+                case DOMAIN:
+                    spec = new PrimaryParentDomainInsertStatement<>(clause, this.function);
+                    break;
+                case VALUES:
+                    spec = new PrimaryParentValueInsertStatement<>(clause, this.function);
+                    break;
+                case ASSIGNMENT:
+                    spec = new PrimaryParentAssignmentInsertStatement<>(clause, this.function);
+                    break;
+                case QUERY:
+                    spec = new PrimaryParentQueryInsertStatement<>(clause, this.function);
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(mode);
+            }
+            return spec.asInsert();
         }
-
-
-        @Override
-        public MySQLInsert._PrimaryIntoClause insert(Supplier<List<Hint>> supplier, List<MySQLs.Modifier> modifiers) {
-            this.hintList = CriteriaUtils.asHintList(this.context, supplier.get(), MySQLHints::castHint);
-            this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::insertModifier);
-            return this;
-        }
-
-        @Override
-        public <T> MySQLInsert._PartitionSpec<Insert, T> into(SimpleTableMeta<T> table) {
-            return new MySQLComplexValuesClause<>(this, table, MySQLInserts::createSimpleInsert);
-        }
-
-
-        @Override
-        public <P> MySQLInsert._PartitionSpec<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>, P> into(ParentTableMeta<P> table) {
-            return new MySQLComplexValuesClause<>(this, table, MySQLInserts::createParentInsert);
-        }
-
-        @Override
-        public <T> MySQLInsert._PartitionSpec<Insert, T> insertInto(SimpleTableMeta<T> table) {
-            return new MySQLComplexValuesClause<>(this, table, MySQLInserts::createSimpleInsert);
-        }
-
-        @Override
-        public <P> MySQLInsert._PartitionSpec<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>, P> insertInto(ParentTableMeta<P> table) {
-            return new MySQLComplexValuesClause<>(this, table, MySQLInserts::createParentInsert);
-        }
-
 
 
     }//PrimaryInsertIntoClause
 
 
-    private static final class ChildInsertIntoClause<P> extends ChildOptionClause
-            implements MySQLInsert._ChildInsertIntoSpec<P>, MySQLInsert._ChildIntoClause<P> {
+    private static final class ChildInsertIntoClause<I extends Item, P> extends ChildOptionClause
+            implements MySQLInsert._ChildInsertIntoSpec<I, P>,
+            MySQLInsert._ChildIntoClause<I, P> {
 
-        private final Function<MySQLComplexValuesClause<?, ?>, Insert> dmlFunction;
+        private final Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction;
 
         private List<Hint> hintList;
 
         private List<MySQLs.Modifier> modifierList;
 
-        private ChildInsertIntoClause(ValueSyntaxOptions options
-                , Function<MySQLComplexValuesClause<?, ?>, Insert> dmlFunction) {
-            super(options, CriteriaContexts.primaryInsertContext());
+        /**
+         * @see PrimaryParentDomainInsertStatement
+         */
+        private ChildInsertIntoClause(ValueSyntaxOptions options,
+                                      Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
+            super(options, CriteriaContexts.primaryInsertContext(null));
             this.dmlFunction = dmlFunction;
             ContextStack.push(this.context);
         }
 
 
         @Override
-        public MySQLInsert._ChildIntoClause<P> insert(Supplier<List<Hint>> supplier, List<MySQLs.Modifier> modifiers) {
+        public MySQLInsert._ChildIntoClause<I, P> insert(Supplier<List<Hint>> supplier, List<MySQLs.Modifier> modifiers) {
             this.hintList = CriteriaUtils.asHintList(this.context, supplier.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::insertModifier);
             return this;
         }
 
         @Override
-        public <T> MySQLInsert._PartitionSpec<Insert, T> insertInto(ComplexTableMeta<P, T> table) {
+        public <T> MySQLInsert._PartitionSpec<I, T> insertInto(ComplexTableMeta<P, T> table) {
             return new MySQLComplexValuesClause<>(this, table, this.dmlFunction);
         }
 
         @Override
-        public <T> MySQLInsert._PartitionSpec<Insert, T> into(ComplexTableMeta<P, T> table) {
+        public <T> MySQLInsert._PartitionSpec<I, T> into(ComplexTableMeta<P, T> table) {
             return new MySQLComplexValuesClause<>(this, table, this.dmlFunction);
         }
 
@@ -230,24 +191,256 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     private static final class StaticOnDuplicateKeyClause<I extends Item, F extends TableField>
-            extends SetWhereClause.SetWhereClauseClause<
-            F,
-            MySQLInsert._StaticOnDuplicateKeySetSpec<I, F>,
-            Object,
-            Object> implements MySQLInsert._StaticOnDuplicateKeySetSpec<I, F> {
+            implements MySQLInsert._StaticConflictUpdateClause<I, F>,
+            MySQLInsert._StaticConflictUpdateCommaClause<I, F> {
 
         private final MySQLComplexValuesClause<I, ?> clause;
 
+
+        private List<_ItemPair> itemPairList;
+
         private StaticOnDuplicateKeyClause(MySQLComplexValuesClause<I, ?> clause) {
-            super(clause.context, clause.insertTable, "");
             this.clause = clause;
         }
 
-        private StaticOnDuplicateKeyClause(MySQLComplexValuesClause<I, ?> clause, String rowAlias) {
-            super(clause.context, clause.insertTable, rowAlias);
-            this.clause = clause;
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> update(F field, Expression value) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, value));
         }
 
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> update(F field, Supplier<Expression> supplier) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, supplier.get()));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> update(F field, Function<F, Expression> function) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, function.apply(field)));
+        }
+
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> update(
+                F field, BiFunction<F, Expression, Expression> valueOperator, Expression expression) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, expression)));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> update(
+                F field, BiFunction<F, Object, Expression> valueOperator, @Nullable Object value) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+        }
+
+        @Override
+        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, F> update(
+                F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, supplier.get())));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> update(
+                F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function,
+                String keyName) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, function.apply(keyName))));
+        }
+
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> update(
+                F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                BiFunction<F, Expression, Expression> valueOperator, Expression expression) {
+            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, expression)));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> update(
+                F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                BiFunction<F, Object, Expression> valueOperator, Object value) {
+            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+        }
+
+        @Override
+        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, F> update(
+                F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, E, Expression> valueOperator,
+                Supplier<E> supplier) {
+            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, supplier.get())));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> update(
+                F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, function.apply(keyName))));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, Supplier<Expression> supplier) {
+            return this.ifComma(field, supplier);
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, Function<F, Expression> function) {
+            return this.ifComma(field, function);
+        }
+
+        @Override
+        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, F> ifUpdate(
+                F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> getter) {
+            return this.ifComma(field, valueOperator, getter);
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> ifUpdate(
+                F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function,
+                String keyName) {
+            return this.ifComma(field, valueOperator, function, keyName);
+        }
+
+
+        @Override
+        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, F> ifUpdate(
+                F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, E, Expression> valueOperator,
+                Supplier<E> getter) {
+            return this.ifComma(field, fieldOperator, valueOperator, getter);
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> ifUpdate(
+                F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            return this.ifComma(field, fieldOperator, valueOperator, function, keyName);
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> comma(F field, Expression value) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, value));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> comma(F field, Supplier<Expression> supplier) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, supplier.get()));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> comma(F field, Function<F, Expression> function) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, function.apply(field)));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> comma(
+                F field, BiFunction<F, Expression, Expression> valueOperator, Expression expression) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, expression)));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> comma(
+                F field, BiFunction<F, Object, Expression> valueOperator, @Nullable Object value) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+        }
+
+        @Override
+        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, F> comma(
+                F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, supplier.get())));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> comma(
+                F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function,
+                String keyName) {
+            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, function.apply(keyName))));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> comma(
+                F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                BiFunction<F, Expression, Expression> valueOperator, Expression expression) {
+            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, expression)));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> comma(
+                F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                BiFunction<F, Object, Expression> valueOperator, Object value) {
+            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+        }
+
+        @Override
+        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, F> comma(
+                F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, E, Expression> valueOperator,
+                Supplier<E> supplier) {
+            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, supplier.get())));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> comma(
+                F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, function.apply(keyName))));
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> ifComma(F field, Supplier<Expression> supplier) {
+            final Expression expression;
+            if ((expression = supplier.get()) != null) {
+                this.onAddItemPair(SQLs._itemPair(field, null, expression));
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> ifComma(F field, Function<F, Expression> function) {
+            final Expression expression;
+            if ((expression = function.apply(field)) != null) {
+                this.onAddItemPair(SQLs._itemPair(field, null, expression));
+            }
+            return this;
+        }
+
+
+        @Override
+        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, F> ifComma(
+                F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> getter) {
+            final E value;
+            if ((value = getter.get()) != null) {
+                this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> ifComma(
+                F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function,
+                String keyName) {
+            final Object value;
+            if ((value = function.apply(keyName)) != null) {
+                this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+            }
+            return this;
+        }
+
+        @Override
+        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, F> ifComma(
+                F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, E, Expression> valueOperator,
+                Supplier<E> getter) {
+            final E value;
+            if ((value = getter.get()) != null) {
+                this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, F> ifComma(
+                F field, BiFunction<F, Expression, ItemPair> fieldOperator,
+                BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+            final Object value;
+            if ((value = function.apply(keyName)) != null) {
+                this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+            }
+            return this;
+        }
 
         @Override
         public I asInsert() {
@@ -255,6 +448,34 @@ abstract class MySQLInserts extends InsertSupport {
                     .asInsert();
         }
 
+        private List<_ItemPair> endUpdateSetClause() {
+            List<_ItemPair> pairList = this.itemPairList;
+            if (pairList == null) {
+                pairList = Collections.emptyList();
+                this.itemPairList = pairList;
+            } else if (pairList instanceof ArrayList) {
+                pairList = _CollectionUtils.unmodifiableList(pairList);
+                this.itemPairList = pairList;
+            } else {
+                throw ContextStack.castCriteriaApi(this.clause.context);
+            }
+            return pairList;
+        }
+
+        private MySQLInsert._StaticConflictUpdateCommaClause<I, F> onAddItemPair(final ItemPair pair) {
+            if (!(pair instanceof SQLs.FieldItemPair)) {
+                throw CriteriaUtils.illegalItemPair(this.clause.context, pair);
+            }
+            List<_ItemPair> pairList = this.itemPairList;
+            if (pairList == null) {
+                pairList = new ArrayList<>();
+                this.itemPairList = pairList;
+            } else if (!(pairList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.clause.context);
+            }
+            pairList.add((SQLs.FieldItemPair) pair);
+            return this;
+        }
 
 
     }//StaticOnDuplicateKeyClause
@@ -271,14 +492,12 @@ abstract class MySQLInserts extends InsertSupport {
 
 
         @Override
-        public MySQLInsert._StaticOnDuplicateKeySetClause<I, F> onDuplicateKey() {
-            final String rowAlias = this.valuesClause.rowAlias;
-            assert rowAlias != null;
-            return new StaticOnDuplicateKeyClause<>(this.valuesClause, rowAlias);
+        public MySQLInsert._StaticConflictUpdateClause<I, F> onDuplicateKey() {
+            return new StaticOnDuplicateKeyClause<>(this.valuesClause);
         }
 
         @Override
-        public Statement._DmlInsertClause<I> onDuplicateKey(Consumer<ItemPairs<F>> consumer) {
+        public Statement._DmlInsertClause<I> onDuplicateKeyUpdate(Consumer<ItemPairs<F>> consumer) {
             final MySQLComplexValuesClause<I, ?> valuesClause = this.valuesClause;
             if (valuesClause.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(valuesClause.context);
@@ -295,7 +514,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Statement._DmlInsertClause<I> ifOnDuplicateKey(Consumer<ItemPairs<F>> consumer) {
+        public Statement._DmlInsertClause<I> ifOnDuplicateKeyUpdate(Consumer<ItemPairs<F>> consumer) {
             final MySQLComplexValuesClause<I, ?> valuesClause = this.valuesClause;
             if (valuesClause.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(valuesClause.context);
@@ -305,6 +524,8 @@ abstract class MySQLInserts extends InsertSupport {
                     , list::add));
             if (list.size() > 0) {
                 valuesClause.conflictPairList = _CollectionUtils.unmodifiableList(list);
+            } else {
+                valuesClause.conflictPairList = null;
             }
             return valuesClause;
         }
@@ -335,21 +556,21 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._StaticOnDuplicateKeySetClause<I, FieldMeta<T>> onDuplicateKey() {
+        public MySQLInsert._StaticConflictUpdateClause<I, FieldMeta<T>> onDuplicateKey() {
             return this.valuesClause.staticValuesClauseEnd(this.endValuesClause())
                     .onDuplicateKey();
         }
 
         @Override
-        public Statement._DmlInsertClause<I> onDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+        public Statement._DmlInsertClause<I> onDuplicateKeyUpdate(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
             return this.valuesClause.staticValuesClauseEnd(this.endValuesClause())
-                    .onDuplicateKey(consumer);
+                    .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Statement._DmlInsertClause<I> ifOnDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+        public Statement._DmlInsertClause<I> ifOnDuplicateKeyUpdate(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
             return this.valuesClause.staticValuesClauseEnd(this.endValuesClause())
-                    .ifOnDuplicateKey(consumer);
+                    .ifOnDuplicateKeyUpdate(consumer);
         }
 
         @Override
@@ -384,7 +605,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private List<_ItemPair> conflictPairList;
 
-        private MySQLComplexValuesClause(PrimaryInsertIntoClause options, SingleTableMeta<T> table
+        private MySQLComplexValuesClause(PrimaryInsertIntoClause<?> options, SingleTableMeta<T> table
                 , Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
             super(options, table);
             this.hintList = _CollectionUtils.safeList(options.hintList);
@@ -392,7 +613,7 @@ abstract class MySQLInserts extends InsertSupport {
             this.dmlFunction = dmlFunction;
         }
 
-        private MySQLComplexValuesClause(ChildInsertIntoClause<?> options, ChildTableMeta<T> table
+        private MySQLComplexValuesClause(ChildInsertIntoClause<?, ?> options, ChildTableMeta<T> table
                 , Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
             super(options, table);
             this.hintList = _CollectionUtils.safeList(options.hintList);
@@ -400,17 +621,34 @@ abstract class MySQLInserts extends InsertSupport {
             this.dmlFunction = dmlFunction;
         }
 
-        private MySQLComplexValuesClause(PrimaryInsertIntoSingleClause<?> options, SingleTableMeta<T> table
-                , Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
-            super(options, table);
-            this.hintList = _CollectionUtils.safeList(options.hintList);
-            this.modifierList = _CollectionUtils.safeList(options.modifierList);
-            this.dmlFunction = dmlFunction;
+
+        @Override
+        public MySQLInsert._ColumnListSpec<I, T> partition(String first, String... rest) {
+            this.partitionList = ArrayUtils.unmodifiableListOf(first, rest);
+            return this;
         }
 
         @Override
-        public Statement._LeftParenStringQuadraOptionalSpec<MySQLInsert._ColumnListSpec<I, T>> partition() {
-            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
+        public MySQLInsert._ColumnListSpec<I, T> partition(Consumer<Consumer<String>> consumer) {
+            final List<String> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() == 0) {
+                throw MySQLUtils.partitionListIsEmpty(this.context);
+            }
+            this.partitionList = _CollectionUtils.unmodifiableList(list);
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._ColumnListSpec<I, T> ifPartition(Consumer<Consumer<String>> consumer) {
+            final List<String> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() > 0) {
+                this.partitionList = _CollectionUtils.unmodifiableList(list);
+            } else {
+                this.partitionList = null;
+            }
+            return this;
         }
 
         @Override
@@ -425,20 +663,18 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public MySQLInsert._OnDuplicateKeyUpdateSpec<I, TypeTableField<T>> as(final String rowAlias) {
-            if (!_StringUtils.hasText(rowAlias)) {
-                throw ContextStack.criteriaError(this.context, "rowAlias no text");
-            }
+            this.context.onInsertRowAlias(rowAlias);
             this.rowAlias = rowAlias;
             return new OnDuplicateKeyUpdateClause<>(this);
         }
 
         @Override
-        public MySQLInsert._StaticOnDuplicateKeySetClause<I, FieldMeta<T>> onDuplicateKey() {
+        public MySQLInsert._StaticConflictUpdateClause<I, FieldMeta<T>> onDuplicateKey() {
             return new StaticOnDuplicateKeyClause<>(this);
         }
 
         @Override
-        public Statement._DmlInsertClause<I> onDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+        public Statement._DmlInsertClause<I> onDuplicateKeyUpdate(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
             if (this.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -452,7 +688,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Statement._DmlInsertClause<I> ifOnDuplicateKey(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+        public Statement._DmlInsertClause<I> ifOnDuplicateKeyUpdate(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
             if (this.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -484,21 +720,12 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
 
-        private MySQLInsert._ColumnListSpec<I, T> partitionEnd(final List<String> list) {
-            if (this.partitionList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.partitionList = list;
-            return this;
-        }
-
-
     }//MySQLComplexValuesClause
 
 
     static abstract class MySQLValueSyntaxStatement<I extends Statement.DmlInsert>
             extends ValueSyntaxInsertStatement<I>
-            implements MySQLInsert, _MySQLInsert,Insert {
+            implements MySQLInsert, _MySQLInsert, Insert {
 
         private final List<Hint> hintList;
 
@@ -552,7 +779,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-       final   Dialect statementDialect() {
+        final Dialect statementDialect() {
             return MySQLDialect.MySQL80;
         }
 
@@ -561,7 +788,7 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     static abstract class DomainInsertStatement<I extends Statement.DmlInsert> extends MySQLValueSyntaxStatement<I>
-            implements _MySQLInsert._MySQLDomainInsert, Insert {
+            implements _MySQLInsert._MySQLDomainInsert {
 
         private DomainInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
@@ -571,15 +798,16 @@ abstract class MySQLInserts extends InsertSupport {
 
     }//DomainInsertStatement
 
-    private static final class PrimarySimpleDomainInsertStatement
-            extends DomainInsertStatement<Insert>
-            implements Insert {
+    private static final class PrimarySingleDomainInsertStatement extends DomainInsertStatement<Insert> {
 
         private final List<?> domainList;
 
-        private PrimarySimpleDomainInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
+        /**
+         * @see PrimaryInsertIntoClause#createSingleInsert(MySQLComplexValuesClause)
+         */
+        private PrimarySingleDomainInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
-            assert clause.insertTable instanceof SimpleTableMeta;
+            assert clause.insertTable instanceof SingleTableMeta;
             this.domainList = clause.domainListForSingle();
         }
 
@@ -589,15 +817,15 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
 
-    }//PrimarySimpleDomainInsertStatement
+    }//PrimarySingleDomainInsertStatement
 
 
     private static final class PrimaryChildDomainInsertStatement extends DomainInsertStatement<Insert>
             implements _MySQLInsert._MySQLChildDomainInsert {
 
-        private final PrimaryParentDomainInsertStatement<?> parentStatement;
+        private final PrimaryParentDomainInsertStatement<?, ?> parentStatement;
 
-        private PrimaryChildDomainInsertStatement(PrimaryParentDomainInsertStatement<?> parentStatement
+        private PrimaryChildDomainInsertStatement(PrimaryParentDomainInsertStatement<?, ?> parentStatement
                 , MySQLComplexValuesClause<?, ?> childClause) {
             super(childClause);
             assert childClause.insertTable instanceof ChildTableMeta;
@@ -618,17 +846,23 @@ abstract class MySQLInserts extends InsertSupport {
     }//PrimaryChildDomainInsertStatement
 
 
-    private static final class PrimaryParentDomainInsertStatement<P>
-            extends DomainInsertStatement<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>>
-            implements Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>> {
+    private static final class PrimaryParentDomainInsertStatement<I extends Item, P>
+            extends DomainInsertStatement<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<I, P>>>
+            implements Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<I, P>> {
+
+        private final Function<Insert, I> function;
 
         private final List<?> originalDomainList;
 
         private final List<?> domainList;
 
-        private PrimaryParentDomainInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
+        /**
+         * @see PrimaryInsertIntoClause#createParentInsert(MySQLComplexValuesClause)
+         */
+        private PrimaryParentDomainInsertStatement(MySQLComplexValuesClause<?, ?> clause, Function<Insert, I> function) {
             super(clause);
             assert clause.insertTable instanceof ParentTableMeta;
+            this.function = function;
             this.originalDomainList = clause.originalDomainList();
             this.domainList = _CollectionUtils.unmodifiableList(this.originalDomainList);
         }
@@ -639,15 +873,17 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public _ChildInsertIntoSpec<P> child() {
+        public _ChildInsertIntoSpec<I, P> child() {
             this.prepared();
             return new ChildInsertIntoClause<>(this, this::childInsertEnd);
         }
 
-        private Insert childInsertEnd(final MySQLComplexValuesClause<?, ?> childClause) {
+        private I childInsertEnd(final MySQLComplexValuesClause<?, ?> childClause) {
             childClause.domainListForChild(this.originalDomainList);
-            return new PrimaryChildDomainInsertStatement(this, childClause)
+            final Insert insert;
+            insert = new PrimaryChildDomainInsertStatement(this, childClause)
                     .asInsert();
+            return this.function.apply(insert);
         }
 
 
@@ -676,9 +912,12 @@ abstract class MySQLInserts extends InsertSupport {
     private static final class PrimarySimpleValueInsertStatement extends ValueInsertStatement<Insert>
             implements Insert {
 
+        /**
+         * @see PrimaryInsertIntoClause#createSingleInsert(MySQLComplexValuesClause)
+         */
         private PrimarySimpleValueInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
-            assert clause.insertTable instanceof SimpleTableMeta;
+            assert clause.insertTable instanceof SingleTableMeta;
         }
 
     }//PrimarySimpleValueStatement
@@ -687,9 +926,9 @@ abstract class MySQLInserts extends InsertSupport {
     private static final class PrimaryChildValueStatement extends ValueInsertStatement<Insert>
             implements _MySQLInsert._MySQLChildValueInsert, Insert {
 
-        private final PrimaryParentValueInsertStatement<?> parentStatement;
+        private final PrimaryParentValueInsertStatement<?, ?> parentStatement;
 
-        private PrimaryChildValueStatement(PrimaryParentValueInsertStatement<?> parentStatement
+        private PrimaryChildValueStatement(PrimaryParentValueInsertStatement<?, ?> parentStatement
                 , MySQLComplexValuesClause<?, ?> childClause) {
             super(childClause);
             assert childClause.insertTable instanceof ChildTableMeta;
@@ -705,27 +944,35 @@ abstract class MySQLInserts extends InsertSupport {
     }//PrimarySimpleValueStatement
 
 
-    private static final class PrimaryParentValueInsertStatement<P>
-            extends ValueInsertStatement<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>>
-            implements Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>> {
+    private static final class PrimaryParentValueInsertStatement<I extends Item, P>
+            extends ValueInsertStatement<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<I, P>>>
+            implements Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<I, P>> {
 
-        private PrimaryParentValueInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
+        private final Function<Insert, I> function;
+
+        /**
+         * @see PrimaryInsertIntoClause#createParentInsert(MySQLComplexValuesClause)
+         */
+        private PrimaryParentValueInsertStatement(MySQLComplexValuesClause<?, ?> clause, Function<Insert, I> function) {
             super(clause);
             assert clause.insertTable instanceof ParentTableMeta;
+            this.function = function;
         }
 
         @Override
-        public _ChildInsertIntoSpec<P> child() {
+        public _ChildInsertIntoSpec<I, P> child() {
             this.prepared();
             return new ChildInsertIntoClause<>(this, this::childInsertEnd);
         }
 
-        private Insert childInsertEnd(final MySQLComplexValuesClause<?, ?> childClause) {
+        private I childInsertEnd(final MySQLComplexValuesClause<?, ?> childClause) {
             if (childClause.rowPairList().size() != this.valuePairList.size()) {
                 throw CriteriaUtils.childParentRowNotMatch(childClause, this);
             }
-            return new PrimaryChildValueStatement(this, childClause)
+            final Insert insert;
+            insert = new PrimaryChildValueStatement(this, childClause)
                     .asInsert();
+            return this.function.apply(insert);
         }
 
 
@@ -734,7 +981,7 @@ abstract class MySQLInserts extends InsertSupport {
 
     static abstract class PrimaryAssignmentStatement<I extends Statement.DmlInsert>
             extends InsertSupport.AssignmentInsertStatement<I>
-            implements MySQLInsert, _MySQLInsert._MySQLAssignmentInsert ,Insert{
+            implements MySQLInsert, _MySQLInsert._MySQLAssignmentInsert, Insert {
 
         private final List<Hint> hintList;
 
@@ -788,7 +1035,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-       final   Dialect statementDialect() {
+        final Dialect statementDialect() {
             return MySQLDialect.MySQL80;
         }
 
@@ -796,22 +1043,24 @@ abstract class MySQLInserts extends InsertSupport {
     }//PrimaryAssignmentStatement
 
 
-    private static final class PrimarySimpleAssignmentInsertStatement extends PrimaryAssignmentStatement<Insert>
-            implements Insert {
+    private static final class PrimarySimpleAssignmentInsertStatement extends PrimaryAssignmentStatement<Insert> {
 
+        /**
+         * @see PrimaryInsertIntoClause#createSingleInsert(MySQLComplexValuesClause)
+         */
         private PrimarySimpleAssignmentInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
-            assert clause.insertTable instanceof SimpleTableMeta;
+            assert clause.insertTable instanceof SingleTableMeta;
         }
 
     }//PrimarySimpleAssignmentStatement
 
     private static final class PrimaryChildAssignmentStatement extends PrimaryAssignmentStatement<Insert>
-            implements _MySQLInsert._MySQLChildAssignmentInsert, Insert {
+            implements _MySQLInsert._MySQLChildAssignmentInsert {
 
-        private final PrimaryParentAssignmentInsertStatement<?> parentStatement;
+        private final PrimaryParentAssignmentInsertStatement<?, ?> parentStatement;
 
-        private PrimaryChildAssignmentStatement(PrimaryParentAssignmentInsertStatement<?> parentStatement
+        private PrimaryChildAssignmentStatement(PrimaryParentAssignmentInsertStatement<?, ?> parentStatement
                 , MySQLComplexValuesClause<?, ?> childClause) {
             super(childClause);
             assert childClause.insertTable instanceof ChildTableMeta;
@@ -826,24 +1075,33 @@ abstract class MySQLInserts extends InsertSupport {
 
     }//PrimaryChildAssignmentStatement
 
-    private static final class PrimaryParentAssignmentInsertStatement<P>
-            extends PrimaryAssignmentStatement<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>>
-            implements Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>> {
+    private static final class PrimaryParentAssignmentInsertStatement<I extends Item, P>
+            extends PrimaryAssignmentStatement<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<I, P>>>
+            implements Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<I, P>> {
 
-        private PrimaryParentAssignmentInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
+        private final Function<Insert, I> function;
+
+        /**
+         * @see PrimaryInsertIntoClause#createParentInsert(MySQLComplexValuesClause)
+         */
+        private PrimaryParentAssignmentInsertStatement(MySQLComplexValuesClause<?, ?> clause,
+                                                       Function<Insert, I> function) {
             super(clause);
             assert clause.insertTable instanceof ParentTableMeta;
+            this.function = function;
         }
 
         @Override
-        public MySQLInsert._ChildInsertIntoSpec<P> child() {
+        public MySQLInsert._ChildInsertIntoSpec<I, P> child() {
             this.prepared();
             return new ChildInsertIntoClause<>(this, this::childInsertEnd);
         }
 
-        private Insert childInsertEnd(MySQLComplexValuesClause<?, ?> childClause) {
-            return new PrimaryChildAssignmentStatement(this, childClause)
+        private I childInsertEnd(MySQLComplexValuesClause<?, ?> childClause) {
+            final Insert insert;
+            insert = new PrimaryChildAssignmentStatement(this, childClause)
                     .asInsert();
+            return this.function.apply(insert);
         }
 
 
@@ -852,7 +1110,7 @@ abstract class MySQLInserts extends InsertSupport {
 
     static abstract class PrimaryQueryInsertStatement<I extends Statement.DmlInsert>
             extends InsertSupport.QuerySyntaxInsertStatement<I>
-            implements MySQLInsert, _MySQLInsert._MySQLQueryInsert {
+            implements MySQLInsert, _MySQLInsert._MySQLQueryInsert, Insert {
 
 
         private final List<Hint> hintList;
@@ -907,16 +1165,18 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        final   Dialect statementDialect() {
+        final Dialect statementDialect() {
             return MySQLDialect.MySQL80;
         }
 
 
     }//PrimaryQueryInsertStatement
 
-    private static final class PrimarySimpleQueryInsertStatement extends PrimaryQueryInsertStatement<Insert>
-            implements Insert {
+    private static final class PrimarySimpleQueryInsertStatement extends PrimaryQueryInsertStatement<Insert> {
 
+        /**
+         * @see PrimaryInsertIntoClause#createSingleInsert(MySQLComplexValuesClause)
+         */
         private PrimarySimpleQueryInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
             assert clause.insertTable instanceof SimpleTableMeta;
@@ -927,11 +1187,11 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     private static final class PrimaryChildQueryInsertStatement extends PrimaryQueryInsertStatement<Insert>
-            implements Insert, _MySQLInsert._MySQLChildQueryInsert {
+            implements _MySQLInsert._MySQLChildQueryInsert {
 
-        private final PrimaryParentQueryInsertStatement<?> parentStatement;
+        private final PrimaryParentQueryInsertStatement<?, ?> parentStatement;
 
-        private PrimaryChildQueryInsertStatement(PrimaryParentQueryInsertStatement<?> parentStatement
+        private PrimaryChildQueryInsertStatement(PrimaryParentQueryInsertStatement<?, ?> parentStatement
                 , MySQLComplexValuesClause<?, ?> childClause) {
             super(childClause);
             assert childClause.insertTable instanceof ChildTableMeta;
@@ -947,24 +1207,33 @@ abstract class MySQLInserts extends InsertSupport {
     }//PrimaryChildQueryStatement
 
 
-    private static final class PrimaryParentQueryInsertStatement<P>
-            extends PrimaryQueryInsertStatement<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>>
-            implements Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>> {
+    private static final class PrimaryParentQueryInsertStatement<I extends Item, P>
+            extends PrimaryQueryInsertStatement<Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<I, P>>>
+            implements Insert._ParentInsert<MySQLInsert._ChildInsertIntoSpec<I, P>> {
 
-        private PrimaryParentQueryInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
+        private final Function<Insert, I> function;
+
+        /**
+         * @see PrimaryInsertIntoClause#createParentInsert(MySQLComplexValuesClause)
+         */
+        private PrimaryParentQueryInsertStatement(MySQLComplexValuesClause<?, ?> clause,
+                                                  Function<Insert, I> function) {
             super(clause);
             assert clause.insertTable instanceof ParentTableMeta;
+            this.function = function;
         }
 
         @Override
-        public _ChildInsertIntoSpec<P> child() {
+        public _ChildInsertIntoSpec<I, P> child() {
             this.prepared();
             return new ChildInsertIntoClause<>(this, this::childInsertEnd);
         }
 
-        private Insert childInsertEnd(MySQLComplexValuesClause<?, ?> childClause) {
-            return new PrimaryChildQueryInsertStatement(this, childClause)
+        private I childInsertEnd(final MySQLComplexValuesClause<?, ?> childClause) {
+            final Insert insert;
+            insert = new PrimaryChildQueryInsertStatement(this, childClause)
                     .asInsert();
+            return this.function.apply(insert);
         }
 
 

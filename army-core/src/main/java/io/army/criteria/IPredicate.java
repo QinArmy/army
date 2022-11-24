@@ -2,7 +2,6 @@ package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
 import io.army.function.*;
-import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.meta.TypeMeta;
 
@@ -34,6 +33,13 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
 
     <E extends RightOperand> IPredicate or(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
+
+    IPredicate or(ExpressionOperator<Expression, Expression, IPredicate> expOperator,
+                  BiFunction<Expression, Expression, Expression> operator, Expression expression);
+
+    IPredicate or(ExpressionOperator<Expression, Object, IPredicate> expOperator,
+                  BiFunction<Expression, Object, Expression> operator, Object value);
+
     <T> IPredicate or(ExpressionOperator<Expression, T, IPredicate> expOperator,
                       BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
 
@@ -42,6 +48,9 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
 
     IPredicate or(ExpressionOperator<Expression, Object, IPredicate> expOperator,
                   BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+
+    IPredicate or(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator,
+                  Object firstValue, SQLs.WordAnd and, Object secondValue);
 
     <T> IPredicate or(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator,
                       Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
@@ -63,7 +72,7 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
                         BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
 
     IPredicate ifOr(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                    TeNamedOperator<DataField> namedOperator, @Nullable Integer size);
+                    TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier);
 
     IPredicate ifOr(ExpressionOperator<Expression, Object, IPredicate> expOperator,
                     BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
@@ -76,7 +85,7 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
                     Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
 
     IPredicate ifOr(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName,
-                    @Nullable Integer size);
+                    Supplier<Integer> supplier);
 
     IPredicate ifOr(Consumer<Consumer<IPredicate>> consumer);
 

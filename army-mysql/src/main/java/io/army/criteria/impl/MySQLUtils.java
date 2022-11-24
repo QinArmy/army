@@ -152,8 +152,8 @@ abstract class MySQLUtils extends CriteriaUtils {
         return new CriteriaException("index list must not empty.");
     }
 
-    static CriteriaException partitionListIsEmpty() {
-        return new CriteriaException("partition list must not empty");
+    static CriteriaException partitionListIsEmpty(CriteriaContext context) {
+        return ContextStack.criteriaError(context, "you don't add any partition");
     }
 
     static CriteriaException lockOfTableAliasListIsEmpty() {

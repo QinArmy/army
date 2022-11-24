@@ -275,7 +275,7 @@ abstract class PostgreInserts extends InsertSupport {
             implements PostgreInsert._PrimaryOptionSpec {
 
         private PrimaryInsertIntoClause() {
-            super(CriteriaContexts.primaryInsertContext());
+            super(CriteriaContexts.primaryInsertContext(null));//TODO spec
             ContextStack.push(this.context);
         }
 
@@ -329,7 +329,7 @@ abstract class PostgreInserts extends InsertSupport {
         private ChildInsertIntoClause(ValueSyntaxOptions parentOption
                 , Function<PostgreComplexValuesClause<?, ?, ?>, Insert> dmlFunction
                 , Function<PostgreComplexValuesClause<?, ?, ?>, ReturningInsert> dqlFunction) {
-            super(parentOption, CriteriaContexts.primaryInsertContext());
+            super(parentOption, CriteriaContexts.primaryInsertContext(null));
             this.dmlFunction = dmlFunction;
             this.dqlFunction = dqlFunction;
             ContextStack.push(this.context);
@@ -527,7 +527,7 @@ abstract class PostgreInserts extends InsertSupport {
 
 
         private ComplexInsertIntoClause(Function<PrimaryStatement, I> function) {
-            super(CriteriaContexts.primaryInsertContext());
+            super(CriteriaContexts.primaryInsertContext(null));//spec
             this.function = function;
             ContextStack.push(this.context);
         }

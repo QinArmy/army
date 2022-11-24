@@ -5,6 +5,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.function.BetweenOperator;
 import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
+import io.army.lang.Nullable;
 
 import java.util.function.*;
 
@@ -33,23 +34,41 @@ public interface SQLFunction {
 
         _CaseEndClause<E> elseValue(Supplier<Expression> supplier);
 
+        _CaseEndClause<E> elseValue(Function<Expression, Expression> valueOperator, Expression expression);
+
+        _CaseEndClause<E> elseValue(Function<Object, Expression> valueOperator, @Nullable Object value);
+
         <T> _CaseEndClause<E> elseValue(Function<T, Expression> valueOperator, Supplier<T> getter);
 
-        _CaseEndClause<E> elseValue(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        _CaseEndClause<E> elseValue(Function<Object, Expression> valueOperator, Function<String, ?> function,
+                                    String keyName);
 
-        <T> _CaseEndClause<E> elseValue(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter);
+        _CaseEndClause<E> elseValue(ExpressionOperator<Expression, Expression, Expression> expOperator,
+                                    BiFunction<Expression, Expression, Expression> valueOperator, Expression expression);
 
-        _CaseEndClause<E> elseValue(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        _CaseEndClause<E> elseValue(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                    BiFunction<Expression, Object, Expression> valueOperator, Object value);
+
+        <T> _CaseEndClause<E> elseValue(ExpressionOperator<Expression, T, Expression> expOperator,
+                                        BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter);
+
+        _CaseEndClause<E> elseValue(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                    BiFunction<Expression, Object, Expression> valueOperator,
+                                    Function<String, ?> function, String keyName);
 
         _CaseEndClause<E> ifElse(Supplier<Expression> supplier);
 
         <T> _CaseEndClause<E> ifElse(Function<T, Expression> valueOperator, Supplier<T> getter);
 
-        _CaseEndClause<E> ifElse(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        _CaseEndClause<E> ifElse(Function<Object, Expression> valueOperator, Function<String, ?> function,
+                                 String keyName);
 
-        <T> _CaseEndClause<E> ifElse(ExpressionOperator<Expression, T, Expression> expOperator, BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter);
+        <T> _CaseEndClause<E> ifElse(ExpressionOperator<Expression, T, Expression> expOperator,
+                                     BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter);
 
-        _CaseEndClause<E> ifElse(ExpressionOperator<Expression, Object, Expression> expOperator, BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        _CaseEndClause<E> ifElse(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                 BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function,
+                                 String keyName);
 
 
     }

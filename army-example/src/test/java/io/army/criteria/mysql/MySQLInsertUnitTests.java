@@ -57,17 +57,13 @@ public class MySQLInsertUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, Collections.singletonList(MySQLs.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
-                .partition()
-                .leftParen("p1")
-                .rightParen()
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp)
-                .comma(ChinaRegion_.parentId)
-                .rightParen()
+                .partition("p1")
+                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(this::createReginList)
                 .onDuplicateKey()
-                .set(ChinaRegion_.name, SQLs::param, "光明顶")
-                .set(ChinaRegion_.regionGdp, SQLs::param, "6666.88")
+                .update(ChinaRegion_.name, SQLs::param, "光明顶")
+                .comma(ChinaRegion_.regionGdp, SQLs::param, "6666.88")
                 .asInsert();
 
         printStmt(stmt);
@@ -92,13 +88,11 @@ public class MySQLInsertUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, Collections.singletonList(MySQLs.HIGH_PRIORITY))
                 .into(PillUser_.T)
-                .partition()
-                .leftParen("p1")
-                .rightParen()
+                .partition("p1")
                 .defaultValue(PillUser_.visible, SQLs::literal, true)
                 .values(pillPersonList)
                 .onDuplicateKey()
-                .set(PillUser_.identityId, SQLs::param, 0)
+                .update(PillUser_.identityId, SQLs::param, 0)
                 .asInsert()
 
                 .child()
@@ -107,7 +101,7 @@ public class MySQLInsertUnitTests {
                 .defaultValue(PillPerson_.birthday, SQLs::literal, LocalDate.now())
                 .values(pillPersonList)
                 .onDuplicateKey()
-                .set(PillPerson_.birthday, SQLs::param, 0)
+                .update(PillPerson_.birthday, SQLs::param, 0)
                 .asInsert();
 
         printStmt(stmt);
@@ -129,15 +123,13 @@ public class MySQLInsertUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, Collections.singletonList(MySQLs.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
-                .partition()
-                .leftParen("p1")
-                .rightParen()
+                .partition("p1")
                 .set(ChinaRegion_.name, SQLs::param, "光明顶")
                 .set(ChinaRegion_.regionGdp, SQLs::param, "6666.88")
                 .set(ChinaRegion_.parentId, SQLs::literal, 0)
                 .onDuplicateKey()
-                .set(ChinaRegion_.name, SQLs::param, "光明顶")
-                .set(ChinaRegion_.regionGdp, SQLs::param, "6666.88")
+                .update(ChinaRegion_.name, SQLs::param, "光明顶")
+                .comma(ChinaRegion_.regionGdp, SQLs::param, "6666.88")
                 .asInsert();
 
         printStmt(stmt);
@@ -157,23 +149,19 @@ public class MySQLInsertUnitTests {
             return hintList;
         };
 
-        Insert stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
-                .insert(hintSupplier, Collections.singletonList(MySQLs.HIGH_PRIORITY))
+                .insert(hintSupplier, Collections.emptyList())
                 .into(ChinaRegion_.T)
-                .partition()
-                .leftParen("p1")
-                .rightParen()
-                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
-                .comma(ChinaRegion_.updateTime, ChinaRegion_.version)
-                .comma(ChinaRegion_.visible, ChinaRegion_.regionType)
-                .comma(ChinaRegion_.name, ChinaRegion_.regionGdp)
-                .comma(ChinaRegion_.parentId)
+                .partition("p1")
+                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
+                .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
+                .comma(ChinaRegion_.regionType)
                 .rightParen()
                 .space()
                 .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
-                .comma(ChinaRegion_.visible, ChinaRegion_.regionType, ChinaRegion_.name, ChinaRegion_.regionGdp)
-                .comma(ChinaRegion_.parentId)
+                .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
+                .comma(SQLs.literalFrom(RegionType.NONE), AS, ChinaRegion_.REGION_TYPE)
                 .from(ChinaRegion_.T, AS, "c")
                 .limit(SQLs::param, 10)
                 .asQuery()

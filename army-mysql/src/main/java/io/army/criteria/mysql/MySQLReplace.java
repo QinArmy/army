@@ -54,7 +54,7 @@ public interface MySQLReplace extends  DialectStatement, Statement.DmlInsert {
 
     }
 
-    interface _PartitionSpec<I extends Item, T> extends MySQLQuery._PartitionClause<_ColumnListSpec<I, T>>
+    interface _PartitionSpec<I extends Item, T> extends MySQLStatement._PartitionClause_0<_ColumnListSpec<I, T>>
             , _ColumnListSpec<I, T> {
 
     }

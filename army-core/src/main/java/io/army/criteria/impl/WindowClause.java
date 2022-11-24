@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLWords;
 import io.army.criteria.Statement;
@@ -113,6 +114,8 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
             throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
         } else if (existingWindowName != null && !_StringUtils.hasText(existingWindowName)) {
             throw ContextStack.criteriaError(context, "existingWindowName must be null or non-empty");
+        } else if (existingWindowName != null && context.isNotExistWindow(existingWindowName)) {
+            throw refWindowNotExists(context, existingWindowName);
         }
         this.windowName = windowName;
         this.context = context;
@@ -129,6 +132,8 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
         super(context);
         if (existingWindowName != null && !_StringUtils.hasText(existingWindowName)) {
             throw ContextStack.criteriaError(context, "existingWindowName must be null or non-empty");
+        } else if (existingWindowName != null && context.isNotExistWindow(existingWindowName)) {
+            throw refWindowNotExists(context, existingWindowName);
         }
         this.windowName = null;
         this.context = context;
@@ -581,6 +586,12 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
     @Override
     final Dialect statementDialect() {
         throw ContextStack.castCriteriaApi(this.context);
+    }
+
+
+    private static CriteriaException refWindowNotExists(CriteriaContext context, String existingWindowName) {
+        String m = String.format("reference window[%s] not exists.", existingWindowName);
+        return ContextStack.criteriaError(context, m);
     }
 
 

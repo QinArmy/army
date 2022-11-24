@@ -132,12 +132,6 @@ abstract class ArmyParser implements DialectParser {
      */
     @Override
     public final Stmt insert(final Insert insert, final Visible visible) {
-        insert.prepared();
-        if (insert instanceof StandardInsert) {
-            _SQLConsultant.assertStandardInsert(insert);
-        } else {
-            assertInsert(insert);
-        }
         return this.createInsertStmt(this.handleInsert(null, insert, visible));
     }
 
@@ -380,6 +374,10 @@ abstract class ArmyParser implements DialectParser {
         throw standardParserDontSupportDialect();
     }
 
+    /**
+     * @see #handleDomainInsert(_SqlContext, _Insert._DomainInsert, Visible)
+     * @see #handleValueInsert(_SqlContext, _Insert._ValuesInsert, Visible)
+     */
     protected void parseValuesInsert(_ValueInsertContext context, _Insert._ValuesSyntaxInsert insert) {
         throw standardParserDontSupportDialect();
     }
@@ -514,8 +512,8 @@ abstract class ArmyParser implements DialectParser {
      *               </ul>
      * @see #insert(Insert, Visible)
      */
-    protected final _InsertContext handleInsert(final @Nullable _SqlContext outerContext, final Insert insert
-            , final Visible visible) {
+    protected final _InsertContext handleInsert(final @Nullable _SqlContext outerContext, final Insert insert,
+                                                final Visible visible) {
         insert.prepared();
         if (insert instanceof StandardInsert) {
             _SQLConsultant.assertStandardInsert(insert);

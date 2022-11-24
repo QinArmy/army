@@ -747,9 +747,21 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final <E> DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator,
-                                         @Nullable E value) {
+        public final DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, Expression> operator,
+                                     Expression expression) {
+            return this.defaultValue(field, operator.apply(field, expression));
+        }
+
+        @Override
+        public final DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator,
+                                     @Nullable Object value) {
             return this.defaultValue(field, operator.apply(field, value));
+        }
+
+        @Override
+        public final <E> DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator,
+                                         Supplier<E> supplier) {
+            return this.defaultValue(field, operator.apply(field, supplier.get()));
         }
 
         @Override
@@ -1435,27 +1447,38 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+        public final Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Supplier<Expression> supplier) {
             return this.comma(field, supplier.get());
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
+        public final Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field,
+                                                                      Function<FieldMeta<T>, Expression> function) {
             return this.comma(field, function.apply(field));
         }
 
         @Override
-        public final <E> Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value) {
+        public final Insert._StaticColumnValueClause<T, RR> leftParen(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, Expression> operator, Expression expression) {
+            return this.comma(field, operator.apply(field, expression));
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<T, RR> leftParen(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator, @Nullable Object value) {
             return this.comma(field, operator.apply(field, value));
         }
 
         @Override
-        public final <E> Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
+        public final <E> Insert._StaticColumnValueClause<T, RR> leftParen(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, Supplier<E> supplier) {
             return this.comma(field, operator.apply(field, supplier.get()));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+        public final Insert._StaticColumnValueClause<T, RR> leftParen(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator, Function<String, ?> function,
+                String keyName) {
             return this.comma(field, operator.apply(field, function.apply(keyName)));
         }
 
@@ -1479,27 +1502,39 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+        public final Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Supplier<Expression> supplier) {
             return this.comma(field, supplier.get());
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Function<? super FieldMeta<T>, ? extends Expression> function) {
+        public final Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field,
+                                                                  Function<FieldMeta<T>, Expression> function) {
             return this.comma(field, function.apply(field));
         }
 
+
         @Override
-        public final <E> Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, @Nullable E value) {
+        public final Insert._StaticColumnValueClause<T, RR> comma(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, Expression> operator, Expression expression) {
+            return this.comma(field, operator.apply(field, expression));
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<T, RR> comma(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator, @Nullable Object value) {
             return this.comma(field, operator.apply(field, value));
         }
 
         @Override
-        public final <E> Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, E, ? extends Expression> operator, Supplier<E> supplier) {
+        public final <E> Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field,
+                                                                      BiFunction<FieldMeta<T>, E, Expression> operator,
+                                                                      Supplier<E> supplier) {
             return this.comma(field, operator.apply(field, supplier.get()));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+        public final Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object,
+                Expression> operator, Function<String, ?> function, String keyName) {
             return this.comma(field, operator.apply(field, function.apply(keyName)));
         }
 

@@ -46,7 +46,7 @@ abstract class MySQLReplaces extends InsertSupport {
         private List<MySQLs.Modifier> modifierList;
 
         private PrimaryReplaceIntoClause() {
-            super(CriteriaContexts.primaryInsertContext());
+            super(CriteriaContexts.primaryInsertContext(null));
             ContextStack.push(this.context);
         }
 
@@ -140,7 +140,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private ChildReplaceIntoClause(ValueSyntaxOptions options
                 , Function<MySQLComplexValuesClause<?, ?>, Insert> dmlFunction) {
-            super(options, CriteriaContexts.primaryInsertContext());
+            super(options, CriteriaContexts.primaryInsertContext(null));
             this.dmlFunction = dmlFunction;
             ContextStack.push(this.context);
         }

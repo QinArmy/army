@@ -67,52 +67,52 @@ abstract class InsertContext extends StatementContext implements _InsertContext
             , ArmyParser parser, Visible visible) {
         super(outerContext, parser, visible);
         this.parentContext = null;
-        final _Insert nonChildStmt;
+        final _Insert targetStmt;
         if (domainStmt instanceof _Insert._ChildInsert) {
-            nonChildStmt = ((_Insert._ChildInsert) domainStmt).parentStmt();
+            targetStmt = ((_Insert._ChildInsert) domainStmt).parentStmt();
         } else {
             if (domainStmt instanceof _Insert._QueryInsert) {
                 //validate,because criteria implementation can't do this
                 ((_Insert._QueryInsert) domainStmt).validateOnlyParen();
             }
-            nonChildStmt = domainStmt;
+            targetStmt = domainStmt;
         }
-        this.insertTable = nonChildStmt.table();
+        this.insertTable = targetStmt.table();
         assert this.insertTable instanceof SingleTableMeta;
 
-        if (nonChildStmt instanceof _Insert._InsertOption) {
-            final _Insert._InsertOption option = (_Insert._InsertOption) nonChildStmt;
+        if (targetStmt instanceof _Insert._InsertOption) {
+            final _Insert._InsertOption option = (_Insert._InsertOption) targetStmt;
             this.literalMode = option.literalMode();
-            this.migration = nonChildStmt instanceof _Insert._QueryInsert || option.isMigration();
+            this.migration = targetStmt instanceof _Insert._QueryInsert || option.isMigration();
         } else {
-            this.migration = nonChildStmt instanceof _Insert._QueryInsert;
+            this.migration = targetStmt instanceof _Insert._QueryInsert;
             this.literalMode = LiteralMode.DEFAULT;
         }
 
-        if (nonChildStmt instanceof _Insert._ConflictActionClauseSpec) {
-            this.rowAlias = ((_Insert._ConflictActionClauseSpec) nonChildStmt).rowAlias();
+        if (targetStmt instanceof _Insert._ConflictActionClauseSpec) {
+            this.rowAlias = ((_Insert._ConflictActionClauseSpec) targetStmt).rowAlias();
             this.safeRowAlias = this.rowAlias == null ? null : parser.identifier(this.rowAlias);
         } else {
             this.safeRowAlias = this.rowAlias = null;
         }
         final List<FieldMeta<?>> fieldList;
-        if (nonChildStmt instanceof _Insert._ColumnListInsert) {
-            fieldList = ((_Insert._ColumnListInsert) nonChildStmt).fieldList();
+        if (targetStmt instanceof _Insert._ColumnListInsert) {
+            fieldList = ((_Insert._ColumnListInsert) targetStmt).fieldList();
         } else {
             fieldList = null;
         }
         if (fieldList != null && fieldList.size() > 0) {
             this.fieldList = fieldList;
-        } else if (nonChildStmt instanceof _Insert._AssignmentInsert) {
+        } else if (targetStmt instanceof _Insert._AssignmentInsert) {
             final Map<FieldMeta<?>, _Expression> fieldMap;
-            fieldMap = ((_Insert._AssignmentInsert) nonChildStmt).assignmentMap();
+            fieldMap = ((_Insert._AssignmentInsert) targetStmt).assignmentMap();
             this.fieldList = createNonChildFieldList((SingleTableMeta<?>) this.insertTable, fieldMap::containsKey);
         } else {
-            assert !(nonChildStmt instanceof _Insert._QueryInsert);
+            assert !(targetStmt instanceof _Insert._QueryInsert);
             this.fieldList = castFieldList(this.insertTable);
         }
-        this.conflictClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) nonChildStmt).hasConflictAction();
+        this.conflictClause = targetStmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) targetStmt).hasConflictAction();
 
         final PrimaryFieldMeta<?> idField = this.insertTable.id();
         if (this.migration || idField.generatorType() != GeneratorType.POST) {
@@ -122,7 +122,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
             //TODO
             throw new UnsupportedOperationException();
         } else if (this.conflictClause) {
-            if (nonChildStmt != domainStmt) {
+            if (targetStmt != domainStmt) {
                 //the implementations of io.army.criteria.Insert no bug,never here
                 throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) domainStmt.table());
             }
@@ -196,6 +196,12 @@ abstract class InsertContext extends StatementContext implements _InsertContext
     @Override
     public final TableMeta<?> insertTable() {
         return this.insertTable;
+    }
+
+
+    @Override
+    public final String rowAlias() {
+        return this.rowAlias;
     }
 
     @Override

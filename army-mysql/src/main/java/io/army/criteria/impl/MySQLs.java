@@ -13,8 +13,8 @@ public abstract class MySQLs extends MySQLSyntax {
     private MySQLs() {
     }
 
-    public static MySQLInsert._PrimaryOptionSpec singleInsert() {
-        return MySQLInserts.primaryInsert();
+    public static MySQLInsert._PrimaryOptionSpec<Insert> singleInsert() {
+        return MySQLInserts.primaryInsert(SQLs._INSERT_IDENTITY);
     }
 
     public static MySQLReplace._PrimaryOptionSpec singleReplace() {

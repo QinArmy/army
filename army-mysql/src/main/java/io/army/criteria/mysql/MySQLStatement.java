@@ -4,6 +4,8 @@ import io.army.criteria.DialectStatement;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
 
+import java.util.function.Consumer;
+
 public interface MySQLStatement extends DialectStatement {
 
     interface _MySQLDynamicWithClause<WE> extends _DynamicWithClause<MySQLCtes, WE> {
@@ -17,13 +19,23 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
-    interface _PartitionClause<PR> {
+    interface _PartitionClause_0<PR> {
 
         _LeftParenStringQuadraOptionalSpec<PR> partition();
 
     }
 
-    interface _PartitionAndAsClause<AR> extends _PartitionClause<Statement._AsClause<AR>> {
+    interface _PartitionClause<R> {
+
+        R partition(String first, String... rest);
+
+        R partition(Consumer<Consumer<String>> consumer);
+
+        R ifPartition(Consumer<Consumer<String>> consumer);
+
+    }
+
+    interface _PartitionAndAsClause<AR> extends _PartitionClause_0<_AsClause<AR>> {
 
     }
 
