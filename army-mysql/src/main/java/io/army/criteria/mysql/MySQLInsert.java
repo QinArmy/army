@@ -38,7 +38,7 @@ public interface MySQLInsert extends MySQLStatement {
                                                      Expression expression);
 
         _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Object, Expression> valueOperator,
-                                                     @Nullable Object expression);
+                                                     @Nullable Object value);
 
         <E> _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, E, Expression> valueOperator,
                                                          Supplier<E> supplier);

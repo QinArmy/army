@@ -106,6 +106,8 @@ public interface Query extends RowSet {
 
         SR select(NamedExpression exp1, NamedExpression exp2);
 
+        _AliasExpression<SR> select(Function<Object, Expression> operator, Object value);
+
         <T> _AliasExpression<SR> select(Function<T, Expression> operator, Supplier<T> supplier);
 
         _AliasExpression<SR> select(Function<Expression, Expression> operator, Expression exp);
@@ -129,8 +131,14 @@ public interface Query extends RowSet {
 
         SR select(Supplier<Expression> supplier, SQLs.WordAs as, String alias);
 
+        _AliasExpression<SR> select(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                    BiFunction<Expression, Object, Expression> operator, Object value);
+
+        _AliasExpression<SR> select(ExpressionOperator<Expression, Expression, Expression> expOperator,
+                                    BiFunction<Expression, Expression, Expression> operator, Expression exp);
+
         <T> _AliasExpression<SR> select(ExpressionOperator<Expression, T, Expression> expOperator,
-                                        BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+                                        BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
         <R extends Item> R select(SqlTwoFunction<_AliasExpression<SR>, SR, R> function, Expression exp1,
                                   Expression exp2);
@@ -138,6 +146,8 @@ public interface Query extends RowSet {
         //below four argument method
 
         SR select(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4);
+
+        SR select(Function<Object, Expression> operator, Object value, SQLs.WordAs as, String alias);
 
         <T> SR select(Function<T, Expression> operator, Supplier<T> supplier, SQLs.WordAs as, String alias);
 
@@ -179,6 +189,7 @@ public interface Query extends RowSet {
 
     interface _StaticSelectSpaceClause<SR extends Item> {
 
+
         //below one argument method
 
         SR space(NamedExpression exp);
@@ -192,6 +203,8 @@ public interface Query extends RowSet {
         //below two argument method
 
         SR space(NamedExpression exp1, NamedExpression exp2);
+
+        _AliasExpression<SR> space(Function<Object, Expression> operator, Object value);
 
         <T> _AliasExpression<SR> space(Function<T, Expression> operator, Supplier<T> supplier);
 
@@ -216,8 +229,14 @@ public interface Query extends RowSet {
 
         SR space(Supplier<Expression> supplier, SQLs.WordAs as, String alias);
 
+        _AliasExpression<SR> space(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                   BiFunction<Expression, Object, Expression> operator, Object value);
+
+        _AliasExpression<SR> space(ExpressionOperator<Expression, Expression, Expression> expOperator,
+                                   BiFunction<Expression, Expression, Expression> operator, Expression exp);
+
         <T> _AliasExpression<SR> space(ExpressionOperator<Expression, T, Expression> expOperator,
-                                       BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+                                       BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
         <R extends Item> R space(SqlTwoFunction<_AliasExpression<SR>, SR, R> function, Expression exp1,
                                  Expression exp2);
@@ -225,6 +244,8 @@ public interface Query extends RowSet {
         //below four argument method
 
         SR space(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4);
+
+        SR space(Function<Object, Expression> operator, Object value, SQLs.WordAs as, String alias);
 
         <T> SR space(Function<T, Expression> operator, Supplier<T> supplier, SQLs.WordAs as, String alias);
 
@@ -285,6 +306,7 @@ public interface Query extends RowSet {
 
     interface _StaticSelectCommaClause<SR extends Item> extends Item {
 
+
         //below one argument method
 
         SR comma(NamedExpression exp);
@@ -298,6 +320,8 @@ public interface Query extends RowSet {
         //below two argument method
 
         SR comma(NamedExpression exp1, NamedExpression exp2);
+
+        _AliasExpression<SR> comma(Function<Object, Expression> operator, Object value);
 
         <T> _AliasExpression<SR> comma(Function<T, Expression> operator, Supplier<T> supplier);
 
@@ -322,8 +346,14 @@ public interface Query extends RowSet {
 
         SR comma(Supplier<Expression> supplier, SQLs.WordAs as, String alias);
 
+        _AliasExpression<SR> comma(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                   BiFunction<Expression, Object, Expression> operator, Object value);
+
+        _AliasExpression<SR> comma(ExpressionOperator<Expression, Expression, Expression> expOperator,
+                                   BiFunction<Expression, Expression, Expression> operator, Expression exp);
+
         <T> _AliasExpression<SR> comma(ExpressionOperator<Expression, T, Expression> expOperator,
-                                       BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+                                       BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
         <R extends Item> R comma(SqlTwoFunction<_AliasExpression<SR>, SR, R> function, Expression exp1,
                                  Expression exp2);
@@ -331,6 +361,8 @@ public interface Query extends RowSet {
         //below four argument method
 
         SR comma(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4);
+
+        SR comma(Function<Object, Expression> operator, Object value, SQLs.WordAs as, String alias);
 
         <T> SR comma(Function<T, Expression> operator, Supplier<T> supplier, SQLs.WordAs as, String alias);
 
@@ -366,11 +398,6 @@ public interface Query extends RowSet {
         SR comma(ExpressionOperator<Expression, Object, Expression> expOperator,
                  BiFunction<Expression, Object, Expression> operator, Function<String, ?> function,
                  String keyName, SQLs.WordAs as, String alias);
-    }
-
-
-    interface _SelectionsCommaSpec extends _StaticSelectCommaClause<_SelectionsCommaSpec> {
-
     }
 
 

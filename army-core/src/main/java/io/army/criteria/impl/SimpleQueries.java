@@ -110,6 +110,11 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
+    public final _AliasExpression<SR> select(Function<Object, Expression> operator, Object value) {
+        return this.onSelectExpression(operator.apply(value));
+    }
+
+    @Override
     public final <T> _AliasExpression<SR> select(Function<T, Expression> operator, Supplier<T> supplier) {
         return this.onSelectExpression(operator.apply(supplier.get()));
     }
@@ -169,6 +174,18 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
+    public final _AliasExpression<SR> select(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                             BiFunction<Expression, Object, Expression> operator, Object value) {
+        return this.onSelectExpression(expOperator.apply(operator, value));
+    }
+
+    @Override
+    public final _AliasExpression<SR> select(ExpressionOperator<Expression, Expression, Expression> expOperator,
+                                             BiFunction<Expression, Expression, Expression> operator, Expression exp) {
+        return this.onSelectExpression(expOperator.apply(operator, exp));
+    }
+
+    @Override
     public final <T> _AliasExpression<SR> select(ExpressionOperator<Expression, T, Expression> expOperator,
                                                  BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
         return this.onSelectExpression(expOperator.apply(operator, getter.get()));
@@ -186,6 +203,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
                 .onAddSelectItem(exp2)
                 .onAddSelectItem(exp3)
                 .onAddSelectItem(exp4);
+        return (SR) this;
+    }
+
+    @Override
+    public final SR select(Function<Object, Expression> operator, Object value, SQLsSyntax.WordAs as, String alias) {
+        this.context.onAddSelectItem(ArmySelections.forExp(operator.apply(value), alias));
         return (SR) this;
     }
 
@@ -336,6 +359,11 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
+    public final _AliasExpression<SR> space(Function<Object, Expression> operator, Object value) {
+        return this.onSelectExpression(operator.apply(value));
+    }
+
+    @Override
     public final <T> _AliasExpression<SR> space(Function<T, Expression> operator, Supplier<T> supplier) {
         return this.onSelectExpression(operator.apply(supplier.get()));
     }
@@ -394,6 +422,19 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         return (SR) this;
     }
 
+
+    @Override
+    public final _AliasExpression<SR> space(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                            BiFunction<Expression, Object, Expression> operator, Object value) {
+        return this.onSelectExpression(expOperator.apply(operator, value));
+    }
+
+    @Override
+    public final _AliasExpression<SR> space(ExpressionOperator<Expression, Expression, Expression> expOperator,
+                                            BiFunction<Expression, Expression, Expression> operator, Expression exp) {
+        return this.onSelectExpression(expOperator.apply(operator, exp));
+    }
+
     @Override
     public final <T> _AliasExpression<SR> space(ExpressionOperator<Expression, T, Expression> expOperator,
                                                 BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
@@ -412,6 +453,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
                 .onAddSelectItem(exp2)
                 .onAddSelectItem(exp3)
                 .onAddSelectItem(exp4);
+        return (SR) this;
+    }
+
+    @Override
+    public final SR space(Function<Object, Expression> operator, Object value, SQLsSyntax.WordAs as, String alias) {
+        this.context.onAddSelectItem(ArmySelections.forExp(operator.apply(value), alias));
         return (SR) this;
     }
 
@@ -511,6 +558,11 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
+    public final _AliasExpression<SR> comma(Function<Object, Expression> operator, Object value) {
+        return this.onSelectExpression(operator.apply(value));
+    }
+
+    @Override
     public final <T> _AliasExpression<SR> comma(Function<T, Expression> operator, Supplier<T> supplier) {
         return this.onSelectExpression(operator.apply(supplier.get()));
     }
@@ -570,6 +622,18 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
+    public final _AliasExpression<SR> comma(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                            BiFunction<Expression, Object, Expression> operator, Object value) {
+        return this.onSelectExpression(expOperator.apply(operator, value));
+    }
+
+    @Override
+    public final _AliasExpression<SR> comma(ExpressionOperator<Expression, Expression, Expression> expOperator,
+                                            BiFunction<Expression, Expression, Expression> operator, Expression exp) {
+        return this.onSelectExpression(expOperator.apply(operator, exp));
+    }
+
+    @Override
     public final <T> _AliasExpression<SR> comma(ExpressionOperator<Expression, T, Expression> expOperator,
                                                 BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
         return this.onSelectExpression(expOperator.apply(operator, getter.get()));
@@ -587,6 +651,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
                 .onAddSelectItem(exp2)
                 .onAddSelectItem(exp3)
                 .onAddSelectItem(exp4);
+        return (SR) this;
+    }
+
+    @Override
+    public final SR comma(Function<Object, Expression> operator, Object value, SQLsSyntax.WordAs as, String alias) {
+        this.context.onAddSelectItem(ArmySelections.forExp(operator.apply(value), alias));
         return (SR) this;
     }
 
@@ -1284,6 +1354,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             return this.createSelectClause().select(exp1, exp2);
         }
 
+
+        @Override
+        public final _AliasExpression<SR> select(Function<Object, Expression> operator, Object value) {
+            return this.createSelectClause().select(operator, value);
+        }
+
         @Override
         public final <T> _AliasExpression<SR> select(Function<T, Expression> operator, Supplier<T> supplier) {
             return this.createSelectClause().select(operator, supplier);
@@ -1336,6 +1412,20 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             return this.createSelectClause().select(supplier, as, alias);
         }
 
+
+        @Override
+        public final _AliasExpression<SR> select(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                                 BiFunction<Expression, Object, Expression> operator, Object value) {
+            return this.createSelectClause().select(expOperator, operator, value);
+        }
+
+        @Override
+        public final _AliasExpression<SR> select(ExpressionOperator<Expression, Expression, Expression> expOperator,
+                                                 BiFunction<Expression, Expression, Expression> operator,
+                                                 Expression exp) {
+            return this.createSelectClause().select(expOperator, operator, exp);
+        }
+
         @Override
         public final <T> _AliasExpression<SR> select(ExpressionOperator<Expression, T, Expression> expOperator,
                                                      BiFunction<Expression, T, Expression> operator,
@@ -1352,6 +1442,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         @Override
         public final SR select(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4) {
             return this.createSelectClause().select(exp1, exp2, exp3, exp4);
+        }
+
+
+        @Override
+        public final SR select(Function<Object, Expression> operator, Object value, SQLsSyntax.WordAs as, String alias) {
+            return this.createSelectClause().select(operator, value, as, alias);
         }
 
         @Override
@@ -1697,6 +1793,11 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
+        public _AliasExpression<Selections> selection(Function<Object, Expression> operator, Object value) {
+            return this.onSelectExpression(operator.apply(value));
+        }
+
+        @Override
         public <T> _AliasExpression<Selections> selection(Function<T, Expression> operator, Supplier<T> supplier) {
             return this.onSelectExpression(operator.apply(supplier.get()));
         }
@@ -1756,6 +1857,20 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             return this;
         }
 
+
+        @Override
+        public _AliasExpression<Selections> selection(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                                      BiFunction<Expression, Object, Expression> operator, Object value) {
+            return this.onSelectExpression(expOperator.apply(operator, value));
+        }
+
+        @Override
+        public _AliasExpression<Selections> selection(ExpressionOperator<Expression, Expression, Expression> expOperator,
+                                                      BiFunction<Expression, Expression, Expression> operator,
+                                                      Expression exp) {
+            return this.onSelectExpression(expOperator.apply(operator, exp));
+        }
+
         @Override
         public <T> _AliasExpression<Selections> selection(ExpressionOperator<Expression, T, Expression> expOperator,
                                                           BiFunction<Expression, T, Expression> operator,
@@ -1776,6 +1891,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
                     .onAddSelectItem(exp2)
                     .onAddSelectItem(exp3)
                     .onAddSelectItem(exp4);
+            return this;
+        }
+
+        @Override
+        public Selections selection(Function<Object, Expression> operator, Object value, SQLs.WordAs as, String alias) {
+            this.context.onAddSelectItem(ArmySelections.forExp(operator.apply(value), alias));
             return this;
         }
 

@@ -27,6 +27,8 @@ public interface Selections extends Item {
 
     Selections selection(NamedExpression exp1, NamedExpression exp2);
 
+    _AliasExpression<Selections> selection(Function<Object, Expression> operator, Object value);
+
     <T> _AliasExpression<Selections> selection(Function<T, Expression> operator, Supplier<T> supplier);
 
     _AliasExpression<Selections> selection(Function<Expression, Expression> operator, Expression exp);
@@ -50,6 +52,12 @@ public interface Selections extends Item {
 
     Selections selection(Supplier<Expression> supplier, SQLs.WordAs as, String alias);
 
+    _AliasExpression<Selections> selection(ExpressionOperator<Expression, Object, Expression> expOperator,
+                                           BiFunction<Expression, Object, Expression> operator, Object value);
+
+    _AliasExpression<Selections> selection(ExpressionOperator<Expression, Expression, Expression> expOperator,
+                                           BiFunction<Expression, Expression, Expression> operator, Expression exp);
+
     <T> _AliasExpression<Selections> selection(ExpressionOperator<Expression, T, Expression> expOperator,
                                                BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
 
@@ -59,6 +67,9 @@ public interface Selections extends Item {
     //below four argument method
 
     Selections selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4);
+
+
+    Selections selection(Function<Object, Expression> operator, Object value, SQLs.WordAs as, String alias);
 
     <T> Selections selection(Function<T, Expression> operator, Supplier<T> supplier, SQLs.WordAs as, String alias);
 
