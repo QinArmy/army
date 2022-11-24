@@ -27,6 +27,10 @@ abstract class PostgreParser extends _ArmyDialectParser {
         return false;
     }
 
+    @Override
+    protected final boolean isSupportRowAlias() {
+        return true;
+    }
 
     @Override
     protected final boolean isSupportTableOnly() {

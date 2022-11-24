@@ -542,9 +542,19 @@ abstract class CriteriaSupports {
             return (SR) this;
         }
 
+
         @Override
-        public final SR set(F field, BiFunction<F, Expression, Expression> valueOperator, Expression expression) {
-            this.consumer.accept(SQLs._itemPair(field, null, valueOperator.apply(field, expression)));
+        public final <R extends AssignmentItem> SR set(F field, BiFunction<F, Expression, R> valueOperator,
+                                                       Expression expression) {
+            final R item;
+            item = valueOperator.apply(field, expression);
+            if (item instanceof Expression) {
+                this.consumer.accept(SQLs._itemPair(field, null, (Expression) item));
+            } else if (item instanceof ItemPair) {
+                this.consumer.accept((ItemPair) item);
+            } else {
+                throw CriteriaUtils.illegalAssignmentItem(ContextStack.peek(), item);
+            }
             return (SR) this;
         }
 

@@ -17,7 +17,13 @@ public interface _Insert extends _Statement {
 
     TableMeta<?> table();
 
-    interface _ConflictActionClauseSpec {
+    interface _SupportConflictClauseSpec {
+
+        boolean hasConflictAction();
+
+    }
+
+    interface _ConflictActionClauseSpec extends _SupportConflictClauseSpec {
 
         @Nullable
         String rowAlias();
@@ -34,11 +40,7 @@ public interface _Insert extends _Statement {
     }
 
 
-    interface _SupportConflictClauseSpec extends _Insert {
 
-        boolean hasConflictAction();
-
-    }
 
     /**
      * <p>

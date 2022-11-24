@@ -62,8 +62,19 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final SR set(F field, BiFunction<F, Expression, Expression> valueOperator, Expression expression) {
-        return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, expression)));
+    public final <R extends AssignmentItem> SR set(F field, BiFunction<F, Expression, R> valueOperator,
+                                                   Expression expression) {
+        final R item;
+        item = valueOperator.apply(field, expression);
+
+        if (item instanceof Expression) {
+            this.onAddItemPair(SQLs._itemPair(field, null, (Expression) item));
+        } else if (item instanceof ItemPair) {
+            this.onAddItemPair((ItemPair) item);
+        } else {
+            throw CriteriaUtils.illegalAssignmentItem(this.context, item);
+        }
+        return (SR) this;
     }
 
     @Override

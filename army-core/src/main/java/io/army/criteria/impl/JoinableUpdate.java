@@ -62,9 +62,21 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
         return this.onAddItemPair(SQLs._itemPair(field, null, function.apply(field)));
     }
 
+
     @Override
-    public final SR set(F field, BiFunction<F, Expression, Expression> valueOperator, Expression expression) {
-        return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, expression)));
+    public final <R extends AssignmentItem> SR set(F field, BiFunction<F, Expression, R> valueOperator,
+                                                   Expression expression) {
+        final R item;
+        item = valueOperator.apply(field, expression);
+        final ItemPair pair;
+        if (item instanceof Expression) {
+            pair = SQLs._itemPair(field, null, (Expression) item);
+        } else if (item instanceof ItemPair) {
+            pair = (ItemPair) item;
+        } else {
+            throw CriteriaUtils.illegalAssignmentItem(this.context, item);
+        }
+        return this.onAddItemPair(pair);
     }
 
     @Override

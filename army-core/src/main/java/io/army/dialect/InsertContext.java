@@ -39,7 +39,11 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
     private final String safeRowAlias;
 
+    private final String safeTableName;
+
     final boolean conflictClause;
+
+    final boolean conflictPredicateClause;
 
     /**
      * {@link #insertTable} instanceof {@link  SingleTableMeta} and  dialect support returning clause nad generated key.
@@ -89,11 +93,16 @@ abstract class InsertContext extends StatementContext implements _InsertContext
             this.literalMode = LiteralMode.DEFAULT;
         }
 
+
         if (targetStmt instanceof _Insert._ConflictActionClauseSpec) {
-            this.rowAlias = ((_Insert._ConflictActionClauseSpec) targetStmt).rowAlias();
-            this.safeRowAlias = this.rowAlias == null ? null : parser.identifier(this.rowAlias);
+            final _Insert._ConflictActionClauseSpec spec = (_Insert._ConflictActionClauseSpec) targetStmt;
+            this.rowAlias = parser.supportRowAlias ? spec.rowAlias() : null;
+            this.safeRowAlias = this.rowAlias == null ? null : this.parser.identifier(this.rowAlias);
+            this.safeTableName = spec.hasConflictAction() ? this.parser.safeObjectName(this.insertTable) : null;
+            this.conflictPredicateClause = targetStmt instanceof _Insert._ConflictActionPredicateClauseSpec;
         } else {
-            this.safeRowAlias = this.rowAlias = null;
+            this.safeTableName = this.safeRowAlias = this.rowAlias = null;
+            this.conflictPredicateClause = false;
         }
         final List<FieldMeta<?>> fieldList;
         if (targetStmt instanceof _Insert._ColumnListInsert) {
@@ -161,10 +170,14 @@ abstract class InsertContext extends StatementContext implements _InsertContext
                 && ((ChildTableMeta<?>) this.insertTable).parentMeta() == parentContext.insertTable;
 
         if (stmt instanceof _Insert._ConflictActionClauseSpec) {
-            this.rowAlias = ((_Insert._ConflictActionClauseSpec) stmt).rowAlias();
-            this.safeRowAlias = this.rowAlias == null ? null : parser.identifier(this.rowAlias);
+            final _Insert._ConflictActionClauseSpec spec = (_Insert._ConflictActionClauseSpec) stmt;
+            this.rowAlias = this.parser.supportRowAlias ? spec.rowAlias() : null;
+            this.safeRowAlias = this.rowAlias == null ? null : this.parser.identifier(this.rowAlias);
+            this.safeTableName = spec.hasConflictAction() ? this.parser.safeObjectName(this.insertTable) : null;
+            this.conflictPredicateClause = stmt instanceof _Insert._ConflictActionPredicateClauseSpec;
         } else {
-            this.safeRowAlias = this.rowAlias = null;
+            this.safeTableName = this.safeRowAlias = this.rowAlias = null;
+            this.conflictPredicateClause = false;
         }
         final List<FieldMeta<?>> fieldList;
         if (stmt instanceof _Insert._ColumnListInsert) {
@@ -215,36 +228,77 @@ abstract class InsertContext extends StatementContext implements _InsertContext
     }
 
     @Override
-    public final void appendField(String tableAlias, FieldMeta<?> field) {
-        this.appendFieldForConflict(tableAlias, field);
+    public final void appendField(final String tableAlias, final FieldMeta<?> field) {
+        if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {
+            throw _Exceptions.unknownColumn(field);
+        }
+        final String rowAlias = this.rowAlias;
+        if (rowAlias == null || !rowAlias.equals(tableAlias)) {
+            throw _Exceptions.unknownColumn(field);
+        }
+        final StringBuilder sqlBuilder;
+        sqlBuilder = this.sqlBuilder.append(_Constant.SPACE)
+                .append(this.safeRowAlias)
+                .append(_Constant.POINT);
+        this.parser.safeObjectName(field, sqlBuilder);
+
     }
 
     @Override
-    public final void appendField(FieldMeta<?> field) {
-        this.appendFieldForConflict(null, field);
+    public final void appendField(final FieldMeta<?> field) {
+        if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {
+            throw _Exceptions.unknownColumn(field);
+        }
+        final StringBuilder sqlBuilder;
+        sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
+        this.parser.safeObjectName(field, sqlBuilder);
     }
 
     @Override
     public void appendSetLeftItem(final DataField dataField) {
+        final TableField field;
+        final String fieldName = dataField.fieldName();
         if (!(dataField instanceof TableField)) {
             String m = String.format("Insert statement conflict clause don't support %s", dataField);
             throw new CriteriaException(m);
-        } else if (((TableField) dataField).tableMeta() != this.insertTable) {
+        } else if ((field = (TableField) dataField).tableMeta() != this.insertTable) {
             throw _Exceptions.unknownColumn(dataField);
+        } else if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {
+            throw _Exceptions.unknownColumn(field);
+        } else if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
+            throw _Exceptions.armyManageField(field);
+        } else {
+            switch (field.updateMode()) {
+                case IMMUTABLE:
+                    throw _Exceptions.immutableField(field);
+                case ONLY_NULL:
+                case ONLY_DEFAULT: {
+                    if (!this.conflictPredicateClause) {
+                        String m = String.format("%s don't support update the field with %s mode.",
+                                this.parser.dialect, field.updateMode());
+                        throw new CriteriaException(m);
+                    }
+                }
+                break;
+                case UPDATABLE:
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(field.updateMode());
+            }
         }
 
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
-        if (dataField instanceof QualifiedField) {
+        if (field instanceof QualifiedField) {
             final String rowAlias = this.rowAlias;
-            if (rowAlias == null || !rowAlias.equals(((QualifiedField<?>) dataField).tableAlias())) {
-                throw _Exceptions.unknownColumn(dataField);
+            if (rowAlias == null || !rowAlias.equals(((QualifiedField<?>) field).tableAlias())) {
+                throw _Exceptions.unknownColumn(field);
             }
             sqlBuilder.append(this.safeRowAlias)
                     .append(_Constant.POINT);
-            this.parser.safeObjectName(((QualifiedField<?>) dataField).fieldMeta(), sqlBuilder);
+            this.parser.safeObjectName((field).fieldMeta(), sqlBuilder);
         } else {
-            this.parser.safeObjectName((FieldMeta<?>) dataField, sqlBuilder);
+            this.parser.safeObjectName(field, sqlBuilder);
         }
 
     }
@@ -406,24 +460,6 @@ abstract class InsertContext extends StatementContext implements _InsertContext
                 throw _Exceptions.unexpectedEnum(mode);
         }
 
-    }
-
-
-    private void appendFieldForConflict(@Nullable String tableAlias, FieldMeta<?> field) {
-        if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {
-            throw _Exceptions.unknownColumn(field);
-        }
-        final StringBuilder sqlBuilder;
-        sqlBuilder = this.sqlBuilder
-                .append(_Constant.SPACE);
-        if (tableAlias != null) {
-            if (!tableAlias.equals(this.rowAlias)) {
-                throw _Exceptions.unknownColumn(tableAlias, field);
-            }
-            sqlBuilder.append(this.safeRowAlias)
-                    .append(_Constant.POINT);
-        }
-        this.parser.safeObjectName(field, sqlBuilder);
     }
 
 

@@ -24,7 +24,7 @@ import java.lang.reflect.Field;
  * @see QualifiedField
  */
 @SuppressWarnings("unused")
-public interface TableField extends DataField, FieldSelection, TypeMeta, SetLeftItem, DatabaseObject {
+public interface TableField extends DataField, FieldSelection, TypeMeta, DatabaseObject {
 
     TableMeta<?> tableMeta();
 

@@ -5,7 +5,7 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.stmt.SimpleStmt;
 
-public interface _InsertContext extends _DmlContext {
+public interface _InsertContext extends _DmlContext, _SetClauseContext {
 
     TableMeta<?> insertTable();
 

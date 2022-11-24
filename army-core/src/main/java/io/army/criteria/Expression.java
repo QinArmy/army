@@ -17,7 +17,7 @@ import java.util.function.BiFunction;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortItem, RightOperand {
+public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortItem, RightOperand, AssignmentItem {
 
 
     /**

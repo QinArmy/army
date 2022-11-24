@@ -911,6 +911,11 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
+        public boolean hasConflictAction() {
+            return true;
+        }
+
+        @Override
         public List<_ItemPair> updateSetClauseList() {
             return this.itemPairList;
         }

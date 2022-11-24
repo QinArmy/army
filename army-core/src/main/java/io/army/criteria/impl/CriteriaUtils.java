@@ -46,8 +46,6 @@ abstract class CriteriaUtils {
     }
 
 
-
-
     static List<_Predicate> asPredicateList(CriteriaContext context, final List<IPredicate> list) {
         final List<_Predicate> predicateList;
         final int size = list.size();
@@ -562,6 +560,11 @@ abstract class CriteriaUtils {
     static CriteriaException funDontSupportMultiValue(String name) {
         String m = String.format("function[%s] don't support multi-value", name);
         return ContextStack.criteriaError(ContextStack.peek(), m);
+    }
+
+    static CriteriaException illegalAssignmentItem(CriteriaContext context, @Nullable AssignmentItem item) {
+        String m = String.format("%s is illegal %s", _ClassUtils.safeClassName(item), AssignmentItem.class.getName());
+        return ContextStack.criteriaError(context, m);
     }
 
     private static CriteriaException unknownSelectItem(final RowSet left, final SelectItem item) {

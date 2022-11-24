@@ -26,110 +26,113 @@ public interface MySQLInsert extends MySQLStatement {
     }
 
 
-    interface _StaticConflictUpdateCommaClause<I extends Item, F extends TableField> extends _DmlInsertClause<I> {
+    interface _StaticConflictUpdateCommaClause<I extends Item, T> extends _DmlInsertClause<I> {
 
-        _StaticConflictUpdateCommaClause<I, F> comma(F field, Expression value);
+        _StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field, Expression value);
 
-        _StaticConflictUpdateCommaClause<I, F> comma(F field, Supplier<Expression> supplier);
+        _StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field, Supplier<Expression> supplier);
 
-        _StaticConflictUpdateCommaClause<I, F> comma(F field, Function<F, Expression> function);
+        _StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-        _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Expression, Expression> valueOperator,
-                                                     Expression expression);
+        <R extends AssignmentItem> _StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, R> valueOperator,
+                                                                                Expression expression);
 
-        _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Object, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                      @Nullable Object value);
 
-        <E> _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, E, Expression> valueOperator,
+        <E> _StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator,
                                                          Supplier<E> supplier);
 
-        _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Object, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                      Function<String, ?> function, String keyName);
 
-        _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                                                     BiFunction<F, Expression, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+                                                     BiFunction<FieldMeta<T>, Expression, Expression> valueOperator,
                                                      Expression expression);
 
-        _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                                                     BiFunction<F, Object, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+                                                     BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                      Object value);
 
-        <E> _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                                                         BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier);
+        <E> _StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+                                                         BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
 
-        _StaticConflictUpdateCommaClause<I, F> comma(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                                                     BiFunction<F, Object, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+                                                     BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                      Function<String, ?> function, String keyName);
 
-        _StaticConflictUpdateCommaClause<I, F> ifComma(F field, Supplier<Expression> supplier);
+        _StaticConflictUpdateCommaClause<I, T> ifComma(FieldMeta<T> field, Supplier<Expression> supplier);
 
-        _StaticConflictUpdateCommaClause<I, F> ifComma(F field, Function<F, Expression> function);
+        _StaticConflictUpdateCommaClause<I, T> ifComma(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-        <E> _StaticConflictUpdateCommaClause<I, F> ifComma(F field, BiFunction<F, E, Expression> valueOperator,
+        <E> _StaticConflictUpdateCommaClause<I, T> ifComma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator,
                                                            Supplier<E> getter);
 
-        _StaticConflictUpdateCommaClause<I, F> ifComma(F field, BiFunction<F, Object, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> ifComma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                        Function<String, ?> function, String keyName);
 
-        <E> _StaticConflictUpdateCommaClause<I, F> ifComma(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                                                           BiFunction<F, E, Expression> valueOperator, Supplier<E> getter);
+        <E> _StaticConflictUpdateCommaClause<I, T> ifComma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+                                                           BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> getter);
 
-        _StaticConflictUpdateCommaClause<I, F> ifComma(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                                                       BiFunction<F, Object, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> ifComma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+                                                       BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                        Function<String, ?> function, String keyName);
 
     }
 
-    interface _StaticConflictUpdateClause<I extends Item, F extends TableField> {
+    /**
+     * @see MySQLFunctions#values(FieldMeta)
+     */
+    interface _StaticConflictUpdateClause<I extends Item, T> {
 
-        _StaticConflictUpdateCommaClause<I, F> update(F field, Expression value);
+        _StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, Expression value);
 
-        _StaticConflictUpdateCommaClause<I, F> update(F field, Supplier<Expression> supplier);
+        _StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, Supplier<Expression> supplier);
 
-        _StaticConflictUpdateCommaClause<I, F> update(F field, Function<F, Expression> function);
+        _StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-        _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Expression, Expression> valueOperator,
-                                                      Expression expression);
+        <R extends AssignmentItem> _StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, R> valueOperator,
+                                                                                 Expression expression);
 
-        _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Object, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                       @Nullable Object value);
 
-        <E> _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, E, Expression> valueOperator,
+        <E> _StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator,
                                                           Supplier<E> supplier);
 
-        _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Object, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                       Function<String, ?> function, String keyName);
 
-        _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                                                      BiFunction<F, Expression, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+                                                      BiFunction<FieldMeta<T>, Expression, Expression> valueOperator,
                                                       Expression expression);
 
-        _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                                                      BiFunction<F, Object, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+                                                      BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                       Object value);
 
-        <E> _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                                                          BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier);
+        <E> _StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+                                                          BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
 
-        _StaticConflictUpdateCommaClause<I, F> update(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                                                      BiFunction<F, Object, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> update(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+                                                      BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                       Function<String, ?> function, String keyName);
 
-        _StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, Supplier<Expression> supplier);
+        _StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field, Supplier<Expression> supplier);
 
-        _StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, Function<F, Expression> function);
+        _StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-        <E> _StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, BiFunction<F, E, Expression> valueOperator,
+        <E> _StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator,
                                                             Supplier<E> getter);
 
-        _StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, BiFunction<F, Object, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                         Function<String, ?> function, String keyName);
 
-        <E> _StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                                                            BiFunction<F, E, Expression> valueOperator, Supplier<E> getter);
+        <E> _StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+                                                            BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> getter);
 
-        _StaticConflictUpdateCommaClause<I, F> ifUpdate(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                                                        BiFunction<F, Object, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+                                                        BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                         Function<String, ?> function, String keyName);
     }
 
@@ -137,19 +140,19 @@ public interface MySQLInsert extends MySQLStatement {
     /**
      * @see MySQLFunctions#values(FieldMeta)
      */
-    interface _OnDuplicateKeyUpdateSpec<I extends Item, F extends TableField> extends _DmlInsertClause<I> {
+    interface _OnDuplicateKeyUpdateSpec<I extends Item, T> extends _DmlInsertClause<I> {
         //TODO MySQLFunctions#values(FieldMeta)
-        _StaticConflictUpdateClause<I, F> onDuplicateKey();
+        _StaticConflictUpdateClause<I, T> onDuplicateKey();
 
-        _DmlInsertClause<I> onDuplicateKeyUpdate(Consumer<ItemPairs<F>> consumer);
+        _DmlInsertClause<I> onDuplicateKeyUpdate(Consumer<ItemPairs<FieldMeta<T>>> consumer);
 
-        _DmlInsertClause<I> ifOnDuplicateKeyUpdate(Consumer<ItemPairs<F>> consumer);
+        _DmlInsertClause<I> ifOnDuplicateKeyUpdate(Consumer<ItemPairs<FieldMeta<T>>> consumer);
     }
 
 
-    interface _OnAsRowAliasSpec<I extends Item, T> extends _OnDuplicateKeyUpdateSpec<I, FieldMeta<T>> {
+    interface _OnAsRowAliasSpec<I extends Item, T> extends _OnDuplicateKeyUpdateSpec<I, T> {
 
-        _OnDuplicateKeyUpdateSpec<I, TypeTableField<T>> as(String rowAlias);
+        _OnDuplicateKeyUpdateSpec<I, T> as(String rowAlias);
 
     }
 

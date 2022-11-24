@@ -437,6 +437,11 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     @Override
+    protected final boolean isSupportRowAlias() {
+        return this.dialect.version() >= MySQLDialect.MySQL80.version();
+    }
+
+    @Override
     protected final _ChildUpdateMode childUpdateMode() {
         return _ChildUpdateMode.MULTI_TABLE;
     }

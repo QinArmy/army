@@ -5,6 +5,7 @@ import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.Visible;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.impl.MySQLFunctions;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Insert;
@@ -45,6 +46,11 @@ public class MySQLInsertUnitTests {
     public void domainInsertParentPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
+        final ChinaRegion<?> region;
+        region = new ChinaRegion<>()
+                .setName("光明顶")
+                .setRegionGdp(new BigDecimal("6666.88"));
+
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
             List<Hint> hintList = new ArrayList<>();
@@ -52,7 +58,7 @@ public class MySQLInsertUnitTests {
             return hintList;
         };
 
-        Insert stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, Collections.singletonList(MySQLs.HIGH_PRIORITY))
@@ -61,9 +67,10 @@ public class MySQLInsertUnitTests {
                 .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(this::createReginList)
+                .as("cr")
                 .onDuplicateKey()
-                .update(ChinaRegion_.name, SQLs::param, "光明顶")
-                .comma(ChinaRegion_.regionGdp, SQLs::param, "6666.88")
+                .update(ChinaRegion_.name, MySQLFunctions::values)
+                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLFunctions.values(ChinaRegion_.regionGdp))
                 .asInsert();
 
         printStmt(stmt);

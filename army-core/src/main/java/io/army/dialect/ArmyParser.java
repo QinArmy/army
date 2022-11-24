@@ -71,6 +71,8 @@ abstract class ArmyParser implements DialectParser {
 
     final boolean supportSingleDeleteAlias;
 
+    final boolean supportRowAlias;
+
     final boolean singleDmlAliasAfterAs;
 
     final boolean aliasAfterAs;
@@ -112,6 +114,8 @@ abstract class ArmyParser implements DialectParser {
         this.setClauseTableAlias = this.isSetClauseTableAlias();
         this.supportUpdateRow = this.isSupportUpdateRow();
         this.supportUpdateDerivedField = this.isSupportUpdateDerivedField();
+
+        this.supportRowAlias = this.isSupportRowAlias();
 
         this.keyWordSet = Collections.unmodifiableSet(this.createKeyWordSet());
         if (this.mockEnv) {
@@ -317,6 +321,8 @@ abstract class ArmyParser implements DialectParser {
     protected abstract boolean isTableAliasAfterAs();
 
     protected abstract boolean isSupportOnlyDefault();
+
+    protected abstract boolean isSupportRowAlias();
 
     protected abstract boolean isSupportTableOnly();
 
@@ -570,17 +576,17 @@ abstract class ArmyParser implements DialectParser {
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder().append(conflictWords);
 
-        final _SetClauseContext setClauseContext = (_SetClauseContext) context;
         for (int i = 0; i < pairSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            itemPairList.get(i).appendItemPair(setClauseContext);
+            itemPairList.get(i).appendItemPair(context);
         }
 
         final TableMeta<?> insertTable;
         insertTable = context.insertTable();
         if (insertTable instanceof SingleTableMeta) {
+            // here ,safe table alias must be null
             this.appendUpdateTimeAndVersion((SingleTableMeta<?>) insertTable, null, context, false);
         }
     }
