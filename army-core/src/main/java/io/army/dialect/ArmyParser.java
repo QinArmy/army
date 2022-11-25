@@ -544,7 +544,7 @@ abstract class ArmyParser implements DialectParser {
     protected final void handleRowSet(final RowSet rowSet, final _SqlContext original) {
         //3. parse RowSet
         if (rowSet instanceof Query) {
-            this.handleQuery((Select) rowSet, original);
+            this.handleQuery((Query) rowSet, original);
         } else if (rowSet instanceof ValuesQuery) {
             this.handleDqlValues((ValuesQuery) rowSet, original);
         } else {

@@ -737,6 +737,9 @@ abstract class CriteriaContexts {
 
         private Map<String, Map<String, DerivedField>> aliasToDerivedField;
 
+        /**
+         * can't validate field,because field possibly from outer context,{@link _SqlContext} validate this.
+         */
         private Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasFieldMap;
 
         private Function<TypeInfer, ? extends Item> function = SQLs._IDENTITY;
@@ -919,6 +922,13 @@ abstract class CriteriaContexts {
                 this.aliasToDerivedField = null;//clear
             }
 
+            // can't validate field,because field possibly from outer context,{@link _SqlContext} validate this.
+            final Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasFieldMap = this.aliasFieldMap;
+            if (aliasFieldMap != null) {
+                aliasFieldMap.clear();
+                this.aliasFieldMap = null;
+            }
+
             //4. clear SimpleQueryContext
             if (this instanceof SimpleQueryContext) {
                 final SimpleQueryContext context = (SimpleQueryContext) this;
@@ -1068,25 +1078,6 @@ abstract class CriteriaContexts {
             return field;
         }
 
-        private boolean doContainCte(final String cteName, final List<? extends _TableBlock> blockList) {
-            boolean match = false;
-            TabularItem item;
-            for (_TableBlock block : blockList) {
-                item = block.tableItem();
-                if (item instanceof CteItem && cteName.equals(((CteItem) item).name())) {
-                    match = true;
-                    break;
-                }
-                if (!(item instanceof NestedItems)) {
-                    continue;
-                }
-                if (this.doContainCte(cteName, ((_NestedItems) item).tableBlockList())) {
-                    match = true;
-                    break;
-                }
-            }
-            return match;
-        }
 
         /**
          * @see #onAddBlock(_TableBlock)
@@ -1130,6 +1121,9 @@ abstract class CriteriaContexts {
 
         private String rowAlias;
 
+        /**
+         * can't validate field,because field possibly from outer context,{@link _SqlContext} validate this.
+         */
         private Map<FieldMeta<?>, QualifiedField<?>> qualifiedFieldMap;
 
         private InsertContext(@Nullable CriteriaContext outerContext) {
@@ -1175,6 +1169,18 @@ abstract class CriteriaContexts {
                 qualifiedFieldMap.put(field, qualifiedField);
             }
             return (QualifiedField<T>) qualifiedField;
+        }
+
+
+        @Override
+        List<_TableBlock> onEndContext() {
+            // can't validate field,because field possibly from outer context,{@link _SqlContext} validate this.
+            final Map<FieldMeta<?>, QualifiedField<?>> aliasFieldMap = this.qualifiedFieldMap;
+            if (aliasFieldMap != null) {
+                aliasFieldMap.clear();
+                this.qualifiedFieldMap = null;
+            }
+            return Collections.emptyList();
         }
 
 

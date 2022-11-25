@@ -17,7 +17,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public abstract class CriteriaUnitTests {
 
     private static final List<String> REGION_LIST = ArrayUtils.asUnmodifiableList(
-            "绿叶港", "幽龙潭", "涡流岛", "元泱界", "曲境", "迷离谷", "万诗之海", "死亡空间", "马鱼腮角", "雪谷海沟",
+            "绿叶港", "幽龙潭", "涡流岛", "元泱界", "曲境", "迷离谷", "万诗之海", "马鱼腮角", "雪谷海沟",
             "光之森林", "铁河流域", "长梦之河", "灵山塔", "舞阳河"//, "" , "","","","",
             // "","","","","", "" , "","","","",
             // "","","","","", "" , "","","","",
@@ -66,7 +66,7 @@ public abstract class CriteriaUnitTests {
     }
 
     protected final String randomProvince(Random random) {
-        return PROVINCE_LIST.get(random.nextInt(PROVINCE_LIST.size()));
+        return PROVINCE_LIST.get(random.nextInt(Integer.MAX_VALUE) % PROVINCE_LIST.size());
     }
 
     protected final String randomRegion() {
@@ -74,7 +74,7 @@ public abstract class CriteriaUnitTests {
     }
 
     protected final String randomRegion(Random random) {
-        return REGION_LIST.get(random.nextInt(REGION_LIST.size()));
+        return REGION_LIST.get(random.nextInt(Integer.MAX_VALUE) % REGION_LIST.size());
     }
 
     protected final String randomCity() {
@@ -82,7 +82,7 @@ public abstract class CriteriaUnitTests {
     }
 
     protected final String randomCity(Random random) {
-        return CITY_LIST.get(random.nextInt(CITY_LIST.size()));
+        return CITY_LIST.get(random.nextInt(Integer.MAX_VALUE) % CITY_LIST.size());
     }
 
     protected final String randomPerson() {
@@ -90,7 +90,7 @@ public abstract class CriteriaUnitTests {
     }
 
     protected final String randomPerson(Random random) {
-        return PERSON_LIST.get(random.nextInt(PERSON_LIST.size()));
+        return PERSON_LIST.get(random.nextInt(Integer.MAX_VALUE) % PERSON_LIST.size());
     }
 
     protected final String randomNation() {
@@ -98,7 +98,16 @@ public abstract class CriteriaUnitTests {
     }
 
     protected final String randomNation(Random random) {
-        return NATION_LIST.get(random.nextInt(NATION_LIST.size()));
+        return NATION_LIST.get(random.nextInt(Integer.MAX_VALUE) % NATION_LIST.size());
+    }
+
+    protected final BigDecimal randomDecimal() {
+        return randomDecimal(ThreadLocalRandom.current());
+    }
+
+    protected final BigDecimal randomDecimal(Random random) {
+        return BigDecimal.valueOf(random.nextDouble() * 999999)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
 
@@ -116,7 +125,7 @@ public abstract class CriteriaUnitTests {
 
                     .setName(randomRegion(random))
                     .setRegionType(RegionType.NONE)
-                    .setRegionGdp(BigDecimal.valueOf(random.nextDouble() * 66666).setScale(2, RoundingMode.HALF_UP))
+                    .setRegionGdp(randomDecimal(random))
 
                     .setVersion(0)
                     .setVisible(Boolean.TRUE);
@@ -141,7 +150,7 @@ public abstract class CriteriaUnitTests {
 
                     .setName(randomCity(random))
                     .setRegionType(RegionType.CITY)
-                    .setRegionGdp(BigDecimal.valueOf(random.nextDouble() * 88888).setScale(2, RoundingMode.HALF_UP))
+                    .setRegionGdp(randomDecimal(random))
 
                     .setVersion(0)
                     .setVisible(Boolean.TRUE)
@@ -167,7 +176,7 @@ public abstract class CriteriaUnitTests {
 
                     .setName(randomProvince(random))
                     .setRegionType(RegionType.CITY)
-                    .setRegionGdp(BigDecimal.valueOf(random.nextDouble() * 99999).setScale(2, RoundingMode.HALF_UP))
+                    .setRegionGdp(randomDecimal(random))
 
                     .setVersion(0)
                     .setVisible(Boolean.TRUE)

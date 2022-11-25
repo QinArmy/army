@@ -169,7 +169,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
                 if (field == discriminator) {
                     assert insertTable instanceof ParentTableMeta;
                     sqlBuilder.append(spaceDiscriminator);
-                } else if (field instanceof PrimaryFieldMeta && insertTable instanceof ChildTableMeta && postParentId) {
+                } else if (postParentId && field instanceof PrimaryFieldMeta && insertTable instanceof ChildTableMeta) {
                     assert delayIdParam == null;
                     delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, currentDomain, accessor);
                     this.appendParam(delayIdParam);

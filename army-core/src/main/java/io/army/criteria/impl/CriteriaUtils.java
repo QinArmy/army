@@ -3,8 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._RowSet;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.mapping.LongType;
@@ -115,41 +115,6 @@ abstract class CriteriaUtils {
         return selectionMap;
     }
 
-    static void assertSelectItemSizeMatch(final RowSet left, final RowSet right) {
-        final List<? extends SelectItem> leftList, rightList;
-
-        leftList = ((_PartRowSet) left).selectItemList();
-        rightList = ((_PartRowSet) right).selectItemList();
-
-        int leftSize = 0, rightSize = 0;
-
-        for (SelectItem item : leftList) {
-            if (item instanceof Selection) {
-                leftSize++;
-            } else if (item instanceof SelectionGroup) {
-                leftSize += ((SelectionGroup) item).selectionList().size();
-            } else {
-                throw unknownSelectItem(left, item);
-            }
-        }
-
-        for (SelectItem item : rightList) {
-            if (item instanceof Selection) {
-                rightSize++;
-            } else if (item instanceof SelectionGroup) {
-                rightSize += ((SelectionGroup) item).selectionList().size();
-            } else {
-                throw unknownSelectItem(left, item);
-            }
-        }
-
-        if (leftSize != rightSize) {
-            String m = String.format("Left select list size[%s] and right select list size[%s] not match."
-                    , leftSize, rightSize);
-            throw criteriaError(left, m);
-        }
-
-    }
 
     static CriteriaException criteriaError(final RowSet left, final String m) {
         return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext(), m);
@@ -424,7 +389,7 @@ abstract class CriteriaUtils {
 
     static int selectionCount(final RowSet rowSet) {
         int count = 0;
-        for (SelectItem selectItem : ((_PartRowSet) rowSet).selectItemList()) {
+        for (SelectItem selectItem : ((_RowSet) rowSet).selectItemList()) {
             if (selectItem instanceof Selection) {
                 count++;
             } else if (selectItem instanceof SelectionGroup) {

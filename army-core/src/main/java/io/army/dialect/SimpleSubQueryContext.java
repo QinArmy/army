@@ -58,7 +58,11 @@ final class SimpleSubQueryContext extends MultiTableQueryContext implements _Sub
     void appendOuterField(final @Nullable String tableAlias, final FieldMeta<?> field) {
         final StatementContext outerContext = this.outerContext;
         if (outerContext instanceof _ParenRowSetContext) {
-            throw _Exceptions.unknownColumn(tableAlias, field);
+            if (tableAlias == null) {
+                ((_ParenRowSetContext) outerContext).appendOuterField(field);
+            } else {
+                ((_ParenRowSetContext) outerContext).appendOuterField(tableAlias, field);
+            }
         } else if (outerContext instanceof _SubQueryContext) {
             if (tableAlias == null) {
                 ((_SubQueryContext) outerContext).appendThisField(field);

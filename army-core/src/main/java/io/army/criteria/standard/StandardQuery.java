@@ -27,7 +27,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     *
      * @since 1.0
      */
     interface _UnionSpec<I extends Item> extends _AsQueryClause<I>, _QueryUnionClause<_SelectComplexUnionSpec<I>> {
@@ -47,7 +46,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
-     *
      *
      * @since 1.0
      */
@@ -73,7 +71,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     *
      * @since 1.0
      */
     interface _UnionOrderBySpec<I extends Item> extends Statement._StaticOrderByClause<_UnionLimitSpec<I>>
@@ -97,7 +94,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     *
      * @since 1.0
      */
     interface _LockSpec<I extends Item> extends _LockForUpdateClause<_AsQueryClause<I>>, _AsQueryClause<I> {
@@ -120,7 +116,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     *
      * @since 1.0
      */
     interface _LimitSpec<I extends Item> extends _LockSpec<I>, Statement._LimitClause<_LockSpec<I>> {
@@ -142,11 +137,10 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     *
      * @since 1.0
      */
-    interface _OrderBySpec<I extends Item> extends _LimitSpec<I>
-            , Statement._StaticOrderByClause<_LimitSpec<I>> {
+    interface _OrderBySpec<I extends Item> extends _LimitSpec<I>, Statement._StaticOrderByClause<_LimitSpec<I>>,
+            _UnionSpec<I> {
 
     }
 
@@ -163,7 +157,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
-     *
      *
      * @since 1.0
      */
@@ -187,7 +180,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     *
      * @since 1.0
      */
     interface _GroupBySpec<I extends Item> extends _GroupByClause<_HavingSpec<I>>
@@ -209,7 +201,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
-     *
      *
      * @since 1.0
      */
@@ -234,7 +225,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     *
      * @since 1.0
      */
     interface _WhereSpec<I extends Item>
@@ -256,7 +246,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
-     *
      *
      * @since 1.0
      */
@@ -280,7 +269,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
-     *
      *
      * @since 1.0
      */

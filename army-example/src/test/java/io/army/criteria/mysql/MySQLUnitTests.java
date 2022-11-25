@@ -15,4 +15,17 @@ abstract class MySQLUnitTests extends CriteriaUnitTests {
         }
 
     }
+
+    static void print80Stmt(Logger logger, PrimaryStatement statement) {
+
+        for (MySQLDialect dialect : MySQLDialect.values()) {
+            if (dialect.version() < MySQLDialect.MySQL80.version()) {
+                continue;
+            }
+            logger.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+        }
+
+    }
+
+
 }

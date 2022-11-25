@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._ParensRowSet;
-import io.army.criteria.impl.inner._PartRowSet;
+import io.army.criteria.impl.inner._RowSet;
 import io.army.util._Assert;
 
 import java.util.List;
@@ -118,7 +118,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         if (rowSet == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return ((_PartRowSet) rowSet).selectionSize();
+        return ((_RowSet) rowSet).selectionSize();
     }
 
     @Override
@@ -127,7 +127,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         if (rowSet == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return ((_PartRowSet) rowSet).selectItemList();
+        return ((_RowSet) rowSet).selectItemList();
     }
 
     @Override

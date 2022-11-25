@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.criteria.Select;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._RowSet;
+import io.army.criteria.impl.inner._ParensRowSet;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
@@ -27,7 +27,7 @@ final class ParensSelectContext extends StatementContext implements _SelectConte
             , Visible visible) {
         super(dialect, visible);
         this.outerContext = outerContext;
-        this.selectionList = _DialectUtils.flatSelectItem(((_RowSet) select).selectItemList());
+        this.selectionList = _DialectUtils.flatSelectItem(((_ParensRowSet) select).selectItemList());
     }
 
 

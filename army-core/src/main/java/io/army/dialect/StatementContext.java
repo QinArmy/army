@@ -48,7 +48,7 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
         this(null, dialect, visible);
     }
 
-    @Deprecated
+
     protected StatementContext(StatementContext outerContext) {
         this(outerContext, outerContext.parser, outerContext.visible);
     }

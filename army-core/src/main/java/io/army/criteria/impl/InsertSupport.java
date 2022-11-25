@@ -944,7 +944,9 @@ abstract class InsertSupport {
         final List<?> domainListForSingle() {
             assert this.insertTable instanceof SingleTableMeta;
             final List<?> domainList = this.domainList;
-            if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
+            if (this.insertMode != InsertMode.DOMAIN) {
+                throw insertModeNotMatch();
+            } else if (domainList == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             return _CollectionUtils.asUnmodifiableList(domainList);
@@ -954,9 +956,11 @@ abstract class InsertSupport {
          * @return a original list
          */
         final List<?> originalDomainList() {
-            assert !(this.insertTable instanceof SimpleTableMeta);
+            assert this.insertTable instanceof ParentTableMeta;
             final List<?> domainList = this.domainList;
-            if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
+            if (this.insertMode != InsertMode.DOMAIN) {
+                throw insertModeNotMatch();
+            } else if (domainList == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             return domainList;
@@ -967,7 +971,9 @@ abstract class InsertSupport {
             assert this.insertTable instanceof ChildTableMeta;
 
             final List<?> domainList = this.domainList;
-            if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
+            if (this.insertMode != InsertMode.DOMAIN) {
+                throw insertModeNotMatch();
+            } else if (domainList == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             if (domainList != originalList
@@ -981,7 +987,9 @@ abstract class InsertSupport {
         @Override
         public final List<Map<FieldMeta<?>, _Expression>> rowPairList() {
             final List<Map<FieldMeta<?>, _Expression>> list = this.rowPairList;
-            if (this.insertMode != InsertMode.VALUES || list == null || list instanceof ArrayList) {
+            if (this.insertMode != InsertMode.VALUES) {
+                throw insertModeNotMatch();
+            } else if (list == null || list instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             return list;
@@ -990,7 +998,9 @@ abstract class InsertSupport {
         @Override
         public final SubQuery subQuery() {
             final SubQuery query = this.subQuery;
-            if (this.insertMode != InsertMode.QUERY || query == null) {
+            if (this.insertMode != InsertMode.QUERY) {
+                throw insertModeNotMatch();
+            } else if (query == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             return query;
@@ -1003,6 +1013,18 @@ abstract class InsertSupport {
 
         final CriteriaException queryInsetSupportOnlyMigration() {
             return ContextStack.criteriaError(this.context, "query insert support only migration mode.");
+        }
+
+        final CriteriaException insertModeNotMatch() {
+            final CriteriaException e;
+            if (this.insertTable instanceof ChildTableMeta) {
+                String m = String.format("%s insert mode[%s] and %s not match.",
+                        this.insertTable, this.insertMode, ((ChildTableMeta<T>) this.insertTable).parentMeta());
+                e = ContextStack.criteriaError(this.context, m);
+            } else {
+                e = ContextStack.castCriteriaApi(this.context);
+            }
+            return e;
         }
 
 
@@ -1403,13 +1425,7 @@ abstract class InsertSupport {
 
         private void assertAssignmentMode() {
             if (((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode != InsertMode.ASSIGNMENT) {
-                if (this.insertTable instanceof ChildTableMeta) {
-                    String m = String.format("%s with %s insert mode don't match.", this.insertTable
-                            , ((ChildTableMeta<T>) this.insertTable).parentMeta());
-                    throw ContextStack.criteriaError(this.context, m);
-                } else {
-                    throw new IllegalStateException(String.format("non %s", InsertMode.ASSIGNMENT));
-                }
+                throw insertModeNotMatch();
             }
         }
 

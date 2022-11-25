@@ -14,6 +14,12 @@ public class InvalidPropertyException extends ObjectAccessException {
         this.propertyName = propertyName;
     }
 
+    public InvalidPropertyException(String message, Class<?> beanClass, String propertyName, Throwable cause) {
+        super(message, cause);
+        this.beanClass = beanClass;
+        this.propertyName = propertyName;
+    }
+
 
     public Class<?> getBeanClass() {
         return beanClass;

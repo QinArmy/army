@@ -73,7 +73,7 @@ class BeanReadAccessor implements ReadAccessor {
     final InvalidPropertyException accessError(String propertyName, Throwable cause) {
         final Class<?> beanClass = this.accessors.beanClass;
         String m = String.format("%s property of %s access occur error.", propertyName, beanClass.getName());
-        return new InvalidPropertyException(m, beanClass, propertyName);
+        return new InvalidPropertyException(m, beanClass, propertyName, cause);
     }
 
 

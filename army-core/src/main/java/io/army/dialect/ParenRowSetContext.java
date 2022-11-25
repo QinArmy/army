@@ -18,7 +18,7 @@ final class ParenRowSetContext extends StatementContext implements _ParenRowSetC
         return new ParenRowSetContext((StatementContext) outerContext);
     }
 
-    private final StatementContext outerContext;
+    private final _SqlContext outerContext;
 
 
     ParenRowSetContext(@Nullable StatementContext outerContext, ArmyParser parser, Visible visible) {
@@ -47,6 +47,32 @@ final class ParenRowSetContext extends StatementContext implements _ParenRowSetC
     @Override
     public void appendField(FieldMeta<?> field) {
         throw _Exceptions.unknownColumn(field);
+    }
+
+    @Override
+    public void appendOuterField(final String tableAlias, final FieldMeta<?> field) {
+        final _SqlContext outerContext = this.outerContext;
+        if (outerContext == null) {
+            throw _Exceptions.unknownColumn(tableAlias, field);
+        } else if (outerContext instanceof _ParenRowSetContext) {
+            ((_ParenRowSetContext) outerContext).appendOuterField(tableAlias, field);
+        } else {
+            outerContext.appendField(tableAlias, field);
+        }
+    }
+
+    @Override
+    public void appendOuterField(final FieldMeta<?> field) {
+        final _SqlContext outerContext = this.outerContext;
+        if (outerContext == null) {
+            throw _Exceptions.unknownColumn(field);
+        } else if (outerContext instanceof _ParenRowSetContext) {
+            ((_ParenRowSetContext) outerContext).appendOuterField(field);
+        } else if (outerContext instanceof _DmlContext._SingleTableContextSpec) {
+            ((_DmlContext._SingleTableContextSpec) outerContext).appendFieldFromSub(field);
+        } else {
+            outerContext.appendField(field);
+        }
     }
 
 
