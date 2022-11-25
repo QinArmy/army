@@ -65,10 +65,12 @@ final class SimpleSubQueryContext extends MultiTableQueryContext implements _Sub
             } else {
                 ((_SubQueryContext) outerContext).appendThisField(tableAlias, field);
             }
-        } else if (tableAlias == null) {
-            outerContext.appendField(field);
-        } else {
+        } else if (tableAlias != null) {
             outerContext.appendField(tableAlias, field);
+        } else if (outerContext instanceof _DmlContext._SingleTableContextSpec) {
+            ((_DmlContext._SingleTableContextSpec) outerContext).appendFieldFromSub(field);
+        } else {
+            outerContext.appendField(field);
         }
 
     }

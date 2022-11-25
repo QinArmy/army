@@ -199,7 +199,7 @@ public enum MySQLTypes implements SqlType, SQLWords {
 
     @Override
     public final String toString() {
-        return _StringUtils.sqlWordsToString(this);
+        return _StringUtils.enumToString(this);
     }
 
 

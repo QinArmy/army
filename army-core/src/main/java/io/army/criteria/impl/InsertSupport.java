@@ -2127,10 +2127,10 @@ abstract class InsertSupport {
     private static boolean isForbidChildSyntax(final _Insert._ChildInsert child) {
         final _Insert parentStmt;
         parentStmt = child.parentStmt();
-        return parentStmt instanceof _Insert._SupportConflictClauseSpec
-                && !(parentStmt instanceof _Insert._SupportReturningClauseSpec)
+        return parentStmt.table().id().generatorType() == GeneratorType.POST
+                && parentStmt instanceof _Insert._SupportConflictClauseSpec
                 && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction()
-                && parentStmt.table().id().generatorType() == GeneratorType.POST;
+                && !(parentStmt instanceof _Insert._SupportReturningClauseSpec);
     }
 
     /**

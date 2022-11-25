@@ -104,6 +104,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         final DomainWrapper wrapper = this.wrapper;
         final ObjectAccessor accessor = wrapper.accessor;
         final TableMeta<?> insertTable = this.insertTable, domainTable = wrapper.domainTable;
+        final boolean postParentId = insertTable.nonChildId().generatorType() == GeneratorType.POST;
 
         final boolean manageVisible;
         final FieldMeta<?> discriminator = domainTable.discriminator();
@@ -168,17 +169,15 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
                 if (field == discriminator) {
                     assert insertTable instanceof ParentTableMeta;
                     sqlBuilder.append(spaceDiscriminator);
+                } else if (field instanceof PrimaryFieldMeta && insertTable instanceof ChildTableMeta && postParentId) {
+                    assert delayIdParam == null;
+                    delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, currentDomain, accessor);
+                    this.appendParam(delayIdParam);
                 } else if ((value = accessor.get(currentDomain, field.fieldName())) != null) {
                     this.appendInsertValue(literalMode, field, value);
                 } else if (field instanceof PrimaryFieldMeta && insertTable instanceof ChildTableMeta) {//child id must be managed by army
-                    if (field.generatorType() == GeneratorType.POST) {
-                        assert delayIdParam == null;
-                        delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, currentDomain, accessor);
-                        this.appendParam(delayIdParam);
-                    } else {
-                        assert mockEnv; // must assert
-                        this.appendInsertValue(literalMode, field, null);
-                    }
+                    assert mockEnv; // must assert
+                    this.appendInsertValue(literalMode, field, null);
                 } else if ((expression = defaultValueMap.get(field)) != null) {
                     expression.appendSql(this);
                 } else if (field.generatorType() == GeneratorType.PRECEDE) {

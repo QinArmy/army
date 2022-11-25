@@ -46,7 +46,7 @@ public abstract class _StringUtils extends io.qinarmy.util.StringUtils {
         return new StringBuilder();
     }
 
-    public static String sqlWordsToString(final Enum<?> words) {
+    public static String enumToString(final Enum<?> words) {
         Class<?> clazz;
         clazz = words.getClass();
         if (clazz.isAnonymousClass()) {

@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.DataField;
 import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.stmt.BatchStmt;
 
 import java.util.List;
@@ -40,6 +41,12 @@ public  interface _DmlContext extends _PrimaryContext {
     interface _SetClauseContextSpec {
 
         void appendSetLeftItem(DataField dataField);
+    }
+
+    interface _SingleTableContextSpec {
+
+        void appendFieldFromSub(FieldMeta<?> field);
+
     }
 
 

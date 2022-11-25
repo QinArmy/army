@@ -459,21 +459,21 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected _PrimaryContext handleDialectDml(final @Nullable _SqlContext outerContext,final DmlStatement statement
-            ,final Visible visible) {
-        final  _PrimaryContext context;
-         if(statement instanceof MySQLLoadData){
-             _MySQLConsultant.assertMySQLLoad((MySQLLoadData) statement);
-             context = this.handleLoadData(outerContext,(_MySQLLoadData) statement,visible);
-         }else {
-             throw _Exceptions.unknownStatement(statement,this.dialect);
-         }
+    protected _PrimaryContext handleDialectDml(final @Nullable _SqlContext outerContext, final DmlStatement statement
+            , final Visible visible) {
+        final _PrimaryContext context;
+        if (statement instanceof MySQLLoadData) {
+            _MySQLConsultant.assertMySQLLoad((MySQLLoadData) statement);
+            context = this.handleLoadData(outerContext, (_MySQLLoadData) statement, visible);
+        } else {
+            throw _Exceptions.unknownStatement(statement, this.dialect);
+        }
         return context;
     }
 
     @Override
-    protected _PrimaryContext handleDialectDql(final @Nullable _SqlContext outerContext,final DqlStatement statement
-            ,final Visible visible) {
+    protected _PrimaryContext handleDialectDql(final @Nullable _SqlContext outerContext, final DqlStatement statement
+            , final Visible visible) {
         return super.handleDialectDql(outerContext, statement, visible);
     }
 
@@ -490,6 +490,9 @@ final class MySQLDialectParser extends MySQLParser {
     private void hintClause(List<Hint> hintList, final StringBuilder sqlBuilder, final _SqlContext context) {
         if (hintList.size() == 0) {
             return;
+        }
+        if (this.dialect.version() < MySQLDialect.MySQL57.version()) {
+            throw _Exceptions.dontSupportHint(this.dialect);
         }
         sqlBuilder.append(SPACE_HINT_START);
         for (Hint hint : hintList) {
@@ -993,7 +996,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
 
-    private _OtherDmlContext handleLoadData(@Nullable final _SqlContext outerContext,final _MySQLLoadData loadData
+    private _OtherDmlContext handleLoadData(@Nullable final _SqlContext outerContext, final _MySQLLoadData loadData
             , final Visible visible) {
         final _OtherDmlContext context;
         if (loadData instanceof _MySQLLoadData._ChildLoadData) {

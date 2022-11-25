@@ -447,7 +447,15 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
     public static CriteriaException standardDontSupportHint() {
-        return new CriteriaException("Standard api don't Hint");
+        return new CriteriaException("Standard api don't support Hint");
+    }
+
+    public static CriteriaException dontSupportHint(Dialect dialect) {
+        return new CriteriaException(String.format("%s don't support Hint", dialect));
+    }
+
+    public static CriteriaException dontSupportHint(Dialect dialect, Enum<?> hintType) {
+        return new CriteriaException(String.format("%s don't support hint[%s]", dialect, hintType.name()));
     }
 
     public static CriteriaException returningListEmpty() {

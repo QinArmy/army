@@ -4,6 +4,7 @@ package io.army.dialect.mysql;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.meta.ServerMeta;
+import io.army.util._StringUtils;
 
 public enum MySQLDialect implements Dialect {
 
@@ -31,7 +32,7 @@ public enum MySQLDialect implements Dialect {
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", MySQLDialect.class.getSimpleName(), this.name());
+        return _StringUtils.enumToString(this);
     }
 
 

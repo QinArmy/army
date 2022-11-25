@@ -4,9 +4,11 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.mysql.HintStrategy;
+import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -20,6 +22,7 @@ import java.util.List;
  * </p>
  *
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html">Optimizer Hints</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/optimizer-hints.html">MySQL 5.7 Optimizer Hints</a>
  */
 abstract class MySQLHints implements Hint, _SelfDescribed {
 
@@ -180,19 +183,23 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
 
         @Override
         public void appendSql(final _SqlContext context) {
+            final DialectParser parser = context.parser();
+            final Dialect dialect;
+            dialect = parser.dialect();
+            if (dialect.version() < MySQLDialect.MySQL80.version()) {
+                throw _Exceptions.dontSupportHint(dialect, HintType.JOIN_FIXED_ORDER);
+            }
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE)
                     .append(HintType.JOIN_FIXED_ORDER.name())
                     .append(_Constant.LEFT_PAREN);
             final String queryBlockName = this.queryBlockName;
-            if (queryBlockName == null) {
-                builder.append(_Constant.RIGHT_PAREN);
-            } else {
+            if (queryBlockName != null) {
                 builder.append(_Constant.SPACE_AT);
-                context.parser().identifier(queryBlockName, builder);
-                builder.append(_Constant.SPACE_RIGHT_PAREN);
+                parser.identifier(queryBlockName, builder);
             }
+            builder.append(_Constant.RIGHT_PAREN);
 
         }
 
@@ -211,24 +218,24 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
      */
     private static final class JoinOrder extends MySQLHints {
 
-        private final HintType hint;
+        private final HintType hintType;
 
         private final String queryBlockName;
 
         private final List<String> tableNameList;
 
-        private JoinOrder(HintType hint, @Nullable String queryBlockName, List<String> tableNameList) {
+        private JoinOrder(HintType hintType, @Nullable String queryBlockName, List<String> tableNameList) {
             if (tableNameList.size() == 0) {
                 throw MySQLHints.hintTableListIsEmpty();
             }
-            switch (hint) {
+            switch (hintType) {
                 case JOIN_ORDER:
                 case JOIN_PREFIX:
                 case JOIN_SUFFIX:
-                    this.hint = hint;
+                    this.hintType = hintType;
                     break;
                 default:
-                    throw _Exceptions.unexpectedEnum(hint);
+                    throw _Exceptions.unexpectedEnum(hintType);
             }
             this.queryBlockName = queryBlockName;
             this.tableNameList = _CollectionUtils.asUnmodifiableList(tableNameList);
@@ -236,17 +243,22 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
 
         @Override
         public void appendSql(final _SqlContext context) {
+            final DialectParser parser = context.parser();
+            final Dialect dialect = parser.dialect();
+            if (dialect.version() < MySQLDialect.MySQL80.version()) {
+                throw _Exceptions.dontSupportHint(dialect, this.hintType);
+            }
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE)
-                    .append(this.hint.name())
+                    .append(this.hintType.name())
                     .append(_Constant.LEFT_PAREN);
 
             final String queryBlockName = this.queryBlockName;
-            final DialectParser dialect = context.parser();
+
             if (queryBlockName != null) {
                 builder.append(_Constant.SPACE_AT);
-                dialect.identifier(queryBlockName, builder);
+                parser.identifier(queryBlockName, builder);
             }
             builder.append(_Constant.SPACE);
 
@@ -259,17 +271,17 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                     builder.append(_Constant.SPACE_COMMA_SPACE);
                 }
                 if (queryBlockName == null) {
-                    dialect.identifier(tableNameList.get(i), builder);
+                    parser.identifier(tableNameList.get(i), builder);
                     continue;
                 }
                 tableName = tableNameList.get(i);
                 index = tableName.indexOf(_Constant.AT_CHAR);
                 if (index < 0) {
-                    dialect.identifier(tableName, builder);
+                    parser.identifier(tableName, builder);
                 } else if (index < tableName.length() - 1) {
-                    dialect.identifier(tableName.substring(0, index), builder)
+                    parser.identifier(tableName.substring(0, index), builder)
                             .append(_Constant.AT_CHAR);
-                    dialect.identifier(tableName.substring(index + 1), builder);
+                    parser.identifier(tableName.substring(index + 1), builder);
                 } else {
                     throw MySQLHints.hintTableNameError(tableName);
                 }
@@ -282,17 +294,17 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
 
     private static final class TableLevelHint extends MySQLHints {
 
-        private final HintType hint;
+        private final HintType hintType;
 
         private final String queryBlockName;
 
         private final List<String> tableNameList;
 
-        private TableLevelHint(HintType hint, @Nullable String queryBlockName, List<String> tableNameList) {
+        private TableLevelHint(HintType hintType, @Nullable String queryBlockName, List<String> tableNameList) {
             if (tableNameList.size() == 0) {
                 throw MySQLHints.hintTableListIsEmpty();
             }
-            switch (hint) {
+            switch (hintType) {
                 case BKA:
                 case NO_BKA:
                 case BNL:
@@ -303,10 +315,10 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                 case NO_HASH_JOIN:
                 case MERGE:
                 case NO_MERGE:
-                    this.hint = hint;
+                    this.hintType = hintType;
                     break;
                 default:
-                    throw _Exceptions.unexpectedEnum(hint);
+                    throw _Exceptions.unexpectedEnum(hintType);
             }
             this.queryBlockName = queryBlockName;
             this.tableNameList = _CollectionUtils.asUnmodifiableList(tableNameList);
@@ -315,17 +327,32 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
 
         @Override
         public void appendSql(final _SqlContext context) {
+            final DialectParser parser = context.parser();
+            switch (this.hintType) {
+                case BKA:
+                case NO_BKA:
+                case BNL:
+                case NO_BNL:
+                    break;
+                default: {
+                    final Dialect dialect = parser.dialect();
+                    if (dialect.version() < MySQLDialect.MySQL80.version()) {
+                        throw _Exceptions.dontSupportHint(dialect, this.hintType);
+                    }
+                }
+            }
+
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE)
-                    .append(this.hint.name())
+                    .append(this.hintType.name())
                     .append(_Constant.LEFT_PAREN);
 
             final String queryBlockName = this.queryBlockName;
-            final DialectParser dialect = context.parser();
+
             if (queryBlockName != null) {
                 builder.append(_Constant.SPACE_AT);
-                dialect.identifier(queryBlockName, builder);
+                parser.identifier(queryBlockName, builder);
             }
             builder.append(_Constant.SPACE);
 
@@ -344,9 +371,9 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                         throw MySQLHints.hintTableNameError(tableName);
                     }
                 } else if (index > 0 && index < tableName.length() - 1) {
-                    dialect.identifier(tableName.substring(0, index), builder)
+                    parser.identifier(tableName.substring(0, index), builder)
                             .append(_Constant.AT_CHAR);
-                    dialect.identifier(tableName.substring(index + 1), builder);
+                    parser.identifier(tableName.substring(index + 1), builder);
                 } else {
                     throw MySQLHints.hintTableNameError(tableName);
                 }
@@ -358,7 +385,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
 
     private static final class IndexLevelHint extends MySQLHints {
 
-        private final HintType hint;
+        private final HintType hintType;
 
         private final String queryBlockName;
 
@@ -366,8 +393,8 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
 
         private final List<String> indexNameList;
 
-        private IndexLevelHint(HintType hint, @Nullable String queryBlockName, String tableName, List<String> indexNameList) {
-            switch (hint) {
+        private IndexLevelHint(HintType hintType, @Nullable String queryBlockName, String tableName, List<String> indexNameList) {
+            switch (hintType) {
                 case GROUP_INDEX:
                 case NO_GROUP_INDEX:
                 case INDEX:
@@ -384,10 +411,10 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                 case NO_ORDER_INDEX:
                 case SKIP_SCAN:
                 case NO_SKIP_SCAN:
-                    this.hint = hint;
+                    this.hintType = hintType;
                     break;
                 default:
-                    throw _Exceptions.unexpectedEnum(hint);
+                    throw _Exceptions.unexpectedEnum(hintType);
             }
             this.queryBlockName = queryBlockName;
             this.tableName = tableName;
@@ -396,20 +423,34 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
 
         @Override
         public void appendSql(final _SqlContext context) {
+            final DialectParser parser = context.parser();
+            switch (this.hintType) {
+                case MRR:
+                case NO_MRR:
+                case NO_ICP:
+                case NO_RANGE_OPTIMIZATION:
+                    break;
+                default: {
+                    final Dialect dialect = parser.dialect();
+                    if (dialect.version() < MySQLDialect.MySQL80.version()) {
+                        throw _Exceptions.dontSupportHint(dialect, this.hintType);
+                    }
+                }
+            }
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE)
-                    .append(this.hint.name())
+                    .append(this.hintType.name())
                     .append(_Constant.LEFT_PAREN);
 
             final String queryBlockName = this.queryBlockName;
-            final DialectParser dialect = context.parser();
+
             if (queryBlockName != null) {
                 builder.append(_Constant.SPACE_AT);
-                dialect.identifier(queryBlockName, builder);
+                parser.identifier(queryBlockName, builder);
             }
             builder.append(_Constant.SPACE);
-            dialect.identifier(this.tableName, builder)
+            parser.identifier(this.tableName, builder)
                     .append(_Constant.SPACE);
             final List<String> indexNameList = this.indexNameList;
             final int size = indexNameList.size();
@@ -417,7 +458,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                 if (i > 0) {
                     builder.append(_Constant.SPACE_COMMA_SPACE);
                 }
-                dialect.identifier(indexNameList.get(i), builder);
+                parser.identifier(indexNameList.get(i), builder);
             }
             builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
@@ -427,20 +468,20 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
 
     private static final class SubQueryHint extends MySQLHints {
 
-        private final HintType hint;
+        private final HintType hintType;
 
         private final String queryBlockName;
 
         private final EnumSet<HintStrategy> strategySet;
 
-        private SubQueryHint(HintType hint, @Nullable String queryBlockName, EnumSet<HintStrategy> strategySet) {
-            switch (hint) {
+        private SubQueryHint(HintType hintType, @Nullable String queryBlockName, EnumSet<HintStrategy> strategySet) {
+            switch (hintType) {
                 case SEMIJOIN:
                 case NO_SEMIJOIN:
-                    this.hint = hint;
+                    this.hintType = hintType;
                     break;
                 default:
-                    throw _Exceptions.unexpectedEnum(hint);
+                    throw _Exceptions.unexpectedEnum(hintType);
             }
             this.queryBlockName = queryBlockName;
             this.strategySet = EnumSet.copyOf(strategySet);
@@ -448,17 +489,19 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
 
         @Override
         public void appendSql(final _SqlContext context) {
+            final DialectParser parser = context.parser();
+
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE)
-                    .append(this.hint.name())
+                    .append(this.hintType.name())
                     .append(_Constant.LEFT_PAREN);
 
             final String queryBlockName = this.queryBlockName;
-            final DialectParser dialect = context.parser();
+
             if (queryBlockName != null) {
                 builder.append(_Constant.SPACE_AT);
-                dialect.identifier(queryBlockName, builder);
+                parser.identifier(queryBlockName, builder);
             }
             builder.append(_Constant.SPACE);
 
@@ -508,6 +551,9 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
 
     }//MaxExecutionTimeHint
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html#optimizer-hints-set-var">Variable-Setting Hint Syntax</a>
+     */
     private static final class VariableSettingHint extends MySQLHints {
 
         private final String varValuePair;
@@ -522,6 +568,10 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
 
         @Override
         public void appendSql(final _SqlContext context) {
+            final Dialect dialect = context.parser().dialect();
+            if (dialect.version() < MySQLDialect.MySQL80.version()) {
+                throw _Exceptions.dontSupportHint(dialect, HintType.SET_VAR);
+            }
             context.sqlBuilder()
                     .append(_Constant.SPACE)
                     .append(HintType.SET_VAR.name())
@@ -544,6 +594,10 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
 
         @Override
         public void appendSql(final _SqlContext context) {
+            final Dialect dialect = context.parser().dialect();
+            if (dialect.version() < MySQLDialect.MySQL80.version()) {
+                throw _Exceptions.dontSupportHint(dialect, HintType.SET_VAR);
+            }
             context.sqlBuilder()
                     .append(_Constant.SPACE)
                     .append(HintType.RESOURCE_GROUP.name())
@@ -584,10 +638,10 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
         index = str.indexOf(_Constant.START_CHAR);
         if (index > -1) {
             if (index < last && str.charAt(index + 1) == _Constant.SLASH) {
-                throw MySQLHints.varValuePairError(str);
+                throw ContextStack.clearStackAndCriteriaError(MySQLHints::varValuePairError, str);
             }
             if (index > 0 && str.charAt(index - 1) == _Constant.SLASH) {
-                throw MySQLHints.varValuePairError(str);
+                throw ContextStack.clearStackAndCriteriaError(MySQLHints::varValuePairError, str);
             }
         }
     }

@@ -1307,16 +1307,10 @@ abstract class ArmyParser implements DialectParser {
             sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
         }
 
-        final String actualTableAlias;
-        if (safeTableAlias == null) {
-            actualTableAlias = this.safeObjectName(table);
-        } else {
-            actualTableAlias = safeTableAlias;
-
+        if (safeTableAlias != null) {
+            sqlBuilder.append(safeTableAlias)
+                    .append(_Constant.POINT);
         }
-        sqlBuilder.append(actualTableAlias)
-                .append(_Constant.POINT);
-
         this.safeObjectName(field, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL);
 
@@ -1333,14 +1327,19 @@ abstract class ArmyParser implements DialectParser {
         if ((field = table.tryGetField(_MetaBridge.VERSION)) != null) {
             final String versionColumnName;
             versionColumnName = this.safeObjectName(field);
-            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE)
-                    .append(actualTableAlias)
-                    .append(_Constant.POINT)
-                    .append(versionColumnName)
-                    .append(_Constant.SPACE_EQUAL_SPACE)
-                    .append(actualTableAlias)
-                    .append(_Constant.POINT)
-                    .append(versionColumnName)
+            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+
+            if (safeTableAlias != null) {
+                sqlBuilder.append(safeTableAlias)
+                        .append(_Constant.POINT);
+            }
+            sqlBuilder.append(versionColumnName)
+                    .append(_Constant.SPACE_EQUAL_SPACE);
+            if (safeTableAlias != null) {
+                sqlBuilder.append(safeTableAlias)
+                        .append(_Constant.POINT);
+            }
+            sqlBuilder.append(versionColumnName)
                     .append(" + 1");
 
         }
@@ -2172,9 +2171,10 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleAssignmentInsert(_SqlContext, _Insert._AssignmentInsert, Visible)
      */
     private void checkParentStmt(_Insert parentStmt, ChildTableMeta<?> childTable) {
-        if (parentStmt instanceof _Insert._SupportConflictClauseSpec
-                && this.childUpdateMode != _ChildUpdateMode.CTE // support RETURNING clause,could returning parent id
-                && parentStmt.table().id().generatorType() == GeneratorType.POST) {
+        if (parentStmt.table().id().generatorType() == GeneratorType.POST
+                && parentStmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction()
+                && this.childUpdateMode != _ChildUpdateMode.CTE) { // support RETURNING clause,could returning parent id
             throw _Exceptions.duplicateKeyAndPostIdInsert(childTable);
         }
     }

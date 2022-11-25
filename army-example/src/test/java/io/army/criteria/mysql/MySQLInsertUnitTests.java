@@ -1,6 +1,7 @@
 package io.army.criteria.mysql;
 
 import io.army.annotation.GeneratorType;
+import io.army.criteria.CriteriaException;
 import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.Visible;
@@ -12,7 +13,8 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.example.bank.domain.user.ChinaRegion;
+import io.army.example.bank.domain.user.ChinaProvince;
+import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
 import io.army.example.pill.domain.PillPerson;
@@ -28,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ import java.util.function.Supplier;
 
 import static io.army.criteria.impl.SQLs.AS;
 
-public class MySQLInsertUnitTests {
+public class MySQLInsertUnitTests extends MySQLUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLInsertUnitTests.class);
 
@@ -46,35 +47,78 @@ public class MySQLInsertUnitTests {
     public void domainInsertParentPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
-        final ChinaRegion<?> region;
-        region = new ChinaRegion<>()
-                .setName("光明顶")
-                .setRegionGdp(new BigDecimal("6666.88"));
-
-        final Supplier<List<Hint>> hintSupplier;
-        hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
-            hintList.add(MySQLs.qbName("regionBlock"));
-            return hintList;
-        };
-
         final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
-                .insert(hintSupplier, Collections.singletonList(MySQLs.HIGH_PRIORITY))
-                .into(ChinaRegion_.T)
+                .insertInto(ChinaRegion_.T)
                 .partition("p1")
                 .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(this::createReginList)
-                .as("cr")
                 .onDuplicateKey()
                 .update(ChinaRegion_.name, MySQLFunctions::values)
                 .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLFunctions.values(ChinaRegion_.regionGdp))
                 .asInsert();
 
-        printStmt(stmt);
+        printStmt(LOG, stmt);
 
+    }
+
+    @Test
+    public void domainInsertChildPost() {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaProvince> provinceList;
+        provinceList = this.createProvinceList();
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .literalMode(LiteralMode.PREFERENCE)
+                .insertInto(ChinaRegion_.T)
+                .partition("p1")
+                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .values(provinceList)
+                .asInsert()
+                .child()
+                .insertInto(ChinaProvince_.T)
+                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                .values(provinceList)
+                .onDuplicateKey()
+                .update(ChinaProvince_.governor, MySQLFunctions::values)
+                .comma(ChinaProvince_.provincialCapital, MySQLFunctions::values)
+                .asInsert();
+
+        printStmt(LOG, stmt);
+    }
+
+    @Test(expectedExceptions = CriteriaException.class)
+    public void domainInsertChildPostWithParentConflictError() {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaProvince> provinceList;
+        provinceList = this.createProvinceList();
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .literalMode(LiteralMode.PREFERENCE)
+                .insertInto(ChinaRegion_.T)
+                .partition("p1")
+                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .values(provinceList)
+                .onDuplicateKey()
+                .update(ChinaRegion_.name, MySQLFunctions::values)
+                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLFunctions.values(ChinaRegion_.regionGdp))
+                .asInsert()
+                .child()
+                .insertInto(ChinaProvince_.T)
+                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                .values(provinceList)
+                .onDuplicateKey()
+                .update(ChinaProvince_.governor, MySQLFunctions::values)
+                .comma(ChinaProvince_.provincialCapital, MySQLFunctions::values)
+                .asInsert();
+
+        printStmt(LOG, stmt);
     }
 
     //@Test
@@ -179,31 +223,7 @@ public class MySQLInsertUnitTests {
     }
 
 
-    private List<ChinaRegion<?>> createReginList() {
-        final List<ChinaRegion<?>> list = new ArrayList<>();
-        ChinaRegion<?> c;
-        final int rowSize = 3;
-        final LocalDateTime now = LocalDateTime.now();
-        for (int i = 0; i < rowSize; i++) {
-            c = new ChinaRegion<>()
-                    .setId((long) i)
-                    .setCreateTime(now)
-                    .setUpdateTime(now)
-
-                    .setName("海龟徒弟" + i)
-                    .setRegionType(RegionType.NONE)
-                    .setRegionGdp(BigDecimal.valueOf(i)).setParentId(i * 100L)
-
-                    .setVersion(0)
-                    .setVisible(Boolean.TRUE);
-
-            list.add(c);
-        }
-        return list;
-    }
-
-
-    private List<PillPerson> createPsersonList() {
+    final List<PillPerson> createPsersonList() {
         final List<PillPerson> list = new ArrayList<>();
         PillPerson u;
         final int rowSize = 3;
