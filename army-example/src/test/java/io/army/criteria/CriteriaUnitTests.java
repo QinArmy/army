@@ -4,10 +4,15 @@ import io.army.example.bank.domain.user.ChinaCity;
 import io.army.example.bank.domain.user.ChinaProvince;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.RegionType;
+import io.army.example.pill.domain.PillPerson;
+import io.army.example.pill.domain.PillUser;
+import io.army.example.pill.struct.IdentityType;
+import io.army.example.pill.struct.PillUserType;
 import io.army.util.ArrayUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -185,6 +190,55 @@ public abstract class CriteriaUnitTests {
                     .setProvincialCapital(randomPerson(random));
 
             list.add(c);
+        }
+        return list;
+    }
+
+
+    protected final List<PillPerson> createPersonList() {
+        final List<PillPerson> list = new ArrayList<>();
+        PillPerson u;
+        final int rowSize = 3;
+        final LocalDateTime now = LocalDateTime.now();
+
+        for (int i = 0; i < rowSize; i++) {
+            u = new PillPerson();
+
+            u.setIdentityId(i + 1L);
+            u.setCreateTime(now);
+            u.setUpdateTime(now);
+            u.setUserType(PillUserType.NONE);
+
+            u.setIdentityType(IdentityType.PERSON);
+            u.setNickName("脉兽" + 1);
+            u.setBirthday(LocalDate.now());
+
+            list.add(u);
+
+        }
+        return list;
+    }
+
+
+    protected final List<PillUser> createUserList() {
+        final List<PillUser> list = new ArrayList<>();
+        PillUser u;
+        final int rowSize = 3;
+        final LocalDateTime now = LocalDateTime.now();
+
+        for (int i = 0; i < rowSize; i++) {
+            u = new PillUser();
+
+            u.setIdentityId(i + 1L);
+            u.setCreateTime(now);
+            u.setUpdateTime(now);
+            u.setUserType(PillUserType.NONE);
+
+            u.setIdentityType(IdentityType.PERSON);
+            u.setNickName("脉兽" + 1);
+
+            list.add(u);
+
         }
         return list;
     }

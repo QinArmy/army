@@ -181,7 +181,7 @@ public interface MySQLInsert extends MySQLStatement {
     }
 
     interface _ComplexColumnDefaultSpec<I extends Item, T> extends _ValuesColumnDefaultSpec<I, T>
-            , _StaticSpaceClause<MySQLQuery._WithSpec<_OnAsRowAliasSpec<I, T>>> {
+            , _StaticSpaceClause<MySQLQuery._WithSpec<_OnDuplicateKeyUpdateSpec<I, T>>> {
 
     }
 

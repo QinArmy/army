@@ -330,8 +330,8 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         final List<FieldMeta<?>> fieldList = this.fieldList;
         assert fieldList != null; //when assignment insert, fieldList is null.
         final ArmyParser parser = this.parser;
-        final StringBuilder sqlBuilder = this.sqlBuilder
-                .append(_Constant.SPACE_LEFT_PAREN);
+        final StringBuilder sqlBuilder;
+        sqlBuilder = this.sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
 
         final boolean migration = this.migration;
         final int fieldSize = fieldList.size();
@@ -343,6 +343,11 @@ abstract class InsertContext extends StatementContext implements _InsertContext
                 // fieldList have be checked,fieldList possibly is io.army.meta.TableMeta.fieldList()
                 continue;
             }
+
+            assert !(field instanceof PrimaryFieldMeta)
+                    || !(field.generatorType() == GeneratorType.POST
+                    && field.tableMeta() instanceof SingleTableMeta);
+
             if (actualIndex > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
             } else {

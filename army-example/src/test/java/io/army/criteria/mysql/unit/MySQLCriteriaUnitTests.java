@@ -1,4 +1,4 @@
-package io.army.criteria.mysql;
+package io.army.criteria.mysql.unit;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;

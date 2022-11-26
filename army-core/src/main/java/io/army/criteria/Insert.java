@@ -265,9 +265,9 @@ public interface Insert extends DmlStatement, Statement.DmlInsert {
 
     interface _DynamicAssignmentSetClause<T, SD> {
 
-        SD set(Consumer<Assignments<T>> consumer);
+        SD sets(Consumer<Assignments<T>> consumer);
 
-        SD ifSet(Consumer<Assignments<T>> consumer);
+        SD ifSets(Consumer<Assignments<T>> consumer);
     }
 
 

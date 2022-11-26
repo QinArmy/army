@@ -1369,8 +1369,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final VR set(Consumer<Assignments<T>> consumer) {
-            this.ifSet(consumer);
+        public final VR sets(Consumer<Assignments<T>> consumer) {
+            this.ifSets(consumer);
             final List<_Pair<FieldMeta<?>, _Expression>> list = this.assignmentPairList;
             if (list == null || list.size() == 0) {
                 throw ContextStack.criteriaError(this.context, "You don't assignment any value.");
@@ -1379,13 +1379,11 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final VR ifSet(Consumer<Assignments<T>> consumer) {
+        public final VR ifSets(Consumer<Assignments<T>> consumer) {
             if (this.assignmentPairList != null || ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode = InsertMode.ASSIGNMENT;
             consumer.accept(new AssignmentsImpl<>(this.context, this::set));
-
             this.endStaticAssignmentClauseIfNeed();
             return (VR) this;
         }
@@ -1416,6 +1414,7 @@ abstract class InsertSupport {
             if (pairList == null) {
                 this.assignmentPairList = Collections.emptyList();
                 this.assignmentMap = Collections.emptyMap();
+                ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode = InsertMode.ASSIGNMENT;
             } else if (pairList instanceof ArrayList) {
                 this.assignmentPairList = _CollectionUtils.unmodifiableList(pairList);
                 this.assignmentMap = Collections.unmodifiableMap(fieldMap);

@@ -1,4 +1,4 @@
-package io.army.criteria.mysql;
+package io.army.criteria.mysql.unit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

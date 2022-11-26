@@ -553,6 +553,7 @@ abstract class MySQLInserts extends InsertSupport {
             MySQLInsert._StaticAssignmentSpec<I, T>>
             implements MySQLInsert._PartitionSpec<I, T>
             , MySQLInsert._ComplexColumnDefaultSpec<I, T>
+            , MySQLInsert._StaticAssignmentSpec<I, T>
             , MySQLInsert._OnAsRowAliasSpec<I, T> {
 
         private final List<Hint> hintList;
@@ -619,7 +620,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLQuery._WithSpec<MySQLInsert._OnAsRowAliasSpec<I, T>> space() {
+        public MySQLQuery._WithSpec<MySQLInsert._OnDuplicateKeyUpdateSpec<I, T>> space() {
             return MySQLQueries.subQuery(null, this.context, this::staticSpaceQueryEnd);
         }
 

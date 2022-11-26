@@ -112,8 +112,9 @@ final class MySQLDialectParser extends MySQLParser {
         context.appendValueList();
 
         //4. on duplicate key update clause
-        this.appendMySqlConflictClause(context, stmt);
-
+        if (!(insert instanceof MySQLReplace)) {
+            this.appendMySqlConflictClause(context, stmt);
+        }
     }
 
 
@@ -127,7 +128,9 @@ final class MySQLDialectParser extends MySQLParser {
         //2. append assignment clause
         context.appendAssignmentClause();
         //3. on duplicate key update clause
-        this.appendMySqlConflictClause(context, stmt);
+        if (!(insert instanceof MySQLReplace)) {
+            this.appendMySqlConflictClause(context, stmt);
+        }
 
     }
 
@@ -144,7 +147,9 @@ final class MySQLDialectParser extends MySQLParser {
         context.appendSubQuery();
 
         //4. on duplicate key update clause
-        this.appendMySqlConflictClause(context, stmt);
+        if (!(insert instanceof MySQLReplace)) {
+            this.appendMySqlConflictClause(context, stmt);
+        }
 
     }
 
@@ -1224,9 +1229,14 @@ final class MySQLDialectParser extends MySQLParser {
         final List<_ItemPair> itemPairList;
         itemPairList = stmt.updateSetClauseList();
         if (itemPairList.size() > 0) {
-            final String safeRowAlias;
-            safeRowAlias = context.safeRowAlias();
-            if (safeRowAlias != null) {
+            if (stmt.rowAlias() != null) {
+                if (!this.asOf80) {
+                    String m = String.format("%s don't support row alias clause", this.dialect);
+                    throw new CriteriaException(m);
+                }
+                final String safeRowAlias;
+                safeRowAlias = context.safeRowAlias();
+                assert safeRowAlias != null;
                 context.sqlBuilder()
                         .append(_Constant.SPACE_AS_SPACE)
                         .append(safeRowAlias);

@@ -1,4 +1,4 @@
-package io.army.criteria.mysql;
+package io.army.criteria.mysql.unit;
 
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;

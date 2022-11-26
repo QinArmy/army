@@ -61,8 +61,8 @@ final class AssignmentInsertContext extends InsertContext
      * @see #forSingle(_SqlContext, _Insert._AssignmentInsert, ArmyParser, Visible)
      * @see #forParent(_SqlContext, _Insert._ChildAssignmentInsert, ArmyParser, Visible)
      */
-    private AssignmentInsertContext(@Nullable StatementContext outerContext, _Insert._AssignmentInsert domainStmt
-            , ArmyParser dialect, Visible visible) {
+    private AssignmentInsertContext(@Nullable StatementContext outerContext, _Insert._AssignmentInsert domainStmt,
+                                    ArmyParser dialect, Visible visible) {
         super(outerContext, domainStmt, dialect, visible);
 
         if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
@@ -80,14 +80,13 @@ final class AssignmentInsertContext extends InsertContext
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      *
-     * @see #forChild(_SqlContext,_Insert._ChildAssignmentInsert, AssignmentInsertContext)
+     * @see #forChild(_SqlContext, _Insert._ChildAssignmentInsert, AssignmentInsertContext)
      */
-    private AssignmentInsertContext(@Nullable StatementContext outerContext, _Insert._ChildAssignmentInsert stmt
-            , AssignmentInsertContext parentContext) {
+    private AssignmentInsertContext(@Nullable StatementContext outerContext, _Insert._ChildAssignmentInsert stmt,
+                                    AssignmentInsertContext parentContext) {
         super(outerContext, stmt, parentContext);
 
         this.pairList = stmt.assignmentPairList();
-        ;
         this.rowWrapper = parentContext.rowWrapper;
         assert this.rowWrapper.domainTable == this.insertTable;
         assert this.pairList.size() == this.rowWrapper.childPairMap.size();
@@ -98,15 +97,13 @@ final class AssignmentInsertContext extends InsertContext
     @Override
     void doAppendAssignments() {
 
-        final ArmyParser dialect = this.parser;
-
+        final ArmyParser parser = this.parser;
         final TableMeta<?> insertTable = this.insertTable;
-
         final AssignmentWrapper wrapper = this.rowWrapper;
         //1. generate or validate
         if (insertTable instanceof SingleTableMeta) {
 
-            final FieldValueGenerator generator = dialect.generator;
+            final FieldValueGenerator generator = parser.generator;
             if (this.migration) {
                 //use wrapper.domainTable not this.insertTable
                 generator.validate(wrapper.domainTable, wrapper);
@@ -118,23 +115,22 @@ final class AssignmentInsertContext extends InsertContext
                 generator.generate(wrapper.domainTable, manageVisible, wrapper);
                 wrapper.tempGeneratedMap = null;  //clear
             }
-
         }
 
         //2. SET keyword and space
-        final StringBuilder sqlBuilder = this.sqlBuilder
-                .append(_Constant.SPACE_SET_SPACE);
+        final StringBuilder sqlBuilder;
+        sqlBuilder = this.sqlBuilder.append(_Constant.SPACE_SET_SPACE);
 
         //3. the fields that is managed by army
         if (!this.migration) {
             this.appendArmyManageFields();
         } else if (insertTable instanceof ChildTableMeta) {
+            parser.safeObjectName(insertTable.id(), sqlBuilder)
+                    .append(_Constant.SPACE_EQUAL);
+
             final _Expression expression;
             expression = wrapper.nonChildPairMap.get(insertTable.nonChildId());
-            assert expression instanceof SqlValueParam.SingleNonNamedValue;
-
-            dialect.safeObjectName(insertTable.id(), sqlBuilder)
-                    .append(_Constant.SPACE_EQUAL);
+            assert expression instanceof SqlValueParam.SingleNonNamedValue; //validated by FieldValueGenerator
             expression.appendSql(this);
         }
 
@@ -152,7 +148,7 @@ final class AssignmentInsertContext extends InsertContext
             field = pair.first;
             assert !(field instanceof PrimaryFieldMeta && insertTable instanceof ChildTableMeta); // child id must be managed by army
 
-            dialect.safeObjectName(field, sqlBuilder)
+            parser.safeObjectName(field, sqlBuilder)
                     .append(_Constant.SPACE_EQUAL);
             pair.second.appendSql(this);
         }
@@ -183,7 +179,7 @@ final class AssignmentInsertContext extends InsertContext
     private void appendArmyManageFields() {
         assert !this.migration;
 
-        final ArmyParser dialect = this.parser;
+        final ArmyParser parser = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder;
 
         final Map<FieldMeta<?>, Object> generatedMap = this.rowWrapper.generatedMap;
@@ -193,45 +189,56 @@ final class AssignmentInsertContext extends InsertContext
         assert fieldSize > 0;
 
         final LiteralMode literalMode = this.literalMode;
-        final boolean mockEnv = dialect.mockEnv;
+        final boolean mockEnv = parser.mockEnv;
 
         FieldMeta<?> field;
-        Object value;
-        GeneratorType generatorType;
-        DelayIdParam delayIdParam = null;
+        Object value, idValue = null;
+
         for (int i = 0; i < fieldSize; i++) {
             field = fieldList.get(i);
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
             }
 
-            dialect.safeObjectName(field, sqlBuilder)
+            parser.safeObjectName(field, sqlBuilder)
                     .append(_Constant.SPACE_EQUAL);
 
-            if (field instanceof PrimaryFieldMeta
-                    && this.insertTable instanceof ChildTableMeta
-                    && (generatorType = this.insertTable.nonChildId().generatorType()) != GeneratorType.PRECEDE) {//child id must be managed by army
-
-                if (generatorType == null) {
-                    final _Expression expression;
-                    expression = this.rowWrapper.nonChildPairMap.get(this.insertTable.nonChildId());
-                    assert expression instanceof SqlValueParam.SingleNonNamedValue; //validated by FieldValueGenerator
-                    expression.appendSql(this);
-                } else if (generatorType == GeneratorType.POST) {
-                    assert field.tableMeta() == this.insertTable && delayIdParam == null;
-                    delayIdParam = new DelayIdParam((PrimaryFieldMeta<?>) field);
-                    this.rowWrapper.delayIdParam = delayIdParam;
-                    this.appendParam(delayIdParam);
-                } else {
-                    //no bug,never here
-                    throw _Exceptions.unexpectedEnum(generatorType);
-                }
-            } else if ((value = generatedMap.get(field)) != null) {
+            if (!(field instanceof PrimaryFieldMeta)) {//child id must be managed by army
+                value = generatedMap.get(field);
+                assert value != null || mockEnv;
                 this.appendInsertValue(literalMode, field, value);
-            } else {
-                assert mockEnv;
-                this.appendInsertValue(literalMode, field, null);
+                continue;
             }
+
+            assert idValue == null;
+            final GeneratorType generatorType;
+            generatorType = this.insertTable.nonChildId().generatorType();
+            if (generatorType == null) {
+                final _Expression expression;
+                expression = this.rowWrapper.nonChildPairMap.get(this.insertTable.nonChildId());
+                assert expression instanceof SqlValueParam.SingleNonNamedValue; //validated by FieldValueGenerator
+                expression.appendSql(this);
+                idValue = expression;
+            } else if (generatorType == GeneratorType.PRECEDE) {
+                idValue = generatedMap.get(field);
+                assert idValue != null || mockEnv;
+                this.appendInsertValue(literalMode, field, idValue);
+                idValue = Boolean.TRUE;
+            } else if (generatorType == GeneratorType.POST) {
+                assert this.insertTable instanceof ChildTableMeta;
+                assert this.rowWrapper.delayIdParam == null;
+                assert field.tableMeta() == this.insertTable;
+
+                final DelayIdParam delayIdParam;
+                delayIdParam = new DelayIdParam((PrimaryFieldMeta<?>) field);
+                this.rowWrapper.delayIdParam = delayIdParam;
+                this.appendParam(delayIdParam);
+                idValue = delayIdParam;
+            } else {
+                //no bug,never here
+                throw _Exceptions.unexpectedEnum(generatorType);
+            }
+
 
         }
 
@@ -240,6 +247,8 @@ final class AssignmentInsertContext extends InsertContext
 
 
     private static final class AssignmentWrapper extends _DialectUtils.ExpRowWrapper {
+
+        private final boolean mockEnv;
 
         private final Map<FieldMeta<?>, _Expression> nonChildPairMap;
 
@@ -253,13 +262,13 @@ final class AssignmentInsertContext extends InsertContext
 
         private AssignmentWrapper(AssignmentInsertContext context, _Insert._AssignmentInsert domainStmt) {
             super(domainStmt.table(), context.parser.mappingEnv);
-
+            this.mockEnv = context.parser.mockEnv;
             if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
                 assert context.insertTable == ((ChildTableMeta<?>) this.domainTable).parentMeta();
                 this.nonChildPairMap = ((_Insert._ChildAssignmentInsert) domainStmt).parentStmt().assignmentMap();
                 this.childPairMap = domainStmt.assignmentMap();
             } else {
-                assert  context.insertTable == this.domainTable;
+                assert context.insertTable == this.domainTable;
                 this.nonChildPairMap = domainStmt.assignmentMap();
                 this.childPairMap = Collections.emptyMap();
             }
@@ -289,6 +298,7 @@ final class AssignmentInsertContext extends InsertContext
             final Map<FieldMeta<?>, Object> map = this.tempGeneratedMap;
             assert map != null;
             if (value == null) {
+                assert this.mockEnv;
                 //here mock environment
                 return;
             }
@@ -297,7 +307,7 @@ final class AssignmentInsertContext extends InsertContext
                 final TableMeta<?> fieldTable = field.tableMeta();
                 assert fieldTable instanceof SingleTableMeta;
                 if (fieldTable != this.domainTable) {
-                    map.put(this.domainTable.id(), value);
+                    map.put(fieldTable.nonChildId(), value);
                 }
             }
         }
