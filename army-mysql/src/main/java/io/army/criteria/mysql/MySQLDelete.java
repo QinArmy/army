@@ -430,7 +430,7 @@ public interface MySQLDelete extends MySQLStatement {
      * @since 1.0
      */
     interface _MultiPartitionOnClause<I extends Item>
-            extends MySQLQuery._PartitionAndAsClause<_MultiIndexHintOnSpec<I>> {
+            extends _PartitionAndAsClause_0<_MultiIndexHintOnSpec<I>> {
 
     }
 
@@ -483,7 +483,7 @@ public interface MySQLDelete extends MySQLStatement {
      * @since 1.0
      */
     interface _MultiPartitionJoinClause<I extends Item>
-            extends MySQLQuery._PartitionAndAsClause<_MultiIndexHintJoinSpec<I>> {
+            extends _PartitionAndAsClause_0<_MultiIndexHintJoinSpec<I>> {
 
     }
 
@@ -631,7 +631,7 @@ public interface MySQLDelete extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchMultiPartitionOnClause<I extends Item>
-            extends MySQLQuery._PartitionAndAsClause<_BatchMultiIndexHintOnSpec<I>> {
+            extends _PartitionAndAsClause_0<_BatchMultiIndexHintOnSpec<I>> {
 
     }
 
@@ -684,7 +684,7 @@ public interface MySQLDelete extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchMultiPartitionJoinClause<I extends Item>
-            extends MySQLQuery._PartitionAndAsClause<_BatchMultiIndexHintJoinSpec<I>> {
+            extends _PartitionAndAsClause_0<_BatchMultiIndexHintJoinSpec<I>> {
 
     }
 

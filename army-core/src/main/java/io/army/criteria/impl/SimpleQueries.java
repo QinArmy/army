@@ -192,6 +192,18 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
+    public final <R extends Item> R select(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                           @Nullable SQLs.ArgDistinct distinct, Expression exp) {
+        return function.apply(distinct, exp, this.expFunc, this.asFunc);
+    }
+
+    @Override
+    public final <R extends Item> R select(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                           @Nullable SQLs.ArgDistinct distinct, Supplier<Expression> supplier) {
+        return function.apply(distinct, supplier.get(), this.expFunc, this.asFunc);
+    }
+
+    @Override
     public final <R extends Item> R select(SqlTwoFunction<_AliasExpression<SR>, SR, R> function,
                                            Expression exp1, Expression exp2) {
         return function.apply(exp1, exp2, this.expFunc, this.asFunc);
@@ -442,6 +454,18 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
+    public final <R extends Item> R space(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                          @Nullable SQLs.ArgDistinct distinct, Expression exp) {
+        return function.apply(distinct, exp, this.expFunc, this.asFunc);
+    }
+
+    @Override
+    public final <R extends Item> R space(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                          @Nullable SQLs.ArgDistinct distinct, Supplier<Expression> supplier) {
+        return function.apply(distinct, supplier.get(), this.expFunc, this.asFunc);
+    }
+
+    @Override
     public final <R extends Item> R space(SqlTwoFunction<_AliasExpression<SR>, SR, R> function,
                                           Expression exp1, Expression exp2) {
         return function.apply(exp1, exp2, this.expFunc, this.asFunc);
@@ -637,6 +661,18 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     public final <T> _AliasExpression<SR> comma(ExpressionOperator<Expression, T, Expression> expOperator,
                                                 BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
         return this.onSelectExpression(expOperator.apply(operator, getter.get()));
+    }
+
+    @Override
+    public final <R extends Item> R comma(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                          @Nullable SQLs.ArgDistinct distinct, Expression exp) {
+        return function.apply(distinct, exp, this.expFunc, this.asFunc);
+    }
+
+    @Override
+    public final <R extends Item> R comma(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                          @Nullable SQLs.ArgDistinct distinct, Supplier<Expression> supplier) {
+        return function.apply(distinct, supplier.get(), this.expFunc, this.asFunc);
     }
 
     @Override
@@ -1267,9 +1303,10 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         @Override
         public final List<_Cte> cteList() {
-            final List<_Cte> list = this.cteList;
+            List<_Cte> list = this.cteList;
             if (list == null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                list = Collections.emptyList();
+                this.cteList = list;
             }
             return list;
         }
@@ -1434,6 +1471,18 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
+        public final <R extends Item> R select(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                               @Nullable SQLSyntax.ArgDistinct distinct, Expression exp) {
+            return this.createSelectClause().select(function, distinct, exp);
+        }
+
+        @Override
+        public final <R extends Item> R select(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                               @Nullable SQLSyntax.ArgDistinct distinct, Supplier<Expression> supplier) {
+            return this.createSelectClause().select(function, distinct, supplier.get());
+        }
+
+        @Override
         public final <R extends Item> R select(SqlTwoFunction<_AliasExpression<SR>, SR, R> function, Expression exp1,
                                                Expression exp2) {
             return this.createSelectClause().select(function, exp1, exp2);
@@ -1547,8 +1596,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     static abstract class WithBuilderSelectClauseDispatcher<B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR extends Item, SD>
             extends SelectClauseDispatcher<W, SR, SD>
-            implements DialectStatement._DynamicWithClause<B, WE>
-            , _WithClauseSpec {
+            implements DialectStatement._DynamicWithClause<B, WE>,
+            _WithClauseSpec, CriteriaContextSpec {
 
         final CriteriaContext outerContext;
 
@@ -1563,6 +1612,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             this.outerContext = outerContext;
         }
 
+        @Override
+        public final CriteriaContext getContext() {
+            final CriteriaContext context = this.withClauseContext;
+            assert context != null;
+            return context;
+        }
 
         @Override
         public final WE with(Consumer<B> consumer) {
@@ -1630,9 +1685,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         final void resetWithClause() {
-            if (this.withClauseContext != null) {
-                throw new IllegalStateException("withClauseContext non-null");
-            }
+            this.withClauseContext = null;
             this.cteList = null;
             this.recursive = false;
         }
@@ -1644,11 +1697,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (this.cteList != null) {
                 throw ContextStack.castCriteriaApi(withClauseContext);
             }
-            this.recursive = builder.isRecursive();
-            this.cteList = withClauseContext.endWithClause(builder.isRecursive(), required);
+            final boolean recursive;
+            recursive = builder.isRecursive();
+            this.recursive = recursive;
+            this.cteList = withClauseContext.endWithClause(recursive, required);
             ContextStack.pop(withClauseContext);
             withClauseContext.endContext();
-            this.withClauseContext = null;
             return (WE) this;
         }
 
@@ -1876,6 +1930,19 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
                                                           BiFunction<Expression, T, Expression> operator,
                                                           Supplier<T> getter) {
             return this.onSelectExpression(expOperator.apply(operator, getter.get()));
+        }
+
+
+        @Override
+        public <R extends Item> R selection(SqlDistinctOneFunction<_AliasExpression<Selections>, Selections, R> function,
+                                            @Nullable SQLSyntax.ArgDistinct distinct, Expression exp) {
+            return function.apply(distinct, exp, this.expFunc, this.asFunc);
+        }
+
+        @Override
+        public <R extends Item> R selection(SqlDistinctOneFunction<_AliasExpression<Selections>, Selections, R> function,
+                                            @Nullable SQLSyntax.ArgDistinct distinct, Supplier<Expression> supplier) {
+            return function.apply(distinct, supplier.get(), this.expFunc, this.asFunc);
         }
 
         @Override

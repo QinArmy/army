@@ -3,6 +3,7 @@ package io.army.criteria;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._AliasExpression;
 import io.army.function.*;
+import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
@@ -60,6 +61,12 @@ public interface Selections extends Item {
 
     <T> _AliasExpression<Selections> selection(ExpressionOperator<Expression, T, Expression> expOperator,
                                                BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+
+    <R extends Item> R selection(SqlDistinctOneFunction<_AliasExpression<Selections>, Selections, R> function,
+                                 @Nullable SQLs.ArgDistinct distinct, Expression exp);
+
+    <R extends Item> R selection(SqlDistinctOneFunction<_AliasExpression<Selections>, Selections, R> function,
+                                 @Nullable SQLs.ArgDistinct distinct, Supplier<Expression> supplier);
 
     <R extends Item> R selection(SqlTwoFunction<_AliasExpression<Selections>, Selections, R> function, Expression exp1,
                                  Expression exp2);

@@ -153,7 +153,7 @@ public interface MySQLUpdate extends MySQLStatement {
     }
 
     interface _SinglePartitionClause<I extends Item, T>
-            extends MySQLQuery._PartitionAndAsClause<_SingleIndexHintSpec<I, T>> {
+            extends _PartitionAndAsClause_0<_SingleIndexHintSpec<I, T>> {
 
     }
 
@@ -342,7 +342,7 @@ public interface MySQLUpdate extends MySQLStatement {
     }
 
     interface _BatchSinglePartitionClause<I extends Item, T>
-            extends MySQLQuery._PartitionAndAsClause<_BatchSingleIndexHintSpec<I, T>> {
+            extends _PartitionAndAsClause_0<_BatchSingleIndexHintSpec<I, T>> {
 
     }
 
@@ -495,7 +495,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _MultiPartitionOnClause<I extends Item>
-            extends _PartitionAndAsClause<_MultiIndexHintOnSpec<I>> {
+            extends _PartitionAndAsClause_0<_MultiIndexHintOnSpec<I>> {
 
     }
 
@@ -563,7 +563,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _MultiPartitionJoinClause<I extends Item>
-            extends MySQLQuery._PartitionAndAsClause<_MultiIndexHintJoinSpec<I>> {
+            extends _PartitionAndAsClause_0<_MultiIndexHintJoinSpec<I>> {
 
     }
 
@@ -749,7 +749,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchMultiPartitionOnClause<I extends Item>
-            extends MySQLQuery._PartitionAndAsClause<_BatchMultiIndexHintOnSpec<I>> {
+            extends _PartitionAndAsClause_0<_BatchMultiIndexHintOnSpec<I>> {
 
     }
 
@@ -817,7 +817,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchMultiPartitionJoinClause<I extends Item>
-            extends MySQLQuery._PartitionAndAsClause<_BatchMultiIndexHintJoinSpec<I>> {
+            extends _PartitionAndAsClause_0<_BatchMultiIndexHintJoinSpec<I>> {
 
     }
 

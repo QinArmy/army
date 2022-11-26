@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.criteria.Select;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._ParensRowSet;
+import io.army.criteria.impl.inner._RowSet;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
@@ -12,7 +12,7 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 
-final class ParensSelectContext extends StatementContext implements _SelectContext {
+final class ParensSelectContext extends StatementContext implements _SelectContext, _ParenRowSetContext {
 
     static ParensSelectContext create(@Nullable _SqlContext outerContext, Select select, ArmyParser dialect
             , Visible visible) {
@@ -27,7 +27,7 @@ final class ParensSelectContext extends StatementContext implements _SelectConte
             , Visible visible) {
         super(dialect, visible);
         this.outerContext = outerContext;
-        this.selectionList = _DialectUtils.flatSelectItem(((_ParensRowSet) select).selectItemList());
+        this.selectionList = _DialectUtils.flatSelectItem(((_RowSet) select).selectItemList());
     }
 
 
@@ -38,9 +38,18 @@ final class ParensSelectContext extends StatementContext implements _SelectConte
 
     @Override
     public void appendField(FieldMeta<?> field) {
-        throw _Exceptions.unknownColumn(null, field);
+        throw _Exceptions.unknownColumn(field);
     }
 
+    @Override
+    public void appendOuterField(String tableAlias, FieldMeta<?> field) {
+        throw _Exceptions.unknownColumn(tableAlias, field);
+    }
+
+    @Override
+    public void appendOuterField(FieldMeta<?> field) {
+        throw _Exceptions.unknownColumn(field);
+    }
 
     @Override
     public SimpleStmt build() {

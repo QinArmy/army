@@ -143,7 +143,6 @@ public interface MySQLInsert extends MySQLStatement {
      * @see MySQLFunctions#values(FieldMeta)
      */
     interface _OnDuplicateKeyUpdateSpec<I extends Item, T> extends _DmlInsertClause<I> {
-        //TODO MySQLFunctions#values(FieldMeta)
         _StaticConflictUpdateClause<I, T> onDuplicateKey();
 
         _DmlInsertClause<I> onDuplicateKeyUpdate(Consumer<ItemPairs<FieldMeta<T>>> consumer);

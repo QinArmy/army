@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
-import io.army.criteria.Expression;
-import io.army.criteria.SQLWords;
-import io.army.criteria.Statement;
+import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Dialect;
@@ -86,8 +83,6 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
 
     private List<_Expression> partitionByList;
 
-    private List<ArmySortItem> orderByList;
-
     private FrameUnits frameUnits;
 
     private Boolean betweenExtent;
@@ -112,10 +107,11 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
         super(context);
         if (!_StringUtils.hasText(windowName)) {
             throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
-        } else if (existingWindowName != null && !_StringUtils.hasText(existingWindowName)) {
-            throw ContextStack.criteriaError(context, "existingWindowName must be null or non-empty");
-        } else if (existingWindowName != null && context.isNotExistWindow(existingWindowName)) {
-            throw refWindowNotExists(context, existingWindowName);
+        } else if (existingWindowName != null) {
+            if (!_StringUtils.hasText(existingWindowName)) {
+                throw ContextStack.criteriaError(context, "existingWindowName must be null or non-empty");
+            }
+            context.onRefWindow(existingWindowName);
         }
         this.windowName = windowName;
         this.context = context;
@@ -130,10 +126,11 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
      */
     WindowClause(CriteriaContext context, @Nullable String existingWindowName) {
         super(context);
-        if (existingWindowName != null && !_StringUtils.hasText(existingWindowName)) {
-            throw ContextStack.criteriaError(context, "existingWindowName must be null or non-empty");
-        } else if (existingWindowName != null && context.isNotExistWindow(existingWindowName)) {
-            throw refWindowNotExists(context, existingWindowName);
+        if (existingWindowName != null) {
+            if (!_StringUtils.hasText(existingWindowName)) {
+                throw ContextStack.criteriaError(context, "existingWindowName must be null or non-empty");
+            }
+            context.onRefWindow(existingWindowName);
         }
         this.windowName = null;
         this.context = context;
@@ -362,10 +359,10 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
         if (windowName != null) {
             sqlBuilder.append(_Constant.SPACE);
             parser.identifier(windowName, sqlBuilder)
-                    .append(_Constant.SPACE_AS)
-                    .append(_Constant.SPACE_LEFT_PAREN);
+                    .append(_Constant.SPACE_AS);
         }// anonymous window no parens
 
+        sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
         //3.reference window name
         final String refWindowName = this.refWindowName;
         if (refWindowName != null) {
@@ -386,16 +383,15 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
             }
         }
         //5.order_clause
-        final List<ArmySortItem> orderByList = this.orderByList;
-        if (orderByList != null) {
-            final int size = orderByList.size();
-            assert size > 0;
+        final List<? extends SortItem> orderByList = this.orderByList();
+        final int orderItemSize;
+        if ((orderItemSize = orderByList.size()) > 0) {
             sqlBuilder.append(_Constant.SPACE_ORDER_BY);
-            for (int i = 0; i < size; i++) {
+            for (int i = 0; i < orderItemSize; i++) {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                orderByList.get(i).appendSql(context);
+                ((ArmySortItem) orderByList.get(i)).appendSql(context);
             }
         }
         //6.frame_clause
@@ -448,14 +444,12 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
     @Override
     public final void clear() {
         this.partitionByList = null;
-        this.orderByList = null;
         this.frameUnits = null;
-
         this.betweenExtent = null;
         this.frameStartExp = null;
+
         this.frameStartBound = null;
         this.frameEndExp = null;
-
         this.frameEndBound = null;
         this.prepared = false;
     }

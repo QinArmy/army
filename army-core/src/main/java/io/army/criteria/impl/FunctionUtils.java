@@ -5,6 +5,7 @@ import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.standard.SQLFunction;
+import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -16,6 +17,7 @@ import io.army.mapping.StringType;
 import io.army.mapping.VoidType;
 import io.army.meta.TypeMeta;
 import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.*;
@@ -621,11 +623,12 @@ abstract class FunctionUtils {
                     .append(_Constant.SPACE)
                     .append(this.name) // function name
                     .append(_Constant.LEFT_PAREN);
-
-            if (!(this instanceof NoArgFunction)) {
+            if (this instanceof NoArgFunction) {
+                sqlBuilder.append(_Constant.RIGHT_PAREN);
+            } else {
                 this.appendArguments(context);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
             if (this instanceof SQLFunction._OuterClauseBeforeOver) {
                 this.appendOuterClause(context);
@@ -634,12 +637,16 @@ abstract class FunctionUtils {
             final String existingWindowName = this.existingWindowName;
             final _Window anonymousWindow = this.anonymousWindow;
 
+            final DialectParser parser;
             if (existingWindowName == null && anonymousWindow == null) {
                 if (!(this instanceof SQLFunction.AggregateFunction)) {
-                    throw ContextStack.castCriteriaApi(this.context);
+                    throw _Exceptions.castCriteriaApi();
                 }
+            } else if (this.isDontSupportWindow((parser = context.parser()).dialect())) {
+                String m = String.format("%s don't support window function[%s].", parser.dialect(), this.name);
+                throw new CriteriaException(m);
             } else if (existingWindowName != null && anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw _Exceptions.castCriteriaApi();
             } else {
                 sqlBuilder.append(_Constant.SPACE_OVER);
                 if (existingWindowName != null) {
@@ -698,6 +705,8 @@ abstract class FunctionUtils {
         abstract void appendArguments(_SqlContext context);
 
         abstract void argumentToString(StringBuilder builder);
+
+        abstract boolean isDontSupportWindow(Dialect dialect);
 
         void appendOuterClause(_SqlContext context) {
             throw new UnsupportedOperationException();

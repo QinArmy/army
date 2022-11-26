@@ -820,7 +820,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
 
 
     private static final class SimplePartitionJoinClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause<MySQLDelete._MultiIndexHintJoinSpec<I>>
+            extends MySQLSupports.PartitionAsClause_0<_MultiIndexHintJoinSpec<I>>
             implements MySQLDelete._MultiPartitionJoinClause<I> {
 
         private final SimpleMultiDelete<I> stmt;
@@ -864,7 +864,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
     }//SimpleOnTableBlock
 
     private static final class SimplePartitionOnClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause<MySQLDelete._MultiIndexHintOnSpec<I>>
+            extends MySQLSupports.PartitionAsClause_0<_MultiIndexHintOnSpec<I>>
             implements MySQLDelete._MultiPartitionOnClause<I> {
 
         private final SimpleMultiDelete<I> stmt;
@@ -889,7 +889,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
 
 
     private static final class BatchPartitionJoinClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause<MySQLDelete._BatchMultiIndexHintJoinSpec<I>>
+            extends MySQLSupports.PartitionAsClause_0<_BatchMultiIndexHintJoinSpec<I>>
             implements MySQLDelete._BatchMultiPartitionJoinClause<I> {
 
         private final BatchMultiDelete<I> stmt;
@@ -933,7 +933,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
     }//BatchOnTableBlock
 
     private static final class BatchPartitionOnClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause<MySQLDelete._BatchMultiIndexHintOnSpec<I>>
+            extends MySQLSupports.PartitionAsClause_0<_BatchMultiIndexHintOnSpec<I>>
             implements MySQLDelete._BatchMultiPartitionOnClause<I> {
 
         private final BatchMultiDelete<I> stmt;

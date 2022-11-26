@@ -434,7 +434,7 @@ abstract class ArmyParser implements DialectParser {
 
     /**
      * @see #handleValues(_SqlContext, Values, Visible)
-     * @see #handleDqlValues(ValuesQuery, _SqlContext)
+     * @see #handleValuesQuery(ValuesQuery, _SqlContext)
      */
     protected void parseValues(_Values values, _ValuesContext context) {
         throw standardParserDontSupportDialect();
@@ -477,7 +477,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleSelect(_SqlContext, Select, Visible)
      * @see #handleQuery(Query, _SqlContext)
      * @see #handleValues(_SqlContext, Values, Visible)
-     * @see #handleDqlValues(ValuesQuery, _SqlContext)
+     * @see #handleValuesQuery(ValuesQuery, _SqlContext)
      */
     protected void parseParensRowSet(_ParensRowSet values, _ParenRowSetContext context) {
         throw standardParserDontSupportDialect();
@@ -546,7 +546,7 @@ abstract class ArmyParser implements DialectParser {
         if (rowSet instanceof Query) {
             this.handleQuery((Query) rowSet, original);
         } else if (rowSet instanceof ValuesQuery) {
-            this.handleDqlValues((ValuesQuery) rowSet, original);
+            this.handleValuesQuery((ValuesQuery) rowSet, original);
         } else {
             throw _Exceptions.unknownStatement(rowSet, this.dialect);
         }
@@ -595,7 +595,7 @@ abstract class ArmyParser implements DialectParser {
     protected final void handleSubValues(final SubValues values, final _SqlContext original) {
         final StringBuilder sqlBuilder;
         sqlBuilder = ((StatementContext) original).sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
-        this.handleDqlValues(values, original);
+        this.handleValuesQuery(values, original);
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
@@ -603,7 +603,7 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #handleRowSet(RowSet, _SqlContext)
      */
-    protected final void handleDqlValues(final ValuesQuery values, final _SqlContext original) {
+    protected final void handleValuesQuery(final ValuesQuery values, final _SqlContext original) {
         this.assertRowSet(values);
         if (values instanceof _Values) {
             final ValuesContext context;
@@ -611,7 +611,7 @@ abstract class ArmyParser implements DialectParser {
             this.parseValues((_Values) values, context);
         } else if (values instanceof _UnionRowSet) {
             final _UnionRowSet union = (_UnionRowSet) values;
-            this.handleDqlValues((ValuesQuery) union.leftRowSet(), original);
+            this.handleValuesQuery((ValuesQuery) union.leftRowSet(), original);
             ((StatementContext) original).sqlBuilder.append(union.unionType().render());
             this.handleRowSet(union.rightRowSet(), original);
         } else {
@@ -765,18 +765,28 @@ abstract class ArmyParser implements DialectParser {
     protected final void handleQuery(final Query query, final _SqlContext original) {
         query.prepared();
         if (query instanceof _Query) {
-            final _SimpleQueryContext context;
-            if (query instanceof Select) {
-                context = SimpleSelectContext.create(original, (Select) query);
+            final _ParensRowSet parensRowSet;
+            if ((parensRowSet = ((_Query) query).parenQuery()) == null) {
+                final _SimpleQueryContext context;
+                if (query instanceof Select) {
+                    context = SimpleSelectContext.create(original, (Select) query);
+                } else {
+                    context = SimpleSubQueryContext.create(original, (SubQuery) query);
+                }
+                if (query instanceof StandardQuery) {
+                    this.parseStandardQuery((_StandardQuery) query, context);
+                } else {
+                    this.assertRowSet(query);
+                    this.parseQuery((_Query) query, context);
+                }
             } else {
-                context = SimpleSubQueryContext.create(original, (SubQuery) query);
+                assert ((_Query) query).selectItemList().size() == 0;
+                final StringBuilder sqlBuilder;
+                sqlBuilder = original.sqlBuilder().append(_Constant.SPACE_LEFT_PAREN);
+                this.handleRowSet(parensRowSet.innerRowSet(), original);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
-            if (query instanceof StandardQuery) {
-                this.parseStandardQuery((_StandardQuery) query, context);
-            } else {
-                this.assertRowSet(query);
-                this.parseQuery((_Query) query, context);
-            }
+
         } else if (query instanceof _UnionRowSet) {
             final _UnionRowSet unionRowSet = (_UnionRowSet) query;
             this.handleQuery((Query) unionRowSet.leftRowSet(), original);
@@ -1489,19 +1499,31 @@ abstract class ArmyParser implements DialectParser {
         return context;
     }
 
-
     /**
      * @see #select(Select, Visible)
+     * @see #handleQuery(Query, _SqlContext)
+     * @see #handleValuesQuery(ValuesQuery, _SqlContext)
      */
     private _SelectContext handleSelect(final @Nullable _SqlContext outerContext, final Select stmt
             , final Visible visible) {
         final _SelectContext context;
         if (stmt instanceof _Query) {
-            context = SimpleSelectContext.create(outerContext, stmt, this, visible);
-            if (stmt instanceof StandardQuery) {
-                this.parseStandardQuery((_StandardQuery) stmt, (_SimpleQueryContext) context);
+            final _ParensRowSet parensRowSet;
+            parensRowSet = ((_Query) stmt).parenQuery();
+            if (parensRowSet == null) {
+                context = SimpleSelectContext.create(outerContext, stmt, this, visible);
+                if (stmt instanceof StandardQuery) {
+                    this.parseStandardQuery((_StandardQuery) stmt, (_SimpleQueryContext) context);
+                } else {
+                    this.parseQuery((_Query) stmt, (_SimpleQueryContext) context);
+                }
             } else {
-                this.parseQuery((_Query) stmt, (_SimpleQueryContext) context);
+                assert ((_Query) stmt).selectItemList().size() == 0;
+                context = ParensSelectContext.create(outerContext, stmt, this, visible);
+                final StringBuilder sqlBuilder;
+                sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LEFT_PAREN);
+                this.handleRowSet(parensRowSet.innerRowSet(), context);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
         } else if (stmt instanceof _UnionRowSet) {
             context = ParensSelectContext.create(outerContext, stmt, this, visible);
@@ -1513,10 +1535,19 @@ abstract class ArmyParser implements DialectParser {
             assert stmt instanceof _ParensRowSet;
             context = ParensSelectContext.create(outerContext, stmt, this, visible);
             final _ParensRowSet parensRowSet = (_ParensRowSet) stmt;
+
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LEFT_PAREN);
             this.handleRowSet(parensRowSet.innerRowSet(), context);
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+            if (stmt instanceof StandardQuery) {
+                _SQLConsultant.assertStandardQuery(stmt);
+                this.parseStandardParensQuery(parensRowSet, (_ParenRowSetContext) context);
+            } else {
+                this.assertRowSet(stmt);
+                this.parseParensRowSet(parensRowSet, (_ParenRowSetContext) context);
+            }
         }
         return context;
     }
@@ -1534,7 +1565,7 @@ abstract class ArmyParser implements DialectParser {
             this.parseValues((_Values) stmt, context);
         } else if (stmt instanceof _UnionRowSet) {
             final _UnionRowSet union = (_UnionRowSet) stmt;
-            this.handleDqlValues((Values) union.leftRowSet(), context);
+            this.handleValuesQuery((Values) union.leftRowSet(), context);
             context.sqlBuilder().append(union.unionType().render());
             this.handleRowSet(union.rightRowSet(), context);
         } else {
@@ -2116,15 +2147,8 @@ abstract class ArmyParser implements DialectParser {
      */
     private void parseStandardQuery(final _StandardQuery query, final _SimpleQueryContext context) {
         _SQLConsultant.assertStandardQuery((Query) query);
-        final _ParensRowSet parenQuery;
-        parenQuery = query.parenQuery();
-        if (parenQuery != null) {
-            if (query.selectItemList().size() > 0) {
-                throw _Exceptions.castCriteriaApi();
-            }
-            this.handleQuery((Query) parenQuery, context);
-            return;
-        }
+        assert query.parenQuery() == null;
+
         final StringBuilder builder;
         if ((builder = context.sqlBuilder()).length() > 0) {
             builder.append(_Constant.SPACE);

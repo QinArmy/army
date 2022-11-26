@@ -6,6 +6,7 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._AliasExpression;
 import io.army.function.*;
+import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
@@ -140,6 +141,12 @@ public interface Query extends RowSet {
         <T> _AliasExpression<SR> select(ExpressionOperator<Expression, T, Expression> expOperator,
                                         BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
 
+        <R extends Item> R select(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                  @Nullable SQLs.ArgDistinct distinct, Expression exp);
+
+        <R extends Item> R select(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                  @Nullable SQLs.ArgDistinct distinct, Supplier<Expression> supplier);
+
         <R extends Item> R select(SqlTwoFunction<_AliasExpression<SR>, SR, R> function, Expression exp1,
                                   Expression exp2);
 
@@ -237,6 +244,12 @@ public interface Query extends RowSet {
 
         <T> _AliasExpression<SR> space(ExpressionOperator<Expression, T, Expression> expOperator,
                                        BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+
+        <R extends Item> R space(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                 @Nullable SQLs.ArgDistinct distinct, Expression exp);
+
+        <R extends Item> R space(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                 @Nullable SQLs.ArgDistinct distinct, Supplier<Expression> supplier);
 
         <R extends Item> R space(SqlTwoFunction<_AliasExpression<SR>, SR, R> function, Expression exp1,
                                  Expression exp2);
@@ -354,6 +367,12 @@ public interface Query extends RowSet {
 
         <T> _AliasExpression<SR> comma(ExpressionOperator<Expression, T, Expression> expOperator,
                                        BiFunction<Expression, T, Expression> operator, Supplier<T> supplier);
+
+        <R extends Item> R comma(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                 @Nullable SQLs.ArgDistinct distinct, Expression exp);
+
+        <R extends Item> R comma(SqlDistinctOneFunction<_AliasExpression<SR>, SR, R> function,
+                                 @Nullable SQLs.ArgDistinct distinct, Supplier<Expression> supplier);
 
         <R extends Item> R comma(SqlTwoFunction<_AliasExpression<SR>, SR, R> function, Expression exp1,
                                  Expression exp2);

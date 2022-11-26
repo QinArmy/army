@@ -4,9 +4,11 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.mysql.*;
+import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.mapping.IntegerType;
 import io.army.mapping.LongType;
@@ -200,6 +202,11 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             return this.endWindow((ArmyWindow) clause);
         }
 
+        @Override
+        final boolean isDontSupportWindow(final Dialect dialect) {
+            return !(dialect instanceof MySQLDialect) || dialect.version() < MySQLDialect.MySQL80.version();
+        }
+
 
     }//MySQLWindowFunction
 
@@ -271,7 +278,6 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             final SQLWords option = this.option;
             if (option != null) {
                 context.sqlBuilder()
-                        .append(_Constant.SPACE)
                         .append(option.render());
             }
             this.argument.appendSql(context);

@@ -578,7 +578,7 @@ abstract class MySQLNestedJoins {
      * @see MySQLNestedLeftParenClause
      */
     private static final class PartitionJoinClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause<MySQLQuery._NestedIndexHintJoinSpec<I>>
+            extends MySQLSupports.PartitionAsClause_0<MySQLQuery._NestedIndexHintJoinSpec<I>>
             implements MySQLQuery._NestedPartitionJoinSpec<I> {
 
         private final Consumer<_TableBlock> blockConsumer;
@@ -611,7 +611,7 @@ abstract class MySQLNestedJoins {
      * @see MySQLNestedJoinClause#crossJoin(TableMeta)
      */
     private static final class PartitionCrossClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause<MySQLQuery._NestedIndexHintCrossSpec<I>>
+            extends MySQLSupports.PartitionAsClause_0<MySQLQuery._NestedIndexHintCrossSpec<I>>
             implements MySQLQuery._NestedPartitionCrossSpec<I> {
 
         private final Consumer<_TableBlock> blockConsumer;
@@ -645,7 +645,7 @@ abstract class MySQLNestedJoins {
      * @see MySQLNestedJoinClause
      */
     private static final class PartitionOnClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause<MySQLQuery._NestedIndexHintOnSpec<I>>
+            extends MySQLSupports.PartitionAsClause_0<MySQLQuery._NestedIndexHintOnSpec<I>>
             implements MySQLQuery._NestedPartitionOnSpec<I> {
 
         private final Consumer<_TableBlock> blockConsumer;

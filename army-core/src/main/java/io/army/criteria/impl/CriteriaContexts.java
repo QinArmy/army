@@ -48,6 +48,7 @@ abstract class CriteriaContexts {
     static CriteriaContext primaryQuery(final @Nullable _Statement._WithClauseSpec spec,
                                         final @Nullable CriteriaContext outerContext,
                                         final @Nullable CriteriaContext leftContext) {
+        assert leftContext == null || leftContext.getNonNullOuterContext() == outerContext;
         final StatementContext context;
         context = new SelectContext(outerContext, leftContext);
         if (spec != null) {
@@ -75,6 +76,7 @@ abstract class CriteriaContexts {
     static CriteriaContext subQueryContext(final @Nullable _Statement._WithClauseSpec spec,
                                            final CriteriaContext outerContext,
                                            final @Nullable CriteriaContext leftContext) {
+        assert leftContext == null || leftContext.getNonNullOuterContext() == outerContext;
         final StatementContext context;
         context = new SubQueryContext(outerContext, leftContext);
         if (spec != null) {
@@ -112,10 +114,11 @@ abstract class CriteriaContexts {
         return context;
     }
 
-    @Deprecated
+
     static CriteriaContext withClauseContext(final @Nullable CriteriaContext outerContext) {
-        throw new UnsupportedOperationException();
+        return new OnlyWithClauseContext(outerContext);
     }
+
 
     @Deprecated
     static CriteriaContext bracketContext(@Nullable _Statement._WithClauseSpec withSpec) {
@@ -725,6 +728,17 @@ abstract class CriteriaContexts {
     private interface PrimaryContext {
 
     }
+
+    private static final class OnlyWithClauseContext extends StatementContext {
+
+        /**
+         * @see #withClauseContext(CriteriaContext)
+         */
+        private OnlyWithClauseContext(@Nullable CriteriaContext outerContext) {
+            super(outerContext);
+        }
+
+    }//OnlyWithClauseContext
 
 
     private static abstract class JoinableContext extends StatementContext {

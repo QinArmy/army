@@ -105,7 +105,7 @@ abstract class TableBlock implements _TableBlock {
 
         NoOnModifierTableBlock(DialectBlockParams params) {
             super(params);
-            this.itemWord = params.itemWord();
+            this.itemWord = params.modifier();
         }
 
         @Override
@@ -131,7 +131,7 @@ abstract class TableBlock implements _TableBlock {
     interface DialectBlockParams extends BlockParams {
 
         @Nullable
-        SQLWords itemWord();
+        SQLWords modifier();
 
     }
 

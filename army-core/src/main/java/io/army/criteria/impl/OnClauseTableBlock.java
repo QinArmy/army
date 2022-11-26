@@ -140,7 +140,7 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
 
         OnItemTableBlock(TableBlock.DialectBlockParams params, OR stmt) {
             super(params, stmt);
-            this.modifier = params.itemWord();
+            this.modifier = params.modifier();
         }
 
         @Override

@@ -619,7 +619,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
             this.alias = params.alias();
 
             if (params instanceof TableBlock.DialectBlockParams) {
-                this.modifier = ((TableBlock.DialectBlockParams) params).itemWord();
+                this.modifier = ((TableBlock.DialectBlockParams) params).modifier();
             } else {
                 this.modifier = null;
             }

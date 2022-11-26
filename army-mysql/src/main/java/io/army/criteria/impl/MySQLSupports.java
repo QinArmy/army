@@ -8,8 +8,10 @@ import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLQuery;
+import io.army.criteria.mysql.MySQLStatement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -17,6 +19,7 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract class MySQLSupports extends CriteriaSupports {
@@ -87,7 +90,7 @@ abstract class MySQLSupports extends CriteriaSupports {
             if (aliasList != null) {
                 context.onCteColumnAlias(cteName, aliasList);
             }
-            return MySQLQueries.subQuery(null,this.context, query -> {
+            return MySQLQueries.subQuery(null, this.context, query -> {
                 CriteriaUtils.createAndAddCte(context, cteName, aliasList, query);
                 MySQLCteBuilderImpl.this.cteName = null; //clear for next cte
                 MySQLCteBuilderImpl.this.columnAliasList = null; //clear for next cte
@@ -277,9 +280,107 @@ abstract class MySQLSupports extends CriteriaSupports {
 
     }//MySQLOnBlock
 
+    static abstract class PartitionAsClause<R> implements Statement._AsClause<R>,
+            MySQLBlockParams, MySQLStatement._PartitionAsClause<R> {
 
-    static abstract class PartitionAsClause<AR> implements Statement._AsClause<AR>, MySQLBlockParams
-            , MySQLQuery._PartitionAndAsClause<AR> {
+        final CriteriaContext context;
+
+        final _JoinType joinType;
+
+        final TableMeta<?> table;
+
+        private List<String> partitionList;
+
+        private String tableAlias;
+
+        PartitionAsClause(CriteriaContext context, _JoinType joinType, TableMeta<?> table) {
+            this.context = context;
+            this.joinType = joinType;
+            this.table = table;
+        }
+
+
+        @Override
+        public final Statement._AsClause<R> partition(String first, String... rest) {
+            this.partitionList = ArrayUtils.unmodifiableListOf(first, rest);
+            return this;
+        }
+
+        @Override
+        public final Statement._AsClause<R> partition(Consumer<Consumer<String>> consumer) {
+            final List<String> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() == 0) {
+                throw MySQLUtils.partitionListIsEmpty(this.context);
+            }
+            this.partitionList = _CollectionUtils.unmodifiableList(list);
+            return this;
+        }
+
+        @Override
+        public final Statement._AsClause<R> ifPartition(Consumer<Consumer<String>> consumer) {
+            final List<String> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() > 0) {
+                this.partitionList = _CollectionUtils.unmodifiableList(list);
+            } else {
+                this.partitionList = Collections.emptyList();
+            }
+            return this;
+        }
+
+        @Override
+        public final R as(final @Nullable String alias) {
+            if (this.tableAlias != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            } else if (alias == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            this.tableAlias = alias;
+            return this.asEnd(this);
+        }
+
+        @Override
+        public final _JoinType joinType() {
+            return this.joinType;
+        }
+
+        @Override
+        public final TabularItem tableItem() {
+            return this.table;
+        }
+
+        @Override
+        public final String alias() {
+            final String tableAlias = this.tableAlias;
+            if (tableAlias == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return tableAlias;
+        }
+
+        @Override
+        public final SQLWords modifier() {
+            return null;
+        }
+
+        @Override
+        public final List<String> partitionList() {
+            final List<String> list = this.partitionList;
+            if (list == null || list instanceof ArrayList) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return list;
+        }
+
+        abstract R asEnd(MySQLBlockParams params);
+
+
+    }//PartitionAsClause
+
+
+    static abstract class PartitionAsClause_0<AR> implements Statement._AsClause<AR>, MySQLBlockParams
+            , MySQLStatement._PartitionAndAsClause_0<AR> {
 
         final CriteriaContext context;
 
@@ -292,7 +393,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         String tableAlias;
 
-        PartitionAsClause(CriteriaContext context, _JoinType joinType, TableMeta<?> table) {
+        PartitionAsClause_0(CriteriaContext context, _JoinType joinType, TableMeta<?> table) {
             this.context = context;
             this.joinType = joinType;
             this.table = table;
@@ -327,7 +428,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
         @Override
-        public final SQLWords itemWord() {
+        public final SQLWords modifier() {
             //null,currently,MySQL table don't support LATERAL
             return null;
         }
@@ -362,7 +463,6 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
     }//PartitionAsClause
-
 
 
     private static final class IndexHintClause<RR> extends CriteriaSupports.ParenStringConsumerClause<RR>
@@ -430,8 +530,6 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     }//IndexHintClause
-
-
 
 
 }

@@ -1103,7 +1103,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
 
     private static final class SimplePartitionJoinClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause<MySQLUpdate._MultiIndexHintJoinSpec<I>>
+            extends MySQLSupports.PartitionAsClause_0<_MultiIndexHintJoinSpec<I>>
             implements MySQLUpdate._MultiPartitionJoinClause<I> {
 
         private final SimpleUpdateStatement<I> stmt;
@@ -1147,7 +1147,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
     }//OnTableBlock
 
     private static final class SimplePartitionOnClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause<MySQLUpdate._MultiIndexHintOnSpec<I>>
+            extends MySQLSupports.PartitionAsClause_0<_MultiIndexHintOnSpec<I>>
             implements MySQLUpdate._MultiPartitionOnClause<I> {
 
         private final SimpleUpdateStatement<I> stmt;
@@ -1172,7 +1172,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
 
     private static final class BatchPartitionJoinClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause<MySQLUpdate._BatchMultiIndexHintJoinSpec<I>>
+            extends MySQLSupports.PartitionAsClause_0<_BatchMultiIndexHintJoinSpec<I>>
             implements MySQLUpdate._BatchMultiPartitionJoinClause<I> {
 
         private final BatchUpdateStatement<I> stmt;
@@ -1216,7 +1216,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
     }//BatchOnTableBlock
 
     private static final class BatchPartitionOnClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause<MySQLUpdate._BatchMultiIndexHintOnSpec<I>>
+            extends MySQLSupports.PartitionAsClause_0<_BatchMultiIndexHintOnSpec<I>>
             implements MySQLUpdate._BatchMultiPartitionOnClause<I> {
 
         private final BatchUpdateStatement<I> stmt;

@@ -35,7 +35,11 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _PartitionAndAsClause<AR> extends _PartitionClause_0<_AsClause<AR>> {
+    interface _PartitionAsClause<R> extends _PartitionClause<_AsClause<R>> {
+
+    }
+
+    interface _PartitionAndAsClause_0<AR> extends _PartitionClause_0<_AsClause<AR>> {
 
     }
 
@@ -196,7 +200,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _NestedPartitionOnSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintOnSpec<I>> {
+    interface _NestedPartitionOnSpec<I extends Item> extends _PartitionAndAsClause_0<_NestedIndexHintOnSpec<I>> {
 
     }
 
@@ -205,7 +209,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _NestedPartitionCrossSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintCrossSpec<I>> {
+    interface _NestedPartitionCrossSpec<I extends Item> extends _PartitionAndAsClause_0<_NestedIndexHintCrossSpec<I>> {
 
     }
 
@@ -214,7 +218,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _NestedPartitionJoinSpec<I extends Item> extends _PartitionAndAsClause<_NestedIndexHintJoinSpec<I>> {
+    interface _NestedPartitionJoinSpec<I extends Item> extends _PartitionAndAsClause_0<_NestedIndexHintJoinSpec<I>> {
 
     }
 
@@ -235,7 +239,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _DynamicPartitionOnClause extends _PartitionAndAsClause<_DynamicIndexHintOnClause> {
+    interface _DynamicPartitionOnClause extends _PartitionAndAsClause_0<_DynamicIndexHintOnClause> {
 
     }
 
@@ -257,7 +261,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _DynamicPartitionJoinClause extends _PartitionAndAsClause<_DynamicIndexHintJoinClause> {
+    interface _DynamicPartitionJoinClause extends _PartitionAndAsClause_0<_DynamicIndexHintJoinClause> {
 
     }
 

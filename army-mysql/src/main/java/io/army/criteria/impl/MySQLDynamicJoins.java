@@ -461,7 +461,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinClause<
      * @see MySQLCrossJoinBuilder
      */
     private static final class PartitionJoinClause
-            extends MySQLSupports.PartitionAsClause<MySQLQuery._DynamicIndexHintJoinClause>
+            extends MySQLSupports.PartitionAsClause_0<MySQLQuery._DynamicIndexHintJoinClause>
             implements MySQLQuery._DynamicPartitionJoinClause {
 
         private final MySQLDynamicJoins joins;
@@ -513,7 +513,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinClause<
 
 
     private static final class PartitionOnClause
-            extends MySQLSupports.PartitionAsClause<MySQLQuery._DynamicIndexHintOnClause>
+            extends MySQLSupports.PartitionAsClause_0<MySQLQuery._DynamicIndexHintOnClause>
             implements MySQLQuery._DynamicPartitionOnClause {
 
         private final MySQLDynamicJoins joins;

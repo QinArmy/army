@@ -6,7 +6,6 @@ import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.MySQLs;
 import io.army.lang.Nullable;
 
-import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
@@ -25,6 +24,7 @@ import java.util.function.Consumer;
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/parenthesized-query-expressions.html">MySQL 8.0 Parenthesized Query Expressions</a>
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/index-hints.html">MySQL 8.0 Index Hints</a>
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html">MySQL 8.0 Optimizer Hints</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/optimizer-hints.html">MySQL 5.7 Optimizer Hints</a>
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/with.html">MySQL 8.0 WITH (Common Table Expressions)</a>
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-named-windows.html">MySQL 8.0 Named Windows</a>
  * @since 1.0
@@ -48,18 +48,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
      */
     interface _IntoOptionClause<IO> {
 
-        IO into(String varName);
-
-        IO into(String varName1, String varName2);
-
-        IO into(String varName1, String varName2, String varName3);
-
-        IO into(String varName1, String varName2, String varName3, String varName4);
-
-        /**
-         * @param varNameList non-null and non-empty list.
-         */
-        IO into(List<String> varNameList);
+        IO into(String firstVarName, String... rest);
 
         IO into(Consumer<Consumer<String>> consumer);
 
@@ -193,31 +182,31 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _PartitionOnSpec<I extends Item> extends _PartitionAndAsClause<_IndexHintOnSpec<I>> {
+    interface _PartitionOnSpec<I extends Item> extends _PartitionAsClause<_IndexHintOnSpec<I>> {
 
     }
 
 
     interface _JoinSpec<I extends Item>
-            extends _MySQLJoinClause<_IndexHintOnSpec<I>, _OnClause<_JoinSpec<I>>>
-            , _MySQLCrossJoinClause<_IndexHintJoinSpec<I>, _JoinSpec<I>>
-            , _MySQLJoinNestedClause<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>>
-            , _CrossJoinNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>
-            , _MySQLDynamicJoinClause<_JoinSpec<I>>
-            , _MySQLDynamicCrossJoinClause<_JoinSpec<I>>
-            , _MySQLDialectJoinClause<_PartitionOnSpec<I>>
-            , _DialectCrossJoinClause<_PartitionJoinSpec<I>>
-            , _WhereSpec<I> {
+            extends _MySQLJoinClause<_IndexHintOnSpec<I>, _OnClause<_JoinSpec<I>>>,
+            _MySQLCrossJoinClause<_IndexHintJoinSpec<I>, _JoinSpec<I>>,
+            _MySQLJoinNestedClause<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>>,
+            _CrossJoinNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>,
+            _MySQLDynamicJoinClause<_JoinSpec<I>>,
+            _MySQLDynamicCrossJoinClause<_JoinSpec<I>>,
+            _MySQLDialectJoinClause<_PartitionOnSpec<I>>,
+            _DialectCrossJoinClause<_PartitionJoinSpec<I>>,
+            _WhereSpec<I> {
 
     }
 
-    interface _IndexHintJoinSpec<I extends Item> extends _QueryIndexHintClause<_IndexHintJoinSpec<I>>
-            , _JoinSpec<I> {
+    interface _IndexHintJoinSpec<I extends Item> extends _QueryIndexHintClause<_IndexHintJoinSpec<I>>,
+            _JoinSpec<I> {
 
     }
 
 
-    interface _PartitionJoinSpec<I extends Item> extends _PartitionAndAsClause<_IndexHintJoinSpec<I>> {
+    interface _PartitionJoinSpec<I extends Item> extends _PartitionAsClause<_IndexHintJoinSpec<I>> {
 
     }
 
@@ -230,14 +219,14 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _MySQLSelectCommaSpec<I extends Item> extends _StaticSelectCommaClause<_MySQLSelectCommaSpec<I>>
-            , _FromSpec<I> {
+    interface _MySQLSelectCommaSpec<I extends Item> extends _StaticSelectCommaClause<_MySQLSelectCommaSpec<I>>,
+            _FromSpec<I> {
 
     }
 
     interface _MySQLSelectClause<I extends Item>
-            extends _HintsModifiersListSelectClause<MySQLs.Modifier, _MySQLSelectCommaSpec<I>>
-            , _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<I>> {
+            extends _HintsModifiersListSelectClause<MySQLs.Modifier, _MySQLSelectCommaSpec<I>>,
+            _DynamicHintModifierSelectClause<MySQLs.Modifier, _FromSpec<I>> {
 
     }
 
@@ -247,16 +236,15 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _MinWithSpec<I extends Item> extends _MySQLDynamicWithClause<_SelectSpec<I>>
-            , _SelectSpec<I> {
+    interface _MinWithSpec<I extends Item> extends _MySQLDynamicWithClause<_SelectSpec<I>>,
+            _SelectSpec<I> {
 
 
     }
 
 
-    interface _CteComma<I extends Item>
-            extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_CteComma<I>>>
-            , _SelectSpec<I> {
+    interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_CteComma<I>>>,
+            _SelectSpec<I> {
 
     }
 
@@ -265,13 +253,13 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _DynamicCteLeftParenSpec extends _LeftParenStringQuadraOptionalSpec<_DynamicCteAsClause>
-            , _DynamicCteAsClause {
+    interface _DynamicCteLeftParenSpec extends _LeftParenStringQuadraOptionalSpec<_DynamicCteAsClause>,
+            _DynamicCteAsClause {
 
     }
 
-    interface _WithSpec<I extends Item> extends _MinWithSpec<I>
-            , _StaticWithClause<_StaticCteLeftParenSpec<_CteComma<I>>> {
+    interface _WithSpec<I extends Item> extends _MinWithSpec<I>,
+            _StaticWithClause<_StaticCteLeftParenSpec<_CteComma<I>>> {
 
     }
 
@@ -282,8 +270,9 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>
-            , _MySQLDynamicWithClause<_QueryComplexSpec<I>> {
+    interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>,
+            _MySQLDynamicWithClause<_QueryComplexSpec<I>>,
+            _LeftParenRowSetClause<_RightParenClause<_UnionOrderBySpec<I>>> {
 
     }
 
