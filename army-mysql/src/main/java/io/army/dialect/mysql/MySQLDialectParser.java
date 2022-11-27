@@ -153,6 +153,10 @@ final class MySQLDialectParser extends MySQLParser {
 
     }
 
+    @Override
+    protected void parseWithClause(final _Statement._WithClauseSpec spec, final _SqlContext context) {
+        this.mySqlWithClause(spec.isRecursive(), spec.cteList(), context);
+    }
 
     @Override
     protected void parseQuery(final _Query query, final _SimpleQueryContext context) {

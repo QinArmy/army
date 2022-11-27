@@ -57,9 +57,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         _StandardQuery {
 
 
-    static <I extends Item> _SelectSpec<I> primaryQuery(Function<Select, I> function) {
+    static <I extends Item> _SelectSpec<I> primaryQuery(@Nullable CriteriaContext outerContext,
+                                                        Function<Select, I> function) {
         // primary no outer context
-        return new SimpleSelect<>(null, function, null);
+        return new SimpleSelect<>(outerContext, function, null);
     }
 
     static <I extends Item> _SelectSpec<I> subQuery(CriteriaContext outerContext, Function<SubQuery, I> function) {
@@ -310,22 +311,23 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         @Override
         public _SelectSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            this.endQueryBeforeSelect();
+
             final BracketSelect<I> bracket;
-            bracket = new BracketSelect<>(this.context, this::bracketEnd, null);
+            bracket = new BracketSelect<>(this.context.getOuterContext(), this.function, null);
             return new SimpleSelect<>(bracket.context, bracket::parenRowSetEnd, null);
         }
 
         @Override
         public final <S extends RowSet> _RightParenClause<_UnionOrderBySpec<I>> leftParen(Supplier<S> supplier) {
+            this.endQueryBeforeSelect();
 
             final BracketSelect<I> bracket;
-            bracket = new BracketSelect<>(this.context, this::bracketEnd, null);
+            bracket = new BracketSelect<>(this.context.getOuterContext(), this.function, null);
 
             final RowSet rowSet;
-            rowSet = supplier.get();
-            if (rowSet == null) {
-                throw ContextStack.nullPointer(bracket.context);
-            } else if (!(rowSet instanceof Select && rowSet instanceof StandardQuery)) {
+            rowSet = ContextStack.unionQuerySupplier(supplier);
+            if (!(rowSet instanceof Select && rowSet instanceof StandardQuery)) {
                 String m = String.format("%s not standard Select statement.", rowSet.getClass().getName());
                 throw ContextStack.criteriaError(bracket.context, m);
             }
@@ -346,12 +348,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             return new SimpleSelect<>(this.context.getOuterContext(), unionFunc, this.context);
         }
 
-        private I bracketEnd(final Select query) {
-            ContextStack.pop(this.context.endContextBeforeSelect());
-            //standard query no with clause,so function.apply(query) not function.apply(this)
-            return this.function.apply(query);
-        }
-
 
     }//SimpleSelect
 
@@ -369,21 +365,23 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         @Override
         public _SelectSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            this.endQueryBeforeSelect();
+
             final BracketSubQuery<I> bracket;
-            bracket = new BracketSubQuery<>(this.context, this::bracketEnd, null);
+            bracket = new BracketSubQuery<>(this.context.getNonNullOuterContext(), this.function, null);
             return new SimpleSubQuery<>(bracket.context, bracket::parenRowSetEnd, null);
         }
 
         @Override
         public final <S extends RowSet> _RightParenClause<_UnionOrderBySpec<I>> leftParen(Supplier<S> supplier) {
+            this.endQueryBeforeSelect();
+
             final BracketSubQuery<I> bracket;
-            bracket = new BracketSubQuery<>(this.context, this::bracketEnd, null);
+            bracket = new BracketSubQuery<>(this.context.getNonNullOuterContext(), this.function, null);
 
             final RowSet rowSet;
-            rowSet = supplier.get();
-            if (rowSet == null) {
-                throw ContextStack.nullPointer(bracket.context);
-            } else if (!(rowSet instanceof SubQuery && rowSet instanceof StandardQuery)) {
+            rowSet = ContextStack.unionQuerySupplier(supplier);
+            if (!(rowSet instanceof SubQuery && rowSet instanceof StandardQuery)) {
                 String m = String.format("%s not standard SubQuery statement.", rowSet.getClass().getName());
                 throw ContextStack.criteriaError(bracket.context, m);
             }

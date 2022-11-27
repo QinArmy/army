@@ -18,13 +18,16 @@ interface CriteriaContext {
 
     CriteriaContext getNonNullOuterContext();
 
-    CteConsumer onBeforeWithClause(boolean recursive);
+    CriteriaContext onBeforeWithClause(boolean recursive);
 
     void onStartCte(String name);
 
     void onCteColumnAlias(String name, List<String> columnAliasList);
 
     void onAddCte(_Cte cte);
+
+
+    List<_Cte> getCteList();
 
     /**
      * @return a unmodified list
@@ -109,6 +112,8 @@ interface CriteriaContext {
      * @return this
      */
     CriteriaContext endContextBeforeSelect();
+
+    boolean isBracketAndNotEnd();
 
 
     @Deprecated

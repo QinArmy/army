@@ -23,12 +23,12 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLQuery._WithSpec<Select> query() {
-        return MySQLQueries.primaryQuery(null, null, SQLs::_identity);
+        return MySQLQueries.primaryQuery(null, ContextStack.peekIfBracket(), SQLs._SELECT_IDENTITY);
     }
 
 
     public static MySQLQuery._WithSpec<SubQuery> subQuery() {
-        return MySQLQueries.subQuery(null, ContextStack.peek(), SQLs::_identity);
+        return MySQLQueries.subQuery(null, ContextStack.peek(), SQLs._SUB_QUERY_IDENTITY);
     }
 
 
@@ -38,7 +38,7 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLValues._ValueSpec<Values> primaryValues() {
-        return MySQLSimpleValues.primaryValues(null, SQLs::_identity);
+        return MySQLSimpleValues.primaryValues(ContextStack.peekIfBracket(), SQLs::_identity);
     }
 
 

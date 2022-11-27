@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
+import io.army.criteria.RowSet;
 import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
@@ -39,6 +40,25 @@ abstract class ContextStack {
         }
         return stack.peek();
 
+    }
+
+    /**
+     * <p>
+     * This method is invoked by primary query(Values) statement.
+     * </p>
+     *
+     * @see #unionQuerySupplier(Supplier)
+     */
+    @Nullable
+    static CriteriaContext peekIfBracket() {
+        final Stack stack = HOLDER.get();
+        final CriteriaContext current, context;
+        if (stack != null && (current = stack.peek()).isBracketAndNotEnd()) {
+            context = current;
+        } else {
+            context = null;
+        }
+        return context;
     }
 
 
@@ -82,7 +102,9 @@ abstract class ContextStack {
             }
         } else {
             //no bug,never here
-            throw new IllegalArgumentException("outer context not match,reject push");
+            String m = String.format("outer context[%s] and current[%s] not match,reject push",
+                    outerContext, stack.peek());
+            throw new IllegalArgumentException(m);
         }
 
     }
@@ -144,6 +166,26 @@ abstract class ContextStack {
             HOLDER.remove();
         }
         return new CriteriaException(msg);
+    }
+
+    /**
+     * @see #peekIfBracket()
+     */
+    static RowSet unionQuerySupplier(Supplier<? extends RowSet> supplier) {
+        try {
+            final RowSet rowSet;
+            rowSet = supplier.get();
+            if (rowSet == null) {
+                throw new NullPointerException("supplier return null");
+            }
+            return rowSet;
+        } catch (Throwable e) {
+            final Stack stack = HOLDER.get();
+            if (stack != null) {
+                HOLDER.remove();
+            }
+            throw new CriteriaException("union query supplier occur error", e);
+        }
     }
 
 

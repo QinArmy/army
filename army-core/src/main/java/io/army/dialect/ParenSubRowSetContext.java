@@ -7,26 +7,26 @@ import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
-final class ParenRowSetContext extends StatementContext implements _ParenRowSetContext {
+final class ParenSubRowSetContext extends StatementContext implements _ParenRowSetContext {
 
-    static ParenRowSetContext create(@Nullable _SqlContext outerContext, ArmyParser parser, Visible visible) {
-        return new ParenRowSetContext((StatementContext) outerContext, parser, visible);
+    static ParenSubRowSetContext create(@Nullable _SqlContext outerContext, ArmyParser parser, Visible visible) {
+        return new ParenSubRowSetContext((StatementContext) outerContext, parser, visible);
     }
 
 
-    static ParenRowSetContext create(_SqlContext outerContext) {
-        return new ParenRowSetContext((StatementContext) outerContext);
+    static ParenSubRowSetContext create(_SqlContext outerContext) {
+        return new ParenSubRowSetContext((StatementContext) outerContext);
     }
 
     private final _SqlContext outerContext;
 
 
-    ParenRowSetContext(@Nullable StatementContext outerContext, ArmyParser parser, Visible visible) {
+    ParenSubRowSetContext(@Nullable StatementContext outerContext, ArmyParser parser, Visible visible) {
         super(outerContext, parser, visible);
         this.outerContext = outerContext;
     }
 
-    ParenRowSetContext(StatementContext outerContext) {
+    ParenSubRowSetContext(StatementContext outerContext) {
         super(outerContext);
         this.outerContext = outerContext;
     }

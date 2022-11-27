@@ -24,6 +24,12 @@ public abstract class _SQLConsultant {
         }
     }
 
+    public static void assertUnionRowSet(final RowSet rowSet) {
+        if (!(rowSet instanceof OrderByClause.UnionRowSet)) {
+            throw nonArmyStatement(rowSet);
+        }
+    }
+
 
     public static void assertStandardUpdate(Update update) {
         if (!(update instanceof StandardUpdates)) {

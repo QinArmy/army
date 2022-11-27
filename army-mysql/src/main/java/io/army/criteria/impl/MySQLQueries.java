@@ -4,6 +4,8 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.Window;
+import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
@@ -717,8 +719,10 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         @Override
         public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            this.endQueryBeforeSelect();
+
             final BracketSelect<I> bracket;
-            bracket = new BracketSelect<>(null, this.context, this::bracketEnd, null);
+            bracket = new BracketSelect<>(this.getWithClause(), this.context.getOuterContext(), this.function, null);
             return new SimpleSelect<>(null, bracket.context, bracket::parenRowSetEnd, null);
         }
 
@@ -735,12 +739,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             return new ComplexSelect<>(this.context, unionFunc);
         }
 
-        private I bracketEnd(final Select query) {
-            this.endQueryBeforeSelect((BracketSelect<?>) query);
-            return this.function.apply(this);
-        }
-
-
     }//SimpleSelect
 
     private static final class SimpleSubQuery<I extends Item> extends MySQLQueries<I>
@@ -756,8 +754,10 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         @Override
         public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            this.endQueryBeforeSelect();
             final BracketSubQuery<I> bracket;
-            bracket = new BracketSubQuery<>(null, this.context, this::bracketEnd, null);
+            bracket = new BracketSubQuery<>(this.getWithClause(), this.context.getNonNullOuterContext(), this.function,
+                    null);
             return new SimpleSubQuery<>(null, bracket.context, bracket::parenRowSetEnd, null);
         }
 
@@ -774,10 +774,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             return new ComplexSubQuery<>(this.context, unionFunc);
         }
 
-        private I bracketEnd(SubQuery query) {
-            ContextStack.pop(this.context.endContextBeforeSelect());
-            return this.function.apply(query);
-        }
 
     }//SimpleSubQuery
 
@@ -1095,12 +1091,35 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             _AsQueryClause<I>,
             Object,
             Object,
-            _QueryWithComplexSpec<I>> implements _UnionOrderBySpec<I> {
+            _QueryWithComplexSpec<I>>
+            implements _UnionOrderBySpec<I>,
+            _Statement._WithClauseSpec {
 
+        private final boolean recursive;
+
+        private final List<_Cte> cteList;
 
         private MySQLBracketQuery(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext,
                                   @Nullable CriteriaContext leftContext) {
             super(CriteriaContexts.bracketContext(spec, outerContext, leftContext));
+            if (spec == null) {
+                this.recursive = false;
+                this.cteList = Collections.emptyList();
+            } else {
+                this.recursive = spec.isRecursive();
+                this.cteList = spec.cteList();
+                assert this.context.getCteList() == this.cteList;
+            }
+        }
+
+        @Override
+        public final boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public final List<_Cte> cteList() {
+            return this.cteList;
         }
 
         @Override
@@ -1184,6 +1203,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             this.function = function;
         }
 
+        private ComplexQueries(Function<RowSet, I> function, CriteriaContext outerContext) {
+            super(outerContext);
+            this.leftContext = null;
+            this.function = function;
+        }
+
         @Override
         final MySQLCtes createCteBuilder(boolean recursive, CriteriaContext withClauseContext) {
             return MySQLSupports.mySQLCteBuilder(recursive, withClauseContext);
@@ -1197,6 +1222,10 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         private ComplexSubQuery(CriteriaContext leftContext, Function<RowSet, I> function) {
             super(leftContext, function);
+        }
+
+        private ComplexSubQuery(Function<RowSet, I> function, CriteriaContext outerContext) {
+            super(function, outerContext);
         }
 
         @Override
@@ -1221,7 +1250,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             assert outerContext != null;
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this.getWithClause(), outerContext, this.function, this.leftContext);
-            return new ComplexSubQuery<>(bracket.context, bracket::parenRowSetEnd);
+            return new ComplexSubQuery<>(bracket::parenRowSetEnd, bracket.context);
         }
 
         @Override
@@ -1233,10 +1262,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             bracket = new BracketSubQuery<>(this.getWithClause(), outerContext, this.function, this.leftContext);
 
             final RowSet rowSet;
-            rowSet = supplier.get();
-            if (rowSet == null) {
-                throw ContextStack.nullPointer(bracket.context);
-            } else if (rowSet instanceof SubValues) {
+            rowSet = ContextStack.unionQuerySupplier(supplier);
+            if (rowSet instanceof SubValues) {
                 if (!(rowSet instanceof MySQLValues)) {
                     String m = String.format("%s not MySQL SubValues statement.", rowSet.getClass().getName());
                     throw ContextStack.criteriaError(bracket.context, m);
@@ -1267,13 +1294,14 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     private static final class ComplexSelect<I extends Item> extends ComplexQueries<I> {
 
-        private final Function<RowSet, I> function;
 
         private ComplexSelect(CriteriaContext leftContext, Function<RowSet, I> function) {
             super(leftContext, function);
-            this.function = function;
         }
 
+        private ComplexSelect(Function<RowSet, I> function, CriteriaContext outerContext) {
+            super(function, outerContext);
+        }
 
         @Override
         public MySQLValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
@@ -1291,7 +1319,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         public _QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this.getWithClause(), this.outerContext, this.function, this.leftContext);
-            return new ComplexSelect<>(bracket.context, bracket::parenRowSetEnd);
+            return new ComplexSelect<>(bracket::parenRowSetEnd, bracket.context);
         }
 
 
@@ -1301,10 +1329,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             bracket = new BracketSelect<>(this.getWithClause(), this.outerContext, this.function, this.leftContext);
 
             final RowSet rowSet;
-            rowSet = supplier.get();
-            if (rowSet == null) {
-                throw ContextStack.nullPointer(bracket.context);
-            } else if (rowSet instanceof Values) {
+            rowSet = ContextStack.unionQuerySupplier(supplier);
+            if (rowSet instanceof Values) {
                 if (!(rowSet instanceof MySQLValues)) {
                     String m = String.format("%s isn't MySQL Values statement.", rowSet.getClass().getName());
                     throw ContextStack.criteriaError(bracket.context, m);

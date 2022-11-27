@@ -113,7 +113,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 .asQuery()
                 .rightParen()
 
-                .unionAll()
+                .union()
 
                 .leftParen()
                 .select(PillUser_.id)
@@ -128,7 +128,22 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 .asQuery()
                 .rightParen()
 
+
                 .unionAll()
+                .leftParen(() -> SQLs.query()
+                        .select(PillUser_.id)
+                        .from(PillUser_.T, SQLs.AS, "p")
+                        .where(PillUser_.id::equal, SQLs::literal, () -> 2)
+                        .and(PillUser_.nickName::equal, SQLs::param, () -> "蛮大人")
+                        .and(PillUser_.version.equal(SQLs::literal, 2))
+                        //.and(User_.version::equal, SQLs::literal, 2)
+                        .groupBy(PillUser_.userType)
+                        .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
+                        .orderBy(PillUser_.id, SQLs.DESC)
+                        .limit(SQLs::literal, 0, 10)
+                        .asQuery()
+                ).rightParen()
+                .unionDistinct()
 
                 .select(PillUser_.id)
                 .from(PillUser_.T, SQLs.AS, "p")
@@ -142,7 +157,6 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 .limit(SQLs::literal, 0, 10)
 
                 .asQuery();
-
         printStmt(LOG, stmt);
     }
 
@@ -264,7 +278,6 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         printStmt(LOG, stmt);
 
     }
-
 
 
 }

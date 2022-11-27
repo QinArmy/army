@@ -48,14 +48,14 @@ abstract class CriteriaContexts {
     static CriteriaContext primaryQuery(final @Nullable _Statement._WithClauseSpec spec,
                                         final @Nullable CriteriaContext outerContext,
                                         final @Nullable CriteriaContext leftContext) {
-        assert leftContext == null || leftContext.getNonNullOuterContext() == outerContext;
+        assert leftContext == null || leftContext.getOuterContext() == outerContext;
         final StatementContext context;
         context = new SelectContext(outerContext, leftContext);
         if (spec != null) {
-            final WithClauseContext withClauseContext;
-            withClauseContext = ((StatementContext) ((CriteriaContextSpec) spec).getContext()).withClauseContext;
+            final WithCteContext withClauseContext;
+            withClauseContext = ((StatementContext) ((CriteriaContextSpec) spec).getContext()).withCteContext;
             assert withClauseContext != null;
-            context.withClauseContext = withClauseContext;
+            context.withCteContext = withClauseContext;
         }
         return context;
     }
@@ -80,10 +80,10 @@ abstract class CriteriaContexts {
         final StatementContext context;
         context = new SubQueryContext(outerContext, leftContext);
         if (spec != null) {
-            final WithClauseContext withClauseContext;
-            withClauseContext = ((StatementContext) ((CriteriaContextSpec) spec).getContext()).withClauseContext;
+            final WithCteContext withClauseContext;
+            withClauseContext = ((StatementContext) ((CriteriaContextSpec) spec).getContext()).withCteContext;
             assert withClauseContext != null;
-            context.withClauseContext = withClauseContext;
+            context.withCteContext = withClauseContext;
         }
         return context;
     }
@@ -103,13 +103,14 @@ abstract class CriteriaContexts {
     static CriteriaContext bracketContext(final @Nullable _Statement._WithClauseSpec spec,
                                           final @Nullable CriteriaContext outerContext,
                                           final @Nullable CriteriaContext leftContext) {
+        assert leftContext == null || leftContext.getOuterContext() == outerContext;
         final StatementContext context;
         context = new BracketQueryContext(outerContext, leftContext);
         if (spec != null) {
-            final WithClauseContext withClauseContext;
-            withClauseContext = ((StatementContext) ((CriteriaContextSpec) spec).getContext()).withClauseContext;
+            final WithCteContext withClauseContext;
+            withClauseContext = ((StatementContext) ((CriteriaContextSpec) spec).getContext()).withCteContext;
             assert withClauseContext != null;
-            context.withClauseContext = withClauseContext;
+            context.withCteContext = withClauseContext;
         }
         return context;
     }
@@ -282,7 +283,7 @@ abstract class CriteriaContexts {
     }
 
 
-    private static final class WithClauseContext {
+    private static final class WithCteContext {
         private final boolean recursive;
 
         private String currentName;
@@ -293,7 +294,7 @@ abstract class CriteriaContexts {
 
         private Map<String, SQLs.CteImpl> cteMap;
 
-        private WithClauseContext(boolean recursive) {
+        private WithCteContext(boolean recursive) {
             this.recursive = recursive;
         }
 
@@ -316,7 +317,7 @@ abstract class CriteriaContexts {
 
         private boolean withClauseEnd;
 
-        private WithClauseContext withClauseContext;
+        private WithCteContext withCteContext;
 
 
         private StatementContext(@Nullable CriteriaContext outerContext) {
@@ -358,18 +359,18 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final CteConsumer onBeforeWithClause(final boolean recursive) {
+        public final CriteriaContext onBeforeWithClause(final boolean recursive) {
             if (this.withClauseCteMap != null || this.withClauseEnd) {
                 throw ContextStack.castCriteriaApi(this);
             }
             this.recursive = recursive;
             this.withClauseCteMap = new HashMap<>();
-            return new CteConsumerImpl(this::addCte, this::withClauseEnd);
+            return this;
         }
 
         @Override
         public final void onStartCte(final String name) {
-            final WithClauseContext withContext = this.withClauseContext;
+            final WithCteContext withContext = this.withCteContext;
             assert withContext != null;
             if (withContext.currentName != null) {
                 String m = String.format("Cte[%s] don't end,couldn't start new Cte[%s]", withContext.currentName, name);
@@ -385,7 +386,7 @@ abstract class CriteriaContexts {
 
         @Override
         public final void onCteColumnAlias(final String name, final List<String> columnAliasList) {
-            final WithClauseContext withContext = this.withClauseContext;
+            final WithCteContext withContext = this.withCteContext;
             assert withContext != null;
             final String currentName = withContext.currentName;
             assert currentName != null && currentName.equals(name);
@@ -394,7 +395,7 @@ abstract class CriteriaContexts {
 
         @Override
         public final void onAddCte(final _Cte cte) {
-            final WithClauseContext withContext = this.withClauseContext;
+            final WithCteContext withContext = this.withCteContext;
             assert withContext != null;
 
             final String currentName = withContext.currentName;
@@ -430,15 +431,24 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public final List<_Cte> getCteList() {
+            final WithCteContext withContext = this.withCteContext;
+            assert withContext != null;
+            final List<_Cte> cteList = withContext.cteList;
+            assert !(cteList == null || cteList instanceof ArrayList);
+            return cteList;
+        }
+
+        @Override
         public final boolean isWithRecursive() {
-            final WithClauseContext withContext = this.withClauseContext;
+            final WithCteContext withContext = this.withCteContext;
             assert withContext != null;
             return withContext.recursive;
         }
 
         @Override
         public final List<_Cte> endWithClause(final boolean required) {
-            final WithClauseContext withContext = this.withClauseContext;
+            final WithCteContext withContext = this.withCteContext;
             assert withContext != null;
 
             final String currentName = withContext.currentName;
@@ -642,6 +652,28 @@ abstract class CriteriaContexts {
             throw ContextStack.criteriaError(this, m);
         }
 
+        @Override
+        public final boolean isBracketAndNotEnd() {
+            return this instanceof BracketQueryContext && ((BracketQueryContext) this).innerContext == null;
+        }
+
+        @Override
+        public final String toString() {
+            final StringBuilder builder;
+            builder = new StringBuilder()
+                    .append(this.getClass().getSimpleName())
+                    .append("[hash:")
+                    .append(System.identityHashCode(this))
+                    .append(",outerContext:");
+            final CriteriaContext outerContext = this.outerContext;
+            if (outerContext == null) {
+                builder.append("null");
+            } else {
+                builder.append(outerContext.getClass().getSimpleName());
+            }
+            return builder.append(']')
+                    .toString();
+        }
 
         List<_TableBlock> onEndContext() {
             return Collections.emptyList();
@@ -1201,9 +1233,6 @@ abstract class CriteriaContexts {
     }//InsertContext
 
 
-    /**
-     * @see #primaryInsertContext()
-     */
     private static final class PrimaryInsertContext extends InsertContext {
 
         private PrimaryInsertContext() {
@@ -1275,7 +1304,8 @@ abstract class CriteriaContexts {
 
         private boolean orderByStart;
 
-        private SimpleQueryContext(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
+        private SimpleQueryContext(final @Nullable CriteriaContext outerContext,
+                                   final @Nullable CriteriaContext leftContext) {
             super(outerContext);
             assert leftContext == null || leftContext.getOuterContext() == outerContext;
             this.leftContext = leftContext;

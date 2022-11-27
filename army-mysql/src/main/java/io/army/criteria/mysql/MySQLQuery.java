@@ -65,8 +65,8 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _UnionOrderBySpec<I extends Item> extends _StaticOrderByClause<_UnionLimitSpec<I>>
-            , _UnionLimitSpec<I>, _UnionSpec<I> {
+    interface _UnionOrderBySpec<I extends Item> extends _StaticOrderByClause<_UnionLimitSpec<I>>,
+            _UnionLimitSpec<I>, _UnionSpec<I> {
 
     }
 

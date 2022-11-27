@@ -642,11 +642,11 @@ abstract class FunctionUtils {
                 if (!(this instanceof SQLFunction.AggregateFunction)) {
                     throw _Exceptions.castCriteriaApi();
                 }
-            } else if (this.isDontSupportWindow((parser = context.parser()).dialect())) {
-                String m = String.format("%s don't support window function[%s].", parser.dialect(), this.name);
-                throw new CriteriaException(m);
             } else if (existingWindowName != null && anonymousWindow != null) {
                 throw _Exceptions.castCriteriaApi();
+            } else if (this.isDontSupportWindow((parser = context.parser()).dialect())) {
+                String m = String.format("%s don't support %s window function.", parser.dialect(), this.name);
+                throw new CriteriaException(m);
             } else {
                 sqlBuilder.append(_Constant.SPACE_OVER);
                 if (existingWindowName != null) {

@@ -25,7 +25,7 @@ final class ParensSelectContext extends StatementContext implements _SelectConte
 
     private ParensSelectContext(@Nullable StatementContext outerContext, Select select, ArmyParser dialect
             , Visible visible) {
-        super(dialect, visible);
+        super(outerContext, dialect, visible);
         this.outerContext = outerContext;
         this.selectionList = _DialectUtils.flatSelectItem(((_RowSet) select).selectItemList());
     }

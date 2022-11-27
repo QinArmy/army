@@ -425,6 +425,16 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
+     * @see #handleQuery(Query, _SqlContext)
+     * @see #handleSelect(_SqlContext, Select, Visible)
+     * @see #handleValuesQuery(ValuesQuery, _SqlContext)
+     * @see #handleValues(_SqlContext, Values, Visible)
+     */
+    protected void parseWithClause(_Statement._WithClauseSpec spec, _SqlContext context) {
+        throw standardParserDontSupportDialect();
+    }
+
+    /**
      * @see #handleSelect(_SqlContext, Select, Visible)
      * @see #handleQuery(Query, _SqlContext)
      */
@@ -620,7 +630,7 @@ abstract class ArmyParser implements DialectParser {
             if (original instanceof _ParenRowSetContext) {
                 context = (_ParenRowSetContext) original;
             } else {
-                context = ParenRowSetContext.create(original, this, original.visible());
+                context = ParenSubRowSetContext.create(original, this, original.visible());
             }
             final _ParensRowSet parensRowSet = (_ParensRowSet) values;
             final StringBuilder sqlBuilder;
@@ -758,6 +768,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
+     * @see #handleSelect(_SqlContext, Select, Visible)
      * @see #handleRowSet(RowSet, _SqlContext)
      * @see #subQuery(SubQuery, _SqlContext)
      * @see #withSubQuery(boolean, List, _SqlContext, Consumer)
@@ -765,54 +776,48 @@ abstract class ArmyParser implements DialectParser {
     protected final void handleQuery(final Query query, final _SqlContext original) {
         query.prepared();
         if (query instanceof _Query) {
-            final _ParensRowSet parensRowSet;
-            if ((parensRowSet = ((_Query) query).parenQuery()) == null) {
-                final _SimpleQueryContext context;
-                if (query instanceof Select) {
-                    context = SimpleSelectContext.create(original, (Select) query);
-                } else {
-                    context = SimpleSubQueryContext.create(original, (SubQuery) query);
-                }
-                if (query instanceof StandardQuery) {
-                    this.parseStandardQuery((_StandardQuery) query, context);
-                } else {
-                    this.assertRowSet(query);
-                    this.parseQuery((_Query) query, context);
-                }
+            final _SimpleQueryContext context;
+            if (query instanceof Select) {
+                context = SimpleSelectContext.create(original, (Select) query);
+            } else if (query instanceof SubQuery) {
+                context = SimpleSubQueryContext.create(original, (SubQuery) query);
             } else {
-                assert ((_Query) query).selectItemList().size() == 0;
-                final StringBuilder sqlBuilder;
-                sqlBuilder = original.sqlBuilder().append(_Constant.SPACE_LEFT_PAREN);
-                this.handleRowSet(parensRowSet.innerRowSet(), original);
-                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+                throw _Exceptions.unknownRowSetType(query);
             }
-
+            if (query instanceof StandardQuery) {
+                _SQLConsultant.assertStandardQuery(query);
+                this.parseStandardQuery((_StandardQuery) query, context);
+            } else {
+                this.assertRowSet(query);
+                this.parseQuery((_Query) query, context);
+            }
         } else if (query instanceof _UnionRowSet) {
+            _SQLConsultant.assertUnionRowSet(query);
             final _UnionRowSet unionRowSet = (_UnionRowSet) query;
             this.handleQuery((Query) unionRowSet.leftRowSet(), original);
             original.sqlBuilder().append(unionRowSet.unionType().render());
             this.handleRowSet(unionRowSet.rightRowSet(), original);
-        } else {
-            assert query instanceof _ParensRowSet;
-            final _ParenRowSetContext context;
-            if (original instanceof _ParenRowSetContext) {
-                context = (_ParenRowSetContext) original;
-            } else {
-                context = ParenRowSetContext.create(original);
-            }
-            final _ParensRowSet parensRowSet = (_ParensRowSet) query;
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LEFT_PAREN);
-            this.handleRowSet(parensRowSet.innerRowSet(), context);
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
+        } else if (query instanceof _ParensRowSet) {
             if (query instanceof StandardQuery) {
                 _SQLConsultant.assertStandardQuery(query);
-                this.parseStandardParensQuery(parensRowSet, context);
             } else {
                 this.assertRowSet(query);
-                this.parseParensRowSet(parensRowSet, context);
             }
+            if (query instanceof _Statement._WithClauseSpec
+                    && ((_Statement._WithClauseSpec) query).cteList().size() > 0) {
+                this.parseWithClause((_Statement._WithClauseSpec) query, original);
+            }
+            final _ParenRowSetContext context;
+            if (query instanceof Select) {
+                context = ParensSelectContext.create(original, (Select) query, this, original.visible());
+            } else if (query instanceof SubQuery) {
+                context = ParenSubRowSetContext.create(original);
+            } else {
+                throw _Exceptions.unknownRowSetType(query);
+            }
+            this.handleParenRowSet(context, (_ParensRowSet) query);
+        } else {
+            throw _Exceptions.unknownRowSetType(query);
         }
 
     }
@@ -1502,54 +1507,71 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #select(Select, Visible)
      * @see #handleQuery(Query, _SqlContext)
-     * @see #handleValuesQuery(ValuesQuery, _SqlContext)
      */
     private _SelectContext handleSelect(final @Nullable _SqlContext outerContext, final Select stmt
             , final Visible visible) {
+        stmt.prepared();
         final _SelectContext context;
         if (stmt instanceof _Query) {
-            final _ParensRowSet parensRowSet;
-            parensRowSet = ((_Query) stmt).parenQuery();
-            if (parensRowSet == null) {
-                context = SimpleSelectContext.create(outerContext, stmt, this, visible);
-                if (stmt instanceof StandardQuery) {
-                    this.parseStandardQuery((_StandardQuery) stmt, (_SimpleQueryContext) context);
-                } else {
-                    this.parseQuery((_Query) stmt, (_SimpleQueryContext) context);
-                }
+            context = SimpleSelectContext.create(outerContext, stmt, this, visible);
+            if (stmt instanceof StandardQuery) {
+                _SQLConsultant.assertStandardQuery(stmt);
+                this.parseStandardQuery((_StandardQuery) stmt, (_SimpleQueryContext) context);
             } else {
-                assert ((_Query) stmt).selectItemList().size() == 0;
-                context = ParensSelectContext.create(outerContext, stmt, this, visible);
-                final StringBuilder sqlBuilder;
-                sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LEFT_PAREN);
-                this.handleRowSet(parensRowSet.innerRowSet(), context);
-                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+                this.assertRowSet(stmt);
+                this.parseQuery((_Query) stmt, (_SimpleQueryContext) context);
             }
         } else if (stmt instanceof _UnionRowSet) {
+            _SQLConsultant.assertUnionRowSet(stmt);
             context = ParensSelectContext.create(outerContext, stmt, this, visible);
             final _UnionRowSet union = (_UnionRowSet) stmt;
             this.handleQuery((Query) union.leftRowSet(), context);
             context.sqlBuilder().append(union.unionType().render());
             this.handleRowSet(union.rightRowSet(), context);
-        } else {
-            assert stmt instanceof _ParensRowSet;
-            context = ParensSelectContext.create(outerContext, stmt, this, visible);
-            final _ParensRowSet parensRowSet = (_ParensRowSet) stmt;
-
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LEFT_PAREN);
-            this.handleRowSet(parensRowSet.innerRowSet(), context);
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
+        } else if (stmt instanceof _ParensRowSet) {
             if (stmt instanceof StandardQuery) {
                 _SQLConsultant.assertStandardQuery(stmt);
-                this.parseStandardParensQuery(parensRowSet, (_ParenRowSetContext) context);
             } else {
                 this.assertRowSet(stmt);
-                this.parseParensRowSet(parensRowSet, (_ParenRowSetContext) context);
             }
+            if (stmt instanceof _Statement._WithClauseSpec
+                    && ((_Statement._WithClauseSpec) stmt).cteList().size() > 0) {
+                final ParensSelectContext withClauseContext;
+                withClauseContext = ParensSelectContext.create(outerContext, stmt, this, visible);
+
+                this.parseWithClause((_Statement._WithClauseSpec) stmt, withClauseContext);
+                context = ParensSelectContext.create(withClauseContext, stmt, this, visible);
+            } else {
+                context = ParensSelectContext.create(outerContext, stmt, this, visible);
+            }
+            this.handleParenRowSet((_ParenRowSetContext) context, (_ParensRowSet) stmt);
+        } else {
+            throw _Exceptions.unknownRowSetType(stmt);
         }
         return context;
+    }
+
+    /**
+     * @see #handleSelect(_SqlContext, Select, Visible)
+     * @see #handleQuery(Query, _SqlContext)
+     */
+    private void handleParenRowSet(final _ParenRowSetContext context, final _ParensRowSet parensRowSet) {
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LEFT_PAREN);
+        final RowSet innerRowSet;
+        innerRowSet = parensRowSet.innerRowSet();
+        assert (parensRowSet instanceof PrimaryStatement) == (innerRowSet instanceof PrimaryStatement);
+        this.handleRowSet(innerRowSet, context);
+        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+        if (parensRowSet instanceof StandardQuery) {
+            _SQLConsultant.assertStandardQuery((StandardQuery) parensRowSet);
+            this.parseStandardParensQuery(parensRowSet, context);
+        } else {
+            this.assertRowSet((RowSet) parensRowSet);
+            this.parseParensRowSet(parensRowSet, context);
+        }
+
     }
 
     /**
@@ -2146,8 +2168,6 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleSubQuery(SubQuery, _SqlContext)
      */
     private void parseStandardQuery(final _StandardQuery query, final _SimpleQueryContext context) {
-        _SQLConsultant.assertStandardQuery((Query) query);
-        assert query.parenQuery() == null;
 
         final StringBuilder builder;
         if ((builder = context.sqlBuilder()).length() > 0) {

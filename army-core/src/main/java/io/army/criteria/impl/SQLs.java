@@ -52,7 +52,7 @@ public abstract class SQLs extends SQLsSyntax {
     static final Function<SubQuery, SubQuery> _SUB_QUERY_IDENTITY = SQLs::_identity;
 
     public static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
-        return StandardInserts.primaryInsert(SQLs::_identity);
+        return StandardInserts.primaryInsert(SQLs._INSERT_IDENTITY);
     }
 
     public static StandardUpdate._DomainUpdateClause domainUpdate() {
@@ -61,7 +61,7 @@ public abstract class SQLs extends SQLsSyntax {
 
 
     public static StandardUpdate._SingleUpdateClause<Update> singleUpdate() {
-        return StandardUpdates.simpleSingle(SQLs::_identity);
+        return StandardUpdates.simpleSingle(SQLs._UPDATE_IDENTITY);
     }
 
 
@@ -108,7 +108,7 @@ public abstract class SQLs extends SQLsSyntax {
 
 
     public static StandardQuery._SelectSpec<Select> query() {
-        return StandardQueries.primaryQuery(SQLs._SELECT_IDENTITY);
+        return StandardQueries.primaryQuery(ContextStack.peekIfBracket(), SQLs._SELECT_IDENTITY);
     }
 
     public static StandardQuery._SelectSpec<SubQuery> subQuery() {

@@ -55,9 +55,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     private final Function<_ItemExpression<SR>, _AliasExpression<SR>> expFunc;
 
 
-    private _ParensRowSet parenQuery;
-
-
     private List<Hint> hintList;
 
     private List<? extends Query.SelectModifier> modifierList;
@@ -964,10 +961,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     /*################################## blow _Query method ##################################*/
 
-    @Override
-    public final _ParensRowSet parenQuery() {
-        return this.parenQuery;
-    }
 
     @Override
     public final List<Hint> hintList() {
@@ -1044,7 +1037,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     @Override
     public final Q asQuery() {
-        this.endQueryStatement(null);
+        this.endQueryStatement(false);
         return this.onAsQuery();
     }
 
@@ -1086,7 +1079,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
 
     private SP onUnion(UnionType unionType) {
-        this.endQueryStatement(null);
+        this.endQueryStatement(false);
         return this.createQueryUnion(unionType);
     }
 
@@ -1109,12 +1102,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
 
-    final void endQueryBeforeSelect(final _ParensRowSet parenQuery) {
-        this.endQueryStatement(parenQuery);
+    final void endQueryBeforeSelect() {
+        this.endQueryStatement(true);
     }
 
 
-    private void endQueryStatement(final @Nullable _ParensRowSet parenQuery) {
+    private void endQueryStatement(final boolean beforeSelect) {
         _Assert.nonPrepared(this.prepared);
         // hint list
         if (this.hintList == null) {
@@ -1138,19 +1131,14 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         this.endOrderByClause();
 
         final CriteriaContext context = this.context;
-        if (parenQuery == null) {
-            // selection list
-            this.selectItemList = context.endSelectClause();
-            this.onEndQuery();
-            this.tableBlockList = context.endContext();
-            this.parenQuery = null;
-        } else {
-            assert (this instanceof Select && parenQuery instanceof Select)
-                    || (this instanceof SubQuery && parenQuery instanceof SubQuery);
+        if (beforeSelect) {
             this.selectItemList = Collections.emptyList();
             context.endContextBeforeSelect();
             this.tableBlockList = Collections.emptyList();
-            this.parenQuery = parenQuery;
+        } else {
+            this.selectItemList = context.endSelectClause();
+            this.onEndQuery();
+            this.tableBlockList = context.endContext();
         }
         ContextStack.pop(context);
         this.prepared = Boolean.TRUE;
@@ -1323,6 +1311,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             this.cteList = this.context.endWithClause(recursive, true);
             return (WE) this;
         }
+
+        @SuppressWarnings("unchecked")
+        final _Statement._WithClauseSpec getWithClause() {
+            return this.cteList == null ? null : this;
+        }
+
 
         private WE endWithClause(final B builder, final boolean required) {
             final boolean recursive;
