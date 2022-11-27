@@ -246,7 +246,7 @@ abstract class InsertSupport {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.recursive = recursive;
-            this.cteList = this.context.endWithClause(true);
+            this.cteList = this.context.endWithClause(recursive, true);
             return (WE) this;
         }
 
@@ -255,8 +255,10 @@ abstract class InsertSupport {
 
 
         private WE endWithClause(final B builder, final boolean required) {
-            this.recursive = builder.isRecursive();
-            this.cteList = this.context.endWithClause(required);
+            final boolean recursive;
+            recursive = builder.isRecursive();
+            this.recursive = recursive;
+            this.cteList = this.context.endWithClause(recursive, required);
             return (WE) this;
         }
 

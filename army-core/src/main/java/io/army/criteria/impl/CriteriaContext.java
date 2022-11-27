@@ -29,12 +29,6 @@ interface CriteriaContext {
 
     List<_Cte> getCteList();
 
-    /**
-     * @return a unmodified list
-     */
-    @Deprecated
-    List<_Cte> endWithClause(boolean required);
-
     boolean isWithRecursive();
 
     /**

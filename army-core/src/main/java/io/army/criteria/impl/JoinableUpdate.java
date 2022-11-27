@@ -388,7 +388,7 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.recursive = recursive;
-            this.cteList = this.context.endWithClause(true);//static with syntax is required
+            this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
         }
 
 
@@ -400,8 +400,10 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
             if (this.cteList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            this.recursive = builder.isRecursive();
-            this.cteList = this.context.endWithClause(required);
+            final boolean recursive;
+            recursive = builder.isRecursive();
+            this.recursive = recursive;
+            this.cteList = this.context.endWithClause(recursive, required);
             return (WE) this;
         }
 

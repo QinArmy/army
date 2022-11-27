@@ -11,7 +11,9 @@ abstract class MySQLUnitTests extends CriteriaUnitTests {
     static void printStmt(Logger logger, PrimaryStatement statement) {
 
         for (MySQLDialect dialect : MySQLDialect.values()) {
+           // statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
             logger.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+            // break;
         }
 
     }

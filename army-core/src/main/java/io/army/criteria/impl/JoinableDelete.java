@@ -171,7 +171,7 @@ abstract class JoinableDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.recursive = recursive;
-            this.cteList = this.context.endWithClause(true);//static with syntax is required
+            this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
             return (WE) this;
         }
 
@@ -184,8 +184,10 @@ abstract class JoinableDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
             if (this.cteList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            this.recursive = builder.isRecursive();
-            this.cteList = this.context.endWithClause(required);
+            final boolean recursive;
+            recursive = builder.isRecursive();
+            this.recursive = recursive;
+            this.cteList = this.context.endWithClause(recursive, required);
             return (WE) this;
         }
 

@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 
 @Table(name = "u_user", comment = "user", indexes = @Index(name = "idx_identity_id", fieldList = {"identityId"}, unique = true))
 @Inheritance("userType")
-public class PillUser extends VersionDomain {
+@SuppressWarnings("unchecked")
+public class PillUser<T extends PillUser<T>> extends VersionDomain {
 
     @Column
     private Long id;
@@ -39,36 +40,41 @@ public class PillUser extends VersionDomain {
     private Long identityId;
 
 
+    @Override
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public T setId(Long id) {
         this.id = id;
+        return (T) this;
     }
 
     public PillUserType getUserType() {
         return userType;
     }
 
-    public void setUserType(PillUserType userType) {
+    public T setUserType(PillUserType userType) {
         this.userType = userType;
+        return (T) this;
     }
 
     public LocalDateTime getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(LocalDateTime createTime) {
+    public T setCreateTime(LocalDateTime createTime) {
         this.createTime = createTime;
+        return (T) this;
     }
 
     public LocalDateTime getUpdateTime() {
         return updateTime;
     }
 
-    public void setUpdateTime(LocalDateTime updateTime) {
+    public T setUpdateTime(LocalDateTime updateTime) {
         this.updateTime = updateTime;
+        return (T) this;
     }
 
     @Override
@@ -76,40 +82,45 @@ public class PillUser extends VersionDomain {
         return version;
     }
 
-    public void setVersion(Integer version) {
+    public T setVersion(Integer version) {
         this.version = version;
+        return (T) this;
     }
 
     public Boolean getVisible() {
         return visible;
     }
 
-    public void setVisible(Boolean visible) {
+    public T setVisible(Boolean visible) {
         this.visible = visible;
+        return (T) this;
     }
 
     public String getNickName() {
         return nickName;
     }
 
-    public void setNickName(String nickName) {
+    public T setNickName(String nickName) {
         this.nickName = nickName;
+        return (T) this;
     }
 
     public IdentityType getIdentityType() {
         return identityType;
     }
 
-    public void setIdentityType(IdentityType identityType) {
+    public T setIdentityType(IdentityType identityType) {
         this.identityType = identityType;
+        return (T) this;
     }
 
     public Long getIdentityId() {
         return identityId;
     }
 
-    public void setIdentityId(Long identityId) {
+    public T setIdentityId(Long identityId) {
         this.identityId = identityId;
+        return (T) this;
     }
 
 

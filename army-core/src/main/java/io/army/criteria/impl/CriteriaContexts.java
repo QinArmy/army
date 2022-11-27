@@ -17,7 +17,6 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -244,6 +243,11 @@ abstract class CriteriaContexts {
         return ContextStack.criteriaError(context, builder.toString());
     }
 
+    private static CriteriaException unknownCte(CriteriaContext context, @Nullable String cteName) {
+        String m = String.format("unknown cte[%s]", cteName);
+        return ContextStack.criteriaError(context, m);
+    }
+
 
     private static CriteriaException notFoundDerivedField(CriteriaContext context
             , Map<String, Map<String, RefDerivedField<?>>> aliasToRefSelection) {
@@ -294,6 +298,8 @@ abstract class CriteriaContexts {
 
         private Map<String, SQLs.CteImpl> cteMap;
 
+        private Map<String, RecursiveCte> recursiveCteMap;
+
         private WithCteContext(boolean recursive) {
             this.recursive = recursive;
         }
@@ -307,15 +313,9 @@ abstract class CriteriaContexts {
 
         final CriteriaContext outerContext;
 
-        private boolean recursive;
-
-        private Map<String, SQLs.CteImpl> withClauseCteMap;
-
-        private Map<String, RefCte> refCteMap;
+        private Map<String, RecursiveCte> refCteMap;
 
         private List<Runnable> endListenerList;
-
-        private boolean withClauseEnd;
 
         private WithCteContext withCteContext;
 
@@ -360,11 +360,10 @@ abstract class CriteriaContexts {
 
         @Override
         public final CriteriaContext onBeforeWithClause(final boolean recursive) {
-            if (this.withClauseCteMap != null || this.withClauseEnd) {
+            if (this.withCteContext != null) {
                 throw ContextStack.castCriteriaApi(this);
             }
-            this.recursive = recursive;
-            this.withClauseCteMap = new HashMap<>();
+            this.withCteContext = new WithCteContext(recursive);
             return this;
         }
 
@@ -403,7 +402,9 @@ abstract class CriteriaContexts {
             final List<String> columnAliasList = withContext.currentAliasList;
 
             final SQLs.CteImpl cteImpl = (SQLs.CteImpl) cte;
-            assert currentName.equals(cteImpl.name);
+            if (!currentName.equals(cteImpl.name)) {
+                throw ContextStack.castCriteriaApi(this);
+            }
             assert columnAliasList == null || columnAliasList == cteImpl.columnNameList;//same instance
 
             Map<String, SQLs.CteImpl> cteMap = withContext.cteMap;
@@ -413,7 +414,7 @@ abstract class CriteriaContexts {
                 withContext.cteMap = cteMap;
                 cteList = new ArrayList<>();
                 withContext.cteList = cteList;
-            } else if (!(cteList instanceof ArrayList)) {
+            } else if (!(cteMap instanceof HashMap)) {
                 // with clause end
                 throw ContextStack.castCriteriaApi(this);
             }
@@ -423,6 +424,12 @@ abstract class CriteriaContexts {
                 throw ContextStack.criteriaError(this, m);
             }
             cteList.add(cteImpl);
+
+            final Map<String, RecursiveCte> recursiveCteMap = withContext.recursiveCteMap;
+            final RecursiveCte recursiveCte;
+            if (recursiveCteMap != null && (recursiveCte = recursiveCteMap.remove(currentName)) != null) {
+
+            }
 
             // clear current for next cte
             withContext.currentName = null;
@@ -447,7 +454,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final List<_Cte> endWithClause(final boolean required) {
+        public final List<_Cte> endWithClause(boolean recursive, boolean required) {
             final WithCteContext withContext = this.withCteContext;
             assert withContext != null;
 
@@ -478,46 +485,49 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public List<_Cte> endWithClause(boolean recursive, boolean required) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public final CteItem refCte(final String cteName) {
-            final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
-            final CriteriaContext outerContext = this.outerContext;
-            CteItem tempItem;
-            final CteItem cteItem;
-            if (withClauseCteMap == null) {
-                if (outerContext == null) {
-                    throw notFoundCte(this, cteName);
-                }
-                cteItem = outerContext.refCte(cteName);// get CteItem fro outer context
-            } else if ((tempItem = withClauseCteMap.get(cteName)) != null) {
-                cteItem = tempItem;
-            } else if (this.withClauseEnd) {
-                if (outerContext == null) {
-                    throw notFoundCte(this, cteName);
-                }
-                cteItem = outerContext.refCte(cteName);
-            } else {
-                Map<String, RefCte> refCteMap = this.refCteMap;
-                if (refCteMap == null) {
-                    refCteMap = new HashMap<>();
-                    this.refCteMap = refCteMap;
-                }
-                tempItem = refCteMap.get(cteName);
-                if (tempItem == null) {
-                    final RefCte refCte;
-                    refCte = new RefCte(cteName);
-                    refCteMap.put(cteName, refCte);
-                    tempItem = refCte;
-                }
-                cteItem = tempItem;
+        public final CteItem refCte(final @Nullable String cteName) {
+            if (cteName == null) {
+                throw ContextStack.nullPointer(this);
             }
-            return cteItem;
-        }
+            final WithCteContext withContext = this.withCteContext;
+            final CriteriaContext outerContext = this.outerContext;
+            if (withContext == null) {
+                if (outerContext == null) {
+                    throw unknownCte(this, cteName);
+                }
+                return outerContext.refCte(cteName);
+            }
 
+            final CteItem thisLevelCte;
+            final String currentName = withContext.currentName;
+            if (currentName != null && currentName.equals(cteName)) {
+                if (!withContext.recursive) {
+                    String m = String.format("Not recursive with clause,cte[%s] couldn't self-referencing", cteName);
+                    throw ContextStack.criteriaError(this, m);
+                }
+                Map<String, RecursiveCte> recursiveCteMap = withContext.recursiveCteMap;
+                if (recursiveCteMap == null) {
+                    recursiveCteMap = new HashMap<>();
+                    withContext.recursiveCteMap = recursiveCteMap;
+                }
+                thisLevelCte = recursiveCteMap.computeIfAbsent(cteName, RecursiveCte::new);
+            } else {
+                final Map<String, SQLs.CteImpl> cteMap = withContext.cteMap;
+                if (cteMap == null) {
+                    throw unknownCte(this, cteName);
+                }
+                thisLevelCte = cteMap.get(cteName);
+            }
+            final CteItem cte;
+            if (thisLevelCte != null) {
+                cte = thisLevelCte;
+            } else if (outerContext == null) {
+                throw unknownCte(this, cteName);
+            } else {
+                cte = outerContext.refCte(cteName);
+            }
+            return cte;
+        }
 
         @Override
         public final VarExpression createVar(String name, TypeMeta paramMeta) throws CriteriaException {
@@ -531,12 +541,7 @@ abstract class CriteriaContexts {
 
         @Override
         public List<_TableBlock> endContext() {
-            final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
-            if (withClauseCteMap != null) {
-                withClauseCteMap.clear();
-                this.withClauseCteMap = null;
-            }
-            final Map<String, RefCte> refCteMap = this.refCteMap;
+            final Map<String, RecursiveCte> refCteMap = this.refCteMap;
             if (refCteMap != null) {
                 refCteMap.clear();
                 this.refCteMap = null;
@@ -677,80 +682,6 @@ abstract class CriteriaContexts {
 
         List<_TableBlock> onEndContext() {
             return Collections.emptyList();
-        }
-
-
-        private void addCte(final _Cte cte) {
-            final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
-            if (withClauseCteMap == null || this.withClauseEnd) {
-                throw ContextStack.castCriteriaApi(this);
-            }
-            if (!(cte instanceof SQLs.CteImpl)) {
-                String m = String.format("Illegal implementation of %s", _Cte.class.getName());
-                throw ContextStack.criteriaError(this, m);
-            }
-            final SQLs.CteImpl cteImpl = (SQLs.CteImpl) cte;
-            if (withClauseCteMap.putIfAbsent(cteImpl.name, cteImpl) != null) {
-                String m = String.format("%s %s duplication.", _Cte.class.getName(), cteImpl.name);
-                throw ContextStack.criteriaError(this, m);
-            }
-            final Map<String, RefCte> refCteMap = this.refCteMap;
-            if (refCteMap == null || refCteMap.size() == 0) {
-                return;
-            }
-            final CriteriaContext outerContext = this.outerContext;
-            final RefCte refCte;
-            if ((refCte = refCteMap.remove(cteImpl.name)) != null && refCte.actualCte == null) {//refCte.actualCte != null,actualCte from outer context
-                final CriteriaContext context;
-                context = ((CriteriaContextSpec) cteImpl.subStatement).getContext();
-                if (this.recursive
-                        && context instanceof BracketQueryContext) {
-                    refCte.actualCte = cteImpl;
-                    refCteMap.remove(cteImpl.name);
-                } else {
-                    throw referenceCteSyntaxError(this, cteImpl.name);
-                }
-
-            }
-
-            if (refCteMap.size() == 0) {
-                return;
-            }
-            for (RefCte c : refCteMap.values()) {
-                if (outerContext == null) {
-                    throw notFoundCte(this, c.name);
-                }
-                if (c.actualCte != null) {
-                    //here,actualCte is from outer context.
-                    continue;
-                }
-                c.actualCte = (_Cte) outerContext.refCte(c.name);
-            }
-
-        }
-
-        private void withClauseEnd() {
-            final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
-            if (withClauseCteMap == null || this.withClauseEnd) {
-                throw _Exceptions.castCriteriaApi();
-            }
-            final Map<String, RefCte> refCteMap = this.refCteMap;
-            if (refCteMap != null && refCteMap.size() > 0) {
-                final CriteriaContext outerContext = this.outerContext;
-                for (RefCte refCte : refCteMap.values()) {
-                    if (refCte.actualCte != null) {
-                        continue;
-                    }
-                    if (outerContext == null) {
-                        throw notFoundCte(this, refCte.name);
-                    }
-                    refCte.actualCte = (_Cte) outerContext.refCte(refCte.name);
-                }
-                refCteMap.clear();
-            }
-            this.refCteMap = null;
-            this.withClauseCteMap = _CollectionUtils.unmodifiableMap(withClauseCteMap);
-            this.withClauseEnd = true;
         }
 
 
@@ -1929,32 +1860,15 @@ abstract class CriteriaContexts {
     }//DerivedAliasSelection
 
 
-    static final class RefCte implements _Cte {
+    static final class RecursiveCte implements CteItem {
 
         private final String name;
 
-        private _Cte actualCte;
-
-        private RefCte(String name) {
+        /**
+         * @see StatementContext#refCte(String)
+         */
+        private RecursiveCte(String name) {
             this.name = name;
-        }
-
-        @Override
-        public List<String> columnNameList() {
-            final _Cte actualCte = this.actualCte;
-            if (actualCte == null) {
-                throw new IllegalStateException("No actual cte");
-            }
-            return actualCte.columnNameList();
-        }
-
-        @Override
-        public SubStatement subStatement() {
-            final _Cte actualCte = this.actualCte;
-            if (actualCte == null) {
-                throw new IllegalStateException("No actual cte");
-            }
-            return actualCte.subStatement();
         }
 
         @Override
@@ -1963,58 +1877,35 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public List<? extends SelectItem> selectItemList() {
-            final _Cte actualCte = this.actualCte;
-            if (actualCte == null) {
-                throw new IllegalStateException("No actual cte");
-            }
-            return actualCte.selectItemList();
+        public int hashCode() {
+            return this.name.hashCode();
         }
 
         @Override
-        public Selection selection(String derivedAlias) {
-            final _Cte actualCte = this.actualCte;
-            if (actualCte == null) {
-                throw new IllegalStateException("No actual cte");
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof RecursiveCte) {
+                match = ((RecursiveCte) obj).name.equals(this.name);
+            } else {
+                match = false;
             }
-            return actualCte.selection(derivedAlias);
+            return match;
         }
 
         @Override
         public String toString() {
-            return String.format("reference  %s[name:%s,hash:%s]", CteItem.class.getName()
-                    , this.name, System.identityHashCode(this));
+            return _StringUtils.builder()
+                    .append("reference recursive cte[")
+                    .append(this.name)
+                    .append(",hash:")
+                    .append(System.identityHashCode(this))
+                    .append(']')
+                    .toString();
         }
 
     }// RefCte
-
-    private static final class CteConsumerImpl implements CriteriaContext.CteConsumer {
-
-
-        private final Consumer<_Cte> cteConsumer;
-
-        private final Runnable endCallback;
-
-        private final List<_Cte> cteList = new ArrayList<>();
-
-        private CteConsumerImpl(Consumer<_Cte> cteConsumer, Runnable endCallback) {
-            this.cteConsumer = cteConsumer;
-            this.endCallback = endCallback;
-        }
-
-        @Override
-        public void addCte(_Cte cte) {
-            this.cteConsumer.accept(cte);
-            this.cteList.add(cte);
-        }
-
-        @Override
-        public List<_Cte> end() {
-            this.endCallback.run();
-            return _CollectionUtils.unmodifiableList(this.cteList);
-        }
-
-    }//CteConsumerImpl
 
 
 }

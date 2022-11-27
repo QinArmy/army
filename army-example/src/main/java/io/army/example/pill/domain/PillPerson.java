@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Table(name = "u_person", comment = "person user")
 @DiscriminatorValue(PillUserType.Constant.PERSON)
-public class PillPerson extends PillUser {
+public class PillPerson extends PillUser<PillPerson> {
 
     @Column(comment = "user's birthday")
     private LocalDate birthday;
@@ -22,16 +22,18 @@ public class PillPerson extends PillUser {
         return birthday;
     }
 
-    public void setBirthday(LocalDate birthday) {
+    public PillPerson setBirthday(LocalDate birthday) {
         this.birthday = birthday;
+        return this;
     }
 
     public String getPhone() {
         return phone;
     }
 
-    public void setPhone(String phone) {
+    public PillPerson setPhone(String phone) {
         this.phone = phone;
+        return this;
     }
 
 
