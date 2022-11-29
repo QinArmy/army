@@ -1216,6 +1216,15 @@ public interface Statement extends Item {
 
     }
 
+    interface _ParensStringClause<R> {
+
+        R parens(String first, String... rest);
+
+        R parens(Consumer<Consumer<String>> consumer);
+
+        R ifParens(Consumer<Consumer<String>> consumer);
+    }
+
 
     interface _DmlInsertClause<I extends Item> extends Item {
 

@@ -8,7 +8,6 @@ import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
 import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLDelete;
-import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLStatement;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
@@ -202,7 +201,7 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
 
         private final SimpleDeleteStatement<I> statement;
 
-        private final Function<String, MySQLQuery._StaticCteLeftParenSpec<MySQLDelete._SingleComma<I>>> function;
+        private final Function<String, _StaticCteParensSpec<_SingleComma<I>>> function;
 
         private SingleComma(boolean recursive, SimpleDeleteStatement<I> statement) {
             this.recursive = recursive;
@@ -211,7 +210,7 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>> comma(String name) {
+        public _StaticCteParensSpec<_SingleComma<I>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -254,14 +253,14 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>> with(String name) {
+        public _StaticCteParensSpec<_SingleComma<I>> with(String name) {
             final boolean recursive = false;
             this.context.onBeforeWithClause(recursive);
             return new SingleComma<>(recursive, this).function.apply(name);
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>> withRecursive(String name) {
+        public _StaticCteParensSpec<_SingleComma<I>> withRecursive(String name) {
             final boolean recursive = true;
             this.context.onBeforeWithClause(recursive);
             return new SingleComma<>(recursive, this).function.apply(name);
@@ -277,7 +276,7 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
 
         private final BatchDeleteStatement<I> statement;
 
-        private final Function<String, MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>> function;
+        private final Function<String, _StaticCteParensSpec<_BatchSingleComma<I>>> function;
 
         private BatchSingleComma(boolean recursive, BatchDeleteStatement<I> statement) {
             this.recursive = recursive;
@@ -286,7 +285,7 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>> comma(String name) {
+        public _StaticCteParensSpec<_BatchSingleComma<I>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -332,14 +331,14 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>> with(String name) {
+        public _StaticCteParensSpec<_BatchSingleComma<I>> with(String name) {
             final boolean recursive = false;
             this.context.onBeforeWithClause(recursive);
             return new BatchSingleComma<>(recursive, this).function.apply(name);
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>> withRecursive(String name) {
+        public _StaticCteParensSpec<_BatchSingleComma<I>> withRecursive(String name) {
             final boolean recursive = true;
             this.context.onBeforeWithClause(recursive);
             return new BatchSingleComma<>(recursive, this).function.apply(name);

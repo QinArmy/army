@@ -527,6 +527,10 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, m);
     }
 
+    static CriteriaException columnAliasIsEmpty(CriteriaContext context) {
+        return ContextStack.criteriaError(context, "You don't add any cte column alias");
+    }
+
 
     private static CriteriaException unknownSelectItem(final RowSet left, final SelectItem item) {
         return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext()

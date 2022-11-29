@@ -177,7 +177,10 @@ abstract class MySQLSupports extends CriteriaSupports {
             return indexClause;
         }
 
-        private RR addIndexHint(final MySQLIndexHint indexHint) {
+        private RR addIndexHint(final @Nullable MySQLIndexHint indexHint) {
+            if (indexHint == null) {
+                return this.stmt;
+            }
             List<MySQLIndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null) {
                 indexHintList = new ArrayList<>();
@@ -266,7 +269,10 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
         @SuppressWarnings("unchecked")
-        private RR addIndexHint(final MySQLIndexHint indexHint) {
+        private RR addIndexHint(final @Nullable MySQLIndexHint indexHint) {
+            if (indexHint == null) {
+                return (RR) this;
+            }
             List<MySQLIndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null) {
                 indexHintList = new ArrayList<>();
@@ -465,8 +471,10 @@ abstract class MySQLSupports extends CriteriaSupports {
     }//PartitionAsClause
 
 
-    private static final class IndexHintClause<RR> extends CriteriaSupports.ParenStringConsumerClause<RR>
-            implements MySQLQuery._IndexPurposeBySpec<RR>, MySQLQuery._QueryIndexHintClause<RR> {
+    private static final class IndexHintClause<RR> implements MySQLQuery._IndexPurposeBySpec<RR>,
+            MySQLQuery._QueryIndexHintClause<RR> {
+
+        private final CriteriaContext context;
 
         private final Function<MySQLIndexHint, RR> function;
 
@@ -474,8 +482,8 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         private MySQLIndexHint.Purpose purpose;
 
-        private IndexHintClause(CriteriaContext criteriaContext, Function<MySQLIndexHint, RR> function) {
-            super(criteriaContext);
+        private IndexHintClause(CriteriaContext context, Function<MySQLIndexHint, RR> function) {
+            this.context = context;
             this.function = function;
         }
 
@@ -498,25 +506,54 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
         @Override
-        public Statement._LeftParenStringDualOptionalSpec<RR> forJoin() {
+        public Statement._ParensStringClause<RR> forJoin() {
             this.purpose = MySQLIndexHint.Purpose.FOR_JOIN;
             return this;
         }
 
         @Override
-        public Statement._LeftParenStringDualOptionalSpec<RR> forOrderBy() {
+        public Statement._ParensStringClause<RR> forOrderBy() {
             this.purpose = MySQLIndexHint.Purpose.FOR_ORDER_BY;
             return this;
         }
 
         @Override
-        public Statement._LeftParenStringDualOptionalSpec<RR> forGroupBy() {
+        public Statement._ParensStringClause<RR> forGroupBy() {
             this.purpose = MySQLIndexHint.Purpose.FOR_GROUP_BY;
             return this;
         }
 
+
         @Override
-        RR stringConsumerEnd(final List<String> stringList) {
+        public RR parens(String first, String... rest) {
+            return this.stringConsumerEnd(ArrayUtils.unmodifiableListOf(first, rest));
+        }
+
+        @Override
+        public RR parens(Consumer<Consumer<String>> consumer) {
+            final List<String> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() > 0) {
+                throw ContextStack.criteriaError(this.context, "You don't add any index name");
+            }
+            return this.stringConsumerEnd(_CollectionUtils.unmodifiableList(list));
+        }
+
+        @Override
+        public RR ifParens(Consumer<Consumer<String>> consumer) {
+            final List<String> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() > 0) {
+                this.stringConsumerEnd(_CollectionUtils.unmodifiableList(list));
+            } else {
+                this.command = null;
+                this.purpose = null;
+            }
+            return this.function.apply(null);
+        }
+
+
+        private RR stringConsumerEnd(final List<String> stringList) {
             final MySQLIndexHint.Command command = this.command;
             if (command == null) {
                 throw ContextStack.castCriteriaApi(this.context);

@@ -178,7 +178,7 @@ public interface MySQLUpdate extends MySQLStatement {
     }
 
 
-    interface _SingleComma<I extends Item> extends _StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>>>
+    interface _SingleComma<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<_SingleComma<I>>>
             , _SingleUpdateClause<I> {
 
     }
@@ -201,7 +201,7 @@ public interface MySQLUpdate extends MySQLStatement {
      */
     interface _SingleWithSpec<I extends Item>
             extends _MySQLDynamicWithClause<_SingleUpdateClause<I>>
-            , _StaticWithClause<_StaticCteLeftParenSpec<_SingleComma<I>>>
+            , _StaticWithClause<_StaticCteParensSpec<_SingleComma<I>>>
             , _SingleUpdateClause<I> {
 
     }
@@ -369,7 +369,7 @@ public interface MySQLUpdate extends MySQLStatement {
 
 
     interface _BatchSingleComma<I extends Item>
-            extends _StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
+            extends _StaticWithCommaClause<_StaticCteParensSpec<_BatchSingleComma<I>>>
             , _BatchSingleUpdateClause<I> {
 
     }
@@ -392,7 +392,7 @@ public interface MySQLUpdate extends MySQLStatement {
      */
     interface _BatchSingleWithSpec<I extends Item>
             extends _MySQLDynamicWithClause<_BatchSingleUpdateClause<I>>
-            , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>>>
+            , _StaticWithClause<_StaticCteParensSpec<_BatchSingleComma<I>>>
             , _BatchSingleUpdateClause<I> {
 
     }
@@ -618,7 +618,7 @@ public interface MySQLUpdate extends MySQLStatement {
 
 
     interface _MultiComma<I extends Item>
-            extends _StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>>>
+            extends _StaticWithCommaClause<_StaticCteParensSpec<_MultiComma<I>>>
             , MultiUpdateClause<I> {
 
     }
@@ -642,7 +642,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _MultiWithSpec<I extends Item> extends _MySQLDynamicWithClause<MultiUpdateClause<I>>
-            , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>>>
+            , _StaticWithClause<_StaticCteParensSpec<_MultiComma<I>>>
             , MultiUpdateClause<I> {
 
     }
@@ -871,7 +871,7 @@ public interface MySQLUpdate extends MySQLStatement {
 
 
     interface _BatchMultiComma<I extends Item>
-            extends _StaticWithCommaClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>>>
+            extends _StaticWithCommaClause<_StaticCteParensSpec<_BatchMultiComma<I>>>
             , _BatchMultiUpdateClause<I> {
 
     }
@@ -896,7 +896,7 @@ public interface MySQLUpdate extends MySQLStatement {
      */
     interface _BatchMultiWithSpec<I extends Item>
             extends _MySQLDynamicWithClause<_BatchMultiUpdateClause<I>>
-            , _StaticWithClause<MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>>>
+            , _StaticWithClause<_StaticCteParensSpec<_BatchMultiComma<I>>>
             , _BatchMultiUpdateClause<I> {
 
     }

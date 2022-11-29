@@ -186,7 +186,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
         private final SimpleUpdateStatement<I> clause;
 
-        private final Function<String, MySQLQuery._StaticCteLeftParenSpec<MySQLUpdate._MultiComma<I>>> function;
+        private final Function<String, _StaticCteParensSpec<_MultiComma<I>>> function;
 
         private SimpleComma(boolean recursive, SimpleUpdateStatement<I> clause) {
             this.recursive = recursive;
@@ -195,7 +195,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>> comma(String name) {
+        public _StaticCteParensSpec<_MultiComma<I>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -319,14 +319,14 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>> with(String name) {
+        public _StaticCteParensSpec<_MultiComma<I>> with(String name) {
             final boolean recursive = false;
             this.context.onBeforeWithClause(recursive);
             return new SimpleComma<>(recursive, this).function.apply(name);
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>> withRecursive(String name) {
+        public _StaticCteParensSpec<_MultiComma<I>> withRecursive(String name) {
             final boolean recursive = true;
             this.context.onBeforeWithClause(recursive);
             return new SimpleComma<>(recursive, this).function.apply(name);
@@ -630,7 +630,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
         private final BatchUpdateStatement<I> clause;
 
-        private final Function<String, MySQLQuery._StaticCteLeftParenSpec<MySQLUpdate._BatchMultiComma<I>>> function;
+        private final Function<String, _StaticCteParensSpec<_BatchMultiComma<I>>> function;
 
         private BatchComma(boolean recursive, BatchUpdateStatement<I> clause) {
             this.recursive = recursive;
@@ -639,7 +639,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>> comma(String name) {
+        public _StaticCteParensSpec<_BatchMultiComma<I>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -761,14 +761,14 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>> with(String name) {
+        public _StaticCteParensSpec<_BatchMultiComma<I>> with(String name) {
             final boolean recursive = false;
             this.context.onBeforeWithClause(recursive);
             return new BatchComma<>(recursive, this).function.apply(name);
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>> withRecursive(String name) {
+        public _StaticCteParensSpec<_BatchMultiComma<I>> withRecursive(String name) {
             final boolean recursive = true;
             this.context.onBeforeWithClause(recursive);
             return new BatchComma<>(recursive, this).function.apply(name);

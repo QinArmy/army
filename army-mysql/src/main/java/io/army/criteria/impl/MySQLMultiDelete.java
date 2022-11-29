@@ -315,7 +315,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
 
         private final SimpleMultiDelete<I> statement;
 
-        private final Function<String, MySQLQuery._StaticCteLeftParenSpec<MySQLDelete._MultiComma<I>>> function;
+        private final Function<String, _StaticCteParensSpec<_MultiComma<I>>> function;
 
         private MultiComma(boolean recursive, SimpleMultiDelete<I> statement) {
             this.recursive = recursive;
@@ -324,7 +324,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>> comma(String name) {
+        public _StaticCteParensSpec<_MultiComma<I>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -392,14 +392,14 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>> with(String name) {
+        public _StaticCteParensSpec<_MultiComma<I>> with(String name) {
             final boolean recursive = false;
             this.context.onBeforeWithClause(recursive);
             return new MultiComma<>(recursive, this).function.apply(name);
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_MultiComma<I>> withRecursive(String name) {
+        public _StaticCteParensSpec<_MultiComma<I>> withRecursive(String name) {
             final boolean recursive = true;
             this.context.onBeforeWithClause(recursive);
             return new MultiComma<>(recursive, this).function.apply(name);
@@ -555,7 +555,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
 
         private final BatchMultiDelete<I> statement;
 
-        private final Function<String, MySQLQuery._StaticCteLeftParenSpec<MySQLDelete._BatchMultiComma<I>>> function;
+        private final Function<String, _StaticCteParensSpec<_BatchMultiComma<I>>> function;
 
         private BatchMultiComma(boolean recursive, BatchMultiDelete<I> statement) {
             this.recursive = recursive;
@@ -564,7 +564,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>> comma(String name) {
+        public _StaticCteParensSpec<_BatchMultiComma<I>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -635,14 +635,14 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>> with(String name) {
+        public _StaticCteParensSpec<_BatchMultiComma<I>> with(String name) {
             final boolean recursive = false;
             this.context.onBeforeWithClause(recursive);
             return new BatchMultiComma<>(recursive, this).function.apply(name);
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_BatchMultiComma<I>> withRecursive(String name) {
+        public _StaticCteParensSpec<_BatchMultiComma<I>> withRecursive(String name) {
             final boolean recursive = true;
             this.context.onBeforeWithClause(recursive);
             return new BatchMultiComma<>(recursive, this).function.apply(name);

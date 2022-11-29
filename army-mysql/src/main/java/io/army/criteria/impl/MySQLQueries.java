@@ -6,7 +6,6 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Statement;
-import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.*;
@@ -14,6 +13,7 @@ import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect.mysql.MySQLDialect;
+import io.army.function.ParensStringFunction;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -45,10 +45,10 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         MySQLQuery._MySQLSelectCommaSpec<I>,
         MySQLQuery._FromSpec<I>,
         MySQLQuery._IndexHintJoinSpec<I>,
-        MySQLQuery._JoinSpec<I>,
+        DialectStatement._DerivedAsClause<MySQLQuery._JoinSpec<I>>,
         MySQLQuery._JoinSpec<I>,
         MySQLQuery._IndexHintOnSpec<I>,
-        Statement._OnClause<MySQLQuery._JoinSpec<I>>,
+        DialectStatement._DerivedAsClause<Statement._OnClause<MySQLQuery._JoinSpec<I>>>,
         Statement._OnClause<MySQLQuery._JoinSpec<I>>,
         MySQLQuery._GroupBySpec<I>,
         MySQLQuery._WhereAndSpec<I>,
@@ -83,9 +83,9 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         return new SimpleSubQuery<>(spec, outerContext, function, null);
     }
 
-    static <I extends Item> Function<String, _StaticCteLeftParenSpec<I>> complexCte(CriteriaContext context,
-                                                                                    I cteComma) {
-        return new StaticCteColumnAliasClause<>(context, cteComma)::nextCte;
+    static <I extends Item> Function<String, _StaticCteParensSpec<I>> complexCte(CriteriaContext context,
+                                                                                 I cteComma) {
+        return new StaticCteParensClause<>(context, cteComma)::nextCte;
     }
 
     private MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>> noOnBlock;
@@ -119,7 +119,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
     @Override
     public final _NestedLeftParenSpec<_JoinSpec<I>> from() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::nestedLeftParenJoinEnd);
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
     }
 
     @Override
@@ -170,32 +170,32 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> leftJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::nestedLeftParenOnEnd);
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> join() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::nestedLeftParenOnEnd);
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> rightJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::nestedLeftParenOnEnd);
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> fullJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::nestedLeftParenOnEnd);
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> straightJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.STRAIGHT_JOIN, this::nestedLeftParenOnEnd);
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.STRAIGHT_JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_JoinSpec<I>> crossJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::nestedLeftParenJoinEnd);
+        return MySQLNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
     }
 
     @Override
@@ -554,49 +554,114 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
 
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table
-            , String alias) {
+    final _IndexHintJoinSpec<I> onFromTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
+                                            String alias) {
         if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, this);
+        final MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>> block;
+        block = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, this);
+        this.blockConsumer.accept(block);
+        this.noOnBlock = block;
+        return this;
     }
 
     @Override
-    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable DerivedModifier modifier, TabularItem tableItem
-            , String alias) {
+    final _DerivedAsClause<_JoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
+                                                       @Nullable DerivedTable table) {
         if (modifier != null && modifier != SQLs.LATERAL) {
             throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+        } else if (table == null) {
+            throw ContextStack.nullPointer(this.context);
         }
-        return new MySQLSupports.MySQLNoOnBlock<>(joinType, modifier, tableItem, alias, this);
+        return new _DerivedAsClause<_JoinSpec<I>>() {
+            @Override
+            public _JoinSpec<I> as(String alias, Function<ParensStringFunction, List<String>> function) {
+                ((ArmyDerivedTable) table).setColumnAliasList(function.apply(ArrayUtils::unmodifiableListOf));
+                MySQLQueries.this.blockConsumer.accept(
+                        new TableBlock.NoOnModifierTableBlock(joinType, modifier, table, alias)
+                );
+                return MySQLQueries.this;
+            }
+
+            @Override
+            public _JoinSpec<I> as(String alias) {
+                ((ArmyDerivedTable) table).setColumnAliasList(CriteriaUtils.EMPTY_STRING_LIST);
+                MySQLQueries.this.blockConsumer.accept(
+                        new TableBlock.NoOnModifierTableBlock(joinType, modifier, table, alias)
+                );
+                return MySQLQueries.this;
+            }
+
+        };
     }
 
 
     @Override
-    final _IndexHintOnSpec<I> createTableBlock(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table
-            , String tableAlias) {
+    final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem,
+                                 String alias) {
         if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return new OnTableBlock<>(joinType, null, table, tableAlias, this);
+        final TableBlock.NoOnTableBlock block;
+        block = new TableBlock.NoOnTableBlock(joinType, cteItem, alias);
+        this.blockConsumer.accept(block);
+        return this;
     }
 
     @Override
-    final _OnClause<_JoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable DerivedModifier modifier
-            , TabularItem tableItem, String alias) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
+    final _IndexHintOnSpec<I> onJoinTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
+                                          String alias) {
+        if (modifier != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        final OnTableBlock<I> block;
+        block = new OnTableBlock<>(joinType, table, alias, this);
+        this.blockConsumer.accept(block);
+        return block;
+    }
+
+    @Override
+    final _DerivedAsClause<_OnClause<_JoinSpec<I>>> onJoinDerived(_JoinType joinType,
+                                                                  @Nullable DerivedModifier modifier,
+                                                                  @Nullable DerivedTable table) {
+        if (table == null) {
+            throw ContextStack.nullPointer(this.context);
+        } else if (modifier != null && modifier != SQLs.LATERAL) {
             throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
         }
-        return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
+        return new _DerivedAsClause<_OnClause<_JoinSpec<I>>>() {
+            @Override
+            public _OnClause<_JoinSpec<I>> as(String alias, Function<ParensStringFunction, List<String>> function) {
+                ((ArmyDerivedTable) table).setColumnAliasList(function.apply(ArrayUtils::unmodifiableListOf));
+                final OnClauseTableBlock.OnItemTableBlock<_JoinSpec<I>> block;
+                block = new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, table, alias, MySQLQueries.this);
+                MySQLQueries.this.blockConsumer.accept(block);
+                return block;
+            }
+
+            @Override
+            public _OnClause<_JoinSpec<I>> as(String alias) {
+                ((ArmyDerivedTable) table).setColumnAliasList(CriteriaUtils.EMPTY_STRING_LIST);
+                final OnClauseTableBlock.OnItemTableBlock<_JoinSpec<I>> block;
+                block = new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, table, alias, MySQLQueries.this);
+                MySQLQueries.this.blockConsumer.accept(block);
+                return block;
+            }
+
+        };
     }
 
     @Override
-    final _OnClause<_JoinSpec<I>> createCteBlock(_JoinType joinType, @Nullable DerivedModifier modifier
-            , TabularItem tableItem, String alias) {
+    final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem,
+                                            String alias) {
         if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return new OnClauseTableBlock.OnItemTableBlock<>(joinType, null, tableItem, alias, this);
+        final OnClauseTableBlock<_JoinSpec<I>> block;
+        block = new OnClauseTableBlock<>(joinType, cteItem, alias, this);
+        this.blockConsumer.accept(block);
+        return block;
     }
 
     @Override
@@ -611,7 +676,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
      * @see #from()
      * @see #crossJoin()
      */
-    private _JoinSpec<I> nestedLeftParenJoinEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertNoneCrossType();
         final TableBlock.NoOnTableBlock block;
         block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
@@ -626,7 +691,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
      * @see #fullJoin()
      * @see #straightJoin()
      */
-    private _OnClause<_JoinSpec<I>> nestedLeftParenOnEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertMySQLJoinType();
 
         final OnClauseTableBlock<_JoinSpec<I>> block;
@@ -694,13 +759,13 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
 
         @Override
-        public final _StaticCteLeftParenSpec<_CteComma<I>> with(String name) {
+        public final _StaticCteParensSpec<_CteComma<I>> with(String name) {
             return new MySQLCteComma<>(false, this).function.apply(name);
 
         }
 
         @Override
-        public final _StaticCteLeftParenSpec<_CteComma<I>> withRecursive(String name) {
+        public final _StaticCteParensSpec<_CteComma<I>> withRecursive(String name) {
             return new MySQLCteComma<>(true, this).function.apply(name);
         }
 
@@ -926,9 +991,8 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
             extends MySQLSupports.MySQLOnBlock<_IndexHintOnSpec<I>, _JoinSpec<I>>
             implements _IndexHintOnSpec<I> {
 
-        private OnTableBlock(_JoinType joinType, @Nullable SQLWords itemWord
-                , TabularItem tableItem, String alias, _JoinSpec<I> stmt) {
-            super(joinType, itemWord, tableItem, alias, stmt);
+        private OnTableBlock(_JoinType joinType, TableMeta<?> table, String alias, _JoinSpec<I> stmt) {
+            super(joinType, null, table, alias, stmt);
         }
 
         private OnTableBlock(MySQLSupports.MySQLBlockParams params, _JoinSpec<I> stmt) {
@@ -954,7 +1018,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
             final MySQLQueries<I, ?> stmt = this.stmt;
             final OnTableBlock<I> block;
             block = new OnTableBlock<>(params, stmt);
-            stmt.context.onAddBlock(block);
+            stmt.blockConsumer.accept(block);
             return block;
         }
 
@@ -968,7 +1032,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         private final MySQLSimpleQuery<I> stmt;
 
 
-        private final Function<String, _StaticCteLeftParenSpec<MySQLQuery._CteComma<I>>> function;
+        private final Function<String, _StaticCteParensSpec<_CteComma<I>>> function;
 
         /**
          * @see MySQLSimpleQuery#with(String)
@@ -982,7 +1046,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         }
 
         @Override
-        public _StaticCteLeftParenSpec<_CteComma<I>> comma(String name) {
+        public _StaticCteParensSpec<_CteComma<I>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -1001,7 +1065,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         private final MySQLComplexQuery<I> stmt;
 
 
-        private final Function<String, _StaticCteLeftParenSpec<MySQLQuery._ComplexCteComma<I>>> function;
+        private final Function<String, _StaticCteParensSpec<_ComplexCteComma<I>>> function;
 
         /**
          * @see MySQLComplexQuery#with(String)
@@ -1015,7 +1079,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         }
 
         @Override
-        public _StaticCteLeftParenSpec<MySQLQuery._ComplexCteComma<I>> comma(String name) {
+        public _StaticCteParensSpec<_ComplexCteComma<I>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -1028,9 +1092,10 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
     }//MySQLCteComma
 
 
-    private static final class StaticCteColumnAliasClause<I extends Item>
-            extends CriteriaSupports.ParenStringConsumerClause<_StaticCteAsClause<I>>
-            implements _StaticCteLeftParenSpec<I>, _AsCteClause<I> {
+    private static final class StaticCteParensClause<I extends Item>
+            implements _StaticCteParensSpec<I>, _AsCteClause<I> {
+
+        private final CriteriaContext context;
 
         private final I cteComma;
 
@@ -1041,10 +1106,38 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         /**
          * @see #complexCte(CriteriaContext, Item)
          */
-        private StaticCteColumnAliasClause(CriteriaContext context, I cteComma) {
-            super(context);
+        private StaticCteParensClause(CriteriaContext context, I cteComma) {
+            this.context = context;
             this.cteComma = cteComma;
         }
+
+        @Override
+        public _StaticCteAsClause<I> parens(String first, String... rest) {
+            return this.columnAliasListEnd(ArrayUtils.unmodifiableListOf(first, rest));
+        }
+
+        @Override
+        public _StaticCteAsClause<I> parens(Consumer<Consumer<String>> consumer) {
+            final List<String> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() == 0) {
+                throw CriteriaUtils.columnAliasIsEmpty(this.context);
+            }
+            return this.columnAliasListEnd(_CollectionUtils.unmodifiableList(list));
+        }
+
+        @Override
+        public _StaticCteAsClause<I> ifParens(Consumer<Consumer<String>> consumer) {
+            final List<String> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() > 0) {
+                this.columnAliasListEnd(_CollectionUtils.unmodifiableList(list));
+            } else {
+                this.columnAliasList = null;
+            }
+            return this;
+        }
+
 
         @Override
         public I as(Function<_SelectSpec<_AsCteClause<I>>, I> function) {
@@ -1056,20 +1149,16 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
             return this.cteComma;
         }
 
-        @Override
-        _StaticCteAsClause<I> stringConsumerEnd(final List<String> stringList) {
-            final String name = this.name;
-            if (name == null || this.columnAliasList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            if (stringList.size() > 0) {
-                this.context.onCteColumnAlias(name, stringList);
-            }
-            this.columnAliasList = stringList;
+        /**
+         * @param columnAliasList unmodified list
+         */
+        private _StaticCteAsClause<I> columnAliasListEnd(final List<String> columnAliasList) {
+            this.context.onCteColumnAlias(this.name, columnAliasList);
+            this.columnAliasList = columnAliasList;
             return this;
         }
 
-        private _StaticCteLeftParenSpec<I> nextCte(final String name) {
+        private _StaticCteParensSpec<I> nextCte(final String name) {
             if (this.name != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -1085,6 +1174,8 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
             this.columnAliasList = null;// clear for next cte
             return this;
         }
+
+
 
     }//StaticCteColumnAliasClause
 
@@ -1205,12 +1296,12 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
 
         @Override
-        public final _StaticCteLeftParenSpec<_ComplexCteComma<I>> with(String name) {
+        public final _StaticCteParensSpec<_ComplexCteComma<I>> with(String name) {
             return new MySQLComplexCteComma<>(false, this).function.apply(name);
         }
 
         @Override
-        public final _StaticCteLeftParenSpec<_ComplexCteComma<I>> withRecursive(String name) {
+        public final _StaticCteParensSpec<_ComplexCteComma<I>> withRecursive(String name) {
             return new MySQLComplexCteComma<>(true, this).function.apply(name);
         }
 

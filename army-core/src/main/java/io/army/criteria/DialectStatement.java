@@ -2,8 +2,10 @@ package io.army.criteria;
 
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.SQLs;
+import io.army.function.ParensStringFunction;
 import io.army.meta.TableMeta;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -53,6 +55,11 @@ public interface DialectStatement extends Statement {
 
     }
 
+
+    interface _DerivedAsClause<R> extends _AsClause<R> {
+
+        R as(String alias, Function<ParensStringFunction, List<String>> function);
+    }
 
 
     interface _WhereCurrentOfClause<R> {

@@ -188,8 +188,11 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
 
     interface _JoinSpec<I extends Item>
-            extends _MySQLJoinClause<_IndexHintOnSpec<I>, _OnClause<_JoinSpec<I>>>,
-            _MySQLCrossJoinClause<_IndexHintJoinSpec<I>, _JoinSpec<I>>,
+            extends _MySQLJoinClause<_IndexHintOnSpec<I>, _DerivedAsClause<_OnClause<_JoinSpec<I>>>>,
+            _CrossJoinModifierTabularClause<_IndexHintJoinSpec<I>, _DerivedAsClause<_JoinSpec<I>>>,
+            _JoinCteClause<_OnClause<_JoinSpec<I>>>,
+            _StraightJoinCteClause<_OnClause<_JoinSpec<I>>>,
+            _CrossJoinCteClause<_JoinSpec<I>>,
             _MySQLJoinNestedClause<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>>,
             _CrossJoinNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>,
             _MySQLDynamicJoinClause<_JoinSpec<I>>,
@@ -211,11 +214,13 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _FromSpec<I extends Item> extends _MySQLFromClause<_IndexHintJoinSpec<I>, _JoinSpec<I>>
-            , _DialectFromClause<_PartitionJoinSpec<I>>
-            , _FromNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>
-            , _IntoOptionSpec<I>
-            , _UnionSpec<I> {
+    interface _FromSpec<I extends Item>
+            extends _FromModifierTabularClause<_IndexHintJoinSpec<I>, _DerivedAsClause<_JoinSpec<I>>>,
+            _FromCteClause<_JoinSpec<I>>,
+            _DialectFromClause<_PartitionJoinSpec<I>>,
+            _FromNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>,
+            _IntoOptionSpec<I>,
+            _UnionSpec<I> {
 
     }
 
@@ -243,7 +248,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_CteComma<I>>>,
+    interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<_CteComma<I>>>,
             _StaticSpaceClause<_SelectSpec<I>> {
 
     }
@@ -259,13 +264,13 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
     interface _WithSpec<I extends Item> extends _MinWithSpec<I>,
-            _StaticWithClause<_StaticCteLeftParenSpec<_CteComma<I>>> {
+            _StaticWithClause<_StaticCteParensSpec<_CteComma<I>>> {
 
     }
 
 
     interface _ComplexCteComma<I extends Item>
-            extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_ComplexCteComma<I>>>,
+            extends _StaticWithCommaClause<_StaticCteParensSpec<_ComplexCteComma<I>>>,
             _StaticSpaceClause<_QueryComplexSpec<I>> {
 
     }
@@ -277,7 +282,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>,
             _MySQLDynamicWithClause<_QueryComplexSpec<I>>,
-            _StaticWithClause<_StaticCteLeftParenSpec<_ComplexCteComma<I>>>,
+            _StaticWithClause<_StaticCteParensSpec<_ComplexCteComma<I>>>,
             MySQLValues._MySQLValuesClause<I>,
             _LeftParenRowSetClause<_RightParenClause<_UnionOrderBySpec<I>>> {
 

@@ -264,7 +264,7 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, SR, WR, WA, OR, LR>
 
         private final SimpleUpdateClause<I> clause;
 
-        private final Function<String, MySQLQuery._StaticCteLeftParenSpec<MySQLUpdate._SingleComma<I>>> function;
+        private final Function<String, _StaticCteParensSpec<_SingleComma<I>>> function;
 
         private SimpleComma(boolean recursive, SimpleUpdateClause<I> clause) {
             this.recursive = recursive;
@@ -273,7 +273,7 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, SR, WR, WA, OR, LR>
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>> comma(String name) {
+        public _StaticCteParensSpec<_SingleComma<I>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -341,14 +341,14 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, SR, WR, WA, OR, LR>
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>> with(String name) {
+        public _StaticCteParensSpec<_SingleComma<I>> with(String name) {
             final boolean recursive = false;
             this.context.onBeforeWithClause(recursive);
             return new SimpleComma<>(recursive, this).function.apply(name);
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_SingleComma<I>> withRecursive(String name) {
+        public _StaticCteParensSpec<_SingleComma<I>> withRecursive(String name) {
             final boolean recursive = true;
             this.context.onBeforeWithClause(recursive);
             return new SimpleComma<>(recursive, this).function.apply(name);
@@ -455,7 +455,7 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, SR, WR, WA, OR, LR>
 
         private final BatchUpdateClause<I> clause;
 
-        private final Function<String, MySQLQuery._StaticCteLeftParenSpec<MySQLUpdate._BatchSingleComma<I>>> function;
+        private final Function<String, _StaticCteParensSpec<_BatchSingleComma<I>>> function;
 
         private BatchComma(boolean recursive, BatchUpdateClause<I> clause) {
             this.recursive = recursive;
@@ -464,7 +464,7 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, SR, WR, WA, OR, LR>
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>> comma(String name) {
+        public _StaticCteParensSpec<_BatchSingleComma<I>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -588,14 +588,14 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, SR, WR, WA, OR, LR>
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>> with(String name) {
+        public _StaticCteParensSpec<_BatchSingleComma<I>> with(String name) {
             final boolean recursive = false;
             this.context.onBeforeWithClause(recursive);
             return new BatchComma<>(recursive, this).function.apply(name);
         }
 
         @Override
-        public MySQLQuery._StaticCteLeftParenSpec<_BatchSingleComma<I>> withRecursive(String name) {
+        public _StaticCteParensSpec<_BatchSingleComma<I>> withRecursive(String name) {
             final boolean recursive = true;
             this.context.onBeforeWithClause(recursive);
             return new BatchComma<>(recursive, this).function.apply(name);
