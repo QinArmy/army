@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
-import io.army.criteria.impl.inner._Query;
+import io.army.criteria.impl.inner._RowSet;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -21,11 +21,10 @@ abstract class MultiTableQueryContext extends StatementContext implements _Multi
             , ArmyParser parser, Visible visible) {
         super(outerContext, parser, visible);
 
+        this.selectionList = ((_RowSet) query).selectionList();
         if (query instanceof SubQuery) {
-            this.selectionList = null;
             this.multiTableContext = new MultiTableContext(this, tableContext, this::appendOuterField);
         } else {
-            this.selectionList = _DialectUtils.flatSelectItem(((_Query) query).selectItemList());
             this.multiTableContext = new MultiTableContext(this, tableContext, null);
         }
 
@@ -64,14 +63,12 @@ abstract class MultiTableQueryContext extends StatementContext implements _Multi
 
     @Override
     public final List<Selection> selectionList() {
-        final List<Selection> list = this.selectionList;
-        assert list != null;
-        return list;
+        return this.selectionList;
     }
 
     @Override
     public final SimpleStmt build() {
-        if (this.selectionList == null) {
+        if (this instanceof _SubQueryContext) {
             //sub query don't support,no bug,never here
             String m = String.format("%s don't support build() method", this.getClass().getName());
             throw new UnsupportedOperationException();

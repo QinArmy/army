@@ -280,8 +280,8 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         }
 
         @Override
-        public final List<? extends SelectItem> selectItemList() {
-            return ((_RowSet) this.left).selectItemList();
+        public final List<Selection> selectionList() {
+            return ((_RowSet) this.left).selectionList();
         }
 
         @Override
@@ -338,7 +338,7 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
     }//UnionRowSet
 
     static abstract class UnionSubRowSet extends UnionRowSet
-            implements DerivedTable {
+            implements ArmyDerivedTable {
 
         UnionSubRowSet(RowSet left, UnionType unionType, RowSet right) {
             super(left, unionType, right);
@@ -347,9 +347,19 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
         @Override
         public final Selection selection(String derivedAlias) {
-            return ((DerivedTable) this.left).selection(derivedAlias);
+            return ((ArmyDerivedTable) this.left).selection(derivedAlias);
         }
 
+
+        @Override
+        public final void setColumnAliasList(List<String> aliasList) {
+            ((ArmyDerivedTable) this.left).setColumnAliasList(aliasList);
+        }
+
+        @Override
+        public final List<String> columnAliasList() {
+            return ((ArmyDerivedTable) this.left).columnAliasList();
+        }
 
     }//UnionSubRowSet
 

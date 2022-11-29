@@ -5,6 +5,7 @@ import io.army.criteria.Item;
 import io.army.criteria.Statement;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public interface MySQLStatement extends DialectStatement {
 
@@ -266,9 +267,8 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
-    interface _StaticCteAsClause<I extends Item>
-            extends Statement._StaticAsClaus<MySQLQuery._SelectSpec<_AsCteClause<I>>> {
-
+    interface _StaticCteAsClause<I extends Item> {
+        I as(Function<MySQLQuery._SelectSpec<_AsCteClause<I>>, I> function);
     }
 
 

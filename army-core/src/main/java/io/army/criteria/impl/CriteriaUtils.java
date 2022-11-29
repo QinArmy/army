@@ -26,12 +26,15 @@ abstract class CriteriaUtils {
         throw new UnsupportedOperationException();
     }
 
+    static final List<String> EMPTY_STRING_LIST = Collections.emptyList();
+
 
     static void createAndAddCte(final CriteriaContext context, final @Nullable String name
             , final @Nullable List<String> columnAliasList, final SubStatement subStatement) {
         if (name == null) {
             throw ContextStack.castCriteriaApi(context);
         }
+        assert ((CriteriaContextSpec) subStatement).getContext().getNonNullOuterContext() == context;
         final SQLs.CteImpl cte;
         if (columnAliasList == null) {
             cte = new SQLs.CteImpl(name, subStatement);
@@ -66,19 +69,6 @@ abstract class CriteriaUtils {
         return predicateList;
     }
 
-
-    static CriteriaException unionTypeError(final RowSet left, final String message) {
-        final CriteriaContext leftContext, outerContext;
-        leftContext = ((CriteriaContextSpec) left).getContext();
-        outerContext = ((CriteriaContext.OuterContextSpec) leftContext).getOuterContext();
-        final CriteriaException e;
-        if (outerContext == null) {
-            e = new CriteriaException(message);
-        } else {
-            e = ContextStack.criteriaError(outerContext, message);
-        }
-        return e;
-    }
 
     static CriteriaException ofTableListIsEmpty(CriteriaContext context) {
         return ContextStack.criteriaError(context, "of table list must non-empty.");
@@ -389,7 +379,7 @@ abstract class CriteriaUtils {
 
     static int selectionCount(final RowSet rowSet) {
         int count = 0;
-        for (SelectItem selectItem : ((_RowSet) rowSet).selectItemList()) {
+        for (SelectItem selectItem : ((_RowSet) rowSet).selectionList()) {
             if (selectItem instanceof Selection) {
                 count++;
             } else if (selectItem instanceof SelectionGroup) {
@@ -531,6 +521,12 @@ abstract class CriteriaUtils {
         String m = String.format("%s is illegal %s", _ClassUtils.safeClassName(item), AssignmentItem.class.getName());
         return ContextStack.criteriaError(context, m);
     }
+
+    static CriteriaException duplicateColumnAlias(CriteriaContext context, String columnAlias) {
+        String m = String.format("column alias[%s] duplication.", columnAlias);
+        return ContextStack.criteriaError(context, m);
+    }
+
 
     private static CriteriaException unknownSelectItem(final RowSet left, final SelectItem item) {
         return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext()

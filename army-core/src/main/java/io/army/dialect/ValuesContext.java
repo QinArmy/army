@@ -27,7 +27,7 @@ final class ValuesContext extends StatementContext implements _ValuesContext {
             , Visible visible) {
         super(outerContext, dialect, visible);
         if (outerContext == null && stmt instanceof Values) {
-            this.selectionList = _DialectUtils.flatSelectItem(((_RowSet) stmt).selectItemList());
+            this.selectionList = _DialectUtils.flatSelectItem(((_RowSet) stmt).selectionList());
         } else {
             this.selectionList = null;
         }

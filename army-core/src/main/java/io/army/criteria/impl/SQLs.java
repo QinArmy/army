@@ -431,7 +431,7 @@ public abstract class SQLs extends SQLsSyntax {
     }//ExpressionPairImpl
 
 
-    static final class CteImpl implements _Cte {
+    static final class CteImpl implements _Cte, TabularItem._DerivedTableSpec, DerivedTable {
 
         final String name;
 
@@ -442,6 +442,9 @@ public abstract class SQLs extends SQLsSyntax {
         CteImpl(String name, SubStatement subStatement) {
             this.name = name;
             this.columnNameList = Collections.emptyList();
+            if (subStatement instanceof DerivedTable) {
+                ((ArmyDerivedTable) subStatement).setColumnAliasList(this.columnNameList);
+            }
             this.subStatement = subStatement;
         }
 
@@ -450,6 +453,9 @@ public abstract class SQLs extends SQLsSyntax {
             this.name = name;
             this.columnNameList = columnNameList;
             this.subStatement = subStatement;
+            if (subStatement instanceof DerivedTable) {
+                ((ArmyDerivedTable) subStatement).setColumnAliasList(columnNameList);
+            }
         }
 
         @Override
@@ -458,7 +464,7 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public List<String> columnNameList() {
+        public List<String> columnAliasList() {
             return this.columnNameList;
         }
 
@@ -468,11 +474,11 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public List<? extends SelectItem> selectItemList() {
+        public List<Selection> selectionList() {
             final SubStatement subStatement = this.subStatement;
-            final List<? extends SelectItem> list;
+            final List<Selection> list;
             if (subStatement instanceof DerivedTable) {
-                list = ((DerivedTable) subStatement).selectItemList();
+                list = ((ArmyDerivedTable) subStatement).selectionList();
             } else if (subStatement instanceof _Statement._ReturningListSpec) {
                 list = ((_Statement._ReturningListSpec) subStatement).returningList();
             } else {
@@ -481,12 +487,13 @@ public abstract class SQLs extends SQLsSyntax {
             return list;
         }
 
+
         @Override
         public Selection selection(final String derivedAlias) {
             final SubStatement subStatement = this.subStatement;
             final Selection selection;
             if (subStatement instanceof DerivedTable) {
-                selection = ((DerivedTable) subStatement).selection(derivedAlias);
+                selection = ((ArmyDerivedTable) subStatement).selection(derivedAlias);
             } else {
                 selection = null;
             }

@@ -3,6 +3,7 @@ package io.army.dialect;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -48,15 +49,15 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
             , ArmyParser parser, Visible visible) {
         super(outerContext, domainStmt, parser, visible);
 
-        final _Insert._QueryInsert nonChildStmt;
+        final _Insert._QueryInsert targetStmt;
         if (domainStmt instanceof _Insert._ChildQueryInsert) {
-            nonChildStmt = ((_Insert._ChildQueryInsert) domainStmt).parentStmt();
+            targetStmt = ((_Insert._ChildQueryInsert) domainStmt).parentStmt();
         } else {
-            nonChildStmt = domainStmt;
+            targetStmt = domainStmt;
 
         }
-        this.subQuery = nonChildStmt.subQuery();
-        this.querySelectionList = _DialectUtils.flatSelectItem(this.subQuery.selectItemList());
+        this.subQuery = targetStmt.subQuery();
+        this.querySelectionList = ((_DerivedTable) this.subQuery).selectionList();
 
         assert this.fieldList.size() == this.querySelectionList.size();
 
@@ -74,7 +75,7 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
         super(outerContext, domainStmt, parentContext);
 
         this.subQuery = domainStmt.subQuery();
-        this.querySelectionList = _DialectUtils.flatSelectItem(this.subQuery.selectItemList());
+        this.querySelectionList = ((_DerivedTable) this.subQuery).selectionList();
 
         assert this.insertTable instanceof ChildTableMeta
                 && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta()

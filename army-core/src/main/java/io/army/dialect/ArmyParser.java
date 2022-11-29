@@ -741,7 +741,7 @@ abstract class ArmyParser implements DialectParser {
             }
             cte = cteList.get(i);
             assetConsumer.accept(cte);
-            columnAliasList = cte.columnNameList();
+            columnAliasList = cte.columnAliasList();
             subQuery = (SubQuery) cte.subStatement();
 
             sqlBuilder.append(_Constant.SPACE);
@@ -759,8 +759,9 @@ abstract class ArmyParser implements DialectParser {
                 }
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
-            sqlBuilder.append(_Constant.SPACE_AS);
+            sqlBuilder.append(_Constant.SPACE_AS).append(_Constant.SPACE_LEFT_PAREN);
             this.handleQuery(subQuery, context);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
         }
 
@@ -949,28 +950,21 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
-    protected final void selectListClause(final List<? extends SelectItem> selectItemList, final _SqlContext context) {
-
-        final int size = selectItemList.size();
+    protected final void selectListClause(final SelectionListContext context) {
+        final List<Selection> selectionList;
+        selectionList = context.selectionList();
+        final int size = selectionList.size();
         if (size == 0) {
             throw _Exceptions.selectListIsEmpty();
         }
         final StringBuilder builder = context.sqlBuilder();
-        SelectItem selectItem;
         for (int i = 0; i < size; i++) {
             if (i > 0) {
                 builder.append(_Constant.SPACE_COMMA);
             }
-            selectItem = selectItemList.get(i);
-            if (selectItem instanceof Selection) {
-                ((_Selection) selectItem).appendSelection(context);
-            } else if (selectItem instanceof SelectionGroup) {
-                ((_SelfDescribed) selectItem).appendSql(context);
-            } else {
-                throw _Exceptions.unknownSelectItem(selectItem);
-            }
+            ((_SelfDescribed) selectionList.get(i)).appendSql(context);
 
-        }
+        }//for
 
     }
 
@@ -1534,17 +1528,18 @@ abstract class ArmyParser implements DialectParser {
             } else {
                 this.assertRowSet(stmt);
             }
+            final _ParenRowSetContext parenContext;
             if (stmt instanceof _Statement._WithClauseSpec
                     && ((_Statement._WithClauseSpec) stmt).cteList().size() > 0) {
-                final ParensSelectContext withClauseContext;
-                withClauseContext = ParensSelectContext.create(outerContext, stmt, this, visible);
-
-                this.parseWithClause((_Statement._WithClauseSpec) stmt, withClauseContext);
-                context = ParensSelectContext.create(withClauseContext, stmt, this, visible);
-            } else {
                 context = ParensSelectContext.create(outerContext, stmt, this, visible);
+
+                this.parseWithClause((_Statement._WithClauseSpec) stmt, context);
+                parenContext = ParensSelectContext.create(context, stmt, this, visible);
+            } else {
+                parenContext = ParensSelectContext.create(outerContext, stmt, this, visible);
+                context = (_SelectContext) parenContext;
             }
-            this.handleParenRowSet((_ParenRowSetContext) context, (_ParensRowSet) stmt);
+            this.handleParenRowSet(parenContext, (_ParensRowSet) stmt);
         } else {
             throw _Exceptions.unknownRowSetType(stmt);
         }
@@ -2177,7 +2172,7 @@ abstract class ArmyParser implements DialectParser {
         //1. select clause
         this.standardSelectClause(query.modifierList(), builder);
         //2. select list clause
-        this.selectListClause(query.selectItemList(), context);
+        this.selectListClause(context);
         //3. from clause
         final List<_TableBlock> blockList;
         blockList = query.tableBlockList();

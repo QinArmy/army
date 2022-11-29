@@ -1,6 +1,6 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.SelectItem;
+import io.army.criteria.Selection;
 import io.army.criteria.SortItem;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -23,7 +23,7 @@ public interface _Statement {
 
     interface _ReturningListSpec {
 
-        List<? extends SelectItem> returningList();
+        List<Selection> returningList();
     }
 
     interface _RowCountSpec {

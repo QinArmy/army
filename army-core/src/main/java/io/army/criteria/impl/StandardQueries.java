@@ -353,7 +353,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     static class SimpleSubQuery<I extends Item> extends StandardQueries<I>
-            implements SubQuery {
+            implements SubQuery, ArmyDerivedTable {
 
         private final Function<SubQuery, I> function;
 
@@ -402,17 +402,11 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             return new SimpleSubQuery<>(this.context.getNonNullOuterContext(), unionFunc, this.context);
         }
 
-        private I bracketEnd(final SubQuery query) {
-            ContextStack.pop(this.context.endContextBeforeSelect());
-            //standard query no with clause,so function.apply(query) not function.apply(this)
-            return this.function.apply(query);
-        }
-
 
     } // SimpleSubQuery
 
 
-    static abstract class StandardBracketQueries<I extends Item>
+    static abstract class StandardBracketQuery<I extends Item>
             extends BracketRowSet<
             I,
             _UnionOrderBySpec<I>,
@@ -424,7 +418,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             StandardQuery {
 
 
-        private StandardBracketQueries(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
+        private StandardBracketQuery(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
             super(CriteriaContexts.bracketContext(null, outerContext, leftContext));
         }
 
@@ -434,11 +428,11 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             return MySQLDialect.MySQL57;
         }
 
-    }//StandardBracketQueries
+    }//StandardBracketQuery
 
 
     private static final class BracketSelect<I extends Item>
-            extends StandardBracketQueries<I>
+            extends StandardBracketQuery<I>
             implements Select {
 
         private final Function<Select, I> function;
@@ -466,8 +460,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }//BracketSelect
 
     private static final class BracketSubQuery<I extends Item>
-            extends StandardBracketQueries<I>
-            implements SubQuery {
+            extends StandardBracketQuery<I>
+            implements SubQuery, ArmyDerivedTable {
 
         private final Function<SubQuery, I> function;
 

@@ -2,10 +2,7 @@ package io.army.dialect;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._MultiUpdate;
-import io.army.criteria.impl.inner._Selection;
-import io.army.criteria.impl.inner._SingleUpdate;
-import io.army.criteria.impl.inner._Update;
+import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -98,7 +95,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
             final String tableAlias = field.tableAlias();
             final TabularItem tableItem = this.multiTableContext.aliasToTable.get(tableAlias);
             if (!(tableItem instanceof DerivedTable)
-                    || ((DerivedTable) tableItem).selection(field.fieldName()) == null) {
+                    || ((_DerivedTable) tableItem).selection(field.fieldName()) == null) {
                 throw _Exceptions.unknownColumn(field);
             }
             final String safeTableAlias;

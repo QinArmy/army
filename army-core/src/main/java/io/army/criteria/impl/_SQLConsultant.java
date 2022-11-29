@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
@@ -17,7 +16,7 @@ public abstract class _SQLConsultant {
 
     public static void assertStandardQuery(final Query query) {
         if (!(query instanceof StandardQueries
-                || query instanceof StandardQueries.StandardBracketQueries
+                || query instanceof StandardQueries.StandardBracketQuery
                 || query instanceof SimpleQueries.UnionSelect
                 || query instanceof SimpleQueries.UnionSubQuery)) {
             throw nonArmyStatement(query);
@@ -84,7 +83,7 @@ public abstract class _SQLConsultant {
         throw new CriteriaException(m);
     }
 
-    static CriteriaException illegalCteImpl(_Cte cte) {
+    static CriteriaException illegalCteImpl(CteItem cte) {
         return new CriteriaException(String.format("Illegal Cte %s", cte));
     }
 

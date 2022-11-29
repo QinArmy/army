@@ -2184,51 +2184,26 @@ abstract class InsertSupport {
         }
         //2. validate parent statement discriminator
         final List<FieldMeta<?>> fieldList;
-        final List<? extends SelectItem> selectItemList;
+        final List<Selection> selectionList;
         if (statement instanceof _Insert._ChildQueryInsert) {
             final _Insert._QueryInsert parentStmt;
             parentStmt = ((_Insert._ChildQueryInsert) statement).parentStmt();
             fieldList = parentStmt.fieldList();
-            selectItemList = parentStmt.subQuery().selectItemList();
+            selectionList = ((_DerivedTable) parentStmt.subQuery()).selectionList();
         } else {
             fieldList = statement.fieldList();
-            selectItemList = statement.subQuery().selectItemList();
+            selectionList = ((_DerivedTable) statement.subQuery()).selectionList();
         }
         //2.1 find discriminatorSelection
         final int fieldSize = fieldList.size();
         final FieldMeta<?> discriminatorField = insertTable.discriminator();
         assert discriminatorField != null;
         Selection discriminatorSelection = null;
-        outerFor:
-        for (int i = 0, selectionIndex; i < fieldSize; i++) {
-            if (fieldList.get(i) != discriminatorField) {
-                continue;
+        for (int i = 0; i < fieldSize; i++) {
+            if (fieldList.get(i) == discriminatorField) {
+                discriminatorSelection = selectionList.get(i);
+                break;
             }
-            selectionIndex = 0;
-            for (SelectItem selectItem : selectItemList) {
-                if (selectItem instanceof Selection) {
-                    if (selectionIndex == i) {
-                        discriminatorSelection = (Selection) selectItem;
-                        break outerFor;
-                    }
-                    selectionIndex++;
-                    continue;
-                }
-                if (!(selectItem instanceof SelectionGroup)) {
-                    //no bug,never here
-                    throw _Exceptions.unknownSelectItem(selectItem);
-                }
-                for (Selection selection : ((SelectionGroup) selectItem).selectionList()) {
-                    if (selectionIndex == i) {
-                        discriminatorSelection = selection;
-                        break outerFor;
-                    }
-                    selectionIndex++;
-                }
-
-            }
-
-            break;
         }//outerFor
 
         if (discriminatorSelection == null) {

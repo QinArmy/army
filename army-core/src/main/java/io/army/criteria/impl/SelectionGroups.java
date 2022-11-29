@@ -7,7 +7,6 @@ import io.army.criteria.SelectionGroup;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
-import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.meta.*;
 import io.army.util._CollectionUtils;
@@ -254,7 +253,7 @@ abstract class SelectionGroups {
             if (this instanceof DerivedFieldGroup) {
                 this.selectionList = ((DerivedFieldGroup) this).createSelectionList(table);
             } else {
-                this.selectionList = Collections.unmodifiableList(_DialectUtils.flatSelectItem(table.selectItemList()));
+                this.selectionList = ((ArmyDerivedTable) table).selectionList();
             }
 
         }
@@ -324,7 +323,7 @@ abstract class SelectionGroups {
             final List<Selection> selectionList = new ArrayList<>(derivedFieldNameList.size());
             Selection selection;
             for (String selectionAlias : derivedFieldNameList) {
-                selection = table.selection(selectionAlias);
+                selection = ((ArmyDerivedTable) table).selection(selectionAlias);
                 if (selection == null) {
                     String m = String.format("unknown derived field %s.%s .", this.derivedAlias, selectionAlias);
                     throw new CriteriaException(m);

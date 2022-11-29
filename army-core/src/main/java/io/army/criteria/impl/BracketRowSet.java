@@ -15,13 +15,13 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         Query._QueryIntersectClause<SP>,
         Query._QueryExceptClause<SP>,
         Query._QueryMinusClause<SP>,
-        TabularItem.DerivedTableSpec,
+        CriteriaSupports.ArmyDerivedSpec,
         Query._AsQueryClause<I>,
         Statement._RightParenClause<RR>,
         RowSet {
 
 
-    private RowSet rowSet;
+    private RowSet innerRowSet;
 
     private Boolean prepared;
 
@@ -105,7 +105,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
 
     @Override
     public final RowSet innerRowSet() {
-        final RowSet rowSet = this.rowSet;
+        final RowSet rowSet = this.innerRowSet;
         if (rowSet == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -114,7 +114,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
 
     @Override
     public final int selectionSize() {
-        final RowSet rowSet = this.rowSet;
+        final RowSet rowSet = this.innerRowSet;
         if (rowSet == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -122,27 +122,45 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
     }
 
     @Override
-    public final List<? extends SelectItem> selectItemList() {
-        final RowSet rowSet = this.rowSet;
+    public final List<Selection> selectionList() {
+        final RowSet rowSet = this.innerRowSet;
         if (rowSet == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return ((_RowSet) rowSet).selectItemList();
+        return ((_RowSet) rowSet).selectionList();
+    }
+
+    @Override
+    public final List<String> columnAliasList() {
+        final RowSet rowSet = this.innerRowSet;
+        if (!(this instanceof DerivedTable && rowSet instanceof DerivedTable)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return ((ArmyDerivedTable) rowSet).columnAliasList();
+    }
+
+    @Override
+    public final void setColumnAliasList(final List<String> aliasList) {
+        final RowSet rowSet = this.innerRowSet;
+        if (!(this instanceof DerivedTable && rowSet instanceof DerivedTable)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        ((ArmyDerivedTable) rowSet).setColumnAliasList(aliasList);
     }
 
     @Override
     public final Selection selection(final String derivedAlias) {
-        final RowSet rowSet = this.rowSet;
+        final RowSet rowSet = this.innerRowSet;
         if (!(rowSet instanceof DerivedTable)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return ((DerivedTable) rowSet).selection(derivedAlias);
+        return ((ArmyDerivedTable) rowSet).selection(derivedAlias);
     }
 
     @Override
     public final void clear() {
         _Assert.prepared(this.prepared);
-        this.rowSet = null;
+        this.innerRowSet = null;
         this.clearOrderByList();
         this.prepared = Boolean.FALSE;
     }
@@ -161,10 +179,10 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
 
 
     final Statement._RightParenClause<RR> parenRowSetEnd(final RowSet parenRowSet) {
-        if (this.rowSet != null) {
+        if (this.innerRowSet != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        this.rowSet = parenRowSet;
+        this.innerRowSet = parenRowSet;
         this.context.onSetInnerContext(((CriteriaContextSpec) parenRowSet).getContext());
         return this;
     }
@@ -189,7 +207,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
     private void endQueryStatement() {
         _Assert.nonPrepared(this.prepared);
         final CriteriaContext context = this.context;
-        if (this.rowSet == null) {
+        if (this.innerRowSet == null) {
             throw ContextStack.castCriteriaApi(context);
         }
         this.endOrderByClause();

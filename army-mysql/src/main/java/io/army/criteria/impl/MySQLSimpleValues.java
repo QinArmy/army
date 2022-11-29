@@ -314,7 +314,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        MySQLQueries<I> onSelectClause(final @Nullable _WithClauseSpec spec) {
+        MySQLQueries<I, ?> onSelectClause(final @Nullable _WithClauseSpec spec) {
             final CriteriaContext outerContext = this.outerContext;
             assert outerContext != null;
             return MySQLQueries.subQuery(spec, outerContext, this::queryEnd);
@@ -373,7 +373,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        MySQLQueries<I> onSelectClause(final @Nullable _WithClauseSpec spec) {
+        MySQLQueries<I, ?> onSelectClause(final @Nullable _WithClauseSpec spec) {
             return MySQLQueries.primaryQuery(spec, this.outerContext, this::queryEnd);
         }
 

@@ -24,6 +24,7 @@ interface CriteriaContext {
 
     void onCteColumnAlias(String name, List<String> columnAliasList);
 
+
     void onAddCte(_Cte cte);
 
 
@@ -40,7 +41,6 @@ interface CriteriaContext {
 
     CriteriaContext onAddSelectItem(SelectItem selectItem);
 
-    List<SelectItem> endSelectClause();
 
     int selectionSize();
 
@@ -84,8 +84,6 @@ interface CriteriaContext {
 
     void onAddWindow(String windowName);
 
-    boolean isNotExistWindow(String windowName);
-
     void onRefWindow(String windowName);
 
     @Nullable
@@ -102,31 +100,15 @@ interface CriteriaContext {
      */
     List<_TableBlock> endContext();
 
-    /**
-     * @return this
-     */
-    CriteriaContext endContextBeforeSelect();
+    void endContextBeforeSelect();
+
+    List<String> derivedColumnAliasList();
+
+    List<Selection> selectionList();
+
+    void onDerivedColumnAliasList(List<String> aliasList);
 
     boolean isBracketAndNotEnd();
 
-
-    @Deprecated
-    interface CteConsumer {
-
-        void addCte(_Cte cte);
-
-        /**
-         * @return a unmodified list.
-         */
-        List<_Cte> end();
-
-    }
-
-    @Deprecated
-    interface OuterContextSpec {
-
-        @Nullable
-        CriteriaContext getOuterContext();
-    }
 
 }

@@ -184,6 +184,9 @@ abstract class ContextStack {
             if (stack != null) {
                 HOLDER.remove();
             }
+            if (e instanceof Error) {
+                throw e;
+            }
             throw new CriteriaException("union query supplier occur error", e);
         }
     }

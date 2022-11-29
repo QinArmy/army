@@ -20,12 +20,17 @@ import java.util.List;
 public interface TabularItem extends Item {
 
 
-    interface DerivedTableSpec {
+    interface _DerivedTableSpec {
 
         @Nullable
         Selection selection(String derivedAlias);
 
-        List<? extends SelectItem> selectItemList();
+        List<Selection> selectionList();
+
+        /**
+         * @return empty : representing no alias list.
+         */
+        List<String> columnAliasList();
 
     }
 

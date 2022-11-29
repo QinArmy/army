@@ -2210,7 +2210,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
         @Override
-        public List<Selection> selectItemList() {
+        public List<Selection> selectionList() {
             final List<Selection> selectionList = this.selectionList;
             if (selectionList == null || selectionList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);

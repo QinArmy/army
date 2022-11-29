@@ -108,13 +108,13 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
     }
 
     static Expression scalarExpression(final SubQuery subQuery) {
-        final List<? extends SelectItem> selectItemList;
-        selectItemList = ((_RowSet) subQuery).selectItemList();
-        final SelectItem selectItem;
-        if (!(selectItemList.size() == 1 && (selectItem = selectItemList.get(0)) instanceof Selection)) {
+        final List<Selection> selectionList;
+        selectionList = ((_RowSet) subQuery).selectionList();
+        if (selectionList.size() != 1) {
             throw ContextStack.criteriaError(ContextStack.peek(), _Exceptions::nonScalarSubQuery, subQuery);
         }
-        return new ScalarExpression<>(((Selection) selectItem).typeMeta(), subQuery, SQLs._IDENTITY);
+        ((ArmyDerivedTable) subQuery).setColumnAliasList(CriteriaUtils.EMPTY_STRING_LIST);
+        return new ScalarExpression<>(selectionList.get(0).typeMeta(), subQuery, SQLs._IDENTITY);
     }
 
     static <I extends Item> OperationExpression<I> wrapExpression(final OperationExpression<?> expression,
@@ -298,9 +298,7 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
      */
     private static void assertColumnSubQuery(final DualOperator operator
             , final @Nullable QueryOperator queryOperator, final SubQuery subQuery) {
-        final List<? extends SelectItem> selectItemList;
-        selectItemList = subQuery.selectItemList();
-        if (selectItemList.size() != 1 || !(selectItemList.get(0) instanceof Selection)) {
+        if (((_RowSet) subQuery).selectionList().size() != 1) {
             StringBuilder builder = new StringBuilder();
             builder.append("Operator ")
                     .append(operator.name());
@@ -309,8 +307,9 @@ abstract class Expressions<I extends Item> extends OperationExpression<I> {
                         .append(queryOperator.name());
             }
             builder.append(" only support column sub query.");
-            throw ContextStack.criteriaError(ContextStack.peek(), builder.toString());
+            throw ContextStack.clearStackAndCriteriaError(builder.toString());
         }
+
     }
 
 

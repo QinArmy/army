@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
@@ -127,12 +126,15 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
         }
     }
 
-    public static void assertMySQLCte(final _Cte cte) {
+    public static void assertMySQLCte(final CteItem cte) {
+        if (cte instanceof CriteriaContexts.RecursiveCte) {
+            return;
+        }
         if (!(cte instanceof SQLs.CteImpl)) {
             throw illegalCteImpl(cte);
         }
         final SubStatement subStatement;
-        subStatement = cte.subStatement();
+        subStatement = ((SQLs.CteImpl) cte).subStatement();
         if (!(subStatement instanceof MySQLQueries
                 || subStatement instanceof MySQLQueries.MySQLBracketQuery
                 || subStatement instanceof SimpleQueries.UnionSubQuery)) {

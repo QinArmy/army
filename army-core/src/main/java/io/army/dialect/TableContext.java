@@ -168,7 +168,9 @@ final class TableContext {
             }
 
             alias = block.alias();
-            _DialectUtils.validateTableAlias(alias);
+            if (!(tableItem instanceof CteItem)) {
+                _DialectUtils.validateTableAlias(alias);
+            }
             //1. create alias to tableItem map
             if (aliasToTable.putIfAbsent(alias, tableItem) != null) {
                 throw _Exceptions.tableAliasDuplication(alias);

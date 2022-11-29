@@ -42,7 +42,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         Query._GroupByClause<GR>,
         Query._HavingClause<HR>,
         Query._AsQueryClause<Q>,
-        TabularItem.DerivedTableSpec,
+        CriteriaSupports.ArmyDerivedSpec,
         Query._QueryUnionClause<SP>,
         Query._QueryIntersectClause<SP>,
         Query._QueryExceptClause<SP>,
@@ -58,8 +58,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     private List<Hint> hintList;
 
     private List<? extends Query.SelectModifier> modifierList;
-
-    private List<SelectItem> selectItemList;
 
     private List<_TableBlock> tableBlockList;
 
@@ -987,12 +985,20 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final List<? extends SelectItem> selectItemList() {
-        final List<? extends SelectItem> list = this.selectItemList;
-        if (list == null || list instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return list;
+    public final List<Selection> selectionList() {
+        return this.context.selectionList();
+    }
+
+    @Override
+    public final List<String> columnAliasList() {
+        prepared();
+        return this.context.derivedColumnAliasList();
+    }
+
+    @Override
+    public final void setColumnAliasList(final List<String> aliasList) {
+        prepared();
+        this.context.onDerivedColumnAliasList(aliasList);
     }
 
     @Override
@@ -1046,10 +1052,9 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     public final void clear() {
         this.hintList = null;
         this.modifierList = null;
-        this.selectItemList = null;
         this.tableBlockList = null;
-
         this.groupByList = null;
+
         this.havingList = null;
         this.onClear();
     }
@@ -1132,11 +1137,9 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         final CriteriaContext context = this.context;
         if (beforeSelect) {
-            this.selectItemList = Collections.emptyList();
             context.endContextBeforeSelect();
             this.tableBlockList = Collections.emptyList();
         } else {
-            this.selectItemList = context.endSelectClause();
             this.onEndQuery();
             this.tableBlockList = context.endContext();
         }
@@ -1312,7 +1315,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             return (WE) this;
         }
 
-        @SuppressWarnings("unchecked")
+
+        @Nullable
         final _Statement._WithClauseSpec getWithClause() {
             return this.cteList == null ? null : this;
         }

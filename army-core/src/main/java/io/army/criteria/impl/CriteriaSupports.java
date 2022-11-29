@@ -91,9 +91,11 @@ abstract class CriteriaSupports {
         return new SimpleFieldItemPairs<>(context, updateTable, consumer);
     }
 
-    public interface ArmyDerivedSpec {
+    interface ArmyDerivedSpec extends TabularItem._DerivedTableSpec {
+
 
         void setColumnAliasList(List<String> aliasList);
+
 
     }
 

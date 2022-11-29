@@ -244,7 +244,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
 
     interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_CteComma<I>>>,
-            _SelectSpec<I> {
+            _StaticSpaceClause<_SelectSpec<I>> {
 
     }
 
@@ -264,14 +264,21 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
+    interface _ComplexCteComma<I extends Item>
+            extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_ComplexCteComma<I>>>,
+            _StaticSpaceClause<_QueryComplexSpec<I>> {
+
+    }
+
     interface _QueryComplexSpec<I extends Item> extends _MySQLSelectClause<I>,
-            MySQLValues._MySQLValuesClause<I>,
             _LeftParenClause<_QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 
     interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>,
             _MySQLDynamicWithClause<_QueryComplexSpec<I>>,
+            _StaticWithClause<_StaticCteLeftParenSpec<_ComplexCteComma<I>>>,
+            MySQLValues._MySQLValuesClause<I>,
             _LeftParenRowSetClause<_RightParenClause<_UnionOrderBySpec<I>>> {
 
     }

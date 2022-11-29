@@ -23,7 +23,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
         Query._QueryExceptClause<SP>,
         Query._QueryIntersectClause<SP>,
         Query._QueryMinusClause<SP>,
-        TabularItem.DerivedTableSpec {
+        CriteriaSupports.ArmyDerivedSpec {
 
     private List<_Expression> columnList;
 
@@ -283,12 +283,22 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
     }
 
     @Override
-    public final List<? extends SelectItem> selectItemList() {
+    public final List<Selection> selectionList() {
         final List<Selection> list = this.selectionList;
         if (list == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         return list;
+    }
+
+    @Override
+    public final List<String> columnAliasList() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public final void setColumnAliasList(final List<String> aliasList) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

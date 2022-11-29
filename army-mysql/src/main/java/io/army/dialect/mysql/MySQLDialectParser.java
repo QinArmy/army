@@ -178,12 +178,15 @@ final class MySQLDialectParser extends MySQLParser {
         this.selectModifiers(stmt.modifierList(), sqlBuilder);
 
         //5. select item list clause
-        this.selectListClause(stmt.selectItemList(), context);
+        this.selectListClause(context);
         final List<_TableBlock> tableBlockList;
         tableBlockList = stmt.tableBlockList();
-        //6. FROM clause
-        sqlBuilder.append(_Constant.SPACE_FROM);
-        this.mysqlTableReferences(tableBlockList, context, false);
+
+        if (tableBlockList.size() > 0) {
+            //6. FROM clause
+            sqlBuilder.append(_Constant.SPACE_FROM);
+            this.mysqlTableReferences(tableBlockList, context, false);
+        }
         //7. WHERE clause
         this.queryWhereClause(tableBlockList, stmt.wherePredicateList(), context);
         //8. GROUP clause
@@ -722,10 +725,10 @@ final class MySQLDialectParser extends MySQLParser {
                 this.mysqlTableReferences(((_NestedItems) tableItem).tableBlockList(), context, true);
             } else if (!asOf80) {
                 throw _Exceptions.dontSupportTableItem(tableItem, alias, this.dialect);
-            } else if (tableItem instanceof _Cte) {
-                _MySQLConsultant.assertMySQLCte((_Cte) tableItem);
+            } else if (tableItem instanceof CteItem) {
+                _MySQLConsultant.assertMySQLCte((CteItem) tableItem);
                 sqlBuilder.append(_Constant.SPACE);
-                this.identifier(((_Cte) tableItem).name(), sqlBuilder);
+                this.identifier(((CteItem) tableItem).name(), sqlBuilder);
                 if (_StringUtils.hasText(alias)) {
                     sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                     this.identifier(alias, sqlBuilder);
