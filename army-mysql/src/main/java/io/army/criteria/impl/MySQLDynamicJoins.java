@@ -173,7 +173,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinClause<
     }
 
     @Override
-    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
+    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
             , TabularItem tableItem, String alias) {
         if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
@@ -192,7 +192,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinClause<
 
     @Override
     final Statement._OnClause<MySQLQuery._DynamicJoinSpec> createItemBlock(_JoinType joinType
-            , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
+            , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
         final OnClauseTableBlock<MySQLQuery._DynamicJoinSpec> block;
         if (modifier == null) {
             block = new OnClauseTableBlock<>(joinType, tableItem, alias, this);
@@ -206,7 +206,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinClause<
 
     @Override
     final Statement._OnClause<MySQLQuery._DynamicJoinSpec> createCteBlock(_JoinType joinType
-            , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
+            , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
         joinType.assertMySQLJoinType();
         if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
@@ -295,7 +295,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinClause<
         }
 
         @Override
-        public <T extends TabularItem> Statement._AsClause<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> tabular(final @Nullable Query.TabularModifier modifier
+        public <T extends TabularItem> Statement._AsClause<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> tabular(final @Nullable Query.DerivedModifier modifier
                 , Supplier<T> supplier) {
             if (this.started) {
                 throw CriteriaUtils.duplicateTabularMethod(this.context);
@@ -403,7 +403,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinClause<
         }
 
         @Override
-        public <T extends TabularItem> Statement._AsClause<MySQLQuery._DynamicJoinSpec> tabular(@Nullable Query.TabularModifier modifier
+        public <T extends TabularItem> Statement._AsClause<MySQLQuery._DynamicJoinSpec> tabular(@Nullable Query.DerivedModifier modifier
                 , Supplier<T> supplier) {
             if (this.started) {
                 throw CriteriaUtils.duplicateTabularMethod(this.context);

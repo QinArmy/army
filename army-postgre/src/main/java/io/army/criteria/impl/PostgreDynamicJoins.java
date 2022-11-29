@@ -243,7 +243,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinClause<
     }
 
     @Override
-    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
+    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
             , TabularItem tableItem, String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
             throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
@@ -262,7 +262,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinClause<
 
     @Override
     final Statement._OnClause<PostgreStatement._DynamicJoinSpec> createItemBlock(_JoinType joinType
-            , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
+            , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
             throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
         }
@@ -271,7 +271,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinClause<
 
     @Override
     final Statement._OnClause<PostgreStatement._DynamicJoinSpec> createCteBlock(_JoinType joinType
-            , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
+            , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
         if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -385,7 +385,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinClause<
 
         @Override
         public <T extends TabularItem> Statement._AsClause<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> tabular(
-                @Nullable Query.TabularModifier modifier, Supplier<T> supplier) {
+                @Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
             if (this.started) {
                 throw CriteriaUtils.duplicateTabularMethod(this.context);
             }
@@ -500,7 +500,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinClause<
         }
 
         @Override
-        public <T extends TabularItem> Statement._AsClause<PostgreStatement._DynamicJoinSpec> tabular(Query.TabularModifier modifier, Supplier<T> supplier) {
+        public <T extends TabularItem> Statement._AsClause<PostgreStatement._DynamicJoinSpec> tabular(Query.DerivedModifier modifier, Supplier<T> supplier) {
             if (this.started) {
                 throw CriteriaUtils.duplicateTabularMethod(this.context);
             }

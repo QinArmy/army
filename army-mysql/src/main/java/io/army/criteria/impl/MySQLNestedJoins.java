@@ -97,7 +97,7 @@ abstract class MySQLNestedJoins {
 
         @Override
         public <T extends TabularItem> Statement._AsClause<MySQLQuery._MySQLNestedJoinClause<I>> leftParen(
-                final Query.TabularModifier modifier, final Supplier<T> supplier) {
+                final Query.DerivedModifier modifier, final Supplier<T> supplier) {
             if (modifier != SQLs.LATERAL) {
                 throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
             }
@@ -350,7 +350,7 @@ abstract class MySQLNestedJoins {
         }
 
         @Override
-        final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
+        final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
                 , TabularItem tableItem, String alias) {
             if (modifier != null && modifier != SQLs.LATERAL) {
                 throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
@@ -369,7 +369,7 @@ abstract class MySQLNestedJoins {
         }
 
         @Override
-        final MySQLQuery._NestedOnSpec<I> createItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
+        final MySQLQuery._NestedOnSpec<I> createItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
                 , TabularItem tableItem, String alias) {
             if (modifier != null && modifier != SQLs.LATERAL) {
                 throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
@@ -379,7 +379,7 @@ abstract class MySQLNestedJoins {
         }
 
         @Override
-        final MySQLQuery._NestedOnSpec<I> createCteBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
+        final MySQLQuery._NestedOnSpec<I> createCteBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
                 , TabularItem tableItem, String alias) {
             if (modifier != null) {
                 throw ContextStack.castCriteriaApi(this.context);

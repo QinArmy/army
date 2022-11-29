@@ -303,7 +303,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
     }
 
     @Override
-    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
+    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
             , TabularItem tableItem, String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
             throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
@@ -543,7 +543,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
 
         @Override
         final _OnClause<_SingleJoinSpec<I, Q>> createItemBlock(_JoinType joinType
-                , @Nullable Query.TabularModifier modifier
+                , @Nullable Query.DerivedModifier modifier
                 , TabularItem tableItem, String alias) {
             if (modifier != null && modifier != SQLs.LATERAL) {
                 throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
@@ -553,7 +553,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
 
         @Override
         final _OnClause<_SingleJoinSpec<I, Q>> createCteBlock(_JoinType joinType
-                , @Nullable Query.TabularModifier modifier
+                , @Nullable Query.DerivedModifier modifier
                 , TabularItem tableItem, String alias) {
             if (modifier != null) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -805,7 +805,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
         }
 
         @Override
-        _OnClause<_BatchSingleJoinSpec<I, Q>> createItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
+        _OnClause<_BatchSingleJoinSpec<I, Q>> createItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
                 , TabularItem tableItem, String alias) {
             if (modifier != null && modifier != SQLs.LATERAL) {
                 throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
@@ -814,7 +814,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
         }
 
         @Override
-        _OnClause<_BatchSingleJoinSpec<I, Q>> createCteBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
+        _OnClause<_BatchSingleJoinSpec<I, Q>> createCteBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
                 , TabularItem tableItem, String alias) {
             if (modifier != null) {
                 throw ContextStack.castCriteriaApi(this.context);

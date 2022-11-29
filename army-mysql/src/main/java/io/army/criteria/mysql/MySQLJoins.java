@@ -16,7 +16,7 @@ public interface MySQLJoins extends Statement.JoinBuilder {
 
     <T extends TabularItem> Statement._AsClause<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> tabular(Supplier<T> supplier);
 
-    <T extends TabularItem> Statement._AsClause<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> tabular(Query.TabularModifier modifier
+    <T extends TabularItem> Statement._AsClause<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> tabular(Query.DerivedModifier modifier
             , Supplier<T> supplier);
 
     Statement._OnClause<MySQLQuery._DynamicJoinSpec> tabular(String cteName);

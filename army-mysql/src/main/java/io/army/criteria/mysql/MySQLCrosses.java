@@ -16,7 +16,7 @@ public interface MySQLCrosses extends Statement.JoinBuilder {
 
     <T extends TabularItem> Statement._AsClause<MySQLQuery._DynamicJoinSpec> tabular(Supplier<T> supplier);
 
-    <T extends TabularItem> Statement._AsClause<MySQLQuery._DynamicJoinSpec> tabular(Query.TabularModifier modifier
+    <T extends TabularItem> Statement._AsClause<MySQLQuery._DynamicJoinSpec> tabular(Query.DerivedModifier modifier
             , Supplier<T> supplier);
 
     MySQLQuery._DynamicJoinSpec tabular(String cteName);

@@ -249,9 +249,8 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _JoinSpec<I extends Item>
-            extends _StandardJoinClause<_JoinSpec<I>, _OnClause<_JoinSpec<I>>>
-            , _WhereSpec<I> {
+    interface _JoinSpec<I extends Item> extends _StandardJoinClause<_JoinSpec<I>, _OnClause<_JoinSpec<I>>>,
+            _WhereSpec<I> {
 
     }
 
@@ -272,14 +271,15 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _FromSpec<I extends Item> extends Statement._FromClause<_JoinSpec<I>, _JoinSpec<I>>
-            , _FromNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>
-            , _UnionSpec<I> {
+    interface _FromSpec<I extends Item> extends Statement._FromClause<_JoinSpec<I>, _AsClause<_JoinSpec<I>>>,
+            _FromNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>,
+            _UnionSpec<I> {
 
     }
 
-    interface _StandardSelectCommaClause<I extends Item> extends _StaticSelectCommaClause<_StandardSelectCommaClause<I>>
-            , _FromSpec<I> {
+    interface _StandardSelectCommaClause<I extends Item>
+            extends _StaticSelectCommaClause<_StandardSelectCommaClause<I>>,
+            _FromSpec<I> {
 
     }
 

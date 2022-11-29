@@ -80,14 +80,14 @@ public interface DialectStatement extends Statement {
 
         JT straightJoin(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        <T extends TabularItem> _AsClause<JS> straightJoin(Supplier<T> supplier);
+        <T extends DerivedTable> JS straightJoin(Supplier<T> supplier);
 
 
     }
 
     interface _StraightJoinModifierTabularClause<JT, JS> extends _StraightJoinClause<JT, JS> {
 
-        <T extends TabularItem> _AsClause<JS> straightJoin(Query.TabularModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> JS straightJoin(Query.DerivedModifier modifier, Supplier<T> supplier);
     }
 
 
@@ -203,21 +203,21 @@ public interface DialectStatement extends Statement {
 
     interface _JoinModifierCteClause<JC> extends _JoinCteClause<JC> {
 
-        JC leftJoin(Query.TabularModifier modifier, String cteName);
+        JC leftJoin(Query.DerivedModifier modifier, String cteName);
 
-        JC leftJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        JC leftJoin(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
-        JC join(Query.TabularModifier modifier, String cteName);
+        JC join(Query.DerivedModifier modifier, String cteName);
 
-        JC join(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        JC join(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
-        JC rightJoin(Query.TabularModifier modifier, String cteName);
+        JC rightJoin(Query.DerivedModifier modifier, String cteName);
 
-        JC rightJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        JC rightJoin(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
-        JC fullJoin(Query.TabularModifier modifier, String cteName);
+        JC fullJoin(Query.DerivedModifier modifier, String cteName);
 
-        JC fullJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        JC fullJoin(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 
@@ -231,9 +231,9 @@ public interface DialectStatement extends Statement {
 
     interface _CrossJoinModifierCteClause<FC> extends _CrossJoinCteClause<FC> {
 
-        FC crossJoin(Query.TabularModifier modifier, String cteName);
+        FC crossJoin(Query.DerivedModifier modifier, String cteName);
 
-        FC crossJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        FC crossJoin(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 
@@ -261,9 +261,9 @@ public interface DialectStatement extends Statement {
 
     interface _StraightJoinModifierCteClause<JS> extends _StraightJoinCteClause<JS> {
 
-        JS straightJoin(Query.TabularModifier modifier, String cteName);
+        JS straightJoin(Query.DerivedModifier modifier, String cteName);
 
-        JS straightJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        JS straightJoin(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 

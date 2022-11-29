@@ -494,7 +494,7 @@ public interface MySQLDelete extends MySQLStatement {
 
         <T extends TabularItem> Statement._AsClause<_MultiJoinSpec<I>> using(Supplier<T> supplier);
 
-        <T extends TabularItem> Statement._AsClause<_MultiJoinSpec<I>> using(Query.TabularModifier modifier, Supplier<T> supplier);
+        <T extends TabularItem> Statement._AsClause<_MultiJoinSpec<I>> using(Query.DerivedModifier modifier, Supplier<T> supplier);
 
         _MultiJoinSpec<I> using(String cteName);
 
@@ -695,7 +695,7 @@ public interface MySQLDelete extends MySQLStatement {
 
         <T extends TabularItem> Statement._AsClause<_BatchMultiJoinSpec<I>> using(Supplier<T> supplier);
 
-        <T extends TabularItem> Statement._AsClause<_BatchMultiJoinSpec<I>> using(Query.TabularModifier modifier, Supplier<T> supplier);
+        <T extends TabularItem> Statement._AsClause<_BatchMultiJoinSpec<I>> using(Query.DerivedModifier modifier, Supplier<T> supplier);
 
         _BatchMultiJoinSpec<I> using(String cteName);
 

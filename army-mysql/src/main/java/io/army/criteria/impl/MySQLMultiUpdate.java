@@ -133,7 +133,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
     }
 
     @Override
-    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
+    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
             throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
         }
@@ -223,12 +223,12 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
         @Override
         public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers, Query.TabularModifier modifier, Supplier<T> supplier) {
+                , List<MySQLSyntax.Modifier> modifiers, Query.DerivedModifier modifier, Supplier<T> supplier) {
             return this.endStaticWithEnd().update(hints, modifiers, modifier, supplier);
         }
 
         @Override
-        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Query.TabularModifier modifier
+        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Query.DerivedModifier modifier
                 , Supplier<T> supplier) {
             return this.endStaticWithEnd().update(modifier, supplier);
         }
@@ -386,7 +386,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
         @Override
         public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers, final Query.TabularModifier modifier, Supplier<T> supplier) {
+                , List<MySQLSyntax.Modifier> modifiers, final Query.DerivedModifier modifier, Supplier<T> supplier) {
 
             if (modifier != SQLs.LATERAL) {
                 throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
@@ -411,7 +411,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
         @Override
-        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Query.TabularModifier modifier
+        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Query.DerivedModifier modifier
                 , Supplier<T> supplier) {
             if (modifier != SQLs.LATERAL) {
                 throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
@@ -603,7 +603,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
         @Override
-        _OnClause<_MultiJoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
+        _OnClause<_MultiJoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
                 , TabularItem tableItem, String alias) {
             if (modifier != null && modifier != SQLs.LATERAL) {
                 throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
@@ -612,7 +612,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
         @Override
-        _OnClause<_MultiJoinSpec<I>> createCteBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
+        _OnClause<_MultiJoinSpec<I>> createCteBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
                 , TabularItem tableItem, String alias) {
             if (modifier != null) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -667,12 +667,12 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
         @Override
         public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers, Query.TabularModifier modifier, Supplier<T> supplier) {
+                , List<MySQLSyntax.Modifier> modifiers, Query.DerivedModifier modifier, Supplier<T> supplier) {
             return this.endStaticWithClause().update(hints, modifiers, modifier, supplier);
         }
 
         @Override
-        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Query.TabularModifier modifier
+        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Query.DerivedModifier modifier
                 , Supplier<T> supplier) {
             return this.endStaticWithClause().update(modifier, supplier);
         }
@@ -828,7 +828,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
         @Override
         public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers, Query.TabularModifier modifier, Supplier<T> supplier) {
+                , List<MySQLSyntax.Modifier> modifiers, Query.DerivedModifier modifier, Supplier<T> supplier) {
             if (modifier != SQLs.LATERAL) {
                 throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
             }
@@ -852,7 +852,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
         @Override
-        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Query.TabularModifier modifier
+        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Query.DerivedModifier modifier
                 , Supplier<T> supplier) {
             if (modifier != SQLs.LATERAL) {
                 throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
@@ -1081,7 +1081,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
         @Override
         _OnClause<_BatchMultiJoinSpec<I>> createItemBlock(_JoinType joinType
-                , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
+                , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
             if (modifier != null && modifier != SQLs.LATERAL) {
                 throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
             }
@@ -1090,7 +1090,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
         @Override
         _OnClause<_BatchMultiJoinSpec<I>> createCteBlock(_JoinType joinType
-                , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
+                , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
             if (modifier != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }

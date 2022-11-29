@@ -49,7 +49,7 @@ public interface Query extends RowSet {
 
     }
 
-    interface TabularModifier extends SQLWords {
+    interface DerivedModifier extends SQLWords {
 
     }
 

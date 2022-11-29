@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._StandardQuery;
-import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.standard.StandardCrosses;
 import io.army.criteria.standard.StandardJoins;
 import io.army.criteria.standard.StandardQuery;
@@ -33,10 +32,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._StandardSelectCommaClause<I>, // SR
         StandardQuery._FromSpec<I>, // SD
         StandardQuery._JoinSpec<I>,// FT
-        StandardQuery._JoinSpec<I>,// FS
+        Statement._AsClause<StandardQuery._JoinSpec<I>>,// FS
         Void,                          //FC
         Statement._OnClause<StandardQuery._JoinSpec<I>>, // JT
-        Statement._OnClause<StandardQuery._JoinSpec<I>>, // JS
+        Statement._AsClause<Statement._OnClause<StandardQuery._JoinSpec<I>>>, // JS
         Void,                               // JC
         StandardQuery._GroupBySpec<I>, // WR
         StandardQuery._WhereAndSpec<I>, // AR
@@ -77,32 +76,32 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
     @Override
     public final _NestedLeftParenSpec<_JoinSpec<I>> from() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.NONE, this::nestedNonCrossEnd);
+        return StandardNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> leftJoin() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::nestedJoinEnd);
+        return StandardNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> join() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::nestedJoinEnd);
+        return StandardNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> rightJoin() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::nestedJoinEnd);
+        return StandardNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> fullJoin() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::nestedJoinEnd);
+        return StandardNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_JoinSpec<I>> crossJoin() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::nestedNonCrossEnd);
+        return StandardNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
     }
 
     @Override
@@ -178,45 +177,62 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table
-            , String alias) {
+    final _JoinSpec<I> onFromTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
+                                   String alias) {
         if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return new TableBlock.NoOnTableBlock(joinType, table, alias);
+        this.blockConsumer.accept(new TableBlock.NoOnTableBlock(joinType, table, alias));
+        return this;
     }
 
     @Override
-    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable TabularModifier modifier, TabularItem tableItem
-            , String alias) {
+    final _AsClause<_JoinSpec<I>> onFromDerived(final _JoinType joinType, @Nullable DerivedModifier modifier,
+                                                final @Nullable DerivedTable table) {
         if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
+        } else if (table == null) {
+            throw ContextStack.nullPointer(this.context);
         }
-        return new TableBlock.NoOnTableBlock(joinType, tableItem, alias);
-    }
-
-    @Override
-    final _OnClause<_JoinSpec<I>> createTableBlock(_JoinType joinType, @Nullable TableModifier modifier
-            , TableMeta<?> table, String tableAlias) {
-        if (modifier != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return new OnClauseTableBlock<>(joinType, table, tableAlias, this);
-    }
-
-    @Override
-    final _OnClause<_JoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable TabularModifier modifier
-            , TabularItem tableItem, String alias) {
-        if (modifier != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
+        return alias -> {
+            this.blockConsumer.accept(new OnClauseTableBlock<>(joinType, table, alias, this));
+            return this;
+        };
     }
 
 
     @Override
-    final Void createCteBlock(_JoinType joinType, @Nullable TabularModifier modifier, TabularItem tableItem
-            , String alias) {
+    final _OnClause<_JoinSpec<I>> onJoinTable(final _JoinType joinType, @Nullable TableModifier modifier,
+                                              final TableMeta<?> table, final String alias) {
+        final OnClauseTableBlock<_JoinSpec<I>> block;
+        block = new OnClauseTableBlock<>(joinType, table, alias, this);
+        this.blockConsumer.accept(block);
+        return block;
+    }
+
+    @Override
+    final _AsClause<_OnClause<_JoinSpec<I>>> onJoinDerived(final _JoinType joinType, @Nullable DerivedModifier modifier,
+                                                           final @Nullable DerivedTable table) {
+        if (modifier != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        } else if (table == null) {
+            throw ContextStack.nullPointer(this.context);
+        }
+        return alias -> {
+            final OnClauseTableBlock<_JoinSpec<I>> block;
+            block = new OnClauseTableBlock<>(joinType, table, alias, this);
+            this.blockConsumer.accept(block);
+            return block;
+        };
+    }
+
+    @Override
+    final Void onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem, String alias) {
+        throw ContextStack.castCriteriaApi(this.context);
+    }
+
+    @Override
+    final Void onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem, String alias) {
         throw ContextStack.castCriteriaApi(this.context);
     }
 
@@ -242,7 +258,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
      * @see #from()
      * @see #crossJoin()
      */
-    private _JoinSpec<I> nestedNonCrossEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertNoneCrossType();
         final TableBlock.NoOnTableBlock block;
         block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
@@ -256,7 +272,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
      * @see #rightJoin()
      * @see #fullJoin()
      */
-    private _OnClause<_JoinSpec<I>> nestedJoinEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertStandardJoinType();
 
         final OnClauseTableBlock<_JoinSpec<I>> block;
@@ -293,8 +309,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }//StandardLockMode
 
 
-    static class SimpleSelect<I extends Item> extends StandardQueries<I>
-            implements Select {
+    static class SimpleSelect<I extends Item> extends StandardQueries<I> implements Select {
 
         private final Function<Select, I> function;
 

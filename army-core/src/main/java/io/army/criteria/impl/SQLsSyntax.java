@@ -11,7 +11,6 @@ import io.army.lang.Nullable;
 import io.army.mapping._MappingFactory;
 import io.army.mapping._NullType;
 import io.army.meta.*;
-import io.army.util.ArrayUtils;
 import io.army.util._StringUtils;
 
 import java.util.BitSet;
@@ -108,7 +107,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     }
 
-    public interface WordLateral extends Query.TabularModifier {
+    public interface WordLateral extends Query.DerivedModifier {
 
     }
 
@@ -1189,9 +1188,6 @@ abstract class SQLsSyntax extends SQLSyntax {
 //        return FunctionUtils.caseFunction(null, endFunc, asFunc);
 //    }
 
-    public static List<String> parens(String first, String... rest) {
-        return ArrayUtils.unmodifiableListOf(first, rest);
-    }
 
 
 

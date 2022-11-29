@@ -594,9 +594,9 @@ public interface MySQLUpdate extends MySQLStatement {
         <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Supplier<T> supplier);
 
         <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , Query.TabularModifier modifier, Supplier<T> supplier);
+                , Query.DerivedModifier modifier, Supplier<T> supplier);
 
-        <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Query.TabularModifier modifier, Supplier<T> supplier);
+        <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Query.DerivedModifier modifier, Supplier<T> supplier);
 
         _MultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName);
 
@@ -847,9 +847,9 @@ public interface MySQLUpdate extends MySQLStatement {
         <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Supplier<T> supplier);
 
         <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , Query.TabularModifier modifier, Supplier<T> supplier);
+                , Query.DerivedModifier modifier, Supplier<T> supplier);
 
-        <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Query.TabularModifier modifier, Supplier<T> supplier);
+        <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Query.DerivedModifier modifier, Supplier<T> supplier);
 
         _BatchMultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName);
 

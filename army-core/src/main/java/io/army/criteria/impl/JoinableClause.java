@@ -66,90 +66,82 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
     @Override
     public final FT from(TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddNoOnTableItem(_JoinType.NONE, null, table, tableAlias);
+        return this.onFromTable(_JoinType.NONE, null, table, tableAlias);
     }
 
     @Override
     public final FT from(Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddNoOnTableItem(_JoinType.NONE, modifier, table, tableAlias);
+        return this.onFromTable(_JoinType.NONE, modifier, table, tableAlias);
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<FS> from(Supplier<T> supplier) {
-        return this.onAddNoOnQueryItem(_JoinType.NONE, null, supplier.get());
+    public final <T extends DerivedTable> FS from(Supplier<T> supplier) {
+        return this.onFromDerived(_JoinType.NONE, null, supplier.get());
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<FS> from(Query.TabularModifier modifier, Supplier<T> supplier) {
-        return this.onAddNoOnQueryItem(_JoinType.NONE, modifier, supplier.get());
+    public final <T extends DerivedTable> FS from(Query.DerivedModifier modifier, Supplier<T> supplier) {
+        return this.onFromDerived(_JoinType.NONE, modifier, supplier.get());
     }
 
     @Override
     public final FC from(String cteName) {
-        return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, "");
+        return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), "");
     }
 
     @Override
     public final FC from(String cteName, SQLsSyntax.WordAs wordAs, String alias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, alias);
+        return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), alias);
     }
 
     @Override
-    public final FC from(Query.TabularModifier modifier, String cteName) {
-        return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, "");
+    public final FC from(Query.DerivedModifier modifier, String cteName) {
+        return this.onFromCte(_JoinType.NONE, modifier, this.context.refCte(cteName), "");
     }
 
     @Override
-    public final FC from(Query.TabularModifier modifier, String cteName, SQLsSyntax.WordAs wordAs, String alias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, alias);
+    public final FC from(Query.DerivedModifier modifier, String cteName, SQLsSyntax.WordAs wordAs, String alias) {
+        return this.onFromCte(_JoinType.NONE, modifier, this.context.refCte(cteName), alias);
     }
 
     @Override
     public final FT using(TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddNoOnTableItem(_JoinType.NONE, null, table, tableAlias);
+        return this.onFromTable(_JoinType.NONE, null, table, tableAlias);
     }
 
     @Override
     public final FT using(Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddNoOnTableItem(_JoinType.NONE, modifier, table, tableAlias);
+        return this.onFromTable(_JoinType.NONE, modifier, table, tableAlias);
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<FS> using(Supplier<T> supplier) {
-        return this.onAddNoOnQueryItem(_JoinType.NONE, null, supplier.get());
+    public final <T extends DerivedTable> FS using(Supplier<T> supplier) {
+        return this.onFromDerived(_JoinType.NONE, null, supplier.get());
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<FS> using(Query.TabularModifier modifier, Supplier<T> supplier) {
-        return this.onAddNoOnQueryItem(_JoinType.NONE, modifier, supplier.get());
+    public final <T extends DerivedTable> FS using(Query.DerivedModifier modifier, Supplier<T> supplier) {
+        return this.onFromDerived(_JoinType.NONE, modifier, supplier.get());
     }
 
     @Override
     public final FC using(String cteName) {
-        return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, "");
+        return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), "");
     }
 
     @Override
     public final FC using(String cteName, SQLsSyntax.WordAs wordAs, String alias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddNoOnCteItem(_JoinType.NONE, null, cteName, alias);
+        return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), alias);
     }
 
     @Override
-    public final FC using(Query.TabularModifier modifier, String cteName) {
-        return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, "");
+    public final FC using(Query.DerivedModifier modifier, String cteName) {
+        return this.onFromCte(_JoinType.NONE, modifier, this.context.refCte(cteName), "");
     }
 
     @Override
-    public final FC using(Query.TabularModifier modifier, String cteName, SQLsSyntax.WordAs wordAs, String alias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddNoOnCteItem(_JoinType.NONE, modifier, cteName, alias);
+    public final FC using(Query.DerivedModifier modifier, String cteName, SQLsSyntax.WordAs wordAs, String alias) {
+        return this.onFromCte(_JoinType.NONE, modifier, this.context.refCte(cteName), alias);
     }
 
 
@@ -158,356 +150,308 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
     @Override
     public final JT leftJoin(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddTableItem(_JoinType.LEFT_JOIN, null, table, tableAlias);
+        return this.onJoinTable(_JoinType.LEFT_JOIN, null, table, tableAlias);
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<JS> leftJoin(Supplier<T> supplier) {
-        return this.onAddQueryItem(_JoinType.LEFT_JOIN, null, supplier.get());
+    public final <T extends DerivedTable> JS leftJoin(Supplier<T> supplier) {
+        return this.onJoinDerived(_JoinType.LEFT_JOIN, null, supplier.get());
     }
 
 
     @Override
     public final JC leftJoin(String cteName) {
-        return this.onAddCteItem(_JoinType.LEFT_JOIN, null, cteName, "");
+        return this.onJoinCte(_JoinType.LEFT_JOIN, null, this.context.refCte(cteName), "");
     }
 
     @Override
     public final JC leftJoin(String cteName, SQLs.WordAs wordAs, String alias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddCteItem(_JoinType.LEFT_JOIN, null, cteName, alias);
+        return this.onJoinCte(_JoinType.LEFT_JOIN, null, this.context.refCte(cteName), alias);
     }
 
     @Override
     public final JT leftJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-        assert as == SQLs.AS;
-        return this.onAddTableItem(_JoinType.LEFT_JOIN, modifier, table, tableAlias);
+        return this.onJoinTable(_JoinType.LEFT_JOIN, modifier, table, tableAlias);
     }
 
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<JS> leftJoin(Query.TabularModifier modifier, Supplier<T> supplier) {
-        return this.onAddQueryItem(_JoinType.LEFT_JOIN, modifier, supplier.get());
+    public final <T extends DerivedTable> JS leftJoin(Query.DerivedModifier modifier, Supplier<T> supplier) {
+        return this.onJoinDerived(_JoinType.LEFT_JOIN, modifier, supplier.get());
     }
 
     @Override
-    public final JC leftJoin(Query.TabularModifier modifier, String cteName) {
-        return this.onAddCteItem(_JoinType.LEFT_JOIN, modifier, cteName, "");
+    public final JC leftJoin(Query.DerivedModifier modifier, String cteName) {
+        return this.onJoinCte(_JoinType.LEFT_JOIN, modifier, this.context.refCte(cteName), "");
     }
 
     @Override
-    public final JC leftJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs as, String alias) {
-        return this.onAddCteItem(_JoinType.LEFT_JOIN, modifier, cteName, alias);
+    public final JC leftJoin(Query.DerivedModifier modifier, String cteName, SQLs.WordAs as, String alias) {
+        return this.onJoinCte(_JoinType.LEFT_JOIN, modifier, this.context.refCte(cteName), alias);
     }
 
     @Override
     public final JT join(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-        return this.onAddTableItem(_JoinType.JOIN, null, table, tableAlias);
+        return this.onJoinTable(_JoinType.JOIN, null, table, tableAlias);
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<JS> join(Supplier<T> supplier) {
-        return this.onAddQueryItem(_JoinType.JOIN, null, supplier.get());
+    public final <T extends DerivedTable> JS join(Supplier<T> supplier) {
+        return this.onJoinDerived(_JoinType.JOIN, null, supplier.get());
     }
 
     @Override
     public final JC join(String cteName) {
-        return this.onAddCteItem(_JoinType.JOIN, null, cteName, "");
+        return this.onJoinCte(_JoinType.JOIN, null, this.context.refCte(cteName), "");
     }
 
     @Override
     public final JC join(String cteName, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        return this.onAddCteItem(_JoinType.JOIN, null, cteName, alias);
+        return this.onJoinCte(_JoinType.JOIN, null, this.context.refCte(cteName), alias);
     }
 
     @Override
     public final JT join(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-        assert as == SQLs.AS;
-        return this.onAddTableItem(_JoinType.JOIN, modifier, table, tableAlias);
+        return this.onJoinTable(_JoinType.JOIN, modifier, table, tableAlias);
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<JS> join(Query.TabularModifier modifier, Supplier<T> supplier) {
-        return this.onAddQueryItem(_JoinType.JOIN, modifier, supplier.get());
+    public final <T extends DerivedTable> JS join(Query.DerivedModifier modifier, Supplier<T> supplier) {
+        return this.onJoinDerived(_JoinType.JOIN, modifier, supplier.get());
     }
 
     @Override
-    public final JC join(Query.TabularModifier modifier, String cteName) {
-        return this.onAddCteItem(_JoinType.JOIN, modifier, cteName, "");
+    public final JC join(Query.DerivedModifier modifier, String cteName) {
+        return this.onJoinCte(_JoinType.JOIN, modifier, this.context.refCte(cteName), "");
     }
 
     @Override
-    public final JC join(Query.TabularModifier modifier, String cteName, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        return this.onAddCteItem(_JoinType.JOIN, modifier, cteName, alias);
+    public final JC join(Query.DerivedModifier modifier, String cteName, SQLs.WordAs as, String alias) {
+        return this.onJoinCte(_JoinType.JOIN, modifier, this.context.refCte(cteName), alias);
     }
 
     @Override
     public final JT rightJoin(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
         assert as == SQLs.AS;
-        return this.onAddTableItem(_JoinType.RIGHT_JOIN, null, table, tableAlias);
+        return this.onJoinTable(_JoinType.RIGHT_JOIN, null, table, tableAlias);
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<JS> rightJoin(Supplier<T> supplier) {
-        return this.onAddQueryItem(_JoinType.RIGHT_JOIN, null, supplier.get());
+    public final <T extends DerivedTable> JS rightJoin(Supplier<T> supplier) {
+        return this.onJoinDerived(_JoinType.RIGHT_JOIN, null, supplier.get());
     }
 
     @Override
     public final JC rightJoin(String cteName) {
-        return this.onAddCteItem(_JoinType.RIGHT_JOIN, null, cteName, "");
+        return this.onJoinCte(_JoinType.RIGHT_JOIN, null, this.context.refCte(cteName), "");
     }
 
     @Override
     public final JC rightJoin(String cteName, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        return this.onAddCteItem(_JoinType.RIGHT_JOIN, null, cteName, alias);
+        return this.onJoinCte(_JoinType.RIGHT_JOIN, null, this.context.refCte(cteName), alias);
     }
 
     @Override
     public final JT rightJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
         assert as == SQLs.AS;
-        return this.onAddTableItem(_JoinType.RIGHT_JOIN, modifier, table, tableAlias);
+        return this.onJoinTable(_JoinType.RIGHT_JOIN, modifier, table, tableAlias);
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<JS> rightJoin(Query.TabularModifier modifier, Supplier<T> supplier) {
-        return this.onAddQueryItem(_JoinType.RIGHT_JOIN, modifier, supplier.get());
+    public final <T extends DerivedTable> JS rightJoin(Query.DerivedModifier modifier, Supplier<T> supplier) {
+        return this.onJoinDerived(_JoinType.RIGHT_JOIN, modifier, supplier.get());
     }
 
     @Override
-    public final JC rightJoin(Query.TabularModifier modifier, String cteName) {
-        return this.onAddCteItem(_JoinType.RIGHT_JOIN, modifier, cteName, "");
+    public final JC rightJoin(Query.DerivedModifier modifier, String cteName) {
+        return this.onJoinCte(_JoinType.RIGHT_JOIN, modifier, this.context.refCte(cteName), "");
     }
 
     @Override
-    public final JC rightJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs as, String alias) {
+    public final JC rightJoin(Query.DerivedModifier modifier, String cteName, SQLs.WordAs as, String alias) {
         assert as == SQLs.AS;
-        return this.onAddCteItem(_JoinType.RIGHT_JOIN, modifier, cteName, alias);
+        return this.onJoinCte(_JoinType.RIGHT_JOIN, modifier, this.context.refCte(cteName), alias);
     }
 
     @Override
     public final JT fullJoin(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
         assert as == SQLs.AS;
-        return this.onAddTableItem(_JoinType.FULL_JOIN, null, table, tableAlias);
+        return this.onJoinTable(_JoinType.FULL_JOIN, null, table, tableAlias);
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<JS> fullJoin(Supplier<T> supplier) {
-        return this.onAddQueryItem(_JoinType.FULL_JOIN, null, supplier.get());
+    public final <T extends DerivedTable> JS fullJoin(Supplier<T> supplier) {
+        return this.onJoinDerived(_JoinType.FULL_JOIN, null, supplier.get());
     }
 
     @Override
     public final JC fullJoin(String cteName) {
-        return this.onAddCteItem(_JoinType.FULL_JOIN, null, cteName, "");
+        return this.onJoinCte(_JoinType.FULL_JOIN, null, this.context.refCte(cteName), "");
     }
 
     @Override
     public final JC fullJoin(String cteName, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        return this.onAddCteItem(_JoinType.FULL_JOIN, null, cteName, alias);
+        return this.onJoinCte(_JoinType.FULL_JOIN, null, this.context.refCte(cteName), alias);
     }
 
     @Override
     public final JT fullJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
         assert as == SQLs.AS;
-        return this.onAddTableItem(_JoinType.FULL_JOIN, modifier, table, tableAlias);
+        return this.onJoinTable(_JoinType.FULL_JOIN, modifier, table, tableAlias);
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<JS> fullJoin(Query.TabularModifier modifier, Supplier<T> supplier) {
-        return this.onAddQueryItem(_JoinType.FULL_JOIN, modifier, supplier.get());
+    public final <T extends DerivedTable> JS fullJoin(Query.DerivedModifier modifier, Supplier<T> supplier) {
+        return this.onJoinDerived(_JoinType.FULL_JOIN, modifier, supplier.get());
     }
 
     @Override
-    public final JC fullJoin(Query.TabularModifier modifier, String cteName) {
-        return this.onAddCteItem(_JoinType.FULL_JOIN, modifier, cteName, "");
+    public final JC fullJoin(Query.DerivedModifier modifier, String cteName) {
+        return this.onJoinCte(_JoinType.FULL_JOIN, modifier, this.context.refCte(cteName), "");
     }
 
     @Override
-    public final JC fullJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        return this.onAddCteItem(_JoinType.FULL_JOIN, modifier, cteName, alias);
+    public final JC fullJoin(Query.DerivedModifier modifier, String cteName, SQLs.WordAs as, String alias) {
+        return this.onJoinCte(_JoinType.FULL_JOIN, modifier, this.context.refCte(cteName), alias);
     }
 
     @Override
     public final JT straightJoin(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
         assert as == SQLs.AS;
-        return this.onAddTableItem(_JoinType.STRAIGHT_JOIN, null, table, tableAlias);
+        return this.onJoinTable(_JoinType.STRAIGHT_JOIN, null, table, tableAlias);
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<JS> straightJoin(Supplier<T> supplier) {
-        return this.onAddQueryItem(_JoinType.STRAIGHT_JOIN, null, supplier.get());
+    public final <T extends DerivedTable> JS straightJoin(Supplier<T> supplier) {
+        return this.onJoinDerived(_JoinType.STRAIGHT_JOIN, null, supplier.get());
     }
 
     @Override
     public final JC straightJoin(String cteName) {
-        return this.onAddCteItem(_JoinType.STRAIGHT_JOIN, null, cteName, "");
+        return this.onJoinCte(_JoinType.STRAIGHT_JOIN, null, this.context.refCte(cteName), "");
     }
 
     @Override
     public final JC straightJoin(String cteName, SQLs.WordAs as, String alias) {
         assert as == SQLs.AS;
-        return this.onAddCteItem(_JoinType.STRAIGHT_JOIN, null, cteName, alias);
+        return this.onJoinCte(_JoinType.STRAIGHT_JOIN, null, this.context.refCte(cteName), alias);
     }
 
     @Override
-    public final JC straightJoin(Query.TabularModifier modifier, String cteName) {
-        return this.onAddCteItem(_JoinType.STRAIGHT_JOIN, modifier, cteName, "");
+    public final JC straightJoin(Query.DerivedModifier modifier, String cteName) {
+        return this.onJoinCte(_JoinType.STRAIGHT_JOIN, modifier, this.context.refCte(cteName), "");
     }
 
     @Override
-    public final JC straightJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs as, String alias) {
-        assert as == SQLs.AS;
-        return this.onAddCteItem(_JoinType.STRAIGHT_JOIN, modifier, cteName, alias);
+    public final JC straightJoin(Query.DerivedModifier modifier, String cteName, SQLs.WordAs as, String alias) {
+        return this.onJoinCte(_JoinType.STRAIGHT_JOIN, modifier, this.context.refCte(cteName), alias);
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<JS> straightJoin(Query.TabularModifier modifier, Supplier<T> supplier) {
-        return this.onAddQueryItem(_JoinType.STRAIGHT_JOIN, modifier, supplier.get());
+    public final <T extends DerivedTable> JS straightJoin(Query.DerivedModifier modifier, Supplier<T> supplier) {
+        return this.onJoinDerived(_JoinType.STRAIGHT_JOIN, modifier, supplier.get());
     }
 
     @Override
     public final FT crossJoin(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
         assert as == SQLs.AS;
-        return this.onAddNoOnTableItem(_JoinType.CROSS_JOIN, null, table, tableAlias);
+        return this.onFromTable(_JoinType.CROSS_JOIN, null, table, tableAlias);
     }
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<FS> crossJoin(Supplier<T> supplier) {
-        return this.onAddNoOnQueryItem(_JoinType.CROSS_JOIN, null, supplier.get());
+    public final <T extends DerivedTable> FS crossJoin(Supplier<T> supplier) {
+        return this.onFromDerived(_JoinType.CROSS_JOIN, null, supplier.get());
     }
 
 
     @Override
     public final FC crossJoin(String cteName) {
-        return this.onAddNoOnCteItem(_JoinType.CROSS_JOIN, null, cteName, "");
+        return this.onFromCte(_JoinType.CROSS_JOIN, null, this.context.refCte(cteName), "");
     }
 
     @Override
     public final FC crossJoin(String cteName, SQLs.WordAs wordAs, String alias) {
-        assert wordAs == SQLs.AS;
-        return this.onAddNoOnCteItem(_JoinType.CROSS_JOIN, null, cteName, alias);
+        return this.onFromCte(_JoinType.CROSS_JOIN, null, this.context.refCte(cteName), alias);
     }
 
     @Override
     public final FT crossJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
         assert wordAs == SQLs.AS;
-        return this.onAddNoOnTableItem(_JoinType.CROSS_JOIN, modifier, table, tableAlias);
+        return this.onFromTable(_JoinType.CROSS_JOIN, modifier, table, tableAlias);
     }
 
 
     @Override
-    public final <T extends TabularItem> Statement._AsClause<FS> crossJoin(Query.TabularModifier modifier, Supplier<T> supplier) {
-        return this.onAddNoOnQueryItem(_JoinType.CROSS_JOIN, modifier, supplier.get());
+    public final <T extends DerivedTable> FS crossJoin(Query.DerivedModifier modifier, Supplier<T> supplier) {
+        return this.onFromDerived(_JoinType.CROSS_JOIN, modifier, supplier.get());
     }
 
     @Override
-    public final FC crossJoin(Query.TabularModifier modifier, String cteName) {
-        return this.onAddNoOnCteItem(_JoinType.CROSS_JOIN, modifier, cteName, "");
+    public final FC crossJoin(Query.DerivedModifier modifier, String cteName) {
+        return this.onFromCte(_JoinType.CROSS_JOIN, modifier, this.context.refCte(cteName), "");
     }
 
     @Override
-    public final FC crossJoin(Query.TabularModifier modifier, String cteName, SQLs.WordAs wordAs, String alias) {
+    public final FC crossJoin(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias) {
         assert wordAs == SQLs.AS;
-        return this.onAddNoOnCteItem(_JoinType.CROSS_JOIN, modifier, cteName, alias);
+        return this.onFromCte(_JoinType.CROSS_JOIN, modifier, this.context.refCte(cteName), alias);
     }
 
-    abstract _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias);
+    _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
+        throw new UnsupportedOperationException();
+    }
 
-    abstract _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias);
-
-
-    abstract JT createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias);
-
-    abstract JS createItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias);
-
-    abstract JC createCteBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias);
+    _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
+        throw new UnsupportedOperationException();
+    }
 
 
-    final FT onAddNoOnTableItem(_JoinType joinType, @Nullable Query.TableModifier modifier
-            , TableMeta<?> table, String alias) {
+    JT createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
+        throw new UnsupportedOperationException();
+    }
 
-        final _TableBlock block;
-        block = createNoOnTableBlock(joinType, modifier, table, alias);
-        this.blockConsumer.accept(block);
-        final FT clause;
-        if (block instanceof JoinableClause) {
-            clause = (FT) block;
-        } else {
-            clause = (FT) this;
-        }
-        return clause;
+    JS createItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
+        throw new UnsupportedOperationException();
+    }
+
+    JC createCteBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
+        throw new UnsupportedOperationException();
+    }
+
+
+    FT onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table,
+                   String alias) {
+
+        throw new UnsupportedOperationException();
     }
 
     /**
      * @see #crossJoin(Supplier)
-     * @see #crossJoin(Query.TabularModifier, Supplier)
+     * @see #crossJoin(Query.DerivedModifier, Supplier)
      */
-    final Statement._AsClause<FS> onAddNoOnQueryItem(final _JoinType joinType
-            , final @Nullable Query.TabularModifier modifier, final @Nullable TabularItem item) {
-        if (item == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-
-        return alias -> {
-            final _TableBlock block;
-            block = createNoOnItemBlock(joinType, modifier, item, alias);
-            this.blockConsumer.accept(block);
-            final FS clause;
-            if (block instanceof JoinableClause) {
-                clause = (FS) block;
-            } else {
-                clause = (FS) this;
-            }
-            return clause;
-        };
+    FS onFromDerived(final _JoinType joinType, final @Nullable Query.DerivedModifier modifier,
+                     final @Nullable DerivedTable table) {
+        throw new UnsupportedOperationException();
     }
 
-    final FC onAddNoOnCteItem(_JoinType joinType, @Nullable Query.TabularModifier modifier
-            , String cteName, String alias) {
+    FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
 
-        final _TableBlock block;
-        block = createNoOnItemBlock(joinType, modifier, this.context.refCte(cteName), alias);
-        this.blockConsumer.accept(block);
-        return (FC) this;
+        throw new UnsupportedOperationException();
     }
 
-    final JT onAddTableItem(_JoinType joinType, @Nullable Query.TableModifier modifier
-            , TableMeta<?> table, String alias) {
-
-        final JT block;
-        block = this.createTableBlock(joinType, modifier, table, alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+    JT onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
+        throw new UnsupportedOperationException();
     }
 
 
-    final Statement._AsClause<JS> onAddQueryItem(final _JoinType joinType
-            , final @Nullable Query.TabularModifier modifier, final @Nullable TabularItem item) {
-        if (item == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return alias -> {
-            final JS block;
-            block = this.createItemBlock(joinType, modifier, item, alias);
-            this.blockConsumer.accept((_TableBlock) block);
-            return block;
-        };
+    JS onJoinDerived(final _JoinType joinType, final @Nullable Query.DerivedModifier modifier,
+                     final @Nullable DerivedTable table) {
+        throw new UnsupportedOperationException();
     }
 
-    final JC onAddCteItem(_JoinType joinType, @Nullable Query.TabularModifier modifier
-            , @Nullable String cteName, String alias) {
-        if (cteName == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        final JC block;
-        block = this.createCteBlock(joinType, modifier, this.context.refCte(cteName), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+    JC onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem,
+                 String alias) {
+        throw new UnsupportedOperationException();
     }
 
 
@@ -529,8 +473,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }//DynamicJoinClause
 
 
-    static abstract class NestedLeftParenClause<I extends Item>
-            implements _NestedItems {
+    static abstract class NestedLeftParenClause<I extends Item> implements _NestedItems {
 
         final CriteriaContext context;
 

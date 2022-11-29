@@ -92,7 +92,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
     @Override
     public <T extends TabularItem> Statement._AsClause<PostgreStatement._PostgreNestedJoinClause<I>> leftParen(
-            final Query.TabularModifier modifier, Supplier<T> supplier) {
+            final Query.DerivedModifier modifier, Supplier<T> supplier) {
         if (modifier != SQLs.LATERAL) {
             throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
         }
@@ -248,7 +248,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         @Override
-        final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
+        final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
                 , TabularItem tableItem, String alias) {
             if (modifier != null && modifier != SQLs.LATERAL) {
                 throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
@@ -268,7 +268,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         final PostgreStatement._NestedOnSpec<I> createItemBlock(_JoinType joinType
-                , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
+                , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
             if (modifier != null && modifier != SQLs.LATERAL) {
                 throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
             }
@@ -278,7 +278,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         final PostgreStatement._NestedOnSpec<I> createCteBlock(_JoinType joinType
-                , @Nullable Query.TabularModifier modifier, TabularItem tableItem, String alias) {
+                , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
             if (modifier != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }

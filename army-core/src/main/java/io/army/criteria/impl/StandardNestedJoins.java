@@ -47,7 +47,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
     }
 
     @Override
-    public <T extends TabularItem> Statement._AsClause<StandardStatement._StandardNestedJoinClause<I>> leftParen(Supplier<T> supplier) {
+    public <T extends DerivedTable> Statement._AsClause<StandardStatement._StandardNestedJoinClause<I>> leftParen(Supplier<T> supplier) {
         final TabularItem tabularItem;
         if ((tabularItem = supplier.get()) == null) {
             throw ContextStack.nullPointer(this.context);
@@ -84,11 +84,11 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
     private static final class StandardNestedJoinClause<I extends Item> extends JoinableClause.NestedJoinClause<
             StandardStatement._NestedJoinSpec<I>,
-            StandardStatement._NestedJoinSpec<I>,
-            StandardStatement._NestedJoinSpec<I>,
+            Statement._AsClause<StandardStatement._NestedJoinSpec<I>>,
+            Void,
             StandardStatement._NestedOnSpec<I>,
-            StandardStatement._NestedOnSpec<I>,
-            StandardStatement._NestedOnSpec<I>,
+            Statement._AsClause<StandardStatement._NestedOnSpec<I>>,
+            Void,
             StandardStatement._NestedJoinSpec<I>>
             implements StandardStatement._NestedOnSpec<I> {
 
@@ -103,27 +103,27 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
         @Override
         public StandardStatement._NestedLeftParenSpec<StandardStatement._NestedOnSpec<I>> leftJoin() {
-            return new StandardNestedJoins<>(this.context, _JoinType.LEFT_JOIN, this::nestedJoinEnd);
+            return new StandardNestedJoins<>(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
         }
 
         @Override
         public StandardStatement._NestedLeftParenSpec<StandardStatement._NestedOnSpec<I>> join() {
-            return new StandardNestedJoins<>(this.context, _JoinType.JOIN, this::nestedJoinEnd);
+            return new StandardNestedJoins<>(this.context, _JoinType.JOIN, this::joinNestedEnd);
         }
 
         @Override
         public StandardStatement._NestedLeftParenSpec<StandardStatement._NestedOnSpec<I>> rightJoin() {
-            return new StandardNestedJoins<>(this.context, _JoinType.RIGHT_JOIN, this::nestedJoinEnd);
+            return new StandardNestedJoins<>(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
         }
 
         @Override
         public StandardStatement._NestedLeftParenSpec<StandardStatement._NestedOnSpec<I>> fullJoin() {
-            return new StandardNestedJoins<>(this.context, _JoinType.FULL_JOIN, this::nestedJoinEnd);
+            return new StandardNestedJoins<>(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
         }
 
         @Override
         public StandardStatement._NestedLeftParenSpec<StandardStatement._NestedJoinSpec<I>> crossJoin() {
-            return new StandardNestedJoins<>(this.context, _JoinType.CROSS_JOIN, this::nestedCrossJoinEnd);
+            return new StandardNestedJoins<>(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
         }
 
         @Override
@@ -161,51 +161,70 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
             return this.supplier.get();
         }
 
+
         @Override
-        _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
-                , TableMeta<?> table, String alias) {
+        StandardStatement._NestedJoinSpec<I> onFromTable(final _JoinType joinType, @Nullable Query.TableModifier modifier,
+                                                         final TableMeta<?> table, final String alias) {
             if (modifier != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            return new TableBlock.NoOnTableBlock(joinType, table, alias);
+            this.blockConsumer.accept(new TableBlock.NoOnTableBlock(joinType, table, alias));
+            return this;
         }
 
         @Override
-        _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
-                , TabularItem tableItem, String alias) {
+        Statement._AsClause<StandardStatement._NestedJoinSpec<I>> onFromDerived(
+                _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
             if (modifier != null) {
                 throw ContextStack.castCriteriaApi(this.context);
+            } else if (table == null) {
+                throw ContextStack.nullPointer(this.context);
             }
-            return new TableBlock.NoOnTableBlock(joinType, tableItem, alias);
+            return alias -> {
+                final StandardNestedJoinClause<I> block;
+                block = new StandardNestedJoinClause<>(this.context, this.blockConsumer, joinType, table, alias,
+                        this.supplier);
+                this.blockConsumer.accept(block);
+                return block;
+            };
         }
 
         @Override
-        StandardStatement._NestedOnSpec<I> createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
-                , TableMeta<?> table, String tableAlias) {
-            if (modifier != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return new StandardNestedJoinClause<>(this.context, this.blockConsumer
-                    , joinType, table, tableAlias, this.supplier);
-        }
-
-        @Override
-        StandardStatement._NestedOnSpec<I> createItemBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
-                , TabularItem tableItem, String alias) {
-            if (modifier != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return new StandardNestedJoinClause<>(this.context, this.blockConsumer
-                    , joinType, tableItem, alias, this.supplier);
-        }
-
-        @Override
-        StandardStatement._NestedOnSpec<I> createCteBlock(_JoinType joinType, @Nullable Query.TabularModifier modifier
-                , TabularItem tableItem, String alias) {
-            //standard query don't support cte
+        Void onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
             throw ContextStack.castCriteriaApi(this.context);
         }
 
+        @Override
+        StandardStatement._NestedOnSpec<I> onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
+                                                       TableMeta<?> table, String alias) {
+            final StandardNestedJoinClause<I> block;
+            block = new StandardNestedJoinClause<>(this.context, this.blockConsumer, joinType, table, alias,
+                    this.supplier);
+            this.blockConsumer.accept(block);
+            return block;
+        }
+
+        @Override
+        Statement._AsClause<StandardStatement._NestedOnSpec<I>> onJoinDerived(
+                _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable item) {
+            if (item == null) {
+                throw ContextStack.nullPointer(this.context);
+            } else if (modifier != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return alias -> {
+                final StandardNestedJoinClause<I> block;
+                block = new StandardNestedJoinClause<>(this.context, this.blockConsumer, joinType, item, alias,
+                        this.supplier);
+                this.blockConsumer.accept(block);
+                return block;
+            };
+        }
+
+        @Override
+        Void onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
 
         /**
          * @see #leftJoin()
@@ -213,12 +232,12 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
          * @see #rightJoin()
          * @see #fullJoin()
          */
-        private StandardStatement._NestedOnSpec<I> nestedJoinEnd(final _JoinType joinType
+        private StandardStatement._NestedOnSpec<I> joinNestedEnd(final _JoinType joinType
                 , final NestedItems nestedItems) {
             joinType.assertStandardJoinType();
             final StandardNestedJoinClause<I> block;
-            block = new StandardNestedJoinClause<>(this.context, this.blockConsumer
-                    , joinType, nestedItems, "", this.supplier);
+            block = new StandardNestedJoinClause<>(this.context, this.blockConsumer, joinType, nestedItems, "",
+                    this.supplier);
             this.blockConsumer.accept(block);
             return block;
         }
@@ -226,12 +245,11 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
         /**
          * @see #crossJoin()
          */
-        private StandardStatement._NestedJoinSpec<I> nestedCrossJoinEnd(final _JoinType joinType
-                , final NestedItems items) {
+        private StandardStatement._NestedJoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems items) {
             assert joinType == _JoinType.CROSS_JOIN;
             final StandardNestedJoinClause<I> block;
-            block = new StandardNestedJoinClause<>(this.context, this.blockConsumer
-                    , _JoinType.CROSS_JOIN, items, "", this.supplier);
+            block = new StandardNestedJoinClause<>(this.context, this.blockConsumer, _JoinType.CROSS_JOIN, items, "",
+                    this.supplier);
             this.blockConsumer.accept(block);
             return block;
         }

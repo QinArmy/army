@@ -563,7 +563,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
     }
 
     @Override
-    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable TabularModifier modifier, TabularItem tableItem
+    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable DerivedModifier modifier, TabularItem tableItem
             , String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
             throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
@@ -582,7 +582,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
     }
 
     @Override
-    final _OnClause<_JoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable TabularModifier modifier
+    final _OnClause<_JoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable DerivedModifier modifier
             , TabularItem tableItem, String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
             throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
@@ -591,7 +591,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
     }
 
     @Override
-    final _OnClause<_JoinSpec<I>> createCteBlock(_JoinType joinType, @Nullable TabularModifier modifier
+    final _OnClause<_JoinSpec<I>> createCteBlock(_JoinType joinType, @Nullable DerivedModifier modifier
             , TabularItem tableItem, String alias) {
         if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
