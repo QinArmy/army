@@ -6,6 +6,7 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.*;
@@ -13,7 +14,6 @@ import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.function.ParensStringFunction;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -45,10 +45,10 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         MySQLQuery._MySQLSelectCommaSpec<I>,
         MySQLQuery._FromSpec<I>,
         MySQLQuery._IndexHintJoinSpec<I>,
-        DialectStatement._DerivedAsClause<MySQLQuery._JoinSpec<I>>,
+        Statement._AsClause<MySQLQuery._ParensJoinSpec<I>>,
         MySQLQuery._JoinSpec<I>,
         MySQLQuery._IndexHintOnSpec<I>,
-        DialectStatement._DerivedAsClause<Statement._OnClause<MySQLQuery._JoinSpec<I>>>,
+        Statement._AsClause<MySQLQuery._ParensOnSpec<MySQLQuery._JoinSpec<I>>>,
         Statement._OnClause<MySQLQuery._JoinSpec<I>>,
         MySQLQuery._GroupBySpec<I>,
         MySQLQuery._WhereAndSpec<I>,
@@ -63,6 +63,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         MySQLQuery._MySQLSelectClause<I>,
         MySQLQuery._MySQLSelectCommaSpec<I>,
         MySQLQuery._IndexHintJoinSpec<I>,
+        MySQLQuery._ParensJoinSpec<I>,
         MySQLQuery._WhereAndSpec<I>,
         MySQLQuery._GroupByWithRollupSpec<I>,
         MySQLQuery._HavingSpec<I>,
@@ -88,7 +89,14 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         return new StaticCteParensClause<>(context, cteComma)::nextCte;
     }
 
-    private MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>> noOnBlock;
+    /**
+     * @see #onFromTable(_JoinType, TableModifier, TableMeta, String)
+     * @see #onFromDerived(_JoinType, DerivedModifier, DerivedTable)
+     * @see PartitionJoinClause#asEnd(MySQLSupports.MySQLBlockParams)
+     * @see #getIndexHintClause()
+     * @see #getLastDerived()
+     */
+    private _TableBlock fromCrossBlock;
 
     /**
      * @see #onOrderByEvent()
@@ -137,6 +145,31 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         return this.getIndexHintClause().forceIndex();
     }
 
+    @Override
+    public final _JoinSpec<I> parens(String first, String... rest) {
+        this.getLastDerived().setColumnAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> parens(Consumer<Consumer<String>> consumer) {
+        final List<String> list = new ArrayList<>();
+        consumer.accept(list::add);
+        this.getLastDerived().setColumnAliasList(list);
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> ifParens(Consumer<Consumer<String>> consumer) {
+        final List<String> list = new ArrayList<>();
+        consumer.accept(list::add);
+        if (list.size() > 0) {
+            this.getLastDerived().setColumnAliasList(list);
+        } else {
+            this.getLastDerived().setColumnAliasList(CriteriaUtils.EMPTY_STRING_LIST);
+        }
+        return this;
+    }
 
     @Override
     public final _PartitionOnSpec<I> leftJoin(TableMeta<?> table) {
@@ -562,37 +595,24 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         final MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>> block;
         block = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, this);
         this.blockConsumer.accept(block);
-        this.noOnBlock = block;
+        this.fromCrossBlock = block;
         return this;
     }
 
     @Override
-    final _DerivedAsClause<_JoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
-                                                       @Nullable DerivedTable table) {
+    final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
+                                                      @Nullable DerivedTable table) {
         if (modifier != null && modifier != SQLs.LATERAL) {
             throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
         } else if (table == null) {
             throw ContextStack.nullPointer(this.context);
         }
-        return new _DerivedAsClause<_JoinSpec<I>>() {
-            @Override
-            public _JoinSpec<I> as(String alias, Function<ParensStringFunction, List<String>> function) {
-                ((ArmyDerivedTable) table).setColumnAliasList(function.apply(ArrayUtils::unmodifiableListOf));
-                MySQLQueries.this.blockConsumer.accept(
-                        new TableBlock.NoOnModifierTableBlock(joinType, modifier, table, alias)
-                );
-                return MySQLQueries.this;
-            }
-
-            @Override
-            public _JoinSpec<I> as(String alias) {
-                ((ArmyDerivedTable) table).setColumnAliasList(CriteriaUtils.EMPTY_STRING_LIST);
-                MySQLQueries.this.blockConsumer.accept(
-                        new TableBlock.NoOnModifierTableBlock(joinType, modifier, table, alias)
-                );
-                return MySQLQueries.this;
-            }
-
+        return alias -> {
+            final _TableBlock block;
+            block = new TableBlock.NoOnModifierDerivedBlock(joinType, modifier, table, alias);
+            this.blockConsumer.accept(block);
+            this.fromCrossBlock = block;
+            return this;
         };
     }
 
@@ -622,35 +642,21 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
     }
 
     @Override
-    final _DerivedAsClause<_OnClause<_JoinSpec<I>>> onJoinDerived(_JoinType joinType,
-                                                                  @Nullable DerivedModifier modifier,
-                                                                  @Nullable DerivedTable table) {
+    final _AsClause<_ParensOnSpec<_JoinSpec<I>>> onJoinDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
+                                                               @Nullable DerivedTable table) {
         if (table == null) {
             throw ContextStack.nullPointer(this.context);
         } else if (modifier != null && modifier != SQLs.LATERAL) {
             throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
         }
-        return new _DerivedAsClause<_OnClause<_JoinSpec<I>>>() {
-            @Override
-            public _OnClause<_JoinSpec<I>> as(String alias, Function<ParensStringFunction, List<String>> function) {
-                ((ArmyDerivedTable) table).setColumnAliasList(function.apply(ArrayUtils::unmodifiableListOf));
-                final OnClauseTableBlock.OnItemTableBlock<_JoinSpec<I>> block;
-                block = new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, table, alias, MySQLQueries.this);
-                MySQLQueries.this.blockConsumer.accept(block);
-                return block;
-            }
-
-            @Override
-            public _OnClause<_JoinSpec<I>> as(String alias) {
-                ((ArmyDerivedTable) table).setColumnAliasList(CriteriaUtils.EMPTY_STRING_LIST);
-                final OnClauseTableBlock.OnItemTableBlock<_JoinSpec<I>> block;
-                block = new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, table, alias, MySQLQueries.this);
-                MySQLQueries.this.blockConsumer.accept(block);
-                return block;
-            }
-
+        return alias -> {
+            final OnClauseTableBlock.OnModifierParensBlock<_JoinSpec<I>> block;
+            block = new OnClauseTableBlock.OnModifierParensBlock<>(joinType, modifier, table, alias, this);
+            this.blockConsumer.accept(block);
+            return block;
         };
     }
+
 
     @Override
     final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem,
@@ -705,12 +711,35 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
      * @see #ignoreIndex()
      * @see #forceIndex()
      */
+    @SuppressWarnings("unchecked")
     private _QueryIndexHintClause<_IndexHintJoinSpec<I>> getIndexHintClause() {
-        final MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>> noOnBlock = this.noOnBlock;
-        if (noOnBlock == null || this.context.lastBlock() != noOnBlock) {
+        final _TableBlock lastBlock = this.fromCrossBlock;
+        if (!(lastBlock instanceof MySQLSupports.MySQLNoOnBlock)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+        final MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>> noOnBlock;
+        noOnBlock = (MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>>) lastBlock;
+        if (this.context.lastBlock() != noOnBlock) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         return noOnBlock.getUseIndexClause();
+    }
+
+    /**
+     * @see #onFromDerived(_JoinType, DerivedModifier, DerivedTable)
+     * @see #parens(String, String...)
+     * @see #parens(Consumer)
+     * @see #ifParens(Consumer)
+     */
+    private ArmyDerivedTable getLastDerived() {
+        final _TableBlock lastBlock = this.fromCrossBlock;
+        if (!(lastBlock instanceof TableBlock.NoOnModifierDerivedBlock)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        } else if (this.context.lastBlock() != lastBlock) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return (ArmyDerivedTable) ((TableBlock.NoOnModifierDerivedBlock) lastBlock).tableItem;
     }
 
     /**
@@ -809,7 +838,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
     }//SimpleSelect
 
-    private static final class SimpleSubQuery<I extends Item> extends MySQLSimpleQuery<I> implements SubQuery {
+    private static final class SimpleSubQuery<I extends Item> extends MySQLSimpleQuery<I> implements ArmySubQuery {
 
         private final Function<? super SubQuery, I> function;
 
@@ -979,7 +1008,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
             block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
 
             stmt.blockConsumer.accept(block);
-            stmt.noOnBlock = block;// update noOnBlock
+            stmt.fromCrossBlock = block;// update noOnBlock
             return stmt;
         }
 
@@ -1001,6 +1030,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
 
     }//OnTableBlock
+
 
     private static final class PartitionOnClause<I extends Item>
             extends MySQLSupports.PartitionAsClause<_IndexHintOnSpec<I>>
@@ -1176,7 +1206,6 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         }
 
 
-
     }//StaticCteColumnAliasClause
 
 
@@ -1254,7 +1283,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
 
     private static final class BracketSubQuery<I extends Item> extends MySQLBracketQuery<I>
-            implements SubQuery {
+            implements ArmySubQuery {
 
         private final Function<? super SubQuery, I> function;
 
@@ -1315,7 +1344,8 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
     }//ComplexQuery
 
 
-    private static final class ComplexSubQuery<I extends Item> extends MySQLComplexQuery<I> implements SubQuery {
+    private static final class ComplexSubQuery<I extends Item> extends MySQLComplexQuery<I>
+            implements ArmySubQuery {
 
         private ComplexSubQuery(CriteriaContext leftContext, Function<RowSet, I> function) {
             super(CriteriaContexts.subQueryContext(null, leftContext.getNonNullOuterContext(), leftContext),

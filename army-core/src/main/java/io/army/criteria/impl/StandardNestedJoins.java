@@ -82,7 +82,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
     }
 
 
-    private static final class StandardNestedJoinClause<I extends Item> extends JoinableClause.NestedJoinClause<
+    private static final class StandardNestedJoinClause<I extends Item> extends JoinableClause.NestedJoinableBlock<
             StandardStatement._NestedJoinSpec<I>,
             Statement._AsClause<StandardStatement._NestedJoinSpec<I>>,
             Void,

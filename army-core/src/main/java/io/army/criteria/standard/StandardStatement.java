@@ -15,8 +15,7 @@ import io.army.criteria.Statement;
 public interface StandardStatement extends Statement {
 
 
-    interface _StandardJoinClause<FS extends Item, JS extends Item>
-            extends _JoinClause<_OnClause<FS>, _AsClause<JS>>,
+    interface _StandardJoinClause<FS extends Item, JS extends Item> extends _JoinClause<JS, _AsClause<JS>>,
             _CrossJoinClause<FS, _AsClause<FS>>,
             _JoinNestedClause<_NestedLeftParenSpec<JS>>,
             _CrossJoinNestedClause<_NestedLeftParenSpec<FS>>,
@@ -27,12 +26,7 @@ public interface StandardStatement extends Statement {
 
 
     interface _StandardNestedJoinClause<I extends Item>
-            extends _JoinClause<_NestedOnSpec<I>, _AsClause<_NestedOnSpec<I>>>,
-            _CrossJoinClause<_NestedJoinSpec<I>, _AsClause<_NestedJoinSpec<I>>>,
-            _JoinNestedClause<_NestedLeftParenSpec<_NestedOnSpec<I>>>,
-            _CrossJoinNestedClause<_NestedLeftParenSpec<_NestedJoinSpec<I>>>,
-            _DynamicJoinClause<StandardJoins, _NestedJoinSpec<I>>,
-            _DynamicCrossJoinClause<StandardCrosses, _NestedJoinSpec<I>> {
+            extends _StandardJoinClause<_NestedJoinSpec<I>, _NestedOnSpec<I>> {
 
     }
 

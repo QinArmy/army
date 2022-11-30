@@ -26,7 +26,10 @@ abstract class CriteriaUtils {
         throw new UnsupportedOperationException();
     }
 
-    static final List<String> EMPTY_STRING_LIST = Collections.emptyList();
+    /**
+     * EMPTY_STRING_LIST couldn't be equals {@link  Collections#EMPTY_LIST}
+     */
+    static final List<String> EMPTY_STRING_LIST = Collections.unmodifiableList(new ArrayList<>(0));
 
 
     static void createAndAddCte(final CriteriaContext context, final @Nullable String name
@@ -103,15 +106,6 @@ abstract class CriteriaUtils {
             selectionMap = Collections.unmodifiableMap(map);
         }
         return selectionMap;
-    }
-
-
-    static CriteriaException criteriaError(final RowSet left, final String m) {
-        return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext(), m);
-    }
-
-    static <T> CriteriaException criteriaError(RowSet left, Function<T, CriteriaException> function, T item) {
-        return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext(), function, item);
     }
 
 

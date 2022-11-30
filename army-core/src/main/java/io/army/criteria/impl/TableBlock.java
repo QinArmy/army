@@ -1,8 +1,9 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.DerivedTable;
 import io.army.criteria.SQLWords;
 import io.army.criteria.TabularItem;
-import io.army.criteria.impl.inner._DialectTableBlock;
+import io.army.criteria.impl.inner._ModifierTableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
@@ -94,7 +95,7 @@ abstract class TableBlock implements _TableBlock {
 
     }//NoOnTableBlock
 
-    static class NoOnModifierTableBlock extends NoOnTableBlock implements _DialectTableBlock {
+    static class NoOnModifierTableBlock extends NoOnTableBlock implements _ModifierTableBlock {
 
         private final SQLWords itemWord;
 
@@ -116,6 +117,14 @@ abstract class TableBlock implements _TableBlock {
 
     }//DialectNoOnTableBlock
 
+    static class NoOnModifierDerivedBlock extends NoOnModifierTableBlock {
+
+        NoOnModifierDerivedBlock(_JoinType joinType, @Nullable SQLWords itemWord, DerivedTable tableItem,
+                                 String alias) {
+            super(joinType, itemWord, tableItem, alias);
+        }
+
+    }//NoOnModifierDerivedBlock
 
 
     interface BlockParams {

@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinClause<
+abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         PostgreStatement._DynamicTableSampleJoinSpec,
         PostgreStatement._DynamicJoinSpec,
         PostgreStatement._DynamicJoinSpec,

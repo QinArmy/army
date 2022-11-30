@@ -12,6 +12,7 @@ import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
+import io.army.util._ClassUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -718,6 +719,7 @@ abstract class CriteriaContexts {
             throw ContextStack.criteriaError(this, m);
         }
 
+
         @Override
         public void endContextBeforeSelect() {
             String m = "current context don't support endContextBeforeSelect()";
@@ -845,14 +847,17 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final _TableBlock lastBlock() {
-            final List<_TableBlock> tableBlockList = this.tableBlockList;
-            final int size;
-            size = tableBlockList.size();
-            if (size == 0) {
-                throw ContextStack.castCriteriaApi(this);
+        public final ArmyDerivedTable lastDeriveTable() {
+            final _TableBlock block;
+            block = this.lastBlock();
+            final TabularItem item;
+            item = block.tableItem();
+            if (!(item instanceof DerivedTable)) {
+                String m = String.format("block[%s %s] isn't %s", block.alias(), _ClassUtils.safeClassName(item),
+                        DerivedTable.class.getName());
+                throw ContextStack.criteriaError(this, m);
             }
-            return tableBlockList.get(size - 1);
+            return (ArmyDerivedTable) item;
         }
 
         @Override
@@ -1019,8 +1024,8 @@ abstract class CriteriaContexts {
             if (derivedTable instanceof SubQuery) {
                 final CriteriaContext context = ((CriteriaContextSpec) derivedTable).getContext();
                 if (((JoinableContext) context).refOuter
-                        && (!(block instanceof _DialectTableBlock)
-                        || ((_DialectTableBlock) block).modifier() != SQLs.LATERAL)) {
+                        && (!(block instanceof _ModifierTableBlock)
+                        || ((_ModifierTableBlock) block).modifier() != SQLs.LATERAL)) {
                     String m = String.format("DerivedTable[%s] isn't lateral,couldn't reference outer field.", alias);
                     throw ContextStack.criteriaError(this, m);
                 }

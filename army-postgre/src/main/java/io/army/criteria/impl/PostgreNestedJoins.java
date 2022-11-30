@@ -157,7 +157,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
     }
 
 
-    private static class PostgreNestedJoinClause<I extends Item> extends JoinableClause.NestedJoinClause<
+    private static class PostgreNestedJoinClause<I extends Item> extends JoinableClause.NestedJoinableBlock<
             PostgreStatement._NestedTableSampleCrossSpec<I>,
             PostgreStatement._NestedJoinSpec<I>,
             PostgreStatement._NestedJoinSpec<I>,

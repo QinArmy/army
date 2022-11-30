@@ -11,7 +11,7 @@ import io.army.meta.TableMeta;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinClause<
+abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         StandardStatement._DynamicJoinSpec,
         Statement._AsClause<StandardStatement._DynamicJoinSpec>,
         Void,

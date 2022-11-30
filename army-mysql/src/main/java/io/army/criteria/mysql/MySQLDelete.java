@@ -455,7 +455,7 @@ public interface MySQLDelete extends MySQLStatement {
             , MySQLQuery._MySQLCrossJoinClause<_MultiIndexHintJoinSpec<I>, _MultiJoinSpec<I>>
             , MySQLQuery._MySQLJoinNestedClause<MySQLQuery._NestedLeftParenSpec<_OnClause<_MultiJoinSpec<I>>>>
             , _CrossJoinNestedClause<MySQLQuery._NestedLeftParenSpec<_MultiJoinSpec<I>>>
-            , MySQLQuery._MySQLDynamicJoinClause<_MultiJoinSpec<I>>
+            , _MySQLDynamicJoinCrossClause<_MultiJoinSpec<I>>
             , MySQLQuery._MySQLDynamicCrossJoinClause<_MultiJoinSpec<I>>
             , MySQLQuery._MySQLDialectJoinClause<_MultiPartitionOnClause<I>>
             , _DialectCrossJoinClause<_MultiPartitionJoinClause<I>>
@@ -656,7 +656,7 @@ public interface MySQLDelete extends MySQLStatement {
             , MySQLQuery._MySQLCrossJoinClause<_BatchMultiIndexHintJoinSpec<I>, _BatchMultiJoinSpec<I>>
             , MySQLQuery._MySQLJoinNestedClause<MySQLQuery._NestedLeftParenSpec<_OnClause<_BatchMultiJoinSpec<I>>>>
             , _CrossJoinNestedClause<MySQLQuery._NestedLeftParenSpec<_BatchMultiJoinSpec<I>>>
-            , MySQLQuery._MySQLDynamicJoinClause<_BatchMultiJoinSpec<I>>
+            , _MySQLDynamicJoinCrossClause<_BatchMultiJoinSpec<I>>
             , MySQLQuery._MySQLDynamicCrossJoinClause<_BatchMultiJoinSpec<I>>
             , MySQLQuery._MySQLDialectJoinClause<_BatchMultiPartitionOnClause<I>>
             , _DialectCrossJoinClause<_BatchMultiPartitionJoinClause<I>>

@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._DialectTableBlock;
+import io.army.criteria.impl.inner._ModifierTableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
 import io.army.util.ArrayUtils;
@@ -53,8 +53,8 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
             throw ContextStack.castCriteriaApi(CriteriaUtils.getCriteriaContext(this.stmt));
         }
         this.predicateList = ArrayUtils.asUnmodifiableList(
-                (OperationPredicate) predicate1,
-                (OperationPredicate) predicate2
+                (OperationPredicate<?>) predicate1,
+                (OperationPredicate<?>) predicate2
         );
         return this.stmt;
     }
@@ -62,9 +62,9 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
     @Override
     public final OR on(Function<Expression, IPredicate> operator, DataField operandField) {
         if (this.predicateList != null) {
-            throw ContextStack.castCriteriaApi(this.getCriteriaContext());
+            throw ContextStack.castCriteriaApi(this.getContext());
         }
-        this.predicateList = Collections.singletonList((OperationPredicate) operator.apply(operandField));
+        this.predicateList = Collections.singletonList((OperationPredicate<?>) operator.apply(operandField));
         return this.stmt;
     }
 
@@ -72,11 +72,11 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
     public final OR on(Function<Expression, IPredicate> operator1, DataField operandField1
             , Function<Expression, IPredicate> operator2, DataField operandField2) {
         if (this.predicateList != null) {
-            throw ContextStack.castCriteriaApi(this.getCriteriaContext());
+            throw ContextStack.castCriteriaApi(this.getContext());
         }
         this.predicateList = ArrayUtils.asUnmodifiableList(
-                (OperationPredicate) operator1.apply(operandField1),
-                (OperationPredicate) operator2.apply(operandField2)
+                (OperationPredicate<?>) operator1.apply(operandField1),
+                (OperationPredicate<?>) operator2.apply(operandField2)
         );
         return this.stmt;
     }
@@ -84,7 +84,7 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
     @Override
     public final OR on(Consumer<Consumer<IPredicate>> consumer) {
         if (this.predicateList != null) {
-            throw ContextStack.castCriteriaApi(this.getCriteriaContext());
+            throw ContextStack.castCriteriaApi(this.getContext());
         }
         consumer.accept(this::addPredicate);
         final List<_Predicate> predicateList = this.predicateList;
@@ -100,14 +100,13 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
     public final List<_Predicate> onClauseList() {
         final List<_Predicate> predicateList = this.predicateList;
         if (predicateList == null | predicateList instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.getCriteriaContext());
+            throw ContextStack.castCriteriaApi(this.getContext());
         }
         return predicateList;
     }
 
 
-
-    final CriteriaContext getCriteriaContext() {
+    final CriteriaContext getContext() {
         return ((CriteriaContextSpec) this.stmt).getContext();
     }
 
@@ -118,18 +117,18 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
             predicateList = new ArrayList<>();
             this.predicateList = predicateList;
         } else if (!(predicateList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.getCriteriaContext());
+            throw ContextStack.castCriteriaApi(this.getContext());
         }
-        predicateList.add((OperationPredicate) predicate);
+        predicateList.add((OperationPredicate<?>) predicate);
     }
 
     private CriteriaException predicateListIsEmpty() {
-        return ContextStack.criteriaError(this.getCriteriaContext()
+        return ContextStack.criteriaError(this.getContext()
                 , _Exceptions::predicateListIsEmpty);
     }
 
 
-    static class OnItemTableBlock<OR> extends OnClauseTableBlock<OR> implements _DialectTableBlock {
+    static class OnItemTableBlock<OR> extends OnClauseTableBlock<OR> implements _ModifierTableBlock {
 
         private final SQLWords modifier;
 
@@ -150,6 +149,43 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
 
 
     }//OnItemTableBlock
+
+    static class OnModifierParensBlock<OR> extends OnItemTableBlock<OR> implements Statement._ParensOnSpec<OR> {
+
+        OnModifierParensBlock(_JoinType joinType, @Nullable SQLWords modifier, DerivedTable tableItem, String alias,
+                              OR stmt) {
+            super(joinType, modifier, tableItem, alias, stmt);
+        }
+
+
+        @Override
+        public final Statement._OnClause<OR> parens(String first, String... rest) {
+            ((ArmyDerivedTable) this.tableItem).setColumnAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+            return this;
+        }
+
+        @Override
+        public final Statement._OnClause<OR> parens(Consumer<Consumer<String>> consumer) {
+            final List<String> list = new ArrayList<>();
+            consumer.accept(list::add);
+            ((ArmyDerivedTable) this.tableItem).setColumnAliasList(list);
+            return this;
+        }
+
+        @Override
+        public final Statement._OnClause<OR> ifParens(Consumer<Consumer<String>> consumer) {
+            final List<String> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() > 0) {
+                ((ArmyDerivedTable) this.tableItem).setColumnAliasList(list);
+            } else {
+                ((ArmyDerivedTable) this.tableItem).setColumnAliasList(CriteriaUtils.EMPTY_STRING_LIST);
+            }
+            return this;
+        }
+
+
+    }//OnModifierParensBlock
 
 
 }

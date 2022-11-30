@@ -707,8 +707,8 @@ final class MySQLDialectParser extends MySQLParser {
                     this.indexHintClause(((_MySQLTableBlock) block).indexHintList(), sqlBuilder);
                 }
             } else if (tableItem instanceof SubQuery) {
-                if (block instanceof _DialectTableBlock
-                        && (modifier = ((_DialectTableBlock) block).modifier()) != null) {
+                if (block instanceof _ModifierTableBlock
+                        && (modifier = ((_ModifierTableBlock) block).modifier()) != null) {
                     if (!asOf80) {
                         throw _Exceptions.dontSupportModifier(modifier, this.dialect);
                     }

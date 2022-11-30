@@ -188,15 +188,13 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
 
     interface _JoinSpec<I extends Item>
-            extends _MySQLJoinClause<_IndexHintOnSpec<I>, _DerivedAsClause<_OnClause<_JoinSpec<I>>>>,
-            _CrossJoinModifierTabularClause<_IndexHintJoinSpec<I>, _DerivedAsClause<_JoinSpec<I>>>,
-            _JoinCteClause<_OnClause<_JoinSpec<I>>>,
-            _StraightJoinCteClause<_OnClause<_JoinSpec<I>>>,
+            extends _MySQLJoinClause<_IndexHintOnSpec<I>, _ParensOnSpec<_JoinSpec<I>>>,
+            _MySQLCrossClause<_IndexHintJoinSpec<I>, _ParensJoinSpec<I>>,
+            _MySQLJoinCteClause<_OnClause<_JoinSpec<I>>>,
             _CrossJoinCteClause<_JoinSpec<I>>,
-            _MySQLJoinNestedClause<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>>,
-            _CrossJoinNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>,
-            _MySQLDynamicJoinClause<_JoinSpec<I>>,
-            _MySQLDynamicCrossJoinClause<_JoinSpec<I>>,
+            _MySQLJoinNestedClause<_OnClause<_JoinSpec<I>>>,
+            _MySQLCrossNestedClause<_JoinSpec<I>>,
+            _MySQLDynamicJoinCrossClause<_JoinSpec<I>>,
             _MySQLDialectJoinClause<_PartitionOnSpec<I>>,
             _DialectCrossJoinClause<_PartitionJoinSpec<I>>,
             _WhereSpec<I> {
@@ -213,12 +211,16 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
+    interface _ParensJoinSpec<I extends Item> extends _ParensStringClause<_JoinSpec<I>>, _JoinSpec<I> {
+
+    }
+
 
     interface _FromSpec<I extends Item>
-            extends _FromModifierTabularClause<_IndexHintJoinSpec<I>, _DerivedAsClause<_JoinSpec<I>>>,
+            extends _MySQLFromClause<_IndexHintJoinSpec<I>, _ParensJoinSpec<I>>,
             _FromCteClause<_JoinSpec<I>>,
             _DialectFromClause<_PartitionJoinSpec<I>>,
-            _FromNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>,
+            _MySQLFromNestedClause<_JoinSpec<I>>,
             _IntoOptionSpec<I>,
             _UnionSpec<I> {
 

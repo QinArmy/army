@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._DialectTableBlock;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
@@ -455,23 +454,6 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
 
-    static abstract class DynamicJoinClause<FT, FS, FC, JT, JS, JC>
-            extends JoinableClause<FT, FS, FC, JT, JS, JC, Object, Object, Object, Object, Object, Object> {
-
-        final _JoinType joinType;
-
-        DynamicJoinClause(CriteriaContext context, _JoinType joinTyp, Consumer<_TableBlock> blockConsumer) {
-            super(context, blockConsumer);
-            this.joinType = joinTyp;
-        }
-
-        @Override
-        final Dialect statementDialect() {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-
-    }//DynamicJoinClause
-
 
     static abstract class NestedLeftParenClause<I extends Item> implements _NestedItems {
 
@@ -529,24 +511,22 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
 
     @SuppressWarnings("unchecked")
-    static abstract class NestedJoinClause<FT, FS, FC, JT, JS, JC, OR>
+    static abstract class JoinableBlock<FT, FS, FC, JT, JS, JC, OR>
             extends JoinableClause<FT, FS, FC, JT, JS, JC, Object, Object, Object, Object, Object, Object>
-            implements Statement._OnClause<OR>
-            , _DialectTableBlock {
+            implements Statement._OnClause<OR>, _TableBlock, _TableBlock._ModifierTableBlockSpec {
 
         private final _JoinType joinType;
 
         private final SQLWords modifier;
 
-        private final TabularItem tabularItem;
+        final TabularItem tabularItem;
 
         private final String alias;
 
         private List<_Predicate> onPredicateList;
 
-        NestedJoinClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer
-                , _JoinType joinType, @Nullable SQLWords modifier
-                , TabularItem tabularItem, String alias) {
+        JoinableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+                      @Nullable SQLWords modifier, TabularItem tabularItem, String alias) {
             super(context, blockConsumer);
             this.joinType = joinType;
             this.modifier = modifier;
@@ -554,8 +534,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
             this.alias = alias;
         }
 
-        NestedJoinClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer
-                , TableBlock.BlockParams params) {
+        JoinableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, TableBlock.BlockParams params) {
             super(context, blockConsumer);
             this.joinType = params.joinType();
             this.tabularItem = params.tableItem();
@@ -639,14 +618,62 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         }
 
 
-
         @Override
         final Dialect statementDialect() {
             throw ContextStack.castCriteriaApi(this.context);
         }
 
 
+    }//JoinableBlock
+
+    static abstract class NestedJoinableBlock<FT, FS, FC, JT, JS, JC, OR>
+            extends JoinableBlock<FT, FS, FC, JT, JS, JC, OR> {
+
+        NestedJoinableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+                            @Nullable SQLWords modifier, TabularItem tabularItem, String alias) {
+            super(context, blockConsumer, joinType, modifier, tabularItem, alias);
+        }
+
+        NestedJoinableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+                            TableBlock.BlockParams params) {
+            super(context, blockConsumer, params);
+        }
+
     }//NestedJoinClause
+
+    static abstract class DynamicJoinableBlock<FT, FS, FC, JT, JS, JC, OR>
+            extends JoinableBlock<FT, FS, FC, JT, JS, JC, OR> {
+
+
+        DynamicJoinableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+                             @Nullable SQLWords modifier, TabularItem tabularItem, String alias) {
+            super(context, blockConsumer, joinType, modifier, tabularItem, alias);
+        }
+
+        DynamicJoinableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+                             TableBlock.BlockParams params) {
+            super(context, blockConsumer, params);
+        }
+
+
+    }//DynamicJoinableBlock
+
+    static abstract class DynamicBuilderSupport {
+
+        final CriteriaContext context;
+
+        final _JoinType joinType;
+
+        final Consumer<_TableBlock> blockConsumer;
+
+
+        DynamicBuilderSupport(CriteriaContext context, _JoinType joinType, Consumer<_TableBlock> blockConsumer) {
+            this.context = context;
+            this.joinType = joinType;
+            this.blockConsumer = blockConsumer;
+        }
+
+    }//DynamicBuilderSupport
 
 
 }

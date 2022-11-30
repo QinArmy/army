@@ -14,7 +14,11 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
-    interface _MySQLFromClause<FT, FS> extends _FromModifierTabularClause<FT, FS> {
+    interface _MySQLFromClause<FT, FS> extends _FromModifierTabularClause<FT, _AsClause<FS>> {
+
+    }
+
+    interface _MySQLFromNestedClause<FN extends Item> extends _FromNestedClause<_NestedLeftParenSpec<FN>> {
 
     }
 
@@ -44,7 +48,18 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
-    interface _MySQLJoinNestedClause<JN> extends _JoinNestedClause<JN>, _StraightJoinNestedClause<JN> {
+    /**
+     * @param <JN> the java type that {@link _RightParenClause#rightParen()} return type
+     */
+    interface _MySQLJoinNestedClause<JN extends Item> extends _JoinNestedClause<_NestedLeftParenSpec<JN>>,
+            _StraightJoinNestedClause<_NestedLeftParenSpec<JN>> {
+
+    }
+
+    /**
+     * @param <CN> the java type that {@link _RightParenClause#rightParen()} return type
+     */
+    interface _MySQLCrossNestedClause<CN extends Item> extends _CrossJoinNestedClause<_NestedLeftParenSpec<CN>> {
 
     }
 
@@ -61,8 +76,8 @@ public interface MySQLStatement extends DialectStatement {
      * @param <JS> next clause java type
      * @since 1.0
      */
-    interface _MySQLJoinClause<JT, JS> extends Statement._JoinModifierTabularClause<JT, JS>,
-            DialectStatement._StraightJoinModifierTabularClause<JT, JS> {
+    interface _MySQLJoinClause<JT, JS> extends _JoinModifierTabularClause<JT, _AsClause<JS>>,
+            _StraightJoinModifierTabularClause<JT, _AsClause<JS>> {
 
     }
 
@@ -77,6 +92,10 @@ public interface MySQLStatement extends DialectStatement {
      * </p>
      */
     interface _MySQLJoinCteClause<JC> extends _JoinCteClause<JC>, _StraightJoinCteClause<JC> {
+
+    }
+
+    interface _MySQLCrossClause<FT, FS> extends _CrossJoinModifierTabularClause<FT, _AsClause<FS>> {
 
     }
 
@@ -103,11 +122,13 @@ public interface MySQLStatement extends DialectStatement {
             DialectStatement._CrossJoinCteClause<FS> {
     }
 
-    interface _MySQLDynamicJoinClause<JD> extends _DynamicJoinClause<MySQLJoins, JD>,
-            _DynamicStraightJoinClause<MySQLJoins, JD> {
+    interface _MySQLDynamicJoinCrossClause<JD> extends _DynamicJoinClause<MySQLJoins, JD>,
+            _DynamicStraightJoinClause<MySQLJoins, JD>,
+            _DynamicCrossJoinClause<MySQLCrosses, JD> {
 
     }
 
+    @Deprecated
     interface _MySQLDynamicCrossJoinClause<JD> extends _DynamicCrossJoinClause<MySQLCrosses, JD> {
 
     }
@@ -186,31 +207,62 @@ public interface MySQLStatement extends DialectStatement {
 
 
     interface _MySQLNestedJoinClause<I extends Item>
-            extends _MySQLJoinClause<_NestedIndexHintOnSpec<I>, _DerivedAsClause<_NestedOnSpec<I>>>,
-            _CrossJoinModifierTabularClause<_NestedIndexHintCrossSpec<I>, _DerivedAsClause<_NestedJoinSpec<I>>>,
+            extends _MySQLJoinClause<_NestedIndexHintOnSpec<I>, _NestedParenOnSpec<I>>,
+            _MySQLCrossClause<_NestedIndexHintCrossSpec<I>, _NestedParenJoinSpec<I>>,
             _MySQLJoinCteClause<_NestedOnSpec<I>>,
             _CrossJoinCteClause<_NestedJoinSpec<I>>,
-            _MySQLJoinNestedClause<_NestedLeftParenSpec<_NestedOnSpec<I>>>,
-            _CrossJoinNestedClause<_NestedLeftParenSpec<_NestedJoinSpec<I>>>,
-            _MySQLDynamicJoinClause<_NestedJoinSpec<I>>,
-            _MySQLDynamicCrossJoinClause<_NestedJoinSpec<I>>,
+            _MySQLJoinNestedClause<_NestedOnSpec<I>>,
+            _MySQLCrossNestedClause<_NestedJoinSpec<I>>,
+            _MySQLDynamicJoinCrossClause<_NestedJoinSpec<I>>,
             _MySQLDialectJoinClause<_NestedPartitionOnSpec<I>>,
             _DialectCrossJoinClause<_NestedPartitionCrossSpec<I>> {
 
     }
 
 
-    interface _NestedJoinSpec<I extends Item> extends _MySQLNestedJoinClause<I>
-            , _RightParenClause<I> {
+    interface _NestedJoinSpec<I extends Item> extends _MySQLNestedJoinClause<I>, _RightParenClause<I> {
 
     }
+
 
     interface _NestedOnSpec<I extends Item> extends _OnClause<_NestedJoinSpec<I>>, _NestedJoinSpec<I> {
 
     }
 
-    interface _NestedIndexHintOnSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintOnSpec<I>>
-            , _NestedOnSpec<I> {
+
+    interface _NestedLeftParensJoinSpec<I extends Item> extends _ParensStringClause<_MySQLNestedJoinClause<I>>,
+            _MySQLNestedJoinClause<I> {
+
+    }
+
+    interface _NestedParenJoinSpec<I extends Item> extends _NestedLeftParensJoinSpec<I>, _NestedJoinSpec<I> {
+
+        @Override
+        _NestedJoinSpec<I> parens(String first, String... rest);
+
+        @Override
+        _NestedJoinSpec<I> parens(Consumer<Consumer<String>> consumer);
+
+        @Override
+        _NestedJoinSpec<I> ifParens(Consumer<Consumer<String>> consumer);
+
+    }
+
+    interface _NestedParenOnSpec<I extends Item> extends _NestedParenJoinSpec<I>, _NestedOnSpec<I> {
+
+        @Override
+        _NestedOnSpec<I> parens(String first, String... rest);
+
+        @Override
+        _NestedOnSpec<I> parens(Consumer<Consumer<String>> consumer);
+
+        @Override
+        _NestedOnSpec<I> ifParens(Consumer<Consumer<String>> consumer);
+
+    }
+
+    interface _NestedIndexHintOnSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintOnSpec<I>>,
+            _NestedOnSpec<I> {
 
     }
 
@@ -218,8 +270,8 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _NestedIndexHintCrossSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintCrossSpec<I>>
-            , _NestedJoinSpec<I> {
+    interface _NestedIndexHintCrossSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintCrossSpec<I>>,
+            _NestedJoinSpec<I> {
 
     }
 
@@ -238,7 +290,7 @@ public interface MySQLStatement extends DialectStatement {
 
 
     interface _NestedLeftParenSpec<I extends Item>
-            extends _NestedLeftParenModifierTabularClause<_NestedIndexHintJoinSpec<I>, _DerivedAsClause<_MySQLNestedJoinClause<I>>>,
+            extends _NestedLeftParenModifierTabularClause<_NestedIndexHintJoinSpec<I>, _AsClause<_NestedLeftParensJoinSpec<I>>>,
             _LeftParenCteClause<_MySQLNestedJoinClause<I>>,
             _NestedDialectLeftParenClause<_NestedPartitionJoinSpec<I>>,
             _LeftParenClause<_NestedLeftParenSpec<_MySQLNestedJoinClause<I>>> {
@@ -256,15 +308,13 @@ public interface MySQLStatement extends DialectStatement {
 
 
     interface _DynamicJoinSpec
-            extends _MySQLJoinClause<_DynamicIndexHintOnClause, _DerivedAsClause<_OnClause<_DynamicJoinSpec>>>,
-            _CrossJoinModifierTabularClause<_DynamicIndexHintJoinClause, _DerivedAsClause<_DynamicJoinSpec>>,
-            _JoinCteClause<_OnClause<_DynamicJoinSpec>>,
-            _StraightJoinCteClause<_OnClause<_DynamicJoinSpec>>,
+            extends _MySQLJoinClause<_DynamicIndexHintOnClause, _OnClause<_DynamicJoinSpec>>,
+            _MySQLCrossClause<_DynamicIndexHintJoinClause, _DynamicJoinSpec>,
+            _MySQLJoinCteClause<_OnClause<_DynamicJoinSpec>>,
             _CrossJoinCteClause<_DynamicJoinSpec>,
-            _MySQLJoinNestedClause<_NestedLeftParenSpec<_OnClause<_DynamicJoinSpec>>>,
-            _CrossJoinNestedClause<_NestedLeftParenSpec<_DynamicJoinSpec>>,
-            _MySQLDynamicJoinClause<_DynamicJoinSpec>,
-            _MySQLDynamicCrossJoinClause<_DynamicJoinSpec>,
+            _MySQLJoinNestedClause<_OnClause<_DynamicJoinSpec>>,
+            _MySQLCrossNestedClause<_DynamicJoinSpec>,
+            _MySQLDynamicJoinCrossClause<_DynamicJoinSpec>,
             _MySQLDialectJoinClause<_DynamicPartitionOnClause>,
             _DialectCrossJoinClause<_DynamicPartitionJoinClause> {
 

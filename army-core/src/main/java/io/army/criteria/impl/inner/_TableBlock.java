@@ -1,7 +1,9 @@
 package io.army.criteria.impl.inner;
 
+import io.army.criteria.SQLWords;
 import io.army.criteria.TabularItem;
 import io.army.criteria.impl._JoinType;
+import io.army.lang.Nullable;
 
 import java.util.List;
 
@@ -28,5 +30,10 @@ public interface _TableBlock {
     String alias();
 
     List<_Predicate> onClauseList();
+
+    interface _ModifierTableBlockSpec {
+        @Nullable
+        SQLWords modifier();
+    }
 
 }

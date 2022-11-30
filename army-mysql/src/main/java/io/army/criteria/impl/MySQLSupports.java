@@ -262,7 +262,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         private MySQLQuery._QueryIndexHintClause<RR> getUseIndexClause() {
             MySQLQuery._QueryIndexHintClause<RR> useIndexClause = this.useIndexClause;
             if (useIndexClause == null) {
-                useIndexClause = new IndexHintClause<>(this.getCriteriaContext(), this::addIndexHint);
+                useIndexClause = new IndexHintClause<>(this.getContext(), this::addIndexHint);
                 this.useIndexClause = useIndexClause;
             }
             return useIndexClause;
@@ -277,7 +277,7 @@ abstract class MySQLSupports extends CriteriaSupports {
             if (indexHintList == null) {
                 indexHintList = new ArrayList<>();
             } else if (!(indexHintList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.getCriteriaContext());
+                throw ContextStack.castCriteriaApi(this.getContext());
             }
             indexHintList.add(indexHint);
             return (RR) this;

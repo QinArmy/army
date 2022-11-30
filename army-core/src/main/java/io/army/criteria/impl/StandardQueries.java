@@ -368,7 +368,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     static class SimpleSubQuery<I extends Item> extends StandardQueries<I>
-            implements SubQuery, ArmyDerivedTable {
+            implements ArmySubQuery {
 
         private final Function<SubQuery, I> function;
 
@@ -446,8 +446,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }//StandardBracketQuery
 
 
-    private static final class BracketSelect<I extends Item>
-            extends StandardBracketQuery<I>
+    private static final class BracketSelect<I extends Item> extends StandardBracketQuery<I>
             implements Select {
 
         private final Function<Select, I> function;
@@ -474,9 +473,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
     }//BracketSelect
 
-    private static final class BracketSubQuery<I extends Item>
-            extends StandardBracketQuery<I>
-            implements SubQuery, ArmyDerivedTable {
+    private static final class BracketSubQuery<I extends Item> extends StandardBracketQuery<I>
+            implements ArmySubQuery {
 
         private final Function<SubQuery, I> function;
 
