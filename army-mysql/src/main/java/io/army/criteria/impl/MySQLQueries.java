@@ -635,8 +635,8 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         if (modifier != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        final OnTableBlock<I> block;
-        block = new OnTableBlock<>(joinType, table, alias, this);
+        final IndexHintOnBlock<I> block;
+        block = new IndexHintOnBlock<>(joinType, table, alias, this);
         this.blockConsumer.accept(block);
         return block;
     }
@@ -1016,15 +1016,15 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
     }//PartitionJoinClause
 
 
-    private static final class OnTableBlock<I extends Item>
+    private static final class IndexHintOnBlock<I extends Item>
             extends MySQLSupports.MySQLOnBlock<_IndexHintOnSpec<I>, _JoinSpec<I>>
             implements _IndexHintOnSpec<I> {
 
-        private OnTableBlock(_JoinType joinType, TableMeta<?> table, String alias, _JoinSpec<I> stmt) {
+        private IndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias, _JoinSpec<I> stmt) {
             super(joinType, null, table, alias, stmt);
         }
 
-        private OnTableBlock(MySQLSupports.MySQLBlockParams params, _JoinSpec<I> stmt) {
+        private IndexHintOnBlock(MySQLSupports.MySQLBlockParams params, _JoinSpec<I> stmt) {
             super(params, stmt);
         }
 
@@ -1046,8 +1046,8 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         @Override
         _IndexHintOnSpec<I> asEnd(final MySQLSupports.MySQLBlockParams params) {
             final MySQLQueries<I, ?> stmt = this.stmt;
-            final OnTableBlock<I> block;
-            block = new OnTableBlock<>(params, stmt);
+            final IndexHintOnBlock<I> block;
+            block = new IndexHintOnBlock<>(params, stmt);
             stmt.blockConsumer.accept(block);
             return block;
         }

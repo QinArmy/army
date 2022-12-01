@@ -208,7 +208,7 @@ public interface MySQLStatement extends DialectStatement {
 
     interface _MySQLNestedJoinClause<I extends Item>
             extends _MySQLJoinClause<_NestedIndexHintOnSpec<I>, _NestedParenOnSpec<I>>,
-            _MySQLCrossClause<_NestedIndexHintCrossSpec<I>, _NestedParenJoinSpec<I>>,
+            _MySQLCrossClause<_NestedIndexHintCrossSpec<I>, _NestedParenCrossSpec<I>>,
             _MySQLJoinCteClause<_NestedOnSpec<I>>,
             _CrossJoinCteClause<_NestedJoinSpec<I>>,
             _MySQLJoinNestedClause<_NestedOnSpec<I>>,
@@ -235,29 +235,13 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _NestedParenJoinSpec<I extends Item> extends _NestedLeftParensJoinSpec<I>, _NestedJoinSpec<I> {
-
-        @Override
-        _NestedJoinSpec<I> parens(String first, String... rest);
-
-        @Override
-        _NestedJoinSpec<I> parens(Consumer<Consumer<String>> consumer);
-
-        @Override
-        _NestedJoinSpec<I> ifParens(Consumer<Consumer<String>> consumer);
+    interface _NestedParenCrossSpec<I extends Item> extends _ParensStringClause<_NestedJoinSpec<I>>,
+            _NestedJoinSpec<I> {
 
     }
 
-    interface _NestedParenOnSpec<I extends Item> extends _NestedParenJoinSpec<I>, _NestedOnSpec<I> {
+    interface _NestedParenOnSpec<I extends Item> extends _ParensStringClause<_NestedOnSpec<I>>, _NestedOnSpec<I> {
 
-        @Override
-        _NestedOnSpec<I> parens(String first, String... rest);
-
-        @Override
-        _NestedOnSpec<I> parens(Consumer<Consumer<String>> consumer);
-
-        @Override
-        _NestedOnSpec<I> ifParens(Consumer<Consumer<String>> consumer);
 
     }
 

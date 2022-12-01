@@ -76,6 +76,8 @@ interface CriteriaContext {
      */
     VarExpression var(String name) throws CriteriaException;
 
+    void bufferNestedDerived(String tableAlias, DerivedTable table);
+
 
     void onAddBlock(_TableBlock block);
 

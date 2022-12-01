@@ -454,7 +454,6 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
 
-
     static abstract class NestedLeftParenClause<I extends Item> implements _NestedItems {
 
         final CriteriaContext context;
@@ -487,8 +486,16 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
                 throw ContextStack.castCriteriaApi(this.context);
             }
             blockList.add(block);
+            final TabularItem item;
+            item = block.tableItem();
+            if (item instanceof DerivedTable) {
+                //buffer for column alias clause
+                this.context.bufferNestedDerived(block.alias(), (DerivedTable) item);
+            }
+
         }
 
+        @Deprecated
         final void onAddFirstBlock(final _TableBlock block) {
             final List<_TableBlock> blockList = this.blockList;
             if (!(blockList instanceof ArrayList && blockList.size() == 0)) {
