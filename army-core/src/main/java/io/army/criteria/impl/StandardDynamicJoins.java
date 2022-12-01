@@ -17,7 +17,8 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         Void,
         Statement._OnClause<StandardStatement._DynamicJoinSpec>,
         Statement._AsClause<Statement._OnClause<StandardStatement._DynamicJoinSpec>>,
-        Void>
+        Void,
+        StandardStatement._DynamicJoinSpec>
         implements StandardStatement._DynamicJoinSpec {
 
     static StandardJoins joinBuilder(CriteriaContext context, _JoinType joinTyp
@@ -30,8 +31,9 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
 
-    private StandardDynamicJoins(CriteriaContext context, _JoinType joinTyp, Consumer<_TableBlock> blockConsumer) {
-        super(context, joinTyp, blockConsumer);
+    private StandardDynamicJoins(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+                                 TabularItem tabularItem, String alias) {
+        super(context, blockConsumer, joinType, null, tabularItem, alias);
     }
 
     @Override
@@ -93,54 +95,28 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     @Override
     final StandardStatement._DynamicJoinSpec onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
                                                          TableMeta<?> table, String alias) {
-        if (modifier != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        this.blockConsumer.accept(new TableBlock.NoOnTableBlock(joinType, table, alias));
-        return this;
+
+        return this.onAddTable(joinType, modifier, table, alias);
     }
 
     @Override
     final Statement._AsClause<StandardStatement._DynamicJoinSpec> onFromDerived(
             _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
-        if (modifier != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        } else if (table == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return alias -> {
-            this.blockConsumer.accept(new TableBlock.NoOnTableBlock(joinType, table, alias));
-            return this;
-        };
+
+        return alias -> this.onAddDerived(joinType, modifier, table, alias);
     }
 
 
     @Override
     final Statement._OnClause<StandardStatement._DynamicJoinSpec> onJoinTable(
             _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
-        if (modifier != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        final OnClauseTableBlock<StandardStatement._DynamicJoinSpec> block;
-        block = new OnClauseTableBlock<>(joinType, table, alias, this);
-        this.blockConsumer.accept(block);
-        return block;
+        return this.onAddTable(joinType, modifier, table, alias);
     }
 
     @Override
     final Statement._AsClause<Statement._OnClause<StandardStatement._DynamicJoinSpec>> onJoinDerived(
             _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
-        if (table == null) {
-            throw ContextStack.nullPointer(this.context);
-        } else if (modifier != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return alias -> {
-            final OnClauseTableBlock<StandardStatement._DynamicJoinSpec> block;
-            block = new OnClauseTableBlock<>(joinType, table, alias, this);
-            this.blockConsumer.accept(block);
-            return block;
-        };
+        return alias -> this.onAddDerived(joinType, modifier, table, alias);
     }
 
     @Override
@@ -158,25 +134,94 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     private Statement._OnClause<StandardStatement._DynamicJoinSpec> joinNestedEnd(final _JoinType joinType,
                                                                                   final NestedItems nestedItems) {
         joinType.assertStandardJoinType();
-        final OnClauseTableBlock<StandardStatement._DynamicJoinSpec> block;
-        block = new OnClauseTableBlock<>(joinType, nestedItems, "", this);
+        final StandardDynamicBlock block;
+        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, nestedItems, "");
         this.blockConsumer.accept(block);
         return block;
     }
 
     private StandardStatement._DynamicJoinSpec crossNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         assert joinType == _JoinType.CROSS_JOIN;
-        final TableBlock.NoOnTableBlock block;
-        block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
+        final StandardDynamicBlock block;
+        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, nestedItems, "");
         this.blockConsumer.accept(block);
-        return this;
+        return block;
     }
 
+    private StandardDynamicBlock onAddTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
+                                            TableMeta<?> table, String alias) {
+        if (modifier != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        final StandardDynamicBlock block;
+        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
+        this.blockConsumer.accept(block);
+        return block;
+    }
 
-    private static final class StandardJoinBuilder extends StandardDynamicJoins
+    private StandardDynamicBlock onAddDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
+                                              @Nullable DerivedTable table, String alias) {
+        if (modifier != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        } else if (table == null) {
+            throw ContextStack.nullPointer(this.context);
+        }
+        final StandardDynamicBlock block;
+        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
+        this.blockConsumer.accept(block);
+        return block;
+    }
+
+    private static final class StandardDynamicBlock extends StandardDynamicJoins {
+
+        private StandardDynamicBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+                                     TabularItem table, String alias) {
+            super(context, blockConsumer, joinType, table, alias);
+        }
+
+
+    }//StandardDynamicBlock
+
+
+    private static abstract class StandardBuilderSupport extends DynamicBuilderSupport {
+
+        boolean started;
+
+        private StandardBuilderSupport(CriteriaContext context, _JoinType joinType,
+                                       Consumer<_TableBlock> blockConsumer) {
+            super(context, joinType, blockConsumer);
+        }
+
+        final StandardDynamicBlock onAddTable(TableMeta<?> table, String alias) {
+            if (this.started) {
+                throw CriteriaUtils.duplicateTabularMethod(this.context);
+            }
+            this.started = true;
+            final StandardDynamicBlock block;
+            block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, table, alias);
+            this.blockConsumer.accept(block);
+            return block;
+        }
+
+        final StandardDynamicBlock onAddDerived(@Nullable DerivedTable table, String alias) {
+            if (this.started) {
+                throw CriteriaUtils.duplicateTabularMethod(this.context);
+            }
+            this.started = true;
+            if (table == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            final StandardDynamicBlock block;
+            block = new StandardDynamicBlock(this.context, this.blockConsumer, this.joinType, table, alias);
+            this.blockConsumer.accept(block);
+            return block;
+        }
+
+    }//StandardBuilderSupport
+
+    private static final class StandardJoinBuilder extends StandardBuilderSupport
             implements StandardJoins {
 
-        private boolean started;
 
         private StandardJoinBuilder(CriteriaContext context, _JoinType joinTyp, Consumer<_TableBlock> blockConsumer) {
             super(context, joinTyp, blockConsumer);
@@ -185,78 +230,34 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         @Override
         public Statement._OnClause<StandardStatement._DynamicJoinSpec> tabular(TableMeta<?> table, SQLs.WordAs wordAs,
                                                                                String alias) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            final OnClauseTableBlock<StandardStatement._DynamicJoinSpec> block;
-            block = new OnClauseTableBlock<>(joinType, table, alias, this);
-            this.blockConsumer.accept(block);
-            return block;
+            return this.onAddTable(table, alias);
         }
 
         @Override
         public <T extends DerivedTable> Statement._AsClause<Statement._OnClause<StandardStatement._DynamicJoinSpec>> tabular(Supplier<T> supplier) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            final DerivedTable tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            return alias -> {
-                final OnClauseTableBlock<StandardStatement._DynamicJoinSpec> block;
-                block = new OnClauseTableBlock<>(this.joinType, tabularItem, alias, this);
-                this.blockConsumer.accept(block);
-                return block;
-            };
+            return alias -> this.onAddDerived(supplier.get(), alias);
         }
 
 
     }//StandardJoinBuilder
 
 
-    private static final class StandardCrossesBuilder extends StandardDynamicJoins
+    private static final class StandardCrossesBuilder extends StandardBuilderSupport
             implements StandardCrosses {
 
-        private boolean started;
 
         private StandardCrossesBuilder(CriteriaContext context, Consumer<_TableBlock> blockConsumer) {
             super(context, _JoinType.CROSS_JOIN, blockConsumer);
         }
 
-
         @Override
         public StandardStatement._DynamicJoinSpec tabular(TableMeta<?> table, SQLs.WordAs wordAs, String alias) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            this.blockConsumer.accept(new TableBlock.NoOnTableBlock(this.joinType, table, alias));
-            return this;
+            return this.onAddTable(table, alias);
         }
 
         @Override
         public <T extends DerivedTable> Statement._AsClause<StandardStatement._DynamicJoinSpec> tabular(Supplier<T> supplier) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            final DerivedTable tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            final Statement._AsClause<StandardStatement._DynamicJoinSpec> asClause;
-            asClause = alias -> {
-                final TableBlock.NoOnTableBlock block;
-                block = new TableBlock.NoOnTableBlock(this.joinType, tabularItem, alias);
-                this.blockConsumer.accept(block);
-                return this;
-            };
-            return asClause;
+            return alias -> this.onAddDerived(supplier.get(), alias);
         }
 
     }//StandardCrossesBuilder
