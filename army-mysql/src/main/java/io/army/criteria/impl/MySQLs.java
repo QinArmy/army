@@ -14,7 +14,7 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
     public static MySQLInsert._PrimaryOptionSpec<Insert> singleInsert() {
-        return MySQLInserts.primaryInsert(SQLs._INSERT_IDENTITY);
+        return MySQLInserts.primaryInsert(SQLs::_identity);
     }
 
     public static MySQLReplace._PrimaryOptionSpec singleReplace() {
@@ -23,12 +23,12 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLQuery._WithSpec<Select> query() {
-        return MySQLQueries.primaryQuery(null, ContextStack.peekIfBracket(), SQLs._SELECT_IDENTITY);
+        return MySQLQueries.primaryQuery(null, ContextStack.peekIfBracket(), SQLs::_identity);
     }
 
 
     public static MySQLQuery._WithSpec<SubQuery> subQuery() {
-        return MySQLQueries.subQuery(null, ContextStack.peek(), SQLs._SUB_QUERY_IDENTITY);
+        return MySQLQueries.subQuery(null, ContextStack.peek(), SQLs::_identity);
     }
 
 
@@ -48,16 +48,16 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLUpdate._SingleWithSpec<Update> singleUpdate() {
-        return MySQLSingleUpdate.simple(SQLs::_identity);
+        return MySQLSingleUpdate.simple(null, SQLs::_identity);
     }
 
 
-    public static MySQLUpdate._BatchSingleWithSpec<Update> batchSingleUpdate() {
-        return MySQLSingleUpdate.batch(SQLs::_identity);
+    public static MySQLUpdate._BatchSingleWithSpec<BatchUpdate> batchSingleUpdate() {
+        return MySQLSingleUpdate.batch(SQLs::_batchUpdateIdentity);
     }
 
     public static MySQLUpdate._MultiWithSpec<Update> multiUpdate() {
-        return MySQLMultiUpdate.simple(SQLs::_identity);
+        return MySQLMultiUpdate.simple(SQLs._UPDATE_IDENTITY);
     }
 
 
@@ -71,11 +71,11 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLDelete._BatchSingleWithSpec<Delete> batchSingleDelete() {
-        return MySQLSingleDelete.batch(null, SQLs::_identity);
+        return MySQLSingleDelete.batch(SQLs::_identity);
     }
 
     public static MySQLDelete._MultiWithSpec<Delete> multiDelete() {
-        return MySQLMultiDelete.simple(SQLs::_identity);
+        return MySQLMultiDelete.simple(null, SQLs::_identity);
     }
 
 

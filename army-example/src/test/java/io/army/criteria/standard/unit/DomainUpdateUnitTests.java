@@ -155,7 +155,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
         final Update stmt;
         stmt = SQLs.domainUpdate()
                 .update(PillPerson_.T, AS, "up")
-                .set(s -> s.set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
+                .sets(s -> s.set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
                         .set(PillUser_.identityId, SQLs::literal, 888)
                         .set(PillUser_.nickName, SQLs::param, "令狐冲"))
 

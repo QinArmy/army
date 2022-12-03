@@ -109,7 +109,11 @@ abstract class CriteriaSupports {
 
         private List<_Cte> cteList;
 
-        WithClause(CriteriaContext context) {
+        WithClause(@Nullable _Statement._WithClauseSpec spec, CriteriaContext context) {
+            if (spec != null) {
+                this.recursive = spec.isRecursive();
+                this.cteList = spec.cteList();
+            }
             this.context = context;
         }
 
@@ -164,6 +168,7 @@ abstract class CriteriaSupports {
         }
 
 
+        @SuppressWarnings("unchecked")
         final WE endStaticWithClause(final boolean recursive) {
             if (this.cteList != null) {
                 throw ContextStack.castCriteriaApi(this.context);

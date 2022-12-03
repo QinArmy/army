@@ -714,7 +714,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._DoUpdateWhereClause<I, Q> set(Consumer<RowPairs<FieldMeta<T>>> consumer) {
+        public PostgreInsert._DoUpdateWhereClause<I, Q> sets(Consumer<RowPairs<FieldMeta<T>>> consumer) {
             consumer.accept(CriteriaSupports.rowPairs(this::onAddItemPair));
             return this;
         }

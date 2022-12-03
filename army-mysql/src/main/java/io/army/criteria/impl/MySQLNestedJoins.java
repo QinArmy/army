@@ -331,9 +331,6 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         @Override
         final MySQLQuery._NestedOnSpec<I> onJoinCte(
                 _JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
-            if (modifier != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
             final MySQLNestedBlock<I> block;
             block = new MySQLNestedBlock<>(this.context, this.blockConsumer, joinType, null, cteItem, alias,
                     this.ender);
@@ -572,14 +569,9 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
 
         @Override
         public final R ifParens(Consumer<Consumer<String>> consumer) {
-
             final List<String> list = new ArrayList<>();
             consumer.accept(list::add);
-            if (list.size() > 0) {
-                ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(list);
-            } else {
-                ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(CriteriaUtils.EMPTY_STRING_LIST);
-            }
+            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(CriteriaUtils.optionalStringList(list));
             return (R) this;
         }
 

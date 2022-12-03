@@ -43,6 +43,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
+    @Deprecated
     interface _PartitionAndAsClause_0<AR> extends _PartitionClause_0<_AsClause<AR>> {
 
     }
@@ -76,8 +77,8 @@ public interface MySQLStatement extends DialectStatement {
      * @param <JS> next clause java type
      * @since 1.0
      */
-    interface _MySQLJoinClause<JT, JS> extends _JoinModifierTabularClause<JT, _AsClause<JS>>,
-            _StraightJoinModifierTabularClause<JT, _AsClause<JS>> {
+    interface _MySQLJoinClause<JT, JS> extends _JoinModifierTabularClause<JT, JS>,
+            _StraightJoinModifierTabularClause<JT, JS> {
 
     }
 
@@ -207,7 +208,7 @@ public interface MySQLStatement extends DialectStatement {
 
 
     interface _MySQLNestedJoinClause<I extends Item>
-            extends _MySQLJoinClause<_NestedIndexHintOnSpec<I>, _NestedParenOnSpec<I>>,
+            extends _MySQLJoinClause<_NestedIndexHintOnSpec<I>, _AsClause<_NestedParenOnSpec<I>>>,
             _MySQLCrossClause<_NestedIndexHintCrossSpec<I>, _NestedParenCrossSpec<I>>,
             _MySQLJoinCteClause<_NestedOnSpec<I>>,
             _CrossJoinCteClause<_NestedJoinSpec<I>>,
@@ -292,7 +293,7 @@ public interface MySQLStatement extends DialectStatement {
 
 
     interface _DynamicJoinSpec
-            extends _MySQLJoinClause<_DynamicIndexHintOnClause, _OnClause<_DynamicJoinSpec>>,
+            extends _MySQLJoinClause<_DynamicIndexHintOnClause, _AsParensOnClause<_DynamicJoinSpec>>,
             _MySQLCrossClause<_DynamicIndexHintJoinClause, _DynamicJoinSpec>,
             _MySQLJoinCteClause<_OnClause<_DynamicJoinSpec>>,
             _CrossJoinCteClause<_DynamicJoinSpec>,
@@ -320,6 +321,14 @@ public interface MySQLStatement extends DialectStatement {
 
     interface _StaticCteParensSpec<I extends Item>
             extends _ParensStringClause<_StaticCteAsClause<I>>, _StaticCteAsClause<I> {
+
+    }
+
+    interface _MySQLStaticWithClause<I extends Item> extends _StaticWithClause<_StaticCteParensSpec<I>> {
+
+    }
+
+    interface _MySQLStaticCteCommaClause<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<I>> {
 
     }
 

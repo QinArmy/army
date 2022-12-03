@@ -387,7 +387,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
         }
 
         @Override
-        public final _SingleFromSpec<I, Q, T> set(Consumer<RowPairs<FieldMeta<T>>> consumer) {
+        public final _SingleFromSpec<I, Q, T> sets(Consumer<RowPairs<FieldMeta<T>>> consumer) {
             consumer.accept(CriteriaSupports.rowPairs(this::onAddItemPair));
             return this;
         }
@@ -683,7 +683,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
         }
 
         @Override
-        public _BatchSingleFromClause<I, Q> set(Consumer<BatchRowPairs<FieldMeta<T>>> consumer) {
+        public _BatchSingleFromClause<I, Q> sets(Consumer<BatchRowPairs<FieldMeta<T>>> consumer) {
             consumer.accept(CriteriaSupports.batchRowPairs(this::onAddItemPair));
             return this;
         }

@@ -13,9 +13,11 @@ import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
+import io.army.util.ArrayUtils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -34,18 +36,20 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         extends SingleDelete.WithSingleDelete<I, MySQLCtes, WE, WR, WA, OR, LR, Object, Object>
-        implements MySQLDelete, _MySQLSingleDelete, Delete
-        , MySQLDelete._SingleDeleteClause<DT>
-        , MySQLStatement._PartitionClause_0<PR>
-        , Delete._SingleDeleteFromClause<DT> {
+        implements MySQLDelete,
+        _MySQLSingleDelete,
+        Delete,
+        MySQLDelete._SingleDeleteClause<DT>,
+        MySQLStatement._PartitionClause<PR>,
+        Delete._SingleDeleteFromClause<DT> {
 
 
     static <I extends Item> _SingleWithSpec<I> simple(@Nullable _WithClauseSpec spec, Function<Delete, I> function) {
-        return new SimpleDeleteStatement<>(spec,function);
+        return new SimpleDeleteStatement<>(spec, function);
     }
 
-    static <I extends Item> _BatchSingleWithSpec<I> batch(@Nullable _WithClauseSpec spec,Function<Delete, I> function) {
-        return new BatchDeleteStatement<>(spec,function);
+    static <I extends Item> _BatchSingleWithSpec<I> batch(Function<Delete, I> function) {
+        return new BatchDeleteStatement<>(null, function);
     }
 
     private final Function<Delete, I> function;
@@ -62,14 +66,13 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
 
 
     private MySQLSingleDelete(@Nullable _WithClauseSpec spec, Function<Delete, I> function) {
-        super(spec,CriteriaContexts.primarySingleDmlContext(spec));
+        super(spec, CriteriaContexts.primarySingleDmlContext(spec, null));
         this.function = function;
     }
 
     @Override
-    public final DT deleteFrom(final @Nullable SingleTableMeta<?> table, SQLs.WordAs wordAs
-            , final @Nullable String tableAlias) {
-        assert wordAs == SQLs.AS;
+    public final DT deleteFrom(final @Nullable SingleTableMeta<?> table, SQLs.WordAs wordAs,
+                               final @Nullable String tableAlias) {
         if (this.deleteTable != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -94,9 +97,23 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
     }
 
     @Override
-    public final _LeftParenStringQuadraOptionalSpec<PR> partition() {
-        return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
+    public final PR partition(String first, String... rest) {
+        this.partitionList = ArrayUtils.unmodifiableListOf(first, rest);
+        return (PR) this;
     }
+
+    @Override
+    public final PR partition(Consumer<Consumer<String>> consumer) {
+        this.partitionList = MySQLUtils.partitionList(this.context, true, consumer);
+        return (PR) this;
+    }
+
+    @Override
+    public final PR ifPartition(Consumer<Consumer<String>> consumer) {
+        this.partitionList = MySQLUtils.partitionList(this.context, false, consumer);
+        return (PR) this;
+    }
+
     @Override
     public final List<Hint> hintList() {
         final List<Hint> list = this.hintList;
@@ -186,15 +203,6 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
 
 
 
-    private PR partitionEnd(final List<String> list) {
-        if (this.partitionList != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        this.partitionList = list;
-        return (PR) this;
-    }
-
-
     private static final class SingleComma<I extends Item> implements MySQLDelete._SingleComma<I> {
 
         private final boolean recursive;
@@ -204,6 +212,7 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         private final Function<String, _StaticCteParensSpec<_SingleComma<I>>> function;
 
         private SingleComma(boolean recursive, SimpleDeleteStatement<I> statement) {
+            statement.context.onBeforeWithClause(recursive);
             this.recursive = recursive;
             this.statement = statement;
             this.function = MySQLQueries.complexCte(statement.context, this);
@@ -215,22 +224,9 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         }
 
         @Override
-        public _SinglePartitionSpec<I> deleteFrom(SingleTableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-            return this.endStaticWithClause().deleteFrom(table, wordAs, tableAlias);
+        public _SimpleSingleDeleteClause<I> space() {
+            return this.statement.endStaticWithClause(this.recursive);
         }
-
-        @Override
-        public _SingleDeleteFromClause<_SinglePartitionSpec<I>> delete(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers) {
-            return this.endStaticWithClause().delete(hints, modifiers);
-        }
-
-        private SimpleDeleteStatement<I> endStaticWithClause() {
-            final SimpleDeleteStatement<I> statement = this.statement;
-            statement.endStaticWithClause(this.recursive);
-            return statement;
-        }
-
 
     }//SingleComma
 
@@ -244,26 +240,22 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
             MySQLDelete._SingleWhereAndSpec<I>,
             MySQLDelete._LimitSpec<I>,
             Statement._DmlDeleteSpec<I>>
-            implements MySQLDelete._SingleWithSpec<I>
-            , MySQLDelete._SinglePartitionSpec<I>
-            , MySQLDelete._SingleWhereAndSpec<I> {
+            implements MySQLDelete._SingleWithSpec<I>,
+            MySQLDelete._SinglePartitionSpec<I>,
+            MySQLDelete._SingleWhereAndSpec<I> {
 
         private SimpleDeleteStatement(@Nullable _WithClauseSpec spec, Function<Delete, I> function) {
-            super(spec,function);
+            super(spec, function);
         }
 
         @Override
         public _StaticCteParensSpec<_SingleComma<I>> with(String name) {
-            final boolean recursive = false;
-            this.context.onBeforeWithClause(recursive);
-            return new SingleComma<>(recursive, this).function.apply(name);
+            return new SingleComma<>(false, this).function.apply(name);
         }
 
         @Override
         public _StaticCteParensSpec<_SingleComma<I>> withRecursive(String name) {
-            final boolean recursive = true;
-            this.context.onBeforeWithClause(recursive);
-            return new SingleComma<>(recursive, this).function.apply(name);
+            return new SingleComma<>(true, this).function.apply(name);
         }
 
 
@@ -279,6 +271,7 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         private final Function<String, _StaticCteParensSpec<_BatchSingleComma<I>>> function;
 
         private BatchSingleComma(boolean recursive, BatchDeleteStatement<I> statement) {
+            statement.context.onBeforeWithClause(recursive);
             this.recursive = recursive;
             this.statement = statement;
             this.function = MySQLQueries.complexCte(statement.context, this);
@@ -289,23 +282,11 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
             return this.function.apply(name);
         }
 
-        @Override
-        public _BatchSinglePartitionSpec<I> deleteFrom(SingleTableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-            return this.endStaticWithClause().deleteFrom(table, wordAs, tableAlias);
-        }
 
         @Override
-        public _SingleDeleteFromClause<_BatchSinglePartitionSpec<I>> delete(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers) {
-            return this.endStaticWithClause().delete(hints, modifiers);
+        public _BatchSingleDeleteClause<I> space() {
+            return this.statement.endStaticWithClause(this.recursive);
         }
-
-        private BatchDeleteStatement<I> endStaticWithClause() {
-            final BatchDeleteStatement<I> statement = this.statement;
-            statement.endStaticWithClause(this.recursive);
-            return statement;
-        }
-
 
     }//BatchSingleComma
 
@@ -319,29 +300,25 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
             MySQLDelete._BatchSingleWhereAndSpec<I>,
             MySQLDelete._BatchLimitSpec<I>,
             Statement._BatchParamClause<_DmlDeleteSpec<I>>>
-            implements MySQLDelete._BatchSingleWithSpec<I>
-            , MySQLDelete._BatchSinglePartitionSpec<I>
-            , MySQLDelete._BatchSingleWhereAndSpec<I>
-            , _BatchDml {
+            implements MySQLDelete._BatchSingleWithSpec<I>,
+            MySQLDelete._BatchSinglePartitionSpec<I>,
+            MySQLDelete._BatchSingleWhereAndSpec<I>,
+            _BatchDml {
 
         private List<?> paramList;
 
-        private BatchDeleteStatement(@Nullable _WithClauseSpec spec,Function<Delete, I> function) {
-            super(spec,function);
+        private BatchDeleteStatement(@Nullable _WithClauseSpec spec, Function<Delete, I> function) {
+            super(spec, function);
         }
 
         @Override
         public _StaticCteParensSpec<_BatchSingleComma<I>> with(String name) {
-            final boolean recursive = false;
-            this.context.onBeforeWithClause(recursive);
-            return new BatchSingleComma<>(recursive, this).function.apply(name);
+            return new BatchSingleComma<>(false, this).function.apply(name);
         }
 
         @Override
         public _StaticCteParensSpec<_BatchSingleComma<I>> withRecursive(String name) {
-            final boolean recursive = true;
-            this.context.onBeforeWithClause(recursive);
-            return new BatchSingleComma<>(recursive, this).function.apply(name);
+            return new BatchSingleComma<>(true, this).function.apply(name);
         }
 
         @Override

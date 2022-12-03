@@ -1230,6 +1230,10 @@ public interface Statement extends Item {
 
     }
 
+    interface _AsParensOnClause<R> extends _AsClause<_ParensOnSpec<R>> {
+
+    }
+
 
     interface _DmlInsertClause<I extends Item> extends Item {
 

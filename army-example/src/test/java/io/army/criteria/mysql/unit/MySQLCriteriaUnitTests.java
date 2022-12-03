@@ -60,25 +60,19 @@ public class MySQLCriteriaUnitTests {
         final Update stmt;
         stmt = MySQLs.singleUpdate()
                 .update(supplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), ChinaCity_.T)
-                .partition()
-                .leftParen("p2", "p1")
-                .rightParen()
+                .partition("p2", "p1")
                 .as("t")
 
-                .useIndex()
-                .forOrderBy()
-                .leftParen("uni_name_region_type")
-                .rightParen()
+                .useIndex().forOrderBy().parens("uni_name_region_type")
 
-                .ignoreIndex()
-                .forOrderBy()
-                .leftParen("uni_name_region_type")
-                .rightParen()
+                .ignoreIndex().forOrderBy().parens("uni_name_region_type")
 
                 .set(ChinaRegion_.name, SQLs::param, "五指礁")
                 .set(ChinaRegion_.regionGdp, SQLs::literal, 100)
                 .where(ChinaRegion_.name.equal(SQLs::literal, ""))
-                .and(ChinaRegion_.parentId.equal(SQLs::param, map.get("parentId")).or(ChinaRegion_.regionType.equal(SQLs::literal, RegionType.CITY)))
+                .and(ChinaRegion_.parentId.equal(SQLs::param, map.get("parentId"))
+                        .or(ChinaRegion_.regionType.equal(SQLs::literal, RegionType.CITY))
+                )
                 .and(ChinaRegion_.regionGdp::plus, SQLs::literal, 100, Expression::greatEqual, 0)
                 .orderBy(ChinaRegion_.name, SQLs.DESC)
                 .limit(SQLs::param, map::get, "rowCount")
@@ -106,7 +100,7 @@ public class MySQLCriteriaUnitTests {
         paramList.add(paramMap);
 
 
-        final Update stmt;
+        final BatchUpdate stmt;
         stmt = MySQLs.batchSingleUpdate()
                 .update(ChinaRegion_.T, AS, "t")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
@@ -350,18 +344,10 @@ public class MySQLCriteriaUnitTests {
             final Update stmt;
             stmt = MySQLs.multiUpdate()
                     .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), BankUser_.T)
-                    .partition()
-                    .leftParen("p1")
-                    .rightParen()
-                    .as("u")
-                    .useIndex()
-                    .forJoin()
-                    .leftParen("PRIMARY")
-                    .rightParen()
+                    .partition("p1").as("u")
+                    .useIndex().forJoin().parens("PRIMARY")
                     .join(BankAccount_.T, AS, "a")
-                    .ignoreIndex()
-                    .leftParen("idx_account_id")
-                    .rightParen()
+                    .ignoreIndex().parens("idx_account_id")
                     .on(BankUser_.id::equal, BankAccount_.id)
                     .ifSet(BankUser_.nickName, SQLs::param, map::get, "newNickName")
                     .ifSet(BankAccount_.balance, SQLs::plusEqual, SQLs::literal, () -> amount)
@@ -507,23 +493,10 @@ public class MySQLCriteriaUnitTests {
             final Update stmt;
             stmt = MySQLs.batchMultiUpdate()
                     .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), PillUser_.T)
-                    .partition()
-                    .leftParen("p1")
-                    .rightParen()
-                    .as("u")
-
-                    .useIndex()
-                    .forJoin()
-                    .leftParen("PRIMARY")
-                    .rightParen()
-
+                    .partition("p1").as("u")
+                    .useIndex().forJoin().parens("PRIMARY")
                     .join(BankAccount_.T, AS, "a")
-
-                    .ignoreIndex()
-                    .forJoin()
-                    .leftParen("idx_account_id")
-                    .rightParen()
-
+                    .ignoreIndex().forJoin().parens("idx_account_id")
                     .on(PillUser_.id::equal, BankAccount_.id)
                     .set(PillUser_.createTime, SQLs::namedParam)
                     .set(BankAccount_.balance, SQLs::plusEqual, SQLs::namedParam)

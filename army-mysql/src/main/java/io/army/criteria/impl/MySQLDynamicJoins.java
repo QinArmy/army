@@ -25,7 +25,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         Statement._AsClause<MySQLStatement._DynamicJoinSpec>,
         MySQLStatement._DynamicJoinSpec,
         MySQLStatement._DynamicIndexHintOnClause,
-        Statement._AsClause<Statement._OnClause<MySQLStatement._DynamicJoinSpec>>,
+        Statement._AsParensOnClause<MySQLStatement._DynamicJoinSpec>,
         Statement._OnClause<MySQLStatement._DynamicJoinSpec>,
         MySQLStatement._DynamicJoinSpec>
         implements MySQLStatement._DynamicJoinSpec {
@@ -191,7 +191,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     @Override
-    final Statement._AsClause<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> onJoinDerived(
+    final Statement._AsParensOnClause<MySQLStatement._DynamicJoinSpec> onJoinDerived(
             _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
         if (modifier != null && modifier != SQLs.LATERAL) {
             throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
@@ -281,11 +281,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         public Statement._OnClause<MySQLStatement._DynamicJoinSpec> ifParens(Consumer<Consumer<String>> consumer) {
             final List<String> list = new ArrayList<>();
             consumer.accept(list::add);
-            if (list.size() > 0) {
-                ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(list);
-            } else {
-                ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(CriteriaUtils.EMPTY_STRING_LIST);
-            }
+            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(CriteriaUtils.optionalStringList(list));
             return this;
         }
 
@@ -521,7 +517,6 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
                                                                         String alias) {
             return this.onAddCte(this.context.refCte(cteName), alias);
         }
-
 
 
     }//MySQLJoinBuilder

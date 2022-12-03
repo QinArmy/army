@@ -108,7 +108,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        public final _StandardWhereClause<I> set(Consumer<ItemPairs<F>> consumer) {
+        public final _StandardWhereClause<I> sets(Consumer<ItemPairs<F>> consumer) {
             consumer.accept(CriteriaSupports.itemPairs(this::onAddItemPair));
             return this;
         }
@@ -197,7 +197,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
             implements _BatchWhereSpec<Update, F>, _BatchWhereAndSpec<Update>, _BatchDml {
 
         @Override
-        public _BatchWhereClause<Update> set(Consumer<BatchItemPairs<F>> consumer) {
+        public _BatchWhereClause<Update> sets(Consumer<BatchItemPairs<F>> consumer) {
             consumer.accept(CriteriaSupports.batchItemPairs(this::onAddItemPair));
             return this;
         }

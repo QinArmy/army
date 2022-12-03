@@ -188,7 +188,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
 
     interface _JoinSpec<I extends Item>
-            extends _MySQLJoinClause<_IndexHintOnSpec<I>, _ParensOnSpec<_JoinSpec<I>>>,
+            extends _MySQLJoinClause<_IndexHintOnSpec<I>, _AsParensOnClause<_JoinSpec<I>>>,
             _MySQLCrossClause<_IndexHintJoinSpec<I>, _ParensJoinSpec<I>>,
             _MySQLJoinCteClause<_OnClause<_JoinSpec<I>>>,
             _CrossJoinCteClause<_JoinSpec<I>>,

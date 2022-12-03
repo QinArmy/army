@@ -12,12 +12,14 @@ import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
 import io.army.sqltype.SqlType;
 import io.army.util._ClassUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract class CriteriaUtils {
@@ -30,6 +32,23 @@ abstract class CriteriaUtils {
      * EMPTY_STRING_LIST couldn't be equals {@link  Collections#EMPTY_LIST}
      */
     static final List<String> EMPTY_STRING_LIST = Collections.unmodifiableList(new ArrayList<>(0));
+
+    static List<String> optionalStringList(final List<String> list) {
+        return list.size() == 0 ? EMPTY_STRING_LIST : list;
+    }
+
+    static List<String> columnAliasList(final boolean required, Consumer<Consumer<String>> consumer) {
+        List<String> list = new ArrayList<>();
+        consumer.accept(list::add);
+        if (list.size() > 0) {
+            list = _CollectionUtils.unmodifiableList(list);
+        } else if (required) {
+            list = Collections.emptyList();
+        } else {
+            list = EMPTY_STRING_LIST;
+        }
+        return list;
+    }
 
 
     static void createAndAddCte(final CriteriaContext context, final @Nullable String name
@@ -46,6 +65,7 @@ abstract class CriteriaUtils {
         }
         context.onAddCte(cte);
     }
+
 
     static CriteriaContext getCriteriaContext(final Object statement) {
         return ((CriteriaContextSpec) statement).getContext();

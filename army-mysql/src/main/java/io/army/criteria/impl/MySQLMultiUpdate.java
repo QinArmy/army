@@ -10,6 +10,9 @@ import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.util.ArrayUtils;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,10 +31,9 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT, JS, WR, WA>
-        extends JoinableUpdate.WithMultiUpdate<I, MySQLCtes, WE, TableField, SR, FT, FS, FS, JT, JS, JS, WR, WA, Object, Object, Object, Object>
-        implements Update, _MySQLMultiUpdate, MySQLUpdate
-        , MySQLStatement._IndexHintForJoinClause<FT> {
+abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC, JT, JS, JC, WR, WA>
+        extends JoinableUpdate.WithMultiUpdate<I, MySQLCtes, WE, TableField, SR, FT, FS, FC, JT, JS, JC, WR, WA, Object, Object, Object, Object>
+        implements Update, _MySQLMultiUpdate, MySQLUpdate, MySQLStatement._IndexHintForJoinClause<FT> {
 
 
     static <I extends Item> _MultiWithSpec<I> simple(Function<Update, I> function) {
@@ -48,7 +50,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
     List<MySQLSyntax.Modifier> modifierList;
 
-    MySQLSupports.MySQLNoOnBlock<FT> noOnBlock;
+    _TableBlock fromCrossBlock;
 
 
     private MySQLMultiUpdate(@Nullable _WithClauseSpec withSpec, Function<Update, I> function) {
@@ -122,43 +124,50 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
     }
 
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
-        if (modifier != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        final MySQLSupports.MySQLNoOnBlock<FT> block;
-        block = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, (FT) this);
-        this.noOnBlock = block;
-        return block;
-    }
-
-    @Override
-    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
-        }
-        return new MySQLSupports.MySQLNoOnBlock<>(joinType, modifier, tableItem, alias, this);
-    }
-
-    @Override
     final MySQLCtes createCteBuilder(boolean recursive) {
         return MySQLSupports.mySQLCteBuilder(recursive, this.context);
     }
 
-    final FS nestedNoneCrossEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    @Override
+    final @Nullable Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
+        throw ContextStack.castCriteriaApi(this.context);
+    }
+
+    @Nullable
+    @Override
+    final Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
+        if (modifier != null && modifier != SQLs.LATERAL) {
+            throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+        }
+        return modifier;
+    }
+
+
+    @Override
+    final FT onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
+        final MySQLSupports.MySQLNoOnBlock<FT> block;
+        block = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, (FT) this);
+        this.blockConsumer.accept(block);
+        this.fromCrossBlock = block;
+        return (FT) this;
+    }
+
+    final FT fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertNoneCrossType();
         final TableBlock.NoOnTableBlock block;
         block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
         this.blockConsumer.accept(block);
-        return (FS) this;
+        this.fromCrossBlock = block;
+        return (FT) this;
     }
 
-    final _OnClause<FS> nestedJoinEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        joinType.assertMySQLJoinType();
-        final OnClauseTableBlock<FS> block;
-        block = new OnClauseTableBlock<>(joinType, nestedItems, "", (FS) this);
-        this.blockConsumer.accept(block);
-        return block;
+    final void derivedAliasList(final List<String> aliasList) {
+        final _TableBlock block = this.fromCrossBlock;
+        final TabularItem item;
+        if (block != this.context.lastBlock() || !((item = block.tableItem()) instanceof DerivedTable)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        ((ArmyDerivedTable) item).setColumnAliasList(aliasList);
     }
 
     /*################################## blow private method ##################################*/
@@ -170,11 +179,11 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
      * @see #forceIndex()
      */
     private MySQLQuery._IndexHintForJoinClause<FT> getHintClause() {
-        final MySQLSupports.MySQLNoOnBlock<FT> noOnBlock = this.noOnBlock;
-        if (noOnBlock != this.context.lastBlock()) {
+        final _TableBlock block = this.fromCrossBlock;
+        if (block != this.context.lastBlock() || !(block instanceof MySQLSupports.MySQLNoOnBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return noOnBlock.getUseIndexClause();
+        return ((MySQLSupports.MySQLNoOnBlock<FT>) block).getUseIndexClause();
     }
 
 
@@ -189,6 +198,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         private final Function<String, _StaticCteParensSpec<_MultiComma<I>>> function;
 
         private SimpleComma(boolean recursive, SimpleUpdateStatement<I> clause) {
+            clause.context.onBeforeWithClause(recursive);
             this.recursive = recursive;
             this.clause = clause;
             this.function = MySQLQueries.complexCte(clause.context, this);
@@ -200,89 +210,9 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
         @Override
-        public _MultiIndexHintJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-            return this.endStaticWithEnd().update(hints, modifiers, table, wordAs, tableAlias);
+        public _SimpleMultiUpdateClause<I> space() {
+            return this.clause.endStaticWithClause(this.recursive);
         }
-
-        @Override
-        public _MultiIndexHintJoinSpec<I> update(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-            return this.endStaticWithEnd().update(table, wordAs, tableAlias);
-        }
-
-        @Override
-        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers, Supplier<T> supplier) {
-            return this.endStaticWithEnd().update(hints, modifiers, supplier);
-        }
-
-        @Override
-        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Supplier<T> supplier) {
-            return this.endStaticWithEnd().update(supplier);
-        }
-
-        @Override
-        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers, Query.DerivedModifier modifier, Supplier<T> supplier) {
-            return this.endStaticWithEnd().update(hints, modifiers, modifier, supplier);
-        }
-
-        @Override
-        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Query.DerivedModifier modifier
-                , Supplier<T> supplier) {
-            return this.endStaticWithEnd().update(modifier, supplier);
-        }
-
-        @Override
-        public _MultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , String cteName) {
-            return this.endStaticWithEnd().update(hints, modifiers, cteName);
-        }
-
-        @Override
-        public _MultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , String cteName, SQLs.WordAs wordAs, String alias) {
-            return this.endStaticWithEnd().update(hints, modifiers, cteName, wordAs, alias);
-        }
-
-        @Override
-        public _MultiJoinSpec<I> update(String cteName) {
-            return this.endStaticWithEnd().update(cteName);
-        }
-
-        @Override
-        public _MultiJoinSpec<I> update(String cteName, SQLs.WordAs wordAs, String alias) {
-            return this.endStaticWithEnd().update(cteName, wordAs, alias);
-        }
-
-        @Override
-        public _MultiPartitionJoinClause<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , TableMeta<?> table) {
-            return this.endStaticWithEnd().update(hints, modifiers, table);
-        }
-
-        @Override
-        public _MultiPartitionJoinClause<I> update(TableMeta<?> table) {
-            return this.endStaticWithEnd().update(table);
-        }
-
-        @Override
-        public MySQLQuery._NestedLeftParenSpec<_MultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLs.Modifier> modifiers) {
-            return this.endStaticWithEnd().update(hints, modifiers);
-        }
-
-        @Override
-        public MySQLQuery._NestedLeftParenSpec<_MultiJoinSpec<I>> update() {
-            return this.endStaticWithEnd().update();
-        }
-
-        private SimpleUpdateStatement<I> endStaticWithEnd() {
-            final SimpleUpdateStatement<I> clause = this.clause;
-            clause.endStaticWithClause(this.recursive);
-            return clause;
-        }
-
 
     }//SimpleComma
 
@@ -294,18 +224,21 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
      */
     private static final class SimpleUpdateStatement<I extends Item> extends MySQLMultiUpdate<
             I,
-            MySQLUpdate.MultiUpdateClause<I>,
+            _SimpleMultiUpdateClause<I>,
             MySQLUpdate._MultiIndexHintJoinSpec<I>,
             MySQLUpdate._MultiWhereSpec<I>,
+            Statement._AsClause<MySQLUpdate._ParensJoinSpec<I>>,
             MySQLUpdate._MultiJoinSpec<I>,
             MySQLUpdate._MultiIndexHintOnSpec<I>,
+            Statement._AsParensOnClause<MySQLUpdate._MultiJoinSpec<I>>,
             Statement._OnClause<MySQLUpdate._MultiJoinSpec<I>>,
             Statement._DmlUpdateSpec<I>,
             MySQLUpdate._MultiWhereAndSpec<I>>
-            implements MySQLUpdate._MultiWithSpec<I>
-            , MySQLUpdate._MultiIndexHintJoinSpec<I>
-            , MySQLUpdate._MultiWhereSpec<I>
-            , MySQLUpdate._MultiWhereAndSpec<I> {
+            implements MySQLUpdate._MultiWithSpec<I>,
+            MySQLUpdate._MultiIndexHintJoinSpec<I>,
+            MySQLUpdate._ParensJoinSpec<I>,
+            MySQLUpdate._MultiWhereSpec<I>,
+            MySQLUpdate._MultiWhereAndSpec<I> {
 
 
         private SimpleUpdateStatement(@Nullable _WithClauseSpec withSpec, Function<Update, I> function) {
@@ -313,160 +246,92 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
         @Override
-        public _MultiWhereSpec<I> set(Consumer<ItemPairs<TableField>> consumer) {
+        public _MultiWhereSpec<I> sets(Consumer<ItemPairs<TableField>> consumer) {
             consumer.accept(CriteriaSupports.itemPairs(this::onAddItemPair));
             return this;
         }
 
         @Override
         public _StaticCteParensSpec<_MultiComma<I>> with(String name) {
-            final boolean recursive = false;
-            this.context.onBeforeWithClause(recursive);
-            return new SimpleComma<>(recursive, this).function.apply(name);
+            return new SimpleComma<>(false, this).function.apply(name);
         }
 
         @Override
         public _StaticCteParensSpec<_MultiComma<I>> withRecursive(String name) {
-            final boolean recursive = true;
-            this.context.onBeforeWithClause(recursive);
-            return new SimpleComma<>(recursive, this).function.apply(name);
+            return new SimpleComma<>(true, this).function.apply(name);
         }
 
         @Override
-        public _MultiIndexHintJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-            assert wordAs == SQLs.AS;
+        public _MultiIndexHintJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
+                                                 TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-
-            this.blockConsumer.accept(this.createNoOnTableBlock(_JoinType.NONE, null, table, tableAlias));
-            return this;
+            return this.onFromTable(_JoinType.NONE, null, table, tableAlias);
         }
 
         @Override
         public _MultiIndexHintJoinSpec<I> update(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-            assert wordAs == SQLs.AS;
-            this.blockConsumer.accept(this.createNoOnTableBlock(_JoinType.NONE, null, table, tableAlias));
-            return this;
+            return this.onFromTable(_JoinType.NONE, null, table, tableAlias);
         }
 
+
         @Override
-        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers, Supplier<T> supplier) {
+        public <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> update(
+                Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers, Supplier<T> supplier) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-
-            final TabularItem tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            final _AsClause<_MultiJoinSpec<I>> asClause;
-            asClause = alias -> {
-                this.blockConsumer.accept(new TableBlock.NoOnTableBlock(_JoinType.NONE, tabularItem, alias));
-                return this;
-            };
-            return asClause;
+            return this.onFromDerived(_JoinType.NONE, null, this.nonNull(supplier.get()));
         }
 
         @Override
-        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Supplier<T> supplier) {
-            final TabularItem tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            final _AsClause<_MultiJoinSpec<I>> asClause;
-            asClause = alias -> {
-                this.blockConsumer.accept(new TableBlock.NoOnTableBlock(_JoinType.NONE, tabularItem, alias));
-                return this;
-            };
-            return asClause;
+        public <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> update(Supplier<T> supplier) {
+            return this.onFromDerived(_JoinType.NONE, null, this.nonNull(supplier.get()));
         }
 
         @Override
-        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers, final Query.DerivedModifier modifier, Supplier<T> supplier) {
-
-            if (modifier != SQLs.LATERAL) {
-                throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
-            }
-
+        public <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> update(
+                Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers,
+                @Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-
-            final TabularItem tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            final _AsClause<_MultiJoinSpec<I>> asClause;
-            asClause = alias -> {
-                final TableBlock.NoOnModifierTableBlock block;
-                block = new TableBlock.NoOnModifierTableBlock(_JoinType.NONE, modifier, tabularItem, alias);
-                this.blockConsumer.accept(block);
-                return this;
-            };
-            return asClause;
+            return this.onFromDerived(_JoinType.NONE, derivedModifier(modifier), nonNull(supplier.get()));
         }
 
         @Override
-        public <T extends TabularItem> _AsClause<_MultiJoinSpec<I>> update(Query.DerivedModifier modifier
-                , Supplier<T> supplier) {
-            if (modifier != SQLs.LATERAL) {
-                throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
-            }
-
-            final TabularItem tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            final _AsClause<_MultiJoinSpec<I>> asClause;
-            asClause = alias -> {
-                final TableBlock.NoOnModifierTableBlock block;
-                block = new TableBlock.NoOnModifierTableBlock(_JoinType.NONE, modifier, tabularItem, alias);
-                this.blockConsumer.accept(block);
-                return this;
-            };
-            return asClause;
+        public <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> update(@Nullable Query.DerivedModifier modifier,
+                                                                             Supplier<T> supplier) {
+            return this.onFromDerived(_JoinType.NONE, derivedModifier(modifier), nonNull(supplier.get()));
         }
 
         @Override
-        public _MultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , String cteName) {
+        public _MultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-
-            this.blockConsumer.accept(new TableBlock.NoOnTableBlock(_JoinType.NONE, this.context.refCte(cteName), ""));
-            return this;
+            return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), "");
         }
 
         @Override
-        public _MultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , String cteName, SQLs.WordAs wordAs, String alias) {
-            assert wordAs == SQLs.AS;
+        public _MultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
+                                        String cteName, SQLs.WordAs wordAs, String alias) {
+            if (!_StringUtils.hasText(alias)) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::cteNameNotText);
+            }
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-
-            final TableBlock.NoOnTableBlock block;
-            block = new TableBlock.NoOnTableBlock(_JoinType.NONE, this.context.refCte(cteName), alias);
-            this.blockConsumer.accept(block);
-            return this;
+            return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), this.cteAlias(alias));
         }
 
         @Override
         public _MultiJoinSpec<I> update(String cteName) {
-            this.blockConsumer.accept(new TableBlock.NoOnTableBlock(_JoinType.NONE, this.context.refCte(cteName), ""));
-            return this;
+            return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), "");
         }
 
         @Override
         public _MultiJoinSpec<I> update(String cteName, SQLs.WordAs wordAs, String alias) {
-            final TableBlock.NoOnTableBlock block;
-            block = new TableBlock.NoOnTableBlock(_JoinType.NONE, this.context.refCte(cteName), alias);
-            this.blockConsumer.accept(block);
-            return this;
+            if (!_StringUtils.hasText(alias)) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::cteNameNotText);
+            }
+            return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), this.cteAlias(alias));
         }
 
         @Override
@@ -487,12 +352,30 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
                 , List<MySQLs.Modifier> modifiers) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::nestedNoneCrossEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
         }
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_MultiJoinSpec<I>> update() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::nestedNoneCrossEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
+        }
+
+        @Override
+        public _MultiJoinSpec<I> parens(String first, String... rest) {
+            this.derivedAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+            return this;
+        }
+
+        @Override
+        public _MultiJoinSpec<I> parens(Consumer<Consumer<String>> consumer) {
+            this.derivedAliasList(CriteriaUtils.columnAliasList(true, consumer));
+            return this;
+        }
+
+        @Override
+        public _MultiJoinSpec<I> ifParens(Consumer<Consumer<String>> consumer) {
+            this.derivedAliasList(CriteriaUtils.columnAliasList(false, consumer));
+            return this;
         }
 
         @Override
@@ -528,32 +411,32 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_OnClause<_MultiJoinSpec<I>>> leftJoin() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::nestedJoinEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
         }
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_OnClause<_MultiJoinSpec<I>>> join() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::nestedJoinEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
         }
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_OnClause<_MultiJoinSpec<I>>> rightJoin() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::nestedJoinEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
         }
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_OnClause<_MultiJoinSpec<I>>> fullJoin() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::nestedJoinEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
         }
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_OnClause<_MultiJoinSpec<I>>> straightJoin() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.STRAIGHT_JOIN, this::nestedJoinEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.STRAIGHT_JOIN, this::joinNestedEnd);
         }
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_MultiJoinSpec<I>> crossJoin() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::nestedNoneCrossEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
         }
 
         @Override
@@ -592,37 +475,68 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
             return this;
         }
 
-
         @Override
-        _MultiIndexHintOnSpec<I> createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
-                , TableMeta<?> table, String tableAlias) {
-            if (modifier != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return new SimpleOnTableBlock<>(joinType, table, tableAlias, this);
-        }
-
-        @Override
-        _OnClause<_MultiJoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
-                , TabularItem tableItem, String alias) {
-            if (modifier != null && modifier != SQLs.LATERAL) {
-                throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
-            }
-            return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
-        }
-
-        @Override
-        _OnClause<_MultiJoinSpec<I>> createCteBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
-                , TabularItem tableItem, String alias) {
-            if (modifier != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return new OnClauseTableBlock.OnItemTableBlock<>(joinType, null, tableItem, alias, this);
+        _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
+                                                    DerivedTable table) {
+            return alias -> {
+                final TableBlock.NoOnModifierDerivedBlock block;
+                block = new TableBlock.NoOnModifierDerivedBlock(joinType, modifier, table, alias);
+                this.blockConsumer.accept(block);
+                this.fromCrossBlock = block;
+                return this;
+            };
         }
 
 
+        @Override
+        _MultiJoinSpec<I> onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem,
+                                    String alias) {
+            final TableBlock.NoOnTableBlock block;
+            block = new TableBlock.NoOnTableBlock(joinType, cteItem, alias);
+            this.blockConsumer.accept(block);
+            this.fromCrossBlock = block;
+            return this;
+        }
 
-    }// SimpleMultiUpdate
+        @Override
+        _MultiIndexHintOnSpec<I> onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
+                                             TableMeta<?> table, String alias) {
+            final SimpleOnTableBlock<I> block;
+            block = new SimpleOnTableBlock<>(joinType, table, alias, this);
+            this.blockConsumer.accept(block);
+            return block;
+        }
+
+        @Override
+        _AsParensOnClause<_MultiJoinSpec<I>> onJoinDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
+                                                           DerivedTable table) {
+            return alias -> {
+                final OnClauseTableBlock.OnModifierParensBlock<_MultiJoinSpec<I>> block;
+                block = new OnClauseTableBlock.OnModifierParensBlock<>(joinType, modifier, table, alias, this);
+                this.blockConsumer.accept(block);
+                return block;
+            };
+        }
+
+        @Override
+        _OnClause<_MultiJoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
+                                               CteItem cteItem, String alias) {
+            final OnClauseTableBlock<_MultiJoinSpec<I>> block;
+            block = new OnClauseTableBlock<>(joinType, cteItem, alias);
+            this.blockConsumer.accept(block);
+            return block;
+        }
+
+        private _OnClause<_MultiJoinSpec<I>> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
+            joinType.assertMySQLJoinType();
+            final OnClauseTableBlock<_MultiJoinSpec<I>> block;
+            block = new OnClauseTableBlock<>(joinType, nestedItems, "", this);
+            this.blockConsumer.accept(block);
+            return block;
+        }
+
+
+    }// SimpleUpdateStatement
 
     private static final class BatchComma<I extends Item> implements MySQLUpdate._BatchMultiComma<I> {
 
@@ -633,6 +547,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         private final Function<String, _StaticCteParensSpec<_BatchMultiComma<I>>> function;
 
         private BatchComma(boolean recursive, BatchUpdateStatement<I> clause) {
+            clause.context.onBeforeWithClause(recursive);
             this.recursive = recursive;
             this.clause = clause;
             this.function = MySQLQueries.complexCte(clause.context, this);
@@ -643,88 +558,10 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
             return this.function.apply(name);
         }
 
-        @Override
-        public _BatchMultiIndexHintJoinSpec<I> update(Supplier<List<Hint>> hints
-                , List<MySQLs.Modifier> modifiers, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-            return this.endStaticWithClause().update(hints, modifiers, table, wordAs, tableAlias);
-        }
 
         @Override
-        public _BatchMultiIndexHintJoinSpec<I> update(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-            return this.endStaticWithClause().update(table, wordAs, tableAlias);
-        }
-
-        @Override
-        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers, Supplier<T> supplier) {
-            return this.endStaticWithClause().update(hints, modifiers, supplier);
-        }
-
-        @Override
-        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Supplier<T> supplier) {
-            return this.endStaticWithClause().update(supplier);
-        }
-
-        @Override
-        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers, Query.DerivedModifier modifier, Supplier<T> supplier) {
-            return this.endStaticWithClause().update(hints, modifiers, modifier, supplier);
-        }
-
-        @Override
-        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Query.DerivedModifier modifier
-                , Supplier<T> supplier) {
-            return this.endStaticWithClause().update(modifier, supplier);
-        }
-
-        @Override
-        public _BatchMultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , String cteName) {
-            return this.endStaticWithClause().update(hints, modifiers, cteName);
-        }
-
-        @Override
-        public _BatchMultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , String cteName, SQLs.WordAs wordAs, String alias) {
-            return this.endStaticWithClause().update(hints, modifiers, cteName, wordAs, alias);
-        }
-
-        @Override
-        public _BatchMultiJoinSpec<I> update(String cteName) {
-            return this.endStaticWithClause().update(cteName);
-        }
-
-        @Override
-        public _BatchMultiJoinSpec<I> update(String cteName, SQLs.WordAs wordAs, String alias) {
-            return this.endStaticWithClause().update(cteName, wordAs, alias);
-        }
-
-        @Override
-        public _BatchMultiPartitionJoinClause<I> update(Supplier<List<Hint>> hints
-                , List<MySQLs.Modifier> modifiers, TableMeta<?> table) {
-            return this.endStaticWithClause().update(hints, modifiers, table);
-        }
-
-        @Override
-        public _BatchMultiPartitionJoinClause<I> update(TableMeta<?> table) {
-            return this.endStaticWithClause().update(table);
-        }
-
-        @Override
-        public MySQLQuery._NestedLeftParenSpec<_BatchMultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLs.Modifier> modifiers) {
-            return this.endStaticWithClause().update(hints, modifiers);
-        }
-
-        @Override
-        public MySQLQuery._NestedLeftParenSpec<_BatchMultiJoinSpec<I>> update() {
-            return this.endStaticWithClause().update();
-        }
-
-        private BatchUpdateStatement<I> endStaticWithClause() {
-            final BatchUpdateStatement<I> clause = this.clause;
-            clause.endStaticWithClause(this.recursive);
-            return clause;
+        public _BatchMultiUpdateClause<I> space() {
+            return this.clause.endStaticWithClause(this.recursive);
         }
 
 
@@ -741,16 +578,20 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
             MySQLUpdate._BatchMultiUpdateClause<I>,
             MySQLUpdate._BatchMultiIndexHintJoinSpec<I>,
             MySQLUpdate._BatchMultiWhereSpec<I>,
+            _AsClause<MySQLUpdate._BatchParensJoinSpec<I>>,
             MySQLUpdate._BatchMultiJoinSpec<I>,
             MySQLUpdate._BatchMultiIndexHintOnSpec<I>,
-            Statement._OnClause<_BatchMultiJoinSpec<I>>,
+            _AsParensOnClause<MySQLUpdate._BatchMultiJoinSpec<I>>,
+            _OnClause<MySQLUpdate._BatchMultiJoinSpec<I>>,
             Statement._BatchParamClause<_DmlUpdateSpec<I>>,
             MySQLUpdate._BatchMultiWhereAndSpec<I>>
-            implements MySQLUpdate._BatchMultiWithSpec<I>
-            , MySQLUpdate._BatchMultiIndexHintJoinSpec<I>
-            , MySQLUpdate._BatchMultiWhereSpec<I>
-            , MySQLUpdate._BatchMultiWhereAndSpec<I>
-            , _BatchDml {
+            implements MySQLUpdate._BatchMultiWithSpec<I>,
+            MySQLUpdate._BatchMultiIndexHintJoinSpec<I>,
+            MySQLUpdate._BatchParensJoinSpec<I>,
+            MySQLUpdate._BatchMultiWhereSpec<I>,
+            MySQLUpdate._BatchMultiWhereAndSpec<I>,
+            BatchUpdate,
+            _BatchDml {
 
 
         private List<?> paramList;
@@ -762,161 +603,89 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
         @Override
         public _StaticCteParensSpec<_BatchMultiComma<I>> with(String name) {
-            final boolean recursive = false;
-            this.context.onBeforeWithClause(recursive);
-            return new BatchComma<>(recursive, this).function.apply(name);
+            return new BatchComma<>(false, this).function.apply(name);
         }
 
         @Override
         public _StaticCteParensSpec<_BatchMultiComma<I>> withRecursive(String name) {
-            final boolean recursive = true;
-            this.context.onBeforeWithClause(recursive);
-            return new BatchComma<>(recursive, this).function.apply(name);
+            return new BatchComma<>(true, this).function.apply(name);
         }
 
         @Override
-        public _BatchMultiIndexHintJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-            assert wordAs == SQLs.AS;
+        public _BatchMultiIndexHintJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
+                                                      TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-
-            this.blockConsumer.accept(this.createNoOnTableBlock(_JoinType.NONE, null, table, tableAlias));
-            return this;
+            return this.onFromTable(_JoinType.NONE, null, table, tableAlias);
         }
 
         @Override
         public _BatchMultiIndexHintJoinSpec<I> update(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-            assert wordAs == SQLs.AS;
-            this.blockConsumer.accept(this.createNoOnTableBlock(_JoinType.NONE, null, table, tableAlias));
-            return this;
+            return this.onFromTable(_JoinType.NONE, null, table, tableAlias);
         }
 
+
         @Override
-        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers, Supplier<T> supplier) {
+        public <T extends DerivedTable> _AsClause<_BatchParensJoinSpec<I>> update(Supplier<List<Hint>> hints,
+                                                                                  List<MySQLSyntax.Modifier> modifiers,
+                                                                                  Supplier<T> supplier) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-
-            final TabularItem tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            final _AsClause<_BatchMultiJoinSpec<I>> asClause;
-            asClause = alias -> {
-                this.blockConsumer.accept(new TableBlock.NoOnTableBlock(_JoinType.NONE, tabularItem, alias));
-                return this;
-            };
-            return asClause;
+            return this.onFromDerived(_JoinType.NONE, null, this.nonNull(supplier.get()));
         }
 
         @Override
-        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Supplier<T> supplier) {
-            final TabularItem tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            final _AsClause<_BatchMultiJoinSpec<I>> asClause;
-            asClause = alias -> {
-                this.blockConsumer.accept(new TableBlock.NoOnTableBlock(_JoinType.NONE, tabularItem, alias));
-                return this;
-            };
-            return asClause;
+        public <T extends DerivedTable> _AsClause<_BatchParensJoinSpec<I>> update(Supplier<T> supplier) {
+            return this.onFromDerived(_JoinType.NONE, null, this.nonNull(supplier.get()));
         }
 
         @Override
-        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLSyntax.Modifier> modifiers, Query.DerivedModifier modifier, Supplier<T> supplier) {
-            if (modifier != SQLs.LATERAL) {
-                throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
-            }
-
+        public <T extends DerivedTable> _AsClause<_BatchParensJoinSpec<I>> update(
+                Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers, Query.DerivedModifier modifier,
+                Supplier<T> supplier) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-
-            final TabularItem tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            final _AsClause<_BatchMultiJoinSpec<I>> asClause;
-            asClause = alias -> {
-                final TableBlock.NoOnModifierTableBlock block;
-                block = new TableBlock.NoOnModifierTableBlock(_JoinType.NONE, modifier, tabularItem, alias);
-                this.blockConsumer.accept(block);
-                return this;
-            };
-            return asClause;
+            return this.onFromDerived(_JoinType.NONE, derivedModifier(modifier), this.nonNull(supplier.get()));
         }
 
         @Override
-        public <T extends TabularItem> _AsClause<_BatchMultiJoinSpec<I>> update(Query.DerivedModifier modifier
-                , Supplier<T> supplier) {
-            if (modifier != SQLs.LATERAL) {
-                throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
-            }
-            final TabularItem tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            final _AsClause<_BatchMultiJoinSpec<I>> asClause;
-            asClause = alias -> {
-                final TableBlock.NoOnModifierTableBlock block;
-                block = new TableBlock.NoOnModifierTableBlock(_JoinType.NONE, modifier, tabularItem, alias);
-                this.blockConsumer.accept(block);
-                return this;
-            };
-            return asClause;
+        public <T extends DerivedTable> _AsClause<_BatchParensJoinSpec<I>> update(Query.DerivedModifier modifier,
+                                                                                  Supplier<T> supplier) {
+            return this.onFromDerived(_JoinType.NONE, derivedModifier(modifier), this.nonNull(supplier.get()));
         }
 
         @Override
-        public _BatchMultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , String cteName) {
+        public _BatchMultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
+                                             String cteName) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-
-            final TableBlock.NoOnTableBlock block;
-            block = new TableBlock.NoOnTableBlock(_JoinType.NONE, this.context.refCte(cteName), "");
-            this.blockConsumer.accept(block);
-            return this;
+            return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), "");
         }
 
         @Override
-        public _BatchMultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers
-                , String cteName, SQLs.WordAs wordAs, String alias) {
+        public _BatchMultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
+                                             String cteName, SQLs.WordAs wordAs, String alias) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-
-            assert wordAs == SQLs.AS;
-            final TableBlock.NoOnTableBlock block;
-            block = new TableBlock.NoOnTableBlock(_JoinType.NONE, this.context.refCte(cteName), alias);
-            this.blockConsumer.accept(block);
-            return this;
+            return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), this.cteAlias(alias));
         }
 
         @Override
         public _BatchMultiJoinSpec<I> update(String cteName) {
-            final TableBlock.NoOnTableBlock block;
-            block = new TableBlock.NoOnTableBlock(_JoinType.NONE, this.context.refCte(cteName), "");
-            this.blockConsumer.accept(block);
-            return this;
+            return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), "");
         }
 
         @Override
         public _BatchMultiJoinSpec<I> update(String cteName, SQLs.WordAs wordAs, String alias) {
-            assert wordAs == SQLs.AS;
-            final TableBlock.NoOnTableBlock block;
-            block = new TableBlock.NoOnTableBlock(_JoinType.NONE, this.context.refCte(cteName), alias);
-            this.blockConsumer.accept(block);
-            return this;
+            if (!_StringUtils.hasText(alias)) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::cteNameNotText);
+            }
+            return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), this.cteAlias(alias));
         }
 
         @Override
-        public _BatchMultiPartitionJoinClause<I> update(Supplier<List<Hint>> hints
-                , List<MySQLs.Modifier> modifiers, TableMeta<?> table) {
+        public _BatchMultiPartitionJoinClause<I> update(Supplier<List<Hint>> hints,
+                                                        List<MySQLs.Modifier> modifiers, TableMeta<?> table) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
             return new BatchPartitionJoinClause<>(this, _JoinType.NONE, table);
@@ -928,16 +697,35 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
         @Override
-        public MySQLQuery._NestedLeftParenSpec<_BatchMultiJoinSpec<I>> update(Supplier<List<Hint>> hints
-                , List<MySQLs.Modifier> modifiers) {
+        public MySQLQuery._NestedLeftParenSpec<_BatchMultiJoinSpec<I>> update(Supplier<List<Hint>> hints,
+                                                                              List<MySQLs.Modifier> modifiers) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::nestedNoneCrossEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
         }
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_BatchMultiJoinSpec<I>> update() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::nestedNoneCrossEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
+        }
+
+
+        @Override
+        public _BatchMultiJoinSpec<I> parens(String first, String... rest) {
+            this.derivedAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+            return this;
+        }
+
+        @Override
+        public _BatchMultiJoinSpec<I> parens(Consumer<Consumer<String>> consumer) {
+            this.derivedAliasList(CriteriaUtils.columnAliasList(true, consumer));
+            return this;
+        }
+
+        @Override
+        public _BatchMultiJoinSpec<I> ifParens(Consumer<Consumer<String>> consumer) {
+            this.derivedAliasList(CriteriaUtils.columnAliasList(false, consumer));
+            return this;
         }
 
         @Override
@@ -972,32 +760,32 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_OnClause<_BatchMultiJoinSpec<I>>> leftJoin() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::nestedJoinEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
         }
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_OnClause<_BatchMultiJoinSpec<I>>> join() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::nestedJoinEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
         }
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_OnClause<_BatchMultiJoinSpec<I>>> rightJoin() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::nestedJoinEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
         }
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_OnClause<_BatchMultiJoinSpec<I>>> fullJoin() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::nestedJoinEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
         }
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_OnClause<_BatchMultiJoinSpec<I>>> straightJoin() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.STRAIGHT_JOIN, this::nestedJoinEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.STRAIGHT_JOIN, this::joinNestedEnd);
         }
 
         @Override
         public MySQLQuery._NestedLeftParenSpec<_BatchMultiJoinSpec<I>> crossJoin() {
-            return MySQLNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::nestedNoneCrossEnd);
+            return MySQLNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
         }
 
         @Override
@@ -1037,7 +825,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
         @Override
-        public _BatchMultiWhereSpec<I> set(Consumer<BatchItemPairs<TableField>> consumer) {
+        public _BatchMultiWhereSpec<I> sets(Consumer<BatchItemPairs<TableField>> consumer) {
             consumer.accept(CriteriaSupports.batchItemPairs(this::onAddItemPair));
             return this;
         }
@@ -1071,39 +859,82 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
         @Override
-        _BatchMultiIndexHintOnSpec<I> createTableBlock(_JoinType joinType
-                , @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
-            if (modifier != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return new BatchOnTableBlock<>(joinType, table, tableAlias, this);
-        }
-
-        @Override
-        _OnClause<_BatchMultiJoinSpec<I>> createItemBlock(_JoinType joinType
-                , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
-            if (modifier != null && modifier != SQLs.LATERAL) {
+        _AsClause<_BatchParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
+                                                         @Nullable DerivedTable table) {
+            if (table == null) {
+                throw ContextStack.nullPointer(this.context);
+            } else if (modifier != null && modifier != SQLs.LATERAL) {
                 throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
             }
-            return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
+            return alias -> {
+                final TableBlock.NoOnModifierDerivedBlock block;
+                block = new TableBlock.NoOnModifierDerivedBlock(joinType, modifier, table, alias);
+                this.blockConsumer.accept(block);
+                this.fromCrossBlock = block;
+                return this;
+            };
         }
 
         @Override
-        _OnClause<_BatchMultiJoinSpec<I>> createCteBlock(_JoinType joinType
-                , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
-            if (modifier != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
+        _BatchMultiJoinSpec<I> onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
+                                         CteItem cteItem, String alias) {
+            final TableBlock.NoOnTableBlock block;
+            block = new TableBlock.NoOnTableBlock(joinType, cteItem, alias);
+            this.blockConsumer.accept(block);
+            this.fromCrossBlock = block;
+            return this;
         }
 
+        @Override
+        _BatchMultiIndexHintOnSpec<I> onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
+                                                  TableMeta<?> table, String alias) {
+            final BatchOnTableBlock<I> block;
+            block = new BatchOnTableBlock<>(joinType, table, alias, this);
+            this.blockConsumer.accept(block);
+            return block;
+        }
+
+        @Override
+        _AsParensOnClause<_BatchMultiJoinSpec<I>> onJoinDerived(_JoinType joinType,
+                                                                @Nullable Query.DerivedModifier modifier,
+                                                                @Nullable DerivedTable table) {
+            if (table == null) {
+                throw ContextStack.nullPointer(this.context);
+            } else if (modifier != null && modifier != SQLs.LATERAL) {
+                throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+            }
+            return alias -> {
+                final OnClauseTableBlock.OnModifierParensBlock<_BatchMultiJoinSpec<I>> block;
+                block = new OnClauseTableBlock.OnModifierParensBlock<>(joinType, modifier, table, alias, this);
+                this.blockConsumer.accept(block);
+                return block;
+            };
+        }
+
+        @Override
+        _OnClause<_BatchMultiJoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
+                                                    CteItem cteItem, String alias) {
+            final OnClauseTableBlock<_BatchMultiJoinSpec<I>> block;
+            block = new OnClauseTableBlock<>(joinType, cteItem, alias);
+            this.blockConsumer.accept(block);
+            return block;
+        }
+
+        private _OnClause<_BatchMultiJoinSpec<I>> joinNestedEnd(final _JoinType joinType,
+                                                                final NestedItems nestedItems) {
+            joinType.assertMySQLJoinType();
+            final OnClauseTableBlock<_BatchMultiJoinSpec<I>> block;
+            block = new OnClauseTableBlock<>(joinType, nestedItems, "", this);
+            this.blockConsumer.accept(block);
+            return block;
+        }
 
 
     }// BatchUpdateStatement
 
 
     private static final class SimplePartitionJoinClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause_0<_MultiIndexHintJoinSpec<I>>
+            extends MySQLSupports.PartitionAsClause<_MultiIndexHintJoinSpec<I>>
             implements MySQLUpdate._MultiPartitionJoinClause<I> {
 
         private final SimpleUpdateStatement<I> stmt;
@@ -1121,22 +952,24 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
             block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
 
             stmt.blockConsumer.accept(block);
-            stmt.noOnBlock = block;// update noOnBlock
+            stmt.fromCrossBlock = block;
             return stmt;
         }
 
 
     }//SimplePartitionJoinClause
 
-    private static final class SimpleOnTableBlock<I extends Item>
-            extends MySQLSupports.MySQLOnBlock<
-            MySQLUpdate._MultiIndexHintOnSpec<I>
-            , MySQLUpdate._MultiJoinSpec<I>>
+    private static final class SimpleOnTableBlock<I extends Item> extends MySQLSupports.MySQLOnBlock<
+            MySQLUpdate._MultiIndexHintOnSpec<I>,
+            MySQLUpdate._MultiJoinSpec<I>>
             implements MySQLUpdate._MultiIndexHintOnSpec<I> {
 
-        private SimpleOnTableBlock(_JoinType joinType, TabularItem tableItem, String alias
-                , MySQLUpdate._MultiJoinSpec<I> stmt) {
-            super(joinType, null, tableItem, alias, stmt);
+        /**
+         * @see SimpleUpdateStatement#onJoinTable(_JoinType, Query.TableModifier, TableMeta, String)
+         */
+        private SimpleOnTableBlock(_JoinType joinType, TableMeta<?> table, String alias,
+                                   MySQLUpdate._MultiJoinSpec<I> stmt) {
+            super(joinType, null, table, alias, stmt);
         }
 
         private SimpleOnTableBlock(MySQLSupports.MySQLBlockParams params, MySQLUpdate._MultiJoinSpec<I> stmt) {
@@ -1144,10 +977,10 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
         }
 
 
-    }//OnTableBlock
+    }//SimpleOnTableBlock
 
     private static final class SimplePartitionOnClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause_0<_MultiIndexHintOnSpec<I>>
+            extends MySQLSupports.PartitionAsClause<_MultiIndexHintOnSpec<I>>
             implements MySQLUpdate._MultiPartitionOnClause<I> {
 
         private final SimpleUpdateStatement<I> stmt;
@@ -1172,7 +1005,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
 
 
     private static final class BatchPartitionJoinClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause_0<_BatchMultiIndexHintJoinSpec<I>>
+            extends MySQLSupports.PartitionAsClause<_BatchMultiIndexHintJoinSpec<I>>
             implements MySQLUpdate._BatchMultiPartitionJoinClause<I> {
 
         private final BatchUpdateStatement<I> stmt;
@@ -1190,17 +1023,16 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
             block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
 
             stmt.blockConsumer.accept(block);
-            stmt.noOnBlock = block;// update noOnBlock
+            stmt.fromCrossBlock = block;// update noOnBlock
             return stmt;
         }
 
 
     }//BatchPartitionJoinClause
 
-    private static final class BatchOnTableBlock<I extends Item>
-            extends MySQLSupports.MySQLOnBlock<
-            MySQLUpdate._BatchMultiIndexHintOnSpec<I>
-            , MySQLUpdate._BatchMultiJoinSpec<I>>
+    private static final class BatchOnTableBlock<I extends Item> extends MySQLSupports.MySQLOnBlock<
+            MySQLUpdate._BatchMultiIndexHintOnSpec<I>,
+            MySQLUpdate._BatchMultiJoinSpec<I>>
             implements MySQLUpdate._BatchMultiIndexHintOnSpec<I> {
 
         private BatchOnTableBlock(_JoinType joinType, TableMeta<?> table, String alias
@@ -1216,7 +1048,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, JT,
     }//BatchOnTableBlock
 
     private static final class BatchPartitionOnClause<I extends Item>
-            extends MySQLSupports.PartitionAsClause_0<_BatchMultiIndexHintOnSpec<I>>
+            extends MySQLSupports.PartitionAsClause<_BatchMultiIndexHintOnSpec<I>>
             implements MySQLUpdate._BatchMultiPartitionOnClause<I> {
 
         private final BatchUpdateStatement<I> stmt;

@@ -3,10 +3,12 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.lang.Nullable;
+import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 abstract class MySQLUtils extends CriteriaUtils {
@@ -145,6 +147,21 @@ abstract class MySQLUtils extends CriteriaUtils {
             level = -1;
         }
         return level;
+    }
+
+
+    static List<String> partitionList(CriteriaContext context, final boolean required,
+                                      Consumer<Consumer<String>> consumer) {
+        List<String> list = new ArrayList<>();
+        consumer.accept(list::add);
+        if (list.size() > 0) {
+            list = _CollectionUtils.unmodifiableList(list);
+        } else if (required) {
+            throw partitionListIsEmpty(context);
+        } else {
+            list = Collections.emptyList();
+        }
+        return list;
     }
 
 

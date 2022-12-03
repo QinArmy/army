@@ -170,6 +170,14 @@ public abstract class SQLs extends SQLsSyntax {
         return t;
     }
 
+    static BatchUpdate _batchUpdateIdentity(Update update) {
+        return (BatchUpdate) update;
+    }
+
+    static BatchDelete _batchDeleteIdentity(Delete delete) {
+        return (BatchDelete) delete;
+    }
+
     static Expression _asExp(_ItemExpression<?> expression) {
         return expression;
     }

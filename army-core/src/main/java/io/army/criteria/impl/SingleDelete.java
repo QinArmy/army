@@ -140,12 +140,14 @@ abstract class SingleDelete<I extends Item, WR, WA, OR, LR, LO, LF>
         }
 
 
-        final void endStaticWithClause(final boolean recursive) {
+        @SuppressWarnings("unchecked")
+        final WE endStaticWithClause(final boolean recursive) {
             if (this.cteList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
+            return (WE) this;
         }
 
 

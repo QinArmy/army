@@ -26,7 +26,7 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
     }
 
     interface _DynamicSetClause<B extends _ItemPairBuilder, SR> {
-        SR set(Consumer<B> consumer);
+        SR sets(Consumer<B> consumer);
 
     }
 
