@@ -5,7 +5,6 @@ import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.SQLs;
-import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 
 import java.util.function.*;
@@ -13,76 +12,101 @@ import java.util.function.*;
 public interface PostgreStatement extends DialectStatement {
 
 
+    @Deprecated
     interface _PostgreJoinClause<JT, JS> extends _JoinModifierClause<JT, JS>
             , _JoinCteClause<JS> {
 
     }
 
+    @Deprecated
     interface _PostgreCrossJoinClause<FT, FS> extends _CrossJoinModifierClause<FT, FS>
             , _CrossJoinCteClause<FS> {
 
     }
 
-    interface _PostgreDynamicJoinClause<JD> extends _DynamicJoinClause<PostgreJoins, JD> {
+    interface _PostgreDynamicJoinCrossClause<JD> extends _DynamicJoinClause<PostgreJoins, JD>,
+            _DynamicCrossJoinClause<PostgreCrosses, JD> {
 
     }
 
+    @Deprecated
     interface _PostgreDynamicCrossJoinClause<JD> extends _DynamicCrossJoinClause<PostgreCrosses, JD> {
 
     }
 
+    interface _PostgreCrossClause<FT, FS> extends _CrossJoinModifierClause<FT, _AsClause<FS>> {
 
-    interface _RepeatableClause<RR> {
+    }
 
-        RR repeatable(Expression seed);
+    interface _PostgreJoinNestedClause<JN extends Item> extends _JoinNestedClause<_NestedLeftParenSpec<JN>> {
 
-        RR repeatable(Supplier<Expression> supplier);
+    }
 
-        RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Number seedValue);
+    interface _PostgreCrossNestedClause<CN extends Item> extends _CrossJoinNestedClause<_NestedLeftParenSpec<CN>> {
 
-        RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Supplier<Number> supplier);
+    }
 
-        RR repeatable(BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+    interface _PostgreFromNestedClause<FN extends Item> extends _FromNestedClause<_NestedLeftParenSpec<FN>> {
 
-        RR ifRepeatable(Supplier<Expression> supplier);
+    }
 
-        RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator, @Nullable Number seedValue);
 
-        RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator, Supplier<Number> supplier);
+    interface _RepeatableClause<R> {
 
-        RR ifRepeatable(BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        R repeatable(Expression seed);
+
+        R repeatable(Supplier<Expression> supplier);
+
+        R repeatable(Function<Number, Expression> valueOperator, Number seedValue);
+
+        <E extends Number> R repeatable(Function<E, Expression> valueOperator, Supplier<E> supplier);
+
+        R repeatable(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+        R ifRepeatable(Supplier<Expression> supplier);
+
+        <E extends Number> R ifRepeatable(Function<E, Expression> valueOperator, Supplier<E> supplier);
+
+        R ifRepeatable(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
 
 
     }
 
-    interface _TableSampleClause<TR> {
+    interface _StaticTableSampleClause<R> {
 
-        TR tableSample(Expression method);
+        R tableSample(Expression method);
 
-        TR tableSample(String methodName, Expression argument);
+        R tableSample(String methodName, Expression argument);
 
-        TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer);
+        R tableSample(String methodName, Consumer<Consumer<Expression>> consumer);
 
-        <E> TR tableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method
-                , BiFunction<MappingType, E, Expression> valueOperator, E argument);
+        R tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
+                      BiFunction<MappingType, Object, Expression> valueOperator, Object argument);
 
-        <E> TR tableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method
-                , BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier);
+        R tableSample(BiFunction<BiFunction<MappingType, Expression, Expression>, Expression, Expression> method,
+                      BiFunction<MappingType, Expression, Expression> valueOperator, Expression argument);
 
-        TR tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
-                , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        <E> R tableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method,
+                          BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier);
 
-        TR ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer);
+        R tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
+                      BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function,
+                      String keyName);
 
-        <E> TR ifTableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method
-                , BiFunction<MappingType, E, Expression> valueOperator, @Nullable E argument);
+        R ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer);
 
-        <E> TR ifTableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method
-                , BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier);
+        <E> R ifTableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method,
+                            BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier);
 
-        TR ifTableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
-                , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        R ifTableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
+                , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function,
+                        String keyName);
 
+
+    }
+
+
+    interface _TableSampleClause<R> extends _StaticTableSampleClause<R> {
 
     }
 
@@ -98,20 +122,19 @@ public interface PostgreStatement extends DialectStatement {
         R ifNotMaterialized(BooleanSupplier predicate);
     }
 
-
     interface _PostgreNestedJoinClause<I extends Item>
-            extends _PostgreJoinClause<_NestedTableSampleOnSpec<I>, _NestedOnSpec<I>>
-            , _PostgreCrossJoinClause<_NestedTableSampleCrossSpec<I>, _NestedJoinSpec<I>>
-            , _JoinNestedClause<_NestedLeftParenSpec<_NestedOnSpec<I>>>
-            , _CrossJoinNestedClause<_NestedLeftParenSpec<_NestedJoinSpec<I>>>
-            , _PostgreDynamicJoinClause<_NestedJoinSpec<I>>
-            , _PostgreDynamicCrossJoinClause<_NestedJoinSpec<I>> {
+            extends _JoinModifierClause<_NestedTableSampleOnSpec<I>, _AsClause<_NestedParensOnSpec<I>>>,
+            _PostgreCrossClause<_NestedTableSampleCrossSpec<I>, _NestedParensCrossSpec<I>>,
+            _JoinCteClause<_NestedOnSpec<I>>,
+            _CrossJoinCteClause<_NestedJoinSpec<I>>,
+            _PostgreJoinNestedClause<_NestedOnSpec<I>>,
+            _PostgreCrossNestedClause<_NestedJoinSpec<I>>,
+            _PostgreDynamicJoinCrossClause<_NestedJoinSpec<I>> {
 
     }
 
 
-    interface _NestedJoinSpec<I extends Item> extends _PostgreNestedJoinClause<I>
-            , _RightParenClause<I> {
+    interface _NestedJoinSpec<I extends Item> extends _PostgreNestedJoinClause<I>, _RightParenClause<I> {
 
     }
 
@@ -119,90 +142,99 @@ public interface PostgreStatement extends DialectStatement {
 
     }
 
-    interface _NestedRepeatableOnClause<I extends Item> extends _RepeatableClause<_NestedOnSpec<I>>
-            , _NestedOnSpec<I> {
+    interface _NestedParensOnSpec<I extends Item> extends _ParensStringClause<_NestedOnSpec<I>>, _NestedOnSpec<I> {
 
     }
 
-    interface _NestedTableSampleOnSpec<I extends Item> extends _TableSampleClause<_NestedRepeatableOnClause<I>>
-            , _NestedOnSpec<I> {
+    interface _NestedParensCrossSpec<I extends Item> extends _ParensStringClause<_NestedJoinSpec<I>>,
+            _NestedJoinSpec<I> {
 
     }
 
-
-    interface _NestedRepeatableCrossClause<I extends Item> extends _RepeatableClause<_NestedJoinSpec<I>>
-            , _NestedJoinSpec<I> {
-
-    }
-
-    interface _NestedTableSampleCrossSpec<I extends Item> extends _TableSampleClause<_NestedRepeatableCrossClause<I>>
-            , _NestedJoinSpec<I> {
+    interface _NestedRepeatableOnClause<I extends Item> extends _RepeatableClause<_NestedOnSpec<I>>,
+            _NestedOnSpec<I> {
 
     }
 
-    interface _NestedRepeatableJoinClause<I extends Item> extends _RepeatableClause<_PostgreNestedJoinClause<I>>
-            , _PostgreNestedJoinClause<I> {
-
-    }
-
-    interface _NestedTableSampleJoinSpec<I extends Item> extends _TableSampleClause<_NestedRepeatableJoinClause<I>>
-            , _PostgreNestedJoinClause<I> {
+    interface _NestedTableSampleOnSpec<I extends Item> extends _TableSampleClause<_NestedRepeatableOnClause<I>>,
+            _NestedOnSpec<I> {
 
     }
 
 
-    interface _PostgreNestedLeftParenClause<LT, LS> extends _NestedLeftParenModifierClause<LT, LS>
-            , _LeftParenCteClause<LS> {
+    interface _NestedRepeatableCrossClause<I extends Item> extends _RepeatableClause<_NestedJoinSpec<I>>,
+            _NestedJoinSpec<I> {
+
+    }
+
+    interface _NestedTableSampleCrossSpec<I extends Item>
+            extends _TableSampleClause<_NestedRepeatableCrossClause<I>>, _NestedJoinSpec<I> {
+
+    }
+
+    interface _NestedRepeatableJoinClause<I extends Item> extends _RepeatableClause<_PostgreNestedJoinClause<I>>,
+            _PostgreNestedJoinClause<I> {
+
+    }
+
+    interface _NestedTableSampleJoinSpec<I extends Item>
+            extends _TableSampleClause<_NestedRepeatableJoinClause<I>>, _PostgreNestedJoinClause<I> {
+
+    }
+
+    interface _NestedParensJoinSpec<I extends Item> extends _ParensStringClause<_PostgreNestedJoinClause<I>>,
+            _PostgreNestedJoinClause<I> {
 
     }
 
     interface _NestedLeftParenSpec<I extends Item>
-            extends _PostgreNestedLeftParenClause<_NestedTableSampleJoinSpec<I>, _PostgreNestedJoinClause<I>>
-            , _LeftParenClause<_NestedLeftParenSpec<_PostgreNestedJoinClause<I>>> {
-        //TODO add nested function
+            extends _NestedLeftParenModifierClause<_NestedTableSampleJoinSpec<I>, _AsClause<_NestedParensJoinSpec<I>>>,
+            _LeftParenCteClause<_PostgreNestedJoinClause<I>>,
+            _LeftParenClause<_NestedLeftParenSpec<_PostgreNestedJoinClause<I>>> {
     }
 
 
-    interface _DynamicRepeatableOnSpec extends _RepeatableClause<_OnClause<_DynamicJoinSpec>>
-            , _OnClause<_DynamicJoinSpec> {
+    interface _DynamicRepeatableOnSpec extends _RepeatableClause<_OnClause<_DynamicJoinSpec>>, _OnClause<_DynamicJoinSpec> {
 
     }
 
-    interface _DynamicTableSampleOnSpec extends _TableSampleClause<_DynamicRepeatableOnSpec>
-            , _OnClause<_DynamicJoinSpec> {
+    interface _DynamicTableSampleOnSpec extends _TableSampleClause<_DynamicRepeatableOnSpec>,
+            _OnClause<_DynamicJoinSpec> {
 
     }
 
 
     interface _DynamicJoinSpec
-            extends _PostgreJoinClause<_DynamicTableSampleOnSpec, _OnClause<_DynamicJoinSpec>>
-            , _PostgreCrossJoinClause<_DynamicTableSampleJoinSpec, _DynamicJoinSpec>
-            , _JoinNestedClause<_NestedLeftParenSpec<_OnClause<_DynamicJoinSpec>>>
-            , _CrossJoinNestedClause<_NestedLeftParenSpec<_DynamicJoinSpec>>
-            , _PostgreDynamicJoinClause<_DynamicJoinSpec>
-            , _PostgreDynamicCrossJoinClause<_DynamicJoinSpec> {
+            extends _JoinModifierClause<_DynamicTableSampleOnSpec, _AsParensOnClause<_DynamicJoinSpec>>,
+            _CrossJoinModifierClause<_DynamicTableSampleJoinSpec, _AsClause<_DynamicParensJoinSpec>>,
+            _JoinCteClause<_OnClause<_DynamicJoinSpec>>,
+            _CrossJoinCteClause<_DynamicJoinSpec>,
+            _PostgreJoinNestedClause<_OnClause<_DynamicJoinSpec>>,
+            _PostgreCrossNestedClause<_DynamicJoinSpec>,
+            _PostgreDynamicJoinCrossClause<_DynamicJoinSpec> {
 
     }
 
-    interface _DynamicTableRepeatableJoinSpec extends _RepeatableClause<_DynamicJoinSpec>
-            , _DynamicJoinSpec {
+    interface _DynamicParensJoinSpec extends _ParensStringClause<_DynamicJoinSpec>, _DynamicJoinSpec {
 
     }
 
-    interface _DynamicTableSampleJoinSpec extends _TableSampleClause<_DynamicTableRepeatableJoinSpec>
-            , _DynamicJoinSpec {
+    interface _DynamicTableRepeatableJoinSpec extends _RepeatableClause<_DynamicJoinSpec>, _DynamicJoinSpec {
+
+    }
+
+    interface _DynamicTableSampleJoinSpec extends _TableSampleClause<_DynamicTableRepeatableJoinSpec>,
+            _DynamicJoinSpec {
 
     }
 
 
-    interface _PostgreFromClause<FT, FS> extends _FromModifierClause<FT, FS>
-            , _FromCteClause<FS> {
-        //TODO add dialect function tabular
+    interface _PostgreFromClause<FT, FS> extends _FromModifierClause<FT, _AsClause<FS>> {
+
     }
 
 
-    interface _PostgreDynamicWithClause<SR>
-            extends _DynamicWithClause<PostgreCtes, SR> {
+    interface _PostgreDynamicWithClause<SR> extends _DynamicWithClause<PostgreCtes, SR> {
 
     }
 
@@ -314,13 +346,18 @@ public interface PostgreStatement extends DialectStatement {
     }
 
     interface _StaticCteLeftParenSpec<I extends Item>
-            extends Statement._LeftParenStringQuadraSpec<_StaticCteAsClause<I>>
-            , _StaticCteAsClause<I> {
+            extends Statement._LeftParenStringQuadraSpec<_StaticCteAsClause<I>>,
+            _StaticCteAsClause<I> {
 
     }
 
+    interface _PostgreStaticWithClause<I extends Item> extends _StaticWithClause<_StaticCteLeftParenSpec<I>> {
 
+    }
 
+    interface _PostgreStaticCteCommaClause<I extends Item> extends _StaticWithCommaClause<_StaticCteLeftParenSpec<I>> {
+
+    }
 
 
 }

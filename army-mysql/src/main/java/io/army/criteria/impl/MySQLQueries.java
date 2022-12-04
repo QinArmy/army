@@ -590,7 +590,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
     @Override
     final DerivedModifier derivedModifier(final @Nullable DerivedModifier modifier) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+            throw MySQLUtils.errorTabularModifier(this.context, modifier);
         }
         return modifier;
     }

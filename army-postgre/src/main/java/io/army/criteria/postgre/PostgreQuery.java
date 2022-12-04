@@ -119,8 +119,8 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
     interface _PostgreFrameUnitSpec
-            extends Window._FrameUnitExpClause<_PostgreFrameEndExpBoundClause>
-            , Window._FrameUnitNoExpClause<_PostgreFrameBetweenSpec> {
+            extends Window._FrameUnitExpClause<_PostgreFrameEndExpBoundClause>,
+            Window._FrameUnitNoExpClause<_PostgreFrameBetweenSpec> {
 
         _PostgreFrameBetweenSpec groups();
 
@@ -130,7 +130,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
         _PostgreFrameEndExpBoundClause groups(Supplier<Expression> supplier);
 
-        <E> _PostgreFrameEndExpBoundClause groups(Function<E, Expression> valueOperator, @Nullable E value);
+        _PostgreFrameEndExpBoundClause groups(Function<Object, Expression> valueOperator, @Nullable Object value);
 
         <E> _PostgreFrameEndExpBoundClause groups(Function<E, Expression> valueOperator, Supplier<E> supplier);
 
@@ -257,8 +257,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
     interface _WindowCommaSpec<I extends Item>
-            extends Window._StaticWindowCommaClause<_WindowAsClause<_WindowCommaSpec<I>>>
-            , _OrderBySpec<I> {
+            extends Window._StaticWindowCommaClause<_WindowAsClause<_WindowCommaSpec<I>>>, _OrderBySpec<I> {
 
         _WindowCommaSpec<I> comma(String name, SQLs.WordAs as, Consumer<_WindowPartitionBySpec> consumer);
 
@@ -301,22 +300,26 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _TableSampleOnSpec<I extends Item> extends _TableSampleClause<_RepeatableOnClause<I>>
+    interface _TableSampleOnSpec<I extends Item> extends _StaticTableSampleClause<_RepeatableOnClause<I>>
             , _OnClause<_JoinSpec<I>> {
 
     }
 
 
     interface _JoinSpec<I extends Item>
-            extends _PostgreJoinClause<_TableSampleOnSpec<I>, _OnClause<_JoinSpec<I>>>
-            , _PostgreCrossJoinClause<_TableSampleJoinSpec<I>, _JoinSpec<I>>
-            , _JoinNestedClause<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>>
-            , _CrossJoinNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>
-            , _PostgreDynamicJoinClause<_JoinSpec<I>>
-            , _PostgreDynamicCrossJoinClause<_JoinSpec<I>>
-            , _WhereSpec<I> {
+            extends _JoinModifierClause<_TableSampleOnSpec<I>, _AsParensOnClause<_JoinSpec<I>>>,
+            _PostgreCrossClause<_TableSampleJoinSpec<I>, _ParensJoinSpec<I>>,
+            _JoinCteClause<_OnClause<_JoinSpec<I>>>,
+            _CrossJoinCteClause<_JoinSpec<I>>,
+            _PostgreJoinNestedClause<_OnClause<_JoinSpec<I>>>,
+            _PostgreCrossNestedClause<_JoinSpec<I>>,
+            _PostgreDynamicJoinCrossClause<_JoinSpec<I>>,
+            _WhereSpec<I> {
 
-        //TODO add dialect function tabular
+    }
+
+    interface _ParensJoinSpec<I extends Item> extends _ParensStringClause<_JoinSpec<I>>, _JoinSpec<I> {
+
     }
 
     interface _RepeatableJoinClause<I extends Item> extends _RepeatableClause<_JoinSpec<I>>, _JoinSpec<I> {
@@ -324,43 +327,45 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _TableSampleJoinSpec<I extends Item> extends _TableSampleClause<_RepeatableJoinClause<I>>, _JoinSpec<I> {
+    interface _TableSampleJoinSpec<I extends Item> extends _StaticTableSampleClause<_RepeatableJoinClause<I>>, _JoinSpec<I> {
 
     }
 
 
     interface _FromSpec<I extends Item>
-            extends _PostgreFromClause<_TableSampleJoinSpec<I>, _JoinSpec<I>>
-            , _FromNestedClause<_NestedLeftParenSpec<_JoinSpec<I>>>
-            , _UnionSpec<I> {
+            extends _PostgreFromClause<_TableSampleJoinSpec<I>, _ParensJoinSpec<I>>,
+            _FromCteClause<_JoinSpec<I>>,
+            _PostgreFromNestedClause<_JoinSpec<I>>,
+            _UnionSpec<I> {
 
     }
 
-    interface _PostgreSelectCommaSpec<I extends Item> extends _StaticSelectCommaClause<_PostgreSelectCommaSpec<I>>
-            , _FromSpec<I> {
+    interface _PostgreSelectCommaSpec<I extends Item> extends _StaticSelectCommaClause<_PostgreSelectCommaSpec<I>>,
+            _FromSpec<I> {
 
     }
 
 
     interface _PostgreSelectClause<I extends Item>
-            extends _ModifierSelectClause<Postgres.Modifier, _PostgreSelectCommaSpec<I>>
-            , _DynamicModifierSelectClause<Postgres.Modifier, _FromSpec<I>> {
+            extends _ModifierSelectClause<Postgres.Modifier, _PostgreSelectCommaSpec<I>>,
+            _DynamicModifierSelectClause<Postgres.Modifier, _FromSpec<I>> {
 
     }
 
-    interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_CteComma<I>>>
-            , _PostgreSelectClause<I> {
+    interface _CteComma<I extends Item> extends _PostgreStaticCteCommaClause<_CteComma<I>>,
+            _StaticSpaceClause<_SelectSpec<I>> {
 
     }
 
 
-    interface _SelectSpec<I extends Item> extends _PostgreSelectClause<I>
-            , _LeftParenClause<_MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+    interface _SelectSpec<I extends Item> extends _PostgreSelectClause<I>,
+            _LeftParenClause<_WithSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 
-    interface _MinWithSpec<I extends Item> extends _PostgreDynamicWithClause<_SelectSpec<I>>
-            , _SelectSpec<I> {
+    @Deprecated
+    interface _MinWithSpec<I extends Item> extends _PostgreDynamicWithClause<_SelectSpec<I>>,
+            _SelectSpec<I> {
 
     }
 
@@ -371,15 +376,15 @@ public interface PostgreQuery extends Query, PostgreStatement {
      *
      * @since 1.0
      */
-    interface _WithSpec<I extends Item> extends _MinWithSpec<I>
-            , _StaticWithClause<_StaticCteLeftParenSpec<_CteComma<I>>> {
+    interface _WithSpec<I extends Item> extends _PostgreDynamicWithClause<_SelectSpec<I>>,
+            _PostgreStaticWithClause<_CteComma<I>>,
+            _SelectSpec<I> {
 
     }
 
 
     interface _DynamicSubMaterializedSpec<I extends Item>
-            extends _CteMaterializedClause<_MinWithSpec<I>>
-            , _MinWithSpec<I> {
+            extends _CteMaterializedClause<_MinWithSpec<I>>, _MinWithSpec<I> {
 
     }
 
@@ -388,9 +393,9 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _QueryComplexSpec<I extends Item> extends _PostgreSelectClause<I>
-            , PostgreValues._PostgreValuesClause<I>
-            , _LeftParenClause<_QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+    interface _QueryComplexSpec<I extends Item> extends _PostgreSelectClause<I>,
+            PostgreValues._PostgreValuesClause<I>,
+            _LeftParenClause<_QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 

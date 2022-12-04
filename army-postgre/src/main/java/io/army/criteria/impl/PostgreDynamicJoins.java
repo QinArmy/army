@@ -234,7 +234,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
             , TableMeta<?> table, String alias) {
         if (modifier != null && modifier != SQLs.ONLY) {
-            throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorTabularModifier(this.context, modifier);
         }
         final PostgreSupports.PostgreNoOnTableBlock block;
         block = new PostgreSupports.PostgreNoOnTableBlock(joinType, modifier, table, alias);
@@ -246,7 +246,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
             , TabularItem tableItem, String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorTabularModifier(this.context, modifier);
         }
         return new TableBlock.NoOnModifierTableBlock(joinType, modifier, tableItem, alias);
     }
@@ -255,7 +255,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     final PostgreStatement._DynamicTableSampleOnSpec createTableBlock(_JoinType joinType
             , @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
         if (modifier != null && modifier != SQLs.ONLY) {
-            throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorTabularModifier(this.context, modifier);
         }
         return new OnTableBlock(joinType, modifier, table, tableAlias, this);
     }
@@ -264,7 +264,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     final Statement._OnClause<PostgreStatement._DynamicJoinSpec> createItemBlock(_JoinType joinType
             , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorTabularModifier(this.context, modifier);
         }
         return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
     }
@@ -353,7 +353,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             this.started = true;
             assert wordAs == SQLs.AS;
             if (modifier != SQLs.ONLY) {
-                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorTabularModifier(this.context, modifier);
             }
             final OnTableBlock block;
             block = new OnTableBlock(this.joinType, modifier, table, alias, this);
@@ -390,7 +390,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
                 throw CriteriaUtils.duplicateTabularMethod(this.context);
             }
             if (modifier != null && modifier != SQLs.LATERAL) {
-                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorTabularModifier(this.context, modifier);
             }
             this.started = true;
             final TabularItem tabularItem;
@@ -469,7 +469,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             this.started = true;
             assert wordAs == SQLs.AS;
             if (modifier != SQLs.ONLY) {
-                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorTabularModifier(this.context, modifier);
             }
             final PostgreSupports.PostgreNoOnTableBlock block;
             block = new PostgreSupports.PostgreNoOnTableBlock(this.joinType, modifier, table, alias);
@@ -511,7 +511,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
                 throw ContextStack.nullPointer(this.context);
             }
             if (modifier != SQLs.LATERAL) {
-                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorTabularModifier(this.context, modifier);
             }
             final Statement._AsClause<PostgreStatement._DynamicJoinSpec> asClause;
             asClause = alias -> {

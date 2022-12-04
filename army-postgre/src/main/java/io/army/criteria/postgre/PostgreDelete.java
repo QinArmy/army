@@ -64,7 +64,7 @@ public interface PostgreDelete extends PostgreStatement {
     }
 
     interface _TableSampleOnSpec<I extends Item, Q extends Item>
-            extends PostgreQuery._TableSampleClause<_RepeatableOnClause<I, Q>>
+            extends _StaticTableSampleClause<_RepeatableOnClause<I, Q>>
             , _OnClause<_SingleJoinSpec<I, Q>> {
 
     }
@@ -75,7 +75,7 @@ public interface PostgreDelete extends PostgreStatement {
             , _PostgreCrossJoinClause<_TableSampleJoinSpec<I, Q>, _SingleJoinSpec<I, Q>>
             , _JoinNestedClause<_NestedLeftParenSpec<_OnClause<_SingleJoinSpec<I, Q>>>>
             , _CrossJoinNestedClause<_NestedLeftParenSpec<_SingleJoinSpec<I, Q>>>
-            , _PostgreDynamicJoinClause<_SingleJoinSpec<I, Q>>
+            , _PostgreDynamicJoinCrossClause<_SingleJoinSpec<I, Q>>
             , _PostgreDynamicCrossJoinClause<_SingleJoinSpec<I, Q>>
             , _SingleWhereClause<I, Q> {
 
@@ -89,7 +89,7 @@ public interface PostgreDelete extends PostgreStatement {
 
 
     interface _TableSampleJoinSpec<I extends Item, Q extends Item>
-            extends PostgreQuery._TableSampleClause<_RepeatableJoinClause<I, Q>>, _SingleJoinSpec<I, Q> {
+            extends _StaticTableSampleClause<_RepeatableJoinClause<I, Q>>, _SingleJoinSpec<I, Q> {
 
     }
 
@@ -183,7 +183,7 @@ public interface PostgreDelete extends PostgreStatement {
     }
 
     interface _BatchTableSampleOnSpec<I extends Item, Q extends Item>
-            extends PostgreQuery._TableSampleClause<_BatchRepeatableOnClause<I, Q>>
+            extends _StaticTableSampleClause<_BatchRepeatableOnClause<I, Q>>
             , _OnClause<_BatchSingleJoinSpec<I, Q>> {
 
     }
@@ -194,7 +194,7 @@ public interface PostgreDelete extends PostgreStatement {
             , _PostgreCrossJoinClause<_BatchTableSampleJoinSpec<I, Q>, _BatchSingleJoinSpec<I, Q>>
             , _JoinNestedClause<_NestedLeftParenSpec<_OnClause<_BatchSingleJoinSpec<I, Q>>>>
             , _CrossJoinNestedClause<_NestedLeftParenSpec<_BatchSingleJoinSpec<I, Q>>>
-            , _PostgreDynamicJoinClause<_BatchSingleJoinSpec<I, Q>>
+            , _PostgreDynamicJoinCrossClause<_BatchSingleJoinSpec<I, Q>>
             , _PostgreDynamicCrossJoinClause<_BatchSingleJoinSpec<I, Q>>
             , _BatchSingleWhereClause<I, Q> {
 
@@ -208,7 +208,7 @@ public interface PostgreDelete extends PostgreStatement {
 
 
     interface _BatchTableSampleJoinSpec<I extends Item, Q extends Item>
-            extends PostgreQuery._TableSampleClause<_BatchRepeatableJoinClause<I, Q>>, _BatchSingleJoinSpec<I, Q> {
+            extends _StaticTableSampleClause<_BatchRepeatableJoinClause<I, Q>>, _BatchSingleJoinSpec<I, Q> {
 
     }
 

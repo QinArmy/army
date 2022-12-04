@@ -106,10 +106,11 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     }//PostgreSubStatement
 
+
     @SuppressWarnings("unchecked")
     static abstract class PostgreTableBlock<TR, RR, OR> extends OnClauseTableBlock<OR>
             implements _PostgreTableBlock
-            , PostgreStatement._TableSampleClause<TR>
+            , PostgreStatement._StaticTableSampleClause<TR>
             , PostgreStatement._RepeatableClause<RR> {
 
         private final SQLWords modifier;
@@ -297,10 +298,6 @@ abstract class PostgreSupports extends CriteriaSupports {
         @Override
         public final _Expression seed() {
             return this.seed;
-        }
-
-        CriteriaContext getContext() {
-            return ContextStack.peek();
         }
 
 
@@ -1037,8 +1034,8 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public <E> PostgreQuery._PostgreFrameEndExpBoundClause groups(Function<E, Expression> valueOperator
-                , @Nullable E value) {
+        public PostgreQuery._PostgreFrameEndExpBoundClause groups(Function<Object, Expression> valueOperator,
+                                                                  @Nullable Object value) {
             return this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(value));
         }
 

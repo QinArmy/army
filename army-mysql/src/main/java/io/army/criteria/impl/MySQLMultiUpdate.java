@@ -137,7 +137,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC,
     @Override
     final Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+            throw MySQLUtils.errorTabularModifier(this.context, modifier);
         }
         return modifier;
     }
@@ -313,12 +313,9 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC,
         @Override
         public _MultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
                                         String cteName, SQLs.WordAs wordAs, String alias) {
-            if (!_StringUtils.hasText(alias)) {
-                throw ContextStack.criteriaError(this.context, _Exceptions::cteNameNotText);
-            }
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-            return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), this.cteAlias(alias));
+            return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), cteAlias(alias));
         }
 
         @Override
@@ -328,10 +325,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC,
 
         @Override
         public _MultiJoinSpec<I> update(String cteName, SQLs.WordAs wordAs, String alias) {
-            if (!_StringUtils.hasText(alias)) {
-                throw ContextStack.criteriaError(this.context, _Exceptions::cteNameNotText);
-            }
-            return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), this.cteAlias(alias));
+            return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), cteAlias(alias));
         }
 
         @Override
@@ -864,7 +858,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC,
             if (table == null) {
                 throw ContextStack.nullPointer(this.context);
             } else if (modifier != null && modifier != SQLs.LATERAL) {
-                throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+                throw MySQLUtils.errorTabularModifier(this.context, modifier);
             }
             return alias -> {
                 final TableBlock.NoOnModifierDerivedBlock block;
@@ -901,7 +895,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC,
             if (table == null) {
                 throw ContextStack.nullPointer(this.context);
             } else if (modifier != null && modifier != SQLs.LATERAL) {
-                throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+                throw MySQLUtils.errorTabularModifier(this.context, modifier);
             }
             return alias -> {
                 final OnClauseTableBlock.OnModifierParensBlock<_BatchMultiJoinSpec<I>> block;

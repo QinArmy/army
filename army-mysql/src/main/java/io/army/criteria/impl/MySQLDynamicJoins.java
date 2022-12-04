@@ -161,7 +161,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         if (table == null) {
             throw ContextStack.nullPointer(this.context);
         } else if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+            throw MySQLUtils.errorTabularModifier(this.context, modifier);
         }
         return alias -> {
             final DynamicDerivedBlock block;
@@ -194,7 +194,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     final Statement._AsParensOnClause<MySQLStatement._DynamicJoinSpec> onJoinDerived(
             _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+            throw MySQLUtils.errorTabularModifier(this.context, modifier);
         } else if (table == null) {
             throw ContextStack.nullPointer(this.context);
         }
@@ -436,7 +436,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             }
             this.started = true;
             if (modifier != null && modifier != SQLs.LATERAL) {
-                throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+                throw MySQLUtils.errorTabularModifier(this.context, modifier);
             }
             if (table == null) {
                 throw ContextStack.nullPointer(this.context);

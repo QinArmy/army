@@ -33,12 +33,12 @@ import java.util.function.*;
 abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, JS, TR, WR, WA>
         extends JoinableDelete.WithJoinableDelete<I, PostgreCtes, WE, FT, FS, FS, JT, JS, JS, WR, WA>
         implements PostgreDelete, _PostgreDelete
-        , PostgreStatement._TableSampleClause<TR>
+        , PostgreStatement._StaticTableSampleClause<TR>
         , PostgreStatement._RepeatableClause<FS>
         , Statement._UsingNestedClause<PostgreStatement._NestedLeftParenSpec<FS>>
         , PostgreStatement._JoinNestedClause<PostgreStatement._NestedLeftParenSpec<Statement._OnClause<FS>>>
         , PostgreStatement._CrossJoinNestedClause<PostgreStatement._NestedLeftParenSpec<FS>>
-        , PostgreStatement._PostgreDynamicJoinClause<FS>
+        , PostgreStatement._PostgreDynamicJoinCrossClause<FS>
         , PostgreStatement._PostgreDynamicCrossJoinClause<FS>
         , PostgreDelete._PostgreDeleteClause<DR> {
 
@@ -99,7 +99,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
         if (this.updateTable != null) {
             throw ContextStack.castCriteriaApi(this.context);
         } else if (wordOnly != SQLs.ONLY) {
-            throw CriteriaUtils.dontSupportTabularModifier(this.context, wordOnly);
+            throw CriteriaUtils.errorTabularModifier(this.context, wordOnly);
         }
         assert wordAs == SQLs.AS;
         this.modifier = wordOnly;
@@ -323,7 +323,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
     final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
             , TableMeta<?> table, String alias) {
         if (modifier != null && modifier != SQLs.ONLY) {
-            throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorTabularModifier(this.context, modifier);
         }
         final PostgreSupports.PostgreNoOnTableBlock block;
         block = new PostgreSupports.PostgreNoOnTableBlock(joinType, modifier, table, alias);
@@ -335,7 +335,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
     final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
             , TabularItem tableItem, String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorTabularModifier(this.context, modifier);
         }
         return new TableBlock.NoOnModifierTableBlock(joinType, modifier, tableItem, alias);
     }
@@ -596,7 +596,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
         final _TableSampleOnSpec<I, Q> createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
                 , TableMeta<?> table, String tableAlias) {
             if (modifier != null && modifier != SQLs.ONLY) {
-                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorTabularModifier(this.context, modifier);
             }
             return new SimpleOnTableBlock<>(joinType, modifier, table, tableAlias, this);
         }
@@ -605,7 +605,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
         final _OnClause<_SingleJoinSpec<I, Q>> createItemBlock(_JoinType joinType
                 , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
             if (modifier != null && modifier != SQLs.LATERAL) {
-                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorTabularModifier(this.context, modifier);
             }
             return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
         }
@@ -985,7 +985,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
         _BatchTableSampleOnSpec<I, Q> createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
                 , TableMeta<?> table, String tableAlias) {
             if (modifier != null && modifier != SQLs.ONLY) {
-                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorTabularModifier(this.context, modifier);
             }
             return new BatchOnTableBlock<>(joinType, modifier, table, tableAlias, this);
         }
@@ -994,7 +994,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
         _OnClause<_BatchSingleJoinSpec<I, Q>> createItemBlock(_JoinType joinType
                 , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
             if (modifier != null && modifier != SQLs.LATERAL) {
-                throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorTabularModifier(this.context, modifier);
             }
             return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
         }

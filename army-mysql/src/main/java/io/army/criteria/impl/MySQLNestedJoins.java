@@ -99,7 +99,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
     private <T extends DerivedTable> NestedDerivedJoinBlock<I> onAddDerived(@Nullable Query.DerivedModifier modifier,
                                                                             Supplier<T> supplier, String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+            throw MySQLUtils.errorTabularModifier(this.context, modifier);
         }
         final DerivedTable table;
         table = supplier.get();
@@ -275,7 +275,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
             if (table == null) {
                 throw ContextStack.nullPointer(this.context);
             } else if (modifier != null && modifier != SQLs.LATERAL) {
-                throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+                throw MySQLUtils.errorTabularModifier(this.context, modifier);
             }
             return alias -> {
                 final NestedDerivedCrossBlock<I> block;
@@ -315,7 +315,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         final Statement._AsClause<MySQLStatement._NestedParenOnSpec<I>> onJoinDerived(
                 _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
             if (modifier != null && modifier != SQLs.LATERAL) {
-                throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+                throw MySQLUtils.errorTabularModifier(this.context, modifier);
             } else if (table == null) {
                 throw ContextStack.nullPointer(this.context);
             }
@@ -521,7 +521,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
             implements MySQLQuery._NestedIndexHintOnSpec<I> {
 
         /**
-         * @see MySQLNestedBlock#createTableBlock(_JoinType, Query.TableModifier, TableMeta, String)
+         * @see MySQLNestedBlock#onFromTable(_JoinType, Query.TableModifier, TableMeta, String)
          */
         private NestedTableOnBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
                                    _JoinType joinType, TableMeta<?> table, String alias, Supplier<I> ender) {

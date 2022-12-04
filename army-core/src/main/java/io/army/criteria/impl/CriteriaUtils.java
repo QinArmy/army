@@ -498,7 +498,7 @@ abstract class CriteriaUtils {
     }
 
 
-    static CriteriaException dontSupportTabularModifier(CriteriaContext context, Object modifier) {
+    static CriteriaException errorTabularModifier(CriteriaContext context, Object modifier) {
         String m = String.format("Don't support modifier[%s]", modifier);
         return ContextStack.criteriaError(context, m);
     }

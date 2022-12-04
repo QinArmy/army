@@ -538,7 +538,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table
             , String alias) {
         if (modifier != null && modifier != SQLs.ONLY) {
-            throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorTabularModifier(this.context, modifier);
         }
         final PostgreSupports.PostgreNoOnTableBlock block;
         block = new PostgreSupports.PostgreNoOnTableBlock(joinType, modifier, table, alias);
@@ -550,7 +550,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable DerivedModifier modifier, TabularItem tableItem
             , String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorTabularModifier(this.context, modifier);
         }
         return new TableBlock.NoOnModifierTableBlock(joinType, modifier, tableItem, alias);
     }
@@ -559,7 +559,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     final _TableSampleOnSpec<I> createTableBlock(_JoinType joinType, @Nullable TableModifier modifier
             , TableMeta<?> table, String tableAlias) {
         if (modifier != null && modifier != SQLs.ONLY) {
-            throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorTabularModifier(this.context, modifier);
         }
         return new OnTableBlock<>(joinType, modifier, table, tableAlias, this);
     }
@@ -568,7 +568,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     final _OnClause<_JoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable DerivedModifier modifier
             , TabularItem tableItem, String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw PostgreUtils.dontSupportTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorTabularModifier(this.context, modifier);
         }
         return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
     }

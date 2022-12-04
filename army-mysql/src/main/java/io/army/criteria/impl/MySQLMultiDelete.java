@@ -257,7 +257,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
     @Override
     final Query.DerivedModifier derivedModifier(final @Nullable Query.DerivedModifier modifier) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.dontSupportTabularModifier(this.context, modifier);
+            throw MySQLUtils.errorTabularModifier(this.context, modifier);
         }
         return modifier;
     }
