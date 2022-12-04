@@ -1,14 +1,22 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._ModifierTableBlock;
 import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner.postgre._PostgreTableBlock;
 import io.army.criteria.postgre.PostgreCrosses;
 import io.army.criteria.postgre.PostgreJoins;
 import io.army.criteria.postgre.PostgreStatement;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
+import io.army.util.ArrayUtils;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -16,13 +24,13 @@ import java.util.function.Supplier;
 
 abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         PostgreStatement._DynamicTableSampleJoinSpec,
-        PostgreStatement._DynamicJoinSpec,
+        Statement._AsClause<PostgreStatement._DynamicParensJoinSpec>,
         PostgreStatement._DynamicJoinSpec,
         PostgreStatement._DynamicTableSampleOnSpec,
+        Statement._AsParensOnClause<PostgreStatement._DynamicJoinSpec>,
         Statement._OnClause<PostgreStatement._DynamicJoinSpec>,
-        Statement._OnClause<PostgreStatement._DynamicJoinSpec>>
-        implements PostgreStatement._DynamicTableSampleJoinSpec
-        , PostgreStatement._DynamicTableRepeatableJoinSpec {
+        PostgreStatement._DynamicJoinSpec>
+        implements PostgreStatement._DynamicJoinSpec {
 
     static PostgreJoins joinBuilder(CriteriaContext context, _JoinType joinTyp
             , Consumer<_TableBlock> blockConsumer) {
@@ -33,35 +41,35 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         return new PostgreCrossBuilder(context, blockConsumer);
     }
 
-    PostgreSupports.PostgreNoOnTableBlock noOnBlock;
 
-    private PostgreDynamicJoins(CriteriaContext context, _JoinType joinTyp, Consumer<_TableBlock> blockConsumer) {
-        super(context, joinTyp, blockConsumer);
+    private PostgreDynamicJoins(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+                                @Nullable SQLWords modifier, TabularItem tabularItem, String alias) {
+        super(context, blockConsumer, joinType, modifier, tabularItem, alias);
     }
 
     @Override
     public final PostgreStatement._NestedLeftParenSpec<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> leftJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::nestedJoinEnd);
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final PostgreStatement._NestedLeftParenSpec<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> join() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::nestedJoinEnd);
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final PostgreStatement._NestedLeftParenSpec<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> rightJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::nestedJoinEnd);
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final PostgreStatement._NestedLeftParenSpec<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> fullJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::nestedJoinEnd);
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final PostgreStatement._NestedLeftParenSpec<PostgreStatement._DynamicJoinSpec> crossJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::nestedCrossEnd);
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
     }
 
     @Override
@@ -94,239 +102,397 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         return this;
     }
 
-
     @Override
-    public final PostgreStatement._DynamicTableRepeatableJoinSpec tableSample(final @Nullable Expression method) {
-        this.getNoOnBlock().tableSample(method);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicTableRepeatableJoinSpec tableSample(String methodName, Expression argument) {
-        this.getNoOnBlock().tableSample(methodName, argument);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicTableRepeatableJoinSpec tableSample(String methodName
-            , Consumer<Consumer<Expression>> consumer) {
-        this.getNoOnBlock().tableSample(methodName, consumer);
-        return this;
-    }
-
-    @Override
-    public final <T> PostgreStatement._DynamicTableRepeatableJoinSpec tableSample(
-            BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-            , BiFunction<MappingType, T, Expression> valueOperator, T argument) {
-        this.getNoOnBlock().tableSample(method, valueOperator, argument);
-        return this;
-    }
-
-    @Override
-    public final <T> PostgreStatement._DynamicTableRepeatableJoinSpec tableSample(
-            BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-            , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier) {
-        this.getNoOnBlock().tableSample(method, valueOperator, supplier);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicTableRepeatableJoinSpec tableSample
-            (BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
-                    , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function
-                    , String keyName) {
-        this.getNoOnBlock().tableSample(method, valueOperator, function, keyName);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicTableRepeatableJoinSpec ifTableSample(String methodName
-            , Consumer<Consumer<Expression>> consumer) {
-        this.getNoOnBlock().ifTableSample(methodName, consumer);
-        return this;
-    }
-
-    @Override
-    public final <T> PostgreStatement._DynamicTableRepeatableJoinSpec ifTableSample(
-            BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-            , BiFunction<MappingType, T, Expression> valueOperator, @Nullable T argument) {
-        this.getNoOnBlock().ifTableSample(method, valueOperator, argument);
-        return this;
-    }
-
-    @Override
-    public final <T> PostgreStatement._DynamicTableRepeatableJoinSpec ifTableSample(
-            BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-            , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier) {
-        this.getNoOnBlock().ifTableSample(method, valueOperator, supplier);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicTableRepeatableJoinSpec ifTableSample(
-            BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
-            , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
-        this.getNoOnBlock().ifTableSample(method, valueOperator, function, keyName);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicJoinSpec repeatable(Expression seed) {
-        this.getNoOnBlock().repeatable(seed);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicJoinSpec repeatable(Supplier<Expression> supplier) {
-        this.getNoOnBlock().repeatable(supplier);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicJoinSpec repeatable(BiFunction<MappingType, Number, Expression> valueOperator
-            , Number seedValue) {
-        this.getNoOnBlock().repeatable(valueOperator, seedValue);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicJoinSpec repeatable(BiFunction<MappingType, Number, Expression> valueOperator
-            , Supplier<Number> supplier) {
-        this.getNoOnBlock().repeatable(valueOperator, supplier);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicJoinSpec repeatable(BiFunction<MappingType, Object, Expression> valueOperator
-            , Function<String, ?> function, String keyName) {
-        this.getNoOnBlock().repeatable(valueOperator, function, keyName);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicJoinSpec ifRepeatable(Supplier<Expression> supplier) {
-        this.getNoOnBlock().ifRepeatable(supplier);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicJoinSpec ifRepeatable(BiFunction<MappingType, Number
-            , Expression> valueOperator, @Nullable Number seedValue) {
-        this.getNoOnBlock().ifRepeatable(valueOperator, seedValue);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicJoinSpec ifRepeatable(BiFunction<MappingType, Number
-            , Expression> valueOperator, Supplier<Number> supplier) {
-        this.getNoOnBlock().ifRepeatable(valueOperator, supplier);
-        return this;
-    }
-
-    @Override
-    public final PostgreStatement._DynamicJoinSpec ifRepeatable(BiFunction<MappingType, Object
-            , Expression> valueOperator, Function<String, ?> function, String keyName) {
-        this.getNoOnBlock().ifRepeatable(valueOperator, function, keyName);
-        return this;
-    }
-
-    @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
-            , TableMeta<?> table, String alias) {
+    final Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
         if (modifier != null && modifier != SQLs.ONLY) {
-            throw PostgreUtils.errorTabularModifier(this.context, modifier);
+            throw CriteriaUtils.errorTabularModifier(this.context, modifier);
         }
-        final PostgreSupports.PostgreNoOnTableBlock block;
-        block = new PostgreSupports.PostgreNoOnTableBlock(joinType, modifier, table, alias);
-        this.noOnBlock = block;
+        return modifier;
+    }
+
+    @Override
+    final Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
+        if (modifier != null && modifier != SQLs.LATERAL) {
+            throw CriteriaUtils.errorTabularModifier(this.context, modifier);
+        }
+        return modifier;
+    }
+
+    @Override
+    final PostgreStatement._DynamicTableSampleJoinSpec onFromTable(
+            _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
+        final DynamicTableJoinBlock block;
+        block = new DynamicTableJoinBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
+        this.blockConsumer.accept(block);
         return block;
     }
 
     @Override
-    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
-            , TabularItem tableItem, String alias) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw PostgreUtils.errorTabularModifier(this.context, modifier);
-        }
-        return new TableBlock.NoOnModifierTableBlock(joinType, modifier, tableItem, alias);
+    final Statement._AsClause<PostgreStatement._DynamicParensJoinSpec> onFromDerived(
+            _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+        return alias -> {
+            final DynamicDerivedJoinBlock block;
+            block = new DynamicDerivedJoinBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
+            this.blockConsumer.accept(block);
+            return block;
+        };
     }
 
     @Override
-    final PostgreStatement._DynamicTableSampleOnSpec createTableBlock(_JoinType joinType
-            , @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
-        if (modifier != null && modifier != SQLs.ONLY) {
-            throw PostgreUtils.errorTabularModifier(this.context, modifier);
-        }
-        return new OnTableBlock(joinType, modifier, table, tableAlias, this);
+    final PostgreStatement._DynamicJoinSpec onFromCte(
+            _JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+        final PostgreDynamicBlock block;
+        block = new PostgreDynamicBlock(this.context, this.blockConsumer, joinType, modifier, cteItem, alias);
+        this.blockConsumer.accept(block);
+        return block;
     }
 
     @Override
-    final Statement._OnClause<PostgreStatement._DynamicJoinSpec> createItemBlock(_JoinType joinType
-            , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw PostgreUtils.errorTabularModifier(this.context, modifier);
-        }
-        return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
+    final PostgreStatement._DynamicTableSampleOnSpec onJoinTable(
+            _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
+        final DynamicTableOnBlock block;
+        block = new DynamicTableOnBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
+        this.blockConsumer.accept(block);
+        return block;
     }
 
     @Override
-    final Statement._OnClause<PostgreStatement._DynamicJoinSpec> createCteBlock(_JoinType joinType
-            , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
-        if (modifier != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
+    final Statement._AsParensOnClause<PostgreStatement._DynamicJoinSpec> onJoinDerived(
+            _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+        return alias -> {
+            final DynamicDerivedOnBlock block;
+            block = new DynamicDerivedOnBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
+            this.blockConsumer.accept(block);
+            return block;
+        };
     }
+
+    @Override
+    final Statement._OnClause<PostgreStatement._DynamicJoinSpec> onJoinCte(
+            _JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+        final PostgreDynamicBlock block;
+        block = new PostgreDynamicBlock(this.context, this.blockConsumer, joinType, modifier, cteItem, alias);
+        this.blockConsumer.accept(block);
+        return block;
+    }
+
+
+
 
     /*-------------------below private method-------------------*/
 
-    private Statement._OnClause<PostgreStatement._DynamicJoinSpec> nestedJoinEnd(final _JoinType joinType
-            , final NestedItems nestedItems) {
+    private Statement._OnClause<PostgreStatement._DynamicJoinSpec> joinNestedEnd(final _JoinType joinType,
+                                                                                 final NestedItems nestedItems) {
         joinType.assertStandardJoinType();
-        final OnClauseTableBlock<PostgreStatement._DynamicJoinSpec> block;
-        block = new OnClauseTableBlock<>(joinType, nestedItems, "", this);
+        final PostgreDynamicBlock block;
+        block = new PostgreDynamicBlock(this.context, this.blockConsumer, joinType, null, nestedItems, "");
         this.blockConsumer.accept(block);
         return block;
     }
 
-    private PostgreStatement._DynamicJoinSpec nestedCrossEnd(final _JoinType joinType
-            , final NestedItems nestedItems) {
+    private PostgreStatement._DynamicJoinSpec fromNestedEnd(final _JoinType joinType,
+                                                            final NestedItems nestedItems) {
         assert joinType == _JoinType.CROSS_JOIN;
-        final TableBlock.NoOnTableBlock block;
-        block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
+        final PostgreDynamicBlock block;
+        block = new PostgreDynamicBlock(this.context, this.blockConsumer, joinType, null, nestedItems, "");
         this.blockConsumer.accept(block);
-        return this;
-    }
-
-    private PostgreSupports.PostgreNoOnTableBlock getNoOnBlock() {
-        final PostgreSupports.PostgreNoOnTableBlock block = this.noOnBlock;
-        if (block == null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
         return block;
     }
 
-    private static final class OnTableBlock extends PostgreSupports.PostgreOnTableBlock<
-            PostgreStatement._DynamicRepeatableOnSpec,
-            Statement._OnClause<PostgreStatement._DynamicJoinSpec>,
-            PostgreStatement._DynamicJoinSpec>
-            implements PostgreStatement._DynamicTableSampleOnSpec
-            , PostgreStatement._DynamicRepeatableOnSpec {
 
-        private OnTableBlock(_JoinType joinType, @Nullable SQLWords modifier
-                , TableMeta<?> table, String alias
-                , PostgreStatement._DynamicJoinSpec stmt) {
-            super(joinType, modifier, table, alias, stmt);
+    private static class PostgreDynamicBlock extends PostgreDynamicJoins {
+
+        private PostgreDynamicBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+                                    @Nullable SQLWords modifier, TabularItem tabularItem, String alias) {
+            super(context, blockConsumer, joinType, modifier, tabularItem, alias);
         }
 
 
-    }//OnTableBlock
+    }//PostgreDynamicBlock
 
 
-    private static final class PostgreJoinBuilder extends PostgreDynamicJoins
+    @SuppressWarnings("unchecked")
+    private static abstract class DynamicTableBlock<TR, RR> extends PostgreDynamicBlock
+            implements PostgreStatement._TableSampleClause<TR>,
+            PostgreStatement._RepeatableClause<RR>,
+            _PostgreTableBlock {
+
+        private ArmyExpression sampleMethod;
+
+        private ArmyExpression seed;
+
+        private DynamicTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+                                  @Nullable SQLWords modifier, TableMeta<?> table, String alias) {
+            super(context, blockConsumer, joinType, modifier, table, alias);
+        }
+
+
+        @Override
+        public final TR tableSample(final @Nullable Expression method) {
+            if (this.sampleMethod != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            } else if (method == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            this.sampleMethod = (ArmyExpression) method;
+            return (TR) this;
+        }
+
+        @Override
+        public final TR tableSample(String methodName, Expression argument) {
+            return this.tableSample(FunctionUtils.oneArgVoidFunc(methodName, argument));
+        }
+
+        @Override
+        public final TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
+            final List<Expression> list = new ArrayList<>();
+            consumer.accept(list::add);
+            return this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, list));
+        }
+
+        @Override
+        public final TR tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
+                                    BiFunction<MappingType, Object, Expression> valueOperator, Object argument) {
+            return this.tableSample(method.apply(valueOperator, argument));
+        }
+
+        @Override
+        public final TR tableSample(BiFunction<BiFunction<MappingType, Expression, Expression>, Expression, Expression> method,
+                                    BiFunction<MappingType, Expression, Expression> valueOperator, Expression argument) {
+            return this.tableSample(method.apply(valueOperator, argument));
+        }
+
+        @Override
+        public final <T> TR tableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method,
+                                        BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier) {
+            return this.tableSample(method.apply(valueOperator, supplier.get()));
+        }
+
+        @Override
+        public final TR tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
+                                    BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function,
+                                    String keyName) {
+            return this.tableSample(method.apply(valueOperator, function.apply(keyName)));
+        }
+
+        @Override
+        public final TR ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
+            final List<Expression> expList = new ArrayList<>();
+            consumer.accept(expList::add);
+            if (expList.size() > 0) {
+                this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, expList));
+            }
+            return (TR) this;
+        }
+
+
+        @Override
+        public final <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method,
+                                          BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier) {
+            final T argument;
+            argument = supplier.get();
+            if (argument != null) {
+                this.tableSample(method.apply(valueOperator, argument));
+            }
+            return (TR) this;
+        }
+
+        @Override
+        public final TR ifTableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
+                                      BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function,
+                                      String keyName) {
+            final Object argument;
+            argument = function.apply(keyName);
+            if (argument != null) {
+                this.tableSample(method.apply(valueOperator, argument));
+            }
+            return (TR) this;
+        }
+
+
+        @Override
+        public final RR repeatable(final @Nullable Expression seed) {
+            if (seed == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            this.seed = (ArmyExpression) seed;
+            return (RR) this;
+        }
+
+        @Override
+        public final RR repeatable(Supplier<Expression> supplier) {
+            return this.repeatable(supplier.get());
+        }
+
+        @Override
+        public final RR repeatable(Function<Number, Expression> valueOperator, Number seedValue) {
+            return this.repeatable(valueOperator.apply(seedValue));
+        }
+
+        @Override
+        public final <E extends Number> RR repeatable(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+            return this.repeatable(valueOperator.apply(supplier.get()));
+        }
+
+        @Override
+        public final RR repeatable(Function<Object, Expression> valueOperator, Function<String, ?> function,
+                                   String keyName) {
+            return this.repeatable(valueOperator.apply(function.apply(keyName)));
+        }
+
+        @Override
+        public final RR ifRepeatable(Supplier<Expression> supplier) {
+            final Expression expression;
+            if ((expression = supplier.get()) != null) {
+                this.repeatable(expression);
+            }
+            return (RR) this;
+        }
+
+        @Override
+        public final <E extends Number> RR ifRepeatable(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+            final E seedValue;
+            if ((seedValue = supplier.get()) != null) {
+                this.repeatable(valueOperator.apply(seedValue));
+            }
+            return (RR) this;
+        }
+
+        @Override
+        public final RR ifRepeatable(Function<Object, Expression> valueOperator, Function<String, ?> function,
+                                     String keyName) {
+            final Object seedValue;
+            if ((seedValue = function.apply(keyName)) != null) {
+                this.repeatable(valueOperator.apply(seedValue));
+            }
+            return (RR) this;
+        }
+
+        @Override
+        public final _Expression sampleMethod() {
+            return this.sampleMethod;
+        }
+
+        @Override
+        public final _Expression seed() {
+            return this.seed;
+        }
+
+
+    }//DynamicTableBlock
+
+    private static final class DynamicTableJoinBlock extends DynamicTableBlock<
+            PostgreStatement._DynamicTableRepeatableJoinSpec,
+            PostgreStatement._DynamicJoinSpec>
+            implements PostgreStatement._DynamicTableSampleJoinSpec,
+            PostgreStatement._DynamicTableRepeatableJoinSpec {
+
+        private DynamicTableJoinBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+                                      _JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
+                                      String alias) {
+            super(context, blockConsumer, joinType, modifier, table, alias);
+        }
+
+    }//DynamicTableJoinBlock
+
+    private static final class DynamicTableOnBlock extends DynamicTableBlock<
+            PostgreStatement._DynamicRepeatableOnSpec,
+            Statement._OnClause<PostgreStatement._DynamicJoinSpec>>
+            implements PostgreStatement._DynamicTableSampleOnSpec,
+            PostgreStatement._DynamicRepeatableOnSpec {
+
+        private DynamicTableOnBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+                                    _JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
+                                    String alias) {
+            super(context, blockConsumer, joinType, modifier, table, alias);
+        }
+
+    }//DynamicTableOnBlock
+
+
+    @SuppressWarnings("unchecked")
+    private static abstract class DynamicDerivedBlock<R> extends PostgreDynamicBlock
+            implements Statement._ParensStringClause<R>,
+            _ModifierTableBlock {
+
+        private DynamicDerivedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+                                    @Nullable SQLWords modifier, DerivedTable table, String alias) {
+            super(context, blockConsumer, joinType, modifier, table, alias);
+        }
+
+        @Override
+        public final R parens(String first, String... rest) {
+            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+            return (R) this;
+        }
+
+        @Override
+        public final R parens(Consumer<Consumer<String>> consumer) {
+            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(CriteriaUtils.columnAliasList(true, consumer));
+            return (R) this;
+        }
+
+        @Override
+        public final R ifParens(Consumer<Consumer<String>> consumer) {
+            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(CriteriaUtils.columnAliasList(false, consumer));
+            return (R) this;
+        }
+
+
+    }//DynamicDerivedBlock
+
+    private static final class DynamicDerivedJoinBlock
+            extends DynamicDerivedBlock<PostgreStatement._DynamicJoinSpec>
+            implements PostgreStatement._DynamicParensJoinSpec {
+
+        private DynamicDerivedJoinBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+                                        _JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
+                                        String alias) {
+            super(context, blockConsumer, joinType, modifier, table, alias);
+        }
+
+
+    }//DynamicDerivedJoinBlock
+
+    private static final class DynamicDerivedOnBlock
+            extends DynamicDerivedBlock<Statement._OnClause<PostgreStatement._DynamicJoinSpec>>
+            implements Statement._ParensOnSpec<PostgreStatement._DynamicJoinSpec> {
+
+        private DynamicDerivedOnBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+                                      _JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
+                                      String alias) {
+            super(context, blockConsumer, joinType, modifier, table, alias);
+        }
+
+    }//DynamicDerivedOnBlock
+
+
+    private static abstract class PostgreBuilderSupport extends DynamicBuilderSupport {
+
+        boolean started;
+
+        private PostgreBuilderSupport(CriteriaContext context, _JoinType joinTyp, Consumer<_TableBlock> blockConsumer) {
+            super(context, joinTyp, blockConsumer);
+        }
+
+        final PostgreDynamicBlock onAddCte(String cteName, String alias) {
+            if (this.started) {
+                throw CriteriaUtils.duplicateTabularMethod(this.context);
+            }
+            this.started = true;
+            final PostgreDynamicBlock block;
+            block = new PostgreDynamicBlock(this.context, this.blockConsumer, this.joinType, null,
+                    this.context.refCte(cteName), alias);
+            this.blockConsumer.accept(block);
+            return block;
+        }
+
+
+    }//PostgreBuilderSupport
+
+
+    private static final class PostgreJoinBuilder extends PostgreBuilderSupport
             implements PostgreJoins {
-
-        private boolean started;
 
         private PostgreJoinBuilder(CriteriaContext context, _JoinType joinTyp, Consumer<_TableBlock> blockConsumer) {
             super(context, joinTyp, blockConsumer);
@@ -334,112 +500,82 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         public PostgreStatement._DynamicTableSampleOnSpec tabular(TableMeta<?> table, SQLs.WordAs wordAs, String alias) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            assert wordAs == SQLs.AS;
-            this.started = true;
-            final OnTableBlock block;
-            block = new OnTableBlock(this.joinType, null, table, alias, this);
-            this.blockConsumer.accept(block);
-            return block;
+            return this.onAddTable(null, table, alias);
         }
 
         @Override
-        public PostgreStatement._DynamicTableSampleOnSpec tabular(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String alias) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            assert wordAs == SQLs.AS;
+        public PostgreStatement._DynamicTableSampleOnSpec tabular(Query.TableModifier modifier, TableMeta<?> table,
+                                                                  SQLs.WordAs wordAs, String alias) {
             if (modifier != SQLs.ONLY) {
-                throw PostgreUtils.errorTabularModifier(this.context, modifier);
+                throw CriteriaUtils.errorTabularModifier(this.context, modifier);
             }
-            final OnTableBlock block;
-            block = new OnTableBlock(this.joinType, modifier, table, alias, this);
-            this.blockConsumer.accept(block);
-            return block;
+            return this.onAddTable(modifier, table, alias);
         }
 
         @Override
-        public <T extends TabularItem> Statement._AsClause<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> tabular(Supplier<T> supplier) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            final TabularItem tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-
-            final Statement._AsClause<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> asClause;
-            asClause = alias -> {
-                final OnClauseTableBlock<PostgreStatement._DynamicJoinSpec> block;
-                block = new OnClauseTableBlock<>(this.joinType, tabularItem, alias, this);
-                this.blockConsumer.accept(block);
-                return block;
-            };
-            return asClause;
+        public <T extends DerivedTable> Statement._AsParensOnClause<PostgreStatement._DynamicJoinSpec> tabular(Supplier<T> supplier) {
+            return this.onAddDerived(null, supplier.get());
         }
 
         @Override
-        public <T extends TabularItem> Statement._AsClause<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> tabular(
-                @Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
+        public <T extends DerivedTable> Statement._AsParensOnClause<PostgreStatement._DynamicJoinSpec> tabular(
+                Query.DerivedModifier modifier, Supplier<T> supplier) {
+            if (modifier != SQLs.LATERAL) {
+                throw CriteriaUtils.errorTabularModifier(this.context, modifier);
             }
-            if (modifier != null && modifier != SQLs.LATERAL) {
-                throw PostgreUtils.errorTabularModifier(this.context, modifier);
-            }
-            this.started = true;
-            final TabularItem tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-
-            final Statement._AsClause<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> asClause;
-            asClause = alias -> {
-                final OnClauseTableBlock.OnItemTableBlock<PostgreStatement._DynamicJoinSpec> block;
-                block = new OnClauseTableBlock.OnItemTableBlock<>(this.joinType, modifier, tabularItem, alias, this);
-                this.blockConsumer.accept(block);
-                return block;
-            };
-            return asClause;
+            return this.onAddDerived(modifier, supplier.get());
         }
 
         @Override
         public Statement._OnClause<PostgreStatement._DynamicJoinSpec> tabular(String cteName) {
+            return this.onAddCte(cteName, "");
+        }
+
+        @Override
+        public Statement._OnClause<PostgreStatement._DynamicJoinSpec> tabular(String cteName, SQLs.WordAs wordAs,
+                                                                              String alias) {
+            if (!_StringUtils.hasText(alias)) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::cteNameNotText);
+            }
+            return this.onAddCte(cteName, alias);
+        }
+
+        private PostgreStatement._DynamicTableSampleOnSpec onAddTable(@Nullable Query.TableModifier modifier,
+                                                                      TableMeta<?> table, String alias) {
             if (this.started) {
                 throw CriteriaUtils.duplicateTabularMethod(this.context);
             }
             this.started = true;
-            final OnClauseTableBlock<PostgreStatement._DynamicJoinSpec> block;
-            block = new OnClauseTableBlock<>(this.joinType, this.context.refCte(cteName), "", this);
+
+            final DynamicTableOnBlock block;
+            block = new DynamicTableOnBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
             this.blockConsumer.accept(block);
             return block;
         }
 
-        @Override
-        public Statement._OnClause<PostgreStatement._DynamicJoinSpec> tabular(String cteName, SQLs.WordAs wordAs, String alias) {
+        private Statement._AsParensOnClause<PostgreStatement._DynamicJoinSpec> onAddDerived(
+                @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
             if (this.started) {
                 throw CriteriaUtils.duplicateTabularMethod(this.context);
             }
             this.started = true;
-            final OnClauseTableBlock<PostgreStatement._DynamicJoinSpec> block;
-            block = new OnClauseTableBlock<>(this.joinType, this.context.refCte(cteName), alias, this);
-            this.blockConsumer.accept(block);
-            return block;
+            if (table == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            return alias -> {
+                final DynamicDerivedOnBlock block;
+                block = new DynamicDerivedOnBlock(this.context, this.blockConsumer, this.joinType, modifier, table,
+                        alias);
+                this.blockConsumer.accept(block);
+                return block;
+            };
         }
 
 
     }//PostgreJoinBuilder
 
-    private static final class PostgreCrossBuilder extends PostgreDynamicJoins
+    private static final class PostgreCrossBuilder extends PostgreBuilderSupport
             implements PostgreCrosses {
-
-        private boolean started;
 
         private PostgreCrossBuilder(CriteriaContext context, Consumer<_TableBlock> blockConsumer) {
             super(context, _JoinType.CROSS_JOIN, blockConsumer);
@@ -447,104 +583,74 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         public PostgreStatement._DynamicTableSampleJoinSpec tabular(TableMeta<?> table, SQLs.WordAs wordAs, String alias) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            assert wordAs == SQLs.AS;
-
-            final PostgreSupports.PostgreNoOnTableBlock block;
-            block = new PostgreSupports.PostgreNoOnTableBlock(this.joinType, null, table, alias);
-            this.blockConsumer.accept(block);
-            this.noOnBlock = block;
-            return this;
+            return this.onAddTable(null, table, alias);
         }
 
         @Override
-        public PostgreStatement._DynamicTableSampleJoinSpec tabular(Query.TableModifier modifier, TableMeta<?> table
-                , SQLs.WordAs wordAs, String alias) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            assert wordAs == SQLs.AS;
+        public PostgreStatement._DynamicTableSampleJoinSpec tabular(Query.TableModifier modifier, TableMeta<?> table,
+                                                                    SQLs.WordAs as, String alias) {
             if (modifier != SQLs.ONLY) {
-                throw PostgreUtils.errorTabularModifier(this.context, modifier);
+                throw CriteriaUtils.errorTabularModifier(this.context, modifier);
             }
-            final PostgreSupports.PostgreNoOnTableBlock block;
-            block = new PostgreSupports.PostgreNoOnTableBlock(this.joinType, modifier, table, alias);
-            this.blockConsumer.accept(block);
-            this.noOnBlock = block;
-            return this;
+            return this.onAddTable(modifier, table, alias);
         }
 
         @Override
-        public <T extends TabularItem> Statement._AsClause<PostgreStatement._DynamicJoinSpec> tabular(Supplier<T> supplier) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            final TabularItem tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            final Statement._AsClause<PostgreStatement._DynamicJoinSpec> asClause;
-            asClause = alias -> {
-                final TableBlock.NoOnTableBlock block;
-                block = new TableBlock.NoOnTableBlock(this.joinType, tabularItem, alias);
-                this.blockConsumer.accept(block);
-                return this;
-            };
-            return asClause;
+        public <T extends DerivedTable> Statement._AsClause<PostgreStatement._DynamicJoinSpec> tabular(Supplier<T> supplier) {
+            return this.onAddDerived(null, supplier.get());
         }
 
         @Override
-        public <T extends TabularItem> Statement._AsClause<PostgreStatement._DynamicJoinSpec> tabular(Query.DerivedModifier modifier, Supplier<T> supplier) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            final TabularItem tabularItem;
-            tabularItem = supplier.get();
-            if (tabularItem == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
+        public <T extends DerivedTable> Statement._AsClause<PostgreStatement._DynamicJoinSpec> tabular(
+                Query.DerivedModifier modifier, Supplier<T> supplier) {
             if (modifier != SQLs.LATERAL) {
-                throw PostgreUtils.errorTabularModifier(this.context, modifier);
+                throw CriteriaUtils.errorTabularModifier(this.context, modifier);
             }
-            final Statement._AsClause<PostgreStatement._DynamicJoinSpec> asClause;
-            asClause = alias -> {
-                final TableBlock.NoOnModifierTableBlock block;
-                block = new TableBlock.NoOnModifierTableBlock(this.joinType, modifier, tabularItem, alias);
-                this.blockConsumer.accept(block);
-                return this;
-            };
-            return asClause;
+            return this.onAddDerived(modifier, supplier.get());
         }
 
         @Override
         public PostgreStatement._DynamicJoinSpec tabular(String cteName) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            final TableBlock.NoOnTableBlock block;
-            block = new TableBlock.NoOnTableBlock(this.joinType, this.context.refCte(cteName), "");
-            this.blockConsumer.accept(block);
-            return this;
+            return this.onAddCte(cteName, "");
         }
 
         @Override
         public PostgreStatement._DynamicJoinSpec tabular(String cteName, SQLs.WordAs wordAs, String alias) {
+            if (!_StringUtils.hasText(alias)) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::cteNameNotText);
+            }
+            return this.onAddCte(cteName, alias);
+        }
+
+
+        private PostgreStatement._DynamicTableSampleJoinSpec onAddTable(@Nullable Query.TableModifier modifier,
+                                                                        TableMeta<?> table, String alias) {
             if (this.started) {
                 throw CriteriaUtils.duplicateTabularMethod(this.context);
             }
             this.started = true;
-            final TableBlock.NoOnModifierTableBlock block;
-            block = new TableBlock.NoOnModifierTableBlock(this.joinType, null, this.context.refCte(cteName), alias);
+            final DynamicTableJoinBlock block;
+            block = new DynamicTableJoinBlock(this.context, this.blockConsumer, this.joinType, modifier, table, alias);
             this.blockConsumer.accept(block);
-            return this;
+            return block;
+        }
+
+        private Statement._AsClause<PostgreStatement._DynamicJoinSpec> onAddDerived(
+                @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
+            if (this.started) {
+                throw CriteriaUtils.duplicateTabularMethod(this.context);
+            }
+            this.started = true;
+            if (table == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            return alias -> {
+                final DynamicDerivedJoinBlock block;
+                block = new DynamicDerivedJoinBlock(this.context, this.blockConsumer, this.joinType, modifier, table,
+                        alias);
+                this.blockConsumer.accept(block);
+                return block;
+            };
         }
 
 

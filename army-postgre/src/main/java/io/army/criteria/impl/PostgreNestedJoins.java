@@ -512,7 +512,8 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             I,
             PostgreStatement._NestedRepeatableJoinClause<I>,
             PostgreStatement._PostgreNestedJoinClause<I>>
-            implements PostgreStatement._NestedTableSampleJoinSpec<I> {
+            implements PostgreStatement._NestedTableSampleJoinSpec<I>,
+            PostgreStatement._NestedRepeatableJoinClause<I> {
 
         private NestedTableJoinBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
                                      @Nullable SQLWords modifier, TableMeta<?> table, String alias, Supplier<I> ender) {
@@ -526,7 +527,8 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             I,
             PostgreStatement._NestedRepeatableCrossClause<I>,
             PostgreStatement._NestedJoinSpec<I>>
-            implements PostgreStatement._NestedTableSampleCrossSpec<I> {
+            implements PostgreStatement._NestedTableSampleCrossSpec<I>,
+            PostgreStatement._NestedRepeatableCrossClause<I> {
 
         private NestedTableCrossBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
                                       @Nullable SQLWords modifier, TableMeta<?> table, String alias, Supplier<I> ender) {
@@ -540,7 +542,8 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             I,
             PostgreStatement._NestedRepeatableOnClause<I>,
             PostgreStatement._NestedOnSpec<I>>
-            implements PostgreStatement._NestedTableSampleOnSpec<I> {
+            implements PostgreStatement._NestedTableSampleOnSpec<I>,
+            PostgreStatement._NestedRepeatableOnClause<I> {
 
         private NestedTableOnBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
                                    @Nullable SQLWords modifier, TableMeta<?> table, String alias, Supplier<I> ender) {
