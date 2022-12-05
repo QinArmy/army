@@ -21,13 +21,13 @@ public interface PostgreCommand extends PostgreStatement {
     }
 
     interface _DeclareWithComma<I extends Item>
-            extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_DeclareWithComma<I>>>
+            extends _StaticWithCommaClause<_StaticCteParensSpec<_DeclareWithComma<I>>>
             , _DeclareComplexQueryCommand<I> {
 
     }
 
     interface _DeclareQueryWithSpec<I extends Item> extends _PostgreDynamicWithClause<_DeclareComplexQueryCommand<I>>
-            , _StaticWithClause<_StaticCteLeftParenSpec<_DeclareWithComma<I>>>
+            , _StaticWithClause<_StaticCteParensSpec<_DeclareWithComma<I>>>
             , _DeclareComplexQueryCommand<I> {
 
 

@@ -967,7 +967,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
 
         private final SimpleUpdateClause<I, Q> clause;
 
-        private final Function<String, _StaticCteLeftParenSpec<_CteComma<I, Q>>> function;
+        private final Function<String, _StaticCteParensSpec<_CteComma<I, Q>>> function;
 
         private SimpleComma(boolean recursive, SimpleUpdateClause<I, Q> clause) {
             this.recursive = recursive;
@@ -976,7 +976,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
         }
 
         @Override
-        public _StaticCteLeftParenSpec<_CteComma<I, Q>> comma(String name) {
+        public _StaticCteParensSpec<_CteComma<I, Q>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -1006,14 +1006,14 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
         }
 
         @Override
-        public final _StaticCteLeftParenSpec<_CteComma<I, Q>> with(String name) {
+        public final _StaticCteParensSpec<_CteComma<I, Q>> with(String name) {
             final boolean recursive = false;
             this.context.onBeforeWithClause(recursive);
             return new SimpleComma<>(recursive, this).function.apply(name);
         }
 
         @Override
-        public final _StaticCteLeftParenSpec<_CteComma<I, Q>> withRecursive(String name) {
+        public final _StaticCteParensSpec<_CteComma<I, Q>> withRecursive(String name) {
             final boolean recursive = true;
             this.context.onBeforeWithClause(recursive);
             return new SimpleComma<>(recursive, this).function.apply(name);
@@ -1159,7 +1159,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
 
         private final BatchUpdateClause<I, Q> clause;
 
-        private final Function<String, _StaticCteLeftParenSpec<_BatchCteComma<I, Q>>> function;
+        private final Function<String, _StaticCteParensSpec<_BatchCteComma<I, Q>>> function;
 
         private BatchComma(boolean recursive, BatchUpdateClause<I, Q> clause) {
             this.recursive = recursive;
@@ -1168,7 +1168,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
         }
 
         @Override
-        public _StaticCteLeftParenSpec<_BatchCteComma<I, Q>> comma(String name) {
+        public _StaticCteParensSpec<_BatchCteComma<I, Q>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -1206,14 +1206,14 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
         }
 
         @Override
-        public _StaticCteLeftParenSpec<_BatchCteComma<I, Q>> with(String name) {
+        public _StaticCteParensSpec<_BatchCteComma<I, Q>> with(String name) {
             final boolean recursive = false;
             this.context.onBeforeWithClause(recursive);
             return new BatchComma<>(recursive, this).function.apply(name);
         }
 
         @Override
-        public _StaticCteLeftParenSpec<_BatchCteComma<I, Q>> withRecursive(String name) {
+        public _StaticCteParensSpec<_BatchCteComma<I, Q>> withRecursive(String name) {
             final boolean recursive = true;
             this.context.onBeforeWithClause(recursive);
             return new BatchComma<>(recursive, this).function.apply(name);

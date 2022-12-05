@@ -5,6 +5,6 @@ import io.army.criteria.dialect.Window;
 public interface PostgreWindows extends Window.Builder {
 
 
-    PostgreQuery._WindowAsClause<PostgreWindows> window(String name);
+    Window._WindowAsClause<PostgreQuery._WindowPartitionBySpec> window(String name);
 
 }

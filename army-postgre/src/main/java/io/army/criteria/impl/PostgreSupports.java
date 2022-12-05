@@ -8,7 +8,6 @@ import io.army.criteria.postgre.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.mapping.BigDecimalType;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -34,41 +33,13 @@ abstract class PostgreSupports extends CriteriaSupports {
         return new PostgreCteBuilderImpl(recursive, context);
     }
 
-    static PostgreQuery._WindowPartitionBySpec postgreNamedWindow(String name, CriteriaContext context
-            , @Nullable String existingWindowName) {
+    static PostgreWindow namedWindow(String name, CriteriaContext context, @Nullable String existingWindowName) {
         return new PostgreWindow(name, context, existingWindowName);
     }
 
-    static PostgreQuery._WindowPartitionBySpec postgreAnonymousWindow(CriteriaContext context
-            , @Nullable String existingWindowName) {
+    static PostgreWindow anonymousWindow(CriteriaContext context, @Nullable String existingWindowName) {
         return new PostgreWindow(context, existingWindowName);
     }
-
-
-    enum MaterializedOption implements SQLWords {
-
-        MATERIALIZED(" MATERIALIZED"),
-        NOT_MATERIALIZED(" NOT MATERIALIZED");
-
-        private final String spaceWord;
-
-        MaterializedOption(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String render() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return CriteriaUtils.sqlWordsToString(this);
-        }
-
-
-    }//MaterializedOption
 
 
     static final class PostgreSubStatement implements _PostgreCteStatement {
@@ -108,26 +79,16 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class PostgreTableBlock<TR, RR, OR> extends OnClauseTableBlock<OR>
-            implements _PostgreTableBlock
-            , PostgreStatement._StaticTableSampleClause<TR>
-            , PostgreStatement._RepeatableClause<RR> {
-
-        private final SQLWords modifier;
-
+    static abstract class PostgreTableOnBlock<TR, RR, OR> extends OnClauseTableBlock.OnItemTableBlock<OR>
+            implements _PostgreTableBlock,
+            PostgreStatement._StaticTableSampleClause<TR>,
+            PostgreStatement._RepeatableClause<RR> {
         private ArmyExpression sampleMethod;
 
         private ArmyExpression seed;
 
-        PostgreTableBlock(_JoinType joinType, @Nullable SQLWords modifier
-                , TabularItem tableItem, String alias, OR stmt) {
-            super(joinType, tableItem, alias, stmt);
-            this.modifier = modifier;
-        }
-
-        PostgreTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TabularItem tableItem, String alias) {
-            super(joinType, tableItem, alias);
-            this.modifier = modifier;
+        PostgreTableOnBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table, String alias, OR stmt) {
+            super(joinType, modifier, table, alias, stmt);
         }
 
 
@@ -142,55 +103,54 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public final TR tableSample(String methodName, Expression argument) {
-            this.sampleMethod = FunctionUtils.oneArgVoidFunc(methodName, argument);
-            return (TR) this;
+            return this.tableSample(FunctionUtils.oneArgVoidFunc(methodName, argument));
         }
 
         @Override
         public final TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
             final List<Expression> expList = new ArrayList<>();
             consumer.accept(expList::add);
-            this.sampleMethod = FunctionUtils.multiArgVoidFunc(methodName, expList);
-            return (TR) this;
+            return this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, expList));
         }
 
+
         @Override
-        public final <T> TR tableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-                , BiFunction<MappingType, T, Expression> valueOperator, T argument) {
+        public final TR tableSample(
+                BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
+                BiFunction<MappingType, Object, Expression> valueOperator, Object argument) {
             return this.tableSample(method.apply(valueOperator, argument));
         }
 
         @Override
-        public final <T> TR tableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-                , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier) {
+        public final TR tableSample(
+                BiFunction<BiFunction<MappingType, Expression, Expression>, Expression, Expression> method,
+                BiFunction<MappingType, Expression, Expression> valueOperator, Expression argument) {
+            return this.tableSample(method.apply(valueOperator, argument));
+        }
+
+        @Override
+        public final <T> TR tableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method,
+                                        BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier) {
             return this.tableSample(method.apply(valueOperator, supplier.get()));
         }
 
         @Override
-        public final TR tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
-                , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function
-                , String keyName) {
+        public final TR tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
+                                    BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function,
+                                    String keyName) {
             return this.tableSample(method.apply(valueOperator, function.apply(keyName)));
         }
 
         @Override
         public final TR ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
-            final List<Expression> expList = new ArrayList<>();
-            consumer.accept(expList::add);
-            if (expList.size() > 0) {
-                this.sampleMethod = FunctionUtils.multiArgVoidFunc(methodName, expList);
+            final List<Expression> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() > 0) {
+                this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, list));
             }
             return (TR) this;
         }
 
-        @Override
-        public final <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-                , BiFunction<MappingType, T, Expression> valueOperator, @Nullable T argument) {
-            if (argument != null) {
-                this.tableSample(method.apply(valueOperator, argument));
-            }
-            return (TR) this;
-        }
 
         @Override
         public final <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
@@ -230,64 +190,49 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public final RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Number seedValue) {
-            return this.repeatable(valueOperator.apply(BigDecimalType.INSTANCE, seedValue));
+        public final RR repeatable(Function<Number, Expression> valueOperator, Number seedValue) {
+            return this.repeatable(valueOperator.apply(seedValue));
         }
 
         @Override
-        public final RR repeatable(BiFunction<MappingType, Number, Expression> valueOperator
-                , Supplier<Number> supplier) {
-            return this.repeatable(valueOperator.apply(BigDecimalType.INSTANCE, supplier.get()));
+        public final <E extends Number> RR repeatable(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+            return this.repeatable(valueOperator.apply(supplier.get()));
         }
 
         @Override
-        public final RR repeatable(BiFunction<MappingType, Object, Expression> valueOperator
-                , Function<String, ?> function
-                , String keyName) {
-            return this.repeatable(valueOperator.apply(BigDecimalType.INSTANCE, function.apply(keyName)));
+        public final RR repeatable(Function<Object, Expression> valueOperator, Function<String, ?> function,
+                                   String keyName) {
+            return this.repeatable(valueOperator.apply(function.apply(keyName)));
         }
 
         @Override
         public final RR ifRepeatable(Supplier<Expression> supplier) {
             final Expression expression;
             if ((expression = supplier.get()) != null) {
-                this.seed = (ArmyExpression) expression;
+                this.repeatable(expression);
             }
             return (RR) this;
         }
 
         @Override
-        public final RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator
-                , @Nullable Number seedValue) {
-            if (seedValue != null) {
-                this.repeatable(valueOperator.apply(BigDecimalType.INSTANCE, seedValue));
+        public final <E extends Number> RR ifRepeatable(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+            final E value;
+            value = supplier.get();
+            if (value != null) {
+                this.repeatable(valueOperator.apply(value));
             }
             return (RR) this;
         }
 
         @Override
-        public final RR ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator
-                , Supplier<Number> supplier) {
-            final Number seedValue;
-            if ((seedValue = supplier.get()) != null) {
-                this.repeatable(valueOperator.apply(BigDecimalType.INSTANCE, seedValue));
+        public final RR ifRepeatable(Function<Object, Expression> valueOperator, Function<String, ?> function,
+                                     String keyName) {
+            final Object value;
+            value = function.apply(keyName);
+            if (value != null) {
+                this.repeatable(valueOperator.apply(value));
             }
             return (RR) this;
-        }
-
-        @Override
-        public final RR ifRepeatable(BiFunction<MappingType, Object, Expression> valueOperator
-                , Function<String, ?> function, String keyName) {
-            final Object seedValue;
-            if ((seedValue = function.apply(keyName)) != null) {
-                this.repeatable(valueOperator.apply(BigDecimalType.INSTANCE, seedValue));
-            }
-            return (RR) this;
-        }
-
-        @Override
-        public final SQLWords modifier() {
-            return this.modifier;
         }
 
         @Override
@@ -301,27 +246,40 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
 
-    }//PostgreTableBlock
+    }//PostgreTableOnBlock
 
 
-    static final class PostgreNoOnTableBlock extends PostgreTableBlock<Object, Object, Object> {
+    static final class PostgreNoOnTableBlock extends TableBlock.NoOnModifierTableBlock
+            implements _PostgreTableBlock {
+
+        private ArmyExpression sampleMethod;
+
+        private ArmyExpression seed;
 
         PostgreNoOnTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table, String alias) {
             super(joinType, modifier, table, alias);
         }
 
-    }//PostgreNoOnTableBlock
-
-
-    static abstract class PostgreOnTableBlock<TR, RR, OR> extends PostgreTableBlock<TR, RR, OR> {
-
-        PostgreOnTableBlock(_JoinType joinType, @Nullable SQLWords modifier
-                , TabularItem tableItem, String alias, OR stmt) {
-            super(joinType, modifier, tableItem, alias, stmt);
+        void setSampleMethod(ArmyExpression sampleMethod) {
+            this.sampleMethod = sampleMethod;
         }
 
+        void setSeed(ArmyExpression seed) {
+            this.seed = seed;
+        }
 
-    }//PostgreOnTableBlock
+        @Override
+        public _Expression sampleMethod() {
+            return this.sampleMethod;
+        }
+
+        @Override
+        public _Expression seed() {
+            return this.seed;
+        }
+
+    }//PostgreNoOnTableBlock
+
 
 
     private static abstract class PostgreDynamicDmlCteLeftParenClause<I extends Item>
@@ -929,7 +887,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public PostgreQuery._DynamicCteQuerySpec query(String name) {
+        public PostgreQuery._DynamicCteQuerySpec subQuery(String name) {
             this.context.onStartCte(name);
             return new PostgreDynamicQueryLeftParenClause(name, this);
         }
@@ -979,7 +937,7 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//FrameExclusion
 
 
-    private static final class PostgreWindow extends WindowClause<
+    static final class PostgreWindow extends WindowClause<
             PostgreQuery._WindowOrderBySpec,
             PostgreQuery._PostgreFrameUnitSpec,
             PostgreQuery._PostgreFrameBetweenSpec,
@@ -987,15 +945,15 @@ abstract class PostgreSupports extends CriteriaSupports {
             PostgreQuery._PostgreFrameStartNonExpBoundClause,
             PostgreQuery._PostgreFrameStartExpBoundClause,
             PostgreQuery._PostgreFrameEndNonExpBoundClause>
-            implements PostgreQuery._WindowPartitionBySpec
-            , PostgreQuery._PostgreFrameBetweenSpec
-            , PostgreQuery._PostgreFrameStartExpBoundClause
-            , PostgreQuery._PostgreFrameStartNonExpBoundClause
-            , PostgreQuery._PostgreFrameEndExpBoundClause
-            , PostgreQuery._PostgreFrameEndNonExpBoundClause
-            , PostgreQuery._PostgreFrameBetweenAndClause
-            , PostgreQuery._FrameExclusionSpec
-            , WindowClause.FrameExclusionSpec {
+            implements PostgreQuery._WindowPartitionBySpec,
+            PostgreQuery._PostgreFrameBetweenSpec,
+            PostgreQuery._PostgreFrameStartExpBoundClause,
+            PostgreQuery._PostgreFrameStartNonExpBoundClause,
+            PostgreQuery._PostgreFrameEndExpBoundClause,
+            PostgreQuery._PostgreFrameEndNonExpBoundClause,
+            PostgreQuery._PostgreFrameBetweenAndClause,
+            PostgreQuery._FrameExclusionSpec,
+            WindowClause.FrameExclusionSpec {
 
         private FrameExclusion frameExclusion;
 
@@ -1056,15 +1014,6 @@ abstract class PostgreSupports extends CriteriaSupports {
             final Expression expression;
             if ((expression = supplier.get()) != null) {
                 this.frameUnit(FrameUnits.GROUPS, expression);
-            }
-            return this;
-        }
-
-        @Override
-        public <E> PostgreQuery._PostgreFrameEndExpBoundClause ifGroups(Function<E, Expression> valueOperator
-                , @Nullable E value) {
-            if (value != null) {
-                this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(value));
             }
             return this;
         }

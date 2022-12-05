@@ -99,13 +99,13 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
     }
 
 
-    interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_CteComma<I>>>
+    interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<_CteComma<I>>>
             , _PostgreValuesClause<I> {
 
     }
 
     interface _WithSpec<I extends Item> extends _MinWithSpec<I>
-            , _StaticWithClause<_StaticCteLeftParenSpec<_CteComma<I>>> {
+            , _StaticWithClause<_StaticCteParensSpec<_CteComma<I>>> {
 
     }
 

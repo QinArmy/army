@@ -79,7 +79,9 @@ public interface Query extends RowSet {
     /*-------------------below clause interfaces -------------------*/
 
 
-    interface _AsQueryClause<Q extends Item> extends _RowSetSpec<Q> {
+    interface _AsQueryClause<I extends Item> {
+
+        I asQuery();
 
     }
 
@@ -508,17 +510,15 @@ public interface Query extends RowSet {
 
     }
 
-    interface _LockOfTableClause<OR> {
+    interface _LockOfTableAliasClause<OR> {
 
-        OR of(TableMeta<?> table);
+        OR of(String tableAlias);
 
-        OR of(TableMeta<?> table1, TableMeta<?> table2);
+        OR of(String firstTableAlias, String... restTableAlias);
 
-        OR of(TableMeta<?> table1, TableMeta<?> table2, TableMeta<?> table3);
+        OR of(Consumer<Consumer<String>> consumer);
 
-        OR of(Consumer<Consumer<TableMeta<?>>> consumer);
-
-        OR ifOf(Consumer<Consumer<TableMeta<?>>> consumer);
+        OR ifOf(Consumer<Consumer<String>> consumer);
 
     }
 

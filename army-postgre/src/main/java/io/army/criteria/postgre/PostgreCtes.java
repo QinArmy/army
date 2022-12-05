@@ -10,7 +10,7 @@ public interface PostgreCtes extends CteBuilderSpec {
 
    PostgreDelete._DynamicCteDeleteSpec singleDelete(String name);
 
-   PostgreQuery._DynamicCteQuerySpec query(String name);
+   PostgreQuery._DynamicCteQuerySpec subQuery(String name);
 
    PostgreValues._DynamicCteValuesSpec cteValues(String name);
 

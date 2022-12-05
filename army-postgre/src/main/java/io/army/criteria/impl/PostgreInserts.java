@@ -201,7 +201,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         private final PrimaryInsertIntoClause clause;
 
-        private final Function<String, PostgreStatement._StaticCteLeftParenSpec<PostgreInsert._PrimaryCteComma>> function;
+        private final Function<String, PostgreStatement._StaticCteParensSpec<PostgreInsert._PrimaryCteComma>> function;
 
         private PrimaryCteCommaClause(boolean recursive, PrimaryInsertIntoClause clause) {
             this.recursive = recursive;
@@ -210,7 +210,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreStatement._StaticCteLeftParenSpec<PostgreInsert._PrimaryCteComma> comma(final String name) {
+        public PostgreStatement._StaticCteParensSpec<PostgreInsert._PrimaryCteComma> comma(final String name) {
             return this.function.apply(name);
 
         }
@@ -243,7 +243,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         private final ChildInsertIntoClause<P> primaryClause;
 
-        private final Function<String, PostgreStatement._StaticCteLeftParenSpec<PostgreInsert._ChildCteComma<P>>> function;
+        private final Function<String, PostgreStatement._StaticCteParensSpec<PostgreInsert._ChildCteComma<P>>> function;
 
         private ChildCteComma(boolean recursive, ChildInsertIntoClause<P> clause) {
             this.recursive = recursive;
@@ -252,7 +252,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreStatement._StaticCteLeftParenSpec<PostgreInsert._ChildCteComma<P>> comma(String name) {
+        public PostgreStatement._StaticCteParensSpec<PostgreInsert._ChildCteComma<P>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -281,14 +281,14 @@ abstract class PostgreInserts extends InsertSupport {
 
 
         @Override
-        public PostgreStatement._StaticCteLeftParenSpec<PostgreInsert._PrimaryCteComma> with(String name) {
+        public PostgreStatement._StaticCteParensSpec<PostgreInsert._PrimaryCteComma> with(String name) {
             final boolean recursive = false;
             this.context.onBeforeWithClause(recursive);
             return new PrimaryCteCommaClause(recursive, this).function.apply(name);
         }
 
         @Override
-        public PostgreStatement._StaticCteLeftParenSpec<PostgreInsert._PrimaryCteComma> withRecursive(String name) {
+        public PostgreStatement._StaticCteParensSpec<PostgreInsert._PrimaryCteComma> withRecursive(String name) {
             final boolean recursive = true;
             this.context.onBeforeWithClause(recursive);
             return new PrimaryCteCommaClause(recursive, this).function.apply(name);
@@ -336,14 +336,14 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreStatement._StaticCteLeftParenSpec<PostgreInsert._ChildCteComma<P>> with(String name) {
+        public PostgreStatement._StaticCteParensSpec<PostgreInsert._ChildCteComma<P>> with(String name) {
             final boolean recursive = false;
             this.context.onBeforeWithClause(recursive);
             return new ChildCteComma<>(recursive, this).function.apply(name);
         }
 
         @Override
-        public PostgreStatement._StaticCteLeftParenSpec<PostgreInsert._ChildCteComma<P>> withRecursive(String name) {
+        public PostgreStatement._StaticCteParensSpec<PostgreInsert._ChildCteComma<P>> withRecursive(String name) {
             final boolean recursive = true;
             this.context.onBeforeWithClause(recursive);
             return new ChildCteComma<>(recursive, this).function.apply(name);
@@ -494,7 +494,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         private final ComplexInsertIntoClause<I> clause;
 
-        private final Function<String, PostgreStatement._StaticCteLeftParenSpec<PostgreInsert._ComplexComma<I>>> function;
+        private final Function<String, PostgreStatement._StaticCteParensSpec<PostgreInsert._ComplexComma<I>>> function;
 
         private ComplexComma(boolean recursive, ComplexInsertIntoClause<I> clause) {
             this.recursive = recursive;
@@ -503,7 +503,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreStatement._StaticCteLeftParenSpec<PostgreInsert._ComplexComma<I>> comma(String name) {
+        public PostgreStatement._StaticCteParensSpec<PostgreInsert._ComplexComma<I>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -534,14 +534,14 @@ abstract class PostgreInserts extends InsertSupport {
 
 
         @Override
-        public PostgreStatement._StaticCteLeftParenSpec<PostgreInsert._ComplexComma<I>> with(String name) {
+        public PostgreStatement._StaticCteParensSpec<PostgreInsert._ComplexComma<I>> with(String name) {
             final boolean recursive = false;
             this.context.onBeforeWithClause(recursive);
             return new ComplexComma<>(recursive, this).function.apply(name);
         }
 
         @Override
-        public PostgreStatement._StaticCteLeftParenSpec<PostgreInsert._ComplexComma<I>> withRecursive(String name) {
+        public PostgreStatement._StaticCteParensSpec<PostgreInsert._ComplexComma<I>> withRecursive(String name) {
             final boolean recursive = true;
             this.context.onBeforeWithClause(recursive);
             return new ComplexComma<>(recursive, this).function.apply(name);

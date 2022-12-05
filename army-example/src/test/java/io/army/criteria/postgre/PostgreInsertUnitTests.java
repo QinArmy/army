@@ -12,9 +12,6 @@ import io.army.dialect.postgre.PostgreDialect;
 import io.army.example.bank.domain.user.BankPerson;
 import io.army.example.bank.domain.user.BankPerson_;
 import io.army.example.bank.domain.user.BankUser_;
-import io.army.example.pill.domain.PillUser;
-import io.army.example.pill.struct.IdentityType;
-import io.army.example.pill.struct.PillUserType;
 import io.army.stmt.GeneratedKeyStmt;
 import io.army.stmt.PairStmt;
 import io.army.stmt.Stmt;
@@ -26,7 +23,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PostgreInsertUnitTests {
+public class PostgreInsertUnitTests extends PostgreUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(PostgreInsertUnitTests.class);
 
@@ -54,28 +51,6 @@ public class PostgreInsertUnitTests {
     }
 
 
-    private List<PillUser> createUserList() {
-        final List<PillUser> list = new ArrayList<>();
-        PillUser u;
-        final int rowSize = 3;
-        final LocalDateTime now = LocalDateTime.now();
-
-        for (int i = 0; i < rowSize; i++) {
-            u = new PillUser();
-
-            u.setIdentityId(i + 1L);
-            u.setCreateTime(now);
-            u.setUpdateTime(now);
-            u.setUserType(PillUserType.NONE);
-
-            u.setIdentityType(IdentityType.PERSON);
-            u.setNickName("妖侠" + 1);
-
-            list.add(u);
-
-        }
-        return list;
-    }
 
     private List<BankPerson> createBankPersonList() {
         final List<BankPerson> list = new ArrayList<>();

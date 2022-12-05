@@ -116,13 +116,13 @@ public interface PostgreDelete extends PostgreStatement {
 
 
     interface _CteComma<I extends Item, Q extends Item>
-            extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_CteComma<I, Q>>>
+            extends _StaticWithCommaClause<_StaticCteParensSpec<_CteComma<I, Q>>>
             , _SingleDeleteClause<I, Q> {
 
     }
 
     interface _SingleWithSpec<I extends Item, Q extends Item> extends _SingleMinWithSpec<I, Q>
-            , _StaticWithClause<PostgreQuery._StaticCteLeftParenSpec<_CteComma<I, Q>>> {
+            , _StaticWithClause<_StaticCteParensSpec<_CteComma<I, Q>>> {
 
     }
 
@@ -235,13 +235,13 @@ public interface PostgreDelete extends PostgreStatement {
 
 
     interface _BatchCteComma<I extends Item, Q extends Item>
-            extends _StaticWithCommaClause<PostgreQuery._StaticCteLeftParenSpec<_BatchCteComma<I, Q>>>
+            extends _StaticWithCommaClause<_StaticCteParensSpec<_BatchCteComma<I, Q>>>
             , _BatchSingleDeleteClause<I, Q> {
 
     }
 
     interface _BatchSingleWithSpec<I extends Item, Q extends Item> extends _BatchSingleMinWithSpec<I, Q>
-            , _StaticWithClause<PostgreQuery._StaticCteLeftParenSpec<_BatchCteComma<I, Q>>> {
+            , _StaticWithClause<_StaticCteParensSpec<_BatchCteComma<I, Q>>> {
 
     }
 

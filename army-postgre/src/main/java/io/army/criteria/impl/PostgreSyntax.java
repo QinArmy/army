@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.Query;
+import io.army.criteria.SQLWords;
 import io.army.dialect._Constant;
 import io.army.util._StringUtils;
 
@@ -26,6 +27,10 @@ abstract class PostgreSyntax extends Functions {
     }
 
     public interface WordDistinct extends Modifier, SQLSyntax.ArgDistinct {
+
+    }
+
+    public interface WordMaterialized extends SQLWords {
 
     }
 
@@ -77,11 +82,39 @@ abstract class PostgreSyntax extends Functions {
     }//KeyWordDistinct
 
 
+    private enum KeyWordMaterialized implements WordMaterialized {
+
+        MATERIALIZED(" MATERIALIZED"),
+        NOT_MATERIALIZED(" NOT MATERIALIZED");
+
+        private final String spaceWord;
+
+        KeyWordMaterialized(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return keyWordToString(this);
+        }
+
+
+    }//KeyWordMaterialized
+
+
     public static final Modifier ALL = SelectModifier.ALL;
 
     public static final WordDistinct DISTINCT = KeyWordDistinct.DISTINCT;
 
+    public static final WordMaterialized MATERIALIZED = KeyWordMaterialized.MATERIALIZED;
 
+    public static final WordMaterialized NOT_MATERIALIZED = KeyWordMaterialized.NOT_MATERIALIZED;
 
     /*-------------------below private method -------------------*/
 

@@ -63,9 +63,11 @@ public interface Window extends Item {
         CR comma(String windowName);
     }
 
-    interface _StaticWindowAsClause<R> {
+    interface _WindowAsClause<R> {
 
-        R as();
+        default R as() {
+            return this.as(null);
+        }
 
         R as(@Nullable String existingWindowName);
     }
@@ -87,9 +89,9 @@ public interface Window extends Item {
     interface _DynamicWindowClause<WB extends Builder, WR> {
 
 
-        WR window(Consumer<WB> consumer);
+        WR windows(Consumer<WB> consumer);
 
-        WR ifWindow(Consumer<WB> consumer);
+        WR ifWindows(Consumer<WB> consumer);
 
     }
 

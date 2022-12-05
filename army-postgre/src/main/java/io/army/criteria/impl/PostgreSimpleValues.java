@@ -48,14 +48,14 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
 
     @Override
-    public final _StaticCteLeftParenSpec<_CteComma<I>> with(String name) {
+    public final _StaticCteParensSpec<_CteComma<I>> with(String name) {
         final boolean recursive = false;
         this.context.onBeforeWithClause(recursive);
         return new CteComma<>(recursive, this).function.apply(name);
     }
 
     @Override
-    public final _StaticCteLeftParenSpec<_CteComma<I>> withRecursive(String name) {
+    public final _StaticCteParensSpec<_CteComma<I>> withRecursive(String name) {
         final boolean recursive = true;
         this.context.onBeforeWithClause(recursive);
         return new CteComma<>(recursive, this).function.apply(name);
@@ -384,7 +384,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
         private final PostgreSimpleValues<I> statement;
 
-        private final Function<String, _StaticCteLeftParenSpec<_CteComma<I>>> function;
+        private final Function<String, _StaticCteParensSpec<_CteComma<I>>> function;
 
         private CteComma(boolean recursive, PostgreSimpleValues<I> statement) {
             this.recursive = recursive;
@@ -393,7 +393,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         }
 
         @Override
-        public _StaticCteLeftParenSpec<_CteComma<I>> comma(String name) {
+        public _StaticCteParensSpec<_CteComma<I>> comma(String name) {
             return this.function.apply(name);
         }
 

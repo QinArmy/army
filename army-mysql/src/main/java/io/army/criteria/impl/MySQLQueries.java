@@ -109,7 +109,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
     private MySQLLockMode lockMode;
 
-    private List<TableMeta<?>> ofTableList;
+    private List<String> ofTableList;
 
     private LockWaitOption lockWaitOption;
 
@@ -153,17 +153,13 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
     @Override
     public final _JoinSpec<I> parens(Consumer<Consumer<String>> consumer) {
-        final List<String> list = new ArrayList<>();
-        consumer.accept(list::add);
-        this.getLastDerived().setColumnAliasList(list);
+        this.getLastDerived().setColumnAliasList(CriteriaUtils.columnAliasList(true, consumer));
         return this;
     }
 
     @Override
     public final _JoinSpec<I> ifParens(Consumer<Consumer<String>> consumer) {
-        final List<String> list = new ArrayList<>();
-        consumer.accept(list::add);
-        this.getLastDerived().setColumnAliasList(CriteriaUtils.optionalStringList(list));
+        this.getLastDerived().setColumnAliasList(CriteriaUtils.columnAliasList(false, consumer));
         return this;
     }
 
@@ -308,12 +304,12 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
 
     @Override
-    public final _OrderBySpec<I> window(Consumer<MySQLWindows> consumer) {
+    public final _OrderBySpec<I> windows(Consumer<MySQLWindows> consumer) {
         return this.dynamicWindow(true, consumer);
     }
 
     @Override
-    public final _OrderBySpec<I> ifWindow(Consumer<MySQLWindows> consumer) {
+    public final _OrderBySpec<I> ifWindows(Consumer<MySQLWindows> consumer) {
         return this.dynamicWindow(false, consumer);
     }
 
@@ -376,49 +372,43 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         return this;
     }
 
+
     @Override
-    public final _LockWaitOptionSpec<I> of(TableMeta<?> table) {
-        if (this.lockMode != null) {
-            this.ofTableList = Collections.singletonList(table);
+    public final _LockWaitOptionSpec<I> of(String tableAlias) {
+        if (this.lockMode == null) {
+            this.ofTableList = Collections.emptyList();
+        } else {
+            this.ofTableList = Collections.singletonList(tableAlias);
         }
         return this;
     }
 
     @Override
-    public final _LockWaitOptionSpec<I> of(TableMeta<?> table1, TableMeta<?> table2) {
-        if (this.lockMode != null) {
-            this.ofTableList = ArrayUtils.asUnmodifiableList(table1, table2);
+    public final _LockWaitOptionSpec<I> of(String firstTableAlias, String... restTableAlias) {
+        if (this.lockMode == null) {
+            this.ofTableList = Collections.emptyList();
+        } else {
+            this.ofTableList = ArrayUtils.unmodifiableListOf(firstTableAlias, restTableAlias);
         }
         return this;
     }
 
     @Override
-    public final _LockWaitOptionSpec<I> of(TableMeta<?> table1, TableMeta<?> table2, TableMeta<?> table3) {
-        if (this.lockMode != null) {
-            this.ofTableList = ArrayUtils.asUnmodifiableList(table1, table2, table3);
+    public final _LockWaitOptionSpec<I> of(Consumer<Consumer<String>> consumer) {
+        if (this.lockMode == null) {
+            this.ofTableList = Collections.emptyList();
+        } else {
+            this.ofTableList = CriteriaUtils.stringList(this.context, true, consumer);
         }
         return this;
     }
 
     @Override
-    public final _LockWaitOptionSpec<I> of(Consumer<Consumer<TableMeta<?>>> consumer) {
-        if (this.lockMode != null) {
-            final List<TableMeta<?>> list = new ArrayList<>();
-            consumer.accept(list::add);
-            if (list.size() == 0) {
-                throw CriteriaUtils.ofTableListIsEmpty(this.context);
-            }
-            this.ofTableList = _CollectionUtils.unmodifiableList(list);
-        }
-        return this;
-    }
-
-    @Override
-    public final _LockWaitOptionSpec<I> ifOf(Consumer<Consumer<TableMeta<?>>> consumer) {
-        if (this.lockMode != null) {
-            final List<TableMeta<?>> list = new ArrayList<>();
-            consumer.accept(list::add);
-            this.ofTableList = _CollectionUtils.unmodifiableList(list);
+    public final _LockWaitOptionSpec<I> ifOf(Consumer<Consumer<String>> consumer) {
+        if (this.lockMode == null) {
+            this.ofTableList = Collections.emptyList();
+        } else {
+            this.ofTableList = CriteriaUtils.stringList(this.context, false, consumer);
         }
         return this;
     }
@@ -510,11 +500,11 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
     @Override
     public final List<String> lockOfTableList() {
-        final List<TableMeta<?>> list = this.ofTableList;
+        final List<String> list = this.ofTableList;
         if (list == null) {
             throw ContextStack.castCriteriaApi(this.context);
-        }//TODO
-        throw new UnsupportedOperationException();
+        }
+        return list;
     }
 
     @Override
@@ -725,12 +715,11 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
     }
 
     /**
-     * @see #window(Consumer)
+     * @see #windows(Consumer)
      * @see #window(String)
      */
     private _WindowCommaSpec<I> onAddWindow(final ArmyWindow window) {
         window.endWindowClause();
-        this.context.onAddWindow(window.windowName());
         List<_Window> windowList = this.windowList;
         if (windowList == null) {
             windowList = new ArrayList<>();
@@ -743,8 +732,8 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
     }
 
     /**
-     * @see #window(Consumer)
-     * @see #ifWindow(Consumer)
+     * @see #windows(Consumer)
+     * @see #ifWindows(Consumer)
      */
     private _OrderBySpec<I> dynamicWindow(final boolean required, final Consumer<MySQLWindows> consumer) {
         final MySQLWindowBuilderImpl builder = new MySQLWindowBuilderImpl(this);
@@ -934,8 +923,8 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
 
     /**
-     * @see #window(Consumer)
-     * @see #ifWindow(Consumer)
+     * @see #windows(Consumer)
+     * @see #ifWindows(Consumer)
      */
     private static final class MySQLWindowBuilderImpl implements MySQLWindows {
 

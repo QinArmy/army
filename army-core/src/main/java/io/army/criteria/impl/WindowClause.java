@@ -42,25 +42,28 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
         return new SimpleWindow(windowName, context, existingWindowName);
     }
 
-    static ArmyWindow namedGlobalWindow(CriteriaContext context, String windowName) {
+    static ArmyWindow namedGlobalWindow(final CriteriaContext context, final String windowName) {
         if (!_StringUtils.hasText(windowName)) {
             throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
         }
+        context.onAddWindow(windowName);
         return new SimpleWindowSpec(windowName);
     }
 
     static ArmyWindow namedRefWindow(CriteriaContext context, String windowName, @Nullable String refWindowName) {
         if (!_StringUtils.hasText(windowName)) {
             throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
-        } else if (refWindowName != null && !_StringUtils.hasText(refWindowName)) {
-            throw ContextStack.criteriaError(context, "exists window name must be null or has text.");
         }
         final ArmyWindow window;
         if (refWindowName == null) {
             window = new SimpleWindowSpec(windowName);
-        } else {
+        } else if (_StringUtils.hasText(refWindowName)) {
+            context.onRefWindow(refWindowName);
             window = new SimpleWindowSpec(windowName, refWindowName);
+        } else {
+            throw ContextStack.criteriaError(context, "exists window name must be null or has text.");
         }
+        context.onAddWindow(windowName);
         return window;
     }
 
@@ -75,7 +78,7 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
         return window instanceof WindowClause.SimpleWindow;
     }
 
-    private final String windowName;
+    final String windowName;
 
     final CriteriaContext context;
 

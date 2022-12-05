@@ -4,7 +4,8 @@ import io.army.criteria.DialectStatement;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.impl.Postgres;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 
 import java.util.function.*;
@@ -239,123 +240,26 @@ public interface PostgreStatement extends DialectStatement {
     }
 
 
-    interface _CyclePathColumnClause<I extends Item> {
+    interface _StaticCteAsClause<I extends Item> {
 
-        _AsCteClause<I> using(String cyclePathColumnName);
+        <R extends _CteCommaItem> R as(Function<PostgreQuery._StaticCteComplexCommandSpec<I>, R> function);
 
-    }
-
-    interface _CycleToMarkValueSpec<I extends Item> extends _CyclePathColumnClause<I> {
-
-        _CyclePathColumnClause<I> to(Expression cycleMarkValue, SQLs.WordDefault wordDefault, Expression cycleMarkDefault);
-
-        _CyclePathColumnClause<I> to(Consumer<BiConsumer<Expression, Expression>> consumer);
-
-        _CyclePathColumnClause<I> ifTo(Consumer<BiConsumer<Expression, Expression>> consumer);
+        <R extends _CteCommaItem> R as(@Nullable Postgres.WordMaterialized materialized,
+                                       Function<PostgreQuery._StaticCteComplexCommandSpec<I>, R> function);
 
     }
 
-    interface _SetCycleMarkColumnClause<I extends Item> {
-
-        _CycleToMarkValueSpec<I> set(String cycleMarkColumnName);
-    }
-
-    interface _CteCycleSpec<I extends Item> extends _AsCteClause<I> {
-
-        _SetCycleMarkColumnClause<I> cycle(String columnName);
-
-        _SetCycleMarkColumnClause<I> cycle(String columnName1, String columnName2);
-
-        _SetCycleMarkColumnClause<I> cycle(String columnName1, String columnName2, String columnName3);
-
-        _SetCycleMarkColumnClause<I> cycle(String columnName1, String columnName2, String columnName3, String columnName4);
-
-        _SetCycleMarkColumnClause<I> cycle(Consumer<Consumer<String>> consumer);
-
-        _SetCycleMarkColumnClause<I> ifCycle(Consumer<Consumer<String>> consumer);
-
-
-    }
-
-
-    interface _SetSearchSeqColumnClause<I extends Item> {
-
-        _CteCycleSpec<I> set(String searchSeqColumnName);
-
-    }
-
-    interface _SearchFirstByClause<I extends Item> {
-
-        _SetSearchSeqColumnClause<I> firstBy(String columnName);
-
-        _SetSearchSeqColumnClause<I> firstBy(String columnName1, String columnName2);
-
-        _SetSearchSeqColumnClause<I> firstBy(String columnName1, String columnName2, String columnName3);
-
-        _SetSearchSeqColumnClause<I> firstBy(String columnName1, String columnName2, String columnName3, String columnName4);
-
-        _SetSearchSeqColumnClause<I> firstBy(Consumer<Consumer<String>> consumer);
-
-    }
-
-    interface _CteSearchSpec<I extends Item> extends _CteCycleSpec<I> {
-
-        _SearchFirstByClause<I> searchBreadth();
-
-        _SearchFirstByClause<I> searchDepth();
-
-        _SearchFirstByClause<I> searchBreadth(BooleanSupplier predicate);
-
-        _SearchFirstByClause<I> searchDepth(BooleanSupplier predicate);
-
-    }
-
-
-    interface _StaticCteSelectSpec<I extends Item>
-            extends PostgreQuery._PostgreSelectClause<I>
-            , _LeftParenClause<_StaticCteSelectSpec<_RightParenClause<PostgreQuery._UnionOrderBySpec<I>>>> {
-
-    }
-
-    /**
-     * <p>
-     * static sub-statement syntax forbid the WITH clause ,because it destroy the Readability of code.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface _StaticCteComplexCommandSpec<I extends Item>
-            extends _StaticCteSelectSpec<_CteSearchSpec<I>>
-            , PostgreInsert._StaticSubOptionSpec<_AsCteClause<I>>
-            , PostgreUpdate._SingleUpdateClause<_AsCteClause<I>, _AsCteClause<I>>
-            , PostgreDelete._SingleDeleteClause<_AsCteClause<I>, _AsCteClause<I>>
-            , PostgreValues._PostgreValuesClause<_AsCteClause<I>> {
-
-    }
-
-
-    interface _StaticCteMaterializedSpec<I extends Item>
-            extends _CteMaterializedClause<_StaticCteComplexCommandSpec<I>>
-            , _StaticCteComplexCommandSpec<I> {
-
-    }
-
-    interface _StaticCteAsClause<I extends Item>
-            extends Statement._StaticAsClaus<_StaticCteMaterializedSpec<I>> {
-
-    }
-
-    interface _StaticCteLeftParenSpec<I extends Item>
-            extends Statement._LeftParenStringQuadraSpec<_StaticCteAsClause<I>>,
+    interface _StaticCteParensSpec<I extends Item>
+            extends Statement._ParensStringClause<_StaticCteAsClause<I>>,
             _StaticCteAsClause<I> {
 
     }
 
-    interface _PostgreStaticWithClause<I extends Item> extends _StaticWithClause<_StaticCteLeftParenSpec<I>> {
+    interface _PostgreStaticWithClause<I extends Item> extends _StaticWithClause<_StaticCteParensSpec<I>> {
 
     }
 
-    interface _PostgreStaticCteCommaClause<I extends Item> extends _StaticWithCommaClause<_StaticCteLeftParenSpec<I>> {
+    interface _PostgreStaticWithCommaClause<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<I>> {
 
     }
 

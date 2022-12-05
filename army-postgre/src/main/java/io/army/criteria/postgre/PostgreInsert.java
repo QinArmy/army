@@ -211,7 +211,7 @@ public interface PostgreInsert extends PostgreStatement {
     }
 
     interface _ChildCteComma<P>
-            extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_ChildCteComma<P>>>
+            extends _StaticWithCommaClause<_StaticCteParensSpec<_ChildCteComma<P>>>
             , _ChildInsertIntoClause<P> {
 
     }
@@ -219,7 +219,7 @@ public interface PostgreInsert extends PostgreStatement {
 
     interface _ChildWithCteSpec<P>
             extends _PostgreDynamicWithClause<_ChildInsertIntoClause<P>>
-            , _StaticWithClause<_StaticCteLeftParenSpec<_ChildCteComma<P>>>
+            , _StaticWithClause<_StaticCteParensSpec<_ChildCteComma<P>>>
             , _ChildInsertIntoClause<P> {
 
     }
@@ -254,7 +254,7 @@ public interface PostgreInsert extends PostgreStatement {
 
 
     interface _PrimaryCteComma
-            extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_PrimaryCteComma>>
+            extends _StaticWithCommaClause<_StaticCteParensSpec<_PrimaryCteComma>>
             , _PrimaryInsertIntoClause {
 
     }
@@ -262,7 +262,7 @@ public interface PostgreInsert extends PostgreStatement {
 
     interface _PrimaryWithCteSpec
             extends _PostgreDynamicWithClause<_PrimaryInsertIntoClause>
-            , _StaticWithClause<_StaticCteLeftParenSpec<_PrimaryCteComma>>
+            , _StaticWithClause<_StaticCteParensSpec<_PrimaryCteComma>>
             , _PrimaryInsertIntoClause {
 
     }
@@ -326,7 +326,7 @@ public interface PostgreInsert extends PostgreStatement {
 
 
     interface _ComplexComma<I extends Item>
-            extends _StaticWithCommaClause<_StaticCteLeftParenSpec<_ComplexComma<I>>>
+            extends _StaticWithCommaClause<_StaticCteParensSpec<_ComplexComma<I>>>
             , _ComplexInsertIntoClause<I, I> {
 
     }
@@ -339,7 +339,7 @@ public interface PostgreInsert extends PostgreStatement {
      */
     interface _ComplexWithSpec<I extends Item>
             extends _PostgreDynamicWithClause<_ComplexInsertIntoClause<I, I>>
-            , _StaticWithClause<_StaticCteLeftParenSpec<_ComplexComma<I>>>
+            , _StaticWithClause<_StaticCteParensSpec<_ComplexComma<I>>>
             , _ComplexInsertIntoClause<I, I> {
 
     }

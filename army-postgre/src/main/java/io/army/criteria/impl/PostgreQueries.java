@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.criteria.impl.inner._Window;
@@ -15,7 +16,6 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
-import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -24,18 +24,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.*;
 
-abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpleQueries<
+abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteSimpleQueries<
         I,
         PostgreCtes,
-        PostgreQuery._SelectSpec<I>,
+        WE,
         Postgres.Modifier,
         PostgreQuery._PostgreSelectCommaSpec<I>,
         PostgreQuery._FromSpec<I>,
         PostgreQuery._TableSampleJoinSpec<I>,
-        PostgreQuery._JoinSpec<I>,
+        PostgreQuery._ParensJoinSpec<I>,
         PostgreQuery._JoinSpec<I>,
         PostgreQuery._TableSampleOnSpec<I>,
-        Statement._OnClause<PostgreQuery._JoinSpec<I>>,
+        Statement._AsParensOnClause<PostgreQuery._JoinSpec<I>>,
         Statement._OnClause<PostgreQuery._JoinSpec<I>>,
         PostgreQuery._GroupBySpec<I>,
         PostgreQuery._WhereAndSpec<I>,
@@ -46,16 +46,17 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         PostgreQuery._FetchSpec<I>,
         PostgreQuery._LockSpec<I>,
         PostgreQuery._QueryWithComplexSpec<I>>
-        implements PostgreQuery, _PostgreQuery
-        , PostgreQuery._WithSpec<I>
-        , PostgreQuery._PostgreSelectCommaSpec<I>
-        , PostgreQuery._TableSampleJoinSpec<I>
-        , PostgreQuery._RepeatableJoinClause<I>
-        , PostgreQuery._JoinSpec<I>
-        , PostgreQuery._WindowCommaSpec<I>
-        , PostgreQuery._HavingSpec<I>
-        , PostgreQuery._FetchSpec<I>
-        , PostgreQuery._LockOfTableSpec<I> {
+        implements PostgreQuery,
+        _PostgreQuery,
+        PostgreQuery._PostgreSelectClause<I>,
+        PostgreQuery._PostgreSelectCommaSpec<I>,
+        PostgreQuery._TableSampleJoinSpec<I>,
+        PostgreQuery._RepeatableJoinClause<I>,
+        PostgreQuery._ParensJoinSpec<I>,
+        PostgreQuery._WindowCommaSpec<I>,
+        PostgreQuery._HavingSpec<I>,
+        PostgreQuery._FetchSpec<I>,
+        PostgreQuery._LockOfTableSpec<I> {
 
 
     static <I extends Item> PostgreQueries<I> primaryQuery(@Nullable _WithClauseSpec withSpec
@@ -70,7 +71,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
 
-    static <I extends Item> Function<String, _StaticCteLeftParenSpec<I>> complexCte(CriteriaContext context, I comma) {
+    static <I extends Item> Function<String, _StaticCteParensSpec<I>> complexCte(CriteriaContext context, I comma) {
         return new StaticComplexCommand<>(context, comma)::nextCte;
     }
 
@@ -79,15 +80,16 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         return new DynamicCteSimpleSubQuery<>(outerContext, function);
     }
 
-    private PostgreSupports.PostgreNoOnTableBlock noOnBlock;
 
     private List<_Window> windowList;
 
     private PostgreLockMode lockMode;
 
-    private List<TableMeta<?>> ofTaleList;
+    private List<String> ofTaleList;
 
     private LockWaitOption lockWaitOption;
+
+    private _TableBlock fromCrossBlock;
 
 
     private PostgreQueries(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
@@ -96,47 +98,197 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
 
     @Override
-    public final _StaticCteLeftParenSpec<_CteComma<I>> with(String name) {
-        final boolean recursive = false;
-        this.context.onBeforeWithClause(recursive);
-        return new CteComma<>(recursive, this).function.apply(name);
-    }
-
-    @Override
-    public final _StaticCteLeftParenSpec<_CteComma<I>> withRecursive(String name) {
-        final boolean recursive = true;
-        this.context.onBeforeWithClause(recursive);
-        return new CteComma<>(recursive, this).function.apply(name);
-    }
-
-    @Override
     public final _NestedLeftParenSpec<_JoinSpec<I>> from() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::nestedNonCrossEnd);
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
+    }
+
+    @Override
+    public final _RepeatableJoinClause<I> tableSample(final @Nullable Expression method) {
+        if (method == null) {
+            throw ContextStack.nullPointer(this.context);
+        }
+        this.getLastTableBlock().setSampleMethod((ArmyExpression) method);
+        return this;
+    }
+
+    @Override
+    public final _RepeatableJoinClause<I> tableSample(String methodName, Expression argument) {
+        return this.tableSample(FunctionUtils.oneArgVoidFunc(methodName, argument));
+    }
+
+    @Override
+    public final _RepeatableJoinClause<I> tableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
+        final List<Expression> list = new ArrayList<>();
+        consumer.accept(list::add);
+        return this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, list));
+    }
+
+    @Override
+    public final _RepeatableJoinClause<I> tableSample(
+            BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
+            BiFunction<MappingType, Object, Expression> valueOperator, Object argument) {
+        return this.tableSample(method.apply(valueOperator, argument));
+    }
+
+    @Override
+    public final _RepeatableJoinClause<I> tableSample(
+            BiFunction<BiFunction<MappingType, Expression, Expression>, Expression, Expression> method,
+            BiFunction<MappingType, Expression, Expression> valueOperator, Expression argument) {
+        return this.tableSample(method.apply(valueOperator, argument));
+    }
+
+    @Override
+    public final <E> _RepeatableJoinClause<I> tableSample(
+            BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method,
+            BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier) {
+        return this.tableSample(method.apply(valueOperator, supplier.get()));
+    }
+
+    @Override
+    public final _RepeatableJoinClause<I> tableSample(
+            BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
+            BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        return this.tableSample(method.apply(valueOperator, function.apply(keyName)));
+    }
+
+    @Override
+    public final _RepeatableJoinClause<I> ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
+        final List<Expression> list = new ArrayList<>();
+        consumer.accept(list::add);
+        if (list.size() > 0) {
+            this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, list));
+        }
+        return this;
+    }
+
+    @Override
+    public final <E> _RepeatableJoinClause<I> ifTableSample(
+            BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method,
+            BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier) {
+        final E value;
+        value = supplier.get();
+        if (value != null) {
+            this.tableSample(method.apply(valueOperator, value));
+        }
+        return this;
+    }
+
+    @Override
+    public _RepeatableJoinClause<I> ifTableSample(
+            BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
+            BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (value != null) {
+            this.tableSample(method.apply(valueOperator, value));
+        }
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> repeatable(final @Nullable Expression seed) {
+        if (seed == null) {
+            throw ContextStack.nullPointer(this.context);
+        }
+        this.getLastTableBlock().setSeed((ArmyExpression) seed);
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> repeatable(Supplier<Expression> supplier) {
+        return this.repeatable(supplier.get());
+    }
+
+    @Override
+    public final _JoinSpec<I> repeatable(Function<Number, Expression> valueOperator, Number seedValue) {
+        return this.repeatable(valueOperator.apply(seedValue));
+    }
+
+    @Override
+    public final <E extends Number> _JoinSpec<I> repeatable(Function<E, Expression> valueOperator,
+                                                            Supplier<E> supplier) {
+        return this.repeatable(valueOperator.apply(supplier.get()));
+    }
+
+    @Override
+    public final _JoinSpec<I> repeatable(Function<Object, Expression> valueOperator, Function<String, ?> function,
+                                         String keyName) {
+        return this.repeatable(valueOperator.apply(function.apply(keyName)));
+    }
+
+    @Override
+    public final _JoinSpec<I> ifRepeatable(Supplier<Expression> supplier) {
+        final Expression expression;
+        expression = supplier.get();
+        if (expression != null) {
+            this.repeatable(expression);
+        }
+        return this;
+    }
+
+    @Override
+    public final <E extends Number> _JoinSpec<I> ifRepeatable(Function<E, Expression> valueOperator,
+                                                              Supplier<E> supplier) {
+        final E value;
+        value = supplier.get();
+        if (value != null) {
+            this.repeatable(valueOperator.apply(value));
+        }
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> ifRepeatable(Function<Object, Expression> valueOperator, Function<String, ?> function,
+                                           String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (value != null) {
+            this.repeatable(valueOperator.apply(value));
+        }
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> parens(String first, String... rest) {
+        this.getLastDerived().setColumnAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> parens(Consumer<Consumer<String>> consumer) {
+        this.getLastDerived().setColumnAliasList(CriteriaUtils.stringList(this.context, true, consumer));
+        return this;
+    }
+
+    @Override
+    public final _JoinSpec<I> ifParens(Consumer<Consumer<String>> consumer) {
+        this.getLastDerived().setColumnAliasList(CriteriaUtils.stringList(this.context, false, consumer));
+        return this;
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> leftJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::nestedJoinEnd);
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> join() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::nestedJoinEnd);
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> rightJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::nestedJoinEnd);
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> fullJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::nestedJoinEnd);
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
     }
 
     @Override
     public final _NestedLeftParenSpec<_JoinSpec<I>> crossJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::nestedNonCrossEnd);
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
     }
 
     @Override
@@ -169,160 +321,10 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         return this;
     }
 
-    @Override
-    public final _RepeatableJoinClause<I> tableSample(Expression method) {
-        this.getNoOnBlock().tableSample(method);
-        return this;
-    }
 
     @Override
-    public final _RepeatableJoinClause<I> tableSample(String methodName, Expression argument) {
-        this.getNoOnBlock().tableSample(methodName, argument);
-        return this;
-    }
-
-    @Override
-    public final _RepeatableJoinClause<I> tableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
-        this.getNoOnBlock().tableSample(methodName, consumer);
-        return this;
-    }
-
-    @Override
-    public final <T> _RepeatableJoinClause<I> tableSample(
-            BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-            , BiFunction<MappingType, T, Expression> valueOperator, T argument) {
-        this.getNoOnBlock().tableSample(method, valueOperator, argument);
-        return this;
-    }
-
-    @Override
-    public final <T> _RepeatableJoinClause<I> tableSample(
-            BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-            , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier) {
-        this.getNoOnBlock().tableSample(method, valueOperator, supplier);
-        return this;
-    }
-
-    @Override
-    public final _RepeatableJoinClause<I> tableSample(
-            BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
-            , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
-        this.getNoOnBlock().tableSample(method, valueOperator, function, keyName);
-        return this;
-    }
-
-    @Override
-    public final _RepeatableJoinClause<I> ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
-        this.getNoOnBlock().ifTableSample(methodName, consumer);
-        return this;
-    }
-
-    @Override
-    public final <T> _RepeatableJoinClause<I> ifTableSample(
-            BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-            , BiFunction<MappingType, T, Expression> valueOperator, @Nullable T argument) {
-        this.getNoOnBlock().ifTableSample(method, valueOperator, argument);
-        return this;
-    }
-
-    @Override
-    public final <T> _RepeatableJoinClause<I> ifTableSample(
-            BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method
-            , BiFunction<MappingType, T, Expression> valueOperator, Supplier<T> supplier) {
-        this.getNoOnBlock().ifTableSample(method, valueOperator, supplier);
-        return this;
-    }
-
-    @Override
-    public final _RepeatableJoinClause<I> ifTableSample(
-            BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
-            , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
-        this.getNoOnBlock().ifTableSample(method, valueOperator, function, keyName);
-        return this;
-    }
-
-    @Override
-    public final _JoinSpec<I> repeatable(Expression seed) {
-        this.getNoOnBlock().repeatable(seed);
-        return this;
-    }
-
-    @Override
-    public final _JoinSpec<I> repeatable(Supplier<Expression> supplier) {
-        this.getNoOnBlock().repeatable(supplier);
-        return this;
-    }
-
-    @Override
-    public final _JoinSpec<I> repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Number seedValue) {
-        this.getNoOnBlock().repeatable(valueOperator, seedValue);
-        return this;
-    }
-
-    @Override
-    public final _JoinSpec<I> repeatable(BiFunction<MappingType, Number, Expression> valueOperator
-            , Supplier<Number> supplier) {
-        this.getNoOnBlock().repeatable(valueOperator, supplier);
-        return this;
-    }
-
-    @Override
-    public final _JoinSpec<I> repeatable(BiFunction<MappingType, Object, Expression> valueOperator
-            , Function<String, ?> function, String keyName) {
-        this.getNoOnBlock().repeatable(valueOperator, function, keyName);
-        return this;
-    }
-
-    @Override
-    public final _JoinSpec<I> ifRepeatable(Supplier<Expression> supplier) {
-        this.getNoOnBlock().ifRepeatable(supplier);
-        return this;
-    }
-
-    @Override
-    public final _JoinSpec<I> ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator
-            , @Nullable Number seedValue) {
-        this.getNoOnBlock().ifRepeatable(valueOperator, seedValue);
-        return this;
-    }
-
-    @Override
-    public final _JoinSpec<I> ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator
-            , Supplier<Number> supplier) {
-        this.getNoOnBlock().ifRepeatable(valueOperator, supplier);
-        return this;
-    }
-
-    @Override
-    public final _JoinSpec<I> ifRepeatable(BiFunction<MappingType, Object, Expression> valueOperator
-            , Function<String, ?> function, String keyName) {
-        this.getNoOnBlock().ifRepeatable(valueOperator, function, keyName);
-        return this;
-    }
-
-    @Override
-    public _WindowCommaSpec<I> comma(String name, SQLsSyntax.WordAs as, Consumer<_WindowPartitionBySpec> consumer) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public _WindowCommaSpec<I> comma(String name, SQLsSyntax.WordAs as, String existingWindowName, Consumer<_WindowPartitionBySpec> consumer) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public _WindowCommaSpec<I> window(String name, SQLsSyntax.WordAs as, Consumer<_WindowPartitionBySpec> consumer) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public _WindowCommaSpec<I> window(String name, SQLsSyntax.WordAs as, String existingWindowName, Consumer<_WindowPartitionBySpec> consumer) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public final _OrderBySpec<I> window(Consumer<PostgreWindows> consumer) {
-        consumer.accept(new PostgreWindowBuilder(this));
+    public final _OrderBySpec<I> windows(Consumer<PostgreWindows> consumer) {
+        this.ifWindows(consumer);
         if (this.windowList == null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::windowListIsEmpty);
         }
@@ -330,14 +332,29 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
     @Override
-    public final _OrderBySpec<I> ifWindow(Consumer<PostgreWindows> consumer) {
-        consumer.accept(new PostgreWindowBuilder(this));
+    public final _OrderBySpec<I> ifWindows(Consumer<PostgreWindows> consumer) {
+        final PostgreWindowBuilder builder;
+        builder = new PostgreWindowBuilder(this);
+        consumer.accept(builder);
+
+        final PostgreSupports.PostgreWindow window;
+        window = builder.lastWindow;
+        if (window != null) {
+            builder.lastWindow = null;
+            this.onAddWindow(window);
+        }
         return this;
     }
 
+
     @Override
-    public final _WindowAsClause<_WindowCommaSpec<I>> comma(String windowName) {
-        throw new UnsupportedOperationException();
+    public final _WindowAsClause<I> window(String name) {
+        return new StaticWindowAsClause<>(name, this);
+    }
+
+    @Override
+    public final _WindowAsClause<I> comma(String name) {
+        return new StaticWindowAsClause<>(name, this);
     }
 
 
@@ -406,65 +423,54 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
     @Override
-    public final _LockWaitOptionSpec<I> of(TableMeta<?> table) {
-        if (this.lockMode != null) {
-            this.ofTaleList = Collections.singletonList(table);
+    public final _LockWaitOptionSpec<I> of(String tableAlias) {
+        if (this.lockMode == null) {
+            this.ofTaleList = Collections.emptyList();
+        } else {
+            this.ofTaleList = Collections.singletonList(tableAlias);
         }
         return this;
     }
 
     @Override
-    public final _LockWaitOptionSpec<I> of(TableMeta<?> table1, TableMeta<?> table2) {
-        if (this.lockMode != null) {
-            this.ofTaleList = ArrayUtils.asUnmodifiableList(table1, table2);
+    public final _LockWaitOptionSpec<I> of(String firstTableAlias, String... restTableAlias) {
+        if (this.lockMode == null) {
+            this.ofTaleList = Collections.emptyList();
+        } else {
+            this.ofTaleList = ArrayUtils.unmodifiableListOf(firstTableAlias, restTableAlias);
         }
         return this;
     }
 
     @Override
-    public final _LockWaitOptionSpec<I> of(TableMeta<?> table1, TableMeta<?> table2, TableMeta<?> table3) {
-        if (this.lockMode != null) {
-            this.ofTaleList = ArrayUtils.asUnmodifiableList(table1, table2, table3);
+    public final _LockWaitOptionSpec<I> of(Consumer<Consumer<String>> consumer) {
+        if (this.lockMode == null) {
+            this.ofTaleList = Collections.emptyList();
+        } else {
+            this.ofTaleList = CriteriaUtils.stringList(this.context, true, consumer);
         }
         return this;
     }
 
     @Override
-    public final _LockWaitOptionSpec<I> of(Consumer<Consumer<TableMeta<?>>> consumer) {
-        if (this.lockMode != null) {
-            final List<TableMeta<?>> list = new ArrayList<>();
-            consumer.accept(list::add);
-            if (list.size() == 0) {
-                throw CriteriaUtils.ofTableListIsEmpty(this.context);
-            }
-            this.ofTaleList = _CollectionUtils.asUnmodifiableList(list);
-        }
-        return this;
-    }
-
-    @Override
-    public final _LockWaitOptionSpec<I> ifOf(Consumer<Consumer<TableMeta<?>>> consumer) {
-        if (this.lockMode != null) {
-            final List<TableMeta<?>> list = new ArrayList<>();
-            consumer.accept(list::add);
-            if (list.size() > 0) {
-                this.ofTaleList = _CollectionUtils.asUnmodifiableList(list);
-            } else {
-                this.ofTaleList = null;
-            }
+    public final _LockWaitOptionSpec<I> ifOf(Consumer<Consumer<String>> consumer) {
+        if (this.lockMode == null) {
+            this.ofTaleList = Collections.emptyList();
+        } else {
+            this.ofTaleList = CriteriaUtils.stringList(this.context, false, consumer);
         }
         return this;
     }
 
     @Override
     public final _LockSpec<I> noWait() {
-        this.lockWaitOption = this.lockWaitOption == null ? null : LockWaitOption.NOWAIT;
+        this.lockWaitOption = this.lockMode == null ? null : LockWaitOption.NOWAIT;
         return this;
     }
 
     @Override
     public final _LockSpec<I> skipLocked() {
-        this.lockWaitOption = this.lockWaitOption == null ? null : LockWaitOption.SKIP_LOCKED;
+        this.lockWaitOption = this.lockMode == null ? null : LockWaitOption.SKIP_LOCKED;
         return this;
     }
 
@@ -490,7 +496,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
     @Override
     final void onEndQuery() {
-        this.noOnBlock = null;
         if (this.windowList == null) {
             this.windowList = Collections.emptyList();
         }
@@ -533,55 +538,82 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         return PostgreSupports.postgreCteBuilder(recursive, this.context);
     }
 
-
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table
-            , String alias) {
+    final Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
         if (modifier != null && modifier != SQLs.ONLY) {
             throw PostgreUtils.errorTabularModifier(this.context, modifier);
         }
+        return modifier;
+    }
+
+    @Override
+    final Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
+        if (modifier != null && modifier != SQLs.LATERAL) {
+            throw PostgreUtils.errorTabularModifier(this.context, modifier);
+        }
+        return modifier;
+    }
+
+    @Override
+    final _TableSampleJoinSpec<I> onFromTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
+                                              String alias) {
         final PostgreSupports.PostgreNoOnTableBlock block;
         block = new PostgreSupports.PostgreNoOnTableBlock(joinType, modifier, table, alias);
-        this.noOnBlock = block;
+        this.blockConsumer.accept(block);
+        this.fromCrossBlock = block;
+        return this;
+    }
+
+    @Override
+    final _ParensJoinSpec<I> onFromDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
+                                           DerivedTable table) {
+        return alias -> {
+            final TableBlock.NoOnModifierDerivedBlock block;
+            block = new TableBlock.NoOnModifierDerivedBlock(joinType, modifier, table, alias);
+            this.blockConsumer.accept(block);
+            this.fromCrossBlock = block;
+            return this;
+        };
+    }
+
+    @Override
+    final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem,
+                                 String alias) {
+        final TableBlock.NoOnTableBlock block;
+        block = new TableBlock.NoOnTableBlock(joinType, cteItem, alias);
+        this.blockConsumer.accept(block);
+        this.fromCrossBlock = block;
+        return this;
+    }
+
+    @Override
+    final _TableSampleOnSpec<I> onJoinTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
+                                            String alias) {
+        final TableOnBlock<I> block;
+        block = new TableOnBlock<>(joinType, modifier, table, alias, this);
+        this.blockConsumer.accept(block);
         return block;
     }
 
     @Override
-    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable DerivedModifier modifier, TabularItem tableItem
-            , String alias) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw PostgreUtils.errorTabularModifier(this.context, modifier);
-        }
-        return new TableBlock.NoOnModifierTableBlock(joinType, modifier, tableItem, alias);
+    final _AsParensOnClause<_JoinSpec<I>> onJoinDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
+                                                        DerivedTable table) {
+        return alias -> {
+            final OnClauseTableBlock.OnModifierParensBlock<_JoinSpec<I>> block;
+            block = new OnClauseTableBlock.OnModifierParensBlock<>(joinType, modifier, table, alias, this);
+            this.blockConsumer.accept(block);
+            return block;
+        };
     }
 
     @Override
-    final _TableSampleOnSpec<I> createTableBlock(_JoinType joinType, @Nullable TableModifier modifier
-            , TableMeta<?> table, String tableAlias) {
-        if (modifier != null && modifier != SQLs.ONLY) {
-            throw PostgreUtils.errorTabularModifier(this.context, modifier);
-        }
-        return new OnTableBlock<>(joinType, modifier, table, tableAlias, this);
+    final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem,
+                                            String alias) {
+        final OnClauseTableBlock<_JoinSpec<I>> block;
+        block = new OnClauseTableBlock<>(joinType, cteItem, alias);
+        this.blockConsumer.accept(block);
+        return block;
     }
-
-    @Override
-    final _OnClause<_JoinSpec<I>> createItemBlock(_JoinType joinType, @Nullable DerivedModifier modifier
-            , TabularItem tableItem, String alias) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw PostgreUtils.errorTabularModifier(this.context, modifier);
-        }
-        return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
-    }
-
-    @Override
-    final _OnClause<_JoinSpec<I>> createCteBlock(_JoinType joinType, @Nullable DerivedModifier modifier
-            , TabularItem tableItem, String alias) {
-        if (modifier != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
-    }
-
 
     /*-------------------below private method -------------------*/
 
@@ -589,7 +621,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
      * @see #from()
      * @see #crossJoin()
      */
-    private _JoinSpec<I> nestedNonCrossEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertNoneCrossType();
         final TableBlock.NoOnTableBlock block;
         block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
@@ -603,7 +635,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
      * @see #rightJoin()
      * @see #fullJoin()
      */
-    private _OnClause<_JoinSpec<I>> nestedJoinEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertStandardJoinType();
 
         final OnClauseTableBlock<_JoinSpec<I>> block;
@@ -612,18 +644,30 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         return block;
     }
 
-    private PostgreSupports.PostgreNoOnTableBlock getNoOnBlock() {
-        final PostgreSupports.PostgreNoOnTableBlock block = this.noOnBlock;
-        if (this.context.lastBlock() != block) {
+    private PostgreSupports.PostgreNoOnTableBlock getLastTableBlock() {
+        final _TableBlock block = this.fromCrossBlock;
+        if (block != this.context.lastBlock() || !(block instanceof PostgreSupports.PostgreNoOnTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return block;
+        return (PostgreSupports.PostgreNoOnTableBlock) block;
     }
+
+    private ArmyDerivedTable getLastDerived() {
+        final _TableBlock lastBlock = this.fromCrossBlock;
+        if (!(lastBlock instanceof TableBlock.NoOnModifierDerivedBlock)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        } else if (this.context.lastBlock() != lastBlock) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return (ArmyDerivedTable) ((TableBlock.NoOnModifierDerivedBlock) lastBlock).tableItem;
+    }
+
 
     /**
      * @see #comma(String)
      */
-    private _WindowCommaSpec<I> onAddWindow(final _Window window) {
+    private _WindowCommaSpec<I> onAddWindow(final ArmyWindow window) {
+        window.endWindowClause();
         List<_Window> list = this.windowList;
         if (list == null) {
             list = new ArrayList<>();
@@ -631,42 +675,97 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         } else if (!(list instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        windowList.add(window);
+        list.add(window);
         return this;
     }
 
-    private static final class PostgreWindowBuilder implements PostgreWindows {
 
-        private final PostgreQueries<?> statement;
+    private static final class StaticWindowAsClause<I extends Item> implements PostgreQuery._WindowAsClause<I> {
 
-        private PostgreWindowBuilder(PostgreQueries<?> statement) {
-            this.statement = statement;
+        private final String windowName;
+
+        private final PostgreQueries<I, ?> stmt;
+
+        /**
+         * @see #window(String)
+         * @see #comma(String)
+         */
+        private StaticWindowAsClause(String windowName, PostgreQueries<I, ?> stmt) {
+            this.windowName = windowName;
+            this.stmt = stmt;
         }
-
 
         @Override
-        public _WindowAsClause<PostgreWindows> window(String name) {
-            throw new UnsupportedOperationException();
+        public _WindowCommaSpec<I> as() {
+            return this.stmt.onAddWindow(WindowClause.namedGlobalWindow(this.stmt.context, this.windowName));
         }
 
-        private PostgreWindows windowEnd(_Window window) {
-            this.statement.onAddWindow(window);
-            return this;
+        @Override
+        public _WindowCommaSpec<I> as(@Nullable String existingWindowName) {
+            return this.stmt.onAddWindow(
+                    WindowClause.namedRefWindow(this.stmt.context, this.windowName, existingWindowName)
+            );
+        }
+
+        @Override
+        public _WindowCommaSpec<I> as(Consumer<_WindowPartitionBySpec> consumer) {
+            return this.as(null, consumer);
+        }
+
+        @Override
+        public _WindowCommaSpec<I> as(@Nullable String existingWindowName, Consumer<_WindowPartitionBySpec> consumer) {
+            final PostgreSupports.PostgreWindow window;
+            window = PostgreSupports.namedWindow(this.windowName, this.stmt.context, existingWindowName);
+            consumer.accept(window);
+            return this.stmt.onAddWindow(window);
+        }
+
+    }//StaticWindowAsClause
+
+    private static final class PostgreWindowBuilder implements PostgreWindows {
+
+        private final PostgreQueries<?, ?> stmt;
+
+        private PostgreSupports.PostgreWindow lastWindow;
+
+        /**
+         * @see #windows(Consumer)
+         * @see #ifWindows(Consumer)
+         */
+        private PostgreWindowBuilder(PostgreQueries<?, ?> stmt) {
+            this.stmt = stmt;
+        }
+
+        @Override
+        public Window._WindowAsClause<_WindowPartitionBySpec> window(final String windowName) {
+            final PostgreSupports.PostgreWindow lastWindow = this.lastWindow;
+            if (lastWindow != null) {
+                this.lastWindow = null;
+                this.stmt.onAddWindow(lastWindow);
+            }
+            return existingWindowName -> {
+                final PostgreSupports.PostgreWindow oldWindow, window;
+                window = PostgreSupports.namedWindow(windowName, this.stmt.context, existingWindowName);
+                oldWindow = this.lastWindow;
+                if (oldWindow != null) {
+                    throw CriteriaUtils.windowNotEnd(this.stmt.context, oldWindow, window);
+                }
+                this.lastWindow = window;
+                return window;
+            };
         }
 
 
     }//PostgreWindowBuilder
 
-    private static final class OnTableBlock<I extends Item> extends PostgreSupports.PostgreOnTableBlock<
+    private static final class TableOnBlock<I extends Item> extends PostgreSupports.PostgreTableOnBlock<
             PostgreQuery._RepeatableOnClause<I>,
             Statement._OnClause<PostgreQuery._JoinSpec<I>>,
             PostgreQuery._JoinSpec<I>>
-            implements PostgreQuery._TableSampleOnSpec<I>
-            , PostgreQuery._RepeatableOnClause<I> {
+            implements PostgreQuery._TableSampleOnSpec<I>, PostgreQuery._RepeatableOnClause<I> {
 
-        private OnTableBlock(_JoinType joinType, @Nullable SQLWords modifier
-                , TableMeta<?> tableItem, String alias
-                , PostgreQuery._JoinSpec<I> stmt) {
+        private TableOnBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> tableItem, String alias,
+                             PostgreQuery._JoinSpec<I> stmt) {
             super(joinType, modifier, tableItem, alias, stmt);
         }
 
@@ -1077,7 +1176,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
         private final PostgreQueries<I> clause;
 
-        private final Function<String, _StaticCteLeftParenSpec<_CteComma<I>>> function;
+        private final Function<String, _StaticCteParensSpec<_CteComma<I>>> function;
 
 
         private CteComma(boolean recursive, PostgreQueries<I> clause) {
@@ -1087,7 +1186,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        public _StaticCteLeftParenSpec<_CteComma<I>> comma(String name) {
+        public _StaticCteParensSpec<_CteComma<I>> comma(String name) {
             return this.function.apply(name);
         }
 
@@ -1104,11 +1203,11 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     private static final class StaticComplexCommand<I extends Item>
             extends SimpleQueries.ComplexSelectCommand<
             Postgres.Modifier,
-            _PostgreSelectCommaSpec<_CteSearchSpec<I>>,
-            _FromSpec<_CteSearchSpec<I>>,
+            _PostgreSelectCommaSpec<_CteSearchClause<I>>,
+            _FromSpec<_CteSearchClause<I>>,
             _StaticCteAsClause<I>>
             implements _StaticCteMaterializedSpec<I>
-            , _StaticCteLeftParenSpec<I>
+            , _StaticCteParensSpec<I>
             , _AsCteClause<I> {
 
         private final boolean recursive;
@@ -1232,8 +1331,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        public _StaticCteSelectSpec<_RightParenClause<_UnionOrderBySpec<_CteSearchSpec<I>>>> leftParen() {
-            final BracketSubQuery<_CteSearchSpec<I>> bracket;
+        public _StaticCteSelectSpec<_RightParenClause<_UnionOrderBySpec<_CteSearchClause<I>>>> leftParen() {
+            final BracketSubQuery<_CteSearchClause<I>> bracket;
             bracket = new BracketSubQuery<>(null, this.context, this::queryEnd);
             return new StaticCteSelectSpec<>(bracket.context, bracket::parenRowSetEnd);
         }
@@ -1244,12 +1343,12 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        PostgreQueries<_CteSearchSpec<I>> createSelectClause() {
+        PostgreQueries<_CteSearchClause<I>> createSelectClause() {
             return new SimpleSubQuery<>(null, this.context, this::queryEnd);
         }
 
 
-        private _StaticCteLeftParenSpec<I> nextCte(final @Nullable String name) {
+        private _StaticCteParensSpec<I> nextCte(final @Nullable String name) {
             if (this.currentCteName != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             } else if (name == null) {
@@ -1265,8 +1364,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
 
-        private _CteSearchSpec<I> queryEnd(final SubQuery query) {
-            final _CteSearchSpec<I> clause;
+        private _CteSearchClause<I> queryEnd(final SubQuery query) {
+            final _CteSearchClause<I> clause;
             if (this.recursive && query instanceof _UnionRowSet) {
                 clause = new PostgreSupports.PostgreCteSearchClause<>(this.context, query, this::cteSubStatement);
             } else {

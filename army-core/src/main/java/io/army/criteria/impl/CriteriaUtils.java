@@ -50,6 +50,19 @@ abstract class CriteriaUtils {
         return list;
     }
 
+    static List<String> stringList(CriteriaContext ctx, final boolean required, Consumer<Consumer<String>> consumer) {
+        List<String> list = new ArrayList<>();
+        consumer.accept(list::add);
+        if (list.size() > 0) {
+            list = _CollectionUtils.unmodifiableList(list);
+        } else if (required) {
+            throw ContextStack.criteriaError(ctx, "you don't add string");
+        } else {
+            list = Collections.emptyList();
+        }
+        return list;
+    }
+
 
     static void createAndAddCte(final CriteriaContext context, final @Nullable String name
             , final @Nullable List<String> columnAliasList, final SubStatement subStatement) {
@@ -543,6 +556,12 @@ abstract class CriteriaUtils {
 
     static CriteriaException columnAliasIsEmpty(CriteriaContext context) {
         return ContextStack.criteriaError(context, "You don't add any cte column alias");
+    }
+
+    static CriteriaException windowNotEnd(CriteriaContext context, ArmyWindow oldWindow, ArmyWindow window) {
+        String m = String.format("last window[%s] not end,couldn't start new window[%s]",
+                oldWindow.windowName(), window.windowName());
+        throw ContextStack.criteriaError(context, m);
     }
 
 

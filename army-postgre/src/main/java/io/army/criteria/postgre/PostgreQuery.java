@@ -3,12 +3,10 @@ package io.army.criteria.postgre;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.criteria.Query;
-import io.army.criteria.Statement;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 
 import java.util.function.*;
 
@@ -112,9 +110,9 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
     interface _PostgreFrameBetweenSpec
-            extends Window._FrameBetweenExpClause<_PostgreFrameStartExpBoundClause>
-            , _StaticBetweenClause<_PostgreFrameStartNonExpBoundClause>
-            , _PostgreFrameStartNonExpBoundClause {
+            extends Window._FrameBetweenExpClause<_PostgreFrameStartExpBoundClause>,
+            _StaticBetweenClause<_PostgreFrameStartNonExpBoundClause>,
+            _PostgreFrameStartNonExpBoundClause {
 
     }
 
@@ -138,8 +136,6 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
         _PostgreFrameEndExpBoundClause ifGroups(Supplier<Expression> supplier);
 
-        <E> _PostgreFrameEndExpBoundClause ifGroups(Function<E, Expression> valueOperator, @Nullable E value);
-
         <E> _PostgreFrameEndExpBoundClause ifGroups(Function<E, Expression> valueOperator, Supplier<E> supplier);
 
         _PostgreFrameEndExpBoundClause ifGroups(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
@@ -147,31 +143,20 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _WindowOrderBySpec extends _PostgreOrderByClause<_PostgreFrameUnitSpec>
-            , _PostgreFrameUnitSpec {
-
+    interface _WindowOrderBySpec extends _PostgreOrderByClause<_PostgreFrameUnitSpec>, _PostgreFrameUnitSpec {
+        //TODO _PostgreOrderByClause return order by comma
     }
 
-    interface _WindowPartitionBySpec extends Window._PartitionByExpClause<_WindowOrderBySpec>
-            , _WindowOrderBySpec {
-
-    }
-
-    @Deprecated
-    interface _WindowLeftParenClause<I extends Item> {
-
-    }
-
-    @Deprecated
-    interface _WindowAsClause<I extends Item> extends Statement._StaticAsClaus<_WindowLeftParenClause<I>> {
+    interface _WindowPartitionBySpec extends Window._PartitionByExpClause<_WindowOrderBySpec>,
+            _WindowOrderBySpec {
 
     }
 
 
-    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_QueryWithComplexSpec<I>>
-            , _QueryIntersectClause<_QueryWithComplexSpec<I>>
-            , _QueryExceptClause<_QueryWithComplexSpec<I>>
-            , _AsQueryClause<I> {
+    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_QueryWithComplexSpec<I>>,
+            _QueryIntersectClause<_QueryWithComplexSpec<I>>,
+            _QueryExceptClause<_QueryWithComplexSpec<I>>,
+            _AsQueryClause<I> {
 
     }
 
@@ -185,13 +170,13 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _UnionLimitSpec<I extends Item> extends _RowCountLimitAllClause<_UnionOffsetSpec<I>>
-            , _UnionOffsetSpec<I> {
+    interface _UnionLimitSpec<I extends Item> extends _RowCountLimitAllClause<_UnionOffsetSpec<I>>, _UnionOffsetSpec<I> {
 
     }
 
-    interface _UnionOrderBySpec<I extends Item> extends _PostgreOrderByClause<_UnionLimitSpec<I>>
-            , _UnionLimitSpec<I>, _UnionSpec<I> {
+    interface _UnionOrderBySpec<I extends Item> extends _PostgreOrderByClause<_UnionLimitSpec<I>>,
+            _UnionLimitSpec<I>,
+            _UnionSpec<I> {
 
     }
 
@@ -202,9 +187,8 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _LockOfTableSpec<I extends Item> extends _LockOfTableClause<_LockWaitOptionSpec<I>>
-            , _LockWaitOptionSpec<I> {
-
+    interface _LockOfTableSpec<I extends Item> extends _LockOfTableAliasClause<_LockWaitOptionSpec<I>>,
+            _LockWaitOptionSpec<I> {
 
     }
 
@@ -229,26 +213,6 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     interface _LimitSpec<I extends Item> extends _RowCountLimitAllClause<_OffsetSpec<I>>, _OffsetSpec<I> {
 
-        @Override
-        _FetchSpec<I> offset(Expression start, FetchRow row);
-
-        @Override
-        _FetchSpec<I> offset(BiFunction<MappingType, Number, Expression> operator, long start, FetchRow row);
-
-        @Override
-        <N extends Number> _FetchSpec<I> offset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier, FetchRow row);
-
-        @Override
-        _FetchSpec<I> offset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String keyName, FetchRow row);
-
-        @Override
-        _FetchSpec<I> ifOffset(BiFunction<MappingType, Number, Expression> operator, @Nullable Number start, FetchRow row);
-
-        @Override
-        <N extends Number> _FetchSpec<I> ifOffset(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier, FetchRow row);
-
-        @Override
-        _FetchSpec<I> ifOffset(BiFunction<MappingType, Object, Expression> operator, Function<String, ?> function, String keyName, FetchRow row);
     }
 
 
@@ -256,21 +220,25 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _WindowCommaSpec<I extends Item>
-            extends Window._StaticWindowCommaClause<_WindowAsClause<_WindowCommaSpec<I>>>, _OrderBySpec<I> {
 
-        _WindowCommaSpec<I> comma(String name, SQLs.WordAs as, Consumer<_WindowPartitionBySpec> consumer);
+    interface _WindowAsClause<I extends Item> extends Window._WindowAsClause<_WindowCommaSpec<I>> {
 
-        _WindowCommaSpec<I> comma(String name, SQLs.WordAs as, @Nullable String existingWindowName, Consumer<_WindowPartitionBySpec> consumer);
+        _WindowCommaSpec<I> as(@Nullable String existingWindowName, Consumer<_WindowPartitionBySpec> consumer);
+
+        _WindowCommaSpec<I> as(Consumer<_WindowPartitionBySpec> consumer);
+
     }
 
-    interface _WindowSpec<I extends Item> extends Window._DynamicWindowClause<PostgreWindows, _OrderBySpec<I>>
-            , _OrderBySpec<I> {
+    interface _WindowCommaSpec<I extends Item> extends _OrderBySpec<I> {
 
-        _WindowCommaSpec<I> window(String name, SQLs.WordAs as, Consumer<_WindowPartitionBySpec> consumer);
+        _WindowAsClause<I> comma(String name);
 
-        _WindowCommaSpec<I> window(String name, SQLs.WordAs as, @Nullable String existingWindowName, Consumer<_WindowPartitionBySpec> consumer);
+    }
 
+    interface _WindowSpec<I extends Item> extends Window._DynamicWindowClause<PostgreWindows, _OrderBySpec<I>>,
+            _OrderBySpec<I> {
+
+        _WindowAsClause<I> window(String name);
 
     }
 
@@ -280,8 +248,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _GroupBySpec<I extends Item> extends _GroupByClause<_HavingSpec<I>>
-            , _WindowSpec<I> {
+    interface _GroupBySpec<I extends Item> extends _GroupByClause<_HavingSpec<I>>, _WindowSpec<I> {
         //TODO add dialect method
     }
 
@@ -289,19 +256,19 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _WhereSpec<I extends Item> extends _QueryWhereClause<_GroupBySpec<I>, _WhereAndSpec<I>>
-            , _GroupBySpec<I> {
+    interface _WhereSpec<I extends Item> extends _QueryWhereClause<_GroupBySpec<I>, _WhereAndSpec<I>>,
+            _GroupBySpec<I> {
 
     }
 
 
-    interface _RepeatableOnClause<I extends Item> extends _RepeatableClause<_OnClause<_JoinSpec<I>>>
-            , _OnClause<_JoinSpec<I>> {
+    interface _RepeatableOnClause<I extends Item> extends _RepeatableClause<_OnClause<_JoinSpec<I>>>,
+            _OnClause<_JoinSpec<I>> {
 
     }
 
-    interface _TableSampleOnSpec<I extends Item> extends _StaticTableSampleClause<_RepeatableOnClause<I>>
-            , _OnClause<_JoinSpec<I>> {
+    interface _TableSampleOnSpec<I extends Item> extends _StaticTableSampleClause<_RepeatableOnClause<I>>,
+            _OnClause<_JoinSpec<I>> {
 
     }
 
@@ -327,7 +294,8 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _TableSampleJoinSpec<I extends Item> extends _StaticTableSampleClause<_RepeatableJoinClause<I>>, _JoinSpec<I> {
+    interface _TableSampleJoinSpec<I extends Item> extends _StaticTableSampleClause<_RepeatableJoinClause<I>>,
+            _JoinSpec<I> {
 
     }
 
@@ -352,7 +320,104 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _CteComma<I extends Item> extends _PostgreStaticCteCommaClause<_CteComma<I>>,
+
+    interface _CyclePathColumnClause<I extends Item> {
+
+        I using(String cyclePathColumnName);
+
+        I using(Supplier<String> supplier);
+
+    }
+
+    interface _CycleToMarkValueSpec<I extends Item> extends _CyclePathColumnClause<I> {
+
+        _CyclePathColumnClause<I> to(Expression cycleMarkValue, SQLs.WordDefault wordDefault, Expression cycleMarkDefault);
+
+        _CyclePathColumnClause<I> to(Consumer<BiConsumer<Expression, Expression>> consumer);
+
+        _CyclePathColumnClause<I> ifTo(Consumer<BiConsumer<Expression, Expression>> consumer);
+
+    }
+
+    interface _SetCycleMarkColumnClause<I extends Item> {
+
+        _CycleToMarkValueSpec<I> set(String cycleMarkColumnName);
+
+        _CycleToMarkValueSpec<I> set(Supplier<String> supplier);
+
+    }
+
+    interface _CteCycleClause<I extends Item> extends Item {
+
+        _SetCycleMarkColumnClause<I> cycle(String firstColumnName, String... rest);
+
+        _SetCycleMarkColumnClause<I> cycle(Consumer<Consumer<String>> consumer);
+
+        _SetCycleMarkColumnClause<I> ifCycle(Consumer<Consumer<String>> consumer);
+
+
+    }
+
+
+    interface _SetSearchSeqColumnClause<I extends Item> {
+
+        I set(String searchSeqColumnName);
+
+        I set(Supplier<String> supplier);
+
+    }
+
+    interface _SearchFirstByClause<I extends Item> {
+
+        _SetSearchSeqColumnClause<I> firstBy(String firstColumnName, String... rest);
+
+        _SetSearchSeqColumnClause<I> firstBy(Consumer<Consumer<String>> consumer);
+
+    }
+
+    interface _CteSearchClause<I extends Item> extends Item {
+
+        _SearchFirstByClause<I> searchBreadth();
+
+        _SearchFirstByClause<I> searchDepth();
+
+        _SearchFirstByClause<I> ifSearchBreadth(BooleanSupplier predicate);
+
+        _SearchFirstByClause<I> ifSearchDepth(BooleanSupplier predicate);
+
+    }
+
+    interface _StaticCteCycleSpec<I extends Item> extends _CteCycleClause<_CteComma<I>>, _CteComma<I> {
+
+    }
+
+    interface _StaticCteSearchSpec<I extends Item> extends _CteSearchClause<_StaticCteCycleSpec<I>>, _CteComma<I> {
+
+    }
+
+    interface _StaticCteSelectValuesSpec<I extends Item>
+            extends PostgreQuery._PostgreSelectClause<_StaticCteSearchSpec<I>>,
+            PostgreValues._PostgreValuesClause<I>,
+            _LeftParenClause<_StaticCteSelectValuesSpec<_RightParenClause<PostgreQuery._UnionOrderBySpec<I>>>> {
+
+    }
+
+    /**
+     * <p>
+     * static sub-statement syntax forbid the WITH clause ,because it destroy the Readability of code.
+     * </p>
+     *
+     * @since 1.0
+     */
+    interface _StaticCteComplexCommandSpec<I extends Item>
+            extends _StaticCteSelectValuesSpec<I>,
+            PostgreInsert._StaticSubOptionSpec<I>,
+            PostgreUpdate._SingleUpdateClause<I, I>,
+            PostgreDelete._SingleDeleteClause<I, I> {
+
+    }
+
+    interface _CteComma<I extends Item> extends _PostgreStaticWithCommaClause<_CteComma<I>>,
             _StaticSpaceClause<_SelectSpec<I>> {
 
     }
@@ -382,16 +447,31 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-
-    interface _DynamicSubMaterializedSpec<I extends Item>
-            extends _CteMaterializedClause<_MinWithSpec<I>>, _MinWithSpec<I> {
+    interface _DynamicCteCycleSpec extends _CteCycleClause<PostgreCtes> {
 
     }
 
-    interface _DynamicCteQuerySpec
-            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_CteSearchSpec<PostgreCtes>>> {
+    interface _DynamicCteSearchSpec extends _CteSearchClause<_DynamicCteCycleSpec> {
 
     }
+
+    interface _DynamicCteAsClause {
+
+        _WithSpec<_DynamicCteSearchSpec> as();
+
+        _WithSpec<_DynamicCteSearchSpec> as(@Nullable Postgres.WordMaterialized materialized);
+
+    }
+
+    interface _DynamicCteQuerySpec extends _ParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
+
+    }
+
+    interface _ComplexCteComma<I extends Item> extends _PostgreStaticWithCommaClause<_ComplexCteComma<I>>,
+            _StaticSpaceClause<_QueryComplexSpec<I>> {
+
+    }
+
 
     interface _QueryComplexSpec<I extends Item> extends _PostgreSelectClause<I>,
             PostgreValues._PostgreValuesClause<I>,
@@ -399,8 +479,10 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>
-            , _PostgreDynamicWithClause<_QueryComplexSpec<I>> {
+    interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>,
+            _PostgreDynamicWithClause<_QueryComplexSpec<I>>,
+            _PostgreStaticWithClause<_ComplexCteComma<I>>,
+            _LeftParenRowSetClause<_RightParenClause<_UnionOrderBySpec<I>>> {
 
     }
 

@@ -80,7 +80,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _LockOfTableSpec<I extends Item> extends _LockOfTableClause<_LockWaitOptionSpec<I>>
+    interface _LockOfTableSpec<I extends Item> extends _LockOfTableAliasClause<_LockWaitOptionSpec<I>>
             , _LockWaitOptionSpec<I> {
 
     }
@@ -126,7 +126,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _WindowAsClause<I extends Item> extends Window._StaticWindowAsClause<_WindowCommaSpec<I>> {
+    interface _WindowAsClause<I extends Item> extends Window._WindowAsClause<_WindowCommaSpec<I>> {
 
         _WindowCommaSpec<I> as(@Nullable String existingWindowName, Consumer<Window._SimplePartitionBySpec> consumer);
 
