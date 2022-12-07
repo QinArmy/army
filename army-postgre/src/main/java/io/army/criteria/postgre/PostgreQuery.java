@@ -3,6 +3,7 @@ package io.army.criteria.postgre;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.criteria.Query;
+import io.army.criteria.Statement;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
@@ -375,7 +376,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _CteSearchClause<I extends Item> extends Item {
+    interface _CteSearchClause<I extends Item> {
 
         _SearchFirstByClause<I> searchBreadth();
 
@@ -387,20 +388,47 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _StaticCteCycleSpec<I extends Item> extends _CteCycleClause<_CteComma<I>>, _CteComma<I> {
+
+    interface _StaticCteAsClause<I extends Item> {
+
+        <R extends _StaticCteComma<I>> R as(Function<PostgreQuery._StaticCteComplexCommandSpec<I>, R> function);
+
+        <R extends _StaticCteComma<I>> R as(@Nullable Postgres.WordMaterialized modifier,
+                                            Function<PostgreQuery._StaticCteComplexCommandSpec<I>, R> function);
 
     }
 
-    interface _StaticCteSearchSpec<I extends Item> extends _CteSearchClause<_StaticCteCycleSpec<I>>, _CteComma<I> {
+    interface _StaticCteParensSpec<I extends Item>
+            extends Statement._ParensStringClause<_StaticCteAsClause<I>>,
+            _StaticCteAsClause<I> {
 
     }
 
-    interface _StaticCteSelectValuesSpec<I extends Item>
-            extends PostgreQuery._PostgreSelectClause<_StaticCteSearchSpec<I>>,
-            PostgreValues._PostgreValuesClause<I>,
-            _LeftParenClause<_StaticCteSelectValuesSpec<_RightParenClause<PostgreQuery._UnionOrderBySpec<I>>>> {
+    interface _PostgreStaticWithClause<I extends Item> extends _StaticWithClause<_StaticCteParensSpec<I>> {
 
     }
+
+
+    interface _StaticCteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<I>>,
+            _StaticSpaceClause<I> {
+
+    }
+
+    interface _StaticCteCycleSpec<I extends Item> extends _CteCycleClause<_StaticCteComma<I>>, _StaticCteComma<I> {
+
+    }
+
+    interface _StaticCteSearchSpec<I extends Item> extends _CteSearchClause<_StaticCteCycleSpec<I>>,
+            _StaticCteCycleSpec<I> {
+
+    }
+
+
+    interface _StaticCteSelectSpec<I extends Item> extends PostgreQuery._PostgreSelectClause<I>,
+            _LeftParenClause<_StaticCteSelectSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+
+    }
+
 
     /**
      * <p>
@@ -410,17 +438,14 @@ public interface PostgreQuery extends Query, PostgreStatement {
      * @since 1.0
      */
     interface _StaticCteComplexCommandSpec<I extends Item>
-            extends _StaticCteSelectValuesSpec<I>,
-            PostgreInsert._StaticSubOptionSpec<I>,
-            PostgreUpdate._SingleUpdateClause<I, I>,
-            PostgreDelete._SingleDeleteClause<I, I> {
+            extends _StaticCteSelectSpec<_StaticCteSearchSpec<I>>,
+            PostgreValues._PostgreValuesClause<_StaticCteComma<I>>,
+            PostgreInsert._StaticSubOptionSpec<_StaticCteComma<I>>,
+            PostgreUpdate._SingleUpdateClause<_StaticCteComma<I>, _StaticCteComma<I>>,
+            PostgreDelete._SingleDeleteClause<_StaticCteComma<I>, _StaticCteComma<I>> {
 
     }
 
-    interface _CteComma<I extends Item> extends _PostgreStaticWithCommaClause<_CteComma<I>>,
-            _StaticSpaceClause<_SelectSpec<I>> {
-
-    }
 
 
     interface _SelectSpec<I extends Item> extends _PostgreSelectClause<I>,
@@ -442,7 +467,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
      * @since 1.0
      */
     interface _WithSpec<I extends Item> extends _PostgreDynamicWithClause<_SelectSpec<I>>,
-            _PostgreStaticWithClause<_CteComma<I>>,
+            _PostgreStaticWithClause<_StaticCteComma<I>>,
             _SelectSpec<I> {
 
     }

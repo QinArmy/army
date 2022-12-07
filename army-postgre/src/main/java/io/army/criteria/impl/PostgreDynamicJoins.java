@@ -11,7 +11,7 @@ import io.army.criteria.postgre.PostgreStatement;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
+import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -105,7 +105,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     @Override
     final Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
         if (modifier != null && modifier != SQLs.ONLY) {
-            throw CriteriaUtils.errorTabularModifier(this.context, modifier);
+            throw CriteriaUtils.errorModifier(this.context, modifier);
         }
         return modifier;
     }
@@ -113,7 +113,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     @Override
     final Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw CriteriaUtils.errorTabularModifier(this.context, modifier);
+            throw CriteriaUtils.errorModifier(this.context, modifier);
         }
         return modifier;
     }
@@ -422,7 +422,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         public final R parens(String first, String... rest) {
-            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
             return (R) this;
         }
 
@@ -507,7 +507,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         public PostgreStatement._DynamicTableSampleOnSpec tabular(Query.TableModifier modifier, TableMeta<?> table,
                                                                   SQLs.WordAs wordAs, String alias) {
             if (modifier != SQLs.ONLY) {
-                throw CriteriaUtils.errorTabularModifier(this.context, modifier);
+                throw CriteriaUtils.errorModifier(this.context, modifier);
             }
             return this.onAddTable(modifier, table, alias);
         }
@@ -521,7 +521,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         public <T extends DerivedTable> Statement._AsParensOnClause<PostgreStatement._DynamicJoinSpec> tabular(
                 Query.DerivedModifier modifier, Supplier<T> supplier) {
             if (modifier != SQLs.LATERAL) {
-                throw CriteriaUtils.errorTabularModifier(this.context, modifier);
+                throw CriteriaUtils.errorModifier(this.context, modifier);
             }
             return this.onAddDerived(modifier, supplier.get());
         }
@@ -590,7 +590,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         public PostgreStatement._DynamicTableSampleJoinSpec tabular(Query.TableModifier modifier, TableMeta<?> table,
                                                                     SQLs.WordAs as, String alias) {
             if (modifier != SQLs.ONLY) {
-                throw CriteriaUtils.errorTabularModifier(this.context, modifier);
+                throw CriteriaUtils.errorModifier(this.context, modifier);
             }
             return this.onAddTable(modifier, table, alias);
         }
@@ -604,7 +604,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         public <T extends DerivedTable> Statement._AsClause<PostgreStatement._DynamicJoinSpec> tabular(
                 Query.DerivedModifier modifier, Supplier<T> supplier) {
             if (modifier != SQLs.LATERAL) {
-                throw CriteriaUtils.errorTabularModifier(this.context, modifier);
+                throw CriteriaUtils.errorModifier(this.context, modifier);
             }
             return this.onAddDerived(modifier, supplier.get());
         }

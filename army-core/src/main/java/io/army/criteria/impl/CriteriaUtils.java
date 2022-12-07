@@ -5,6 +5,7 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._RowSet;
+import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.mapping.LongType;
@@ -37,6 +38,7 @@ abstract class CriteriaUtils {
         return list.size() == 0 ? EMPTY_STRING_LIST : list;
     }
 
+    @Deprecated
     static List<String> columnAliasList(final boolean required, Consumer<Consumer<String>> consumer) {
         List<String> list = new ArrayList<>();
         consumer.accept(list::add);
@@ -432,6 +434,12 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, m);
     }
 
+    static CriteriaException unknownRowSet(CriteriaContext context, RowSet rowSet, Database database) {
+        String m = String.format("%s isn't the %s that is supported by %s criteria api.",
+                _ClassUtils.safeClassName(rowSet), RowSet.class.getName(), database.name());
+        return ContextStack.criteriaError(context, m);
+    }
+
     static CriteriaException criteriaNotMatch(CriteriaContext criteriaContext) {
         String m = "criteria not match.";
         return ContextStack.criteriaError(criteriaContext, m);
@@ -511,8 +519,8 @@ abstract class CriteriaUtils {
     }
 
 
-    static CriteriaException errorTabularModifier(CriteriaContext context, Object modifier) {
-        String m = String.format("Don't support modifier[%s]", modifier);
+    static CriteriaException errorModifier(CriteriaContext context, Object modifier) {
+        String m = String.format("error modifier[%s]", modifier);
         return ContextStack.criteriaError(context, m);
     }
 

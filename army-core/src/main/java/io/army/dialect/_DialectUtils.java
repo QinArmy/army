@@ -10,7 +10,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.util.ArrayUtils;
+import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -20,7 +20,7 @@ import java.util.function.Function;
 
 public abstract class _DialectUtils {
 
-    static final Collection<String> FORBID_INSERT_FIELDS = ArrayUtils.asUnmodifiableList(
+    static final Collection<String> FORBID_INSERT_FIELDS = _ArrayUtils.asUnmodifiableList(
             _MetaBridge.CREATE_TIME, _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION
     );
 

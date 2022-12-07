@@ -294,7 +294,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
     final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
             , TableMeta<?> table, String alias) {
         if (modifier != null && modifier != SQLs.ONLY) {
-            throw PostgreUtils.errorTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorModifier(this.context, modifier);
         }
         final PostgreSupports.PostgreNoOnTableBlock block;
         block = new PostgreSupports.PostgreNoOnTableBlock(joinType, modifier, table, alias);
@@ -306,7 +306,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
     final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
             , TabularItem tableItem, String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw PostgreUtils.errorTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorModifier(this.context, modifier);
         }
         return new TableBlock.NoOnModifierTableBlock(joinType, modifier, tableItem, alias);
     }
@@ -536,7 +536,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
         final _TableSampleOnSpec<I, Q> createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
                 , TableMeta<?> table, String tableAlias) {
             if (modifier != null && modifier != SQLs.ONLY) {
-                throw PostgreUtils.errorTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorModifier(this.context, modifier);
             }
             return new SimpleOnTableBlock<>(joinType, modifier, table, tableAlias, this);
         }
@@ -546,7 +546,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
                 , @Nullable Query.DerivedModifier modifier
                 , TabularItem tableItem, String alias) {
             if (modifier != null && modifier != SQLs.LATERAL) {
-                throw PostgreUtils.errorTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorModifier(this.context, modifier);
             }
             return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
         }
@@ -799,7 +799,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
         _BatchTableSampleOnSpec<I, Q> createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
                 , TableMeta<?> table, String tableAlias) {
             if (modifier != null && modifier != SQLs.ONLY) {
-                throw PostgreUtils.errorTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorModifier(this.context, modifier);
             }
             return new BatchOnTableBlock<>(joinType, modifier, table, tableAlias, this);
         }
@@ -808,7 +808,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
         _OnClause<_BatchSingleJoinSpec<I, Q>> createItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
                 , TabularItem tableItem, String alias) {
             if (modifier != null && modifier != SQLs.LATERAL) {
-                throw PostgreUtils.errorTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorModifier(this.context, modifier);
             }
             return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
         }
@@ -1050,7 +1050,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
                 , SQLs.WordAs wordAs, String tableAlias) {
             assert wordAs == SQLs.AS;
             if (wordOnly != SQLs.ONLY) {
-                throw CriteriaUtils.errorTabularModifier(this.context, wordOnly);
+                throw CriteriaUtils.errorModifier(this.context, wordOnly);
             }
             this.modifier = wordOnly;
             this.updateTable = table;
@@ -1119,7 +1119,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
                 , String tableAlias) {
             assert wordAs == SQLs.AS;
             if (wordOnly != SQLs.ONLY) {
-                throw CriteriaUtils.errorTabularModifier(this.context, wordOnly);
+                throw CriteriaUtils.errorModifier(this.context, wordOnly);
             }
             this.modifier = wordOnly;
             this.updateTable = table;
@@ -1232,7 +1232,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS extends Item, JT, JS
                 , String tableAlias) {
             assert wordAs == SQLs.AS;
             if (wordOnly != SQLs.ONLY) {
-                throw CriteriaUtils.errorTabularModifier(this.context, wordOnly);
+                throw CriteriaUtils.errorModifier(this.context, wordOnly);
             }
             this.modifier = wordOnly;
             this.updateTable = table;

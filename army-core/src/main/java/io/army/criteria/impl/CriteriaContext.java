@@ -18,6 +18,11 @@ interface CriteriaContext {
 
     CriteriaContext getNonNullOuterContext();
 
+    @Nullable
+    CriteriaContext getLeftContext();
+
+    CriteriaContext getNonNullLeftContext();
+
     CriteriaContext onBeforeWithClause(boolean recursive);
 
     void onStartCte(String name);

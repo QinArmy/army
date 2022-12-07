@@ -10,7 +10,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
+import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -257,7 +257,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
     @Override
     final Query.DerivedModifier derivedModifier(final @Nullable Query.DerivedModifier modifier) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.errorTabularModifier(this.context, modifier);
+            throw MySQLUtils.errorModifier(this.context, modifier);
         }
         return modifier;
     }
@@ -393,7 +393,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
 
         @Override
         public _MultiJoinSpec<I> parens(String first, String... rest) {
-            this.derivedAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+            this.derivedAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
             return this;
         }
 
@@ -664,7 +664,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
 
         @Override
         public _BatchMultiJoinSpec<I> parens(String first, String... rest) {
-            this.derivedAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+            this.derivedAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
             return this;
         }
 

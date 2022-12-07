@@ -224,8 +224,7 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
 
     static abstract class UnionRowSet
-            implements _UnionRowSet, Statement, CriteriaContextSpec
-            , Statement.StatementMockSpec {
+            implements _UnionRowSet, Statement, CriteriaContextSpec, Statement.StatementMockSpec {
 
         final RowSet left;
 

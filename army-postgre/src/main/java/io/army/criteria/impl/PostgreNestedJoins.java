@@ -11,7 +11,7 @@ import io.army.criteria.postgre.PostgreStatement;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
+import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -60,7 +60,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
     public PostgreStatement._NestedTableSampleJoinSpec<I> leftParen(final Query.TableModifier modifier,
                                                                     TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
         if (modifier != SQLs.ONLY) {
-            throw PostgreUtils.errorTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorModifier(this.context, modifier);
         }
         final NestedTableJoinBlock<I> block;
         block = new NestedTableJoinBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, modifier, table,
@@ -78,7 +78,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
     public <T extends DerivedTable> Statement._AsClause<PostgreStatement._NestedParensJoinSpec<I>> leftParen(
             Query.DerivedModifier modifier, Supplier<T> supplier) {
         if (modifier != SQLs.LATERAL) {
-            throw PostgreUtils.errorTabularModifier(this.context, modifier);
+            throw PostgreUtils.errorModifier(this.context, modifier);
         }
         return this.onAddDerived(modifier, supplier.get());
     }
@@ -223,7 +223,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         @Override
         final Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
             if (modifier != null && modifier != SQLs.ONLY) {
-                throw PostgreUtils.errorTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorModifier(this.context, modifier);
             }
             return modifier;
         }
@@ -231,7 +231,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         @Override
         final Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
             if (modifier != null && modifier != SQLs.LATERAL) {
-                throw PostgreUtils.errorTabularModifier(this.context, modifier);
+                throw PostgreUtils.errorModifier(this.context, modifier);
             }
             return modifier;
         }
@@ -564,7 +564,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         public final R parens(String first, String... rest) {
-            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
             return (R) this;
         }
 

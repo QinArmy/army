@@ -15,7 +15,7 @@ import io.army.mapping.ElementMappingType;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.util.ArrayUtils;
+import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 
 import java.lang.reflect.Field;
@@ -189,7 +189,7 @@ abstract class TableFieldMeta<T> extends OperationDataField<TypeInfer> implement
 
             this.mappingType = FieldMetaUtils.fieldMappingType(field, isDiscriminator);
             if (this.mappingType instanceof ElementMappingType) {
-                this.elementTypeList = ArrayUtils.asUnmodifiableList(field.getAnnotation(Mapping.class).elements());
+                this.elementTypeList = _ArrayUtils.asUnmodifiableList(field.getAnnotation(Mapping.class).elements());
             } else {
                 this.elementTypeList = Collections.emptyList();
             }

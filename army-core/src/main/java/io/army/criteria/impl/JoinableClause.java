@@ -7,7 +7,7 @@ import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
+import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -596,7 +596,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
         @Override
         public final OR on(IPredicate predicate1, IPredicate predicate2) {
-            this.onPredicateList = ArrayUtils.asUnmodifiableList(
+            this.onPredicateList = _ArrayUtils.asUnmodifiableList(
                     (OperationPredicate<?>) predicate1,
                     (OperationPredicate<?>) predicate2
             );
@@ -612,7 +612,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         @Override
         public final OR on(Function<Expression, IPredicate> operator1, DataField operandField1
                 , Function<Expression, IPredicate> operator2, DataField operandField2) {
-            this.onPredicateList = ArrayUtils.asUnmodifiableList(
+            this.onPredicateList = _ArrayUtils.asUnmodifiableList(
                     (OperationPredicate<?>) operator1.apply(operandField1),
                     (OperationPredicate<?>) operator2.apply(operandField2)
             );

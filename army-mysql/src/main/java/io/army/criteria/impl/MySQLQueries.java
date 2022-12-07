@@ -16,7 +16,7 @@ import io.army.dialect._Constant;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
+import io.army.util._ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -147,7 +147,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
     @Override
     public final _JoinSpec<I> parens(String first, String... rest) {
-        this.getLastDerived().setColumnAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+        this.getLastDerived().setColumnAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
         return this;
     }
 
@@ -388,7 +388,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         if (this.lockMode == null) {
             this.ofTableList = Collections.emptyList();
         } else {
-            this.ofTableList = ArrayUtils.unmodifiableListOf(firstTableAlias, restTableAlias);
+            this.ofTableList = _ArrayUtils.unmodifiableListOf(firstTableAlias, restTableAlias);
         }
         return this;
     }
@@ -455,7 +455,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
     @Override
     public final _AsQueryClause<I> into(String firstVarName, String... rest) {
-        this.intoVarList = ArrayUtils.unmodifiableListOf(firstVarName, rest);
+        this.intoVarList = _ArrayUtils.unmodifiableListOf(firstVarName, rest);
         return this;
     }
 
@@ -580,7 +580,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
     @Override
     final DerivedModifier derivedModifier(final @Nullable DerivedModifier modifier) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.errorTabularModifier(this.context, modifier);
+            throw MySQLUtils.errorModifier(this.context, modifier);
         }
         return modifier;
     }
@@ -1114,7 +1114,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
         @Override
         public _StaticCteAsClause<I> parens(String first, String... rest) {
-            return this.columnAliasListEnd(ArrayUtils.unmodifiableListOf(first, rest));
+            return this.columnAliasListEnd(_ArrayUtils.unmodifiableListOf(first, rest));
         }
 
         @Override

@@ -31,14 +31,16 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         , PostgreValues {
 
 
-    static <I extends Item> PostgreSimpleValues<I> primaryValues(@Nullable _WithClauseSpec spec
-            , @Nullable CriteriaContext outerContext, Function<Values, I> function) {
-        return new SimplePrimaryValues<>(spec, outerContext, function);
+    static <I extends Item> PostgreSimpleValues<I> primaryValues(
+            @Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext, Function<Values, I> function,
+            @Nullable CriteriaContext leftContext) {
+        return new SimplePrimaryValues<>(spec, outerContext, function, leftContext);
     }
 
-    static <I extends Item> PostgreSimpleValues<I> subValues(@Nullable _WithClauseSpec spec
-            , CriteriaContext outerContext, Function<SubValues, I> function) {
-        return new SimpleSubValues<>(spec, outerContext, function);
+    static <I extends Item> PostgreSimpleValues<I> subValues(
+            @Nullable _WithClauseSpec spec, CriteriaContext outerContext, Function<SubValues, I> function,
+            @Nullable CriteriaContext leftContext) {
+        return new SimpleSubValues<>(spec, outerContext, function, leftContext);
     }
 
 
@@ -130,7 +132,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         @Override
         _QueryWithComplexSpec<I> createUnionValues(final UnionType unionType) {
             final Function<RowSet, I> unionFun;
-            unionFun = right -> this.function.apply(new UnionValues( this, unionType, right));
+            unionFun = right -> this.function.apply(new UnionValues(this, unionType, right));
             UnionType.exceptType(this.context, unionType);
             return new ComplexValues<>(this.context.getOuterContext(), unionFun);
         }
@@ -237,7 +239,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         _QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
             UnionType.exceptType(this.context, unionType);
             final Function<RowSet, I> unionFun;
-            unionFun = rowSet -> this.function.apply(new UnionValues( this, unionType, rowSet));
+            unionFun = rowSet -> this.function.apply(new UnionValues(this, unionType, rowSet));
             return new ComplexValues<>(this.context.getOuterContext(), unionFun);
         }
 

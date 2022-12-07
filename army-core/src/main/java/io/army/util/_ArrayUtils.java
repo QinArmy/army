@@ -5,9 +5,9 @@ import io.army.lang.Nullable;
 
 import java.util.*;
 
-public abstract class ArrayUtils {
+public abstract class _ArrayUtils {
 
-    protected ArrayUtils() {
+    protected _ArrayUtils() {
         throw new UnsupportedOperationException();
     }
 

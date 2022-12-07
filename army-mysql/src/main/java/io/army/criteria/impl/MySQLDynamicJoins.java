@@ -11,7 +11,7 @@ import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLStatement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
+import io.army.util._ArrayUtils;
 import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
@@ -161,7 +161,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         if (table == null) {
             throw ContextStack.nullPointer(this.context);
         } else if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.errorTabularModifier(this.context, modifier);
+            throw MySQLUtils.errorModifier(this.context, modifier);
         }
         return alias -> {
             final DynamicDerivedBlock block;
@@ -194,7 +194,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     final Statement._AsParensOnClause<MySQLStatement._DynamicJoinSpec> onJoinDerived(
             _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.errorTabularModifier(this.context, modifier);
+            throw MySQLUtils.errorModifier(this.context, modifier);
         } else if (table == null) {
             throw ContextStack.nullPointer(this.context);
         }
@@ -265,7 +265,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         public Statement._OnClause<MySQLStatement._DynamicJoinSpec> parens(String first, String... rest) {
-            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
             return this;
         }
 
@@ -436,7 +436,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             }
             this.started = true;
             if (modifier != null && modifier != SQLs.LATERAL) {
-                throw MySQLUtils.errorTabularModifier(this.context, modifier);
+                throw MySQLUtils.errorModifier(this.context, modifier);
             }
             if (table == null) {
                 throw ContextStack.nullPointer(this.context);

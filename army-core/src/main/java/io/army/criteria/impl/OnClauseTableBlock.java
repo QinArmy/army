@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._ModifierTableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
-import io.army.util.ArrayUtils;
+import io.army.util._ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -52,7 +52,7 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
         if (this.predicateList != null) {
             throw ContextStack.castCriteriaApi(CriteriaUtils.getCriteriaContext(this.stmt));
         }
-        this.predicateList = ArrayUtils.asUnmodifiableList(
+        this.predicateList = _ArrayUtils.asUnmodifiableList(
                 (OperationPredicate<?>) predicate1,
                 (OperationPredicate<?>) predicate2
         );
@@ -74,7 +74,7 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
         if (this.predicateList != null) {
             throw ContextStack.castCriteriaApi(this.getContext());
         }
-        this.predicateList = ArrayUtils.asUnmodifiableList(
+        this.predicateList = _ArrayUtils.asUnmodifiableList(
                 (OperationPredicate<?>) operator1.apply(operandField1),
                 (OperationPredicate<?>) operator2.apply(operandField2)
         );
@@ -160,7 +160,7 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
 
         @Override
         public final Statement._OnClause<OR> parens(String first, String... rest) {
-            ((ArmyDerivedTable) this.tableItem).setColumnAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+            ((ArmyDerivedTable) this.tableItem).setColumnAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
             return this;
         }
 

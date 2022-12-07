@@ -1,0 +1,2 @@
+
+1. Postgre static cte left paren 遵循 优先 复杂的 query statement

@@ -21,7 +21,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         RowSet {
 
 
-    private RowSet innerRowSet;
+    private _RowSet innerRowSet;
 
     private Boolean prepared;
 
@@ -104,8 +104,8 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
 
 
     @Override
-    public final RowSet innerRowSet() {
-        final RowSet rowSet = this.innerRowSet;
+    public final _RowSet innerRowSet() {
+        final _RowSet rowSet = this.innerRowSet;
         if (rowSet == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -114,20 +114,20 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
 
     @Override
     public final int selectionSize() {
-        final RowSet rowSet = this.innerRowSet;
+        final _RowSet rowSet = this.innerRowSet;
         if (rowSet == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return ((_RowSet) rowSet).selectionSize();
+        return rowSet.selectionSize();
     }
 
     @Override
     public final List<Selection> selectionList() {
-        final RowSet rowSet = this.innerRowSet;
+        final _RowSet rowSet = this.innerRowSet;
         if (rowSet == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return ((_RowSet) rowSet).selectionList();
+        return rowSet.selectionList();
     }
 
     @Override
@@ -182,7 +182,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         if (this.innerRowSet != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        this.innerRowSet = parenRowSet;
+        this.innerRowSet = (_RowSet) parenRowSet;
         this.context.onSetInnerContext(((CriteriaContextSpec) parenRowSet).getContext());
         return this;
     }

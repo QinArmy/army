@@ -625,6 +625,15 @@ abstract class CriteriaContexts {
             throw ContextStack.criteriaError(this, m);
         }
 
+        @Override
+        public CriteriaContext getLeftContext() {
+            throw ContextStack.criteriaError(this, "current context don't support getLeftContext()");
+        }
+
+        @Override
+        public CriteriaContext getNonNullLeftContext() {
+            throw ContextStack.criteriaError(this, "current context don't support getNonNullLeftContext()");
+        }
 
         @Override
         public void onAddWindow(String windowName) {
@@ -1402,6 +1411,19 @@ abstract class CriteriaContexts {
             this.leftContext = leftContext;
         }
 
+
+        @Override
+        public final CriteriaContext getLeftContext() {
+            return this.leftContext;
+        }
+
+        @Override
+        public final CriteriaContext getNonNullLeftContext() {
+            final CriteriaContext leftContext = this.leftContext;
+            assert leftContext != null;
+            return leftContext;
+        }
+
         @Override
         public final List<Selection> selectionList() {
             final List<Selection> selectionList = this.selectionList;
@@ -1699,6 +1721,18 @@ abstract class CriteriaContexts {
                                     final @Nullable CriteriaContext leftContext) {
             super(outerContext);
             this.leftContext = leftContext;
+        }
+
+        @Override
+        public CriteriaContext getLeftContext() {
+            return this.leftContext;
+        }
+
+        @Override
+        public CriteriaContext getNonNullLeftContext() {
+            final CriteriaContext leftContext = this.leftContext;
+            assert leftContext != null;
+            return leftContext;
         }
 
         @Override

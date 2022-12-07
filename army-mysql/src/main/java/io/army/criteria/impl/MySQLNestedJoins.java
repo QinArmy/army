@@ -11,7 +11,7 @@ import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLStatement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
+import io.army.util._ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -99,7 +99,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
     private <T extends DerivedTable> NestedDerivedJoinBlock<I> onAddDerived(@Nullable Query.DerivedModifier modifier,
                                                                             Supplier<T> supplier, String alias) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.errorTabularModifier(this.context, modifier);
+            throw MySQLUtils.errorModifier(this.context, modifier);
         }
         final DerivedTable table;
         table = supplier.get();
@@ -275,7 +275,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
             if (table == null) {
                 throw ContextStack.nullPointer(this.context);
             } else if (modifier != null && modifier != SQLs.LATERAL) {
-                throw MySQLUtils.errorTabularModifier(this.context, modifier);
+                throw MySQLUtils.errorModifier(this.context, modifier);
             }
             return alias -> {
                 final NestedDerivedCrossBlock<I> block;
@@ -315,7 +315,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         final Statement._AsClause<MySQLStatement._NestedParenOnSpec<I>> onJoinDerived(
                 _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
             if (modifier != null && modifier != SQLs.LATERAL) {
-                throw MySQLUtils.errorTabularModifier(this.context, modifier);
+                throw MySQLUtils.errorModifier(this.context, modifier);
             } else if (table == null) {
                 throw ContextStack.nullPointer(this.context);
             }
@@ -554,7 +554,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
 
         @Override
         public final R parens(String first, String... rest) {
-            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
             return (R) this;
         }
 

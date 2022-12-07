@@ -3,9 +3,6 @@ package io.army.criteria.postgre;
 import io.army.criteria.DialectStatement;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
-import io.army.criteria.Statement;
-import io.army.criteria.impl.Postgres;
-import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 
 import java.util.function.*;
@@ -236,30 +233,6 @@ public interface PostgreStatement extends DialectStatement {
 
 
     interface _PostgreDynamicWithClause<SR> extends _DynamicWithClause<PostgreCtes, SR> {
-
-    }
-
-
-    interface _StaticCteAsClause<I extends Item> {
-
-        <R extends _CteCommaItem> R as(Function<PostgreQuery._StaticCteComplexCommandSpec<I>, R> function);
-
-        <R extends _CteCommaItem> R as(@Nullable Postgres.WordMaterialized materialized,
-                                       Function<PostgreQuery._StaticCteComplexCommandSpec<I>, R> function);
-
-    }
-
-    interface _StaticCteParensSpec<I extends Item>
-            extends Statement._ParensStringClause<_StaticCteAsClause<I>>,
-            _StaticCteAsClause<I> {
-
-    }
-
-    interface _PostgreStaticWithClause<I extends Item> extends _StaticWithClause<_StaticCteParensSpec<I>> {
-
-    }
-
-    interface _PostgreStaticWithCommaClause<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<I>> {
 
     }
 

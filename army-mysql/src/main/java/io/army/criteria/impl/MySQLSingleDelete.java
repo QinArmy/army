@@ -13,7 +13,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
-import io.army.util.ArrayUtils;
+import io.army.util._ArrayUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -98,7 +98,7 @@ abstract class MySQLSingleDelete<I extends Item, WE, DT, PR, WR, WA, OR, LR>
 
     @Override
     public final PR partition(String first, String... rest) {
-        this.partitionList = ArrayUtils.unmodifiableListOf(first, rest);
+        this.partitionList = _ArrayUtils.unmodifiableListOf(first, rest);
         return (PR) this;
     }
 

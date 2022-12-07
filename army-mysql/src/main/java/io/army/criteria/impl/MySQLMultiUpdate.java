@@ -10,7 +10,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
+import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -137,7 +137,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC,
     @Override
     final Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.errorTabularModifier(this.context, modifier);
+            throw MySQLUtils.errorModifier(this.context, modifier);
         }
         return modifier;
     }
@@ -356,7 +356,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC,
 
         @Override
         public _MultiJoinSpec<I> parens(String first, String... rest) {
-            this.derivedAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+            this.derivedAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
             return this;
         }
 
@@ -706,7 +706,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC,
 
         @Override
         public _BatchMultiJoinSpec<I> parens(String first, String... rest) {
-            this.derivedAliasList(ArrayUtils.unmodifiableListOf(first, rest));
+            this.derivedAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
             return this;
         }
 
@@ -858,7 +858,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC,
             if (table == null) {
                 throw ContextStack.nullPointer(this.context);
             } else if (modifier != null && modifier != SQLs.LATERAL) {
-                throw MySQLUtils.errorTabularModifier(this.context, modifier);
+                throw MySQLUtils.errorModifier(this.context, modifier);
             }
             return alias -> {
                 final TableBlock.NoOnModifierDerivedBlock block;
@@ -895,7 +895,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC,
             if (table == null) {
                 throw ContextStack.nullPointer(this.context);
             } else if (modifier != null && modifier != SQLs.LATERAL) {
-                throw MySQLUtils.errorTabularModifier(this.context, modifier);
+                throw MySQLUtils.errorModifier(this.context, modifier);
             }
             return alias -> {
                 final OnClauseTableBlock.OnModifierParensBlock<_BatchMultiJoinSpec<I>> block;

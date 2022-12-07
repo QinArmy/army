@@ -295,8 +295,7 @@ public interface PostgreInsert extends PostgreStatement {
      * </p>
      */
     interface _StaticSubPreferLiteralSpec<I extends Item>
-            extends Insert._PreferLiteralClause<_ComplexInsertIntoClause<I, I>>
-            , _ComplexInsertIntoClause<I, I> {
+            extends Insert._PreferLiteralClause<_ComplexInsertIntoClause<I, I>>, _ComplexInsertIntoClause<I, I> {
 
     }
 
@@ -306,8 +305,7 @@ public interface PostgreInsert extends PostgreStatement {
      * </p>
      */
     interface _StaticSubNullOptionSpec<I extends Item>
-            extends Insert._NullOptionClause<_StaticSubPreferLiteralSpec<I>>
-            , _StaticSubPreferLiteralSpec<I> {
+            extends Insert._NullOptionClause<_StaticSubPreferLiteralSpec<I>>, _StaticSubPreferLiteralSpec<I> {
 
     }
 
@@ -317,8 +315,7 @@ public interface PostgreInsert extends PostgreStatement {
      * </p>
      */
     interface _StaticSubOptionSpec<I extends Item>
-            extends Insert._MigrationOptionClause<_StaticSubNullOptionSpec<I>>
-            , _StaticSubNullOptionSpec<I> {
+            extends Insert._MigrationOptionClause<_StaticSubNullOptionSpec<I>>, _StaticSubNullOptionSpec<I> {
 
     }
 

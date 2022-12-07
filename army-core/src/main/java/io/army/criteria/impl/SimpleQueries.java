@@ -11,7 +11,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
+import io.army.util._ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
 import io.army.util._StringUtils;
@@ -776,7 +776,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     @Override
     public final GR groupBy(Expression sortItem1, Expression sortItem2) {
-        this.groupByList = ArrayUtils.asUnmodifiableList(
+        this.groupByList = _ArrayUtils.asUnmodifiableList(
                 (ArmySortItem) sortItem1,
                 (ArmySortItem) sortItem2
         );
@@ -785,7 +785,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     @Override
     public final GR groupBy(Expression sortItem1, Expression sortItem2, Expression sortItem3) {
-        this.groupByList = ArrayUtils.asUnmodifiableList(
+        this.groupByList = _ArrayUtils.asUnmodifiableList(
                 (ArmySortItem) sortItem1,
                 (ArmySortItem) sortItem2,
                 (ArmySortItem) sortItem3
@@ -824,7 +824,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (predicate1 == null || predicate2 == null) {
                 throw ContextStack.nullPointer(this.context);
             }
-            this.havingList = ArrayUtils.asUnmodifiableList(
+            this.havingList = _ArrayUtils.asUnmodifiableList(
                     (OperationPredicate<?>) predicate1
                     , (OperationPredicate<?>) predicate2
             );
