@@ -439,7 +439,7 @@ public abstract class SQLs extends SQLsSyntax {
     }//ExpressionPairImpl
 
 
-    static final class CteImpl implements _Cte, TabularItem._DerivedTableSpec, DerivedTable {
+    static final class CteImpl implements _Cte {
 
         final String name;
 

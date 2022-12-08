@@ -466,6 +466,13 @@ abstract class CriteriaUtils {
     }
 
 
+    static CriteriaException cteColumnAliasNotMatch(int selectionSize, int aliasSize) {
+        String m = String.format("cte column alias list size[%s] and selection list size[%s]",
+                aliasSize, selectionSize);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
+
     static CriteriaException criteriaContextNotMatch(CriteriaContext criteriaContext) {
         String m = "criteria context not match.";
         return ContextStack.criteriaError(criteriaContext, m);

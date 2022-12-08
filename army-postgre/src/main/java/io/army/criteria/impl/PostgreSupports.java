@@ -2,6 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._RowSet;
+import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner.postgre._PostgreCte;
 import io.army.criteria.impl.inner.postgre._PostgreCteStatement;
 import io.army.criteria.impl.inner.postgre._PostgreTableBlock;
@@ -17,9 +19,7 @@ import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.*;
 
 
@@ -426,22 +426,140 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final SubStatement subStatement;
 
+
+        private final List<Selection> selectionList;
+
+        private final Map<String, Selection> selectionMap;
+
         private final _SearchClause searchClause;
 
+        private final _CycleClause cycleClause;
 
         PostgreCte(String name, @Nullable List<String> columnAliasList,
                    @Nullable PostgreSyntax.WordMaterialized modifier, SubStatement subStatement) {
-            this(name, columnAliasList, modifier, subStatement, null);
+            this(name, columnAliasList, modifier, subStatement, null, null);
         }
 
-        PostgreCte(String name, @Nullable List<String> columnAliasList,
+        PostgreCte(String name, final @Nullable List<String> columnAliasList,
                    @Nullable PostgreSyntax.WordMaterialized modifier, SubStatement subStatement,
-                   @Nullable _SearchClause searchClause) {
+                   final @Nullable _SearchClause searchClause, final @Nullable _CycleClause cycleClause) {
             this.name = name;
             this.columnAliasList = _CollectionUtils.safeList(columnAliasList);
             this.modifier = modifier;
             this.subStatement = subStatement;
             this.searchClause = searchClause;
+            this.cycleClause = cycleClause;
+
+
+            if (searchSeqSelection == null && cycleMarkSelection == null && cyclePathSelection == null) {
+
+            } else {
+
+            }
+
+            final int selectionSize = stmtSelections.size();
+            if (columnAliasList != null && columnAliasList.size() != selectionSize) {
+                throw CriteriaUtils.cteColumnAliasNotMatch(selectionSize, columnAliasList.size());
+            }
+
+            final Map<String, Selection> map = new HashMap<>();
+            final List<Selection> list = new ArrayList<>(selectionSize);
+            String alias;
+            Selection selection;
+            for (int i = 0; i < selectionSize; i++) {
+                selection = stmtSelections.get(i);
+                if (columnAliasList == null) {
+                    alias = selection.alias();
+                } else {
+                    alias = columnAliasList.get(i);
+                }
+                if (map.putIfAbsent(alias, selection) != null && columnAliasList != null) {
+                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), alias);
+                }
+            }
+            this.selectionList = list;
+            this.selectionMap = Collections.unmodifiableMap(map);
+        }
+
+        private _Pair<List<Selection>, Map<String, Selection>> createPair(final @Nullable _SearchClause searchClause,
+                                                                          final @Nullable _CycleClause cycleClause) {
+            final List<Selection> stmtSelections;
+            if (this.subStatement instanceof RowSet) {
+                stmtSelections = ((_RowSet) this.subStatement).selectionList();
+            } else {
+                stmtSelections = ((_Statement._ReturningListSpec) this.subStatement).returningList();
+            }
+            final int selectionSize;
+            selectionSize = stmtSelections.size();
+            int newSize = selectionSize;
+            final Selection searchSeqSelection, cycleMarkSelection, cyclePathSelection;
+            if (searchClause == null) {
+                searchSeqSelection = null;
+            } else {
+                searchSeqSelection = searchClause.searchSeqSelection();
+                newSize++;
+            }
+
+            if (cycleClause == null) {
+                cycleMarkSelection = null;
+                cyclePathSelection = null;
+            } else {
+                cycleMarkSelection = cycleClause.cycleMarkSelection();
+                cyclePathSelection = cycleClause.cyclePathSelection();
+                newSize += 2;
+            }
+
+            final List<String> columnAliasList = this.columnAliasList;
+
+
+            final int aliasSize;
+            if ((aliasSize = columnAliasList.size()) > 0 && aliasSize != selectionSize) {
+                throw CriteriaUtils.cteColumnAliasNotMatch(selectionSize, aliasSize);
+            }
+            final List<Selection> selectionList = new ArrayList<>(newSize);
+            final Map<String, Selection> selectionMap = new HashMap<>((int) (newSize / 0.75f));
+            String alias;
+            Selection selection;
+            for (int i = 0; i < selectionSize; i++) {
+                selection = stmtSelections.get(i);
+                if (aliasSize == 0) {
+                    alias = selection.alias();
+                } else {
+                    alias = columnAliasList.get(i);
+                    selection = ArmySelections.renameSelection(selection, alias);
+                }
+
+                if (selectionMap.putIfAbsent(alias, selection) != null && aliasSize > 0) {
+                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), alias);
+                }
+                selectionList.add(selection);
+
+            }
+
+            if (searchSeqSelection != null) {
+                if (selectionMap.putIfAbsent(searchSeqSelection.alias(), searchSeqSelection) != null) {
+                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), searchSeqSelection.alias());
+                }
+                selectionList.add(searchSeqSelection);
+            }
+
+            if (cycleMarkSelection != null) {
+                if (selectionMap.putIfAbsent(cycleMarkSelection.alias(), cycleMarkSelection) != null) {
+                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), cycleMarkSelection.alias());
+                }
+                selectionList.add(cycleMarkSelection);
+
+                if (selectionMap.putIfAbsent(cyclePathSelection.alias(), cyclePathSelection) != null) {
+                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), cyclePathSelection.alias());
+                }
+                selectionList.add(cyclePathSelection);
+            }
+
+            assert selectionList.size() == selectionMap.size();
+            return _Pair.create(
+                    Collections.unmodifiableList(selectionList),
+                    Collections.unmodifiableMap(selectionMap)
+            );
         }
 
 
@@ -452,12 +570,12 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public Selection selection(String derivedAlias) {
-            return null;
+            return this.selectionMap.get(derivedAlias);
         }
 
         @Override
         public List<Selection> selectionList() {
-            return null;
+            return this.selectionList;
         }
 
         @Override
@@ -480,6 +598,10 @@ abstract class PostgreSupports extends CriteriaSupports {
             return this.searchClause;
         }
 
+        @Override
+        public _CycleClause cycleClause() {
+            return this.cycleClause;
+        }
 
     }//PostgreCte
 
@@ -572,10 +694,10 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     private static final class NoOperationStaticCteSearchSpec<I extends Item> extends NoActionCteSearchSpec<
             PostgreQuery._StaticCteCycleSpec<I>,
-            PostgreQuery._StaticCteComma<I>>
+            PostgreQuery._CteComma<I>>
             implements PostgreQuery._StaticCteSearchSpec<I>,
             PostgreQuery._SetSearchSeqColumnClause<PostgreQuery._StaticCteCycleSpec<I>>,
-            PostgreQuery._SetCycleMarkColumnClause<PostgreQuery._StaticCteComma<I>> {
+            PostgreQuery._SetCycleMarkColumnClause<PostgreQuery._CteComma<I>> {
 
         private final Function<String, PostgreQuery._StaticCteParensSpec<I>> cteFunction;
 
@@ -791,6 +913,11 @@ abstract class PostgreSupports extends CriteriaSupports {
             return (I) this;
         }
 
+
+        final boolean hasCycleClause() {
+            return this.cycleColumnList != null;
+        }
+
         private void cycleTo(final @Nullable Expression cycleMarkValue,
                              final @Nullable Expression cycleMarkDefault) {
             if (cycleMarkValue == null || cycleMarkDefault == null) {
@@ -805,31 +932,19 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class PostgreCteSearchSpec<SR extends Item, CR extends Item>
+    static abstract class PostgreCteSearchSpec<SR extends Item>
             implements PostgreQuery._CteSearchClause<SR>,
             PostgreQuery._SearchFirstByClause<SR>,
-            PostgreQuery._CteCycleClause<CR>,
-            PostgreQuery._CycleToMarkValueSpec<CR>,
-            PostgreQuery._CyclePathColumnClause<CR>,
+            PostgreQuery._SetSearchSeqColumnClause<SR>,
             _PostgreCte._SearchClause {
 
-        private final CriteriaContext context;
+        final CriteriaContext context;
 
         private CteSearchOption searchOption;
 
         private List<String> firstByColumnList;
 
         private String searchSeqColumnName;
-
-        private List<String> cycleColumnList;
-
-        private String cycleMarkColumnName;
-
-        private ArmyExpression cycleMarkValue;
-
-        private ArmyExpression cycleMarkDefault;
-
-        private String cyclePathColumnName;
 
         PostgreCteSearchSpec(CriteriaContext context) {
             this.context = context;
@@ -838,61 +953,37 @@ abstract class PostgreSupports extends CriteriaSupports {
         @Override
         public final void appendSql(final _SqlContext context) {
             final CteSearchOption searchOption = this.searchOption;
-            final List<String> cycleColumnList = this.cycleColumnList;
-            if (searchOption == null && (cycleColumnList == null || cycleColumnList.size() == 0)) {
+            if (searchOption == null) {
                 return;
             }
-
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder();
             final DialectParser parser;
             parser = context.parser();
-            if (searchOption != null) {
-                sqlBuilder.append(searchOption.spaceWord)
-                        .append(" FIRST BY");
-                final List<String> firstByColumnList = this.firstByColumnList;
-                if (firstByColumnList == null) {
-                    throw _Exceptions.castCriteriaApi();
-                }
-                appendColumnName(firstByColumnList, sqlBuilder, parser);
 
-                sqlBuilder.append(_Constant.SPACE_SET_SPACE);
-                final String searchSeqColumnName = this.searchSeqColumnName;
-                if (searchSeqColumnName == null) {
-                    throw _Exceptions.castCriteriaApi();
-                }
-                parser.identifier(searchSeqColumnName, sqlBuilder);
-            }//searchOption != null
-
-            if (cycleColumnList != null && cycleColumnList.size() > 0) {
-                sqlBuilder.append(" CYCLE");
-                appendColumnName(cycleColumnList, sqlBuilder, parser);
-
-                final ArmyExpression cycleMarkValue = this.cycleMarkValue, cycleMarkDefault = this.cycleMarkDefault;
-                if (cycleMarkValue == null || cycleMarkDefault == null) {
-                    throw _Exceptions.castCriteriaApi();
-                }
-                sqlBuilder.append(_Constant.SPACE_SET);
-                cycleMarkValue.appendSql(context);
-
+            sqlBuilder.append(searchOption.spaceWord);
+            final List<String> firstByColumnList = this.firstByColumnList;
+            if (firstByColumnList == null) {
+                throw _Exceptions.castCriteriaApi();
             }
-
-
-        }
-
-
-        private void appendColumnName(final List<String> columnList, final StringBuilder sqlBuilder,
-                                      final DialectParser parser) {
-            final int columnSize = columnList.size();
+            final int columnSize = firstByColumnList.size();
             assert columnSize > 0;
-            sqlBuilder.append(_Constant.SPACE);
+            sqlBuilder.append(" FIRST BY ");
             for (int i = 0; i < columnSize; i++) {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
                 }
-                parser.identifier(columnList.get(i), sqlBuilder);
+                parser.identifier(firstByColumnList.get(i), sqlBuilder);
             }
+            sqlBuilder.append(_Constant.SPACE_SET_SPACE);
+            final String searchSeqColumnName = this.searchSeqColumnName;
+            if (searchSeqColumnName == null) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            parser.identifier(searchSeqColumnName, sqlBuilder);
+
         }
+
 
         @Override
         public final PostgreQuery._SearchFirstByClause<SR> searchBreadth() {
@@ -929,122 +1020,50 @@ abstract class PostgreSupports extends CriteriaSupports {
         @Override
         public final PostgreQuery._SetSearchSeqColumnClause<SR> firstBy(String firstColumnName, String... rest) {
             if (this.searchOption == null) {
-                this.firstByColumnList = Collections.emptyList();
+                this.firstByColumnList = null;
             } else {
                 this.firstByColumnList = _ArrayUtils.unmodifiableListOf(firstColumnName, rest);
             }
-            return (PostgreQuery._SetSearchSeqColumnClause<SR>) this;
+            return this;
         }
 
         @Override
         public final PostgreQuery._SetSearchSeqColumnClause<SR> firstBy(Consumer<Consumer<String>> consumer) {
             if (this.searchOption == null) {
-                this.firstByColumnList = Collections.emptyList();
+                this.firstByColumnList = null;
             } else {
                 this.firstByColumnList = CriteriaUtils.stringList(this.context, true, consumer);
             }
-            return (PostgreQuery._SetSearchSeqColumnClause<SR>) this;
-        }
-
-
-        @Override
-        public final PostgreQuery._SetCycleMarkColumnClause<CR> cycle(String firstColumnName, String... rest) {
-            this.cycleColumnList = _ArrayUtils.unmodifiableListOf(firstColumnName, rest);
-            return (PostgreQuery._SetCycleMarkColumnClause<CR>) this;
-        }
-
-        @Override
-        public final PostgreQuery._SetCycleMarkColumnClause<CR> cycle(Consumer<Consumer<String>> consumer) {
-            this.cycleColumnList = CriteriaUtils.stringList(this.context, true, consumer);
-            return (PostgreQuery._SetCycleMarkColumnClause<CR>) this;
-        }
-
-        @Override
-        public final PostgreQuery._SetCycleMarkColumnClause<CR> ifCycle(Consumer<Consumer<String>> consumer) {
-            this.cycleColumnList = CriteriaUtils.stringList(this.context, false, consumer);
-            return (PostgreQuery._SetCycleMarkColumnClause<CR>) this;
-        }
-
-        @Override
-        public final PostgreQuery._CyclePathColumnClause<CR> to(final @Nullable Expression cycleMarkValue,
-                                                                SQLs.WordDefault wordDefault,
-                                                                final @Nullable Expression cycleMarkDefault) {
-            return this.cycleTo(cycleMarkValue, cycleMarkDefault);
-        }
-
-        @Override
-        public final PostgreQuery._CyclePathColumnClause<CR> to(Consumer<BiConsumer<Expression, Expression>> consumer) {
-            consumer.accept(this::cycleTo);
-            if (!_CollectionUtils.isEmpty(this.cycleColumnList)
-                    && (this.cycleMarkValue == null || this.cycleMarkDefault == null)) {
-                throw ContextStack.criteriaError(this.context, "You don't add to clause");
-            }
             return this;
         }
 
         @Override
-        public final PostgreQuery._CyclePathColumnClause<CR> ifTo(Consumer<BiConsumer<Expression, Expression>> consumer) {
-            consumer.accept(this::cycleTo);
-            return this;
-        }
-
-
-        @Override
-        public final CR using(final @Nullable String cyclePathColumnName) {
-            if (_CollectionUtils.isEmpty(this.cycleColumnList)) {
-                this.cyclePathColumnName = null;
-            } else if (cyclePathColumnName == null) {
+        public final SR set(final @Nullable String searchSeqColumnName) {
+            if (this.searchOption == null) {
+                this.searchSeqColumnName = null;
+            } else if (searchSeqColumnName == null) {
                 throw ContextStack.nullPointer(this.context);
             } else {
-                this.cyclePathColumnName = cyclePathColumnName;
+                this.searchSeqColumnName = searchSeqColumnName;
             }
-            return (CR) this;
+            return (SR) this;
         }
 
         @Override
-        public final CR using(Supplier<String> supplier) {
-            if (_CollectionUtils.isEmpty(this.cycleColumnList)) {
-                this.cyclePathColumnName = null;
-            } else {
-                this.using(supplier.get());
-            }
-            return (CR) this;
-        }
-
-
-        final void doSet(final @Nullable String columnName) {
-            final List<String> cycleColumnList = this.cycleColumnList;
-            if (cycleColumnList == null) {
-                if (this.searchOption == null) {
-                    this.searchSeqColumnName = null;
-                } else if (columnName == null) {
-                    throw ContextStack.nullPointer(this.context);
-                } else {
-                    this.searchSeqColumnName = columnName;
-                }
-            } else if (cycleColumnList.size() == 0) {
-                this.cycleMarkColumnName = null;
-            } else if (columnName == null) {
+        public final SR set(Supplier<String> supplier) {
+            final String columnName;
+            if (this.searchOption == null) {
+                this.searchSeqColumnName = null;
+            } else if ((columnName = supplier.get()) == null) {
                 throw ContextStack.nullPointer(this.context);
             } else {
-                this.cycleMarkColumnName = columnName;
+                this.searchSeqColumnName = columnName;
             }
-
+            return (SR) this;
         }
 
-        final void doSet(Supplier<String> supplier) {
-            final List<String> cycleColumnList = this.cycleColumnList;
-            if (cycleColumnList == null) {
-                if (this.searchOption == null) {
-                    this.searchSeqColumnName = null;
-                } else {
-                    this.doSet(supplier.get());
-                }
-            } else if (cycleColumnList.size() == 0) {
-                this.cycleMarkColumnName = null;
-            } else {
-                this.doSet(supplier.get());
-            }
+        final boolean hasSearchClause() {
+            return this.searchOption != null;
         }
 
 
@@ -1169,11 +1188,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(FrameExclusion.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return CriteriaUtils.sqlWordsToString(this);
         }
 
     }//FrameExclusion

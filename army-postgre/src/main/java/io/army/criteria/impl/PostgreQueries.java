@@ -5,6 +5,7 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner.postgre._PostgreCte;
 import io.army.criteria.impl.inner.postgre._PostgreQuery;
 import io.army.criteria.postgre.*;
 import io.army.criteria.standard.StandardQuery;
@@ -72,9 +73,9 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
     }
 
 
-    static <I extends Item> Function<String, _StaticCteParensSpec<I>> complexCte(final CriteriaContext context,
-                                                                                 final I comma) {
-        return name -> new CteMultiCommandFunction<>(context, comma, name);
+    static <I extends Item> _CteComma<I> complexCte(
+            final CriteriaContext context, final boolean recursive, final Function<Boolean, I> function) {
+        return new StaticCteComma<>(context, recursive, function);
     }
 
     private List<_Window> windowList;
@@ -807,16 +808,18 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
             super(withSpec, context);
         }
 
-
         @Override
-        public final _StaticCteParensSpec<_StaticCteComma<I>> with(String name) {
-            return new CteComma<>(false, this).function.apply(name);
+        public final _StaticCteParensSpec<_SelectSpec<I>> with(String name) {
+            return PostgreQueries.complexCte(this.context, false, this::endStaticWithClause)
+                    .comma(name);
         }
 
         @Override
-        public final _StaticCteParensSpec<_StaticCteComma<I>> withRecursive(String name) {
-            return new CteComma<>(true, this).function.apply(name);
+        public final _StaticCteParensSpec<_SelectSpec<I>> withRecursive(String name) {
+            return PostgreQueries.complexCte(this.context, true, this::endStaticWithClause)
+                    .comma(name);
         }
+
 
     }//PostgreSimpleQuery
 
@@ -996,13 +999,15 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
         }
 
         @Override
-        public final _StaticCteParensSpec<_ComplexCteComma<I>> with(String name) {
-            return new ComplexCteComma<>(false, this).function.apply(name);
+        public final _StaticCteParensSpec<_QueryComplexSpec<I>> with(String name) {
+            return PostgreQueries.complexCte(this.context, false, this::endStaticWithClause)
+                    .comma(name);
         }
 
         @Override
-        public final _StaticCteParensSpec<_ComplexCteComma<I>> withRecursive(String name) {
-            return new ComplexCteComma<>(false, this).function.apply(name);
+        public final _StaticCteParensSpec<_QueryComplexSpec<I>> withRecursive(String name) {
+            return PostgreQueries.complexCte(this.context, true, this::endStaticWithClause)
+                    .comma(name);
         }
 
 
@@ -1031,6 +1036,8 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
 
         @Override
         public PostgreValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
+            this.endQueryBeforeSelect();
+
             return PostgreSimpleValues.primaryValues(this.getWithClause(), this.context.getOuterContext(),
                             this::valuesEnd, this.context.getLeftContext()
                     )
@@ -1039,6 +1046,8 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
 
         @Override
         public PostgreValues._PostgreValuesLeftParenClause<I> values() {
+            this.endQueryBeforeSelect();
+
             return PostgreSimpleValues.primaryValues(this.getWithClause(), this.context.getOuterContext(),
                             this::valuesEnd, this.context.getLeftContext()
                     )
@@ -1047,6 +1056,8 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
 
         @Override
         public <S extends RowSet> _RightParenClause<_UnionOrderBySpec<I>> leftParen(Supplier<S> supplier) {
+            this.endQueryBeforeSelect();
+
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this, this.function);
             final RowSet rowSet;
@@ -1159,7 +1170,7 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
     }//UnionAndSubQueryClause
 
 
-    private static final class SimpleCteComma<I extends Item> implements _StaticCteComma<I> {
+    private static final class StaticCteComma<I extends Item> implements _CteComma<I> {
 
         private final CriteriaContext context;
 
@@ -1167,7 +1178,7 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
 
         private final Function<Boolean, I> function;
 
-        private SimpleCteComma(CriteriaContext context, boolean recursive, Function<Boolean, I> function) {
+        private StaticCteComma(CriteriaContext context, boolean recursive, Function<Boolean, I> function) {
             this.context = context;
             this.recursive = recursive;
             this.function = function;
@@ -1179,7 +1190,7 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
                 throw ContextStack.nullPointer(this.context);
             }
             this.context.onStartCte(name);
-            return new CteMultiCommandFunction<>(name, this);
+            return new StaticCteAsClause<>(name, this);
         }
 
         @Override
@@ -1190,43 +1201,10 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
     }//SimpleCteComma
 
 
-    private static final class ComplexCteComma<I extends Item> implements PostgreQuery._ComplexCteComma<I> {
-
-        private final boolean recursive;
-
-        private final PostgreComplexQuery<I> clause;
-
-        private final Function<String, _StaticCteParensSpec<_ComplexCteComma<I>>> function;
-
-        /**
-         * @see PostgreComplexQuery#with(String)
-         * @see PostgreComplexQuery#withRecursive(String)
-         */
-        private ComplexCteComma(boolean recursive, PostgreComplexQuery<I> clause) {
-            clause.context.onBeforeWithClause(recursive);
-            this.recursive = recursive;
-            this.clause = clause;
-            this.function = PostgreQueries.complexCte(clause.context, this);
-        }
-
-        @Override
-        public _StaticCteParensSpec<_ComplexCteComma<I>> comma(String name) {
-            return this.function.apply(name);
-        }
-
-
-        @Override
-        public _QueryComplexSpec<I> space() {
-            return this.clause.endStaticWithClause(this.recursive);
-        }
-
-    }//ComplexCteComma
-
-
-    private static final class CteMultiCommandFunction<I extends Item>
+    private static final class StaticCteAsClause<I extends Item>
             implements _StaticCteParensSpec<I> {
 
-        private final SimpleCteComma<I> comma;
+        private final StaticCteComma<I> comma;
 
         private final String name;
 
@@ -1234,10 +1212,8 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
 
         private PostgreSyntax.WordMaterialized modifier;
 
-        /**
-         * @see #complexCte(CriteriaContext, Item)
-         */
-        private CteMultiCommandFunction(String name, SimpleCteComma<I> comma) {
+
+        private StaticCteAsClause(String name, StaticCteComma<I> comma) {
             this.name = name;
             this.comma = comma;
         }
@@ -1258,13 +1234,13 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
         }
 
         @Override
-        public <R extends _StaticCteComma<I>> R as(Function<_StaticCteComplexCommandSpec<I>, R> function) {
+        public <R extends _CteComma<I>> R as(Function<_StaticCteComplexCommandSpec<I>, R> function) {
             return this.as(null, function);
         }
 
         @Override
-        public <R extends _StaticCteComma<I>> R as(@Nullable PostgreSyntax.WordMaterialized modifier,
-                                                   Function<_StaticCteComplexCommandSpec<I>, R> function) {
+        public <R extends _CteComma<I>> R as(@Nullable PostgreSyntax.WordMaterialized modifier,
+                                             Function<_StaticCteComplexCommandSpec<I>, R> function) {
             if (modifier != null && modifier != Postgres.MATERIALIZED && modifier != Postgres.NOT_MATERIALIZED) {
                 throw CriteriaUtils.errorModifier(this.comma.context, modifier);
             }
@@ -1285,7 +1261,7 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
         }
 
 
-        private _StaticCteComma<I> subStmtEnd(final SubStatement statement) {
+        private _CteComma<I> subStmtEnd(final SubStatement statement) {
             final _Cte cte;
             cte = new PostgreSupports.PostgreCte(this.name, this.columnAliasList, this.modifier, statement);
             this.comma.context.onAddCte(cte);
@@ -1317,8 +1293,14 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
             return spec;
         }
 
-        private _StaticCteComma<I> searchClauseEnd(final StaticCteSearchSpec<I> clause) {
+        private _CteComma<I> searchClauseEnd(final StaticCteSearchSpec<I> clause) {
+            final _PostgreCte._SearchClause searchClause;
+            searchClause = clause.hasSearchClause() ? clause : null;
 
+            final _Cte cte;
+            cte = new PostgreSupports.PostgreCte(this.name, this.columnAliasList, this.modifier, clause.query,
+                    searchClause, clause.cycleSpec);
+            this.comma.context.onAddCte(cte);
             return this.comma;
         }
 
@@ -1326,33 +1308,79 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
     }//CteMultiCommandFunction
 
 
-    private static final class StaticCteSearchSpec<I extends Item> extends PostgreSupports.PostgreCteSearchSpec<
-            _StaticCteCycleSpec<I>,
-            _StaticCteComma<I>>
-            implements PostgreQuery._StaticCteSearchSpec<I>,
-            PostgreQuery._SetSearchSeqColumnClause<PostgreQuery._StaticCteCycleSpec<I>>,
-            PostgreQuery._SetCycleMarkColumnClause<PostgreQuery._StaticCteComma<I>> {
+    private static final class StaticCycleSpec<I extends Item>
+            extends PostgreSupports.PostgreCteCycleClause<_CteComma<I>>
+            implements PostgreQuery._StaticCteCycleSpec<I> {
 
-        private final CteMultiCommandFunction<I> clause;
+        private final StaticCteSearchSpec<I> searchSpec;
+
+        private StaticCycleSpec(StaticCteSearchSpec<I> searchSpec) {
+            super(searchSpec.context);
+            this.searchSpec = searchSpec;
+        }
+
+        @Override
+        public _StaticCteParensSpec<I> comma(String name) {
+            return this.searchSpec.comma(name);
+        }
+
+        @Override
+        public I space() {
+            return this.searchSpec.space();
+        }
+
+    }//StaticCycleSpec
+
+
+    private static final class StaticCteSearchSpec<I extends Item> extends PostgreSupports.PostgreCteSearchSpec<
+            _StaticCteCycleSpec<I>>
+            implements PostgreQuery._StaticCteSearchSpec<I> {
+
+        private final StaticCteAsClause<I> clause;
 
         private final SubQuery query;
 
-        private StaticCteSearchSpec(CteMultiCommandFunction<I> clause, SubQuery query) {
+        private StaticCycleSpec<I> cycleSpec;
+
+        private StaticCteSearchSpec(StaticCteAsClause<I> clause, SubQuery query) {
             super(clause.comma.context);
             this.clause = clause;
             this.query = query;
         }
 
         @Override
-        public StaticCteSearchSpec<I> set(String columnName) {
-            this.doSet(columnName);
-            return this;
+        public _SetCycleMarkColumnClause<_CteComma<I>> cycle(String firstColumnName, String... rest) {
+            if (this.cycleSpec != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            final StaticCycleSpec<I> cycleSpec;
+            cycleSpec = new StaticCycleSpec<>(this);
+            this.cycleSpec = cycleSpec;
+            return cycleSpec.cycle(firstColumnName, rest);
         }
 
         @Override
-        public StaticCteSearchSpec<I> set(Supplier<String> supplier) {
-            this.doSet(supplier);
-            return this;
+        public _SetCycleMarkColumnClause<_CteComma<I>> cycle(Consumer<Consumer<String>> consumer) {
+            if (this.cycleSpec != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            final StaticCycleSpec<I> cycleSpec;
+            cycleSpec = new StaticCycleSpec<>(this);
+            this.cycleSpec = cycleSpec;
+            return cycleSpec.cycle(consumer);
+        }
+
+        @Override
+        public _SetCycleMarkColumnClause<_CteComma<I>> ifCycle(Consumer<Consumer<String>> consumer) {
+            if (this.cycleSpec != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            final StaticCycleSpec<I> cycleSpec;
+            cycleSpec = new StaticCycleSpec<>(this);
+            cycleSpec.ifCycle(consumer);
+
+            this.cycleSpec = cycleSpec.hasCycleClause() ? cycleSpec : null;
+            return cycleSpec;
         }
 
         @Override
@@ -1408,9 +1436,9 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
             implements PostgreQuery._StaticCteComplexCommandSpec<I> {
 
 
-        private final Function<SubStatement, _StaticCteComma<I>> function;
+        private final Function<SubStatement, _CteComma<I>> function;
 
-        private StaticCteComplexCommand(CriteriaContext outerContext, Function<SubStatement, _StaticCteComma<I>> function,
+        private StaticCteComplexCommand(CriteriaContext outerContext, Function<SubStatement, _CteComma<I>> function,
                                         Function<SubQuery, _StaticCteSearchSpec<I>> queryFunction) {
             super(outerContext, queryFunction);
             this.function = function;
@@ -1418,77 +1446,79 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
 
 
         @Override
-        public PostgreValues._OrderBySpec<_StaticCteComma<I>> values(Consumer<RowConstructor> consumer) {
+        public PostgreValues._OrderBySpec<_CteComma<I>> values(Consumer<RowConstructor> consumer) {
+            this.endQueryBeforeSelect();
             return PostgreSimpleValues.subValues(null, this.context.getNonNullOuterContext(), this::valuesEnd, null)
                     .values(consumer);
         }
 
         @Override
-        public PostgreValues._PostgreValuesLeftParenClause<_StaticCteComma<I>> values() {
+        public PostgreValues._PostgreValuesLeftParenClause<_CteComma<I>> values() {
+            this.endQueryBeforeSelect();
             return PostgreSimpleValues.subValues(null, this.context.getNonNullOuterContext(), this::valuesEnd, null)
                     .values();
         }
 
         @Override
-        public PostgreInsert._ComplexInsertIntoClause<_StaticCteComma<I>, _StaticCteComma<I>> literalMode(LiteralMode mode) {
+        public PostgreInsert._ComplexInsertIntoClause<_CteComma<I>, _CteComma<I>> literalMode(LiteralMode mode) {
             this.endQueryBeforeSelect();
             return PostgreInserts.staticSubInsert(this.context.getNonNullLeftContext(), this.function)
                     .literalMode(mode);
         }
 
         @Override
-        public PostgreInsert._StaticSubNullOptionSpec<_StaticCteComma<I>> migration(boolean migration) {
+        public PostgreInsert._StaticSubNullOptionSpec<_CteComma<I>> migration(boolean migration) {
             this.endQueryBeforeSelect();
             return PostgreInserts.staticSubInsert(this.context.getNonNullLeftContext(), this.function)
                     .migration(migration);
         }
 
         @Override
-        public PostgreInsert._StaticSubPreferLiteralSpec<_StaticCteComma<I>> nullMode(NullMode mode) {
+        public PostgreInsert._StaticSubPreferLiteralSpec<_CteComma<I>> nullMode(NullMode mode) {
             this.endQueryBeforeSelect();
             return PostgreInserts.staticSubInsert(this.context.getNonNullLeftContext(), this.function)
                     .nullMode(mode);
         }
 
         @Override
-        public <T> PostgreInsert._TableAliasSpec<T, _StaticCteComma<I>, _StaticCteComma<I>> insertInto(TableMeta<T> table) {
+        public <T> PostgreInsert._TableAliasSpec<T, _CteComma<I>, _CteComma<I>> insertInto(TableMeta<T> table) {
             this.endQueryBeforeSelect();
             return PostgreInserts.staticSubInsert(this.context.getNonNullLeftContext(), this.function)
                     .insertInto(table);
         }
 
         @Override
-        public <T> PostgreUpdate._SingleSetClause<_StaticCteComma<I>, _StaticCteComma<I>, T> update(TableMeta<T> table, SQLs.WordAs as,
-                                                                                                    String tableAlias) {
+        public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(TableMeta<T> table, SQLs.WordAs as,
+                                                                                        String tableAlias) {
             this.endQueryBeforeSelect();
             return PostgreUpdates.staticCteUpdate(this.context.getNonNullOuterContext(), this.function)
                     .update(table, as, tableAlias);
         }
 
         @Override
-        public <T> PostgreUpdate._SingleSetClause<_StaticCteComma<I>, _StaticCteComma<I>, T> update(SQLs.WordOnly only, TableMeta<T> table,
-                                                                                                    SQLs.WordAs as, String tableAlias) {
+        public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(SQLs.WordOnly only, TableMeta<T> table,
+                                                                                        SQLs.WordAs as, String tableAlias) {
             this.endQueryBeforeSelect();
             return PostgreUpdates.staticCteUpdate(this.context.getNonNullOuterContext(), this.function)
                     .update(only, table, as, tableAlias);
         }
 
         @Override
-        public PostgreDelete._SingleUsingSpec<_StaticCteComma<I>, _StaticCteComma<I>> delete(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
+        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> delete(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
             this.endQueryBeforeSelect();
             return PostgreDeletes.staticCteDelete(this.context.getNonNullOuterContext(), this.function)
                     .delete(table, as, tableAlias);
         }
 
         @Override
-        public PostgreDelete._SingleUsingSpec<_StaticCteComma<I>, _StaticCteComma<I>> delete(SQLs.WordOnly only, TableMeta<?> table,
-                                                                                             SQLs.WordAs as, String tableAlias) {
+        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> delete(SQLs.WordOnly only, TableMeta<?> table,
+                                                                                 SQLs.WordAs as, String tableAlias) {
             this.endQueryBeforeSelect();
             return PostgreDeletes.staticCteDelete(this.context.getNonNullOuterContext(), this.function)
                     .delete(only, table, as, tableAlias);
         }
 
-        private _StaticCteComma<I> valuesEnd(final SubValues values) {
+        private _CteComma<I> valuesEnd(final SubValues values) {
             return this.function.apply(values);
         }
 

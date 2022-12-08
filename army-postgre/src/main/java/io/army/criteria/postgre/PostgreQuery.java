@@ -391,10 +391,10 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     interface _StaticCteAsClause<I extends Item> {
 
-        <R extends _StaticCteComma<I>> R as(Function<PostgreQuery._StaticCteComplexCommandSpec<I>, R> function);
+        <R extends _CteComma<I>> R as(Function<PostgreQuery._StaticCteComplexCommandSpec<I>, R> function);
 
-        <R extends _StaticCteComma<I>> R as(@Nullable Postgres.WordMaterialized modifier,
-                                            Function<PostgreQuery._StaticCteComplexCommandSpec<I>, R> function);
+        <R extends _CteComma<I>> R as(@Nullable Postgres.WordMaterialized modifier,
+                                      Function<PostgreQuery._StaticCteComplexCommandSpec<I>, R> function);
 
     }
 
@@ -409,12 +409,12 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _StaticCteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<I>>,
+    interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<I>>,
             _StaticSpaceClause<I> {
 
     }
 
-    interface _StaticCteCycleSpec<I extends Item> extends _CteCycleClause<_StaticCteComma<I>>, _StaticCteComma<I> {
+    interface _StaticCteCycleSpec<I extends Item> extends _CteCycleClause<_CteComma<I>>, _CteComma<I> {
 
     }
 
@@ -439,10 +439,10 @@ public interface PostgreQuery extends Query, PostgreStatement {
      */
     interface _StaticCteComplexCommandSpec<I extends Item>
             extends _StaticCteSelectSpec<_StaticCteSearchSpec<I>>,
-            PostgreValues._PostgreValuesClause<_StaticCteComma<I>>,
-            PostgreInsert._StaticSubOptionSpec<_StaticCteComma<I>>,
-            PostgreUpdate._SingleUpdateClause<_StaticCteComma<I>, _StaticCteComma<I>>,
-            PostgreDelete._SingleDeleteClause<_StaticCteComma<I>, _StaticCteComma<I>> {
+            PostgreValues._PostgreValuesClause<_CteComma<I>>,
+            PostgreInsert._StaticSubOptionSpec<_CteComma<I>>,
+            PostgreUpdate._SingleUpdateClause<_CteComma<I>, _CteComma<I>>,
+            PostgreDelete._SingleDeleteClause<_CteComma<I>, _CteComma<I>> {
 
     }
 
@@ -467,7 +467,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
      * @since 1.0
      */
     interface _WithSpec<I extends Item> extends _PostgreDynamicWithClause<_SelectSpec<I>>,
-            _PostgreStaticWithClause<_StaticCteComma<I>>,
+            _PostgreStaticWithClause<_SelectSpec<I>>,
             _SelectSpec<I> {
 
     }
@@ -492,10 +492,6 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _ComplexCteComma<I extends Item> extends _PostgreStaticWithCommaClause<_ComplexCteComma<I>>,
-            _StaticSpaceClause<_QueryComplexSpec<I>> {
-
-    }
 
 
     interface _QueryComplexSpec<I extends Item> extends _PostgreSelectClause<I>,
@@ -506,7 +502,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>,
             _PostgreDynamicWithClause<_QueryComplexSpec<I>>,
-            _PostgreStaticWithClause<_ComplexCteComma<I>>,
+            _PostgreStaticWithClause<_QueryComplexSpec<I>>,
             _LeftParenRowSetClause<_RightParenClause<_UnionOrderBySpec<I>>> {
 
     }

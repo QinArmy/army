@@ -28,6 +28,16 @@ abstract class ArmySelections implements _Selection {
         return selection;
     }
 
+    static Selection renameSelection(Selection selection, String alias) {
+        final Selection s;
+        if (selection.alias().equals(alias)) {
+            s = selection;
+        } else {
+            s = new RenameSelection(selection, alias);
+        }
+        return s;
+    }
+
     final String alias;
 
     private ArmySelections(String alias) {
@@ -234,6 +244,39 @@ abstract class ArmySelections implements _Selection {
 
 
     }//FuncSelection
+
+    private static final class RenameSelection extends ArmySelections {
+
+        private final _Selection selection;
+
+        private RenameSelection(Selection selection, String alias) {
+            super(alias);
+            this.selection = (_Selection) selection;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.selection.typeMeta();
+        }
+
+        @Override
+        public void appendSelection(final _SqlContext context) {
+            // here don't output selection
+            context.parser().identifier(this.alias, context.sqlBuilder().append(_Constant.SPACE));
+        }
+
+        @Override
+        public TableField tableField() {
+            return this.selection.tableField();
+        }
+
+        @Override
+        public Expression selectionExp() {
+            return this.selection.selectionExp();
+        }
+
+
+    }//RenameSelection
 
 
 }

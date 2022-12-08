@@ -1,5 +1,6 @@
 package io.army.criteria.impl.inner.postgre;
 
+import io.army.criteria.Selection;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._SelfDescribed;
@@ -13,15 +14,25 @@ public interface _PostgreCte extends _Cte {
     @Nullable
     _SearchClause searchClause();
 
+    _CycleClause cycleClause();
+
 
     interface _SearchClause extends _SelfDescribed {
+
+        Selection searchSeqSelection();
 
 
     }
 
     interface _CycleClause extends _SelfDescribed {
 
+        Selection cycleMarkSelection();
+
+
+        Selection cyclePathSelection();
 
     }
+
+
 
 }
