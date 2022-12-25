@@ -2,7 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.criteria.DerivedTable;
 import io.army.criteria.SQLWords;
+import io.army.criteria.Selection;
 import io.army.criteria.TabularItem;
+import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._ModifierTableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
@@ -11,7 +13,10 @@ import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 abstract class TableBlock implements _TableBlock {
 
@@ -125,6 +130,57 @@ abstract class TableBlock implements _TableBlock {
         }
 
     }//NoOnModifierDerivedBlock
+
+
+    static class ParensDerivedJoinBlock extends NoOnModifierTableBlock implements _DerivedTable {
+
+        private List<String> columnAliasList;
+
+        private Function<String, Selection> selectionFunction;
+
+        private Supplier<List<Selection>> selectionsSupplier;
+
+        ParensDerivedJoinBlock(_JoinType joinType, @Nullable SQLWords itemWord, DerivedTable tableItem,
+                               String alias) {
+            super(joinType, itemWord, tableItem, alias);
+            this.selectionFunction = tableItem::selection;
+            this.selectionsSupplier = tableItem::selectionList;
+        }
+
+        @Override
+        public final Selection selection(String derivedAlias) {
+            return this.selectionFunction.apply(derivedAlias);
+        }
+
+        @Override
+        public final List<Selection> selectionList() {
+            return this.selectionsSupplier.get();
+        }
+
+
+        @Override
+        public List<String> columnAliasList() {
+            List<String> list = this.columnAliasList;
+            if (list == null) {
+                list = Collections.emptyList();
+                this.columnAliasList = list;
+            }
+            return list;
+        }
+
+        final void onColumnAlias(final List<String> columnAliasList) {
+            if (this.columnAliasList != null) {
+                throw ContextStack.castCriteriaApi(ContextStack.peek());
+            }
+            this.columnAliasList = columnAliasList;
+
+            final _Pair<List<Selection>, Map<String, Selection>> pair;
+            pair = CriteriaUtils.forColumnAlias(columnAliasList, (_DerivedTable) this.tableItem);
+            this.selectionsSupplier = () -> pair.first;
+            this.selectionFunction = pair.second::get;
+        }
+
+    }//ParensDerivedJoinBlock
 
 
     interface BlockParams {

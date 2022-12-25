@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 
@@ -37,6 +38,12 @@ abstract class ArmySelections implements _Selection {
         }
         return s;
     }
+
+
+    static Selection forName(String alias, MappingType typeMeta) {
+        return new SelectionForName(alias, typeMeta);
+    }
+
 
     final String alias;
 
@@ -277,6 +284,37 @@ abstract class ArmySelections implements _Selection {
 
 
     }//RenameSelection
+
+    private static final class SelectionForName extends ArmySelections {
+
+        private final MappingType typeMeta;
+
+        private SelectionForName(String alias, MappingType typeMeta) {
+            super(alias);
+            this.typeMeta = typeMeta;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.typeMeta;
+        }
+
+        @Override
+        public void appendSelection(final _SqlContext context) {
+            context.parser().identifier(this.alias, context.sqlBuilder().append(_Constant.SPACE));
+        }
+
+        @Override
+        public TableField tableField() {
+            return null;
+        }
+
+        @Override
+        public Expression selectionExp() {
+            return null;
+        }
+
+    }//SelectionForName
 
 
 }

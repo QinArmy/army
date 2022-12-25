@@ -4,7 +4,7 @@ import io.army.criteria.CteBuilderSpec;
 
 public interface PostgreCtes extends CteBuilderSpec {
 
-   PostgreInsert._DynamicSubInsertSpec singleInsert(String name);
+   PostgreInsert._DynamicCteParensSpec singleInsert(String name);
 
    PostgreUpdate._DynamicCteUpdateSpec singleUpdate(String name);
 

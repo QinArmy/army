@@ -13,6 +13,7 @@ public interface _Selection extends Selection {
     @Nullable
     TableField tableField();
 
+    @Nullable
     Expression selectionExp();
 
 

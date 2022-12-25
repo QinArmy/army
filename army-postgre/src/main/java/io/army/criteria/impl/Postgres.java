@@ -25,7 +25,7 @@ public abstract class Postgres extends PostgreFuncSyntax {
 
 
     public static PostgreInsert._PrimaryOptionSpec singleInsert() {
-        return PostgreInserts.primaryInsert();
+        return PostgreInserts.primaryInsert(null);
     }
 
     public static PostgreQuery._WithSpec<Select> query() {
@@ -43,7 +43,7 @@ public abstract class Postgres extends PostgreFuncSyntax {
     }
 
     public static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> singleUpdate() {
-        return PostgreUpdates.single(SQLs::_identity, SQLs::_identity);
+        return PostgreUpdates.simple(null, SQLs::_identity, SQLs::_identity);
     }
 
     public static PostgreUpdate._BatchSingleWithSpec<Update, ReturningUpdate> batchSingleUpdate() {

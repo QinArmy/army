@@ -176,8 +176,8 @@ abstract class InsertSupport {
 
         private List<_Cte> cteList;
 
-        NonQueryWithCteOption(CriteriaContext criteriaContext) {
-            super(criteriaContext);
+        NonQueryWithCteOption(CriteriaContext context) {
+            super(context);
         }
 
         @Override

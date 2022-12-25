@@ -129,5 +129,10 @@
     * 见图 ![Alt text](AliasExpression.png)
     * 所以下定决心一定要支持
 
+27. 为什么表态 with clause 以 space 子句结束？
+    * 因为 select 子句的 SQLs.field() 方法和 SQLs.refThis() 方法需要真实的 query context.
+
+
+
     
 

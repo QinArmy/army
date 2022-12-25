@@ -2,9 +2,12 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.ReturningInsert;
+import io.army.criteria.impl.Postgres;
+import io.army.lang.Nullable;
 import io.army.meta.*;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -204,23 +207,17 @@ public interface PostgreInsert extends PostgreStatement {
 
     }
 
-    interface _ChildInsertIntoClause<P> {
+    interface _ChildInsertIntoClause<P> extends Item {
 
         <T> _TableAliasSpec<T, Insert, ReturningInsert> insertInto(ComplexTableMeta<P, T> table);
 
     }
 
-    interface _ChildCteComma<P>
-            extends _StaticWithCommaClause<_StaticCteParensSpec<_ChildCteComma<P>>>
-            , _ChildInsertIntoClause<P> {
-
-    }
-
 
     interface _ChildWithCteSpec<P>
-            extends _PostgreDynamicWithClause<_ChildInsertIntoClause<P>>
-            , _StaticWithClause<_StaticCteParensSpec<_ChildCteComma<P>>>
-            , _ChildInsertIntoClause<P> {
+            extends _PostgreDynamicWithClause<_ChildInsertIntoClause<P>>,
+            PostgreQuery._PostgreStaticWithClause<_ChildInsertIntoClause<P>>,
+            _ChildInsertIntoClause<P> {
 
     }
 
@@ -236,7 +233,7 @@ public interface PostgreInsert extends PostgreStatement {
     }
 
 
-    interface _PrimaryInsertIntoClause {
+    interface _PrimaryInsertIntoClause extends Item {
 
         <T> _TableAliasSpec<T, Insert, ReturningInsert> insertInto(SimpleTableMeta<T> table);
 
@@ -246,47 +243,75 @@ public interface PostgreInsert extends PostgreStatement {
 
     }
 
-    interface _ComplexInsertIntoClause<I extends Item, Q extends Item> {
-
-        <T> _TableAliasSpec<T, I, Q> insertInto(TableMeta<T> table);
-
-    }
-
-
-    interface _PrimaryCteComma
-            extends _StaticWithCommaClause<_StaticCteParensSpec<_PrimaryCteComma>>
-            , _PrimaryInsertIntoClause {
-
-    }
-
 
     interface _PrimaryWithCteSpec
-            extends _PostgreDynamicWithClause<_PrimaryInsertIntoClause>
-            , _StaticWithClause<_StaticCteParensSpec<_PrimaryCteComma>>
-            , _PrimaryInsertIntoClause {
+            extends _PostgreDynamicWithClause<_PrimaryInsertIntoClause>,
+            PostgreQuery._PostgreStaticWithClause<_PrimaryInsertIntoClause>,
+            _PrimaryInsertIntoClause {
 
     }
 
 
-    interface _PrimaryPreferLiteralSpec
-            extends Insert._PreferLiteralClause<_PrimaryWithCteSpec>
-            , _PrimaryWithCteSpec {
+    interface _PrimaryPreferLiteralSpec extends Insert._PreferLiteralClause<_PrimaryWithCteSpec>,
+            _PrimaryWithCteSpec {
 
     }
 
-    interface _PrimaryNullOptionSpec
-            extends Insert._NullOptionClause<_PrimaryPreferLiteralSpec>
-            , _PrimaryPreferLiteralSpec {
+    interface _PrimaryNullOptionSpec extends Insert._NullOptionClause<_PrimaryPreferLiteralSpec>,
+            _PrimaryPreferLiteralSpec {
 
     }
 
-    interface _PrimaryOptionSpec
-            extends Insert._MigrationOptionClause<_PrimaryNullOptionSpec>
-            , _PrimaryNullOptionSpec {
+    interface _PrimaryOptionSpec extends Insert._MigrationOptionClause<_PrimaryNullOptionSpec>,
+            _PrimaryNullOptionSpec {
 
     }
 
     /*-------------------below sub insert syntax -------------------*/
+
+    interface _CteInsertIntoClause<I extends Item> extends Item {
+
+        <T> _TableAliasSpec<T, I, I> insertInto(TableMeta<T> table);
+
+    }
+
+    interface _DynamicSubWithSpec<I extends Item> extends _PostgreDynamicWithClause<_CteInsertIntoClause<I>>,
+            PostgreQuery._PostgreStaticWithClause<_CteInsertIntoClause<I>>,
+            _CteInsertIntoClause<I> {
+
+    }
+
+
+    interface _DynamicSubPreferLiteralSpec<I extends Item>
+            extends Insert._PreferLiteralClause<_DynamicSubWithSpec<I>>, _DynamicSubWithSpec<I> {
+
+    }
+
+
+    interface _DynamicSubNullOptionSpec<I extends Item>
+            extends Insert._NullOptionClause<_DynamicSubPreferLiteralSpec<I>>, _DynamicSubPreferLiteralSpec<I> {
+
+    }
+
+
+    interface _DynamicSubOptionSpec<I extends Item>
+            extends Insert._MigrationOptionClause<_DynamicSubNullOptionSpec<I>>, _DynamicSubNullOptionSpec<I> {
+
+    }
+
+
+    interface _DynamicCteAsClause {
+
+        PostgreCtes as(Function<_DynamicSubOptionSpec<PostgreCtes>, PostgreCtes> function);
+
+        PostgreCtes as(@Nullable Postgres.WordMaterialized modifier,
+                       Function<_DynamicSubOptionSpec<PostgreCtes>, PostgreCtes> function);
+
+    }
+
+    interface _DynamicCteParensSpec extends _ParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
+
+    }
 
 
     /**
@@ -295,7 +320,7 @@ public interface PostgreInsert extends PostgreStatement {
      * </p>
      */
     interface _StaticSubPreferLiteralSpec<I extends Item>
-            extends Insert._PreferLiteralClause<_ComplexInsertIntoClause<I, I>>, _ComplexInsertIntoClause<I, I> {
+            extends Insert._PreferLiteralClause<_CteInsertIntoClause<I>>, _CteInsertIntoClause<I> {
 
     }
 
@@ -319,87 +344,6 @@ public interface PostgreInsert extends PostgreStatement {
 
     }
 
-    /*-------------------below complex insert -------------------*/
-
-
-    interface _ComplexComma<I extends Item>
-            extends _StaticWithCommaClause<_StaticCteParensSpec<_ComplexComma<I>>>
-            , _ComplexInsertIntoClause<I, I> {
-
-    }
-
-
-    /**
-     * <p>
-     * sub-statement syntax forbid static WITH syntax,because it destroy the simpleness of SQL.
-     * </p>
-     */
-    interface _ComplexWithSpec<I extends Item>
-            extends _PostgreDynamicWithClause<_ComplexInsertIntoClause<I, I>>
-            , _StaticWithClause<_StaticCteParensSpec<_ComplexComma<I>>>
-            , _ComplexInsertIntoClause<I, I> {
-
-    }
-
-
-    interface _ComplexPreferLiteralSpec<I extends Item>
-            extends Insert._PreferLiteralClause<_ComplexWithSpec<I>>
-            , _ComplexWithSpec<I> {
-
-    }
-
-    interface _ComplexNullOptionSpec<I extends Item>
-            extends Insert._NullOptionClause<_ComplexPreferLiteralSpec<I>>
-            , _ComplexPreferLiteralSpec<I> {
-    }
-
-    interface _ComplexOptionSpec<I extends Item>
-            extends Insert._MigrationOptionClause<_ComplexNullOptionSpec<I>>
-            , _ComplexNullOptionSpec<I> {
-
-    }
-
-    /*-------------------below dynamic sub insert -------------------*/
-
-    /**
-     * <p>
-     * sub-statement syntax forbid static WITH syntax,because it destroy the simpleness of SQL.
-     * </p>
-     */
-    interface _DynamicSubWithCteSpec<I extends Item>
-            extends _PostgreDynamicWithClause<_ComplexInsertIntoClause<I, I>>
-            , _ComplexInsertIntoClause<I, I> {
-
-    }
-
-
-    interface _DynamicSubPreferLiteralSpec<I extends Item>
-            extends Insert._PreferLiteralClause<_DynamicSubWithCteSpec<I>>
-            , _DynamicSubWithCteSpec<I> {
-
-    }
-
-    interface _DynamicSubNullOptionSpec<I extends Item>
-            extends Insert._NullOptionClause<_DynamicSubPreferLiteralSpec<I>>
-            , _DynamicSubPreferLiteralSpec<I> {
-
-    }
-
-    interface _DynamicSubOptionSpec<I extends Item>
-            extends Insert._MigrationOptionClause<_DynamicSubNullOptionSpec<I>>
-            , _DynamicSubNullOptionSpec<I> {
-
-    }
-
-    interface _DynamicSubMaterializedSpec<I extends Item> extends _CteMaterializedClause<_DynamicSubOptionSpec<I>>
-            , _DynamicSubOptionSpec<I> {
-
-    }
-
-    interface _DynamicSubInsertSpec
-            extends _SimpleCteLeftParenSpec<_DynamicSubMaterializedSpec<_AsCteClause<PostgreCtes>>> {
-
-    }
 
 
 }

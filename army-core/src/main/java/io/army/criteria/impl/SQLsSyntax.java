@@ -83,7 +83,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     }
 
-    public interface WordOnly extends Query.TableModifier, Query.FetchOnlyWithTies {
+    public interface WordOnly extends Query.TableModifier, Query.FetchOnlyWithTies, SQLWords {
 
     }
 

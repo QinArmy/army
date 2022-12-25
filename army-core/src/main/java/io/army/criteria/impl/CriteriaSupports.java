@@ -15,6 +15,7 @@ import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.stmt.Stmt;
+import io.army.util._ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -396,6 +397,44 @@ abstract class CriteriaSupports {
 
 
     }//ParenStringConsumerClause
+
+    @SuppressWarnings("unchecked")
+    static abstract class CteParensClause<R> implements Statement._ParensStringClause<R> {
+
+        final String name;
+
+        final CriteriaContext context;
+
+        List<String> columnAliasList;
+
+        CteParensClause(String name, CriteriaContext context) {
+            context.onStartCte(name);
+            this.name = name;
+            this.context = context;
+        }
+
+        @Override
+        public final R parens(String first, String... rest) {
+            this.columnAliasList = _ArrayUtils.unmodifiableListOf(first, rest);
+            return (R) this;
+        }
+
+        @Override
+        public final R parens(Consumer<Consumer<String>> consumer) {
+            this.columnAliasList = CriteriaUtils.stringList(this.context, true, consumer);
+            return (R) this;
+        }
+
+        @Override
+        public final R ifParens(Consumer<Consumer<String>> consumer) {
+            final List<String> list;
+            list = CriteriaUtils.stringList(this.context, false, consumer);
+            this.columnAliasList = list.size() == 0 ? null : list;
+            return (R) this;
+        }
+
+
+    }//CteParensClause
 
 
     private static final class SimpleDelayParamMeta implements TypeMeta {

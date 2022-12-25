@@ -5,15 +5,12 @@ import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.dialect.SubInsert;
 import io.army.criteria.dialect.SubReturningInsert;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._ItemPair;
-import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._ConflictTargetItem;
 import io.army.criteria.impl.inner.postgre._PostgreInsert;
 import io.army.criteria.postgre.PostgreCtes;
 import io.army.criteria.postgre.PostgreInsert;
-import io.army.criteria.postgre.PostgreStatement;
+import io.army.criteria.postgre.PostgreQuery;
 import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -50,22 +47,18 @@ abstract class PostgreInserts extends InsertSupport {
     }
 
 
-    static PostgreInsert._PrimaryOptionSpec primaryInsert() {
-        return new PrimaryInsertIntoClause();
+    static PostgreInsert._PrimaryOptionSpec primaryInsert(@Nullable _Statement._WithClauseSpec spec) {
+        return new PrimaryInsertIntoClause(spec);
     }
 
-    static <I extends Item> PostgreInsert._DynamicSubMaterializedSpec<I> dynamicSubInsert(CriteriaContext outContext
-            , Function<SubStatement, I> function) {
+    static <I extends Item> PostgreInsert._DynamicSubOptionSpec<I> dynamicSubInsert(
+            CriteriaContext outContext, Function<SubStatement, I> function) {
         return new DynamicSubInsertIntoClause<>(outContext, function);
     }
 
-    static <I extends Item> PostgreInsert._StaticSubOptionSpec<I> staticSubInsert(CriteriaContext outContext
-            , Function<SubStatement, I> function) {
+    static <I extends Item> PostgreInsert._StaticSubOptionSpec<I> staticSubInsert(CriteriaContext outContext,
+                                                                                  Function<SubStatement, I> function) {
         return new StaticSubInsertIntoClause<>(outContext, function);
-    }
-
-    static <I extends Item> PostgreInsert._ComplexOptionSpec<I> complexInsert(Function<PrimaryStatement, I> function) {
-        return new ComplexInsertIntoClause<>(function);
     }
 
 
@@ -195,77 +188,6 @@ abstract class PostgreInserts extends InsertSupport {
     /*-------------------below insert after values syntax class-------------------*/
 
 
-    private static final class PrimaryCteCommaClause implements PostgreInsert._PrimaryCteComma {
-
-        private final boolean recursive;
-
-        private final PrimaryInsertIntoClause clause;
-
-        private final Function<String, PostgreStatement._StaticCteParensSpec<PostgreInsert._PrimaryCteComma>> function;
-
-        private PrimaryCteCommaClause(boolean recursive, PrimaryInsertIntoClause clause) {
-            this.recursive = recursive;
-            this.clause = clause;
-            this.function = PostgreQueries.complexCte(clause.context, this);
-        }
-
-        @Override
-        public PostgreStatement._StaticCteParensSpec<PostgreInsert._PrimaryCteComma> comma(final String name) {
-            return this.function.apply(name);
-
-        }
-
-        @Override
-        public <T> PostgreInsert._TableAliasSpec<T, Insert, ReturningInsert> insertInto(SimpleTableMeta<T> table) {
-            return this.clause.endStaticWithClause(this.recursive)
-                    .insertInto(table);
-        }
-
-        @Override
-        public <T> PostgreInsert._TableAliasSpec<T, Insert, ReturningInsert> insertInto(ChildTableMeta<T> table) {
-            return this.clause.endStaticWithClause(this.recursive)
-                    .insertInto(table);
-        }
-
-        @Override
-        public <P> PostgreInsert._TableAliasSpec<P, PostgreInsert._ParentInsert<P>, PostgreInsert._ParentReturnInsert<P>> insertInto(ParentTableMeta<P> table) {
-            return this.clause.endStaticWithClause(this.recursive)
-                    .insertInto(table);
-        }
-
-
-    }//PrimaryCteCommaClause
-
-
-    private static final class ChildCteComma<P> implements PostgreInsert._ChildCteComma<P> {
-
-        private final boolean recursive;
-
-        private final ChildInsertIntoClause<P> primaryClause;
-
-        private final Function<String, PostgreStatement._StaticCteParensSpec<PostgreInsert._ChildCteComma<P>>> function;
-
-        private ChildCteComma(boolean recursive, ChildInsertIntoClause<P> clause) {
-            this.recursive = recursive;
-            this.primaryClause = clause;
-            this.function = PostgreQueries.complexCte(clause.context, this);
-        }
-
-        @Override
-        public PostgreStatement._StaticCteParensSpec<PostgreInsert._ChildCteComma<P>> comma(String name) {
-            return this.function.apply(name);
-        }
-
-        @Override
-        public <T> PostgreInsert._TableAliasSpec<T, Insert, ReturningInsert> insertInto(ComplexTableMeta<P, T> table) {
-            return this.primaryClause.endStaticWithClause(this.recursive)
-                    .insertInto(table);
-        }
-
-
-    }//ChildCteComma
-
-
     private static final class PrimaryInsertIntoClause extends NonQueryWithCteOption<
             PostgreInsert._PrimaryNullOptionSpec,
             PostgreInsert._PrimaryPreferLiteralSpec,
@@ -274,24 +196,22 @@ abstract class PostgreInserts extends InsertSupport {
             PostgreInsert._PrimaryInsertIntoClause>
             implements PostgreInsert._PrimaryOptionSpec {
 
-        private PrimaryInsertIntoClause() {
-            super(CriteriaContexts.primaryInsertContext(null));//TODO spec
+        private PrimaryInsertIntoClause(@Nullable _Statement._WithClauseSpec spec) {
+            super(CriteriaContexts.primaryInsertContext(spec));
             ContextStack.push(this.context);
         }
 
 
         @Override
-        public PostgreStatement._StaticCteParensSpec<PostgreInsert._PrimaryCteComma> with(String name) {
-            final boolean recursive = false;
-            this.context.onBeforeWithClause(recursive);
-            return new PrimaryCteCommaClause(recursive, this).function.apply(name);
+        public PostgreQuery._StaticCteParensSpec<PostgreInsert._PrimaryInsertIntoClause> with(String name) {
+            return PostgreQueries.complexCte(this.context, false, this::endStaticWithClause)
+                    .comma(name);
         }
 
         @Override
-        public PostgreStatement._StaticCteParensSpec<PostgreInsert._PrimaryCteComma> withRecursive(String name) {
-            final boolean recursive = true;
-            this.context.onBeforeWithClause(recursive);
-            return new PrimaryCteCommaClause(recursive, this).function.apply(name);
+        public PostgreQuery._StaticCteParensSpec<PostgreInsert._PrimaryInsertIntoClause> withRecursive(String name) {
+            return PostgreQueries.complexCte(this.context, true, this::endStaticWithClause)
+                    .comma(name);
         }
 
         @Override
@@ -336,17 +256,15 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreStatement._StaticCteParensSpec<PostgreInsert._ChildCteComma<P>> with(String name) {
-            final boolean recursive = false;
-            this.context.onBeforeWithClause(recursive);
-            return new ChildCteComma<>(recursive, this).function.apply(name);
+        public PostgreQuery._StaticCteParensSpec<PostgreInsert._ChildInsertIntoClause<P>> with(String name) {
+            return PostgreQueries.complexCte(this.context, false, this::endStaticWithClause)
+                    .comma(name);
         }
 
         @Override
-        public PostgreStatement._StaticCteParensSpec<PostgreInsert._ChildCteComma<P>> withRecursive(String name) {
-            final boolean recursive = true;
-            this.context.onBeforeWithClause(recursive);
-            return new ChildCteComma<>(recursive, this).function.apply(name);
+        public PostgreQuery._StaticCteParensSpec<PostgreInsert._ChildInsertIntoClause<P>> withRecursive(String name) {
+            return PostgreQueries.complexCte(this.context, true, this::endStaticWithClause)
+                    .comma(name);
         }
 
         @Override
@@ -363,205 +281,79 @@ abstract class PostgreInserts extends InsertSupport {
     }//ChildInsertIntoClause
 
 
-    private static final class StaticSubInsertIntoClause<I extends Item>
-            extends NonQueryInsertOptionsImpl<
-            PostgreInsert._StaticSubNullOptionSpec<I>,
-            PostgreInsert._StaticSubPreferLiteralSpec<I>,
-            PostgreInsert._ComplexInsertIntoClause<I, I>>
-            implements PostgreInsert._StaticSubOptionSpec<I>
-            , WithValueSyntaxOptions {
+    private static final class DynamicSubInsertIntoClause<I extends Item>
+            extends NonQueryWithCteOption<
+            PostgreInsert._DynamicSubNullOptionSpec<I>,
+            PostgreInsert._DynamicSubPreferLiteralSpec<I>,
+            PostgreInsert._DynamicSubWithSpec<I>,
+            PostgreCtes,
+            PostgreInsert._CteInsertIntoClause<I>>
+            implements PostgreInsert._DynamicSubOptionSpec<I> {
 
+        private final Function<PostgreComplexValuesClause<?, ?, ?>, I> function;
 
-        private final Function<PostgreComplexValuesClause<?, ?, ?>, I> dmlFunction;
-
-        private final Function<PostgreComplexValuesClause<?, ?, ?>, I> dqlFunction;
-
-        private StaticSubInsertIntoClause(CriteriaContext outerContext, Function<SubStatement, I> function) {
+        private DynamicSubInsertIntoClause(CriteriaContext outerContext, Function<SubStatement, I> function) {
             super(CriteriaContexts.cteInsertContext(outerContext));
-            this.dmlFunction = function.compose(PostgreInserts::subInsertEnd);
-            this.dqlFunction = function.compose(PostgreInserts::subReturningInsertEnd);
+            this.function = function.compose(PostgreInserts::subInsertEnd);
             //just push sub context,here don't need to start cte
             ContextStack.push(this.context);
 
         }
 
         @Override
-        public <T> PostgreInsert._TableAliasSpec<T, I, I> insertInto(TableMeta<T> table) {
-            return new PostgreComplexValuesClause<>(this, table, this.dmlFunction, this.dqlFunction);
+        public PostgreQuery._StaticCteParensSpec<PostgreInsert._CteInsertIntoClause<I>> with(String name) {
+            return PostgreQueries.complexCte(this.context, false, this::endStaticWithClause)
+                    .comma(name);
         }
 
         @Override
-        public boolean isRecursive() {
-            return false;
-        }
-
-        @Override
-        public List<_Cte> cteList() {
-            //static with cte don't support WITH clause
-            return Collections.emptyList();
-        }
-
-    }//StaticSubInsertIntoClause
-
-
-    private static final class DynamicSubInsertIntoClause<I extends Item>
-            extends NonQueryWithCteOption<
-            PostgreInsert._DynamicSubNullOptionSpec<I>,
-            PostgreInsert._DynamicSubPreferLiteralSpec<I>,
-            PostgreInsert._DynamicSubWithCteSpec<I>,
-            PostgreCtes,
-            PostgreInsert._ComplexInsertIntoClause<I, I>>
-            implements PostgreInsert._DynamicSubMaterializedSpec<I> {
-
-        private final Function<SubStatement, I> function;
-
-        private PostgreSupports.MaterializedOption materializedOption;
-
-        private DynamicSubInsertIntoClause(final CriteriaContext outContext, Function<SubStatement, I> function) {
-            super(CriteriaContexts.cteInsertContext(outContext));
-            this.function = function;
-            ContextStack.push(this.context);
-        }
-
-
-        @Override
-        public PostgreInsert._DynamicSubOptionSpec<I> materialized() {
-            this.materializedOption = PostgreSupports.MaterializedOption.MATERIALIZED;
-            return this;
-        }
-
-        @Override
-        public PostgreInsert._DynamicSubOptionSpec<I> notMaterialized() {
-            this.materializedOption = PostgreSupports.MaterializedOption.NOT_MATERIALIZED;
-            return this;
-        }
-
-        @Override
-        public PostgreInsert._DynamicSubOptionSpec<I> ifMaterialized(BooleanSupplier predicate) {
-            if (predicate.getAsBoolean()) {
-                this.materializedOption = PostgreSupports.MaterializedOption.MATERIALIZED;
-            } else {
-                this.materializedOption = null;
-            }
-            return this;
-        }
-
-        @Override
-        public PostgreInsert._DynamicSubOptionSpec<I> ifNotMaterialized(BooleanSupplier predicate) {
-            if (predicate.getAsBoolean()) {
-                this.materializedOption = PostgreSupports.MaterializedOption.NOT_MATERIALIZED;
-            } else {
-                this.materializedOption = null;
-            }
-            return this;
+        public PostgreQuery._StaticCteParensSpec<PostgreInsert._CteInsertIntoClause<I>> withRecursive(String name) {
+            return PostgreQueries.complexCte(this.context, true, this::endStaticWithClause)
+                    .comma(name);
         }
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<T, I, I> insertInto(TableMeta<T> table) {
-            return new PostgreComplexValuesClause<>(this, table, this::subInsertEnd, this::subReturningInsertEnd);
+            return new PostgreComplexValuesClause<>(this, table, this.function, this.function);
         }
 
+
         @Override
-        PostgreCtes createCteBuilder(final boolean recursive) {
+        PostgreCtes createCteBuilder(boolean recursive) {
             return PostgreSupports.postgreCteBuilder(recursive, this.context);
         }
-
-        private I subInsertEnd(final PostgreComplexValuesClause<?, ?, ?> clause) {
-            final SubInsert subInsert;
-            subInsert = PostgreInserts.subInsertEnd(clause);
-            final PostgreSupports.MaterializedOption option = this.materializedOption;
-            return this.function.apply(
-                    option == null ? subInsert : new PostgreSupports.PostgreSubStatement(option, subInsert)
-            );
-        }
-
-        private I subReturningInsertEnd(final PostgreComplexValuesClause<?, ?, ?> clause) {
-            final SubReturningInsert subInsert;
-            subInsert = PostgreInserts.subReturningInsertEnd(clause);
-            final PostgreSupports.MaterializedOption option = this.materializedOption;
-            return this.function.apply(
-                    option == null ? subInsert : new PostgreSupports.PostgreSubStatement(option, subInsert)
-            );
-        }
-
 
     }//DynamicSubInsertIntoClause
 
-
-    private static final class ComplexComma<I extends Item> implements PostgreInsert._ComplexComma<I> {
-
-        private final boolean recursive;
-
-        private final ComplexInsertIntoClause<I> clause;
-
-        private final Function<String, PostgreStatement._StaticCteParensSpec<PostgreInsert._ComplexComma<I>>> function;
-
-        private ComplexComma(boolean recursive, ComplexInsertIntoClause<I> clause) {
-            this.recursive = recursive;
-            this.clause = clause;
-            this.function = PostgreQueries.complexCte(clause.context, this);
-        }
-
-        @Override
-        public PostgreStatement._StaticCteParensSpec<PostgreInsert._ComplexComma<I>> comma(String name) {
-            return this.function.apply(name);
-        }
-
-        @Override
-        public <T> PostgreInsert._TableAliasSpec<T, I, I> insertInto(TableMeta<T> table) {
-            return this.clause.endStaticWithClause(this.recursive).insertInto(table);
-        }
-
-    }//ComplexComma
-
-
-    private static final class ComplexInsertIntoClause<I extends Item> extends NonQueryWithCteOption<
-            PostgreInsert._ComplexNullOptionSpec<I>,
-            PostgreInsert._ComplexPreferLiteralSpec<I>,
-            PostgreInsert._ComplexWithSpec<I>,
+    private static final class StaticSubInsertIntoClause<I extends Item> extends NonQueryWithCteOption<
+            PostgreInsert._StaticSubNullOptionSpec<I>,
+            PostgreInsert._StaticSubPreferLiteralSpec<I>,
+            PostgreInsert._CteInsertIntoClause<I>,
             PostgreCtes,
-            PostgreInsert._ComplexInsertIntoClause<I, I>>
-            implements PostgreInsert._ComplexOptionSpec<I> {
+            PostgreInsert._CteInsertIntoClause<I>>
+            implements PostgreInsert._StaticSubOptionSpec<I> {
 
-        private final Function<PrimaryStatement, I> function;
+        private final Function<PostgreComplexValuesClause<?, ?, ?>, I> function;
 
-
-        private ComplexInsertIntoClause(Function<PrimaryStatement, I> function) {
-            super(CriteriaContexts.primaryInsertContext(null));//spec
-            this.function = function;
+        private StaticSubInsertIntoClause(CriteriaContext outerContext, Function<SubStatement, I> function) {
+            super(CriteriaContexts.cteInsertContext(outerContext));
+            this.function = function.compose(PostgreInserts::subInsertEnd);
+            //just push sub context,here don't need to start cte
             ContextStack.push(this.context);
         }
 
-
-        @Override
-        public PostgreStatement._StaticCteParensSpec<PostgreInsert._ComplexComma<I>> with(String name) {
-            final boolean recursive = false;
-            this.context.onBeforeWithClause(recursive);
-            return new ComplexComma<>(recursive, this).function.apply(name);
-        }
-
-        @Override
-        public PostgreStatement._StaticCteParensSpec<PostgreInsert._ComplexComma<I>> withRecursive(String name) {
-            final boolean recursive = true;
-            this.context.onBeforeWithClause(recursive);
-            return new ComplexComma<>(recursive, this).function.apply(name);
-        }
-
         @Override
         public <T> PostgreInsert._TableAliasSpec<T, I, I> insertInto(TableMeta<T> table) {
-            return new PostgreComplexValuesClause<>(this, table
-                    , this.function.compose(PostgreInserts::insertEnd)
-                    , this.function.compose(PostgreInserts::returningInsertEnd)
-            );
+            return new PostgreComplexValuesClause<>(this, table, this.function, this.function);
         }
 
         @Override
-        PostgreCtes createCteBuilder(final boolean recursive) {
-            return PostgreSupports.postgreCteBuilder(recursive, this.context);
+        PostgreCtes createCteBuilder(boolean recursive) {
+            throw ContextStack.castCriteriaApi(this.context);
         }
 
 
-    }//PrimaryInsertIntoClause
+    }//StaticSubInsertIntoClause
 
 
     private enum OverridingMode implements SQLWords {

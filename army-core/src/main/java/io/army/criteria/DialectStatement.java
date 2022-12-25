@@ -15,11 +15,11 @@ public interface DialectStatement extends Statement {
 
     interface _StaticReturningCommaClause<R> {
 
-        R comma(Selection selection);
+        R comma(NamedExpression exp);
 
         R comma(Expression expression, SQLs.WordAs wordAs, String alias);
 
-        R comma(Supplier<Selection> supplier);
+        _AsClause<R> comma(Supplier<Expression> supplier);
 
         R comma(NamedExpression exp1, NamedExpression exp2);
 
@@ -31,11 +31,11 @@ public interface DialectStatement extends Statement {
 
     interface _StaticReturningClause<R> {
 
-        R returning(Selection selection);
+        R returning(NamedExpression exp);
 
         R returning(Expression expression, SQLs.WordAs wordAs, String alias);
 
-        R returning(Supplier<Selection> supplier);
+        _AsClause<R> returning(Supplier<Expression> supplier);
 
         R returning(NamedExpression exp1, NamedExpression exp2);
 

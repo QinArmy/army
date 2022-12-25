@@ -27,13 +27,13 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
-        implements _Update
-        , _Statement._JoinableStatement
-        , Update._StaticBatchSetClause<F, SR>
-        , Update._StaticRowSetClause<F, SR>
-        , _Statement._ItemPairList
-        , Statement._DmlUpdateSpec<I>
-        , Statement {
+        implements _Update,
+        _Statement._JoinableStatement,
+        Update._StaticBatchSetClause<F, SR>,
+        Update._StaticRowSetClause<F, SR>,
+        _Statement._ItemPairList,
+        Statement._DmlUpdateSpec<I>,
+        Statement {
 
     private List<_TableBlock> tableBlockList;
 
@@ -43,7 +43,6 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
 
     JoinableUpdate(CriteriaContext context) {
         super(context);
-        ContextStack.push(context);
     }
 
 

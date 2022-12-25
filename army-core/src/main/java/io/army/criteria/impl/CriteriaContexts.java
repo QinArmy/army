@@ -386,12 +386,14 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void onStartCte(final String name) {
+        public final void onStartCte(final @Nullable String name) {
             final WithCteContext withContext = this.withCteContext;
             assert withContext != null;
             if (withContext.currentName != null) {
                 String m = String.format("Cte[%s] don't end,couldn't start new Cte[%s]", withContext.currentName, name);
                 throw ContextStack.criteriaError(this, m);
+            } else if (name == null) {
+                throw ContextStack.nullPointer(this);
             }
             final List<_Cte> cteList = withContext.cteList;
             if (cteList != null && !(cteList instanceof ArrayList)) {

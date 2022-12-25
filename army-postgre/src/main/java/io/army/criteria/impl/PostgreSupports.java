@@ -12,7 +12,9 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
+import io.army.mapping.BooleanType;
 import io.army.mapping.MappingType;
+import io.army.mapping.StringType;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
 import io.army.util._CollectionUtils;
@@ -274,11 +276,11 @@ abstract class PostgreSupports extends CriteriaSupports {
             super(joinType, modifier, table, alias);
         }
 
-        void setSampleMethod(ArmyExpression sampleMethod) {
+        void onSampleMethod(ArmyExpression sampleMethod) {
             this.sampleMethod = sampleMethod;
         }
 
-        void setSeed(ArmyExpression seed) {
+        void onSeed(ArmyExpression seed) {
             this.seed = seed;
         }
 
@@ -336,21 +338,6 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//PostgreDynamicDmlCteLeftParenClause
 
 
-    private static final class PostgreDynamicInsertLeftParenClause
-            extends PostgreDynamicDmlCteLeftParenClause<
-            PostgreInsert._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>>>
-            implements PostgreInsert._DynamicSubInsertSpec {
-
-        private PostgreDynamicInsertLeftParenClause(String name, PostgreCteBuilderImpl cteBuilder) {
-            super(name, cteBuilder);
-        }
-
-        @Override
-        public PostgreInsert._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>> as() {
-            return PostgreInserts.dynamicSubInsert(this.context, this::subStmtEnd);
-        }
-
-    }//PostgreDynamicInsertLeftParenClause
 
     private static final class PostgreDynamicUpdateLeftParenClause
             extends PostgreDynamicDmlCteLeftParenClause<
@@ -450,36 +437,53 @@ abstract class PostgreSupports extends CriteriaSupports {
             this.searchClause = searchClause;
             this.cycleClause = cycleClause;
 
-
-            if (searchSeqSelection == null && cycleMarkSelection == null && cyclePathSelection == null) {
-
-            } else {
-
-            }
-
-            final int selectionSize = stmtSelections.size();
-            if (columnAliasList != null && columnAliasList.size() != selectionSize) {
-                throw CriteriaUtils.cteColumnAliasNotMatch(selectionSize, columnAliasList.size());
-            }
-
-            final Map<String, Selection> map = new HashMap<>();
-            final List<Selection> list = new ArrayList<>(selectionSize);
-            String alias;
-            Selection selection;
-            for (int i = 0; i < selectionSize; i++) {
-                selection = stmtSelections.get(i);
-                if (columnAliasList == null) {
-                    alias = selection.alias();
-                } else {
-                    alias = columnAliasList.get(i);
-                }
-                if (map.putIfAbsent(alias, selection) != null && columnAliasList != null) {
-                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), alias);
-                }
-            }
-            this.selectionList = list;
-            this.selectionMap = Collections.unmodifiableMap(map);
+            final _Pair<List<Selection>, Map<String, Selection>> pair;
+            pair = createPair(searchClause, cycleClause);
+            this.selectionList = pair.first;
+            this.selectionMap = pair.second;
         }
+
+
+        @Override
+        public String name() {
+            return this.name;
+        }
+
+        @Override
+        public Selection selection(String derivedAlias) {
+            return this.selectionMap.get(derivedAlias);
+        }
+
+        @Override
+        public List<Selection> selectionList() {
+            return this.selectionList;
+        }
+
+        @Override
+        public SubStatement subStatement() {
+            return this.subStatement;
+        }
+
+        @Override
+        public List<String> columnAliasList() {
+            return this.columnAliasList;
+        }
+
+        @Override
+        public Postgres.WordMaterialized modifier() {
+            return this.modifier;
+        }
+
+        @Override
+        public _SearchClause searchClause() {
+            return this.searchClause;
+        }
+
+        @Override
+        public _CycleClause cycleClause() {
+            return this.cycleClause;
+        }
+
 
         private _Pair<List<Selection>, Map<String, Selection>> createPair(final @Nullable _SearchClause searchClause,
                                                                           final @Nullable _CycleClause cycleClause) {
@@ -562,46 +566,6 @@ abstract class PostgreSupports extends CriteriaSupports {
             );
         }
 
-
-        @Override
-        public String name() {
-            return this.name;
-        }
-
-        @Override
-        public Selection selection(String derivedAlias) {
-            return this.selectionMap.get(derivedAlias);
-        }
-
-        @Override
-        public List<Selection> selectionList() {
-            return this.selectionList;
-        }
-
-        @Override
-        public SubStatement subStatement() {
-            return this.subStatement;
-        }
-
-        @Override
-        public List<String> columnAliasList() {
-            return this.columnAliasList;
-        }
-
-        @Override
-        public Postgres.WordMaterialized modifier() {
-            return this.modifier;
-        }
-
-        @Override
-        public _SearchClause searchClause() {
-            return this.searchClause;
-        }
-
-        @Override
-        public _CycleClause cycleClause() {
-            return this.cycleClause;
-        }
 
     }//PostgreCte
 
@@ -913,6 +877,19 @@ abstract class PostgreSupports extends CriteriaSupports {
             return (I) this;
         }
 
+        @Override
+        public final Selection cycleMarkSelection() {
+            final String s = this.cycleMarkColumnName;
+            assert s != null;
+            return ArmySelections.forName(s, BooleanType.INSTANCE);// TODO optimizing
+        }
+
+        @Override
+        public final Selection cyclePathSelection() {
+            final String s = this.cyclePathColumnName;
+            assert s != null;
+            return ArmySelections.forName(s, StringType.INSTANCE);// TODO optimizing
+        }
 
         final boolean hasCycleClause() {
             return this.cycleColumnList != null;
@@ -1062,6 +1039,14 @@ abstract class PostgreSupports extends CriteriaSupports {
             return (SR) this;
         }
 
+
+        @Override
+        public final Selection searchSeqSelection() {
+            final String s = this.searchSeqColumnName;
+            assert s != null;
+            return ArmySelections.forName(s, StringType.INSTANCE);//TODO optimizing
+        }
+
         final boolean hasSearchClause() {
             return this.searchOption != null;
         }
@@ -1070,50 +1055,39 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//PostgreCteSearchSpec
 
 
-    private static final class PostgreDynamicQueryLeftParenClause
-            extends PostgreDynamicDmlCteLeftParenClause<
-            PostgreQuery._DynamicSubMaterializedSpec<PostgreStatement._CteSearchSpec<PostgreCtes>>>
-            implements PostgreQuery._DynamicCteQuerySpec {
+    private static final class DynamicCteInsertParensSpec extends CteParensClause<PostgreInsert._DynamicCteAsClause>
+            implements PostgreInsert._DynamicCteParensSpec {
 
-        private PostgreDynamicQueryLeftParenClause(String name, PostgreCteBuilderImpl cteBuilder) {
-            super(name, cteBuilder);
-        }
+        private final PostgreCteBuilderImpl builder;
 
+        private Postgres.WordMaterialized modifier;
 
-        @Override
-        public PostgreQuery._DynamicSubMaterializedSpec<PostgreStatement._CteSearchSpec<PostgreCtes>> as() {
-            return PostgreQueries.dynamicCteQuery(this.cteBuilder.context, this::subQueryEnd);
-        }
-
-        private PostgreStatement._CteSearchSpec<PostgreCtes> subQueryEnd(SubStatement subQuery) {
-            return new PostgreCteSearchSpec<>(this.cteBuilder.context, subQuery, this::searchOptionEnd);
-        }
-
-        private PostgreCtes searchOptionEnd(SubStatement statement) {
-            //TODO 将 search_seq_col_name 等加入 输出列
-            return this.subStmtEnd(statement)
-                    .asCte();
-        }
-
-
-    }//PostgreDynamicQueryLeftParenClause
-
-
-    private static final class PostgreDynamicValuesLeftParenClause
-            extends PostgreDynamicDmlCteLeftParenClause<
-            PostgreValues._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>>>
-            implements PostgreValues._DynamicCteValuesSpec {
-
-        private PostgreDynamicValuesLeftParenClause(String name, PostgreCteBuilderImpl cteBuilder) {
-            super(name, cteBuilder);
+        private DynamicCteInsertParensSpec(String name, PostgreCteBuilderImpl builder) {
+            super(name, builder.context);
+            this.builder = builder;
         }
 
         @Override
-        public PostgreValues._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>> as() {
-            return PostgreValuesStatements.dynamicCteValues(this.cteBuilder.context, this::subStmtEnd);
+        public PostgreCtes as(Function<PostgreInsert._DynamicSubOptionSpec<PostgreCtes>, PostgreCtes> function) {
+            return function.apply(PostgreInserts.dynamicSubInsert(this.context, this::subInsertEnd));
         }
 
-    }//PostgreDynamicValuesLeftParenClause
+        @Override
+        public PostgreCtes as(@Nullable Postgres.WordMaterialized modifier,
+                              Function<PostgreInsert._DynamicSubOptionSpec<PostgreCtes>, PostgreCtes> function) {
+            this.modifier = modifier;
+            return function.apply(PostgreInserts.dynamicSubInsert(this.context, this::subInsertEnd));
+        }
+
+        private PostgreCtes subInsertEnd(final SubStatement statement) {
+            final PostgreCte cte;
+            cte = new PostgreCte(this.name, this.columnAliasList, this.modifier, statement);
+            this.context.onAddCte(cte);
+            return this.builder;
+        }
+
+
+    }//DynamicCteInsertParensSpec
 
 
     private static final class PostgreCteBuilderImpl implements PostgreCtes {
@@ -1123,16 +1097,15 @@ abstract class PostgreSupports extends CriteriaSupports {
         private final CriteriaContext context;
 
         private PostgreCteBuilderImpl(final boolean recursive, CriteriaContext context) {
+            context.onBeforeWithClause(recursive);
             this.recursive = recursive;
             this.context = context;
-            context.onBeforeWithClause(recursive);
+
         }
 
-
         @Override
-        public PostgreInsert._DynamicSubInsertSpec singleInsert(String name) {
-            this.context.onStartCte(name);
-            return new PostgreDynamicInsertLeftParenClause(name, this);
+        public PostgreInsert._DynamicCteParensSpec singleInsert(String name) {
+            return new DynamicCteInsertParensSpec(name, this);
         }
 
         @Override

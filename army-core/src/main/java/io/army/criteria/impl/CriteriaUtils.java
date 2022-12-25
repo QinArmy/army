@@ -2,6 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.dialect.Returnings;
+import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._RowSet;
@@ -61,6 +63,15 @@ abstract class CriteriaUtils {
             throw ContextStack.criteriaError(ctx, "you don't add string");
         } else {
             list = Collections.emptyList();
+        }
+        return list;
+    }
+
+    static List<Selection> selectionList(CriteriaContext context, Consumer<Returnings> consumer) {
+        final List<Selection> list = new ArrayList<>();
+        consumer.accept(CriteriaSupports.returningBuilder(list::add));
+        if (list.size() == 0) {
+            throw CriteriaUtils.returningListIsEmpty(context);
         }
         return list;
     }
@@ -428,6 +439,45 @@ abstract class CriteriaUtils {
                 .toString();
     }
 
+    static _Pair<List<Selection>, Map<String, Selection>> forColumnAlias(final List<String> columnAliasList,
+                                                                         final _DerivedTable table) {
+        final List<Selection> tableSelectionList;
+        tableSelectionList = table.selectionList();
+        final int selectionSize;
+        selectionSize = tableSelectionList.size();
+        if (columnAliasList.size() != selectionSize) {
+            throw CriteriaUtils.cteColumnAliasNotMatch(selectionSize, columnAliasList.size());
+        }
+        if (selectionSize == 1) {
+            final Selection selection;
+            selection = ArmySelections.renameSelection(tableSelectionList.get(0), columnAliasList.get(0));
+            return _Pair.create(
+                    Collections.singletonList(selection),
+                    Collections.singletonMap(selection.alias(), selection)
+            );
+        }
+        final List<Selection> selectionList = new ArrayList<>(selectionSize);
+        final Map<String, Selection> selectionMap = new HashMap<>((int) (selectionSize / 0.75f));
+        Selection selection;
+        String columnAlias;
+        for (int i = 0; i < selectionSize; i++) {
+            columnAlias = columnAliasList.get(i);
+            if (columnAlias == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            selection = ArmySelections.renameSelection(tableSelectionList.get(i), columnAlias);
+            if (selectionMap.putIfAbsent(columnAlias, selection) != null) {
+                throw CriteriaUtils.duplicateColumnAlias(columnAlias);
+            }
+            selectionList.add(selection);
+        }
+        assert selectionList.size() == selectionMap.size();
+        return _Pair.create(
+                Collections.unmodifiableList(selectionList),
+                Collections.unmodifiableMap(selectionMap)
+        );
+    }
+
 
     static CriteriaException unknownSelection(CriteriaContext context, String selectionAlias) {
         String m = String.format("unknown %s[%s]", Selection.class.getName(), selectionAlias);
@@ -564,9 +614,15 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, m);
     }
 
+    @Deprecated
     static CriteriaException duplicateColumnAlias(CriteriaContext context, String columnAlias) {
         String m = String.format("column alias[%s] duplication.", columnAlias);
         return ContextStack.criteriaError(context, m);
+    }
+
+    static CriteriaException duplicateColumnAlias(String columnAlias) {
+        String m = String.format("column alias[%s] duplication.", columnAlias);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
     static CriteriaException columnAliasIsEmpty(CriteriaContext context) {

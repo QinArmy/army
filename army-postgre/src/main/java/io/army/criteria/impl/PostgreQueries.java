@@ -104,7 +104,7 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
         if (method == null) {
             throw ContextStack.nullPointer(this.context);
         }
-        this.getLastTableBlock().setSampleMethod((ArmyExpression) method);
+        this.getLastTableBlock().onSampleMethod((ArmyExpression) method);
         return this;
     }
 
@@ -187,7 +187,7 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
         if (seed == null) {
             throw ContextStack.nullPointer(this.context);
         }
-        this.getLastTableBlock().setSeed((ArmyExpression) seed);
+        this.getLastTableBlock().onSeed((ArmyExpression) seed);
         return this;
     }
 
@@ -1460,21 +1460,21 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
         }
 
         @Override
-        public PostgreInsert._ComplexInsertIntoClause<_CteComma<I>, _CteComma<I>> literalMode(LiteralMode mode) {
+        public PostgreInsert._CteInsertIntoClause<_CteComma<I>, _CteComma<I>> literalMode(LiteralMode mode) {
             this.endQueryBeforeSelect();
             return PostgreInserts.staticSubInsert(this.context.getNonNullLeftContext(), this.function)
                     .literalMode(mode);
         }
 
         @Override
-        public PostgreInsert._StaticSubNullOptionSpec<_CteComma<I>> migration(boolean migration) {
+        public PostgreInsert._DynamicSubNullOptionSpec<_CteComma<I>> migration(boolean migration) {
             this.endQueryBeforeSelect();
             return PostgreInserts.staticSubInsert(this.context.getNonNullLeftContext(), this.function)
                     .migration(migration);
         }
 
         @Override
-        public PostgreInsert._StaticSubPreferLiteralSpec<_CteComma<I>> nullMode(NullMode mode) {
+        public PostgreInsert._DynamicSubPreferLiteralSpec<_CteComma<I>> nullMode(NullMode mode) {
             this.endQueryBeforeSelect();
             return PostgreInserts.staticSubInsert(this.context.getNonNullLeftContext(), this.function)
                     .nullMode(mode);
