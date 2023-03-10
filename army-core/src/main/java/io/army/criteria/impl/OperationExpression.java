@@ -423,7 +423,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public OperationExpression bracket() {
+    public Expression bracket() {
         return Expressions.bracketExp(this);
     }
 

@@ -23,12 +23,12 @@ import java.util.Objects;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
+abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
 
     /**
      * private constructor
      */
-    private MySQLFunctions() {
+    MySQLFunctions() {
     }
 
 
@@ -350,8 +350,11 @@ public abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html">Flow Control Functions</a>
      */
-    public static SQLFunction._CaseFuncWhenClause<Expression> cases(Expression exp) {
-        return MySQLs.cases(exp, SQLs._getAsExpFunc(), SQLs._IDENTITY);
+    public static SQLFunction._CaseFuncWhenClause cases(Expression exp) {
+        if (!(exp instanceof ArmyExpression)) {
+            throw CriteriaUtils.funcArgError("CASE", exp);
+        }
+        return FunctionUtils.caseFunction(exp);
     }
 
 

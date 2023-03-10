@@ -35,75 +35,60 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }
 
 
-    static <I extends Item, E extends Expression> MySQLFunctionSyntax._OverSpec<E> noArgWindowFunc(
-            String name, TypeMeta returnType, Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
-        return new NoArgWindowFunction<>(name, returnType, expFunc, endFunc);
+    static MySQLWindowFunctions._OverSpec noArgWindowFunc(String name, TypeMeta returnType) {
+        return new NoArgWindowFunction(name, returnType);
     }
 
-    static <I extends Item, E extends Expression> MySQLFunctionSyntax._OverSpec<E> oneArgWindowFunc(
-            String name, Expression arg, TypeMeta returnType, Function<_ItemExpression<I>, E> expFunc,
-            Function<TypeInfer, I> endFunc) {
+    static MySQLWindowFunctions._OverSpec oneArgWindowFunc(
+            String name, Expression arg, TypeMeta returnType) {
         if (arg instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, arg);
         }
-        return new OneArgWindowFunction<>(name, (ArmyExpression) arg, returnType, expFunc, endFunc);
+        return new OneArgWindowFunction(name, (ArmyExpression) arg, returnType);
     }
 
-    static <I extends Item, E extends Expression> MySQLFunctionSyntax._OverSpec<E> twoArgWindowFunc(
-            String name, Expression one, Expression two, TypeMeta returnType, Function<_ItemExpression<I>, E> expFunc,
-            Function<TypeInfer, I> endFunc) {
-        return new MultiArgWindowFunction<>(name, null, twoExpList(name, one, two), returnType, expFunc, endFunc);
+    static MySQLWindowFunctions._OverSpec twoArgWindowFunc(
+            String name, Expression one, Expression two, TypeMeta returnType) {
+        return new MultiArgWindowFunction(name, null, twoExpList(name, one, two), returnType);
     }
 
-    static <I extends Item, E extends Expression> MySQLFunctionSyntax._OverSpec<E> threeArgWindow(
-            String name, Expression one,
-            Expression two, Expression three,
-            TypeMeta returnType, Function<_ItemExpression<I>, E> expFunc,
-            Function<TypeInfer, I> endFunc) {
-        return new MultiArgWindowFunction<>(name, null, threeExpList(name, one, two, three),
-                returnType, expFunc, endFunc);
+    static MySQLWindowFunctions._OverSpec threeArgWindow(String name, Expression one, Expression two, Expression three,
+                                                         TypeMeta returnType) {
+        return new MultiArgWindowFunction(name, null, threeExpList(name, one, two, three), returnType);
     }
 
 
-    static <I extends Item, E extends Expression> MySQLFunctionSyntax._FromFirstLastOverSpec<E> twoArgFromFirstWindowFunc(
-            String name, Expression one,
-            Expression two, TypeMeta returnType,
-            Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
-        return new FromFirstLastMultiArgWindowFunc<>(name, twoExpList(name, one, two), returnType, expFunc, endFunc);
+    static MySQLWindowFunctions._FromFirstLastOverSpec twoArgFromFirstWindowFunc(String name, Expression one,
+                                                                                 Expression two, TypeMeta returnType) {
+        return new FromFirstLastMultiArgWindowFunc(name, twoExpList(name, one, two), returnType);
     }
 
 
-    static <I extends Item, E extends Expression> MySQLFunctionSyntax._ItemAggregateWindowFunc<I, E> oneArgAggregate(
-            String name, Expression arg,
-            TypeMeta returnType, Function<_ItemExpression<I>, E> expFunc,
-            Function<TypeInfer, I> endFunc) {
+    static MySQLWindowFunctions._ItemAggregateWindowFunc oneArgAggregate(String name, Expression arg,
+                                                                         TypeMeta returnType) {
         if (arg instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, arg);
         }
-        return new OneArgAggregateWindowFunc<>(name, (ArmyExpression) arg, returnType, expFunc, endFunc);
+        return new OneArgAggregateWindowFunc(name, (ArmyExpression) arg, returnType);
     }
 
-    static <I extends Item, E extends Expression> MySQLFunctionSyntax._ItemAggregateWindowFunc<I, E> oneArgAggregate(
-            String name, @Nullable SQLWords option
-            , Expression arg, TypeMeta returnType
-            , Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
+    static MySQLWindowFunctions._ItemAggregateWindowFunc oneArgAggregate(String name, @Nullable SQLWords option
+            , Expression arg, TypeMeta returnType) {
         assert option == null || option == SQLs.DISTINCT || option == MySQLs.DISTINCT;
         if (arg instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, arg);
         }
-        return new OneArgOptionAggregateWindowFunc<>(name, option, (ArmyExpression) arg, returnType, expFunc, endFunc);
+        return new OneArgOptionAggregateWindowFunc(name, option, (ArmyExpression) arg, returnType);
     }
 
-    static <I extends Item, E extends Expression> MySQLFunctionSyntax._ItemAggregateWindowFunc<I, E> multiArgAggregateWindowFunc(
-            String name, @Nullable SQLWords option
-            , List<Expression> argList, TypeMeta returnType
-            , Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
+    static MySQLWindowFunctions._ItemAggregateWindowFunc multiArgAggregateWindowFunc(
+            String name, @Nullable SQLWords option, List<Expression> argList, TypeMeta returnType) {
         assert option == null || option == SQLs.DISTINCT || option == MySQLs.DISTINCT;
         final List<ArmyExpression> expList = new ArrayList<>(argList.size());
         for (Expression arg : argList) {
             expList.add((ArmyExpression) arg);
         }
-        return new MultiArgAggregateWindowFunc<>(name, option, expList, returnType, expFunc, endFunc);
+        return new MultiArgAggregateWindowFunc(name, option, expList, returnType);
     }
 
 
@@ -178,7 +163,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
     private static abstract class MySQLWindowFunction extends WindowFunction
-            implements MySQLFunctionSyntax._OverSpec, MySQLFunction {
+            implements MySQLWindowFunctions._OverSpec, MySQLFunction {
 
 
         private MySQLWindowFunction(String name, TypeMeta returnType) {
@@ -207,13 +192,10 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
     }//MySQLWindowFunction
 
-    private static class NoArgWindowFunction<I extends Item, E extends Expression>
-            extends MySQLWindowFunction<I, E>
-            implements FunctionUtils.NoArgFunction {
+    private static class NoArgWindowFunction extends MySQLWindowFunction implements FunctionUtils.NoArgFunction {
 
-        private NoArgWindowFunction(String name, TypeMeta returnType, Function<_ItemExpression<I>, E> expFunc,
-                                    Function<TypeInfer, I> endFunc) {
-            super(name, returnType, expFunc, endFunc);
+        private NoArgWindowFunction(String name, TypeMeta returnType) {
+            super(name, returnType);
         }
 
         @Override
@@ -229,14 +211,12 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }//NoArgWindowFunc
 
 
-    private static class OneArgWindowFunction
-            extends MySQLWindowFunction< {
+    private static class OneArgWindowFunction extends MySQLWindowFunction {
 
         private final ArmyExpression argument;
 
-        private OneArgWindowFunction(String name, ArmyExpression argument, TypeMeta returnType,
-                                     Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
-            super(name, returnType, expFunc, endFunc);
+        private OneArgWindowFunction(String name, ArmyExpression argument, TypeMeta returnType) {
+            super(name, returnType);
             this.argument = argument;
         }
 
@@ -254,8 +234,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }//OneArgWindowFunc
 
 
-    private static class OneOptionArgWindowFunction<I extends Item, E extends Expression>
-            extends MySQLWindowFunction<I, E> {
+    private static class OneOptionArgWindowFunction extends MySQLWindowFunction {
 
         private final SQLWords option;
 
@@ -263,9 +242,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
         private OneOptionArgWindowFunction(String name, @Nullable SQLWords option, ArmyExpression argument,
-                                           TypeMeta returnType, Function<_ItemExpression<I>, E> expFunc,
-                                           Function<TypeInfer, I> endFunc) {
-            super(name, returnType, expFunc, endFunc);
+                                           TypeMeta returnType) {
+            super(name, returnType);
             this.option = option;
             this.argument = argument;
         }
@@ -294,17 +272,15 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }//OneOptionArgWindowFunction
 
 
-    private static class MultiArgWindowFunction<I extends Item, E extends Expression>
-            extends MySQLWindowFunction<I, E> {
+    private static class MultiArgWindowFunction extends MySQLWindowFunction {
 
         private final SQLWords option;
 
         private final List<ArmyExpression> argList;
 
         private MultiArgWindowFunction(String name, @Nullable SQLWords option, List<ArmyExpression> argList,
-                                       TypeMeta returnType, Function<_ItemExpression<I>, E> expFunc,
-                                       Function<TypeInfer, I> endFunc) {
-            super(name, returnType, expFunc, endFunc);
+                                       TypeMeta returnType) {
+            super(name, returnType);
             assert argList.size() > 0;
             this.option = option;
             this.argList = argList;
@@ -324,68 +300,64 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }//MultiArgWindowFunction
 
 
-    private static final class FromFirstLastMultiArgWindowFunc<I extends Item, E extends Expression>
-            extends MultiArgWindowFunction<I, E>
-            implements MySQLFunctionSyntax._FromFirstLastOverSpec<E> {
-
+    private static final class FromFirstLastMultiArgWindowFunc extends MultiArgWindowFunction
+            implements MySQLWindowFunctions._FromFirstLastOverSpec {
 
         private FromFirstLast fromFirstLast;
 
         private NullTreatment nullTreatment;
 
         /**
-         * @see #twoArgFromFirstWindowFunc(String, Expression, Expression, TypeMeta, Function, Function)
+         * @see #twoArgFromFirstWindowFunc(String, Expression, Expression, TypeMeta)
          */
-        public FromFirstLastMultiArgWindowFunc(String name, List<ArmyExpression> argList, TypeMeta returnType,
-                                               Function<_ItemExpression<I>, E> expFunc,
-                                               Function<TypeInfer, I> endFunc) {
-            super(name, null, argList, returnType, expFunc, endFunc);
+        public FromFirstLastMultiArgWindowFunc(String name, List<ArmyExpression> argList, TypeMeta returnType) {
+            super(name, null, argList, returnType);
         }
 
         @Override
-        public MySQLFunctionSyntax._NullTreatmentOverSpec<E> fromFirst() {
+        public MySQLWindowFunctions._NullTreatmentOverSpec fromFirst() {
             this.fromFirstLast = FromFirstLast.FROM_FIRST;
             return this;
         }
 
         @Override
-        public MySQLFunctionSyntax._NullTreatmentOverSpec<E> fromLast() {
+        public MySQLWindowFunctions._NullTreatmentOverSpec fromLast() {
             this.fromFirstLast = FromFirstLast.FROM_LAST;
             return this;
         }
 
         @Override
-        public MySQLFunctionSyntax._NullTreatmentOverSpec<E> ifFromFirst(BooleanSupplier predicate) {
+        public MySQLWindowFunctions._NullTreatmentOverSpec ifFromFirst(BooleanSupplier predicate) {
             this.fromFirstLast = predicate.getAsBoolean() ? FromFirstLast.FROM_FIRST : null;
             return this;
         }
 
         @Override
-        public MySQLFunctionSyntax._NullTreatmentOverSpec<E> ifFromLast(BooleanSupplier predicate) {
+        public MySQLWindowFunctions._NullTreatmentOverSpec ifFromLast(BooleanSupplier predicate) {
             this.fromFirstLast = predicate.getAsBoolean() ? FromFirstLast.FROM_LAST : null;
             return this;
         }
 
         @Override
-        public MySQLFunctionSyntax._OverSpec<E> respectNulls() {
+        public MySQLWindowFunctions._OverSpec respectNulls() {
             this.nullTreatment = NullTreatment.RESPECT_NULLS;
             return this;
         }
 
         @Override
-        public MySQLFunctionSyntax._OverSpec<E> ignoreNulls() {
+        public MySQLWindowFunctions._OverSpec ignoreNulls() {
             this.nullTreatment = NullTreatment.IGNORE_NULLS;
             return this;
         }
 
         @Override
-        public MySQLFunctionSyntax._OverSpec<E> ifRespectNulls(BooleanSupplier predicate) {
+        public MySQLWindowFunctions._OverSpec ifRespectNulls(BooleanSupplier predicate) {
             this.nullTreatment = predicate.getAsBoolean() ? NullTreatment.RESPECT_NULLS : null;
             return this;
         }
 
         @Override
-        public MySQLFunctionSyntax._OverSpec<E> ifIgnoreNulls(BooleanSupplier predicate) {
+        public MySQLWindowFunctions._OverSpec ifIgnoreNulls(BooleanSupplier predicate) {
             this.nullTreatment = predicate.getAsBoolean() ? NullTreatment.IGNORE_NULLS : null;
             return this;
         }
@@ -424,43 +396,37 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }//FromFirstLastMultiArgWindowFunc
 
 
-    private static final class OneArgAggregateWindowFunc<I extends Item, E extends Expression>
-            extends OneArgWindowFunction<I, E>
-            implements MySQLFunctionSyntax._ItemAggregateWindowFunc<I, E> {
+    private static final class OneArgAggregateWindowFunc extends OneArgWindowFunction
+            implements MySQLWindowFunctions._ItemAggregateWindowFunc {
 
-        private OneArgAggregateWindowFunc(String name, ArmyExpression argument, TypeMeta returnType,
-                                          Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
-            super(name, argument, returnType, expFunc, endFunc);
+        private OneArgAggregateWindowFunc(String name, ArmyExpression argument, TypeMeta returnType) {
+            super(name, argument, returnType);
         }
 
 
     }//OneArgAggregateWindowFunc
 
-    private static final class OneArgOptionAggregateWindowFunc<I extends Item, E extends Expression>
-            extends OneOptionArgWindowFunction<I, E>
-            implements MySQLFunctionSyntax._ItemAggregateWindowFunc<I, E> {
+    private static final class OneArgOptionAggregateWindowFunc extends OneOptionArgWindowFunction
+            implements MySQLWindowFunctions._ItemAggregateWindowFunc {
 
         /**
-         * @see #oneArgAggregate(String, SQLWords, Expression, TypeMeta, Function, Function)
+         * @see #oneArgAggregate(String, SQLWords, Expression, TypeMeta)
          */
         private OneArgOptionAggregateWindowFunc(String name, @Nullable SQLWords option, ArmyExpression argument,
-                                                TypeMeta returnType, Function<_ItemExpression<I>, E> expFunc,
-                                                Function<TypeInfer, I> endFunc) {
-            super(name, option, argument, returnType, expFunc, endFunc);
+                                                TypeMeta returnType) {
+            super(name, option, argument, returnType);
         }
 
 
     }//OneArgAggregateWindowFunc
 
 
-    private static final class MultiArgAggregateWindowFunc<I extends Item, E extends Expression>
-            extends MultiArgWindowFunction<I, E>
-            implements MySQLFunctionSyntax._ItemAggregateWindowFunc<I, E> {
+    private static final class MultiArgAggregateWindowFunc extends MultiArgWindowFunction
+            implements MySQLWindowFunctions._ItemAggregateWindowFunc {
 
         private MultiArgAggregateWindowFunc(String name, @Nullable SQLWords option, List<ArmyExpression> argList,
-                                            TypeMeta returnType, Function<_ItemExpression<I>, E> expFunc,
-                                            Function<TypeInfer, I> endFunc) {
-            super(name, option, argList, returnType, expFunc, endFunc);
+                                            TypeMeta returnType) {
+            super(name, option, argList, returnType);
         }
 
     }//MultiArgAggregateWindowFunc
@@ -469,7 +435,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     /**
      * @see #groupConcatFunc(SQLs.ArgDistinct, List, GroupConcatInnerClause)
      */
-    private static final class GroupConcatFunction extends OperationExpression<TypeInfer> {
+    private static final class GroupConcatFunction extends OperationExpression {
 
         private final SQLSyntax.ArgDistinct distinct;
 
@@ -479,7 +445,6 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         private GroupConcatFunction(@Nullable SQLSyntax.ArgDistinct distinct, List<ArmyExpression> expList
                 , @Nullable GroupConcatInnerClause clause) {
-            super(SQLs._IDENTITY);
             assert expList.size() > 0;
             this.distinct = distinct;
             this.expList = expList;
@@ -492,7 +457,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public OperationExpression<TypeInfer> bracket() {
+        public Expression bracket() {
             //return this ,don't create new instance
             return this;
         }
@@ -543,8 +508,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
      */
     static final class GroupConcatInnerClause
             extends OrderByClause.OrderByClauseClause<MySQLFunction._GroupConcatSeparatorClause>
-            implements MySQLFunction._GroupConcatOrderBySpec
-            , Clause, _SelfDescribed {
+            implements MySQLFunction._GroupConcatOrderBySpec, Clause, _SelfDescribed {
 
 
         private String stringValue;
@@ -622,7 +586,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
     }//GroupConcatClause
 
-    private static final class StatementDigestFunc extends Expressions<TypeInfer> {
+    private static final class StatementDigestFunc extends Expressions {
 
         private final String name;
 
@@ -632,15 +596,21 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         private final boolean literal;
 
-        private StatementDigestFunc(String name, final PrimaryStatement statement, final Visible visible
-                , final boolean literal, TypeMeta returnType) {
-            super(returnType, SQLs._IDENTITY);
+        private final TypeMeta returnType;
+
+        private StatementDigestFunc(String name, final PrimaryStatement statement, final Visible visible,
+                                    final boolean literal, TypeMeta returnType) {
             this.name = name;
             this.statement = statement;
             this.visible = visible;
             this.literal = literal;
+            this.returnType = returnType;
         }
 
+        @Override
+        public TypeMeta typeMeta() {
+            return this.returnType;
+        }
 
         @Override
         public void appendSql(final _SqlContext context) {
@@ -944,8 +914,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }//JsonValueClause
 
 
-    private static final class JsonValueFunction extends Expressions<TypeInfer>
-            implements MySQLFunction {
+    private static final class JsonValueFunction extends Expressions implements MySQLFunction {
 
         private final ArmyExpression jsonDoc;
 
@@ -957,7 +926,6 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
         private JsonValueFunction(ArmyExpression jsonDoc, ArmyExpression path, JsonValueClause clause) {
-            super(getReturnType(clause.returningList), SQLs._IDENTITY);
             this.jsonDoc = jsonDoc;
             this.path = path;
             this.returningList = clause.returningList;
@@ -965,6 +933,10 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         }
 
+        @Override
+        public TypeMeta typeMeta() {
+            return StringType.INSTANCE;
+        }
 
         @Override
         public void appendSql(final _SqlContext context) {
@@ -1050,17 +1022,6 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
             return sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
                     .toString();
-        }
-
-
-        private static TypeMeta getReturnType(@Nullable List<Object> returningList) {
-            final TypeMeta returnType;
-            if (returningList == null) {
-                returnType = StringType.INSTANCE;
-            } else {
-                returnType = MySQLFunctions._castReturnType((MySQLCastType) returningList.get(0));
-            }
-            return returnType;
         }
 
 
