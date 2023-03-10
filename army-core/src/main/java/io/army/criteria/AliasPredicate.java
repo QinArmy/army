@@ -5,7 +5,7 @@ import io.army.criteria.impl._AliasExpression;
 import io.army.function.*;
 
 import java.util.function.*;
-
+@Deprecated
 public interface AliasPredicate<I extends Item> extends IPredicate, _AliasExpression<I>, Statement._AsClause<I> {
 
     @Override

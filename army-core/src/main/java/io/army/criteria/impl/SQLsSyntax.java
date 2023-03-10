@@ -17,7 +17,6 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -629,13 +628,11 @@ abstract class SQLsSyntax extends SQLSyntax {
      * @see #TRUE
      * @see #FALSE
      */
-    private static final class BooleanWord extends OperationPredicate<TypeInfer>
-            implements WordBooleans, ArmyKeyWord {
+    private static final class BooleanWord extends OperationPredicate implements WordBooleans, ArmyKeyWord {
 
         private final String spaceWord;
 
         private BooleanWord(boolean value) {
-            super(SQLs._IDENTITY);
             this.spaceWord = value ? " TRUE" : " FALSE";
         }
 
@@ -1152,9 +1149,8 @@ abstract class SQLsSyntax extends SQLSyntax {
     }
 
 
-    public static <I extends Item, E extends Expression> SQLFunction._CaseFuncWhenClause<E> cases(
-            Function<_ItemExpression<I>, E> expFunc, Function<TypeInfer, I> endFunc) {
-        return FunctionUtils.caseFunction(null, expFunc, endFunc);
+    public static SQLFunction._CaseFuncWhenClause cases() {
+        return FunctionUtils.caseFunction(null);
     }
 
 

@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.NamedParam;
 import io.army.criteria.SQLParam;
 import io.army.criteria.SqlValueParam;
-import io.army.criteria.TypeInfer;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -21,7 +20,7 @@ import java.util.*;
  *
  * @since 1.0
  */
-abstract class ParamExpression extends OperationExpression<TypeInfer> implements SQLParam {
+abstract class ParamExpression extends OperationExpression implements SQLParam {
 
 
     static ParamExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object value) {
@@ -68,7 +67,6 @@ abstract class ParamExpression extends OperationExpression<TypeInfer> implements
     final TypeMeta paramType;
 
     private ParamExpression(TypeMeta paramType) {
-        super(SQLs._IDENTITY);
         this.paramType = paramType;
     }
 

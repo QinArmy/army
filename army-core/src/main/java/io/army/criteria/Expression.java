@@ -271,4 +271,7 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
     Expression bracket();
 
 
+    Selection as(String selectionAlas);
+
+
 }

@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.NamedLiteral;
 import io.army.criteria.SqlValueParam;
-import io.army.criteria.TypeInfer;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -22,7 +21,7 @@ import java.util.Objects;
  *
  * @since 1.0
  */
-abstract class LiteralExpression extends OperationExpression<TypeInfer> {
+abstract class LiteralExpression extends OperationExpression {
 
     static LiteralExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object constant) {
         if (paramMeta == null) {
@@ -105,7 +104,6 @@ abstract class LiteralExpression extends OperationExpression<TypeInfer> {
     final TypeMeta paramType;
 
     private LiteralExpression(TypeMeta paramType) {
-        super(SQLs::_identity);
         this.paramType = paramType;
     }
 

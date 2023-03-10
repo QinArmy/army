@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.AliasExpression;
 import io.army.criteria.Item;
 
-
+@Deprecated
 public interface _AliasExpression<I extends Item> extends AliasExpression<I> {
 
 

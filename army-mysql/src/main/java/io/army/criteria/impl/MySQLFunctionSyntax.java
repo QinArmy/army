@@ -35,34 +35,30 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
     }
 
 
-    public interface _OverSpec<E extends Expression> extends Window._OverWindowClause<E> {
+    public interface _OverSpec extends Window._OverWindowClause {
 
-       E over(Consumer<Window._SimplePartitionBySpec> consumer);
+        Expression over(Consumer<Window._SimplePartitionBySpec> consumer);
 
-        E over(@Nullable String windowName, Consumer<Window._SimplePartitionBySpec> consumer);
-
-    }
-
-    public interface _AggregateWindowFunc<E extends Expression> extends _OverSpec<E>
-            , SQLFunction.AggregateFunction, Expression {
+        Expression over(@Nullable String windowName, Consumer<Window._SimplePartitionBySpec> consumer);
 
     }
 
-    public interface _ItemAggregateWindowFunc<I extends Item, E extends Expression> extends _AggregateWindowFunc<E>
-            , _AliasExpression<I> {
+    public interface _AggregateWindowFunc extends _OverSpec, SQLFunction.AggregateFunction, Expression {
+
+    }
+
+    public interface _ItemAggregateWindowFunc extends _AggregateWindowFunc, _AliasExpression {
 
     }
 
 
-    public interface _NullTreatmentOverSpec<E extends Expression>
-            extends Functions._NullTreatmentClause<_OverSpec<E>>, _OverSpec<E> {
+    public interface _NullTreatmentOverSpec extends Functions._NullTreatmentClause<_OverSpec>, _OverSpec {
 
 
     }
 
-    public interface _FromFirstLastOverSpec<E extends Expression>
-            extends Functions._FromFirstLastClause<_NullTreatmentOverSpec<E>>, _NullTreatmentOverSpec<E>
-            , SQLFunction._OuterClauseBeforeOver {
+    public interface _FromFirstLastOverSpec extends Functions._FromFirstLastClause<_NullTreatmentOverSpec>,
+            _NullTreatmentOverSpec, SQLFunction._OuterClauseBeforeOver {
 
     }
 
@@ -618,7 +614,7 @@ abstract class MySQLFunctionSyntax extends SQLSyntax {
         if (!(exp instanceof ArmyExpression)) {
             throw CriteriaUtils.funcArgError("CASE", exp);
         }
-        return FunctionUtils.caseFunction(exp, expFunc, endFunc);
+        return FunctionUtils.caseFunction(exp);
     }
 
 

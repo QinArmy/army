@@ -177,25 +177,22 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }
 
 
-    private static abstract class MySQLWindowFunction<I extends Item, E extends Expression>
-            extends WindowFunction<I, E>
-            implements MySQLFunctionSyntax._OverSpec<E>
-            , MySQLFunction {
+    private static abstract class MySQLWindowFunction extends WindowFunction
+            implements MySQLFunctionSyntax._OverSpec, MySQLFunction {
 
 
-        private MySQLWindowFunction(String name, TypeMeta returnType, Function<_ItemExpression<I>, E> expFunc,
-                                    Function<TypeInfer, I> endFunc) {
-            super(name, returnType, expFunc, endFunc);
+        private MySQLWindowFunction(String name, TypeMeta returnType) {
+            super(name, returnType);
         }
 
 
         @Override
-        public E over(Consumer<Window._SimplePartitionBySpec> consumer) {
+        public Expression over(Consumer<Window._SimplePartitionBySpec> consumer) {
             return this.over(null, consumer);
         }
 
         @Override
-        public E over(@Nullable String windowName, Consumer<Window._SimplePartitionBySpec> consumer) {
+        public Expression over(@Nullable String windowName, Consumer<Window._SimplePartitionBySpec> consumer) {
             final Window._SimplePartitionBySpec clause;
             clause = WindowClause.anonymousWindow(this.context, windowName);
             consumer.accept(clause);
@@ -232,8 +229,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }//NoArgWindowFunc
 
 
-    private static class OneArgWindowFunction<I extends Item, E extends Expression>
-            extends MySQLWindowFunction<I, E> {
+    private static class OneArgWindowFunction
+            extends MySQLWindowFunction< {
 
         private final ArmyExpression argument;
 

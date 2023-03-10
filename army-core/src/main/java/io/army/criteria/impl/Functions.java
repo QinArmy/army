@@ -1,6 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.Expression;
+import io.army.criteria.IPredicate;
+import io.army.criteria.SqlValueParam;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._SqlContext;
 import io.army.mapping.*;
@@ -448,8 +451,8 @@ abstract class Functions extends SQLSyntax {
     }
 
 
-    public static SQLFunction._CaseFuncWhenClause<Expression> cases() {
-        return FunctionUtils.caseFunction(null, SQLs._getAsExpFunc(), SQLs._IDENTITY);
+    public static SQLFunction._CaseFuncWhenClause cases() {
+        return FunctionUtils.caseFunction(null);
     }
 
 
@@ -596,8 +599,8 @@ abstract class Functions extends SQLSyntax {
     }
 
 
-    static Expression _simpleTowArgFunc(final String name, final Expression g1
-            , final Expression g2, final TypeMeta returnType) {
+    static Expression _simpleTowArgFunc(final String name, final Expression g1,
+                                        final Expression g2, final TypeMeta returnType) {
         if (g1 instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, g1);
         }
@@ -730,12 +733,11 @@ abstract class Functions extends SQLSyntax {
      * @see #countStar()
      * @since 1.0
      */
-    private static final class CountStartFunction extends OperationExpression<TypeInfer> implements SQLFunction {
+    private static final class CountStartFunction extends OperationExpression implements SQLFunction {
 
         private static final CountStartFunction INSTANCE = new CountStartFunction();
 
         private CountStartFunction() {
-            super(SQLs._IDENTITY);
         }
 
         @Override

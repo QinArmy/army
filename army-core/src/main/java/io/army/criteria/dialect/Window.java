@@ -271,11 +271,11 @@ public interface Window extends Item {
     }
 
 
-    interface _OverWindowClause<E extends Expression> extends Item {
+    interface _OverWindowClause extends Item {
 
-        E over(String windowName);
+        Expression over(String windowName);
 
-        E over();
+        Expression over();
     }
 
 

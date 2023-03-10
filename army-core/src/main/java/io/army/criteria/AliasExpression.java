@@ -9,7 +9,7 @@ import io.army.meta.TypeMeta;
 
 import java.util.Collection;
 import java.util.function.BiFunction;
-
+@Deprecated
 public interface AliasExpression<I extends Item> extends _ItemExpression<I>, Statement._AsClause<I> {
 
 

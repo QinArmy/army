@@ -16,8 +16,7 @@ import io.army.meta.TableMeta;
 public interface PostgreDelete extends PostgreStatement {
 
 
-    interface _PostgreUsingClause<FT, FS> extends _UsingModifierClause<FT, FS>
-            , _UsingCteClause<FS> {
+    interface _PostgreUsingClause<FT, FS> extends _UsingModifierClause<FT, FS>, _UsingCteClause<FS> {
 
     }
 
