@@ -53,8 +53,8 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
             throw ContextStack.castCriteriaApi(CriteriaUtils.getCriteriaContext(this.stmt));
         }
         this.predicateList = _ArrayUtils.asUnmodifiableList(
-                (OperationPredicate<?>) predicate1,
-                (OperationPredicate<?>) predicate2
+                (OperationPredicate) predicate1,
+                (OperationPredicate) predicate2
         );
         return this.stmt;
     }
@@ -64,7 +64,7 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
         if (this.predicateList != null) {
             throw ContextStack.castCriteriaApi(this.getContext());
         }
-        this.predicateList = Collections.singletonList((OperationPredicate<?>) operator.apply(operandField));
+        this.predicateList = Collections.singletonList((OperationPredicate) operator.apply(operandField));
         return this.stmt;
     }
 
@@ -75,8 +75,8 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
             throw ContextStack.castCriteriaApi(this.getContext());
         }
         this.predicateList = _ArrayUtils.asUnmodifiableList(
-                (OperationPredicate<?>) operator1.apply(operandField1),
-                (OperationPredicate<?>) operator2.apply(operandField2)
+                (OperationPredicate) operator1.apply(operandField1),
+                (OperationPredicate) operator2.apply(operandField2)
         );
         return this.stmt;
     }
@@ -119,7 +119,7 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
         } else if (!(predicateList instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.getContext());
         }
-        predicateList.add((OperationPredicate<?>) predicate);
+        predicateList.add((OperationPredicate) predicate);
     }
 
     private CriteriaException predicateListIsEmpty() {

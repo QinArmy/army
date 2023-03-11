@@ -105,12 +105,12 @@ abstract class CriteriaUtils {
             case 0:
                 throw ContextStack.criteriaError(context, _Exceptions::predicateListIsEmpty);
             case 1:
-                predicateList = Collections.singletonList((OperationPredicate<?>) list.get(0));
+                predicateList = Collections.singletonList((OperationPredicate) list.get(0));
                 break;
             default: {
                 final List<_Predicate> tempList = new ArrayList<>(size);
                 for (IPredicate predicate : list) {
-                    tempList.add((OperationPredicate<?>) predicate);
+                    tempList.add((OperationPredicate) predicate);
                 }
                 predicateList = Collections.unmodifiableList(tempList);
             }

@@ -623,8 +623,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 stmt = context.parser().insert((Insert) statement, this.visible);
             } else if (statement instanceof Update) {
                 stmt = context.parser().update((Update) statement, this.visible);
-            } else if (statement instanceof Delete) {
-                stmt = context.parser().delete((Delete) statement, this.visible);
+            } else if (statement instanceof DeleteStatement) {
+                stmt = context.parser().delete((DeleteStatement) statement, this.visible);
             } else if (statement instanceof Values) {
                 stmt = context.parser().values((Values) statement, this.visible);
             } else if (statement instanceof DqlStatement) {

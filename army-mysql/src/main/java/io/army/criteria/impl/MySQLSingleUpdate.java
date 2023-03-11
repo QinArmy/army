@@ -32,7 +32,7 @@ import java.util.function.Supplier;
  * </p>
  */
 abstract class MySQLSingleUpdate<I extends Item, T, UT, SR, WR, WA, OR, LR>
-        extends SingleUpdate<I, FieldMeta<T>, SR, WR, WA, OR, LR, Object, Object>
+        extends SingleUpdateStatement<I, FieldMeta<T>, SR, WR, WA, OR, LR, Object, Object>
         implements _MySQLSingleUpdate, MySQLUpdate, Update
         , MySQLQuery._IndexHintForOrderByClause<UT> {
 

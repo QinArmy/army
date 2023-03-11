@@ -14,6 +14,7 @@ import io.army.dialect.postgre.PostgreDialect;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
+import io.army.util._ArrayUtils;
 import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
@@ -23,33 +24,33 @@ import java.util.function.*;
 
 /**
  * <p>
- * This class is the implementation of Postgre DELETE synatx.
+ * This class is the implementation of Postgre DELETE syntax.
  * </p>
  *
  * @see PostgreDelete
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, JS, TR, WR, WA>
-        extends JoinableDelete.WithJoinableDelete<I, PostgreCtes, WE, FT, FS, FS, JT, JS, JS, WR, WA>
-        implements PostgreDelete, _PostgreDelete
-        , PostgreStatement._StaticTableSampleClause<TR>
-        , PostgreStatement._RepeatableClause<FS>
-        , Statement._UsingNestedClause<PostgreStatement._NestedLeftParenSpec<FS>>
-        , PostgreStatement._JoinNestedClause<PostgreStatement._NestedLeftParenSpec<Statement._OnClause<FS>>>
-        , PostgreStatement._CrossJoinNestedClause<PostgreStatement._NestedLeftParenSpec<FS>>
-        , PostgreStatement._PostgreDynamicJoinCrossClause<FS>
-        , PostgreStatement._PostgreDynamicCrossJoinClause<FS>
-        , PostgreDelete._PostgreDeleteClause<DR> {
+abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, JT, JS, JC extends Item, TR, WR, WA>
+        extends JoinableDelete.WithJoinableDelete<I, PostgreCtes, WE, FT, FS, FC, JT, JS, JC, WR, WA>
+        implements PostgreDelete,
+        _PostgreDelete,
+        PostgreStatement._StaticTableSampleClause<TR>,
+        PostgreStatement._RepeatableClause<FC>,
+        Statement._UsingNestedClause<PostgreQuery._NestedLeftParenSpec<FC>>,
+        PostgreStatement._PostgreJoinNestedClause<Statement._OnClause<FC>>,
+        PostgreStatement._PostgreCrossNestedClause<FC>,
+        PostgreStatement._PostgreDynamicJoinCrossClause<FC>,
+        PostgreDelete._PostgreDeleteClause<DR> {
 
 
     static <I extends Item, Q extends Item> _SingleWithSpec<I, Q> primarySingle(
-            Function<Delete, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
+            Function<DeleteStatement, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
         return new PrimarySimpleDelete<>(dmlFunction, dqlFunction);
     }
 
     static <I extends Item, Q extends Item> _BatchSingleWithSpec<I, Q> batch(
-            Function<Delete, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
+            Function<DeleteStatement, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
         return new BatchDelete<>(dmlFunction, dqlFunction);
     }
 
@@ -76,18 +77,17 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
 
     private String tableAlias;
 
-    private PostgreSupports.PostgreNoOnTableBlock noOnBlock;
+    _TableBlock fromCrossBlock;
 
     private PostgreDeletes(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
         super(withSpec, context);
     }
 
     @Override
-    public final DR delete(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+    public final DR delete(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
         if (this.updateTable != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        assert wordAs == SQLs.AS;
         this.modifier = null;
         this.updateTable = table;
         this.tableAlias = tableAlias;
@@ -95,14 +95,13 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
     }
 
     @Override
-    public final DR delete(SQLs.WordOnly wordOnly, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+    public final DR delete(SQLs.WordOnly only, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
         if (this.updateTable != null) {
             throw ContextStack.castCriteriaApi(this.context);
-        } else if (wordOnly != SQLs.ONLY) {
-            throw CriteriaUtils.errorModifier(this.context, wordOnly);
+        } else if (only != SQLs.ONLY) {
+            throw CriteriaUtils.errorModifier(this.context, only);
         }
-        assert wordAs == SQLs.AS;
-        this.modifier = wordOnly;
+        this.modifier = only;
         this.updateTable = table;
         this.tableAlias = tableAlias;
         return (DR) this;
@@ -110,185 +109,180 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
 
     @Override
     public final TR tableSample(Expression method) {
-        this.getNoOnBlock().tableSample(method);
+        this.getFromCrossBlock().onSampleMethod((ArmyExpression) method);
         return (TR) this;
     }
 
     @Override
-    public final TR tableSample(String methodName, Expression argument) {
-        this.getNoOnBlock().tableSample(methodName, argument);
+    public final <E> TR tableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method,
+                                    BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier) {
+        return this.tableSample(method.apply(valueOperator, supplier.get()));
+    }
+
+    @Override
+    public final TR tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
+                                BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function,
+                                String keyName) {
+        return this.tableSample(method.apply(valueOperator, function.apply(keyName)));
+    }
+
+    @Override
+    public final TR tableSample(BiFunction<BiFunction<MappingType, Expression, Expression>, Expression, Expression> method,
+                                BiFunction<MappingType, Expression, Expression> valueOperator, Expression argument) {
+        return this.tableSample(method.apply(valueOperator, argument));
+    }
+
+    @Override
+    public final TR ifTableSample(Supplier<Expression> supplier) {
+        final Expression value;
+        value = supplier.get();
+        if (value != null) {
+            this.tableSample(value);
+        }
         return (TR) this;
     }
 
     @Override
-    public final TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
-        this.getNoOnBlock().tableSample(methodName, consumer);
+    public final <E> TR ifTableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method,
+                                      BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier) {
+        final E value;
+        value = supplier.get();
+        if (value != null) {
+            this.tableSample(method.apply(valueOperator, value));
+        }
         return (TR) this;
     }
 
     @Override
-    public final <E> TR tableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method
-            , BiFunction<MappingType, E, Expression> valueOperator, E argument) {
-        this.getNoOnBlock().tableSample(method, valueOperator, argument);
+    public final TR ifTableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
+                                  BiFunction<MappingType, Object, Expression> valueOperator,
+                                  Function<String, ?> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (value != null) {
+            this.tableSample(method.apply(valueOperator, value));
+        }
         return (TR) this;
     }
 
     @Override
-    public final <E> TR tableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method
-            , BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier) {
-        this.getNoOnBlock().tableSample(method, valueOperator, supplier);
-        return (TR) this;
+    public final FC repeatable(Expression seed) {
+        this.getFromCrossBlock().onSeed((ArmyExpression) seed);
+        return (FC) this;
     }
 
     @Override
-    public final TR tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
-            , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
-        this.getNoOnBlock().tableSample(method, valueOperator, function, keyName);
-        return (TR) this;
+    public final FC repeatable(Supplier<Expression> supplier) {
+        return this.repeatable(supplier.get());
     }
 
     @Override
-    public final TR ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
-        this.getNoOnBlock().ifTableSample(methodName, consumer);
-        return (TR) this;
+    public final FC repeatable(Function<Number, Expression> valueOperator, Number seedValue) {
+        return this.repeatable(valueOperator.apply(seedValue));
     }
 
     @Override
-    public final <E> TR ifTableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method
-            , BiFunction<MappingType, E, Expression> valueOperator, @Nullable E argument) {
-        this.getNoOnBlock().ifTableSample(method, valueOperator, argument);
-        return (TR) this;
+    public final <E extends Number> FC repeatable(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+        return this.repeatable(valueOperator.apply(supplier.get()));
     }
 
     @Override
-    public final <E> TR ifTableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method
-            , BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier) {
-        this.getNoOnBlock().ifTableSample(method, valueOperator, supplier);
-        return (TR) this;
+    public final FC repeatable(Function<Object, Expression> valueOperator, Function<String, ?> function,
+                               String keyName) {
+        return this.repeatable(valueOperator.apply(function.apply(keyName)));
     }
 
     @Override
-    public final TR ifTableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
-            , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
-        this.getNoOnBlock().ifTableSample(method, valueOperator, function, keyName);
-        return (TR) this;
+    public final FC ifRepeatable(Supplier<Expression> supplier) {
+        final Expression expression;
+        expression = supplier.get();
+        if (expression != null) {
+            this.repeatable(expression);
+        }
+        return (FC) this;
     }
 
     @Override
-    public final FS repeatable(Expression seed) {
-        this.getNoOnBlock().repeatable(seed);
-        return (FS) this;
+    public final <E extends Number> FC ifRepeatable(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+        final E value;
+        value = supplier.get();
+        if (value != null) {
+            this.repeatable(valueOperator.apply(value));
+        }
+        return (FC) this;
     }
 
     @Override
-    public final FS repeatable(Supplier<Expression> supplier) {
-        this.getNoOnBlock().repeatable(supplier);
-        return (FS) this;
+    public final FC ifRepeatable(Function<Object, Expression> valueOperator, Function<String, ?> function,
+                                 String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (value != null) {
+            this.repeatable(valueOperator.apply(value));
+        }
+        return (FC) this;
     }
 
     @Override
-    public final FS repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Number seedValue) {
-        this.getNoOnBlock().repeatable(valueOperator, seedValue);
-        return (FS) this;
-    }
-
-    @Override
-    public final FS repeatable(BiFunction<MappingType, Number, Expression> valueOperator, Supplier<Number> supplier) {
-        this.getNoOnBlock().repeatable(valueOperator, supplier);
-        return (FS) this;
-    }
-
-    @Override
-    public final FS repeatable(BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function
-            , String keyName) {
-        this.getNoOnBlock().repeatable(valueOperator, function, keyName);
-        return (FS) this;
-    }
-
-    @Override
-    public final FS ifRepeatable(Supplier<Expression> supplier) {
-        this.getNoOnBlock().ifRepeatable(supplier);
-        return (FS) this;
-    }
-
-    @Override
-    public final FS ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator, @Nullable Number seedValue) {
-        this.getNoOnBlock().ifRepeatable(valueOperator, seedValue);
-        return (FS) this;
-    }
-
-    @Override
-    public final FS ifRepeatable(BiFunction<MappingType, Number, Expression> valueOperator, Supplier<Number> supplier) {
-        this.getNoOnBlock().ifRepeatable(valueOperator, supplier);
-        return (FS) this;
-    }
-
-    @Override
-    public final FS ifRepeatable(BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function
-            , String keyName) {
-        this.getNoOnBlock().ifRepeatable(valueOperator, function, keyName);
-        return (FS) this;
+    public final _NestedLeftParenSpec<FC> using() {
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::nestedUsingEnd);
     }
 
 
     @Override
-    public final _NestedLeftParenSpec<FS> using() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::nestedNonCrossEnd);
-    }
-
-    @Override
-    public final _NestedLeftParenSpec<_OnClause<FS>> leftJoin() {
+    public final _NestedLeftParenSpec<_OnClause<FC>> leftJoin() {
         return PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::nestedJoinEnd);
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FS>> join() {
+    public final _NestedLeftParenSpec<_OnClause<FC>> join() {
         return PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::nestedJoinEnd);
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FS>> rightJoin() {
+    public final _NestedLeftParenSpec<_OnClause<FC>> rightJoin() {
         return PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::nestedJoinEnd);
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FS>> fullJoin() {
+    public final _NestedLeftParenSpec<_OnClause<FC>> fullJoin() {
         return PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::nestedJoinEnd);
     }
 
     @Override
-    public final _NestedLeftParenSpec<FS> crossJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::nestedNonCrossEnd);
+    public final _NestedLeftParenSpec<FC> crossJoin() {
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::nestedUsingEnd);
     }
 
+
     @Override
-    public final FS ifLeftJoin(Consumer<PostgreJoins> consumer) {
+    public final FC ifLeftJoin(Consumer<PostgreJoins> consumer) {
         consumer.accept(PostgreDynamicJoins.joinBuilder(this.context, _JoinType.LEFT_JOIN, this.blockConsumer));
-        return (FS) this;
+        return (FC) this;
     }
 
     @Override
-    public final FS ifJoin(Consumer<PostgreJoins> consumer) {
+    public final FC ifJoin(Consumer<PostgreJoins> consumer) {
         consumer.accept(PostgreDynamicJoins.joinBuilder(this.context, _JoinType.JOIN, this.blockConsumer));
-        return (FS) this;
+        return (FC) this;
     }
 
     @Override
-    public final FS ifRightJoin(Consumer<PostgreJoins> consumer) {
+    public final FC ifRightJoin(Consumer<PostgreJoins> consumer) {
         consumer.accept(PostgreDynamicJoins.joinBuilder(this.context, _JoinType.RIGHT_JOIN, this.blockConsumer));
-        return (FS) this;
+        return (FC) this;
     }
 
     @Override
-    public final FS ifFullJoin(Consumer<PostgreJoins> consumer) {
+    public final FC ifFullJoin(Consumer<PostgreJoins> consumer) {
         consumer.accept(PostgreDynamicJoins.joinBuilder(this.context, _JoinType.FULL_JOIN, this.blockConsumer));
-        return (FS) this;
+        return (FC) this;
     }
 
     @Override
-    public final FS ifCrossJoin(Consumer<PostgreCrosses> consumer) {
+    public final FC ifCrossJoin(Consumer<PostgreCrosses> consumer) {
         consumer.accept(PostgreDynamicJoins.crossBuilder(this.context, this.blockConsumer));
-        return (FS) this;
+        return (FC) this;
     }
 
     @Override
@@ -320,46 +314,58 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
 
 
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
-            , TableMeta<?> table, String alias) {
-        if (modifier != null && modifier != SQLs.ONLY) {
-            throw PostgreUtils.errorModifier(this.context, modifier);
-        }
+    final FT onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
         final PostgreSupports.PostgreNoOnTableBlock block;
         block = new PostgreSupports.PostgreNoOnTableBlock(joinType, modifier, table, alias);
-        this.noOnBlock = block;
-        return block;
+        this.blockConsumer.accept(block);
+        this.fromCrossBlock = block;
+        return (FT) this;
     }
 
     @Override
-    final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier
-            , TabularItem tableItem, String alias) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw PostgreUtils.errorModifier(this.context, modifier);
-        }
-        return new TableBlock.NoOnModifierTableBlock(joinType, modifier, tableItem, alias);
+    final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+        final TableBlock.NoOnTableBlock block;
+        block = new TableBlock.NoOnTableBlock(joinType, cteItem, alias);
+        this.blockConsumer.accept(block);
+        this.fromCrossBlock = block;
+        return (FC) this;
     }
 
-    final FS nestedNonCrossEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        joinType.assertNoneCrossType();
+    final FC nestedUsingEnd(final _JoinType joinType, final NestedItems nestedItems) {
         final TableBlock.NoOnTableBlock block;
         block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
         this.blockConsumer.accept(block);
-        return (FS) this;
+        return (FC) this;
     }
 
-    final _OnClause<FS> nestedJoinEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        joinType.assertStandardJoinType();
+    final _OnClause<FC> nestedJoinEnd(final _JoinType joinType, final NestedItems nestedItems) {
 
-        final OnClauseTableBlock<FS> block;
-        block = new OnClauseTableBlock<>(joinType, nestedItems, "", (FS) this);
+        final OnClauseTableBlock<FC> block;
+        block = new OnClauseTableBlock<>(joinType, nestedItems, "", (FC) this);
         this.blockConsumer.accept(block);
         return block;
+    }
+
+
+    @Override
+    final Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
+        if (modifier != null && modifier != SQLs.ONLY) {
+            throw PostgreUtils.errorModifier(this.context, modifier);
+        }
+        return modifier;
+    }
+
+    @Override
+    final Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
+        if (modifier != null && modifier != SQLs.LATERAL) {
+            throw PostgreUtils.errorModifier(this.context, modifier);
+        }
+        return modifier;
     }
 
     @Override
     final void onEndStatement() {
-        this.noOnBlock = null;
+        this.fromCrossBlock = null;
 
     }
 
@@ -368,50 +374,22 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
 
     }
 
-
-    private PostgreSupports.PostgreNoOnTableBlock getNoOnBlock() {
-        final PostgreSupports.PostgreNoOnTableBlock block = this.noOnBlock;
-        if (this.context.lastBlock() != block) {
+    private PostgreSupports.PostgreNoOnTableBlock getFromCrossBlock() {
+        final _TableBlock block = this.fromCrossBlock;
+        if (!(this.context.lastBlock() == block && block instanceof PostgreSupports.PostgreNoOnTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return block;
+        return (PostgreSupports.PostgreNoOnTableBlock) block;
     }
 
 
-    private static final class SimpleComma<I extends Item, Q extends Item> implements _CteComma<I, Q> {
-
-        private final boolean recursive;
-
-        private final SimpleDelete<I, Q, ?> statement;
-
-        private final Function<String, _StaticCteParensSpec<_CteComma<I, Q>>> function;
-
-        private SimpleComma(boolean recursive, SimpleDelete<I, Q, ?> statement) {
-            this.recursive = recursive;
-            this.statement = statement;
-            this.function = PostgreQueries.complexCte(statement.context, this);
+    final TableBlock.ParensDerivedJoinBlock getFromDerived() {
+        final _TableBlock block = this.fromCrossBlock;
+        if (!(this.context.lastBlock() == block && block instanceof TableBlock.ParensDerivedJoinBlock)) {
+            throw ContextStack.castCriteriaApi(this.context);
         }
-
-        @Override
-        public _StaticCteParensSpec<_CteComma<I, Q>> comma(String name) {
-            return this.function.apply(name);
-        }
-
-        @Override
-        public _SingleUsingSpec<I, Q> delete(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-            return this.statement.endStaticWithClause(this.recursive)
-                    .delete(table, wordAs, tableAlias);
-        }
-
-        @Override
-        public _SingleUsingSpec<I, Q> delete(SQLs.WordOnly wordOnly, TableMeta<?> table, SQLs.WordAs wordAs
-                , String tableAlias) {
-            return this.statement.endStaticWithClause(this.recursive)
-                    .delete(wordOnly, table, wordAs, tableAlias);
-        }
-
-
-    }//SimpleComma
+        return (TableBlock.ParensDerivedJoinBlock) block;
+    }
 
 
     private static abstract class SimpleDelete<I extends Item, Q extends Item, S extends Statement>
@@ -420,18 +398,21 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
             PostgreDelete._SingleDeleteClause<I, Q>,
             PostgreDelete._SingleUsingSpec<I, Q>,
             PostgreDelete._TableSampleJoinSpec<I, Q>,
+            Statement._AsClause<PostgreDelete._ParensJoinSpec<I, Q>>,
             PostgreDelete._SingleJoinSpec<I, Q>,
             PostgreDelete._TableSampleOnSpec<I, Q>,
+            PostgreDelete._AsParensOnClause<PostgreDelete._SingleJoinSpec<I, Q>>,
             Statement._OnClause<PostgreDelete._SingleJoinSpec<I, Q>>,
             PostgreDelete._RepeatableJoinClause<I, Q>,
             PostgreDelete._ReturningSpec<I, Q>,
             PostgreDelete._SingleWhereAndSpec<I, Q>>
-            implements PostgreDelete._SingleWithSpec<I, Q>
-            , PostgreDelete._SingleUsingSpec<I, Q>
-            , PostgreDelete._TableSampleJoinSpec<I, Q>
-            , PostgreDelete._RepeatableJoinClause<I, Q>
-            , PostgreDelete._SingleWhereAndSpec<I, Q>
-            , PostgreDelete._StaticReturningCommaSpec<Q> {
+            implements PostgreDelete._SingleWithSpec<I, Q>,
+            PostgreDelete._SingleUsingSpec<I, Q>,
+            PostgreDelete._TableSampleJoinSpec<I, Q>,
+            PostgreDelete._RepeatableJoinClause<I, Q>,
+            PostgreDelete._ParensJoinSpec<I, Q>,
+            PostgreDelete._SingleWhereAndSpec<I, Q>,
+            PostgreDelete._StaticReturningCommaSpec<Q> {
 
         final Function<S, I> dmlFunction;
 
@@ -443,17 +424,33 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
         }
 
         @Override
-        public final _StaticCteParensSpec<_CteComma<I, Q>> with(String name) {
-            final boolean recursive = false;
-            this.context.onBeforeWithClause(recursive);
-            return new SimpleComma<>(recursive, this).function.apply(name);
+        public final PostgreQuery._StaticCteParensSpec<_SingleDeleteClause<I, Q>> with(String name) {
+            return PostgreQueries.complexCte(this.context, false, this::endStaticWithClause)
+                    .comma(name);
         }
 
         @Override
-        public final _StaticCteParensSpec<_CteComma<I, Q>> withRecursive(String name) {
-            final boolean recursive = true;
-            this.context.onBeforeWithClause(recursive);
-            return new SimpleComma<>(recursive, this).function.apply(name);
+        public final PostgreQuery._StaticCteParensSpec<_SingleDeleteClause<I, Q>> withRecursive(String name) {
+            return PostgreQueries.complexCte(this.context, true, this::endStaticWithClause)
+                    .comma(name);
+        }
+
+        @Override
+        public final _SingleJoinSpec<I, Q> parens(String first, String... rest) {
+            this.getFromDerived().onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
+            return this;
+        }
+
+        @Override
+        public final _SingleJoinSpec<I, Q> parens(Consumer<Consumer<String>> consumer) {
+            this.getFromDerived().onColumnAlias(CriteriaUtils.stringList(this.context, true, consumer));
+            return this;
+        }
+
+        @Override
+        public final _SingleJoinSpec<I, Q> ifParens(Consumer<Consumer<String>> consumer) {
+            this.getFromDerived().onColumnAlias(CriteriaUtils.stringList(this.context, false, consumer));
+            return this;
         }
 
         @Override
@@ -484,43 +481,59 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(Expression expression, SQLs.WordAs wordAs, String alias) {
-            assert wordAs == SQLs.AS;
-            this.onAddSelection(ArmySelections.forExp(expression, alias));
+        public final _StaticReturningCommaSpec<Q> returning(Selection selection1, Selection selection2) {
+            this.onAddSelection(selection1)
+                    .add(selection2);
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(Supplier<Selection> supplier) {
-            this.onAddSelection(supplier.get());
+        public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias) {
+            this.onAddSelection(function.apply(alias));
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2) {
-            this.onAddSelection(exp1)
-                    .add(exp2);
+        public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function1, String alias1,
+                                                            Function<String, Selection> function2, String alias2) {
+            this.onAddSelection(function1.apply(alias1))
+                    .add(function2.apply(alias2));
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2
-                , NamedExpression exp3) {
+        public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias,
+                                                            Selection selection) {
+            this.onAddSelection(function.apply(alias))
+                    .add(selection);
+            return this;
+        }
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> returning(Selection selection, Function<String, Selection> function,
+                                                            String alias) {
+            this.onAddSelection(selection)
+                    .add(function.apply(alias));
+            return this;
+        }
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3) {
             final List<Selection> list;
-            list = this.onAddSelection(exp1);
-            list.add(exp2);
-            list.add(exp3);
+            list = this.onAddSelection(field1);
+            list.add(field2);
+            list.add(field3);
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2
-                , NamedExpression exp3, NamedExpression exp4) {
+        public final _StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3,
+                                                            TableField field4) {
             final List<Selection> list;
-            list = this.onAddSelection(exp1);
-            list.add(exp2);
-            list.add(exp3);
-            list.add(exp4);
+            list = this.onAddSelection(field1);
+            list.add(field2);
+            list.add(field3);
+            list.add(field4);
             return this;
         }
 
@@ -531,42 +544,59 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(Expression expression, SQLs.WordAs wordAs, String alias) {
-            this.onAddSelection(ArmySelections.forExp(expression, alias));
+        public final _StaticReturningCommaSpec<Q> comma(Selection selection1, Selection selection2) {
+            this.onAddSelection(selection1)
+                    .add(selection2);
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(Supplier<Selection> supplier) {
-            this.onAddSelection(supplier.get());
+        public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function, String alias) {
+            this.onAddSelection(function.apply(alias));
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2) {
-            this.onAddSelection(exp1)
-                    .add(exp2);
+        public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function1, String alias1,
+                                                        Function<String, Selection> function2, String alias2) {
+            this.onAddSelection(function1.apply(alias1))
+                    .add(function2.apply(alias2));
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2
-                , NamedExpression exp3) {
+        public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function, String alias,
+                                                        Selection selection) {
+            this.onAddSelection(function.apply(alias))
+                    .add(selection);
+            return this;
+        }
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> comma(Selection selection, Function<String, Selection> function,
+                                                        String alias) {
+            this.onAddSelection(selection)
+                    .add(function.apply(alias));
+            return this;
+        }
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3) {
             final List<Selection> list;
-            list = this.onAddSelection(exp1);
-            list.add(exp2);
-            list.add(exp3);
+            list = this.onAddSelection(field1);
+            list.add(field2);
+            list.add(field3);
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2
-                , NamedExpression exp3, NamedExpression exp4) {
+        public final _StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3,
+                                                        TableField field4) {
             final List<Selection> list;
-            list = this.onAddSelection(exp1);
-            list.add(exp2);
-            list.add(exp3);
-            list.add(exp4);
+            list = this.onAddSelection(field1);
+            list.add(field2);
+            list.add(field3);
+            list.add(field4);
             return this;
         }
 
@@ -592,33 +622,6 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
 
         abstract Q onAsReturningDelete();
 
-        @Override
-        final _TableSampleOnSpec<I, Q> createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier
-                , TableMeta<?> table, String tableAlias) {
-            if (modifier != null && modifier != SQLs.ONLY) {
-                throw PostgreUtils.errorModifier(this.context, modifier);
-            }
-            return new SimpleOnTableBlock<>(joinType, modifier, table, tableAlias, this);
-        }
-
-        @Override
-        final _OnClause<_SingleJoinSpec<I, Q>> createItemBlock(_JoinType joinType
-                , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
-            if (modifier != null && modifier != SQLs.LATERAL) {
-                throw PostgreUtils.errorModifier(this.context, modifier);
-            }
-            return new OnClauseTableBlock.OnItemTableBlock<>(joinType, modifier, tableItem, alias, this);
-        }
-
-        @Override
-        final _OnClause<_SingleJoinSpec<I, Q>> createCteBlock(_JoinType joinType
-                , @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
-            if (modifier != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
-        }
-
 
         @Override
         final I onAsDelete() {
@@ -627,6 +630,49 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
             }
             this.returningList = Collections.emptyList();
             return this.dmlFunction.apply((S) this);
+        }
+
+
+        @Override
+        final _AsClause<_ParensJoinSpec<I, Q>> onFromDerived(
+                _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+            return alias -> {
+                final TableBlock.ParensDerivedJoinBlock block;
+                block = new TableBlock.ParensDerivedJoinBlock(joinType, modifier, table, alias);
+                this.blockConsumer.accept(block);
+                this.fromCrossBlock = block;
+                return this;
+            };
+        }
+
+
+        @Override
+        final _TableSampleOnSpec<I, Q> onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
+                                                   TableMeta<?> table, String alias) {
+            final SimpleOnTableBlock<I, Q> block;
+            block = new SimpleOnTableBlock<>(joinType, modifier, table, alias, this);
+            this.blockConsumer.accept(block);
+            return block;
+        }
+
+        @Override
+        final _AsParensOnClause<_SingleJoinSpec<I, Q>> onJoinDerived(
+                _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+            return alias -> {
+                final OnClauseTableBlock.OnModifierParensBlock<_SingleJoinSpec<I, Q>> block;
+                block = new OnClauseTableBlock.OnModifierParensBlock<>(joinType, modifier, table, alias, this);
+                this.blockConsumer.accept(block);
+                return block;
+            };
+        }
+
+        @Override
+        final _OnClause<_SingleJoinSpec<I, Q>> onJoinCte(
+                _JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+            final OnClauseTableBlock<_SingleJoinSpec<I, Q>> block;
+            block = new OnClauseTableBlock<>(joinType, cteItem, alias);
+            this.blockConsumer.accept(block);
+            return block;
         }
 
         private List<Selection> onAddSelection(Selection selection) {
@@ -644,33 +690,28 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
     }//SimpleDelete
 
     private static final class SimpleOnTableBlock<I extends Item, Q extends Item>
-            extends PostgreSupports.PostgreOnTableBlock<
+            extends PostgreSupports.PostgreTableOnBlock<
             PostgreDelete._RepeatableOnClause<I, Q>,
             Statement._OnClause<PostgreDelete._SingleJoinSpec<I, Q>>,
             PostgreDelete._SingleJoinSpec<I, Q>>
-            implements PostgreDelete._TableSampleOnSpec<I, Q>
-            , PostgreDelete._RepeatableOnClause<I, Q> {
+            implements PostgreDelete._TableSampleOnSpec<I, Q>,
+            PostgreDelete._RepeatableOnClause<I, Q> {
 
-        private SimpleOnTableBlock(_JoinType joinType, @Nullable SQLWords modifier
-                , TableMeta<?> tableItem, String alias
-                , PostgreDelete._SingleJoinSpec<I, Q> stmt) {
+        private SimpleOnTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> tableItem,
+                                   String alias, PostgreDelete._SingleJoinSpec<I, Q> stmt) {
             super(joinType, modifier, tableItem, alias, stmt);
         }
 
 
     }//SimpleOnTableBlock
 
-    private static final class PrimarySimpleDelete<I extends Item, Q extends Item>
-            extends SimpleDelete<I, Q, Delete>
+    private static final class PrimarySimpleDelete<I extends Item, Q extends Item> extends SimpleDelete<I, Q, Delete>
             implements Delete, ReturningDelete {
-
-        private final Function<Delete, I> dmlFunction;
 
         private final Function<ReturningDelete, Q> dqlFunction;
 
         private PrimarySimpleDelete(Function<Delete, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
             super(null, CriteriaContexts.joinableSingleDmlContext(null), dmlFunction);
-            this.dmlFunction = dmlFunction;
             this.dqlFunction = dqlFunction;
         }
 
@@ -801,16 +842,16 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
         }
 
         @Override
-        public _BatchSingleUsingSpec<I, Q> delete(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+        public _BatchSingleUsingSpec<I, Q> delete(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
             return this.statement.endStaticWithClause(this.recursive)
-                    .delete(table, wordAs, tableAlias);
+                    .delete(table, as, tableAlias);
         }
 
         @Override
-        public _BatchSingleUsingSpec<I, Q> delete(SQLs.WordOnly wordOnly, TableMeta<?> table, SQLs.WordAs wordAs
+        public _BatchSingleUsingSpec<I, Q> delete(SQLs.WordOnly only, TableMeta<?> table, SQLs.WordAs as
                 , String tableAlias) {
             return this.statement.endStaticWithClause(this.recursive)
-                    .delete(wordOnly, table, wordAs, tableAlias);
+                    .delete(only, table, as, tableAlias);
         }
 
     }//BatchComma
@@ -833,9 +874,9 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
             , PostgreDelete._BatchRepeatableJoinClause<I, Q>
             , PostgreDelete._BatchSingleWhereAndSpec<I, Q>
             , _DqlDeleteSpec<Q>
-            , Delete, ReturningDelete, _BatchDml {
+            , DeleteStatement, ReturningDelete, _BatchDml {
 
-        private final Function<Delete, I> dmlFunction;
+        private final Function<DeleteStatement, I> dmlFunction;
 
         private final Function<ReturningDelete, Q> dqlFunction;
 
@@ -843,7 +884,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS extends Item, JT, J
 
         private List<?> paramList;
 
-        private BatchDelete(Function<Delete, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
+        private BatchDelete(Function<DeleteStatement, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
             super(null, CriteriaContexts.joinableSingleDmlContext(null));
             this.dmlFunction = dmlFunction;
             this.dqlFunction = dqlFunction;

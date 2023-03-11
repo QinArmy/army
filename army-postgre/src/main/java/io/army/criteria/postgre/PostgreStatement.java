@@ -5,7 +5,10 @@ import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.mapping.MappingType;
 
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface PostgreStatement extends DialectStatement {
 
@@ -48,6 +51,10 @@ public interface PostgreStatement extends DialectStatement {
 
     }
 
+    interface _PostgreUsingClause<FT, FS> extends _UsingModifierClause<FT, _AsClause<FS>> {
+
+    }
+
 
     interface _RepeatableClause<R> {
 
@@ -74,13 +81,6 @@ public interface PostgreStatement extends DialectStatement {
 
         R tableSample(Expression method);
 
-        R tableSample(String methodName, Expression argument);
-
-        R tableSample(String methodName, Consumer<Consumer<Expression>> consumer);
-
-        R tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
-                      BiFunction<MappingType, Object, Expression> valueOperator, Object argument);
-
         R tableSample(BiFunction<BiFunction<MappingType, Expression, Expression>, Expression, Expression> method,
                       BiFunction<MappingType, Expression, Expression> valueOperator, Expression argument);
 
@@ -91,15 +91,14 @@ public interface PostgreStatement extends DialectStatement {
                       BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function,
                       String keyName);
 
-        R ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer);
+        R ifTableSample(Supplier<Expression> supplier);
 
         <E> R ifTableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method,
                             BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier);
 
-        R ifTableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method
-                , BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function,
+        R ifTableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
+                        BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function,
                         String keyName);
-
 
     }
 

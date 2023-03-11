@@ -32,10 +32,10 @@ public interface MySQLDelete extends MySQLStatement {
      * @param <DT> next clause java type
      * @since 1.0
      */
-    interface _SingleDeleteClause<DT> extends Delete._SingleDeleteClause<DT> {
+    interface _SingleDeleteClause<DT> extends DeleteStatement._SingleDeleteClause<DT> {
 
 
-        Delete._SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers);
+        DeleteStatement._SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers);
 
     }
 

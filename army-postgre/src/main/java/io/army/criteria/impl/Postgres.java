@@ -50,11 +50,11 @@ public abstract class Postgres extends PostgreFuncSyntax {
         return PostgreUpdates.batch(SQLs::_identity, SQLs::_identity);
     }
 
-    public static PostgreDelete._SingleWithSpec<Delete, ReturningDelete> singleDelete() {
+    public static PostgreDelete._SingleWithSpec<DeleteStatement, ReturningDelete> singleDelete() {
         return PostgreDeletes.primarySingle(SQLs::_identity, SQLs::_identity);
     }
 
-    public static PostgreDelete._BatchSingleWithSpec<Delete, ReturningDelete> batchSingleDelete() {
+    public static PostgreDelete._BatchSingleWithSpec<DeleteStatement, ReturningDelete> batchSingleDelete() {
         return PostgreDeletes.batch(SQLs::_identity, SQLs::_identity);
     }
 

@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Delete;
+import io.army.criteria.DeleteStatement;
 import io.army.criteria.DmlStatement;
 import io.army.criteria.Item;
 import io.army.criteria.impl.inner._BatchDml;
@@ -24,14 +24,14 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 abstract class StandardDeletes<I extends Item, DR, WR, WA>
-        extends SingleDelete<I, WR, WA, Object, Object, Object, Object>
-        implements StandardDelete, Delete {
+        extends SingleDeleteStatement<I, WR, WA, Object, Object, Object, Object>
+        implements StandardDelete, DeleteStatement {
 
-    static <I extends Item> _StandardDeleteClause<I> singleDelete(Function<Delete, I> function) {
+    static <I extends Item> _StandardDeleteClause<I> singleDelete(Function<DeleteStatement, I> function) {
         return new SimpleSingleDelete<>(function);
     }
 
-    static <I extends Item> _BatchDeleteClause<I> batchSingleDelete(Function<Delete, I> function) {
+    static <I extends Item> _BatchDeleteClause<I> batchSingleDelete(Function<DeleteStatement, I> function) {
         return new BatchSingleDelete<>(function);
     }
 
@@ -109,10 +109,10 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
             _WhereAndSpec<I>,
             StandardDelete._StandardDeleteClause<I> {
 
-        private final Function<Delete, I> function;
+        private final Function<DeleteStatement, I> function;
 
 
-        private SimpleSingleDelete(Function<Delete, I> function) {
+        private SimpleSingleDelete(Function<DeleteStatement, I> function) {
             this.function = function;
         }
 
@@ -132,13 +132,13 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
     }//SimpleSingleDelete
 
     private static final class SimpleDomainDelete extends StandardDeletes<
-            Delete,
-            _WhereSpec<Delete>,
-            _DmlDeleteSpec<Delete>,
-            _WhereAndSpec<Delete>>
+            DeleteStatement,
+            _WhereSpec<DeleteStatement>,
+            _DmlDeleteSpec<DeleteStatement>,
+            _WhereAndSpec<DeleteStatement>>
             implements _DomainDeleteClause,
-            _WhereSpec<Delete>,
-            _WhereAndSpec<Delete>,
+            _WhereSpec<DeleteStatement>,
+            _WhereAndSpec<DeleteStatement>,
             _DomainDelete {
 
 
@@ -147,12 +147,12 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
 
 
         @Override
-        public _WhereSpec<Delete> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
+        public _WhereSpec<DeleteStatement> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
             return this.deleteFrom(table, tableAlias);
         }
 
         @Override
-        Delete onAsDelete() {
+        DeleteStatement onAsDelete() {
             return this;
         }
 
@@ -169,12 +169,12 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
             _BatchDml
             , DmlStatement {
 
-        private final Function<Delete, I> function;
+        private final Function<DeleteStatement, I> function;
 
         private List<?> paramList;
 
 
-        private BatchDelete(Function<Delete, I> function) {
+        private BatchDelete(Function<DeleteStatement, I> function) {
             this.function = function;
         }
 
@@ -219,7 +219,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
     private static final class BatchSingleDelete<I extends Item> extends BatchDelete<I>
             implements _BatchDeleteClause<I> {
 
-        private BatchSingleDelete(Function<Delete, I> function) {
+        private BatchSingleDelete(Function<DeleteStatement, I> function) {
             super(function);
         }
 
@@ -231,7 +231,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
     }//BatchSingleDelete
 
 
-    private static final class BatchDomainDelete extends BatchDelete<Delete>
+    private static final class BatchDomainDelete extends BatchDelete<DeleteStatement>
             implements _DomainDelete,
             _BatchDomainDeleteClause {
 
@@ -240,7 +240,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
         }
 
         @Override
-        public _BatchWhereSpec<Delete> deleteFrom(TableMeta<?> table, SQLsSyntax.WordAs as, String tableAlias) {
+        public _BatchWhereSpec<DeleteStatement> deleteFrom(TableMeta<?> table, SQLsSyntax.WordAs as, String tableAlias) {
             return this.deleteFrom(table, tableAlias);
         }
 

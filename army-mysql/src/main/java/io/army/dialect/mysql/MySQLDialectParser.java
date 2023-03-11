@@ -78,7 +78,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected void assertDelete(Delete delete) {
+    protected void assertDelete(DeleteStatement delete) {
         _MySQLConsultant.assertDelete(delete);
     }
 

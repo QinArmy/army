@@ -1,6 +1,6 @@
 package io.army.criteria.standard.unit;
 
-import io.army.criteria.Delete;
+import io.army.criteria.DeleteStatement;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
@@ -25,7 +25,7 @@ public class DomainDeleteUnitTests extends StandardUnitTests {
         map.put("firstId", (byte) 1);
         map.put("secondId", "3");
 
-        final Delete stmt;
+        final DeleteStatement stmt;
         stmt = SQLs.domainDelete()
                 .deleteFrom(ChinaRegion_.T, AS, "c")
                 .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", AND, "secondId")
@@ -36,7 +36,7 @@ public class DomainDeleteUnitTests extends StandardUnitTests {
 
     @Test
     public void deleteChild() {
-        final Delete stmt;
+        final DeleteStatement stmt;
         stmt = SQLs.domainDelete()
                 .deleteFrom(ChinaProvince_.T, AS, "p")
                 .where(ChinaProvince_.id.equal(SQLs::literal, 1))
@@ -55,7 +55,7 @@ public class DomainDeleteUnitTests extends StandardUnitTests {
 
     @Test
     public void batchDeleteParent() {
-        final Delete stmt;
+        final DeleteStatement stmt;
         stmt = SQLs.batchDomainDelete()
                 .deleteFrom(ChinaRegion_.T, AS, "cr")
                 .where(ChinaRegion_.id::equal, SQLs::namedParam)
@@ -70,7 +70,7 @@ public class DomainDeleteUnitTests extends StandardUnitTests {
     @Test
     public void batchDeleteChild() {
 
-        final Delete stmt;
+        final DeleteStatement stmt;
         stmt = SQLs.batchDomainDelete()
                 .deleteFrom(ChinaProvince_.T, AS, "p")
                 .where(ChinaProvince_.id.equal(SQLs::namedParam, ChinaRegion_.ID))

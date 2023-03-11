@@ -243,8 +243,8 @@ abstract class CriteriaSupports {
                 stmt = parser.insert((Insert) this, visible);
             } else if (this instanceof Update) {
                 stmt = parser.update((Update) this, visible);
-            } else if (this instanceof Delete) {
-                stmt = parser.delete((Delete) this, visible);
+            } else if (this instanceof DeleteStatement) {
+                stmt = parser.delete((DeleteStatement) this, visible);
             } else if (this instanceof Values) {
                 stmt = parser.values((Values) this, visible);
             } else if (this instanceof DqlStatement) {
@@ -863,45 +863,62 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public Returnings selection(Expression expression, SQLs.WordAs wordAs, String alias) {
-            this.consumer.accept(ArmySelections.forExp((ArmyExpression) expression, alias));
-            return this;
-        }
-
-        @Override
-        public Returnings selection(Supplier<Selection> supplier) {
-            this.consumer.accept(supplier.get());
-            return this;
-        }
-
-        @Override
-        public Returnings selection(NamedExpression exp1, NamedExpression exp2) {
+        public Returnings selection(Selection selection1, Selection selection2) {
             final Consumer<Selection> consumer = this.consumer;
-            consumer.accept(exp1);
-            consumer.accept(exp2);
+            consumer.accept(selection1);
+            consumer.accept(selection2);
             return this;
         }
 
         @Override
-        public Returnings selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3) {
-            final Consumer<Selection> consumer = this.consumer;
-            consumer.accept(exp1);
-            consumer.accept(exp2);
-            consumer.accept(exp3);
+        public Returnings selection(Function<String, Selection> function, String alias) {
+            this.consumer.accept(function.apply(alias));
             return this;
         }
 
         @Override
-        public Returnings selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3
-                , NamedExpression exp4) {
+        public Returnings selection(Function<String, Selection> function1, String alias1,
+                                    Function<String, Selection> function2, String alias2) {
             final Consumer<Selection> consumer = this.consumer;
-            consumer.accept(exp1);
-            consumer.accept(exp2);
-            consumer.accept(exp3);
-            consumer.accept(exp4);
+            consumer.accept(function1.apply(alias1));
+            consumer.accept(function2.apply(alias2));
             return this;
         }
 
+        @Override
+        public Returnings selection(Function<String, Selection> function, String alias, Selection selection) {
+            final Consumer<Selection> consumer = this.consumer;
+            consumer.accept(function.apply(alias));
+            consumer.accept(selection);
+            return this;
+        }
+
+        @Override
+        public Returnings selection(Selection selection, Function<String, Selection> function, String alias) {
+            final Consumer<Selection> consumer = this.consumer;
+            consumer.accept(selection);
+            consumer.accept(function.apply(alias));
+            return this;
+        }
+
+        @Override
+        public Returnings selection(TableField field1, TableField field2, TableField field3) {
+            final Consumer<Selection> consumer = this.consumer;
+            consumer.accept(field1);
+            consumer.accept(field2);
+            consumer.accept(field3);
+            return this;
+        }
+
+        @Override
+        public Returnings selection(TableField field1, TableField field2, TableField field3, TableField field4) {
+            final Consumer<Selection> consumer = this.consumer;
+            consumer.accept(field1);
+            consumer.accept(field2);
+            consumer.accept(field3);
+            consumer.accept(field4);
+            return this;
+        }
 
     }//ReturningBuilderImpl
 

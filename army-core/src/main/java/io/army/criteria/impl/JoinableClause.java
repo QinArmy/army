@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  * <ul>
  *     <li>{@link io.army.criteria.Query}</li>
  *     <li>{@link io.army.criteria.Update}</li>
- *     <li>{@link io.army.criteria.Delete}</li>
+ *     <li>{@link DeleteStatement}</li>
  * </ul>
  * </p>
  *
@@ -590,22 +590,22 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
         @Override
         public final OR on(IPredicate predicate) {
-            this.onPredicateList = Collections.singletonList((OperationPredicate<?>) predicate);
+            this.onPredicateList = Collections.singletonList((OperationPredicate) predicate);
             return (OR) this;
         }
 
         @Override
         public final OR on(IPredicate predicate1, IPredicate predicate2) {
             this.onPredicateList = _ArrayUtils.asUnmodifiableList(
-                    (OperationPredicate<?>) predicate1,
-                    (OperationPredicate<?>) predicate2
+                    (OperationPredicate) predicate1,
+                    (OperationPredicate) predicate2
             );
             return (OR) this;
         }
 
         @Override
         public final OR on(Function<Expression, IPredicate> operator, DataField operandField) {
-            this.onPredicateList = Collections.singletonList((OperationPredicate<?>) operator.apply(operandField));
+            this.onPredicateList = Collections.singletonList((OperationPredicate) operator.apply(operandField));
             return (OR) this;
         }
 
@@ -613,8 +613,8 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         public final OR on(Function<Expression, IPredicate> operator1, DataField operandField1
                 , Function<Expression, IPredicate> operator2, DataField operandField2) {
             this.onPredicateList = _ArrayUtils.asUnmodifiableList(
-                    (OperationPredicate<?>) operator1.apply(operandField1),
-                    (OperationPredicate<?>) operator2.apply(operandField2)
+                    (OperationPredicate) operator1.apply(operandField1),
+                    (OperationPredicate) operator2.apply(operandField2)
             );
             return (OR) this;
         }

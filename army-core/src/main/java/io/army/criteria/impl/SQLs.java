@@ -47,7 +47,7 @@ public abstract class SQLs extends SQLsSyntax {
     static final Function<Select, Select> _SELECT_IDENTITY = SQLs::_identity;
 
     static final Function<Update, Update> _UPDATE_IDENTITY = SQLs::_identity;
-    static final Function<Delete, Delete> _DELETE_IDENTITY = SQLs::_identity;
+    static final Function<DeleteStatement, DeleteStatement> _DELETE_IDENTITY = SQLs::_identity;
 
     static final Function<SubQuery, SubQuery> _SUB_QUERY_IDENTITY = SQLs::_identity;
 
@@ -85,7 +85,7 @@ public abstract class SQLs extends SQLsSyntax {
     }
 
 
-    public static StandardDelete._StandardDeleteClause<Delete> singleDelete() {
+    public static StandardDelete._StandardDeleteClause<DeleteStatement> singleDelete() {
         return StandardDeletes.singleDelete(SQLs._DELETE_IDENTITY);
     }
 
@@ -98,7 +98,7 @@ public abstract class SQLs extends SQLsSyntax {
      * Batch domain delete
      * </p>
      */
-    public static StandardDelete._BatchDeleteClause<Delete> batchSingleDelete() {
+    public static StandardDelete._BatchDeleteClause<DeleteStatement> batchSingleDelete() {
         return StandardDeletes.batchSingleDelete(SQLs._DELETE_IDENTITY);
     }
 
@@ -174,22 +174,11 @@ public abstract class SQLs extends SQLsSyntax {
         return (BatchUpdate) update;
     }
 
-    static BatchDelete _batchDeleteIdentity(Delete delete) {
+    static BatchDelete _batchDeleteIdentity(DeleteStatement delete) {
         return (BatchDelete) delete;
     }
 
-    static Expression _asExp(_ItemExpression<?> expression) {
-        return expression;
-    }
 
-    static <I extends Item> Function<_ItemExpression<I>, Expression> _getAsExpFunc() {
-        return SQLs::_asExp;
-    }
-
-    @SuppressWarnings("unchecked")
-    static <T1 extends TypeInfer, T2 extends TypeInfer> Function<T1, T2> _getIdentity() {
-        return (Function<T1, T2>) _IDENTITY;
-    }
 
 
     static <I extends Item> Function<TypeInfer, I> _toSelection(final Function<Selection, I> function) {

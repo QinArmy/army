@@ -37,7 +37,7 @@ public abstract class _SQLConsultant {
 
     }
 
-    public static void assertStandardDelete(Delete delete) {
+    public static void assertStandardDelete(DeleteStatement delete) {
         if (!(delete instanceof StandardDeletes)) {
             throw nonArmyStatement(delete);
         }

@@ -35,7 +35,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
     final String tableAlias;
 
     /**
-     * @param tableAlias for {@link SingleUpdate} non-null and  non-empty,for other non-null
+     * @param tableAlias for {@link SingleUpdateStatement} non-null and  non-empty,for other non-null
      */
     SetWhereClause(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
         super(context);

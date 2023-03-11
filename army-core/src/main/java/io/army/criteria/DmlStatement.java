@@ -6,7 +6,7 @@ package io.army.criteria;
  *     <ul>
  *         <li>{@link Insert}</li>
  *         <li>{@link Update}</li>
- *         <li>{@link Delete}</li>
+ *         <li>{@link DeleteStatement}</li>
  *     </ul>
  * </p>
  *

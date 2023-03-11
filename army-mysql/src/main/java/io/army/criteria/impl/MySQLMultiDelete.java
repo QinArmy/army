@@ -37,18 +37,18 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
         MySQLDelete._MultiDeleteHintClause<DH>,
         MySQLDelete._MultiDeleteAliasClause<DT>,
         MySQLQuery._IndexHintForJoinClause<FT>,
-        Delete {
+        DeleteStatement {
 
 
-    static <I extends Item> _MultiWithSpec<I> simple(@Nullable _WithClauseSpec spec, Function<Delete, I> function) {
+    static <I extends Item> _MultiWithSpec<I> simple(@Nullable _WithClauseSpec spec, Function<DeleteStatement, I> function) {
         return new SimpleMultiDelete<>(spec, function);
     }
 
-    static <I extends Item> _BatchMultiWithSpec<I> batch(Function<Delete, I> function) {
+    static <I extends Item> _BatchMultiWithSpec<I> batch(Function<DeleteStatement, I> function) {
         return new BatchMultiDelete<>(function);
     }
 
-    private final Function<Delete, I> function;
+    private final Function<DeleteStatement, I> function;
 
     private List<Hint> hintList;
 
@@ -63,7 +63,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
 
     _TableBlock fromCrossBlock;
 
-    private MySQLMultiDelete(@Nullable _WithClauseSpec withSpec, Function<Delete, I> function) {
+    private MySQLMultiDelete(@Nullable _WithClauseSpec withSpec, Function<DeleteStatement, I> function) {
         super(withSpec, CriteriaContexts.primaryMultiDmlContext());
         this.function = function;
     }
@@ -360,7 +360,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
             MySQLDelete._ParensJoinSpec<I>,
             MySQLDelete._MultiWhereAndSpec<I> {
 
-        private SimpleMultiDelete(@Nullable _WithClauseSpec spec, Function<Delete, I> function) {
+        private SimpleMultiDelete(@Nullable _WithClauseSpec spec, Function<DeleteStatement, I> function) {
             super(spec, function);
         }
 
@@ -630,7 +630,7 @@ abstract class MySQLMultiDelete<I extends Item, WE, DH, DT, FU, FT, FS extends I
 
         private List<?> paramList;
 
-        private BatchMultiDelete(Function<Delete, I> function) {
+        private BatchMultiDelete(Function<DeleteStatement, I> function) {
             super(null, function);
         }
 

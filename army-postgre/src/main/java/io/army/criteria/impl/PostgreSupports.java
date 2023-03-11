@@ -118,26 +118,6 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public final TR tableSample(String methodName, Expression argument) {
-            return this.tableSample(FunctionUtils.oneArgVoidFunc(methodName, argument));
-        }
-
-        @Override
-        public final TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
-            final List<Expression> expList = new ArrayList<>();
-            consumer.accept(expList::add);
-            return this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, expList));
-        }
-
-
-        @Override
-        public final TR tableSample(
-                BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
-                BiFunction<MappingType, Object, Expression> valueOperator, Object argument) {
-            return this.tableSample(method.apply(valueOperator, argument));
-        }
-
-        @Override
         public final TR tableSample(
                 BiFunction<BiFunction<MappingType, Expression, Expression>, Expression, Expression> method,
                 BiFunction<MappingType, Expression, Expression> valueOperator, Expression argument) {
@@ -158,15 +138,14 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public final TR ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
-            final List<Expression> list = new ArrayList<>();
-            consumer.accept(list::add);
-            if (list.size() > 0) {
-                this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, list));
+        public final TR ifTableSample(Supplier<Expression> supplier) {
+            final Expression expression;
+            expression = supplier.get();
+            if (expression != null) {
+                this.tableSample(expression);
             }
             return (TR) this;
         }
-
 
         @Override
         public final <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method

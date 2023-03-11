@@ -159,7 +159,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     @Override
-    public final Stmt delete(final Delete delete, final Visible visible) {
+    public final Stmt delete(final DeleteStatement delete, final Visible visible) {
         final Stmt stmt;
         stmt = this.handleDelete(null, delete, visible, this::createDeleteStmt);
         if (!(delete instanceof _SingleDelete._ChildDelete)) {
@@ -372,7 +372,7 @@ abstract class ArmyParser implements DialectParser {
         return sql;
     }
 
-    protected void assertDelete(Delete delete) {
+    protected void assertDelete(DeleteStatement delete) {
         throw standardParserDontSupportDialect();
     }
 
@@ -411,14 +411,14 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #handleDelete(_SqlContext, Delete, Visible, Function)
+     * @see #handleDelete(_SqlContext, DeleteStatement, Visible, Function)
      */
     protected void parseMultiDelete(final _MultiDelete delete, _MultiDeleteContext context) {
         throw standardParserDontSupportDialect();
     }
 
     /**
-     * @see #handleDelete(_SqlContext, Delete, Visible, Function)
+     * @see #handleDelete(_SqlContext, DeleteStatement, Visible, Function)
      */
     protected void parseSingleDelete(_SingleDelete delete, _SingleDeleteContext context) {
         throw standardParserDontSupportDialect();
@@ -1809,9 +1809,9 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #delete(Delete, Visible)
+     * @see #delete(DeleteStatement, Visible)
      */
-    private <T> T handleDelete(final @Nullable _SqlContext outerContext, final Delete stmt
+    private <T> T handleDelete(final @Nullable _SqlContext outerContext, final DeleteStatement stmt
             , final Visible visible, final Function<_DeleteContext, T> function) {
         stmt.prepared();
         final _DeleteContext context;
@@ -1867,7 +1867,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #handleDelete(_SqlContext, Delete, Visible, Function)
+     * @see #handleDelete(_SqlContext, DeleteStatement, Visible, Function)
      */
     private _DeleteContext handleDomainDelete(final @Nullable _SqlContext outerContext, final _DomainDelete stmt
             , final Visible visible) {
@@ -2060,7 +2060,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #handleDelete(_SqlContext, Delete, Visible, Function)
+     * @see #handleDelete(_SqlContext, DeleteStatement, Visible, Function)
      * @see #handleDomainDelete(_SqlContext, _DomainDelete, Visible)
      */
     private void parseStandardSingleDelete(final _SingleDelete stmt, final _SingleDeleteContext context) {
@@ -2259,7 +2259,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #delete(Delete, Visible)
+     * @see #delete(DeleteStatement, Visible)
      */
     private Stmt createDeleteStmt(final _DeleteContext context) {
         final _DeleteContext parentContext;
@@ -2305,7 +2305,7 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #handleUpdate(_SqlContext, Update, Visible, Function)
      * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, Visible)
-     * @see #handleDelete(_SqlContext, Delete, Visible, Function)
+     * @see #handleDelete(_SqlContext, DeleteStatement, Visible, Function)
      * @see #handleDomainDelete(_SqlContext, _DomainDelete, Visible)
      */
     private static <S extends _Statement, C extends NarrowDmlContext> void multiStmtBatch(

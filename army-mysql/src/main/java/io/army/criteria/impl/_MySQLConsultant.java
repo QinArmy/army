@@ -78,7 +78,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
 
     }
 
-    public static void assertDelete(final Delete delete) {
+    public static void assertDelete(final DeleteStatement delete) {
         if (delete instanceof _SingleDelete) {
             if (!(delete instanceof MySQLSingleDelete)) {
                 throw instanceNotMatch(delete, MySQLSingleDelete.class);

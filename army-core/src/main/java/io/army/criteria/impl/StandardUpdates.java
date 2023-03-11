@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  */
 
 abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
-        extends SingleUpdate<I, F, SR, WR, WA, Object, Object, Object, Object>
+        extends SingleUpdateStatement<I, F, SR, WR, WA, Object, Object, Object, Object>
         implements StandardUpdate, Update {
 
     static <I extends Item> _SingleUpdateClause<I> simpleSingle(Function<Update, I> function) {

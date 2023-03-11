@@ -1,6 +1,6 @@
 package io.army.criteria.standard;
 
-import io.army.criteria.Delete;
+import io.army.criteria.DeleteStatement;
 import io.army.criteria.Item;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.SingleTableMeta;
@@ -38,7 +38,7 @@ public interface StandardDelete extends StandardStatement {
 
     interface _DomainDeleteClause {
 
-        _WhereSpec<Delete> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
+        _WhereSpec<DeleteStatement> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
 
     }
 
@@ -60,7 +60,7 @@ public interface StandardDelete extends StandardStatement {
 
     interface _BatchDomainDeleteClause {
 
-        _BatchWhereSpec<Delete> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
+        _BatchWhereSpec<DeleteStatement> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
 
     }
 

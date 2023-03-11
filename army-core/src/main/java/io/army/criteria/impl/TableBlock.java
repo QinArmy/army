@@ -143,8 +143,8 @@ abstract class TableBlock implements _TableBlock {
         ParensDerivedJoinBlock(_JoinType joinType, @Nullable SQLWords itemWord, DerivedTable tableItem,
                                String alias) {
             super(joinType, itemWord, tableItem, alias);
-            this.selectionFunction = tableItem::selection;
-            this.selectionsSupplier = tableItem::selectionList;
+            this.selectionFunction = ((_DerivedTable) tableItem)::selection;
+            this.selectionsSupplier = ((_DerivedTable) tableItem)::selectionList;
         }
 
         @Override

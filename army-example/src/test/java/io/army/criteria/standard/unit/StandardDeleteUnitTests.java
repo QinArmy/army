@@ -1,6 +1,6 @@
 package io.army.criteria.standard.unit;
 
-import io.army.criteria.Delete;
+import io.army.criteria.DeleteStatement;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import org.slf4j.Logger;
@@ -16,7 +16,7 @@ public class StandardDeleteUnitTests extends StandardUnitTests {
 
     @Test
     public void deleteSingle() {
-        final Delete stmt;
+        final DeleteStatement stmt;
         stmt = SQLs.singleDelete()
                 .deleteFrom(ChinaRegion_.T, AS, "r")
                 .where(ChinaRegion_.id::equal, SQLs::param, () -> 1)

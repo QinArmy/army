@@ -21,7 +21,7 @@ import java.util.function.*;
  *     <li>{@link Select}</li>
  *     <li>{@link Insert}</li>
  *     <li>{@link Update}</li>
- *     <li>{@link Delete}</li>
+ *     <li>{@link DeleteStatement}</li>
  *     <li>{@link SubQuery}</li>
  *     <li>{@link Values}</li>
  * </ul>
@@ -1297,7 +1297,7 @@ public interface Statement extends Item {
     /**
      * This is base interface of below:
      * <ul>
-     *     <li>{@link Delete}</li>
+     *     <li>{@link DeleteStatement}</li>
      *     <li>{@link SubDelete}</li>
      * </ul>
      *

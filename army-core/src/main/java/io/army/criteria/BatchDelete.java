@@ -1,5 +1,5 @@
 package io.army.criteria;
 
-public interface BatchDelete extends BatchDmlStatement, DmlStatement.DmlDelete {
+public interface BatchDelete extends DeleteStatement, BatchDmlStatement, DmlStatement.DmlDelete {
 
 }

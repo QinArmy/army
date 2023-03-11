@@ -126,7 +126,7 @@ public class MySQLCriteriaUnitTests {
                 hintList.add(MySQLs.orderIndex("regionDelete", "r", Collections.singletonList("PRIMARY")));
                 return hintList;
             };
-            final Delete stmt;
+            final DeleteStatement stmt;
             stmt = MySQLs.singleDelete()
                     .delete(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.QUICK, MySQLs.IGNORE))
                     .from(ChinaRegion_.T, AS, "r")
@@ -186,7 +186,7 @@ public class MySQLCriteriaUnitTests {
             paramList.add(paramMap);
 
 
-            final Delete stmt;
+            final DeleteStatement stmt;
             stmt = MySQLs.batchSingleDelete()
                     .delete(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.QUICK, MySQLs.IGNORE))
                     .from(ChinaRegion_.T, AS, "r")
@@ -234,7 +234,7 @@ public class MySQLCriteriaUnitTests {
 
             final List<MySQLs.Modifier> modifierList;
             modifierList = Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.QUICK, MySQLs.IGNORE);
-            final Delete stmt;
+            final DeleteStatement stmt;
             stmt = MySQLs.multiDelete()
                     .delete(hintSupplier, modifierList)
                     .from("c", "r", "u")
@@ -290,7 +290,7 @@ public class MySQLCriteriaUnitTests {
             paramList.add(Collections.singletonMap(ChinaCity_.ID, 22));
             paramList.add(Collections.singletonMap(ChinaCity_.ID, 88L));
 
-            final Delete stmt;
+            final DeleteStatement stmt;
             stmt = MySQLs.batchMultiDelete()
                     .delete(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.QUICK, MySQLs.IGNORE))
                     .from("c", "r")

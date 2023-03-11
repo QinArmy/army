@@ -296,8 +296,8 @@ final class SyncLocalSession extends _AbstractSyncSession implements LocalSessio
             final BatchStmt stmt;
             if (dml instanceof Update) {
                 stmt = (BatchStmt) this.sessionFactory.dialectParser.update((Update) dml, visible);
-            } else if (dml instanceof Delete) {
-                stmt = (BatchStmt) this.sessionFactory.dialectParser.delete((Delete) dml, visible);
+            } else if (dml instanceof DeleteStatement) {
+                stmt = (BatchStmt) this.sessionFactory.dialectParser.delete((DeleteStatement) dml, visible);
             } else {
                 throw _Exceptions.unexpectedStatement(dml);
             }
@@ -486,8 +486,8 @@ final class SyncLocalSession extends _AbstractSyncSession implements LocalSessio
             final SimpleStmt stmt;
             if (dml instanceof Update) {
                 stmt = (SimpleStmt) this.sessionFactory.dialectParser.update((Update) dml, visible);
-            } else if (dml instanceof Delete) {
-                stmt = (SimpleStmt) this.sessionFactory.dialectParser.delete((Delete) dml, visible);
+            } else if (dml instanceof DeleteStatement) {
+                stmt = (SimpleStmt) this.sessionFactory.dialectParser.delete((DeleteStatement) dml, visible);
             } else {
                 throw _Exceptions.unexpectedStatement(dml);
             }

@@ -15,34 +15,43 @@ public interface DialectStatement extends Statement {
 
     interface _StaticReturningCommaClause<R> {
 
-        R comma(NamedExpression exp);
+        R comma(Selection selection);
 
-        R comma(Expression expression, SQLs.WordAs wordAs, String alias);
+        R comma(Selection selection1, Selection selection2);
 
-        _AsClause<R> comma(Supplier<Expression> supplier);
+        R comma(Function<String, Selection> function, String alias);
 
-        R comma(NamedExpression exp1, NamedExpression exp2);
+        R comma(Function<String, Selection> function1, String alias1,
+                Function<String, Selection> function2, String alias2);
 
-        R comma(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3);
+        R comma(Function<String, Selection> function, String alias, Selection selection);
 
-        R comma(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4);
+        R comma(Selection selection, Function<String, Selection> function, String alias);
+
+        R comma(TableField field1, TableField field2, TableField field3);
+
+        R comma(TableField field1, TableField field2, TableField field3, TableField field4);
     }
 
 
     interface _StaticReturningClause<R> {
 
-        R returning(NamedExpression exp);
+        R returning(Selection selection);
 
-        R returning(Expression expression, SQLs.WordAs wordAs, String alias);
+        R returning(Selection selection1, Selection selection2);
 
-        _AsClause<R> returning(Supplier<Expression> supplier);
+        R returning(Function<String, Selection> function, String alias);
 
-        R returning(NamedExpression exp1, NamedExpression exp2);
+        R returning(Function<String, Selection> function1, String alias1,
+                    Function<String, Selection> function2, String alias2);
 
-        R returning(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3);
+        R returning(Function<String, Selection> function, String alias, Selection selection);
 
-        R returning(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4);
+        R returning(Selection selection, Function<String, Selection> function, String alias);
 
+        R returning(TableField field1, TableField field2, TableField field3);
+
+        R returning(TableField field1, TableField field2, TableField field3, TableField field4);
     }
 
 
@@ -51,7 +60,6 @@ public interface DialectStatement extends Statement {
         R returningAll();
 
         R returning(Consumer<Returnings> consumer);
-
 
     }
 

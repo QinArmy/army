@@ -207,7 +207,7 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
         } else if (!(predicateList instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        predicateList.add((OperationPredicate<?>) predicate);
+        predicateList.add((OperationPredicate) predicate);
         return (WA) this;
     }
 

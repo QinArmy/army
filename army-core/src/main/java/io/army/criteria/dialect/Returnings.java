@@ -1,26 +1,29 @@
 package io.army.criteria.dialect;
 
-import io.army.criteria.Expression;
-import io.army.criteria.NamedExpression;
 import io.army.criteria.Selection;
-import io.army.criteria.Statement;
-import io.army.criteria.impl.SQLs;
+import io.army.criteria.TableField;
 
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 public interface Returnings {
 
     Returnings selection(Selection selection);
 
-    Returnings selection(Expression expression, SQLs.WordAs wordAs, String alias);
+    Returnings selection(Selection selection1, Selection selection2);
 
-    Statement._AsClause<Returnings> selection(Supplier<Expression> supplier);
+    Returnings selection(Function<String, Selection> function, String alias);
 
-    Returnings selection(NamedExpression exp1, NamedExpression exp2);
+    Returnings selection(Function<String, Selection> function1, String alias1,
+                         Function<String, Selection> function2, String alias2);
 
-    Returnings selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3);
+    Returnings selection(Function<String, Selection> function, String alias, Selection selection);
 
-    Returnings selection(NamedExpression exp1, NamedExpression exp2, NamedExpression exp3, NamedExpression exp4);
+    Returnings selection(Selection selection, Function<String, Selection> function, String alias);
+
+    Returnings selection(TableField field1, TableField field2, TableField field3);
+
+    Returnings selection(TableField field1, TableField field2, TableField field3, TableField field4);
+
 }
 
 

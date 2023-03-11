@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 
-abstract class SingleDelete<I extends Item, WR, WA, OR, LR, LO, LF>
+abstract class SingleDeleteStatement<I extends Item, WR, WA, OR, LR, LO, LF>
         extends WhereClause<WR, WA, OR, LR, LO, LF>
         implements _SingleDelete
         , Statement
@@ -24,7 +24,7 @@ abstract class SingleDelete<I extends Item, WR, WA, OR, LR, LO, LF>
 
     private Boolean prepared;
 
-    SingleDelete(CriteriaContext context) {
+    SingleDeleteStatement(CriteriaContext context) {
         super(context);
         ContextStack.push(this.context);
     }
@@ -72,7 +72,7 @@ abstract class SingleDelete<I extends Item, WR, WA, OR, LR, LO, LF>
 
 
     static abstract class WithSingleDelete<I extends Item, B extends CteBuilderSpec, WE, WR, WA, OR, LR, LO, LF>
-            extends SingleDelete<I, WR, WA, OR, LR, LO, LF>
+            extends SingleDeleteStatement<I, WR, WA, OR, LR, LO, LF>
             implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {
 
