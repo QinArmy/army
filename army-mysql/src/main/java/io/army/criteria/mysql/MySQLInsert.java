@@ -161,7 +161,7 @@ public interface MySQLInsert extends MySQLStatement {
     /*-------------------below insert syntax interfaces  -------------------*/
 
     interface _MySQLStaticValuesLeftParenClause<I extends Item, T>
-            extends Insert._StaticValueLeftParenClause<T, _StaticValuesLeftParenSpec<I, T>> {
+            extends InsertStatement._StaticValueLeftParenClause<T, _StaticValuesLeftParenSpec<I, T>> {
 
     }
 
@@ -171,10 +171,10 @@ public interface MySQLInsert extends MySQLStatement {
     }
 
     interface _ValuesColumnDefaultSpec<I extends Item, T>
-            extends Insert._ColumnDefaultClause<T, _ValuesColumnDefaultSpec<I, T>>
-            , Insert._DomainValueClause<T, _OnAsRowAliasSpec<I, T>>
-            , Insert._StaticValuesClause<_MySQLStaticValuesLeftParenClause<I, T>>
-            , Insert._DynamicValuesClause<T, _OnAsRowAliasSpec<I, T>> {
+            extends InsertStatement._ColumnDefaultClause<T, _ValuesColumnDefaultSpec<I, T>>
+            , InsertStatement._DomainValueClause<T, _OnAsRowAliasSpec<I, T>>
+            , InsertStatement._StaticValuesClause<_MySQLStaticValuesLeftParenClause<I, T>>
+            , InsertStatement._DynamicValuesClause<T, _OnAsRowAliasSpec<I, T>> {
 
     }
 
@@ -184,7 +184,7 @@ public interface MySQLInsert extends MySQLStatement {
     }
 
     interface _MySQLStaticAssignmentClause<I extends Item, T>
-            extends Insert._StaticAssignmentSetClause<T, _StaticAssignmentSpec<I, T>> {
+            extends InsertStatement._StaticAssignmentSetClause<T, _StaticAssignmentSpec<I, T>> {
 
     }
 
@@ -193,10 +193,10 @@ public interface MySQLInsert extends MySQLStatement {
 
     }
 
-    interface _ColumnListSpec<I extends Item, T> extends Insert._ColumnListClause<T, _ComplexColumnDefaultSpec<I, T>>
+    interface _ColumnListSpec<I extends Item, T> extends InsertStatement._ColumnListClause<T, _ComplexColumnDefaultSpec<I, T>>
             , _ValuesColumnDefaultSpec<I, T>
             , _MySQLStaticAssignmentClause<I, T>
-            , Insert._DynamicAssignmentSetClause<T, _OnAsRowAliasSpec<I, T>> {
+            , InsertStatement._DynamicAssignmentSetClause<T, _OnAsRowAliasSpec<I, T>> {
 
     }
 
@@ -223,7 +223,7 @@ public interface MySQLInsert extends MySQLStatement {
         <T> _PartitionSpec<I, T> into(SingleTableMeta<T> table);
 
 
-        <P> _PartitionSpec<Insert._ParentInsert<_ChildInsertIntoSpec<I, P>>, P> into(ParentTableMeta<P> table);
+        <P> _PartitionSpec<InsertStatement._ParentInsert<_ChildInsertIntoSpec<I, P>>, P> into(ParentTableMeta<P> table);
 
     }
 
@@ -233,22 +233,22 @@ public interface MySQLInsert extends MySQLStatement {
         <T> _PartitionSpec<I, T> insertInto(SimpleTableMeta<T> table);
 
 
-        <P> _PartitionSpec<Insert._ParentInsert<_ChildInsertIntoSpec<I, P>>, P> insertInto(ParentTableMeta<P> table);
+        <P> _PartitionSpec<InsertStatement._ParentInsert<_ChildInsertIntoSpec<I, P>>, P> insertInto(ParentTableMeta<P> table);
 
     }
 
 
-    interface _PrimaryPreferLiteralSpec<I extends Item> extends Insert._PreferLiteralClause<_PrimaryInsertIntoSpec<I>>
+    interface _PrimaryPreferLiteralSpec<I extends Item> extends InsertStatement._PreferLiteralClause<_PrimaryInsertIntoSpec<I>>
             , _PrimaryInsertIntoSpec<I> {
 
     }
 
-    interface _PrimaryNullOptionSpec<I extends Item> extends Insert._NullOptionClause<_PrimaryPreferLiteralSpec<I>>
+    interface _PrimaryNullOptionSpec<I extends Item> extends InsertStatement._NullOptionClause<_PrimaryPreferLiteralSpec<I>>
             , _PrimaryPreferLiteralSpec<I> {
 
     }
 
-    interface _PrimaryOptionSpec<I extends Item> extends Insert._MigrationOptionClause<_PrimaryNullOptionSpec<I>>
+    interface _PrimaryOptionSpec<I extends Item> extends InsertStatement._MigrationOptionClause<_PrimaryNullOptionSpec<I>>
             , _PrimaryNullOptionSpec<I> {
 
     }

@@ -239,10 +239,10 @@ abstract class CriteriaSupports {
             final Stmt stmt;
             if (this instanceof Select) {
                 stmt = parser.select((Select) this, visible);
-            } else if (this instanceof Insert) {
-                stmt = parser.insert((Insert) this, visible);
-            } else if (this instanceof Update) {
-                stmt = parser.update((Update) this, visible);
+            } else if (this instanceof InsertStatement) {
+                stmt = parser.insert((InsertStatement) this, visible);
+            } else if (this instanceof UpdateStatement) {
+                stmt = parser.update((UpdateStatement) this, visible);
             } else if (this instanceof DeleteStatement) {
                 stmt = parser.delete((DeleteStatement) this, visible);
             } else if (this instanceof Values) {
@@ -557,8 +557,8 @@ abstract class CriteriaSupports {
 
     @SuppressWarnings("unchecked")
     private static abstract class UpdateSetClause<F extends DataField, SR>
-            implements Update._StaticBatchSetClause<F, SR>
-            , Update._StaticRowSetClause<F, SR> {
+            implements UpdateStatement._StaticBatchSetClause<F, SR>
+            , UpdateStatement._StaticRowSetClause<F, SR> {
 
         private final Consumer<ItemPair> consumer;
 

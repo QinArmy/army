@@ -1,7 +1,7 @@
 package io.army.criteria;
 
 
-public interface ValuesConstructor<T> extends Insert._StaticAssignmentSetClause<T, ValuesConstructor<T>> {
+public interface ValuesConstructor<T> extends InsertStatement._StaticAssignmentSetClause<T, ValuesConstructor<T>> {
 
     /**
      * <p>

@@ -27,7 +27,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link Update._DmlUpdateSpec}</li>
+     *          <li>{@link UpdateStatement._DmlUpdateSpec}</li>
      *          <li>method {@link Statement._DmlRowCountLimitClause}</li>
      *     </ul>
      * </p>
@@ -82,7 +82,7 @@ public interface MySQLUpdate extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _SingleWhereAndSpec<I extends Item> extends Update._UpdateWhereAndClause<_SingleWhereAndSpec<I>>
+    interface _SingleWhereAndSpec<I extends Item> extends UpdateStatement._UpdateWhereAndClause<_SingleWhereAndSpec<I>>
             , _OrderBySpec<I> {
 
     }
@@ -104,8 +104,8 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _SingleSetClause<I extends Item, T>
-            extends Update._StaticSetClause<FieldMeta<T>, _SingleWhereSpec<I, T>>,
-            Update._DynamicSetClause<ItemPairs<FieldMeta<T>>, _SingleWhereClause<I>> {
+            extends UpdateStatement._StaticSetClause<FieldMeta<T>, _SingleWhereSpec<I, T>>,
+            UpdateStatement._DynamicSetClause<ItemPairs<FieldMeta<T>>, _SingleWhereClause<I>> {
     }
 
 
@@ -227,7 +227,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchLimitSpec<I extends Item>
-            extends Update._DmlRowCountLimitClause<_BatchParamClause<_DmlUpdateSpec<I>>>,
+            extends UpdateStatement._DmlRowCountLimitClause<_BatchParamClause<_DmlUpdateSpec<I>>>,
             Statement._BatchParamClause<_DmlUpdateSpec<I>> {
 
     }
@@ -271,7 +271,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchSingleWhereAndSpec<I extends Item>
-            extends Update._UpdateWhereAndClause<_BatchSingleWhereAndSpec<I>>,
+            extends UpdateStatement._UpdateWhereAndClause<_BatchSingleWhereAndSpec<I>>,
             _BatchOrderBySpec<I> {
 
     }
@@ -296,8 +296,8 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchSingleSetClause<I extends Item, T>
-            extends Update._StaticBatchSetClause<FieldMeta<T>, _BatchSingleWhereSpec<I, T>>,
-            Update._DynamicSetClause<BatchItemPairs<FieldMeta<T>>, _BatchSingleWhereClause<I>> {
+            extends UpdateStatement._StaticBatchSetClause<FieldMeta<T>, _BatchSingleWhereSpec<I, T>>,
+            UpdateStatement._DynamicSetClause<BatchItemPairs<FieldMeta<T>>, _BatchSingleWhereClause<I>> {
 
     }
 
@@ -413,7 +413,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link Update._UpdateWhereAndClause}</li>
+     *          <li>{@link UpdateStatement._UpdateWhereAndClause}</li>
      *          <li>{@link Statement._DmlUpdateSpec}</li>
      *     </ul>
      * </p>
@@ -425,7 +425,7 @@ public interface MySQLUpdate extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _MultiWhereAndSpec<I extends Item> extends Update._UpdateWhereAndClause<_MultiWhereAndSpec<I>>
+    interface _MultiWhereAndSpec<I extends Item> extends UpdateStatement._UpdateWhereAndClause<_MultiWhereAndSpec<I>>
             , _DmlUpdateSpec<I> {
 
     }
@@ -442,8 +442,8 @@ public interface MySQLUpdate extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _MultiSetClause<I extends Item> extends Update._StaticSetClause<TableField, _MultiWhereSpec<I>>
-            , Update._DynamicSetClause<ItemPairs<TableField>, _MultiWhereSpec<I>> {
+    interface _MultiSetClause<I extends Item> extends UpdateStatement._StaticSetClause<TableField, _MultiWhereSpec<I>>
+            , UpdateStatement._DynamicSetClause<ItemPairs<TableField>, _MultiWhereSpec<I>> {
 
     }
 
@@ -685,7 +685,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchMultiWhereAndSpec<I extends Item>
-            extends Update._UpdateWhereAndClause<_BatchMultiWhereAndSpec<I>>
+            extends UpdateStatement._UpdateWhereAndClause<_BatchMultiWhereAndSpec<I>>
             , _BatchParamClause<_DmlUpdateSpec<I>> {
 
 
@@ -704,8 +704,8 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchMultiSetClause<I extends Item>
-            extends Update._StaticBatchSetClause<TableField, _BatchMultiWhereSpec<I>>
-            , Update._DynamicSetClause<BatchItemPairs<TableField>, _BatchMultiWhereSpec<I>> {
+            extends UpdateStatement._StaticBatchSetClause<TableField, _BatchMultiWhereSpec<I>>
+            , UpdateStatement._DynamicSetClause<BatchItemPairs<TableField>, _BatchMultiWhereSpec<I>> {
 
     }
 

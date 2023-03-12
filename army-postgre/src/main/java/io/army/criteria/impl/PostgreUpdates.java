@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.ReturningUpdate;
 import io.army.criteria.dialect.Returnings;
-import io.army.criteria.dialect.SubReturningUpdate;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._TableBlock;
@@ -27,16 +26,22 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR, RR, WR, WA>
+abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT, JS, JC, TR, WR, WA>
         extends JoinableUpdate<I, FieldMeta<T>, SR, FT, FS, FC, JT, JS, JC, WR, WA, Object, Object, Object, Object>
         implements PostgreUpdate,
         _PostgreUpdate,
         PostgreStatement._StaticTableSampleClause<TR>,
-        PostgreStatement._RepeatableClause<RR> {
+        PostgreStatement._RepeatableClause<FC>,
+        Statement._ParensStringClause<FC>,
+        PostgreStatement._PostgreFromNestedClause<FC>,
+        PostgreStatement._PostgreJoinNestedClause<Statement._OnClause<FC>>,
+        PostgreStatement._PostgreCrossNestedClause<FC>,
+        PostgreStatement._PostgreDynamicJoinCrossClause<FC>,
+        DialectStatement._WhereCurrentOfClause<WR> {
 
 
     static <I extends Item, Q extends Item> PostgreUpdate._SingleWithSpec<I, Q> simple(
-            @Nullable _Statement._WithClauseSpec spec, Function<Update, I> dmlFunction,
+            @Nullable _Statement._WithClauseSpec spec, Function<UpdateStatement, I> dmlFunction,
             Function<ReturningUpdate, Q> dqlFunction) {
         return new PrimarySimpleUpdateClause<>(spec, dmlFunction, dqlFunction);
     }
@@ -47,21 +52,25 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
     }
 
     static <I extends Item, Q extends Item> PostgreUpdate._BatchSingleWithSpec<I, Q> batch(
-            Function<Update, I> dmlFunction, Function<ReturningUpdate, Q> dqlFunction) {
+            Function<UpdateStatement, I> dmlFunction, Function<ReturningUpdate, Q> dqlFunction) {
         return new BatchUpdateClause<>(dmlFunction, dqlFunction);
     }
 
 
-    private final SQLsSyntax.WordOnly modifier;
+    private final SQLs.WordOnly modifier;
 
     private final TableMeta<?> updateTable;
 
     private final String tableAlias;
 
+    _TableBlock fromCrossBlock;
 
     private PostgreUpdates(PostgreUpdateClause<?> clause) {
         super(clause.context);
         this.modifier = clause.modifier;
+        if (this.modifier != null && this.modifier != SQLs.ONLY) {
+            throw CriteriaUtils.errorModifier(this.context, this.modifier);
+        }
         this.updateTable = clause.updateTable;
 
         this.tableAlias = clause.tableAlias;
@@ -71,26 +80,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
 
     @Override
     public final TR tableSample(Expression method) {
-        this.lastTableBlock().onSampleMethod((ArmyExpression) method);
+        this.getFromCrossBlock().onSampleMethod((ArmyExpression) method);
         return (TR) this;
-    }
-
-    @Override
-    public final TR tableSample(String methodName, Expression argument) {
-        return this.tableSample(FunctionUtils.oneArgVoidFunc(methodName, argument));
-    }
-
-    @Override
-    public final TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
-        final List<Expression> list = new ArrayList<>();
-        consumer.accept(list::add);
-        return this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, list));
-    }
-
-    @Override
-    public final TR tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
-                                BiFunction<MappingType, Object, Expression> valueOperator, Object argument) {
-        return this.tableSample(method.apply(valueOperator, argument));
     }
 
     @Override
@@ -113,11 +104,11 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
     }
 
     @Override
-    public final TR ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
-        final List<Expression> list = new ArrayList<>();
-        consumer.accept(list::add);
-        if (list.size() > 0) {
-            this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, list));
+    public final TR ifTableSample(Supplier<Expression> supplier) {
+        final Expression expression;
+        expression = supplier.get();
+        if (expression != null) {
+            this.tableSample(expression);
         }
         return (TR) this;
     }
@@ -146,61 +137,146 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
     }
 
     @Override
-    public final RR repeatable(Expression seed) {
-        this.lastTableBlock().onSeed((ArmyExpression) seed);
-        return (RR) this;
+    public final FC repeatable(Expression seed) {
+        this.getFromCrossBlock().onSeed((ArmyExpression) seed);
+        return (FC) this;
     }
 
     @Override
-    public final RR repeatable(Supplier<Expression> supplier) {
+    public final FC repeatable(Supplier<Expression> supplier) {
         return this.repeatable(supplier.get());
     }
 
     @Override
-    public final RR repeatable(Function<Number, Expression> valueOperator, Number seedValue) {
+    public final FC repeatable(Function<Number, Expression> valueOperator, Number seedValue) {
         return this.repeatable(valueOperator.apply(seedValue));
     }
 
     @Override
-    public final <E extends Number> RR repeatable(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+    public final <E extends Number> FC repeatable(Function<E, Expression> valueOperator, Supplier<E> supplier) {
         return this.repeatable(valueOperator.apply(supplier.get()));
     }
 
     @Override
-    public final RR repeatable(Function<Object, Expression> valueOperator, Function<String, ?> function,
+    public final FC repeatable(Function<Object, Expression> valueOperator, Function<String, ?> function,
                                String keyName) {
         return this.repeatable(valueOperator.apply(function.apply(keyName)));
     }
 
     @Override
-    public final RR ifRepeatable(Supplier<Expression> supplier) {
+    public final FC ifRepeatable(Supplier<Expression> supplier) {
         final Expression expression;
         expression = supplier.get();
         if (expression != null) {
             this.repeatable(expression);
         }
-        return (RR) this;
+        return (FC) this;
     }
 
     @Override
-    public final <E extends Number> RR ifRepeatable(Function<E, Expression> valueOperator, Supplier<E> supplier) {
+    public final <E extends Number> FC ifRepeatable(Function<E, Expression> valueOperator, Supplier<E> supplier) {
         final E value;
         value = supplier.get();
         if (value != null) {
             this.repeatable(valueOperator.apply(value));
         }
-        return (RR) this;
+        return (FC) this;
     }
 
     @Override
-    public final RR ifRepeatable(Function<Object, Expression> valueOperator, Function<String, ?> function,
+    public final FC ifRepeatable(Function<Object, Expression> valueOperator, Function<String, ?> function,
                                  String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
             this.repeatable(valueOperator.apply(value));
         }
-        return (RR) this;
+        return (FC) this;
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<FC> from() {
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<FC> crossJoin() {
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<FC>> leftJoin() {
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<FC>> join() {
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<FC>> rightJoin() {
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_OnClause<FC>> fullJoin() {
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
+    }
+
+    @Override
+    public final FC ifLeftJoin(Consumer<PostgreJoins> consumer) {
+        consumer.accept(PostgreDynamicJoins.joinBuilder(this.context, _JoinType.LEFT_JOIN, this.blockConsumer));
+        return (FC) this;
+    }
+
+    @Override
+    public final FC ifJoin(Consumer<PostgreJoins> consumer) {
+        consumer.accept(PostgreDynamicJoins.joinBuilder(this.context, _JoinType.JOIN, this.blockConsumer));
+        return (FC) this;
+    }
+
+    @Override
+    public final FC ifRightJoin(Consumer<PostgreJoins> consumer) {
+        consumer.accept(PostgreDynamicJoins.joinBuilder(this.context, _JoinType.RIGHT_JOIN, this.blockConsumer));
+        return (FC) this;
+    }
+
+    @Override
+    public final FC ifFullJoin(Consumer<PostgreJoins> consumer) {
+        consumer.accept(PostgreDynamicJoins.joinBuilder(this.context, _JoinType.FULL_JOIN, this.blockConsumer));
+        return (FC) this;
+    }
+
+    @Override
+    public final FC ifCrossJoin(Consumer<PostgreCrosses> consumer) {
+        consumer.accept(PostgreDynamicJoins.crossBuilder(this.context, this.blockConsumer));
+        return (FC) this;
+    }
+
+    @Override
+    public final FC parens(String first, String... rest) {
+        this.getFromDerived().onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
+        return (FC) this;
+    }
+
+    @Override
+    public final FC parens(Consumer<Consumer<String>> consumer) {
+        this.getFromDerived().onColumnAlias(CriteriaUtils.stringList(this.context, true, consumer));
+        return (FC) this;
+    }
+
+    @Override
+    public final FC ifParens(Consumer<Consumer<String>> consumer) {
+        this.getFromDerived().onColumnAlias(CriteriaUtils.stringList(this.context, false, consumer));
+        return (FC) this;
+    }
+
+
+    @Override
+    public final WR whereCurrentOf(String cursorName) {
+        this.where(new PostgreCursorPredicate(cursorName));
+        return (WR) this;
     }
 
     @Override
@@ -240,28 +316,6 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
         }
     }
 
-
-    abstract _TableBlock lastBlock();
-
-    final PostgreSupports.PostgreNoOnTableBlock lastTableBlock() {
-        final _TableBlock block;
-        block = this.lastBlock();
-        if (block != this.context.lastBlock() || !(block instanceof PostgreSupports.PostgreNoOnTableBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return (PostgreSupports.PostgreNoOnTableBlock) block;
-    }
-
-
-    final TableBlock.ParensDerivedJoinBlock lastDerivedBlock() {
-        final _TableBlock block;
-        block = this.lastBlock();
-        if (block != this.context.lastBlock() || !(block instanceof TableBlock.ParensDerivedJoinBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return (TableBlock.ParensDerivedJoinBlock) block;
-    }
-
     @Override
     final Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
         if (modifier != null && modifier != SQLs.ONLY) {
@@ -278,12 +332,56 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
         return modifier;
     }
 
-    final FT fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        joinType.assertNoneCrossType();
+    @Override
+    final FT onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
+        final PostgreSupports.PostgreNoOnTableBlock block;
+        block = new PostgreSupports.PostgreNoOnTableBlock(joinType, modifier, table, alias);
+        this.blockConsumer.accept(block);
+        this.fromCrossBlock = block;
+        return (FT) this;
+    }
+
+    @Override
+    final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+        final TableBlock.NoOnTableBlock block;
+        block = new TableBlock.NoOnTableBlock(joinType, cteItem, alias);
+        this.blockConsumer.accept(block);
+        this.fromCrossBlock = block;
+        return (FC) this;
+    }
+
+    final FC fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         final TableBlock.NoOnTableBlock block;
         block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
         this.blockConsumer.accept(block);
-        return (FT) this;
+        return (FC) this;
+    }
+
+
+    final _OnClause<FC> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
+
+        final OnClauseTableBlock<FC> block;
+        block = new OnClauseTableBlock<>(joinType, nestedItems, "", (FC) this);
+        this.blockConsumer.accept(block);
+        return block;
+    }
+
+
+    private PostgreSupports.PostgreNoOnTableBlock getFromCrossBlock() {
+        final _TableBlock block = this.fromCrossBlock;
+        if (!(this.context.lastBlock() == block && block instanceof PostgreSupports.PostgreNoOnTableBlock)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return (PostgreSupports.PostgreNoOnTableBlock) block;
+    }
+
+
+    final TableBlock.ParensDerivedJoinBlock getFromDerived() {
+        final _TableBlock block = this.fromCrossBlock;
+        if (!(this.context.lastBlock() == block && block instanceof TableBlock.ParensDerivedJoinBlock)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return (TableBlock.ParensDerivedJoinBlock) block;
     }
 
 
@@ -299,7 +397,6 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
             Statement._AsParensOnClause<PostgreUpdate._SingleJoinSpec<I, Q>>,
             Statement._OnClause<PostgreUpdate._SingleJoinSpec<I, Q>>,
             PostgreUpdate._RepeatableJoinClause<I, Q>,
-            PostgreUpdate._SingleJoinSpec<I, Q>,
             PostgreUpdate._ReturningSpec<I, Q>,
             PostgreUpdate._SingleWhereAndSpec<I, Q>>
             implements PostgreUpdate._SingleSetFromSpec<I, Q, T>,
@@ -308,8 +405,6 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
             PostgreUpdate._ParensJoinSpec<I, Q>,
             PostgreUpdate._SingleWhereAndSpec<I, Q>,
             PostgreUpdate._StaticReturningCommaSpec<Q> {
-
-        private _TableBlock fromCrossBlock;
 
         private List<Selection> returningList;
 
@@ -324,89 +419,6 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
             return this;
         }
 
-        @Override
-        public final _NestedLeftParenSpec<_SingleJoinSpec<I, Q>> from() {
-            return PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
-        }
-
-        @Override
-        public final _NestedLeftParenSpec<_OnClause<_SingleJoinSpec<I, Q>>> leftJoin() {
-            return PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
-        }
-
-        @Override
-        public final _NestedLeftParenSpec<_OnClause<_SingleJoinSpec<I, Q>>> join() {
-            return PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
-        }
-
-        @Override
-        public final _NestedLeftParenSpec<_OnClause<_SingleJoinSpec<I, Q>>> rightJoin() {
-            return PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
-        }
-
-        @Override
-        public final _NestedLeftParenSpec<_OnClause<_SingleJoinSpec<I, Q>>> fullJoin() {
-            return PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
-        }
-
-        @Override
-        public final _NestedLeftParenSpec<_SingleJoinSpec<I, Q>> crossJoin() {
-            return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
-        }
-
-        @Override
-        public final _SingleJoinSpec<I, Q> ifLeftJoin(Consumer<PostgreJoins> consumer) {
-            consumer.accept(PostgreDynamicJoins.joinBuilder(this.context, _JoinType.LEFT_JOIN, this.blockConsumer));
-            return this;
-        }
-
-        @Override
-        public final _SingleJoinSpec<I, Q> ifJoin(Consumer<PostgreJoins> consumer) {
-            consumer.accept(PostgreDynamicJoins.joinBuilder(this.context, _JoinType.JOIN, this.blockConsumer));
-            return this;
-        }
-
-        @Override
-        public final _SingleJoinSpec<I, Q> ifRightJoin(Consumer<PostgreJoins> consumer) {
-            consumer.accept(PostgreDynamicJoins.joinBuilder(this.context, _JoinType.RIGHT_JOIN, this.blockConsumer));
-            return this;
-        }
-
-        @Override
-        public final _SingleJoinSpec<I, Q> ifFullJoin(Consumer<PostgreJoins> consumer) {
-            consumer.accept(PostgreDynamicJoins.joinBuilder(this.context, _JoinType.FULL_JOIN, this.blockConsumer));
-            return this;
-        }
-
-        @Override
-        public final _SingleJoinSpec<I, Q> ifCrossJoin(Consumer<PostgreCrosses> consumer) {
-            consumer.accept(PostgreDynamicJoins.crossBuilder(this.context, this.blockConsumer));
-            return this;
-        }
-
-        @Override
-        public final _SingleJoinSpec<I, Q> parens(String first, String... rest) {
-            this.lastDerivedBlock().onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
-            return this;
-        }
-
-        @Override
-        public final _SingleJoinSpec<I, Q> parens(Consumer<Consumer<String>> consumer) {
-            this.lastDerivedBlock().onColumnAlias(CriteriaUtils.stringList(this.context, true, consumer));
-            return this;
-        }
-
-        @Override
-        public final _SingleJoinSpec<I, Q> ifParens(Consumer<Consumer<String>> consumer) {
-            this.lastDerivedBlock().onColumnAlias(CriteriaUtils.stringList(this.context, false, consumer));
-            return this;
-        }
-
-        @Override
-        public final _ReturningSpec<I, Q> whereCurrentOf(String cursorName) {
-            this.where(new PostgreCursorPredicate(cursorName));
-            return this;
-        }
 
         @Override
         public final _DqlUpdateSpec<Q> returningAll() {
@@ -421,99 +433,128 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(NamedExpression exp) {
-            this.onAddSelection(exp);
+        public final _StaticReturningCommaSpec<Q> returning(Selection selection) {
+            this.onAddSelection(selection);
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(Expression expression, SQLs.WordAs wordAs, String alias) {
-            this.onAddSelection(ArmySelections.forExp(expression, alias));
-            return this;
-        }
-
-
-        @Override
-        public final _AsClause<_StaticReturningCommaSpec<Q>> returning(Supplier<Expression> supplier) {
-            return alias -> {
-                this.onAddSelection(ArmySelections.forExp(supplier.get(), alias));
-                return this;
-            };
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2) {
-            this.onAddSelection(exp1)
-                    .add(exp2);
+        public final _StaticReturningCommaSpec<Q> returning(Selection selection1, Selection selection2) {
+            this.onAddSelection(selection1)
+                    .add(selection2);
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2,
-                                                            NamedExpression exp3) {
+        public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias) {
+            this.onAddSelection(function.apply(alias));
+            return this;
+        }
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function1, String alias1,
+                                                            Function<String, Selection> function2, String alias2) {
+            this.onAddSelection(function1.apply(alias1))
+                    .add(function2.apply(alias2));
+            return this;
+        }
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias,
+                                                            Selection selection) {
+            this.onAddSelection(function.apply(alias))
+                    .add(selection);
+            return this;
+        }
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> returning(Selection selection, Function<String, Selection> function,
+                                                            String alias) {
+            this.onAddSelection(selection)
+                    .add(function.apply(alias));
+            return this;
+        }
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3) {
             final List<Selection> list;
-            list = this.onAddSelection(exp1);
-            list.add(exp2);
-            list.add(exp3);
+            list = this.onAddSelection(field1);
+            list.add(field2);
+            list.add(field3);
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(NamedExpression exp1, NamedExpression exp2,
-                                                            NamedExpression exp3, NamedExpression exp4) {
+        public final _StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3,
+                                                            TableField field4) {
             final List<Selection> list;
-            list = this.onAddSelection(exp1);
-            list.add(exp2);
-            list.add(exp3);
-            list.add(exp4);
+            list = this.onAddSelection(field1);
+            list.add(field2);
+            list.add(field3);
+            list.add(field4);
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(NamedExpression exp) {
-            this.onAddSelection(exp);
+        public final _StaticReturningCommaSpec<Q> comma(Selection selection) {
+            this.onAddSelection(selection);
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(Expression expression, SQLs.WordAs wordAs, String alias) {
-            this.onAddSelection(ArmySelections.forExp(expression, alias));
+        public final _StaticReturningCommaSpec<Q> comma(Selection selection1, Selection selection2) {
+            this.onAddSelection(selection1)
+                    .add(selection2);
             return this;
         }
 
         @Override
-        public final _AsClause<_StaticReturningCommaSpec<Q>> comma(Supplier<Expression> supplier) {
-            return alias -> {
-                this.onAddSelection(ArmySelections.forExp(supplier.get(), alias));
-                return this;
-            };
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2) {
-            this.onAddSelection(exp1)
-                    .add(exp2);
+        public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function, String alias) {
+            this.onAddSelection(function.apply(alias));
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2,
-                                                        NamedExpression exp3) {
+        public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function1, String alias1,
+                                                        Function<String, Selection> function2, String alias2) {
+            this.onAddSelection(function1.apply(alias1))
+                    .add(function2.apply(alias2));
+            return this;
+        }
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function, String alias,
+                                                        Selection selection) {
+            this.onAddSelection(function.apply(alias))
+                    .add(selection);
+            return this;
+        }
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> comma(Selection selection, Function<String, Selection> function,
+                                                        String alias) {
+            this.onAddSelection(selection)
+                    .add(function.apply(alias));
+            return this;
+        }
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3) {
             final List<Selection> list;
-            list = this.onAddSelection(exp1);
-            list.add(exp2);
-            list.add(exp3);
+            list = this.onAddSelection(field1);
+            list.add(field2);
+            list.add(field3);
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(NamedExpression exp1, NamedExpression exp2,
-                                                        NamedExpression exp3, NamedExpression exp4) {
+        public final _StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3,
+                                                        TableField field4) {
             final List<Selection> list;
-            list = this.onAddSelection(exp1);
-            list.add(exp2);
-            list.add(exp3);
-            list.add(exp4);
+            list = this.onAddSelection(field1);
+            list.add(field2);
+            list.add(field3);
+            list.add(field4);
             return this;
         }
 
@@ -541,16 +582,6 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
 
         abstract I onAsPostgreUpdate();
 
-        @Override
-        final _TableSampleJoinSpec<I, Q> onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
-                                                     TableMeta<?> table, String alias) {
-            final PostgreSupports.PostgreNoOnTableBlock block;
-            block = new PostgreSupports.PostgreNoOnTableBlock(joinType, modifier, table, alias);
-            this.blockConsumer.accept(block);
-            this.fromCrossBlock = block;
-            return this;
-        }
-
 
         @Override
         final _AsClause<_ParensJoinSpec<I, Q>> onFromDerived(_JoinType joinType,
@@ -563,16 +594,6 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
                 this.fromCrossBlock = block;
                 return this;
             };
-        }
-
-        @Override
-        final _SingleJoinSpec<I, Q> onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
-                                              CteItem cteItem, String alias) {
-            final TableBlock.NoOnModifierTableBlock block;
-            block = new TableBlock.NoOnModifierTableBlock(joinType, modifier, cteItem, alias);
-            this.blockConsumer.accept(block);
-            this.fromCrossBlock = block;
-            return this;
         }
 
         @Override
@@ -617,29 +638,13 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
             return list;
         }
 
-        private _OnClause<_SingleJoinSpec<I, Q>> joinNestedEnd(final _JoinType joinType, final NestedItems items) {
-            joinType.assertStandardJoinType();
-
-            final OnClauseTableBlock<_SingleJoinSpec<I, Q>> block;
-            block = new OnClauseTableBlock<>(joinType, items, "", this);
-            this.blockConsumer.accept(block);
-            return block;
-        }
-
-
-        @Override
-        final _TableBlock lastBlock() {
-            return this.fromCrossBlock;
-        }
-
-
     }//SimpleUpdate
 
     private static final class PrimarySimpleUpdate<I extends Item, Q extends Item, T>
             extends SimpleUpdate<I, Q, T>
-            implements Update, ReturningUpdate {
+            implements UpdateStatement, ReturningUpdate {
 
-        private final Function<Update, I> dmlFunction;
+        private final Function<UpdateStatement, I> dmlFunction;
 
         private final Function<ReturningUpdate, Q> dqlFunction;
 
@@ -661,9 +666,33 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
 
     }//PrimarySimpleUpdate
 
+    private static final class PrimarySimpleUpdateForMultiStmt<I extends Item, T>
+            extends SimpleUpdate<I, I, T>
+            implements UpdateStatement, ReturningUpdate {
+
+        private final Function<PrimaryStatement, I> function;
+
+        private PrimarySimpleUpdateForMultiStmt(PrimarySimpleUpdateClauseForMultiStmt<I> clause) {
+            super(clause);
+            this.function = clause.function;
+        }
+
+        @Override
+        I onAsReturningUpdate() {
+            return this.function.apply(this);
+        }
+
+        @Override
+        I onAsPostgreUpdate() {
+            return this.function.apply(this);
+        }
+
+
+    }//PrimarySimpleUpdateForMultiStmt
+
     private static final class SubSimpleUpdate<I extends Item, T>
             extends SimpleUpdate<I, I, T>
-            implements SubUpdate, SubReturningUpdate {
+            implements SubStatement {
 
         private final Function<SubStatement, I> function;
 
@@ -706,11 +735,11 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
             PostgreUpdate._BatchParensJoinSpec<I, Q>,
             PostgreUpdate._BatchSingleWhereAndSpec<I, Q>,
             _DqlUpdateSpec<Q>,
-            Update,
+            UpdateStatement,
             ReturningUpdate,
             _BatchDml {
 
-        private final Function<Update, I> dmlFunction;
+        private final Function<UpdateStatement, I> dmlFunction;
 
         private final Function<ReturningUpdate, Q> dqlFunction;
 
@@ -1142,12 +1171,12 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
     private static final class PrimarySimpleUpdateClause<I extends Item, Q extends Item>
             extends SimpleUpdateClause<I, Q> {
 
-        private final Function<Update, I> dmlFunction;
+        private final Function<UpdateStatement, I> dmlFunction;
 
         private final Function<ReturningUpdate, Q> dqlFunction;
 
         private PrimarySimpleUpdateClause(@Nullable _Statement._WithClauseSpec spec,
-                                          Function<Update, I> dmlFunction,
+                                          Function<UpdateStatement, I> dmlFunction,
                                           Function<ReturningUpdate, Q> dqlFunction) {
             super(spec, CriteriaContexts.joinableSingleDmlContext(null));
             this.dmlFunction = dmlFunction;
@@ -1156,6 +1185,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
 
         @Override
         public <T> _SingleSetClause<I, Q, T> update(TableMeta<T> table, SQLs.WordAs as, String tableAlias) {
+            this.modifier = null;
             this.updateTable = table;
             this.tableAlias = tableAlias;
             return new PrimarySimpleUpdate<>(this);
@@ -1164,9 +1194,6 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
         @Override
         public <T> _SingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table, SQLs.WordAs as,
                                                     String tableAlias) {
-            if (only != null && only != SQLs.ONLY) {
-                throw CriteriaUtils.errorModifier(this.context, only);
-            }
             this.modifier = only;
             this.updateTable = table;
             this.tableAlias = tableAlias;
@@ -1174,6 +1201,36 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
         }
 
     }//PrimarySimpleUpdateClause
+
+    private static final class PrimarySimpleUpdateClauseForMultiStmt<I extends Item>
+            extends SimpleUpdateClause<I, I> {
+
+        private final Function<PrimaryStatement, I> function;
+
+        private PrimarySimpleUpdateClauseForMultiStmt(_WithClauseSpec spec, Function<PrimaryStatement, I> function) {
+            super(spec, CriteriaContexts.joinableSingleDmlContext(null));
+            this.function = function;
+        }
+
+        @Override
+        public <T> _SingleSetClause<I, I, T> update(TableMeta<T> table, SQLsSyntax.WordAs as, String tableAlias) {
+            this.modifier = null;
+            this.updateTable = table;
+            this.tableAlias = tableAlias;
+            return new PrimarySimpleUpdateForMultiStmt<>(this);
+        }
+
+        @Override
+        public <T> _SingleSetClause<I, I, T> update(@Nullable SQLsSyntax.WordOnly wordOnly, TableMeta<T> table,
+                                                    SQLs.WordAs as, String tableAlias) {
+            this.modifier = wordOnly;
+            this.updateTable = table;
+            this.tableAlias = tableAlias;
+            return new PrimarySimpleUpdateForMultiStmt<>(this);
+        }
+
+
+    }//PrimarySimpleUpdateClauseForMultiStmt
 
     private static final class SubSimpleUpdateClause<I extends Item>
             extends SimpleUpdateClause<I, I> {
@@ -1211,11 +1268,11 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC, JT, JS, JC, TR,
             extends PostgreUpdateClause<PostgreUpdate._BatchSingleUpdateClause<I, Q>>
             implements PostgreUpdate._BatchSingleWithSpec<I, Q> {
 
-        private final Function<Update, I> dmlFunction;
+        private final Function<UpdateStatement, I> dmlFunction;
 
         private final Function<ReturningUpdate, Q> dqlFunction;
 
-        private BatchUpdateClause(Function<Update, I> dmlFunction, Function<ReturningUpdate, Q> dqlFunction) {
+        private BatchUpdateClause(Function<UpdateStatement, I> dmlFunction, Function<ReturningUpdate, Q> dqlFunction) {
             super(null, CriteriaContexts.joinableSingleDmlContext(null));
             this.dmlFunction = dmlFunction;
             this.dqlFunction = dqlFunction;

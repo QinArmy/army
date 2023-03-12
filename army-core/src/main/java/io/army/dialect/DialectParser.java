@@ -23,9 +23,9 @@ public interface DialectParser {
      *     <li>{@link io.army.stmt.PairStmt}</li>
      * </ul>
      */
-    Stmt insert(Insert insert, Visible visible);
+    Stmt insert(InsertStatement insert, Visible visible);
 
-    Stmt update(Update update, Visible visible);
+    Stmt update(UpdateStatement update, Visible visible);
 
     Stmt delete(DeleteStatement delete, Visible visible);
 

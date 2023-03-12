@@ -1,7 +1,7 @@
 package io.army.dialect.mysql;
 
 import io.army.criteria.SQLWords;
-import io.army.criteria.Update;
+import io.army.criteria.UpdateStatement;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._SingleDelete;
@@ -292,7 +292,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     /**
-     * @see #update(Update, Visible)
+     * @see #update(UpdateStatement, Visible)
      */
     @Nullable
     @Override

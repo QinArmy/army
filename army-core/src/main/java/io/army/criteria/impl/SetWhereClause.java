@@ -23,8 +23,8 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
         extends WhereClause<WR, WA, OR, LR, LO, LF>
-        implements Update._StaticBatchSetClause<F, SR>
-        , Update._StaticRowSetClause<F, SR>
+        implements UpdateStatement._StaticBatchSetClause<F, SR>
+        , UpdateStatement._StaticRowSetClause<F, SR>
         , _Statement._ItemPairList
         , _Statement._TableMetaSpec {
 

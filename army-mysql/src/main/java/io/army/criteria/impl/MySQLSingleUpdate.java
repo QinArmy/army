@@ -33,19 +33,19 @@ import java.util.function.Supplier;
  */
 abstract class MySQLSingleUpdate<I extends Item, T, UT, SR, WR, WA, OR, LR>
         extends SingleUpdateStatement<I, FieldMeta<T>, SR, WR, WA, OR, LR, Object, Object>
-        implements _MySQLSingleUpdate, MySQLUpdate, Update
+        implements _MySQLSingleUpdate, MySQLUpdate, UpdateStatement
         , MySQLQuery._IndexHintForOrderByClause<UT> {
 
     static <I extends Item> _SingleWithSpec<I> simple(@Nullable _Statement._WithClauseSpec spec,
-                                                      Function<Update, I> function) {
+                                                      Function<UpdateStatement, I> function) {
         return new SimpleUpdateClause<>(spec, function);
     }
 
-    static <I extends Item> _BatchSingleWithSpec<I> batch(Function<Update, I> function) {
+    static <I extends Item> _BatchSingleWithSpec<I> batch(Function<UpdateStatement, I> function) {
         return new BatchUpdateClause<>(function);
     }
 
-    private final Function<Update, I> function;
+    private final Function<UpdateStatement, I> function;
 
 
     private final boolean recursive;
@@ -231,7 +231,7 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, SR, WR, WA, OR, LR>
     private static abstract class UpdateClause<I extends Item, WE> extends CriteriaSupports.WithClause<MySQLCtes, WE> {
 
 
-        private final Function<Update, I> function;
+        private final Function<UpdateStatement, I> function;
 
         List<Hint> hintList;
 
@@ -243,7 +243,7 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, SR, WR, WA, OR, LR>
 
         String tableAlias;
 
-        private UpdateClause(@Nullable _Statement._WithClauseSpec spec, Function<Update, I> function) {
+        private UpdateClause(@Nullable _Statement._WithClauseSpec spec, Function<UpdateStatement, I> function) {
             super(spec, CriteriaContexts.primarySingleDmlContext(spec, null));
             this.function = function;
             ContextStack.push(this.context);
@@ -306,7 +306,7 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, SR, WR, WA, OR, LR>
             implements MySQLUpdate._SingleWithSpec<I> {
 
 
-        private SimpleUpdateClause(@Nullable _Statement._WithClauseSpec spec, Function<Update, I> function) {
+        private SimpleUpdateClause(@Nullable _Statement._WithClauseSpec spec, Function<UpdateStatement, I> function) {
             super(spec, function);
         }
 
@@ -492,7 +492,7 @@ abstract class MySQLSingleUpdate<I extends Item, T, UT, SR, WR, WA, OR, LR>
             extends UpdateClause<I, MySQLUpdate._BatchSingleUpdateClause<I>>
             implements MySQLUpdate._BatchSingleWithSpec<I> {
 
-        private BatchUpdateClause(Function<Update, I> function) {
+        private BatchUpdateClause(Function<UpdateStatement, I> function) {
             super(null, function);
         }
 

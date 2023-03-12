@@ -1,7 +1,7 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.Expression;
-import io.army.criteria.Insert;
+import io.army.criteria.InsertStatement;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
 import io.army.criteria.dialect.SQLCommand;
@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 public interface MySQLLoadData extends MySQLStatement, SQLCommand {
 
 
-    interface _LoadSetSpec<I extends Item, T> extends Insert._StaticAssignmentSetClause<T, _LoadSetSpec<I, T>>
+    interface _LoadSetSpec<I extends Item, T> extends InsertStatement._StaticAssignmentSetClause<T, _LoadSetSpec<I, T>>
             , _AsCommandClause<I> {
 
     }

@@ -15,10 +15,10 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
 
     /**
      * <p>
-     * Assert insert is MySQL dialect {@link  Insert} statement.
+     * Assert insert is MySQL dialect {@link  InsertStatement} statement.
      * </p>
      */
-    public static void assertInsert(final Insert insert) {
+    public static void assertInsert(final InsertStatement insert) {
         if (insert instanceof _Insert._DomainInsert || insert instanceof _Insert._ValuesInsert) {
             if (!(insert instanceof MySQLInserts.MySQLValueSyntaxStatement)) {
                 throw nonArmyStatement(insert);
@@ -40,7 +40,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
 
     /**
      * <p>
-     * Assert insert is MySQL dialect {@link  Insert} statement.
+     * Assert insert is MySQL dialect {@link  InsertStatement} statement.
      * </p>
      */
     public static void assertReplace(final MySQLReplace replace) {
@@ -67,7 +67,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     }
 
 
-    public static void assertUpdate(final Update update) {
+    public static void assertUpdate(final UpdateStatement update) {
         if (update instanceof _SingleUpdate) {
             if (!(update instanceof MySQLSingleUpdate)) {
                 throw instanceNotMatch(update, MySQLSingleUpdate.class);

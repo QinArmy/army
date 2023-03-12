@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.criteria.dialect.ReturningDelete;
 import io.army.criteria.dialect.ReturningUpdate;
 import io.army.criteria.dialect.SubQuery;
@@ -26,9 +27,9 @@ public abstract class Postgres extends PostgreFuncSyntax {
     }
 
 
-    static final Function<ReturningDelete, ReturningDelete> _RETURNING_DELETE_IDENTITY = SQLs::_identity;
+    static final Function<ReturningDelete, ReturningDelete> _RETURNING_DELETE_IDENTITY = SQLs._getIdentity();
 
-    static final Function<BatchReturning, BatchReturning> _BATCH_RETURNING_IDENTITY = SQLs::_identity;
+    static final Function<BatchDqlStatement, BatchDqlStatement> _BATCH_RETURNING_IDENTITY = SQLs._getIdentity();
 
 
     public static PostgreInsert._PrimaryOptionSpec singleInsert() {
@@ -49,20 +50,20 @@ public abstract class Postgres extends PostgreFuncSyntax {
         return PostgreQueries.subQuery(null, ContextStack.peek(), Expressions::scalarExpression, null);
     }
 
-    public static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> singleUpdate() {
+    public static PostgreUpdate._SingleWithSpec<UpdateStatement, ReturningUpdate> singleUpdate() {
         return PostgreUpdates.simple(null, SQLs::_identity, SQLs::_identity);
     }
 
-    public static PostgreUpdate._BatchSingleWithSpec<Update, ReturningUpdate> batchSingleUpdate() {
+    public static PostgreUpdate._BatchSingleWithSpec<UpdateStatement, ReturningUpdate> batchSingleUpdate() {
         return PostgreUpdates.batch(SQLs::_identity, SQLs::_identity);
     }
 
 
     public static PostgreDelete._SingleWithSpec<Delete, ReturningDelete> singleDelete() {
-        return PostgreDeletes.primarySingle(SQLs._DELETE_IDENTITY, _RETURNING_DELETE_IDENTITY);
+        return PostgreDeletes.simple(SQLs._DELETE_IDENTITY, _RETURNING_DELETE_IDENTITY);
     }
 
-    public static PostgreDelete._BatchSingleWithSpec<BatchDelete, BatchReturning> batchSingleDelete() {
+    public static PostgreDelete._BatchSingleWithSpec<BatchDelete, BatchDqlStatement> batchSingleDelete() {
         return PostgreDeletes.batch(SQLs._BATCH_DELETE_IDENTITY, _BATCH_RETURNING_IDENTITY);
     }
 

@@ -86,8 +86,8 @@ abstract class InsertSupport {
 
     }
 
-    static abstract class InsertOptionsImpl<MR, PR> implements InsertOptions, Insert._MigrationOptionClause<MR>
-            , Insert._PreferLiteralClause<PR> {
+    static abstract class InsertOptionsImpl<MR, PR> implements InsertOptions, InsertStatement._MigrationOptionClause<MR>
+            , InsertStatement._PreferLiteralClause<PR> {
 
         final CriteriaContext context;
 
@@ -137,7 +137,7 @@ abstract class InsertSupport {
     }//InsertOptionsImpl
 
     static abstract class NonQueryInsertOptionsImpl<MR, NR, PR> extends InsertOptionsImpl<MR, PR>
-            implements ValueSyntaxOptions, Insert._NullOptionClause<NR> {
+            implements ValueSyntaxOptions, InsertStatement._NullOptionClause<NR> {
 
 
         private NullMode nullMode = NullMode.INSERT_DEFAULT;
@@ -441,9 +441,9 @@ abstract class InsertSupport {
 
 
     static abstract class ColumnsClause<T, RR>
-            implements Insert._ColumnListClause<T, RR>,
-            Insert._StaticColumnDualClause<T, RR>,
-            Insert._StaticColumnQuadraClause<T, RR>,
+            implements InsertStatement._ColumnListClause<T, RR>,
+            InsertStatement._StaticColumnDualClause<T, RR>,
+            InsertStatement._StaticColumnQuadraClause<T, RR>,
             _Insert._ColumnListInsert,
             ColumnListClause {
 
@@ -485,7 +485,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Insert._StaticColumnDualClause<T, RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2) {
+        public final InsertStatement._StaticColumnDualClause<T, RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2) {
             this.comma(field1);
             this.comma(field2);
             return this;
@@ -501,8 +501,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Insert._StaticColumnQuadraClause<T, RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2,
-                                                                       FieldMeta<T> field3, FieldMeta<T> field4) {
+        public final InsertStatement._StaticColumnQuadraClause<T, RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2,
+                                                                                FieldMeta<T> field3, FieldMeta<T> field4) {
             this.comma(field1);
             this.comma(field2);
             this.comma(field3);
@@ -531,7 +531,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Insert._StaticColumnDualClause<T, RR> comma(FieldMeta<T> field1, FieldMeta<T> field2) {
+        public final InsertStatement._StaticColumnDualClause<T, RR> comma(FieldMeta<T> field1, FieldMeta<T> field2) {
             this.comma(field1);
             this.comma(field2);
             return this;
@@ -547,8 +547,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Insert._StaticColumnQuadraClause<T, RR> comma(FieldMeta<T> field1, FieldMeta<T> field2,
-                                                                   FieldMeta<T> field3, FieldMeta<T> field4) {
+        public final InsertStatement._StaticColumnQuadraClause<T, RR> comma(FieldMeta<T> field1, FieldMeta<T> field2,
+                                                                            FieldMeta<T> field3, FieldMeta<T> field4) {
             this.comma(field1);
             this.comma(field2);
             this.comma(field3);
@@ -687,7 +687,7 @@ abstract class InsertSupport {
 
     @SuppressWarnings("unchecked")
     private static abstract class ColumnDefaultClause<T, LR, DR> extends ColumnsClause<T, LR>
-            implements Insert._ColumnDefaultClause<T, DR>, _Insert._ValuesSyntaxInsert {
+            implements InsertStatement._ColumnDefaultClause<T, DR>, _Insert._ValuesSyntaxInsert {
 
 
         final LiteralMode literalMode;
@@ -825,8 +825,8 @@ abstract class InsertSupport {
 
     @SuppressWarnings("unchecked")
     static abstract class ComplexInsertValuesClause<T, CR, DR, VR> extends ColumnDefaultClause<T, CR, DR>
-            implements Insert._DomainValueClause<T, VR>
-            , Insert._DynamicValuesClause<T, VR>
+            implements InsertStatement._DomainValueClause<T, VR>
+            , InsertStatement._DynamicValuesClause<T, VR>
             , _Insert._ValuesInsert
             , _Insert._QueryInsert {
 
@@ -1035,7 +1035,7 @@ abstract class InsertSupport {
 
     @SuppressWarnings("unchecked")
     private static abstract class DynamicAssignmentSetClause<T, SR>
-            implements Insert._StaticAssignmentSetClause<T, SR> {
+            implements InsertStatement._StaticAssignmentSetClause<T, SR> {
 
         final CriteriaContext context;
 
@@ -1243,8 +1243,8 @@ abstract class InsertSupport {
     @SuppressWarnings("unchecked")
     static abstract class ComplexInsertValuesAssignmentClause<T, CR, DR, VR, SR>
             extends ComplexInsertValuesClause<T, CR, DR, VR>
-            implements Insert._StaticAssignmentSetClause<T, SR>
-            , Insert._DynamicAssignmentSetClause<T, VR>
+            implements InsertStatement._StaticAssignmentSetClause<T, SR>
+            , InsertStatement._DynamicAssignmentSetClause<T, VR>
             , _Insert._AssignmentInsert {
 
         private List<_Pair<FieldMeta<?>, _Expression>> assignmentPairList;
@@ -1434,7 +1434,7 @@ abstract class InsertSupport {
 
 
     static abstract class StaticColumnValuePairClause<T, RR>
-            implements Insert._StaticValueLeftParenClause<T, RR>, Insert._StaticColumnValueClause<T, RR>
+            implements InsertStatement._StaticValueLeftParenClause<T, RR>, InsertStatement._StaticColumnValueClause<T, RR>
             , CriteriaContextSpec {
 
         final CriteriaContext context;
@@ -1459,48 +1459,48 @@ abstract class InsertSupport {
 
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Expression value) {
+        public final InsertStatement._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Expression value) {
             return this.comma(field, value);
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Supplier<Expression> supplier) {
+        public final InsertStatement._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Supplier<Expression> supplier) {
             return this.comma(field, supplier.get());
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field,
-                                                                      Function<FieldMeta<T>, Expression> function) {
+        public final InsertStatement._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field,
+                                                                               Function<FieldMeta<T>, Expression> function) {
             return this.comma(field, function.apply(field));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> leftParen(
+        public final InsertStatement._StaticColumnValueClause<T, RR> leftParen(
                 FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, Expression> operator, Expression expression) {
             return this.comma(field, operator.apply(field, expression));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> leftParen(
+        public final InsertStatement._StaticColumnValueClause<T, RR> leftParen(
                 FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator, @Nullable Object value) {
             return this.comma(field, operator.apply(field, value));
         }
 
         @Override
-        public final <E> Insert._StaticColumnValueClause<T, RR> leftParen(
+        public final <E> InsertStatement._StaticColumnValueClause<T, RR> leftParen(
                 FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, Supplier<E> supplier) {
             return this.comma(field, operator.apply(field, supplier.get()));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> leftParen(
+        public final InsertStatement._StaticColumnValueClause<T, RR> leftParen(
                 FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator, Function<String, ?> function,
                 String keyName) {
             return this.comma(field, operator.apply(field, function.apply(keyName)));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> comma(final FieldMeta<T> field, final @Nullable Expression value) {
+        public final InsertStatement._StaticColumnValueClause<T, RR> comma(final FieldMeta<T> field, final @Nullable Expression value) {
             if (value instanceof DataField) {
                 throw ContextStack.criteriaError(this.context, "column value must be non-field.");
             } else if (!(value instanceof ArmyExpression)) {
@@ -1519,38 +1519,38 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Supplier<Expression> supplier) {
+        public final InsertStatement._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Supplier<Expression> supplier) {
             return this.comma(field, supplier.get());
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field,
-                                                                  Function<FieldMeta<T>, Expression> function) {
+        public final InsertStatement._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field,
+                                                                           Function<FieldMeta<T>, Expression> function) {
             return this.comma(field, function.apply(field));
         }
 
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> comma(
+        public final InsertStatement._StaticColumnValueClause<T, RR> comma(
                 FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, Expression> operator, Expression expression) {
             return this.comma(field, operator.apply(field, expression));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> comma(
+        public final InsertStatement._StaticColumnValueClause<T, RR> comma(
                 FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator, @Nullable Object value) {
             return this.comma(field, operator.apply(field, value));
         }
 
         @Override
-        public final <E> Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field,
-                                                                      BiFunction<FieldMeta<T>, E, Expression> operator,
-                                                                      Supplier<E> supplier) {
+        public final <E> InsertStatement._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field,
+                                                                               BiFunction<FieldMeta<T>, E, Expression> operator,
+                                                                               Supplier<E> supplier) {
             return this.comma(field, operator.apply(field, supplier.get()));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object,
+        public final InsertStatement._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object,
                 Expression> operator, Function<String, ?> function, String keyName) {
             return this.comma(field, operator.apply(field, function.apply(keyName)));
         }
@@ -1910,7 +1910,7 @@ abstract class InsertSupport {
 
     static abstract class AssignmentInsertStatement<I extends Statement.DmlInsert>
             extends AssignmentSyntaxInsertStatement<I, Statement.DqlInsert>
-            implements Insert {
+            implements InsertStatement {
 
         AssignmentInsertStatement(_AssignmentInsert clause) {
             super(clause);
@@ -1981,7 +1981,7 @@ abstract class InsertSupport {
 
     static abstract class QuerySyntaxInsertStatement<I extends Statement.DmlInsert>
             extends AbstractQuerySyntaxInsertStatement<I, Statement.DqlInsert>
-            implements Insert {
+            implements InsertStatement {
 
 
         QuerySyntaxInsertStatement(_QueryInsert clause) {

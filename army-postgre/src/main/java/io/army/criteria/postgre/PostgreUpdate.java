@@ -3,7 +3,7 @@ package io.army.criteria.postgre;
 import io.army.criteria.BatchRowPairs;
 import io.army.criteria.Item;
 import io.army.criteria.RowPairs;
-import io.army.criteria.Update;
+import io.army.criteria.UpdateStatement;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -35,7 +35,7 @@ public interface PostgreUpdate extends PostgreStatement {
 
 
     interface _SingleWhereAndSpec<I extends Item, Q extends Item>
-            extends Update._UpdateWhereAndClause<_SingleWhereAndSpec<I, Q>>, _ReturningSpec<I, Q> {
+            extends UpdateStatement._UpdateWhereAndClause<_SingleWhereAndSpec<I, Q>>, _ReturningSpec<I, Q> {
 
     }
 
@@ -84,8 +84,8 @@ public interface PostgreUpdate extends PostgreStatement {
 
 
     interface _SingleSetClause<I extends Item, Q extends Item, T>
-            extends Update._StaticRowSetClause<FieldMeta<T>, _SingleSetFromSpec<I, Q, T>>,
-            Update._DynamicSetClause<RowPairs<FieldMeta<T>>, _SingleFromSpec<I, Q>> {
+            extends UpdateStatement._StaticRowSetClause<FieldMeta<T>, _SingleSetFromSpec<I, Q, T>>,
+            UpdateStatement._DynamicSetClause<RowPairs<FieldMeta<T>>, _SingleFromSpec<I, Q>> {
 
     }
 
@@ -112,7 +112,8 @@ public interface PostgreUpdate extends PostgreStatement {
 
         <T> _SingleSetClause<I, Q, T> update(TableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
-        <T> _SingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly wordOnly, TableMeta<T> table, SQLs.WordAs as, String tableAlias);
+        <T> _SingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly wordOnly, TableMeta<T> table, SQLs.WordAs as,
+                                             String tableAlias);
 
     }
 
@@ -143,7 +144,7 @@ public interface PostgreUpdate extends PostgreStatement {
 
 
     interface _BatchSingleWhereAndSpec<I extends Item, Q extends Item>
-            extends Update._UpdateWhereAndClause<_BatchSingleWhereAndSpec<I, Q>>,
+            extends UpdateStatement._UpdateWhereAndClause<_BatchSingleWhereAndSpec<I, Q>>,
             _BatchReturningSpec<I, Q> {
 
     }
@@ -207,8 +208,8 @@ public interface PostgreUpdate extends PostgreStatement {
     }
 
     interface _BatchSingleSetClause<I extends Item, Q extends Item, T>
-            extends Update._StaticRowSetClause<FieldMeta<T>, _BatchSingleSetFromSpec<I, Q, T>>,
-            Update._DynamicSetClause<BatchRowPairs<FieldMeta<T>>, _BatchSingleFromClause<I, Q>> {
+            extends UpdateStatement._StaticRowSetClause<FieldMeta<T>, _BatchSingleSetFromSpec<I, Q, T>>,
+            UpdateStatement._DynamicSetClause<BatchRowPairs<FieldMeta<T>>, _BatchSingleFromClause<I, Q>> {
 
     }
 
@@ -222,7 +223,8 @@ public interface PostgreUpdate extends PostgreStatement {
 
         <T> _BatchSingleSetClause<I, Q, T> update(TableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
-        <T> _BatchSingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly wordOnly, TableMeta<T> table, SQLs.WordAs as, String tableAlias);
+        <T> _BatchSingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly wordOnly, TableMeta<T> table, SQLs.WordAs as,
+                                                  String tableAlias);
 
     }
 

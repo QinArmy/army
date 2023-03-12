@@ -1,10 +1,19 @@
 package io.army.criteria.dialect;
 
 import io.army.criteria.DialectStatement;
-import io.army.criteria.DqlStatement;
+import io.army.criteria.SimpleDqlStatement;
 import io.army.criteria.Statement;
+import io.army.criteria.UpdateStatement;
 
-public interface ReturningUpdate extends DqlStatement, DialectStatement, Statement.DmlStatementSpec {
+/**
+ * <p>
+ * This interface representing simple(non-batch) primary update statement with RETURNING clause that can return result set.
+ * </p>
+ *
+ * @since 1.0
+ */
+public interface ReturningUpdate extends UpdateStatement, SimpleDqlStatement, DialectStatement,
+        Statement.DmlStatementSpec {
 
 
 }

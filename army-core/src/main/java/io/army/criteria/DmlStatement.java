@@ -2,11 +2,13 @@ package io.army.criteria;
 
 /**
  * <p>
- * This interface is base interface of below:
+ * This interface representing dml statement .This interface is base interface of below:
  *     <ul>
- *         <li>{@link Insert}</li>
- *         <li>{@link Update}</li>
+ *         <li>{@link InsertStatement}</li>
+ *         <li>{@link UpdateStatement}</li>
  *         <li>{@link DeleteStatement}</li>
+ *         <li>{@link SimpleDmlStatement}</li>
+ *         <li>{@link BatchDmlStatement}</li>
  *     </ul>
  * </p>
  *

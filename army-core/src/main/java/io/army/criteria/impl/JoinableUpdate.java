@@ -29,8 +29,8 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
         extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         implements _Update,
         _Statement._JoinableStatement,
-        Update._StaticBatchSetClause<F, SR>,
-        Update._StaticRowSetClause<F, SR>,
+        UpdateStatement._StaticBatchSetClause<F, SR>,
+        UpdateStatement._StaticRowSetClause<F, SR>,
         _Statement._ItemPairList,
         Statement._DmlUpdateSpec<I>,
         Statement {

@@ -1,7 +1,7 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.Item;
-import io.army.criteria.Update;
+import io.army.criteria.UpdateStatement;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.TableMeta;
 
@@ -131,7 +131,7 @@ public interface PostgreDelete extends PostgreStatement {
 
 
     interface _BatchSingleWhereAndSpec<I extends Item, Q extends Item>
-            extends Update._UpdateWhereAndClause<_BatchSingleWhereAndSpec<I, Q>>,
+            extends UpdateStatement._UpdateWhereAndClause<_BatchSingleWhereAndSpec<I, Q>>,
             _BatchReturningSpec<I, Q> {
 
     }

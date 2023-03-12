@@ -3,7 +3,7 @@ package io.army.criteria.standard.unit;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
-import io.army.criteria.Update;
+import io.army.criteria.UpdateStatement;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
@@ -34,7 +34,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
         map.put("firstId", (byte) 1);
         map.put("secondId", "3");
 
-        final Update stmt;
+        final UpdateStatement stmt;
         stmt = SQLs.singleUpdate()
                 .update(ChinaRegion_.T, AS, "c")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
@@ -50,7 +50,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
     @Test
     public void updateChild() {
         final BigDecimal gdpAmount = new BigDecimal("888.8");
-        final Update stmt;
+        final UpdateStatement stmt;
         stmt = SQLs.singleUpdate()
                 .update(ChinaProvince_.T, AS, "p")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
@@ -66,7 +66,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
 
     @Test
     public void batchUpdateParent() {
-        final Update stmt;
+        final UpdateStatement stmt;
         stmt = SQLs.batchSingleUpdate()
                 .update(ChinaProvince_.T, AS, "p")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
@@ -84,7 +84,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
     public void batchUpdateChild() {
         final BigDecimal gdpAmount = new BigDecimal("888.8");
 
-        final Update stmt;
+        final UpdateStatement stmt;
         stmt = SQLs.batchSingleUpdate()
                 .update(ChinaProvince_.T, AS, "p")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
@@ -106,7 +106,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
     @Test
     public void updateParentWithOnlyNullMode() {
         assert PillUser_.identityId.updateMode() == UpdateMode.ONLY_NULL;
-        final Update stmt;
+        final UpdateStatement stmt;
         stmt = SQLs.singleUpdate()
                 .update(PillUser_.T, AS, "u")
                 .set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
@@ -121,7 +121,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
 
     @Test
     public void updateOnlyParentField() {
-        final Update stmt;
+        final UpdateStatement stmt;
         stmt = SQLs.singleUpdate()
                 .update(PillPerson_.T, AS, "up")
                 .set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
@@ -136,7 +136,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
 
     @Test
     public void dynamicSetUpdateOnlyParentField() {
-        final Update stmt;
+        final UpdateStatement stmt;
         stmt = SQLs.singleUpdate()
                 .update(PillPerson_.T, AS, "up")
                 .sets(s -> s.set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
@@ -152,7 +152,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
 
     @Test(expectedExceptions = CriteriaException.class)
     public void existsChildFieldError() {
-        final Update stmt;
+        final UpdateStatement stmt;
         stmt = SQLs.singleUpdate()
                 .update(PillPerson_.T, AS, "up")
                 .set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)

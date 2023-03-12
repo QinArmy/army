@@ -26,7 +26,7 @@ public interface PostgreMerge extends PostgreStatement, DmlStatement {
     }
 
     interface _MergeInsertValuesLeftParenClause<T, I extends Item>
-            extends Insert._StaticValueLeftParenClause<T, _MergeInsertValuesLeftParenSpec<T, I>> {
+            extends InsertStatement._StaticValueLeftParenClause<T, _MergeInsertValuesLeftParenSpec<T, I>> {
 
     }
 
@@ -37,10 +37,10 @@ public interface PostgreMerge extends PostgreStatement, DmlStatement {
 
 
     interface _MergeInsertValuesDefaultSpec<T, I extends Item>
-            extends Insert._ColumnDefaultClause<T, _MergeInsertValuesDefaultSpec<T, I>>
-            , Insert._DomainValueClause<T, _DmlInsertClause<I>>
-            , Insert._DynamicValuesClause<T, _DmlInsertClause<I>>
-            , Insert._StaticValuesClause<_MergeInsertValuesLeftParenClause<T, I>> {
+            extends InsertStatement._ColumnDefaultClause<T, _MergeInsertValuesDefaultSpec<T, I>>
+            , InsertStatement._DomainValueClause<T, _DmlInsertClause<I>>
+            , InsertStatement._DynamicValuesClause<T, _DmlInsertClause<I>>
+            , InsertStatement._StaticValuesClause<_MergeInsertValuesLeftParenClause<T, I>> {
 
     }
 
@@ -53,14 +53,14 @@ public interface PostgreMerge extends PostgreStatement, DmlStatement {
 
 
     interface _MergeInsertColumnListSpec<T, I extends Item>
-            extends Insert._ColumnListClause<T, _MergeInsertOverridingValueSpec<T, I>>
+            extends InsertStatement._ColumnListClause<T, _MergeInsertOverridingValueSpec<T, I>>
             , _MergeInsertOverridingValueSpec<T, I> {
 
     }
 
     interface _MergerUpdateSetClause<T, I extends Item>
-            extends Update._StaticRowSetClause<FieldMeta<T>, _MergerUpdateSetSpec<T, I>>
-            , Update._DynamicSetClause<RowPairs<FieldMeta<T>>, _DmlUpdateSpec<I>> {
+            extends UpdateStatement._StaticRowSetClause<FieldMeta<T>, _MergerUpdateSetSpec<T, I>>
+            , UpdateStatement._DynamicSetClause<RowPairs<FieldMeta<T>>, _DmlUpdateSpec<I>> {
 
     }
 

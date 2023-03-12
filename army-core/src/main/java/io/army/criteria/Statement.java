@@ -19,8 +19,8 @@ import java.util.function.*;
  * This interface representing sql statement,this interface is base interface of below:
  * <ul>
  *     <li>{@link Select}</li>
- *     <li>{@link Insert}</li>
- *     <li>{@link Update}</li>
+ *     <li>{@link InsertStatement}</li>
+ *     <li>{@link UpdateStatement}</li>
  *     <li>{@link DeleteStatement}</li>
  *     <li>{@link SubQuery}</li>
  *     <li>{@link Values}</li>
@@ -1283,7 +1283,7 @@ public interface Statement extends Item {
     /**
      * This is base interface of below:
      * <ul>
-     *     <li>{@link Update}</li>
+     *     <li>{@link UpdateStatement}</li>
      *     <li>{@link SubUpdate}</li>
      * </ul>
      *
@@ -1317,7 +1317,7 @@ public interface Statement extends Item {
     /**
      * This is base interface of below:
      * <ul>
-     *     <li>{@link Insert}</li>
+     *     <li>{@link InsertStatement}</li>
      *     <li>{@link SubInsert}</li>
      * </ul>
      *

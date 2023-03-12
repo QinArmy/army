@@ -1,7 +1,7 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.DialectStatement;
-import io.army.criteria.Insert;
+import io.army.criteria.InsertStatement;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
 import io.army.criteria.dialect.Hint;
@@ -26,7 +26,7 @@ public interface MySQLReplace extends  DialectStatement, Statement.DmlInsert {
     /*-------------------below  replace api interfaces -------------------*/
 
     interface _MySQLStaticValuesLeftParenClause<I extends Item, T>
-            extends Insert._StaticValueLeftParenClause<T, _StaticValuesLeftParenSpec<I, T>> {
+            extends InsertStatement._StaticValueLeftParenClause<T, _StaticValuesLeftParenSpec<I, T>> {
 
     }
 
@@ -36,10 +36,10 @@ public interface MySQLReplace extends  DialectStatement, Statement.DmlInsert {
     }
 
     interface _ValueColumnDefaultSpec<I extends Item, T>
-            extends Insert._ColumnDefaultClause<T, _ValueColumnDefaultSpec<I, T>>
-            , Insert._DomainValueClause<T, _DmlInsertClause<I>>
-            , Insert._StaticValuesClause<_MySQLStaticValuesLeftParenClause<I, T>>
-            , Insert._DynamicValuesClause<T, _DmlInsertClause<I>> {
+            extends InsertStatement._ColumnDefaultClause<T, _ValueColumnDefaultSpec<I, T>>
+            , InsertStatement._DomainValueClause<T, _DmlInsertClause<I>>
+            , InsertStatement._StaticValuesClause<_MySQLStaticValuesLeftParenClause<I, T>>
+            , InsertStatement._DynamicValuesClause<T, _DmlInsertClause<I>> {
 
     }
 
@@ -49,7 +49,7 @@ public interface MySQLReplace extends  DialectStatement, Statement.DmlInsert {
     }
 
     interface _ColumnListSpec<I extends Item, T>
-            extends Insert._ColumnListClause<T, _ComplexColumnDefaultSpec<I, T>>
+            extends InsertStatement._ColumnListClause<T, _ComplexColumnDefaultSpec<I, T>>
             , _ValueColumnDefaultSpec<I, T> {
 
     }
@@ -61,23 +61,23 @@ public interface MySQLReplace extends  DialectStatement, Statement.DmlInsert {
 
     interface _ChildIntoClause<P> {
 
-        <T> _PartitionSpec<Insert, T> into(ComplexTableMeta<P, T> table);
+        <T> _PartitionSpec<InsertStatement, T> into(ComplexTableMeta<P, T> table);
     }
 
 
     interface _ChildReplaceIntoSpec<P> extends _ReplaceClause<_ChildIntoClause<P>> {
 
-        <T> _PartitionSpec<Insert, T> replaceInto(ComplexTableMeta<P, T> table);
+        <T> _PartitionSpec<InsertStatement, T> replaceInto(ComplexTableMeta<P, T> table);
     }
 
 
-    interface _ParentReplace<P> extends Insert, Insert._ChildPartClause<_ChildReplaceIntoSpec<P>> {
+    interface _ParentReplace<P> extends InsertStatement, InsertStatement._ChildPartClause<_ChildReplaceIntoSpec<P>> {
 
     }
 
     interface _PrimaryIntoClause {
 
-        <T> _PartitionSpec<Insert, T> into(SingleTableMeta<T> table);
+        <T> _PartitionSpec<InsertStatement, T> into(SingleTableMeta<T> table);
 
         <P> _PartitionSpec<_ParentReplace<P>, P> into(ParentTableMeta<P> table);
 
@@ -85,23 +85,23 @@ public interface MySQLReplace extends  DialectStatement, Statement.DmlInsert {
 
     interface _PrimaryReplaceIntoSpec extends _ReplaceClause<_PrimaryIntoClause> {
 
-        <T> _PartitionSpec<Insert, T> replaceInto(SingleTableMeta<T> table);
+        <T> _PartitionSpec<InsertStatement, T> replaceInto(SingleTableMeta<T> table);
 
         <P> _PartitionSpec<_ParentReplace<P>, P> replaceInto(ParentTableMeta<P> table);
 
     }
 
     interface _PrimaryPreferLiteralSpec
-            extends Insert._PreferLiteralClause<_PrimaryReplaceIntoSpec>, _PrimaryReplaceIntoSpec {
+            extends InsertStatement._PreferLiteralClause<_PrimaryReplaceIntoSpec>, _PrimaryReplaceIntoSpec {
 
     }
 
-    interface _PrimaryNullOptionSpec extends Insert._NullOptionClause<_PrimaryPreferLiteralSpec>
+    interface _PrimaryNullOptionSpec extends InsertStatement._NullOptionClause<_PrimaryPreferLiteralSpec>
             , _PrimaryPreferLiteralSpec {
 
     }
 
-    interface _PrimaryOptionSpec extends Insert._MigrationOptionClause<_PrimaryNullOptionSpec>
+    interface _PrimaryOptionSpec extends InsertStatement._MigrationOptionClause<_PrimaryNullOptionSpec>
             , _PrimaryNullOptionSpec {
 
     }

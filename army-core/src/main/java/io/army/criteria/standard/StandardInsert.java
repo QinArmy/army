@@ -1,7 +1,7 @@
 package io.army.criteria.standard;
 
 import io.army.criteria.DialectStatement;
-import io.army.criteria.Insert;
+import io.army.criteria.InsertStatement;
 import io.army.criteria.Item;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
@@ -18,7 +18,7 @@ public interface StandardInsert extends StandardStatement {
 
 
     interface _StandardValueStaticLeftParenClause<T, I extends Item>
-            extends Insert._StaticValueLeftParenClause<T, _ValueStaticLeftParenSpec<T, I>> {
+            extends InsertStatement._StaticValueLeftParenClause<T, _ValueStaticLeftParenSpec<T, I>> {
 
     }
 
@@ -28,10 +28,10 @@ public interface StandardInsert extends StandardStatement {
     }
 
     interface _ValuesColumnDefaultSpec<T, I extends Item>
-            extends Insert._ColumnDefaultClause<T, _ValuesColumnDefaultSpec<T, I>>
-            , Insert._DomainValueClause<T, _DmlInsertClause<I>>
-            , Insert._DynamicValuesClause<T, _DmlInsertClause<I>>
-            , Insert._StaticValuesClause<_StandardValueStaticLeftParenClause<T, I>> {
+            extends InsertStatement._ColumnDefaultClause<T, _ValuesColumnDefaultSpec<T, I>>
+            , InsertStatement._DomainValueClause<T, _DmlInsertClause<I>>
+            , InsertStatement._DynamicValuesClause<T, _DmlInsertClause<I>>
+            , InsertStatement._StaticValuesClause<_StandardValueStaticLeftParenClause<T, I>> {
 
     }
 
@@ -42,7 +42,7 @@ public interface StandardInsert extends StandardStatement {
     }
 
     interface _ColumnListSpec<T, I extends Item>
-            extends Insert._ColumnListClause<T, _ComplexColumnDefaultSpec<T, I>>
+            extends InsertStatement._ColumnListClause<T, _ComplexColumnDefaultSpec<T, I>>
             , _ValuesColumnDefaultSpec<T, I> {
 
     }
@@ -58,20 +58,20 @@ public interface StandardInsert extends StandardStatement {
 
         <T> _ColumnListSpec<T, I> insertInto(SingleTableMeta<T> table);
 
-        <P> _ColumnListSpec<P, Insert._ParentInsert<_ChildInsertIntoClause<I, P>>> insertInto(ParentTableMeta<P> table);
+        <P> _ColumnListSpec<P, InsertStatement._ParentInsert<_ChildInsertIntoClause<I, P>>> insertInto(ParentTableMeta<P> table);
     }
 
     interface _PrimaryPreferLiteralSpec<I extends Item>
-            extends Insert._PreferLiteralClause<_PrimaryInsertIntoClause<I>>, _PrimaryInsertIntoClause<I> {
+            extends InsertStatement._PreferLiteralClause<_PrimaryInsertIntoClause<I>>, _PrimaryInsertIntoClause<I> {
 
     }
 
-    interface _PrimaryNullOptionSpec<I extends Item> extends Insert._NullOptionClause<_PrimaryPreferLiteralSpec<I>>,
+    interface _PrimaryNullOptionSpec<I extends Item> extends InsertStatement._NullOptionClause<_PrimaryPreferLiteralSpec<I>>,
             _PrimaryPreferLiteralSpec<I> {
 
     }
 
-    interface _PrimaryOptionSpec<I extends Item> extends Insert._MigrationOptionClause<_PrimaryNullOptionSpec<I>>,
+    interface _PrimaryOptionSpec<I extends Item> extends InsertStatement._MigrationOptionClause<_PrimaryNullOptionSpec<I>>,
             _PrimaryNullOptionSpec<I> {
 
     }

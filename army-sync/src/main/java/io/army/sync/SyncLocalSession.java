@@ -238,7 +238,7 @@ final class SyncLocalSession extends _AbstractSyncSession implements LocalSessio
     @Override
     public long update(final DmlStatement dml, final Visible visible) {
         final long affectedRows;
-        if (dml instanceof Insert) {
+        if (dml instanceof InsertStatement) {
             affectedRows = this.insert((_Insert) dml, visible);
         } else if (dml instanceof NarrowDmlStatement) {
             affectedRows = this.dmlUpdate((NarrowDmlStatement) dml, visible);
@@ -294,8 +294,8 @@ final class SyncLocalSession extends _AbstractSyncSession implements LocalSessio
             assertSession(true, visible);
             //2. parse statement to stmt
             final BatchStmt stmt;
-            if (dml instanceof Update) {
-                stmt = (BatchStmt) this.sessionFactory.dialectParser.update((Update) dml, visible);
+            if (dml instanceof UpdateStatement) {
+                stmt = (BatchStmt) this.sessionFactory.dialectParser.update((UpdateStatement) dml, visible);
             } else if (dml instanceof DeleteStatement) {
                 stmt = (BatchStmt) this.sessionFactory.dialectParser.delete((DeleteStatement) dml, visible);
             } else {
@@ -308,7 +308,7 @@ final class SyncLocalSession extends _AbstractSyncSession implements LocalSessio
         } catch (ArmyException e) {
             throw e;
         } catch (RuntimeException e) {
-            String m = String.format("Army execute %s occur error.", Update.class.getName());
+            String m = String.format("Army execute %s occur error.", UpdateStatement.class.getName());
             throw _Exceptions.unknownError(m, e);
         } finally {
             ((_Statement) dml).clear();
@@ -378,7 +378,7 @@ final class SyncLocalSession extends _AbstractSyncSession implements LocalSessio
     @Override
     public void flush() throws SessionException {
         long affectedRows;
-        Update update;
+        UpdateStatement update;
         TableMeta<?> table;
         for (_CacheBlock block : this.sessionCache.getChangedList()) {
             update = block.statement();
@@ -441,7 +441,7 @@ final class SyncLocalSession extends _AbstractSyncSession implements LocalSessio
             }
             final SyncLocalSessionFactory sessionFactory = this.sessionFactory;
             final Stmt stmt;
-            stmt = sessionFactory.dialectParser.insert((Insert) insert, visible);
+            stmt = sessionFactory.dialectParser.insert((InsertStatement) insert, visible);
 
             sessionFactory.printSqlIfNeed(stmt);
 
@@ -467,7 +467,7 @@ final class SyncLocalSession extends _AbstractSyncSession implements LocalSessio
         } catch (ArmyException e) {
             throw e;
         } catch (RuntimeException e) {
-            String m = String.format("Army execute %s occur error.", Insert.class.getName());
+            String m = String.format("Army execute %s occur error.", InsertStatement.class.getName());
             throw _Exceptions.unknownError(m, e);
         } finally {
             ((_Statement) insert).clear();
@@ -484,8 +484,8 @@ final class SyncLocalSession extends _AbstractSyncSession implements LocalSessio
             assertSession(true, visible);
             //2. parse statement to stmt
             final SimpleStmt stmt;
-            if (dml instanceof Update) {
-                stmt = (SimpleStmt) this.sessionFactory.dialectParser.update((Update) dml, visible);
+            if (dml instanceof UpdateStatement) {
+                stmt = (SimpleStmt) this.sessionFactory.dialectParser.update((UpdateStatement) dml, visible);
             } else if (dml instanceof DeleteStatement) {
                 stmt = (SimpleStmt) this.sessionFactory.dialectParser.delete((DeleteStatement) dml, visible);
             } else {

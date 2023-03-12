@@ -1,7 +1,7 @@
 package io.army.criteria.postgre;
 
 import io.army.annotation.GeneratorType;
-import io.army.criteria.Insert;
+import io.army.criteria.InsertStatement;
 import io.army.criteria.Visible;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
@@ -74,7 +74,7 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
     }
 
 
-    private static void printStmt(final Insert insert) {
+    private static void printStmt(final InsertStatement insert) {
         DialectParser parser;
         Stmt stmt;
         String sql;

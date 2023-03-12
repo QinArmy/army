@@ -4,7 +4,7 @@ import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.IPredicate;
 import io.army.criteria.ItemPairs;
-import io.army.criteria.Update;
+import io.army.criteria.UpdateStatement;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -212,7 +212,7 @@ final class SessionCache implements _SessionCache {
             return predicate;
         };
 
-        final Update stmt;
+        final UpdateStatement stmt;
         stmt = SQLs.domainUpdate()
                 .update(table, "t")
                 .sets(pairConsumer)
@@ -369,10 +369,10 @@ final class SessionCache implements _SessionCache {
 
         private final Number version;
 
-        private final Update stmt;
+        private final UpdateStatement stmt;
 
 
-        private CacheBlock(Wrapper w, @Nullable Number version, Update stmt) {
+        private CacheBlock(Wrapper w, @Nullable Number version, UpdateStatement stmt) {
             this.w = w;
             this.version = version;
             this.stmt = stmt;
@@ -386,7 +386,7 @@ final class SessionCache implements _SessionCache {
         }
 
         @Override
-        public Update statement() {
+        public UpdateStatement statement() {
             return this.stmt;
         }
 

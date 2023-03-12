@@ -30,7 +30,7 @@ public class MySQLCriteriaUnitTests {
         final Criteria criteria = new Criteria();
         criteria.setRowCount(5L);
 
-        final Update stmt;
+        final UpdateStatement stmt;
         stmt = MySQLs.singleUpdate()
                 .update(ChinaRegion_.T, AS, "t")
                 .set(ChinaRegion_.name, SQLs::param, "五指礁")
@@ -57,7 +57,7 @@ public class MySQLCriteriaUnitTests {
             return list;
         };
 
-        final Update stmt;
+        final UpdateStatement stmt;
         stmt = MySQLs.singleUpdate()
                 .update(supplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), ChinaCity_.T)
                 .partition("p2", "p1")
@@ -341,7 +341,7 @@ public class MySQLCriteriaUnitTests {
 
             final Object amount = map.get("amount");
 
-            final Update stmt;
+            final UpdateStatement stmt;
             stmt = MySQLs.multiUpdate()
                     .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), BankUser_.T)
                     .partition("p1").as("u")
@@ -386,7 +386,7 @@ public class MySQLCriteriaUnitTests {
             final BigDecimal amount;
             amount = (BigDecimal) map.get("amount");
 
-            final Update stmt;
+            final UpdateStatement stmt;
             stmt = MySQLs.multiUpdate()
                     .update(BankUser_.T, AS, "u")
                     .join(BankPerson_.T, AS, "p").on(BankUser_.id::equal, BankPerson_.id)
@@ -428,7 +428,7 @@ public class MySQLCriteriaUnitTests {
         //daoMethod mock dao method
         final Consumer<Map<String, Object>> daoMethod = map -> {
 
-            final Update stmt;
+            final UpdateStatement stmt;
             stmt = MySQLs.multiUpdate()
                     .update(PartnerUser_.T, AS, "up")
                     .join(BankUser_.T, AS, "u").on(BankUser_.id::equal, PartnerUser_.id)
@@ -490,7 +490,7 @@ public class MySQLCriteriaUnitTests {
             paramList.add(paramMap);
 
 
-            final Update stmt;
+            final UpdateStatement stmt;
             stmt = MySQLs.batchMultiUpdate()
                     .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), PillUser_.T)
                     .partition("p1").as("u")
@@ -602,7 +602,7 @@ public class MySQLCriteriaUnitTests {
 
     @Test
     public void parentDomainInsert() {
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(Collections::emptyList, Collections.singletonList(MySQLs.HIGH_PRIORITY))

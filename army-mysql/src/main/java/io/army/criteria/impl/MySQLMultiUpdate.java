@@ -33,18 +33,18 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC, JT, JS, JC, WR, WA>
         extends JoinableUpdate.WithMultiUpdate<I, MySQLCtes, WE, TableField, SR, FT, FS, FC, JT, JS, JC, WR, WA, Object, Object, Object, Object>
-        implements Update, _MySQLMultiUpdate, MySQLUpdate, MySQLStatement._IndexHintForJoinClause<FT> {
+        implements UpdateStatement, _MySQLMultiUpdate, MySQLUpdate, MySQLStatement._IndexHintForJoinClause<FT> {
 
 
-    static <I extends Item> _MultiWithSpec<I> simple(Function<Update, I> function) {
+    static <I extends Item> _MultiWithSpec<I> simple(Function<UpdateStatement, I> function) {
         return new SimpleUpdateStatement<>(null, function);
     }
 
-    static <I extends Item> _BatchMultiWithSpec<I> batch(Function<Update, I> function) {
+    static <I extends Item> _BatchMultiWithSpec<I> batch(Function<UpdateStatement, I> function) {
         return new BatchUpdateStatement<>(function);
     }
 
-    private final Function<Update, I> function;
+    private final Function<UpdateStatement, I> function;
 
     List<Hint> hintList;
 
@@ -53,7 +53,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC,
     _TableBlock fromCrossBlock;
 
 
-    private MySQLMultiUpdate(@Nullable _WithClauseSpec withSpec, Function<Update, I> function) {
+    private MySQLMultiUpdate(@Nullable _WithClauseSpec withSpec, Function<UpdateStatement, I> function) {
         super(withSpec, CriteriaContexts.primaryMultiDmlContext());
         this.function = function;
     }
@@ -241,7 +241,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC,
             MySQLUpdate._MultiWhereAndSpec<I> {
 
 
-        private SimpleUpdateStatement(@Nullable _WithClauseSpec withSpec, Function<Update, I> function) {
+        private SimpleUpdateStatement(@Nullable _WithClauseSpec withSpec, Function<UpdateStatement, I> function) {
             super(withSpec, function);
         }
 
@@ -591,7 +591,7 @@ abstract class MySQLMultiUpdate<I extends Item, WE, FT, SR, FS extends Item, FC,
         private List<?> paramList;
 
 
-        private BatchUpdateStatement(Function<Update, I> function) {
+        private BatchUpdateStatement(Function<UpdateStatement, I> function) {
             super(null, function);
         }
 

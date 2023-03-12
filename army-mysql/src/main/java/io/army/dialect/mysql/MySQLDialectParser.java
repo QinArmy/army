@@ -64,7 +64,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected void assertInsert(final Insert insert) {
+    protected void assertInsert(final InsertStatement insert) {
         if (insert instanceof MySQLReplace) {
             _MySQLConsultant.assertReplace((MySQLReplace) insert);
         } else {
@@ -73,7 +73,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected void assertUpdate(Update update) {
+    protected void assertUpdate(UpdateStatement update) {
         _MySQLConsultant.assertUpdate(update);
     }
 

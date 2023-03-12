@@ -135,7 +135,7 @@ abstract class ArmyParser implements DialectParser {
      * {@inheritDoc}
      */
     @Override
-    public final Stmt insert(final Insert insert, final Visible visible) {
+    public final Stmt insert(final InsertStatement insert, final Visible visible) {
         return this.createInsertStmt(this.handleInsert(null, insert, visible));
     }
 
@@ -144,7 +144,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     @Override
-    public final Stmt update(final Update update, final Visible visible) {
+    public final Stmt update(final UpdateStatement update, final Visible visible) {
         final Stmt stmt;
         stmt = this.handleUpdate(null, update, visible, this::createUpdateStmt);
         if (!(update instanceof _SingleUpdate._ChildUpdate)) {
@@ -357,14 +357,14 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract DdlDialect createDdlDialect();
 
-    protected void assertInsert(Insert insert) {
+    protected void assertInsert(InsertStatement insert) {
         throw standardParserDontSupportDialect();
     }
 
     /**
-     * @see #update(Update, Visible)
+     * @see #update(UpdateStatement, Visible)
      */
-    protected void assertUpdate(Update update) {
+    protected void assertUpdate(UpdateStatement update) {
         throw standardParserDontSupportDialect();
     }
 
@@ -397,14 +397,14 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #handleUpdate(_SqlContext, Update, Visible, Function)
+     * @see #handleUpdate(_SqlContext, UpdateStatement, Visible, Function)
      */
     protected void parseSingleUpdate(_SingleUpdate update, _SingleUpdateContext context) {
         throw standardParserDontSupportDialect();
     }
 
     /**
-     * @see #handleUpdate(_SqlContext, Update, Visible, Function)
+     * @see #handleUpdate(_SqlContext, UpdateStatement, Visible, Function)
      */
     protected void parseMultiUpdate(_MultiUpdate update, _MultiUpdateContext context) {
         throw standardParserDontSupportDialect();
@@ -524,11 +524,11 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @param insert possibly be below :
      *               <ul>
-     *                  <li>{@link Insert}</li>
+     *                  <li>{@link InsertStatement}</li>
      *               </ul>
-     * @see #insert(Insert, Visible)
+     * @see #insert(InsertStatement, Visible)
      */
-    protected final _InsertContext handleInsert(final @Nullable _SqlContext outerContext, final Insert insert,
+    protected final _InsertContext handleInsert(final @Nullable _SqlContext outerContext, final InsertStatement insert,
                                                 final Visible visible) {
         insert.prepared();
         if (insert instanceof StandardInsert) {
@@ -1360,7 +1360,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #handleInsert(_SqlContext, Insert, Visible)
+     * @see #handleInsert(_SqlContext, InsertStatement, Visible)
      */
     private _ValueInsertContext handleDomainInsert(final @Nullable _SqlContext outerContext
             , final _Insert._DomainInsert insert, final Visible visible) {
@@ -1399,7 +1399,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #handleInsert(_SqlContext, Insert, Visible)
+     * @see #handleInsert(_SqlContext, InsertStatement, Visible)
      */
     private _ValueInsertContext handleValueInsert(final @Nullable _SqlContext outerContext
             , final _Insert._ValuesInsert insert, final Visible visible) {
@@ -1437,7 +1437,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #handleInsert(_SqlContext, Insert, Visible)
+     * @see #handleInsert(_SqlContext, InsertStatement, Visible)
      */
     private _AssignmentInsertContext handleAssignmentInsert(final @Nullable _SqlContext outerContext
             , final _Insert._AssignmentInsert insert, final Visible visible) {
@@ -1463,7 +1463,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #handleInsert(_SqlContext, Insert, Visible)
+     * @see #handleInsert(_SqlContext, InsertStatement, Visible)
      */
     private _QueryInsertContext handleQueryInsert(final @Nullable _SqlContext outerContext
             , final _Insert._QueryInsert insert, final Visible visible) {
@@ -1598,9 +1598,9 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #update(Update, Visible)
+     * @see #update(UpdateStatement, Visible)
      */
-    private <T> T handleUpdate(final @Nullable _SqlContext outerContext, final Update stmt
+    private <T> T handleUpdate(final @Nullable _SqlContext outerContext, final UpdateStatement stmt
             , final Visible visible, final Function<_UpdateContext, T> function) {
         stmt.prepared();
         final _UpdateContext context;
@@ -1657,7 +1657,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #handleUpdate(_SqlContext, Update, Visible, Function)
+     * @see #handleUpdate(_SqlContext, UpdateStatement, Visible, Function)
      */
     private _UpdateContext handleDomainUpdate(final @Nullable _SqlContext outerContext, final _DomainUpdate stmt
             , final Visible visible) {
@@ -2105,7 +2105,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #handleUpdate(_SqlContext, Update, Visible, Function)
+     * @see #handleUpdate(_SqlContext, UpdateStatement, Visible, Function)
      * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, Visible)
      */
     private void parseStandardSingleUpdate(final _SingleUpdate stmt, final _SingleUpdateContext context) {
@@ -2220,7 +2220,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #insert(Insert, Visible)
+     * @see #insert(InsertStatement, Visible)
      */
     private Stmt createInsertStmt(final _InsertContext context) {
         final _InsertContext parentContext;
@@ -2235,7 +2235,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #update(Update, Visible)
+     * @see #update(UpdateStatement, Visible)
      */
     private Stmt createUpdateStmt(final _UpdateContext context) {
         final _UpdateContext parentContext;
@@ -2303,7 +2303,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #handleUpdate(_SqlContext, Update, Visible, Function)
+     * @see #handleUpdate(_SqlContext, UpdateStatement, Visible, Function)
      * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, Visible)
      * @see #handleDelete(_SqlContext, DeleteStatement, Visible, Function)
      * @see #handleDomainDelete(_SqlContext, _DomainDelete, Visible)

@@ -1,7 +1,7 @@
 package io.army.criteria.mysql.unit;
 
 import io.army.annotation.GeneratorType;
-import io.army.criteria.Insert;
+import io.army.criteria.InsertStatement;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.Visible;
 import io.army.criteria.dialect.Hint;
@@ -42,7 +42,7 @@ public class MySQLReplaceUnitTests {
             return hintList;
         };
 
-        Insert stmt;
+        InsertStatement stmt;
         stmt = MySQLs.singleReplace()
                 .literalMode(LiteralMode.PREFERENCE)
                 .replace(hintSupplier, Collections.singletonList(MySQLs.DELAYED))
@@ -71,7 +71,7 @@ public class MySQLReplaceUnitTests {
             return hintList;
         };
 
-        Insert stmt;
+        InsertStatement stmt;
         stmt = MySQLs.singleReplace()
                 .literalMode(LiteralMode.PREFERENCE)
                 .replace(hintSupplier, Collections.singletonList(MySQLs.LOW_PRIORITY))
@@ -145,7 +145,7 @@ public class MySQLReplaceUnitTests {
     }
 
 
-    private void printStmt(final Insert insert) {
+    private void printStmt(final InsertStatement insert) {
         String sql;
         DialectParser parser;
         Stmt stmt;

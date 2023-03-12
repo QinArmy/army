@@ -43,11 +43,11 @@ public abstract class SQLs extends SQLsSyntax {
 
     private static final Function<? extends Item, ? extends Item> _IDENTITY = SQLs::_identity;
 
-    static final Function<Insert, Insert> _INSERT_IDENTITY = _getIdentity();
+    static final Function<InsertStatement, InsertStatement> _INSERT_IDENTITY = _getIdentity();
 
     static final Function<Select, Select> _SELECT_IDENTITY = _getIdentity();
 
-    static final Function<Update, Update> _UPDATE_IDENTITY = _getIdentity();
+    static final Function<UpdateStatement, UpdateStatement> _UPDATE_IDENTITY = _getIdentity();
     static final Function<Delete, Delete> _DELETE_IDENTITY = _getIdentity();
 
     static final Function<BatchDelete, BatchDelete> _BATCH_DELETE_IDENTITY = _getIdentity();
@@ -55,7 +55,7 @@ public abstract class SQLs extends SQLsSyntax {
     static final Function<SubQuery, SubQuery> _SUB_QUERY_IDENTITY = _getIdentity();
 
 
-    public static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
+    public static StandardInsert._PrimaryOptionSpec<InsertStatement> singleInsert() {
         return StandardInserts.primaryInsert(SQLs._INSERT_IDENTITY);
     }
 
@@ -64,7 +64,7 @@ public abstract class SQLs extends SQLsSyntax {
     }
 
 
-    public static StandardUpdate._SingleUpdateClause<Update> singleUpdate() {
+    public static StandardUpdate._SingleUpdateClause<UpdateStatement> singleUpdate() {
         return StandardUpdates.simpleSingle(SQLs._UPDATE_IDENTITY);
     }
 
@@ -174,7 +174,7 @@ public abstract class SQLs extends SQLsSyntax {
         return t;
     }
 
-    static BatchUpdate _batchUpdateIdentity(Update update) {
+    static BatchUpdate _batchUpdateIdentity(UpdateStatement update) {
         return (BatchUpdate) update;
     }
 

@@ -1,7 +1,7 @@
 package io.army.criteria.standard.unit;
 
 import io.army.annotation.GeneratorType;
-import io.army.criteria.Insert;
+import io.army.criteria.InsertStatement;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.*;
@@ -24,7 +24,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
     public void domainInsertParent() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = SQLs.singleInsert()
 //                .migration(true)
                 .literalMode(LiteralMode.PREFERENCE)
@@ -45,7 +45,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
         final List<ChinaProvince> provinceList;
         provinceList = this.createProvinceList();
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = SQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -71,7 +71,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .setRegionGdp(new BigDecimal("666.88"))
                 .setParentId(2343L);
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = SQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -95,7 +95,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
 
     @Test
     public void valueInsertChild() {
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = SQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -133,7 +133,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
 
     @Test
     public void queryInsertParent() {
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = SQLs.singleInsert()
                 .migration(true)
                 .insertInto(ChinaRegion_.T)
@@ -155,7 +155,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
 
     @Test
     public void singleTableSubQueryInsert() {
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = SQLs.singleInsert()
                 .migration(true)
                 .insertInto(ChinaRegion_.T)

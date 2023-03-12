@@ -26,7 +26,7 @@ import java.util.function.*;
 abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause<OR, LR, LO, LF>
         implements Statement._WhereClause<WR, WA>
         , Statement._WhereAndClause<WA>
-        , Update._UpdateWhereAndClause<WA>
+        , UpdateStatement._UpdateWhereAndClause<WA>
         , _Statement._WherePredicateListSpec {
 
     final CriteriaContext context;

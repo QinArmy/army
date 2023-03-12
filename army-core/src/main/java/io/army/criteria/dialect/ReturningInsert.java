@@ -3,11 +3,11 @@ package io.army.criteria.dialect;
 
 import io.army.criteria.DialectStatement;
 import io.army.criteria.DqlStatement;
-import io.army.criteria.Insert;
+import io.army.criteria.InsertStatement;
 import io.army.criteria.Statement;
 
 /**
- * @see Insert
+ * @see InsertStatement
  * @see SubInsert
  * @see SubReturningInsert
  * @since 1.0

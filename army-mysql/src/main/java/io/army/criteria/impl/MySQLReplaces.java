@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Insert;
+import io.army.criteria.InsertStatement;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
 import io.army.criteria.dialect.Hint;
@@ -58,7 +58,7 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T> MySQLReplace._PartitionSpec<Insert, T> into(SingleTableMeta<T> table) {
+        public <T> MySQLReplace._PartitionSpec<InsertStatement, T> into(SingleTableMeta<T> table) {
             return new MySQLComplexValuesClause<>(this, table, this::singleReplaceEnd);
         }
 
@@ -68,7 +68,7 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T> MySQLReplace._PartitionSpec<Insert, T> replaceInto(SingleTableMeta<T> table) {
+        public <T> MySQLReplace._PartitionSpec<InsertStatement, T> replaceInto(SingleTableMeta<T> table) {
             return new MySQLComplexValuesClause<>(this, table, this::singleReplaceEnd);
         }
 
@@ -78,10 +78,10 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
 
-        private Insert singleReplaceEnd(MySQLComplexValuesClause<?, ?> clause) {
+        private InsertStatement singleReplaceEnd(MySQLComplexValuesClause<?, ?> clause) {
             final InsertMode mode;
             mode = clause.getInsertMode();
-            final Statement._DmlInsertClause<Insert> spec;
+            final Statement._DmlInsertClause<InsertStatement> spec;
             switch (mode) {
                 case DOMAIN:
                     spec = new PrimarySimpleDomainReplaceStatement(clause);
@@ -132,14 +132,14 @@ abstract class MySQLReplaces extends InsertSupport {
             implements MySQLReplace._ChildReplaceIntoSpec<P>
             , MySQLReplace._ChildIntoClause<P> {
 
-        private final Function<MySQLComplexValuesClause<?, ?>, Insert> dmlFunction;
+        private final Function<MySQLComplexValuesClause<?, ?>, InsertStatement> dmlFunction;
 
         private List<Hint> hintList;
 
         private List<MySQLs.Modifier> modifierList;
 
         private ChildReplaceIntoClause(ValueSyntaxOptions options
-                , Function<MySQLComplexValuesClause<?, ?>, Insert> dmlFunction) {
+                , Function<MySQLComplexValuesClause<?, ?>, InsertStatement> dmlFunction) {
             super(options, CriteriaContexts.primaryInsertContext(null));
             this.dmlFunction = dmlFunction;
             ContextStack.push(this.context);
@@ -153,12 +153,12 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T> MySQLReplace._PartitionSpec<Insert, T> into(ComplexTableMeta<P, T> table) {
+        public <T> MySQLReplace._PartitionSpec<InsertStatement, T> into(ComplexTableMeta<P, T> table) {
             return new MySQLComplexValuesClause<>(this, table, this.dmlFunction);
         }
 
         @Override
-        public <T> MySQLReplace._PartitionSpec<Insert, T> replaceInto(ComplexTableMeta<P, T> table) {
+        public <T> MySQLReplace._PartitionSpec<InsertStatement, T> replaceInto(ComplexTableMeta<P, T> table) {
             return new MySQLComplexValuesClause<>(this, table, this.dmlFunction);
         }
 
@@ -257,7 +257,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
 
     static abstract class MySQLValueSyntaxStatement<I extends Statement.DmlInsert> extends ValueSyntaxInsertStatement<I>
-            implements MySQLReplace, _MySQLInsert, Insert {
+            implements MySQLReplace, _MySQLInsert, InsertStatement {
 
         private final List<Hint> hintList;
 
@@ -326,7 +326,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//DomainReplaceStatement
 
     private static final class PrimarySimpleDomainReplaceStatement
-            extends DomainReplaceStatement<Insert> {
+            extends DomainReplaceStatement<InsertStatement> {
 
         private final List<?> domainList;
 
@@ -345,7 +345,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//PrimarySimpleDomainReplaceStatement
 
 
-    private static final class PrimaryChildDomainReplaceStatement extends DomainReplaceStatement<Insert>
+    private static final class PrimaryChildDomainReplaceStatement extends DomainReplaceStatement<InsertStatement>
             implements _MySQLInsert._MySQLChildDomainInsert {
 
         private final PrimaryParentDomainReplaceStatement<?> parentStatement;
@@ -397,7 +397,7 @@ abstract class MySQLReplaces extends InsertSupport {
             return new ChildReplaceIntoClause<>(this, this::childReplaceEnd);
         }
 
-        private Insert childReplaceEnd(final MySQLComplexValuesClause<?, ?> childClause) {
+        private InsertStatement childReplaceEnd(final MySQLComplexValuesClause<?, ?> childClause) {
             childClause.domainListForChild(this.originalDomainList);
             return new PrimaryChildDomainReplaceStatement(this, childClause)
                     .asInsert();
@@ -426,7 +426,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//ValueReplaceStatement
 
 
-    private static final class PrimarySimpleValueReplaceStatement extends ValueReplaceStatement<Insert> {
+    private static final class PrimarySimpleValueReplaceStatement extends ValueReplaceStatement<InsertStatement> {
 
         private PrimarySimpleValueReplaceStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
@@ -436,7 +436,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//PrimarySimpleValueReplaceStatement
 
 
-    private static final class PrimaryChildValueReplaceStatement extends ValueReplaceStatement<Insert>
+    private static final class PrimaryChildValueReplaceStatement extends ValueReplaceStatement<InsertStatement>
             implements _MySQLInsert._MySQLChildValueInsert {
 
         private final PrimaryParentValueReplaceStatement<?> parentStatement;
@@ -472,7 +472,7 @@ abstract class MySQLReplaces extends InsertSupport {
             return new ChildReplaceIntoClause<>(this, this::childReplaceEnd);
         }
 
-        private Insert childReplaceEnd(final MySQLComplexValuesClause<?, ?> childClause) {
+        private InsertStatement childReplaceEnd(final MySQLComplexValuesClause<?, ?> childClause) {
             if (childClause.rowPairList().size() != this.valuePairList.size()) {
                 throw CriteriaUtils.childParentRowNotMatch(childClause, this);
             }
@@ -486,7 +486,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
     static abstract class AssignmentReplaceStatement<I extends Statement.DmlInsert>
             extends InsertSupport.AssignmentInsertStatement<I>
-            implements MySQLReplace, _MySQLInsert._MySQLAssignmentInsert, Insert {
+            implements MySQLReplace, _MySQLInsert._MySQLAssignmentInsert, InsertStatement {
 
         private final List<Hint> hintList;
 
@@ -542,7 +542,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
 
     private static final class PrimarySimpleAssignmentReplaceStatement
-            extends AssignmentReplaceStatement<Insert> {
+            extends AssignmentReplaceStatement<InsertStatement> {
 
         private PrimarySimpleAssignmentReplaceStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
@@ -551,7 +551,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
     }//PrimarySimpleAssignmentReplaceStatement
 
-    private static final class PrimaryChildAssignmentReplaceStatement extends AssignmentReplaceStatement<Insert>
+    private static final class PrimaryChildAssignmentReplaceStatement extends AssignmentReplaceStatement<InsertStatement>
             implements _MySQLInsert._MySQLChildAssignmentInsert {
 
         private final PrimaryParentAssignmentReplaceStatement<?> parentStatement;
@@ -587,7 +587,7 @@ abstract class MySQLReplaces extends InsertSupport {
             return new ChildReplaceIntoClause<>(this, this::childReplaceEnd);
         }
 
-        private Insert childReplaceEnd(MySQLComplexValuesClause<?, ?> childClause) {
+        private InsertStatement childReplaceEnd(MySQLComplexValuesClause<?, ?> childClause) {
             return new PrimaryChildAssignmentReplaceStatement(this, childClause)
                     .asInsert();
         }
@@ -598,7 +598,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
     static abstract class QueryReplaceStatement<I extends Statement.DmlInsert>
             extends InsertSupport.QuerySyntaxInsertStatement<I>
-            implements MySQLReplace, _MySQLInsert._MySQLQueryInsert, Insert {
+            implements MySQLReplace, _MySQLInsert._MySQLQueryInsert, InsertStatement {
 
 
         private final List<Hint> hintList;
@@ -655,7 +655,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
     }//PrimaryQueryReplaceStatement
 
-    private static final class PrimarySimpleQueryReplaceStatement extends QueryReplaceStatement<Insert> {
+    private static final class PrimarySimpleQueryReplaceStatement extends QueryReplaceStatement<InsertStatement> {
 
         private PrimarySimpleQueryReplaceStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
@@ -666,7 +666,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//PrimarySimpleQueryReplaceStatement
 
 
-    private static final class PrimaryChildQueryReplaceStatement extends QueryReplaceStatement<Insert>
+    private static final class PrimaryChildQueryReplaceStatement extends QueryReplaceStatement<InsertStatement>
             implements _MySQLInsert._MySQLChildQueryInsert {
 
         private final PrimaryParentQueryReplaceStatement<?> parentStatement;
@@ -702,7 +702,7 @@ abstract class MySQLReplaces extends InsertSupport {
             return new ChildReplaceIntoClause<>(this, this::childReplaceEnd);
         }
 
-        private Insert childReplaceEnd(MySQLComplexValuesClause<?, ?> childClause) {
+        private InsertStatement childReplaceEnd(MySQLComplexValuesClause<?, ?> childClause) {
             return new PrimaryChildQueryReplaceStatement(this, childClause)
                     .asInsert();
         }

@@ -3,7 +3,7 @@ package io.army.criteria.mysql.unit;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
-import io.army.criteria.Insert;
+import io.army.criteria.InsertStatement;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLFunctions;
@@ -30,7 +30,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     public void domainInsertParentPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -75,7 +75,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         };
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
@@ -117,7 +117,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final List<ChinaProvince> provinceList;
         provinceList = this.createProvinceList();
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -166,7 +166,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final List<ChinaProvince> provinceList;
         provinceList = this.createProvinceList();
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
@@ -241,7 +241,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     public void staticValuesInsertParentPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -298,7 +298,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         };
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
@@ -348,7 +348,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -416,7 +416,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         };
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
@@ -520,7 +520,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -579,7 +579,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         };
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
@@ -632,7 +632,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
         final int rowCount = 2;
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -705,7 +705,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         };
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
@@ -803,7 +803,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     public void assignmentInsertParentPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -834,7 +834,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        Insert stmt;
+        InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList).into(ChinaRegion_.T)
@@ -856,7 +856,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     public void assignmentInsertChildPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -892,7 +892,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList).into(ChinaRegion_.T)
@@ -949,7 +949,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     public void dynamicAssignmentInsertParentPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -981,7 +981,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        Insert stmt;
+        InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList).into(ChinaRegion_.T)
@@ -1004,7 +1004,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     public void dynamicAssignmentInsertChildPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -1041,7 +1041,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList).into(ChinaRegion_.T)
@@ -1101,7 +1101,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     @Test(enabled = false)
     public void queryInsertParent() {
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .migration(true)
                 .insertInto(ChinaRegion_.T)
@@ -1132,7 +1132,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
             return hintList;
         };
 
-        final Insert stmt;
+        final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .migration(true)
                 .insert(hintSupplier, Collections.emptyList())

@@ -13,7 +13,7 @@ public abstract class MySQLs extends MySQLSyntax {
     private MySQLs() {
     }
 
-    public static MySQLInsert._PrimaryOptionSpec<Insert> singleInsert() {
+    public static MySQLInsert._PrimaryOptionSpec<InsertStatement> singleInsert() {
         return MySQLInserts.primaryInsert(SQLs::_identity);
     }
 
@@ -47,7 +47,7 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQLUpdate._SingleWithSpec<Update> singleUpdate() {
+    public static MySQLUpdate._SingleWithSpec<UpdateStatement> singleUpdate() {
         return MySQLSingleUpdate.simple(null, SQLs::_identity);
     }
 
@@ -56,12 +56,12 @@ public abstract class MySQLs extends MySQLSyntax {
         return MySQLSingleUpdate.batch(SQLs::_batchUpdateIdentity);
     }
 
-    public static MySQLUpdate._MultiWithSpec<Update> multiUpdate() {
+    public static MySQLUpdate._MultiWithSpec<UpdateStatement> multiUpdate() {
         return MySQLMultiUpdate.simple(SQLs._UPDATE_IDENTITY);
     }
 
 
-    public static MySQLUpdate._BatchMultiWithSpec<Update> batchMultiUpdate() {
+    public static MySQLUpdate._BatchMultiWithSpec<UpdateStatement> batchMultiUpdate() {
         return MySQLMultiUpdate.batch(SQLs::_identity);
     }
 

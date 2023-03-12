@@ -24,7 +24,7 @@ import java.util.function.Supplier;
  * This class is base class of all implementation of below:
  * <ul>
  *     <li>{@link io.army.criteria.Query}</li>
- *     <li>{@link io.army.criteria.Update}</li>
+ *     <li>{@link UpdateStatement}</li>
  *     <li>{@link DeleteStatement}</li>
  * </ul>
  * </p>

@@ -30,7 +30,7 @@ public abstract class _SQLConsultant {
     }
 
 
-    public static void assertStandardUpdate(Update update) {
+    public static void assertStandardUpdate(UpdateStatement update) {
         if (!(update instanceof StandardUpdates)) {
             throw nonArmyStatement(update);
         }
@@ -43,7 +43,7 @@ public abstract class _SQLConsultant {
         }
     }
 
-    public static void assertStandardInsert(final Insert insert) {
+    public static void assertStandardInsert(final InsertStatement insert) {
         if (insert instanceof _Insert._DomainInsert) {
             if (!(insert instanceof StandardInserts.DomainsInsertStatement)) {
                 throw instanceNotMatch(insert, StandardInserts.DomainsInsertStatement.class);

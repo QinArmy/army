@@ -1,9 +1,12 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.BatchReturningDelete;
 import io.army.criteria.dialect.ReturningDelete;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.postgre._PostgreDelete;
 import io.army.criteria.postgre.*;
@@ -13,6 +16,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
+import io.army.util._Assert;
 import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
@@ -46,13 +50,13 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         PostgreDelete._PostgreDeleteClause<DR> {
 
 
-    static <I extends Item, Q extends Item> _SingleWithSpec<I, Q> primarySingle(
+    static <I extends Item, Q extends Item> _SingleWithSpec<I, Q> simple(
             Function<Delete, I> dmlFunction, Function<ReturningDelete, Q> dqlFunction) {
         return new PrimarySimpleDelete<>(dmlFunction, dqlFunction);
     }
 
     static <I extends Item, Q extends Item> _BatchSingleWithSpec<I, Q> batch(
-            Function<BatchDelete, I> dmlFunction, Function<BatchReturning, Q> dqlFunction) {
+            Function<BatchDelete, I> dmlFunction, Function<BatchReturningDelete, Q> dqlFunction) {
         return new PostgreBatchDelete<>(dmlFunction, dqlFunction);
     }
 
@@ -69,7 +73,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
     }
 
 
-    private SQLWords modifier;
+    private SQLsSyntax.WordOnly modifier;
 
     private TableMeta<?> updateTable;
 
@@ -704,7 +708,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
     }//SimpleOnTableBlock
 
     private static final class PrimarySimpleDelete<I extends Item, Q extends Item> extends SimpleDelete<I, Q, Delete>
-            implements Delete, ReturningDelete {
+            implements Delete {
 
         private final Function<ReturningDelete, Q> dqlFunction;
 
@@ -715,15 +719,14 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
         @Override
         Q onAsReturningDelete() {
-            return this.dqlFunction.apply(this);
+            return this.dqlFunction.apply(new ReturningDeleteWrapper(this));
         }
-
 
     }//PrimarySimpleDelete
 
     private static final class PrimarySimpleDeleteForMultiStmt<I extends Item>
             extends SimpleDelete<I, I, PrimaryStatement>
-            implements Delete, ReturningDelete {
+            implements Delete {
 
 
         private PrimarySimpleDeleteForMultiStmt(_WithClauseSpec withSpec, Function<PrimaryStatement, I> function) {
@@ -733,7 +736,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
         @Override
         I onAsReturningDelete() {
-            return this.dmlFunction.apply(this);
+            return this.dmlFunction.apply(new ReturningDeleteWrapper(this));
         }
 
 
@@ -782,19 +785,18 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
             PostgreDelete._BatchParensJoinSpec<I, Q>,
             PostgreDelete._BatchSingleWhereAndSpec<I, Q>,
             Statement._DqlDeleteSpec<Q>,
-            BatchReturning,
             BatchDelete,
             _BatchDml {
 
         private final Function<BatchDelete, I> dmlFunction;
 
-        private final Function<BatchReturning, Q> dqlFunction;
+        private final Function<BatchReturningDelete, Q> dqlFunction;
 
         private List<Selection> returningList;
 
         private List<?> paramList;
 
-        private PostgreBatchDelete(Function<BatchDelete, I> dmlFunction, Function<BatchReturning, Q> dqlFunction) {
+        private PostgreBatchDelete(Function<BatchDelete, I> dmlFunction, Function<BatchReturningDelete, Q> dqlFunction) {
             super(null, CriteriaContexts.joinableSingleDmlContext(null));
             this.dmlFunction = dmlFunction;
             this.dqlFunction = dqlFunction;
@@ -944,7 +946,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
             }
             this.endDeleteStatement();
             this.returningList = _CollectionUtils.unmodifiableList(returningList);
-            return this.dqlFunction.apply(this);
+            return this.dqlFunction.apply(new BatchReturningDeleteWrapper(this));
         }
 
 
@@ -1104,6 +1106,140 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
 
     }//BatchOnTableBlock
+
+
+    private static abstract class PostgreDeleteWrapper extends CriteriaSupports.StatementMockSupport
+            implements PostgreDelete, _PostgreDelete {
+
+        private final boolean recursive;
+
+        private final List<_Cte> cteList;
+
+        private final SQLsSyntax.WordOnly only;
+
+        private final TableMeta<?> targetTable;
+
+        private final String tableAlias;
+
+        private final List<_TableBlock> tableBlockList;
+
+        private final List<_Predicate> wherePredicateList;
+
+        private final List<Selection> returningList;
+
+        private Boolean prepared = Boolean.TRUE;
+
+        private PostgreDeleteWrapper(PostgreDeletes<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> stmt) {
+            super(stmt.context);
+            this.recursive = stmt.isRecursive();
+            this.cteList = stmt.cteList();
+            this.only = stmt.modifier;
+            this.targetTable = stmt.updateTable;
+
+            this.tableAlias = stmt.tableAlias;
+            this.tableBlockList = stmt.tableBlockList();
+            this.wherePredicateList = stmt.wherePredicateList();
+            this.returningList = stmt.returningList();
+        }
+
+        @Override
+        public final void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            final Boolean prepared = this.prepared;
+            return prepared != null && prepared;
+        }
+
+        @Override
+        public final void clear() {
+            _Assert.prepared(this.prepared);
+            this.prepared = null;
+        }
+
+        @Override
+        final Dialect statementDialect() {
+            return PostgreDialect.POSTGRE15;
+        }
+
+        @Override
+        public final TableMeta<?> table() {
+            return this.targetTable;
+        }
+
+
+        @Override
+        public final String tableAlias() {
+            return this.tableAlias;
+        }
+
+
+        @Override
+        public final List<_Predicate> wherePredicateList() {
+            return this.wherePredicateList;
+        }
+
+
+        @Override
+        public final boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public final List<_Cte> cteList() {
+            return this.cteList;
+        }
+
+        @Override
+        public final SQLWords modifier() {
+            return this.only;
+        }
+
+        @Override
+        public final List<_TableBlock> tableBlockList() {
+            return this.tableBlockList;
+        }
+
+        @Override
+        public final List<Selection> returningList() {
+            return this.returningList;
+        }
+
+
+    }//PostgreDeleteWrapper
+
+
+    private static final class ReturningDeleteWrapper extends PostgreDeleteWrapper
+            implements ReturningDelete {
+
+        private ReturningDeleteWrapper(PrimarySimpleDelete<?, ?> stmt) {
+            super(stmt);
+        }
+
+        private ReturningDeleteWrapper(PrimarySimpleDeleteForMultiStmt<?> stmt) {
+            super(stmt);
+        }
+
+    }//ReturningDeleteWrapper
+
+    private static final class BatchReturningDeleteWrapper extends PostgreDeleteWrapper
+            implements BatchReturningDelete, _BatchDml {
+
+        private final List<?> paramList;
+
+        private BatchReturningDeleteWrapper(PostgreBatchDelete<?, ?> stmt) {
+            super(stmt);
+            this.paramList = stmt.paramList;
+        }
+
+        @Override
+        public List<?> paramList() {
+            return this.paramList;
+        }
+
+    }//BatchReturningDeleteWrapper
 
 
 }
