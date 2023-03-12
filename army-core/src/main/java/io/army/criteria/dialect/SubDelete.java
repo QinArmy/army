@@ -9,6 +9,7 @@ import io.army.criteria.Statement;
  *
  * @since 1.0
  */
+@Deprecated
 public interface SubDelete extends Statement.DmlDelete {
 
 }

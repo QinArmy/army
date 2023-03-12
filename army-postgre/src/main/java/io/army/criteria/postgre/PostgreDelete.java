@@ -188,7 +188,7 @@ public interface PostgreDelete extends PostgreStatement {
 
 
     interface _BatchSingleUsingSpec<I extends Item, Q extends Item>
-            extends _PostgreUsingClause<_BatchTableSampleJoinSpec<I, Q>, _BatchSingleJoinSpec<I, Q>>,
+            extends _PostgreUsingClause<_BatchTableSampleJoinSpec<I, Q>, _BatchParensJoinSpec<I, Q>>,
             _UsingNestedClause<_NestedLeftParenSpec<_BatchSingleJoinSpec<I, Q>>>,
             _BatchSingleWhereClause<I, Q> {
     }

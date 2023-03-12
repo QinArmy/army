@@ -7,6 +7,8 @@ import io.army.criteria.dialect.ReturningUpdate;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.postgre.*;
 
+import java.util.function.Function;
+
 /**
  * <p>
  * This class is Postgre SQL syntax utils.
@@ -22,6 +24,11 @@ public abstract class Postgres extends PostgreFuncSyntax {
      */
     private Postgres() {
     }
+
+
+    static final Function<ReturningDelete, ReturningDelete> _RETURNING_DELETE_IDENTITY = SQLs::_identity;
+
+    static final Function<BatchReturning, BatchReturning> _BATCH_RETURNING_IDENTITY = SQLs::_identity;
 
 
     public static PostgreInsert._PrimaryOptionSpec singleInsert() {
@@ -50,12 +57,13 @@ public abstract class Postgres extends PostgreFuncSyntax {
         return PostgreUpdates.batch(SQLs::_identity, SQLs::_identity);
     }
 
-    public static PostgreDelete._SingleWithSpec<DeleteStatement, ReturningDelete> singleDelete() {
-        return PostgreDeletes.primarySingle(SQLs::_identity, SQLs::_identity);
+
+    public static PostgreDelete._SingleWithSpec<Delete, ReturningDelete> singleDelete() {
+        return PostgreDeletes.primarySingle(SQLs._DELETE_IDENTITY, _RETURNING_DELETE_IDENTITY);
     }
 
-    public static PostgreDelete._BatchSingleWithSpec<DeleteStatement, ReturningDelete> batchSingleDelete() {
-        return PostgreDeletes.batch(SQLs::_identity, SQLs::_identity);
+    public static PostgreDelete._BatchSingleWithSpec<BatchDelete, BatchReturning> batchSingleDelete() {
+        return PostgreDeletes.batch(SQLs._BATCH_DELETE_IDENTITY, _BATCH_RETURNING_IDENTITY);
     }
 
     public static PostgreValues._WithSpec<Values> primaryValues() {

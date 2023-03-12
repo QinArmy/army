@@ -41,15 +41,19 @@ public abstract class SQLs extends SQLsSyntax {
     private SQLs() {
     }
 
-    static final Function<TypeInfer, TypeInfer> _IDENTITY = SQLs::_identity;
+    private static final Function<? extends Item, ? extends Item> _IDENTITY = SQLs::_identity;
 
-    static final Function<Insert, Insert> _INSERT_IDENTITY = SQLs::_identity;
-    static final Function<Select, Select> _SELECT_IDENTITY = SQLs::_identity;
+    static final Function<Insert, Insert> _INSERT_IDENTITY = _getIdentity();
 
-    static final Function<Update, Update> _UPDATE_IDENTITY = SQLs::_identity;
-    static final Function<DeleteStatement, DeleteStatement> _DELETE_IDENTITY = SQLs::_identity;
+    static final Function<Select, Select> _SELECT_IDENTITY = _getIdentity();
 
-    static final Function<SubQuery, SubQuery> _SUB_QUERY_IDENTITY = SQLs::_identity;
+    static final Function<Update, Update> _UPDATE_IDENTITY = _getIdentity();
+    static final Function<Delete, Delete> _DELETE_IDENTITY = _getIdentity();
+
+    static final Function<BatchDelete, BatchDelete> _BATCH_DELETE_IDENTITY = _getIdentity();
+
+    static final Function<SubQuery, SubQuery> _SUB_QUERY_IDENTITY = _getIdentity();
+
 
     public static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
         return StandardInserts.primaryInsert(SQLs._INSERT_IDENTITY);
@@ -179,8 +183,6 @@ public abstract class SQLs extends SQLsSyntax {
     }
 
 
-
-
     static <I extends Item> Function<TypeInfer, I> _toSelection(final Function<Selection, I> function) {
         return t -> {
             if (!(t instanceof Selection)) {
@@ -215,6 +217,10 @@ public abstract class SQLs extends SQLsSyntax {
         return new SQLIdentifierImpl(identifier);
     }
 
+    @SuppressWarnings("unchecked")
+    static <T extends Item> Function<T, T> _getIdentity() {
+        return (Function<T, T>) _IDENTITY;
+    }
 
 
     /*-------------------below package method-------------------*/
