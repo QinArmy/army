@@ -10,6 +10,7 @@ import io.army.criteria.SubStatement;
  *
  * @since 1.0
  */
+@Deprecated
 public interface SubInsert extends Statement.DmlInsert, SubStatement {
 
     @Deprecated

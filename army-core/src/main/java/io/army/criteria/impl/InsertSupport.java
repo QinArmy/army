@@ -1704,13 +1704,14 @@ abstract class InsertSupport {
     }//AssignmentSetClause
 
 
-    private static abstract class AbstractInsertStatement<I extends Statement.DmlInsert, Q extends Statement.DqlInsert>
+    private static abstract class AbstractInsertStatement<I extends Statement, Q extends Statement>
             extends CriteriaSupports.StatementMockSupport
-            implements _Insert
-            , Statement.StatementMockSpec
-            , Statement
-            , CriteriaContextSpec
-            , Statement._DmlInsertClause<I>, Statement._DqlInsertClause<Q> {
+            implements _Insert,
+            Statement.StatementMockSpec,
+            Statement,
+            CriteriaContextSpec,
+            Statement._DmlInsertClause<I>,
+            Statement._DqlInsertClause<Q> {
 
         final TableMeta<?> insertTable;
 
@@ -1784,7 +1785,7 @@ abstract class InsertSupport {
     }//AbstractInsertStatement
 
 
-    static abstract class AbstractValueSyntaxStatement<I extends Statement.DmlInsert, Q extends Statement.DqlInsert>
+    static abstract class AbstractValueSyntaxStatement<I extends Statement, Q extends Statement>
             extends AbstractInsertStatement<I, Q>
             implements _Insert._ValuesSyntaxInsert {
 
@@ -1919,7 +1920,7 @@ abstract class InsertSupport {
     }//AssignmentInsertStatement
 
 
-    static abstract class AbstractQuerySyntaxInsertStatement<I extends Statement.DmlInsert, Q extends Statement.DqlInsert>
+    static abstract class AbstractQuerySyntaxInsertStatement<I extends Statement, Q extends Statement>
             extends AbstractInsertStatement<I, Q>
             implements _Insert._QueryInsert, ValueSyntaxOptions {
 

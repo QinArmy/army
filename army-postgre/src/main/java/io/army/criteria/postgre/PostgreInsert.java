@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 
 /**
  * <p>
- * This interface representing postgre insert statement.
+ * This interface representing postgre INSERT statement.
  * </p>
  *
  * @see <a href="https://www.postgresql.org/docs/current/sql-insert.html">Postgre INSERT syntax</a>
@@ -32,41 +32,41 @@ public interface PostgreInsert extends PostgreStatement {
     }
 
     interface _StaticReturningCommaSpec<Q extends Item>
-            extends _StaticReturningCommaClause<_StaticReturningCommaSpec<Q>>
-            , _DqlInsertClause<Q> {
+            extends _StaticReturningCommaClause<_StaticReturningCommaSpec<Q>>,
+            _DqlInsertClause<Q> {
 
     }
 
     interface _ReturningSpec<I extends Item, Q extends Item>
-            extends _StaticReturningClause<_StaticReturningCommaSpec<Q>>
-            , _DynamicReturningClause<_DqlInsertClause<Q>>
-            , _DmlInsertClause<I> {
+            extends _StaticReturningClause<_StaticReturningCommaSpec<Q>>,
+            _DynamicReturningClause<_DqlInsertClause<Q>>,
+            _DmlInsertClause<I> {
 
     }
 
 
     interface _DoUpdateWhereAndSpec<I extends Item, Q extends Item>
-            extends UpdateStatement._UpdateWhereAndClause<_DoUpdateWhereAndSpec<I, Q>>
-            , _ReturningSpec<I, Q> {
+            extends UpdateStatement._UpdateWhereAndClause<_DoUpdateWhereAndSpec<I, Q>>,
+            _ReturningSpec<I, Q> {
 
     }
 
     interface _DoUpdateWhereClause<I extends Item, Q extends Item>
-            extends _WhereClause<_ReturningSpec<I, Q>, _DoUpdateWhereAndSpec<I, Q>>
-            , _ReturningSpec<I, Q> {
+            extends _WhereClause<_ReturningSpec<I, Q>, _DoUpdateWhereAndSpec<I, Q>>,
+            _ReturningSpec<I, Q> {
 
     }
 
 
     interface _DoUpdateSetClause<T, I extends Item, Q extends Item>
-            extends UpdateStatement._StaticRowSetClause<FieldMeta<T>, _DoUpdateWhereSpec<T, I, Q>>
-            , UpdateStatement._DynamicSetClause<RowPairs<FieldMeta<T>>, _DoUpdateWhereClause<I, Q>> {
+            extends UpdateStatement._StaticRowSetClause<FieldMeta<T>, _DoUpdateWhereSpec<T, I, Q>>,
+            UpdateStatement._DynamicSetClause<RowPairs<FieldMeta<T>>, _DoUpdateWhereClause<I, Q>> {
 
     }
 
     interface _DoUpdateWhereSpec<T, I extends Item, Q extends Item>
-            extends _DoUpdateWhereClause<I, Q>
-            , _DoUpdateSetClause<T, I, Q> {
+            extends _DoUpdateWhereClause<I, Q>,
+            _DoUpdateSetClause<T, I, Q> {
 
     }
 
@@ -80,14 +80,14 @@ public interface PostgreInsert extends PostgreStatement {
     }
 
     interface _ConflictTargetWhereAndSpec<T, I extends Item, Q extends Item>
-            extends Statement._WhereAndClause<_ConflictTargetWhereAndSpec<T, I, Q>>
-            , _ConflictActionClause<T, I, Q> {
+            extends Statement._WhereAndClause<_ConflictTargetWhereAndSpec<T, I, Q>>,
+            _ConflictActionClause<T, I, Q> {
 
     }
 
     interface _ConflictTargetWhereSpec<T, I extends Item, Q extends Item>
-            extends _ConflictActionClause<T, I, Q>
-            , Statement._WhereClause<_ConflictActionClause<T, I, Q>, _ConflictTargetWhereAndSpec<T, I, Q>> {
+            extends _ConflictActionClause<T, I, Q>,
+            Statement._WhereClause<_ConflictActionClause<T, I, Q>, _ConflictTargetWhereAndSpec<T, I, Q>> {
 
     }
 
@@ -156,17 +156,17 @@ public interface PostgreInsert extends PostgreStatement {
 
 
     interface _ValuesDefaultSpec<T, I extends Item, Q extends Item>
-            extends InsertStatement._ColumnDefaultClause<T, _ValuesDefaultSpec<T, I, Q>>
-            , InsertStatement._DomainValueClause<T, _OnConflictSpec<T, I, Q>>
-            , InsertStatement._DynamicValuesClause<T, _OnConflictSpec<T, I, Q>>
-            , InsertStatement._StaticValuesClause<_ValuesLeftParenClause<T, I, Q>> {
+            extends InsertStatement._ColumnDefaultClause<T, _ValuesDefaultSpec<T, I, Q>>,
+            InsertStatement._DomainValueClause<T, _OnConflictSpec<T, I, Q>>,
+            InsertStatement._DynamicValuesClause<T, _OnConflictSpec<T, I, Q>>,
+            InsertStatement._StaticValuesClause<_ValuesLeftParenClause<T, I, Q>> {
 
     }
 
 
     interface _ComplexColumnDefaultSpec<T, I extends Item, Q extends Item>
-            extends _ValuesDefaultSpec<T, I, Q>
-            , _StaticSpaceClause<PostgreQuery._WithSpec<_OnConflictSpec<T, I, Q>>> {
+            extends _ValuesDefaultSpec<T, I, Q>,
+            _StaticSpaceClause<PostgreQuery._WithSpec<_OnConflictSpec<T, I, Q>>> {
 
     }
 
@@ -195,21 +195,20 @@ public interface PostgreInsert extends PostgreStatement {
 
 
     interface _ColumnListSpec<T, I extends Item, Q extends Item>
-            extends InsertStatement._ColumnListClause<T, _ComplexOverridingValueSpec<T, I, Q>>
-            , _OverridingValueSpec<T, I, Q> {
+            extends InsertStatement._ColumnListClause<T, _ComplexOverridingValueSpec<T, I, Q>>,
+            _OverridingValueSpec<T, I, Q> {
 
     }
 
     interface _TableAliasSpec<T, I extends Item, Q extends Item>
-            extends Statement._AsClause<_ColumnListSpec<T, I, Q>>
-            , _ColumnListSpec<T, I, Q> {
-
+            extends Statement._AsClause<_ColumnListSpec<T, I, Q>>,
+            _ColumnListSpec<T, I, Q> {
 
     }
 
     interface _ChildInsertIntoClause<P> extends Item {
 
-        <T> _TableAliasSpec<T, InsertStatement, ReturningInsert> insertInto(ComplexTableMeta<P, T> table);
+        <T> _TableAliasSpec<T, Insert, ReturningInsert> insertInto(ComplexTableMeta<P, T> table);
 
     }
 
@@ -222,7 +221,7 @@ public interface PostgreInsert extends PostgreStatement {
     }
 
 
-    interface _ParentInsert<P> extends InsertStatement, InsertStatement._ChildPartClause<_ChildWithCteSpec<P>> {
+    interface _ParentInsert<P> extends Insert, InsertStatement._ChildPartClause<_ChildWithCteSpec<P>> {
 
 
     }
@@ -235,9 +234,9 @@ public interface PostgreInsert extends PostgreStatement {
 
     interface _PrimaryInsertIntoClause extends Item {
 
-        <T> _TableAliasSpec<T, InsertStatement, ReturningInsert> insertInto(SimpleTableMeta<T> table);
+        <T> _TableAliasSpec<T, Insert, ReturningInsert> insertInto(SimpleTableMeta<T> table);
 
-        <T> _TableAliasSpec<T, InsertStatement, ReturningInsert> insertInto(ChildTableMeta<T> table);
+        <T> _TableAliasSpec<T, Insert, ReturningInsert> insertInto(ChildTableMeta<T> table);
 
         <P> _TableAliasSpec<P, _ParentInsert<P>, _ParentReturnInsert<P>> insertInto(ParentTableMeta<P> table);
 
@@ -267,6 +266,47 @@ public interface PostgreInsert extends PostgreStatement {
 
     }
 
+
+    /*-------------------below complex insert syntax -------------------*/
+
+    /**
+     * <p>
+     * This interface is used by in multi-statement api.
+     * </p>
+     */
+    interface _ComplexInsertIntoClause<I extends Item> extends Item {
+
+        <T> _TableAliasSpec<T, I, I> insertInto(TableMeta<T> table);
+
+    }
+
+
+    interface _ComplexWithCteSpec<I extends Item>
+            extends _PostgreDynamicWithClause<_ComplexInsertIntoClause<I>>,
+            PostgreQuery._PostgreStaticWithClause<_ComplexInsertIntoClause<I>>,
+            _ComplexInsertIntoClause<I> {
+
+    }
+
+
+    interface _ComplexPreferLiteralSpec<I extends Item>
+            extends InsertStatement._PreferLiteralClause<_ComplexWithCteSpec<I>>,
+            _ComplexWithCteSpec<I> {
+
+    }
+
+    interface _ComplexNullOptionSpec<I extends Item>
+            extends InsertStatement._NullOptionClause<_ComplexPreferLiteralSpec<I>>,
+            _ComplexPreferLiteralSpec<I> {
+
+    }
+
+    interface _ComplexOptionSpec<I extends Item>
+            extends InsertStatement._MigrationOptionClause<_ComplexNullOptionSpec<I>>,
+            _ComplexNullOptionSpec<I> {
+
+    }
+
     /*-------------------below sub insert syntax -------------------*/
 
     interface _CteInsertIntoClause<I extends Item> extends Item {
@@ -283,19 +323,22 @@ public interface PostgreInsert extends PostgreStatement {
 
 
     interface _DynamicSubPreferLiteralSpec<I extends Item>
-            extends InsertStatement._PreferLiteralClause<_DynamicSubWithSpec<I>>, _DynamicSubWithSpec<I> {
+            extends InsertStatement._PreferLiteralClause<_DynamicSubWithSpec<I>>,
+            _DynamicSubWithSpec<I> {
 
     }
 
 
     interface _DynamicSubNullOptionSpec<I extends Item>
-            extends InsertStatement._NullOptionClause<_DynamicSubPreferLiteralSpec<I>>, _DynamicSubPreferLiteralSpec<I> {
+            extends InsertStatement._NullOptionClause<_DynamicSubPreferLiteralSpec<I>>,
+            _DynamicSubPreferLiteralSpec<I> {
 
     }
 
 
     interface _DynamicSubOptionSpec<I extends Item>
-            extends InsertStatement._MigrationOptionClause<_DynamicSubNullOptionSpec<I>>, _DynamicSubNullOptionSpec<I> {
+            extends InsertStatement._MigrationOptionClause<_DynamicSubNullOptionSpec<I>>,
+            _DynamicSubNullOptionSpec<I> {
 
     }
 
@@ -320,7 +363,8 @@ public interface PostgreInsert extends PostgreStatement {
      * </p>
      */
     interface _StaticSubPreferLiteralSpec<I extends Item>
-            extends InsertStatement._PreferLiteralClause<_CteInsertIntoClause<I>>, _CteInsertIntoClause<I> {
+            extends InsertStatement._PreferLiteralClause<_CteInsertIntoClause<I>>,
+            _CteInsertIntoClause<I> {
 
     }
 
@@ -330,7 +374,8 @@ public interface PostgreInsert extends PostgreStatement {
      * </p>
      */
     interface _StaticSubNullOptionSpec<I extends Item>
-            extends InsertStatement._NullOptionClause<_StaticSubPreferLiteralSpec<I>>, _StaticSubPreferLiteralSpec<I> {
+            extends InsertStatement._NullOptionClause<_StaticSubPreferLiteralSpec<I>>,
+            _StaticSubPreferLiteralSpec<I> {
 
     }
 
@@ -340,10 +385,10 @@ public interface PostgreInsert extends PostgreStatement {
      * </p>
      */
     interface _StaticSubOptionSpec<I extends Item>
-            extends InsertStatement._MigrationOptionClause<_StaticSubNullOptionSpec<I>>, _StaticSubNullOptionSpec<I> {
+            extends InsertStatement._MigrationOptionClause<_StaticSubNullOptionSpec<I>>,
+            _StaticSubNullOptionSpec<I> {
 
     }
-
 
 
 }

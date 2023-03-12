@@ -32,7 +32,7 @@ public abstract class Postgres extends PostgreFuncSyntax {
     static final Function<BatchReturningDelete, BatchReturningDelete> _BATCH_RETURNING_DELETE_IDENTITY = SQLs._getIdentity();
 
     public static PostgreInsert._PrimaryOptionSpec singleInsert() {
-        return PostgreInserts.primaryInsert(null);
+        return PostgreInserts.singleInsert();
     }
 
     public static PostgreQuery._WithSpec<Select> query() {
