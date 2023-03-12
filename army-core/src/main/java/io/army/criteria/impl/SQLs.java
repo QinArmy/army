@@ -47,8 +47,10 @@ public abstract class SQLs extends SQLsSyntax {
 
     static final Function<Select, Select> _SELECT_IDENTITY = _getIdentity();
 
-    static final Function<UpdateStatement, UpdateStatement> _UPDATE_IDENTITY = _getIdentity();
+    static final Function<Update, Update> _UPDATE_IDENTITY = _getIdentity();
     static final Function<Delete, Delete> _DELETE_IDENTITY = _getIdentity();
+
+    static final Function<BatchUpdate, BatchUpdate> _BATCH_UPDATE_IDENTITY = _getIdentity();
 
     static final Function<BatchDelete, BatchDelete> _BATCH_DELETE_IDENTITY = _getIdentity();
 

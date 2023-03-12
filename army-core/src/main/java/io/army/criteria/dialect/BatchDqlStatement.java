@@ -9,7 +9,6 @@ import io.army.criteria.DqlStatement;
  * This interface representing batch primary DQL statement that return result set.
  * This interface is base interface of below:
  *     <ul>
- *         <li>{@link BatchReturningInsert}</li>
  *         <li>{@link BatchReturningUpdate}</li>
  *         <li>{@link BatchReturningDelete}</li>
  *     </ul>

@@ -11,7 +11,11 @@ import java.util.function.Supplier;
 
 /**
  * <p>
- * This interface representing INSERT statement.
+ * This interface representing primary INSERT statement.This interface is base interface of below:
+ *     <ul>
+ *         <li>{@link Insert}</li>
+ *         <li>{@link io.army.criteria.dialect.ReturningInsert}</li>
+ *     </ul>
  * </p>
  *
  * @since 1.0

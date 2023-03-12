@@ -2,10 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.BatchDqlStatement;
-import io.army.criteria.dialect.ReturningDelete;
-import io.army.criteria.dialect.ReturningUpdate;
-import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.dialect.*;
 import io.army.criteria.postgre.*;
 
 import java.util.function.Function;
@@ -26,11 +23,13 @@ public abstract class Postgres extends PostgreFuncSyntax {
     private Postgres() {
     }
 
+    static final Function<ReturningUpdate, ReturningUpdate> _RETURNING_UPDATE_IDENTITY = SQLs._getIdentity();
 
     static final Function<ReturningDelete, ReturningDelete> _RETURNING_DELETE_IDENTITY = SQLs._getIdentity();
 
-    static final Function<BatchDqlStatement, BatchDqlStatement> _BATCH_RETURNING_IDENTITY = SQLs._getIdentity();
+    static final Function<BatchReturningUpdate, BatchReturningUpdate> _BATCH_RETURNING_UPDATE_IDENTITY = SQLs._getIdentity();
 
+    static final Function<BatchReturningDelete, BatchReturningDelete> _BATCH_RETURNING_DELETE_IDENTITY = SQLs._getIdentity();
 
     public static PostgreInsert._PrimaryOptionSpec singleInsert() {
         return PostgreInserts.primaryInsert(null);
@@ -50,12 +49,12 @@ public abstract class Postgres extends PostgreFuncSyntax {
         return PostgreQueries.subQuery(null, ContextStack.peek(), Expressions::scalarExpression, null);
     }
 
-    public static PostgreUpdate._SingleWithSpec<UpdateStatement, ReturningUpdate> singleUpdate() {
-        return PostgreUpdates.simple(null, SQLs::_identity, SQLs::_identity);
+    public static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> singleUpdate() {
+        return PostgreUpdates.simple(SQLs._UPDATE_IDENTITY, _RETURNING_UPDATE_IDENTITY);
     }
 
-    public static PostgreUpdate._BatchSingleWithSpec<UpdateStatement, ReturningUpdate> batchSingleUpdate() {
-        return PostgreUpdates.batch(SQLs::_identity, SQLs::_identity);
+    public static PostgreUpdate._BatchSingleWithSpec<BatchUpdate, BatchReturningUpdate> batchSingleUpdate() {
+        return PostgreUpdates.batch(SQLs._BATCH_UPDATE_IDENTITY, _BATCH_RETURNING_UPDATE_IDENTITY);
     }
 
 
@@ -63,8 +62,8 @@ public abstract class Postgres extends PostgreFuncSyntax {
         return PostgreDeletes.simple(SQLs._DELETE_IDENTITY, _RETURNING_DELETE_IDENTITY);
     }
 
-    public static PostgreDelete._BatchSingleWithSpec<BatchDelete, BatchDqlStatement> batchSingleDelete() {
-        return PostgreDeletes.batch(SQLs._BATCH_DELETE_IDENTITY, _BATCH_RETURNING_IDENTITY);
+    public static PostgreDelete._BatchSingleWithSpec<BatchDelete, BatchReturningDelete> batchSingleDelete() {
+        return PostgreDeletes.batch(SQLs._BATCH_DELETE_IDENTITY, _BATCH_RETURNING_DELETE_IDENTITY);
     }
 
     public static PostgreValues._WithSpec<Values> primaryValues() {

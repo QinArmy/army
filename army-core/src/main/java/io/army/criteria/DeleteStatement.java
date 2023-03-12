@@ -11,12 +11,14 @@ import io.army.meta.SingleTableMeta;
  *     <ul>
  *         <li>{@link Delete}</li>
  *         <li>{@link BatchDelete}</li>
+ *         <li>{@link io.army.criteria.dialect.ReturningDelete}</li>
+ *         <li>{@link io.army.criteria.dialect.BatchReturningDelete}</li>
  *     </ul>
  * </p>
  *
  * @since 1.0
  */
-public interface DeleteStatement extends NarrowDmlStatement, DmlStatement.DmlDelete, PrimaryStatement {
+public interface DeleteStatement extends DmlStatement {
 
 
     @Deprecated

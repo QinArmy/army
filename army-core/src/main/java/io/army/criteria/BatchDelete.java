@@ -1,5 +1,13 @@
 package io.army.criteria;
 
-public interface BatchDelete extends DeleteStatement, BatchDmlStatement, DmlStatement.DmlDelete {
+/**
+ * <p>
+ * This interface representing batch primary DELETE statement that don't return result set.
+ * </p>
+ *
+ * @see BatchUpdate
+ * @since 1.0
+ */
+public interface BatchDelete extends DeleteStatement, BatchDmlStatement {
 
 }

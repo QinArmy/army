@@ -1303,6 +1303,7 @@ public interface Statement extends Item {
      *
      * @since 1.0
      */
+    @Deprecated
     interface DmlDelete {
 
 

@@ -1,7 +1,6 @@
 package io.army.criteria;
 
 
-import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.criteria.dialect.SubQuery;
 import io.army.function.ExpressionOperator;
 import io.army.lang.Nullable;
@@ -16,15 +15,15 @@ import java.util.function.Supplier;
  * This interface representing primary update statement.This interface is base interface of below:
  *     <ul>
  *         <li>{@link Update}</li>
- *         <li>{@link io.army.criteria.dialect.ReturningUpdate}</li>
  *         <li>{@link BatchUpdate}</li>
- *         <li>The batch update statement class thant support RETURNING clause and implements {@link  BatchDqlStatement},for example, Postgre batch update with RETURNING clause</li>
+ *         <li>{@link io.army.criteria.dialect.ReturningUpdate}</li>
+ *         <li>{@link io.army.criteria.dialect.BatchReturningUpdate}</li>
  *     </ul>
  * </p>
  *
  * @since 1.0
  */
-public interface UpdateStatement extends NarrowDmlStatement, DmlStatement.DmlUpdate {
+public interface UpdateStatement extends DmlStatement {
 
     @Deprecated
     interface _UpdateSpec extends DmlStatement._DmlUpdateSpec<UpdateStatement> {
