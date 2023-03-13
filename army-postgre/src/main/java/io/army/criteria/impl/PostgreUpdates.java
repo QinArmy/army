@@ -40,24 +40,43 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         DialectStatement._WhereCurrentOfClause<WR> {
 
 
-    static <I extends Item, Q extends Item> PostgreUpdate._SingleWithSpec<I, Q> simple(
-            Function<Update, I> dmlFunction, Function<ReturningUpdate, Q> dqlFunction) {
-        return new PrimarySimpleUpdateClause<>(dmlFunction, dqlFunction);
+    /**
+     * <p>
+     * create new simple(non-batch) single-table UPDATE statement that is primary statement.
+     * </p>
+     */
+    static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> simple() {
+        return new PrimarySimpleUpdateClause();
     }
 
-    static <I extends Item> PostgreUpdate._SingleUpdateClause<I, I> simpleForMultiStmt(
-            _WithClauseSpec spec, Function<PrimaryStatement, I> function) {
+
+    /**
+     * <p>
+     * create new simple(non-batch) single-table UPDATE statement that is primary statement for multi-statement.
+     * </p>
+     */
+    static <I extends Item> PostgreUpdate._SingleUpdateClause<I, I> simple(
+            MultiStmtSpec spec, Function<PrimaryStatement, I> function) {
         return new PrimarySimpleUpdateClauseForMultiStmt<>(spec, function);
     }
 
-    static <I extends Item> PostgreUpdate._SingleWithSpec<I, I> subSimple(CriteriaContext outerContext,
+    /**
+     * <p>
+     * create new simple(non-batch) single-table UPDATE statement that is sub statement in with clause.
+     * </p>
+     */
+    static <I extends Item> PostgreUpdate._SingleWithSpec<I, I> cteSimple(CriteriaContext outerContext,
                                                                           Function<SubStatement, I> function) {
         return new SubSimpleUpdateClause<>(outerContext, function);
     }
 
-    static <I extends Item, Q extends Item> PostgreUpdate._BatchSingleWithSpec<I, Q> batch(
-            Function<BatchUpdate, I> dmlFunction, Function<BatchReturningUpdate, Q> dqlFunction) {
-        return new BatchUpdateClause<>(dmlFunction, dqlFunction);
+    /**
+     * <p>
+     * create new batch single-table UPDATE statement that is primary statement.
+     * </p>
+     */
+    static PostgreUpdate._BatchSingleWithSpec<BatchUpdate, BatchReturningUpdate> batch() {
+        return new BatchUpdateClause();
     }
 
 
@@ -324,7 +343,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     @Override
     final void onStatementEnd() {
         final Object thisStmt = this;
-        if (thisStmt instanceof PostgreUpdates.PostgreBatchUpdate && ((PostgreBatchUpdate<?, ?, ?>) thisStmt).paramList == null) {
+        if (thisStmt instanceof PostgreUpdates.PrimaryBatchUpdate && ((PrimaryBatchUpdate<?>) thisStmt).paramList == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
 
@@ -333,8 +352,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     @Override
     final void onClear() {
         final Object thisStmt = this;
-        if (thisStmt instanceof PostgreUpdates.PostgreBatchUpdate) {
-            ((PostgreBatchUpdate<?, ?, ?>) thisStmt).paramList = null;
+        if (thisStmt instanceof PostgreUpdates.PrimaryBatchUpdate) {
+            ((PrimaryBatchUpdate<?>) thisStmt).paramList = null;
         }
     }
 
@@ -582,7 +601,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
 
         @Override
-        public final List<Selection> returningList() {
+        public final List<? extends Selection> returningList() {
             // use wrapper,never here
             throw new UnsupportedOperationException();
         }
@@ -669,28 +688,22 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
     }//SimpleUpdate
 
-    private static final class PrimarySimpleUpdate<I extends Item, Q extends Item, T>
-            extends SimpleUpdate<I, Q, T>
+    private static final class PrimarySimpleUpdate<T>
+            extends SimpleUpdate<Update, ReturningUpdate, T>
             implements Update {
 
-        private final Function<Update, I> dmlFunction;
-
-        private final Function<ReturningUpdate, Q> dqlFunction;
-
-        private PrimarySimpleUpdate(PrimarySimpleUpdateClause<I, Q> clause) {
+        private PrimarySimpleUpdate(PrimarySimpleUpdateClause clause) {
             super(clause);
-            this.dmlFunction = clause.dmlFunction;
-            this.dqlFunction = clause.dqlFunction;
         }
 
         @Override
-        I onAsPostgreUpdate() {
-            return this.dmlFunction.apply(this);
+        Update onAsPostgreUpdate() {
+            return this;
         }
 
         @Override
-        Q onAsReturningUpdate() {
-            return this.dqlFunction.apply(new ReturningUpdateWrapper(this));
+        ReturningUpdate onAsReturningUpdate() {
+            return new ReturningUpdateWrapper(this);
         }
 
     }//PrimarySimpleUpdate
@@ -701,6 +714,9 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
         private final Function<PrimaryStatement, I> function;
 
+        /**
+         * @see #simple(MultiStmtSpec, Function)
+         */
         private PrimarySimpleUpdateForMultiStmt(PrimarySimpleUpdateClauseForMultiStmt<I> clause) {
             super(clause);
             this.function = clause.function;
@@ -743,121 +759,117 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     }//SubSimpleUpdate
 
 
-    private static final class PostgreBatchUpdate<I extends Item, Q extends Item, T>
+    private static final class PrimaryBatchUpdate<T>
             extends PostgreUpdates<
-            I,
+            BatchUpdate,
             T,
-            PostgreUpdate._BatchSingleSetFromSpec<I, Q, T>,
-            PostgreUpdate._BatchTableSampleJoinSpec<I, Q>,
-            Statement._AsClause<PostgreUpdate._BatchParensJoinSpec<I, Q>>,
-            PostgreUpdate._BatchSingleJoinSpec<I, Q>,
-            PostgreUpdate._BatchTableSampleOnSpec<I, Q>,
-            Statement._AsParensOnClause<PostgreUpdate._BatchSingleJoinSpec<I, Q>>,
-            Statement._OnClause<PostgreUpdate._BatchSingleJoinSpec<I, Q>>,
-            PostgreUpdate._BatchRepeatableJoinClause<I, Q>,
-            PostgreUpdate._BatchReturningSpec<I, Q>,
-            PostgreUpdate._BatchSingleWhereAndSpec<I, Q>>
-            implements _BatchSingleSetFromSpec<I, Q, T>,
-            PostgreUpdate._BatchTableSampleJoinSpec<I, Q>,
-            PostgreUpdate._BatchRepeatableJoinClause<I, Q>,
-            PostgreUpdate._BatchParensJoinSpec<I, Q>,
-            PostgreUpdate._BatchSingleWhereAndSpec<I, Q>,
-            _DqlUpdateSpec<Q>,
+            PostgreUpdate._BatchSingleSetFromSpec<BatchUpdate, BatchReturningUpdate, T>,
+            PostgreUpdate._BatchTableSampleJoinSpec<BatchUpdate, BatchReturningUpdate>,
+            Statement._AsClause<PostgreUpdate._BatchParensJoinSpec<BatchUpdate, BatchReturningUpdate>>,
+            PostgreUpdate._BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>,
+            PostgreUpdate._BatchTableSampleOnSpec<BatchUpdate, BatchReturningUpdate>,
+            Statement._AsParensOnClause<PostgreUpdate._BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>>,
+            Statement._OnClause<PostgreUpdate._BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>>,
+            PostgreUpdate._BatchRepeatableJoinClause<BatchUpdate, BatchReturningUpdate>,
+            PostgreUpdate._BatchReturningSpec<BatchUpdate, BatchReturningUpdate>,
+            PostgreUpdate._BatchSingleWhereAndSpec<BatchUpdate, BatchReturningUpdate>>
+            implements _BatchSingleSetFromSpec<BatchUpdate, BatchReturningUpdate, T>,
+            PostgreUpdate._BatchTableSampleJoinSpec<BatchUpdate, BatchReturningUpdate>,
+            PostgreUpdate._BatchRepeatableJoinClause<BatchUpdate, BatchReturningUpdate>,
+            PostgreUpdate._BatchParensJoinSpec<BatchUpdate, BatchReturningUpdate>,
+            PostgreUpdate._BatchSingleWhereAndSpec<BatchUpdate, BatchReturningUpdate>,
+            _DqlUpdateSpec<BatchReturningUpdate>,
             BatchUpdate,
             _BatchDml {
 
-        private final Function<BatchUpdate, I> dmlFunction;
-
-        private final Function<BatchReturningUpdate, Q> dqlFunction;
 
         private List<Selection> returningList;
         private List<?> paramList;
 
-        private PostgreBatchUpdate(BatchUpdateClause<I, Q> clause) {
+        private PrimaryBatchUpdate(BatchUpdateClause clause) {
             super(clause);
-            this.dmlFunction = clause.dmlFunction;
-            this.dqlFunction = clause.dqlFunction;
 
         }
 
         @Override
-        public _BatchSingleFromClause<I, Q> sets(Consumer<BatchRowPairs<FieldMeta<T>>> consumer) {
+        public _BatchSingleFromClause<BatchUpdate, BatchReturningUpdate> sets(Consumer<BatchRowPairs<FieldMeta<T>>> consumer) {
             consumer.accept(CriteriaSupports.batchRowPairs(this::onAddItemPair));
             return this;
         }
+
         @Override
-        public _BatchParamClause<_DqlUpdateSpec<Q>> returningAll() {
+        public _BatchParamClause<_DqlUpdateSpec<BatchReturningUpdate>> returningAll() {
             this.returningList = PostgreSupports.EMPTY_SELECTION_LIST;
-            return new BatchParamClause<>(this);
+            return new BatchParamClause(this);
         }
 
         @Override
-        public _BatchParamClause<_DqlUpdateSpec<Q>> returning(Consumer<Returnings> consumer) {
+        public _BatchParamClause<_DqlUpdateSpec<BatchReturningUpdate>> returning(Consumer<Returnings> consumer) {
             this.returningList = CriteriaUtils.selectionList(this.context, consumer);
-            return new BatchParamClause<>(this);
+            return new BatchParamClause(this);
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> returning(Selection selection) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(Selection selection) {
             this.onAddSelection(selection);
-            return new BatchParamClause<>(this);
+            return new BatchParamClause(this);
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> returning(Selection selection1, Selection selection2) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(Selection selection1, Selection selection2) {
             this.onAddSelection(selection1)
                     .add(selection2);
-            return new BatchParamClause<>(this);
+            return new BatchParamClause(this);
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(Function<String, Selection> function, String alias) {
             this.onAddSelection(function.apply(alias));
-            return new BatchParamClause<>(this);
+            return new BatchParamClause(this);
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> returning(Function<String, Selection> function1, String alias1,
-                                                           Function<String, Selection> function2, String alias2) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(Function<String, Selection> function1, String alias1,
+                                                                              Function<String, Selection> function2, String alias2) {
             this.onAddSelection(function1.apply(alias1))
                     .add(function2.apply(alias2));
-            return new BatchParamClause<>(this);
+            return new BatchParamClause(this);
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias,
-                                                           Selection selection) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(Function<String, Selection> function, String alias,
+                                                                              Selection selection) {
             this.onAddSelection(function.apply(alias))
                     .add(selection);
-            return new BatchParamClause<>(this);
+            return new BatchParamClause(this);
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> returning(Selection selection, Function<String, Selection> function,
-                                                           String alias) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(Selection selection, Function<String, Selection> function,
+                                                                              String alias) {
             this.onAddSelection(selection)
                     .add(function.apply(alias));
-            return new BatchParamClause<>(this);
+            return new BatchParamClause(this);
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(TableField field1, TableField field2, TableField field3) {
             final List<Selection> list;
             list = this.onAddSelection(field1);
             list.add(field2);
             list.add(field3);
-            return new BatchParamClause<>(this);
+            return new BatchParamClause(this);
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3,
-                                                           TableField field4) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(TableField field1, TableField field2, TableField field3,
+                                                                              TableField field4) {
             final List<Selection> list;
             list = this.onAddSelection(field1);
             list.add(field2);
             list.add(field3);
             list.add(field4);
-            return new BatchParamClause<>(this);
+            return new BatchParamClause(this);
         }
 
         @Override
@@ -867,19 +879,19 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public <P> _DmlUpdateSpec<I> paramList(List<P> paramList) {
+        public <P> _DmlUpdateSpec<BatchUpdate> paramList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
         }
 
         @Override
-        public <P> _DmlUpdateSpec<I> paramList(Supplier<List<P>> supplier) {
+        public <P> _DmlUpdateSpec<BatchUpdate> paramList(Supplier<List<P>> supplier) {
             this.paramList = CriteriaUtils.paramList(this.context, supplier.get());
             return this;
         }
 
         @Override
-        public _DmlUpdateSpec<I> paramList(Function<String, ?> function, String keyName) {
+        public _DmlUpdateSpec<BatchUpdate> paramList(Function<String, ?> function, String keyName) {
             this.paramList = CriteriaUtils.paramList(this.context, (List<?>) function.apply(keyName));
             return this;
         }
@@ -894,29 +906,29 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public Q asReturningUpdate() {
+        public BatchReturningUpdate asReturningUpdate() {
             final List<Selection> returningList = this.returningList;
             if (!(returningList instanceof ArrayList) || this.paramList == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.endUpdateStatement();
             this.returningList = _CollectionUtils.unmodifiableList(returningList);
-            return this.dqlFunction.apply(new BatchReturningUpdateWrapper(this));
+            return new BatchReturningUpdateWrapper(this);
         }
 
         @Override
-        I onAsUpdate() {
+        final BatchUpdate onAsUpdate() {
             if (this.returningList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.returningList = Collections.emptyList();
-            return this.dmlFunction.apply(this);
+            return this;
         }
 
 
         @Override
-        _AsClause<_BatchParensJoinSpec<I, Q>> onFromDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
-                                                            DerivedTable table) {
+        _AsClause<_BatchParensJoinSpec<BatchUpdate, BatchReturningUpdate>> onFromDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
+                                                                                         DerivedTable table) {
             return alias -> {
                 final TableBlock.ParensDerivedJoinBlock block;
                 block = new TableBlock.ParensDerivedJoinBlock(joinType, modifier, table, alias);
@@ -928,20 +940,20 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
 
         @Override
-        _BatchTableSampleOnSpec<I, Q> onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
-                                                  TableMeta<?> table, String alias) {
-            final BatchTableBlock<I, Q> block;
+        _BatchTableSampleOnSpec<BatchUpdate, BatchReturningUpdate> onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
+                                                                               TableMeta<?> table, String alias) {
+            final BatchTableBlock<BatchUpdate, BatchReturningUpdate> block;
             block = new BatchTableBlock<>(joinType, modifier, table, alias, this);
             this.blockConsumer.accept(block);
             return block;
         }
 
         @Override
-        _AsParensOnClause<_BatchSingleJoinSpec<I, Q>> onJoinDerived(_JoinType joinType,
-                                                                    @Nullable Query.DerivedModifier modifier,
-                                                                    DerivedTable table) {
+        _AsParensOnClause<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> onJoinDerived(_JoinType joinType,
+                                                                                                 @Nullable Query.DerivedModifier modifier,
+                                                                                                 DerivedTable table) {
             return alias -> {
-                final OnClauseTableBlock.OnModifierParensBlock<_BatchSingleJoinSpec<I, Q>> block;
+                final OnClauseTableBlock.OnModifierParensBlock<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> block;
                 block = new OnClauseTableBlock.OnModifierParensBlock<>(joinType, modifier, table, alias, this);
                 this.blockConsumer.accept(block);
                 return block;
@@ -949,14 +961,13 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        _OnClause<_BatchSingleJoinSpec<I, Q>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
-                                                        CteItem cteItem, String alias) {
-            final OnClauseTableBlock<_BatchSingleJoinSpec<I, Q>> block;
+        _OnClause<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
+                                                                                     CteItem cteItem, String alias) {
+            final OnClauseTableBlock<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> block;
             block = new OnClauseTableBlock<>(joinType, cteItem, alias, this);
             this.blockConsumer.accept(block);
             return block;
         }
-
 
 
         private List<Selection> onAddSelection(Selection selection) {
@@ -971,63 +982,63 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             return list;
         }
 
-    }//PostgreBatchUpdate
+    }//PrimaryBatchUpdate
 
 
-    private static final class BatchParamClause<Q extends Item>
-            implements _BatchStaticReturningCommaSpec<Q> {
+    private static final class BatchParamClause
+            implements _BatchStaticReturningCommaSpec<BatchReturningUpdate> {
 
-        private final PostgreBatchUpdate<?, Q, ?> statement;
+        private final PrimaryBatchUpdate<?> statement;
 
-        private BatchParamClause(PostgreBatchUpdate<?, Q, ?> statement) {
+        private BatchParamClause(PrimaryBatchUpdate<?> statement) {
             this.statement = statement;
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> comma(Selection selection) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(Selection selection) {
             this.statement.onAddSelection(selection);
             return this;
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> comma(Selection selection1, Selection selection2) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(Selection selection1, Selection selection2) {
             this.statement.onAddSelection(selection1)
                     .add(selection2);
             return this;
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> comma(Function<String, Selection> function, String alias) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(Function<String, Selection> function, String alias) {
             this.statement.onAddSelection(function.apply(alias));
             return this;
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> comma(Function<String, Selection> function1, String alias1,
-                                                       Function<String, Selection> function2, String alias2) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(Function<String, Selection> function1, String alias1,
+                                                                          Function<String, Selection> function2, String alias2) {
             this.statement.onAddSelection(function1.apply(alias1))
                     .add(function2.apply(alias2));
             return this;
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> comma(Function<String, Selection> function, String alias,
-                                                       Selection selection) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(Function<String, Selection> function, String alias,
+                                                                          Selection selection) {
             this.statement.onAddSelection(function.apply(alias))
                     .add(selection);
             return this;
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> comma(Selection selection, Function<String, Selection> function,
-                                                       String alias) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(Selection selection, Function<String, Selection> function,
+                                                                          String alias) {
             this.statement.onAddSelection(selection)
                     .add(function.apply(alias));
             return this;
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(TableField field1, TableField field2, TableField field3) {
             final List<Selection> list;
             list = this.statement.onAddSelection(field1);
             list.add(field2);
@@ -1036,8 +1047,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3,
-                                                       TableField field4) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(TableField field1, TableField field2, TableField field3,
+                                                                          TableField field4) {
             final List<Selection> list;
             list = this.statement.onAddSelection(field1);
             list.add(field2);
@@ -1047,19 +1058,19 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public <P> _DqlUpdateSpec<Q> paramList(List<P> paramList) {
+        public <P> _DqlUpdateSpec<BatchReturningUpdate> paramList(List<P> paramList) {
             this.statement.paramList(paramList);
             return this.statement;
         }
 
         @Override
-        public <P> _DqlUpdateSpec<Q> paramList(Supplier<List<P>> supplier) {
+        public <P> _DqlUpdateSpec<BatchReturningUpdate> paramList(Supplier<List<P>> supplier) {
             this.statement.paramList(supplier.get());
             return this.statement;
         }
 
         @Override
-        public _DqlUpdateSpec<Q> paramList(Function<String, ?> function, String keyName) {
+        public _DqlUpdateSpec<BatchReturningUpdate> paramList(Function<String, ?> function, String keyName) {
             this.statement.paramList((List<?>) function.apply(keyName));
             return this.statement;
         }
@@ -1114,22 +1125,18 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
     }//SimpleUpdateClause
 
-    private static final class PrimarySimpleUpdateClause<I extends Item, Q extends Item>
-            extends SimpleUpdateClause<I, Q> {
+    private static final class PrimarySimpleUpdateClause
+            extends SimpleUpdateClause<Update, ReturningUpdate> {
 
-        private final Function<Update, I> dmlFunction;
 
-        private final Function<ReturningUpdate, Q> dqlFunction;
+        private PrimarySimpleUpdateClause() {
+            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(null));
 
-        private PrimarySimpleUpdateClause(Function<Update, I> dmlFunction,
-                                          Function<ReturningUpdate, Q> dqlFunction) {
-            super(null, CriteriaContexts.joinableSingleDmlContext(null));
-            this.dmlFunction = dmlFunction;
-            this.dqlFunction = dqlFunction;
         }
 
         @Override
-        public <T> _SingleSetClause<I, Q, T> update(TableMeta<T> table, SQLs.WordAs as, String tableAlias) {
+        public <T> _SingleSetClause<Update, ReturningUpdate, T> update(TableMeta<T> table, SQLs.WordAs as,
+                                                                       String tableAlias) {
             this.modifier = null;
             this.updateTable = table;
             this.tableAlias = tableAlias;
@@ -1137,8 +1144,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public <T> _SingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table, SQLs.WordAs as,
-                                                    String tableAlias) {
+        public <T> _SingleSetClause<Update, ReturningUpdate, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table,
+                                                                       SQLs.WordAs as, String tableAlias) {
             this.modifier = only;
             this.updateTable = table;
             this.tableAlias = tableAlias;
@@ -1152,8 +1159,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
         private final Function<PrimaryStatement, I> function;
 
-        private PrimarySimpleUpdateClauseForMultiStmt(_WithClauseSpec spec, Function<PrimaryStatement, I> function) {
-            super(spec, CriteriaContexts.joinableSingleDmlContext(null));
+        private PrimarySimpleUpdateClauseForMultiStmt(MultiStmtSpec spec, Function<PrimaryStatement, I> function) {
+            super(spec, CriteriaContexts.primaryJoinableSingleDmlContext(spec));
             this.function = function;
         }
 
@@ -1183,7 +1190,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         private final Function<SubStatement, I> function;
 
         private SubSimpleUpdateClause(CriteriaContext outerContext, Function<SubStatement, I> function) {
-            super(null, CriteriaContexts.joinableSingleDmlContext(outerContext));
+            super(null, CriteriaContexts.subJoinableSingleDmlContext(outerContext));
             this.function = function;
         }
 
@@ -1209,50 +1216,40 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     } //SubSimpleUpdateClause
 
 
-    private static final class BatchUpdateClause<I extends Item, Q extends Item>
-            extends PostgreUpdateClause<PostgreUpdate._BatchSingleUpdateClause<I, Q>>
-            implements PostgreUpdate._BatchSingleWithSpec<I, Q> {
+    private static final class BatchUpdateClause
+            extends PostgreUpdateClause<PostgreUpdate._BatchSingleUpdateClause<BatchUpdate, BatchReturningUpdate>>
+            implements PostgreUpdate._BatchSingleWithSpec<BatchUpdate, BatchReturningUpdate> {
 
-        private final Function<BatchUpdate, I> dmlFunction;
-
-        private final Function<BatchReturningUpdate, Q> dqlFunction;
-
-        private BatchUpdateClause(Function<BatchUpdate, I> dmlFunction, Function<BatchReturningUpdate, Q> dqlFunction) {
-            super(null, CriteriaContexts.joinableSingleDmlContext(null));
-            this.dmlFunction = dmlFunction;
-            this.dqlFunction = dqlFunction;
+        private BatchUpdateClause() {
+            super(null, CriteriaContexts.subJoinableSingleDmlContext(null));
         }
 
         @Override
-        public PostgreQuery._StaticCteParensSpec<_BatchSingleUpdateClause<I, Q>> with(String name) {
+        public PostgreQuery._StaticCteParensSpec<_BatchSingleUpdateClause<BatchUpdate, BatchReturningUpdate>> with(String name) {
             return PostgreQueries.complexCte(this.context, false, this::endStaticWithClause)
                     .comma(name);
         }
 
         @Override
-        public PostgreQuery._StaticCteParensSpec<_BatchSingleUpdateClause<I, Q>> withRecursive(String name) {
+        public PostgreQuery._StaticCteParensSpec<_BatchSingleUpdateClause<BatchUpdate, BatchReturningUpdate>> withRecursive(String name) {
             return PostgreQueries.complexCte(this.context, true, this::endStaticWithClause)
                     .comma(name);
         }
 
         @Override
-        public <T> _BatchSingleSetClause<I, Q, T> update(TableMeta<T> table, SQLs.WordAs wordAs, String tableAlias) {
-            assert wordAs == SQLs.AS;
+        public <T> _BatchSingleSetClause<BatchUpdate, BatchReturningUpdate, T> update(TableMeta<T> table, SQLs.WordAs as, String tableAlias) {
             this.updateTable = table;
             this.tableAlias = tableAlias;
-            return new PostgreBatchUpdate<>(this);
+            return new PrimaryBatchUpdate<>(this);
         }
 
         @Override
-        public <T> _BatchSingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table, SQLs.WordAs as,
-                                                         String tableAlias) {
-            if (only != null && only != SQLs.ONLY) {
-                throw CriteriaUtils.errorModifier(this.context, only);
-            }
+        public <T> _BatchSingleSetClause<BatchUpdate, BatchReturningUpdate, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table,
+                                                                                      SQLs.WordAs as, String tableAlias) {
             this.modifier = only;
             this.updateTable = table;
             this.tableAlias = tableAlias;
-            return new PostgreBatchUpdate<>(this);
+            return new PrimaryBatchUpdate<>(this);
         }
 
 
@@ -1290,8 +1287,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     }//BatchTableBlock
 
 
-    private static abstract class PostgreUpdateWrapper extends CriteriaSupports.StatementMockSupport
-            implements PostgreUpdate, _PostgreUpdate {
+    private static abstract class PostgreReturningUpdateWrapper extends CriteriaSupports.StatementMockSupport
+            implements PostgreUpdate, _PostgreUpdate, _ReturningDml {
 
         private final boolean recursive;
 
@@ -1309,11 +1306,11 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
         private final List<_Predicate> wherePredicateList;
 
-        private final List<Selection> returningList;
+        private final List<? extends Selection> returningList;
 
         private Boolean prepared = Boolean.TRUE;
 
-        private PostgreUpdateWrapper(PostgreUpdates<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> stmt) {
+        private PostgreReturningUpdateWrapper(PostgreUpdates<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> stmt) {
             super(stmt.context);
             this.recursive = stmt.recursive;
             this.cteList = stmt.cteList;
@@ -1393,7 +1390,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public final List<Selection> returningList() {
+        public final List<? extends Selection> returningList() {
             return this.returningList;
         }
 
@@ -1401,10 +1398,10 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     }//PostgreUpdateWrapper
 
 
-    private static final class ReturningUpdateWrapper extends PostgreUpdateWrapper
+    private static final class ReturningUpdateWrapper extends PostgreReturningUpdateWrapper
             implements ReturningUpdate {
 
-        private ReturningUpdateWrapper(PrimarySimpleUpdate<?, ?, ?> stmt) {
+        private ReturningUpdateWrapper(PrimarySimpleUpdate<?> stmt) {
             super(stmt);
         }
 
@@ -1414,12 +1411,12 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
     }//ReturningUpdateWrapper
 
-    private static final class BatchReturningUpdateWrapper extends PostgreUpdateWrapper
+    private static final class BatchReturningUpdateWrapper extends PostgreReturningUpdateWrapper
             implements BatchReturningUpdate, _BatchDml {
 
         private final List<?> paramList;
 
-        private BatchReturningUpdateWrapper(PostgreBatchUpdate<?, ?, ?> stmt) {
+        private BatchReturningUpdateWrapper(PrimaryBatchUpdate<?> stmt) {
             super(stmt);
             this.paramList = stmt.paramList;
         }

@@ -45,25 +45,20 @@ abstract class CriteriaContexts {
     }
 
     static CriteriaContext primaryQuery(final @Nullable _Statement._WithClauseSpec spec,
-                                        final @Nullable CriteriaContext outerContext,
+                                        final @Nullable CriteriaContext outerBracketContext,
                                         final @Nullable CriteriaContext leftContext) {
-        assert leftContext == null || leftContext.getOuterContext() == outerContext;
+        assert leftContext == null || leftContext.getOuterContext() == outerBracketContext;
         final StatementContext context;
-        context = new SelectContext(outerContext, leftContext);
+        context = new SelectContext(outerBracketContext, leftContext);
         if (spec != null) {
             final WithCteContext withClauseContext;
-            withClauseContext = ((StatementContext) ((CriteriaContextSpec) spec).getContext()).withCteContext;
+            withClauseContext = ((StatementContext) spec.getContext()).withCteContext;
             assert withClauseContext != null;
             context.withCteContext = withClauseContext;
         }
         return context;
     }
 
-    static void setAliasEventFunction(CriteriaContext queryContext, Function<TypeInfer, ? extends Item> function) {
-        assert queryContext instanceof SimpleQueryContext;
-        assert ((JoinableContext) queryContext).function == SQLs._IDENTITY;
-        ((JoinableContext) queryContext).function = function;
-    }
 
     @Deprecated
 
@@ -176,7 +171,21 @@ abstract class CriteriaContexts {
         return new SingleDmlContext(null);
     }
 
-    static CriteriaContext joinableSingleDmlContext(@Nullable CriteriaContext outerContext) {
+    /**
+     * <p>
+     * For Example ,Postgre update/delete criteria context
+     * </p>
+     */
+    static CriteriaContext subJoinableSingleDmlContext(@Nullable CriteriaContext outerContext) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * <p>
+     * For Example , Postgre update/delete criteria context
+     * </p>
+     */
+    static CriteriaContext primaryJoinableSingleDmlContext(@Nullable MultiStmtSpec spec) {
         throw new UnsupportedOperationException();
     }
 

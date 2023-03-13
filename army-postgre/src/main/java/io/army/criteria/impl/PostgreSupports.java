@@ -347,7 +347,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public PostgreDelete._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>> as() {
-            return PostgreDeletes.dynamicCteDelete(this.cteBuilder.context, this::subStmtEnd);
+            return PostgreDeletes.cteSimple(this.cteBuilder.context, this::subStmtEnd);
         }
 
     }//PostgreDynamicDeleteLeftParenClause

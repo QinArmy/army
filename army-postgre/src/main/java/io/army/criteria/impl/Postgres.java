@@ -49,21 +49,40 @@ public abstract class Postgres extends PostgreFuncSyntax {
         return PostgreQueries.subQuery(null, ContextStack.peek(), Expressions::scalarExpression, null);
     }
 
+    /**
+     * <p>
+     * create new simple(non-batch) single-table UPDATE statement that is primary statement.
+     * </p>
+     */
     public static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> singleUpdate() {
-        return PostgreUpdates.simple(SQLs._UPDATE_IDENTITY, _RETURNING_UPDATE_IDENTITY);
+        return PostgreUpdates.simple();
     }
 
+    /**
+     * <p>
+     * create new batch single-table UPDATE statement that is primary statement.
+     * </p>
+     */
     public static PostgreUpdate._BatchSingleWithSpec<BatchUpdate, BatchReturningUpdate> batchSingleUpdate() {
-        return PostgreUpdates.batch(SQLs._BATCH_UPDATE_IDENTITY, _BATCH_RETURNING_UPDATE_IDENTITY);
+        return PostgreUpdates.batch();
     }
 
-
+    /**
+     * <p>
+     * create new simple(non-batch) single-table DELETE statement that is primary statement.
+     * </p>
+     */
     public static PostgreDelete._SingleWithSpec<Delete, ReturningDelete> singleDelete() {
-        return PostgreDeletes.simple(SQLs._DELETE_IDENTITY, _RETURNING_DELETE_IDENTITY);
+        return PostgreDeletes.simple();
     }
 
+    /**
+     * <p>
+     * create new batch single-table DELETE statement that is primary statement.
+     * </p>
+     */
     public static PostgreDelete._BatchSingleWithSpec<BatchDelete, BatchReturningDelete> batchSingleDelete() {
-        return PostgreDeletes.batch(SQLs._BATCH_DELETE_IDENTITY, _BATCH_RETURNING_DELETE_IDENTITY);
+        return PostgreDeletes.batch();
     }
 
     public static PostgreValues._WithSpec<Values> primaryValues() {

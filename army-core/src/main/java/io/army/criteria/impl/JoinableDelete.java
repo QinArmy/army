@@ -98,18 +98,19 @@ abstract class JoinableDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
 
 
     static abstract class WithJoinableDelete<I extends Item, B extends CteBuilderSpec, WE, FT, FS, FC, JT, JS, JC, WR, WA>
-            extends JoinableDelete<I, FT, FS, FC, JT, JS, JC, WR, WA> implements DialectStatement._DynamicWithClause<B, WE>
-            , _Statement._WithClauseSpec {
+            extends JoinableDelete<I, FT, FS, FC, JT, JS, JC, WR, WA>
+            implements DialectStatement._DynamicWithClause<B, WE>,
+            _Statement._WithClauseSpec {
 
         private boolean recursive;
 
         private List<_Cte> cteList;
 
-        WithJoinableDelete(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
+        WithJoinableDelete(@Nullable _Statement._WithClauseSpec spec, CriteriaContext context) {
             super(context);
-            if (withSpec != null) {
-                this.recursive = withSpec.isRecursive();
-                this.cteList = withSpec.cteList();
+            if (spec != null) {
+                this.recursive = spec.isRecursive();
+                this.cteList = spec.cteList();
             }
         }
 
