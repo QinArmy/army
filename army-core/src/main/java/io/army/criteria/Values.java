@@ -74,7 +74,7 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
 
     }
 
-    interface _StaticValuesClause<VR> {
+    interface _StaticValuesClause<VR> extends Item {
 
         VR values();
     }

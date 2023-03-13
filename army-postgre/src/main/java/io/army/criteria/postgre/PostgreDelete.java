@@ -2,8 +2,12 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.Item;
 import io.army.criteria.UpdateStatement;
+import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+
+import java.util.function.Function;
 
 /**
  * <p>
@@ -20,7 +24,7 @@ public interface PostgreDelete extends PostgreStatement {
 
         R delete(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
 
-        R delete(SQLs.WordOnly only, TableMeta<?> table, SQLs.WordAs as, String tableAlias);
+        R delete(@Nullable SQLs.WordOnly only, TableMeta<?> table, SQLs.WordAs as, String tableAlias);
     }
 
 
@@ -109,6 +113,19 @@ public interface PostgreDelete extends PostgreStatement {
     interface _SingleWithSpec<I extends Item, Q extends Item> extends _SingleDeleteClause<I, Q>,
             _PostgreDynamicWithClause<_SingleDeleteClause<I, Q>>,
             PostgreQuery._PostgreStaticWithClause<_SingleDeleteClause<I, Q>> {
+
+    }
+
+    interface _DynamicCteAsClause {
+
+        PostgreCtes as(Function<_SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function);
+
+        PostgreCtes as(@Nullable Postgres.WordMaterialized modifier,
+                       Function<_SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function);
+
+    }
+
+    interface _DynamicCteParensSpec extends _ParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
 
     }
 

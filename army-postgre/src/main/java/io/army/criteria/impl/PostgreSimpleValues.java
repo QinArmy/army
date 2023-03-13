@@ -17,24 +17,24 @@ import java.util.function.Function;
 abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimpleValues<
         I,
         PostgreCtes,
-        PostgreValues.ValuesSpec<I>,
+        PostgreValues._ValuesSpec<I>,
         PostgreValues._ValuesLeftParenSpec<I>,
         PostgreValues._OrderByCommaSpec<I>,
         PostgreValues._OffsetSpec<I>,
         PostgreValues._FetchSpec<I>,
         PostgreStatement._AsValuesClause<I>,
         PostgreValues._QueryWithComplexSpec<I>>
-        implements PostgreValues._WithSpec<I>
-        , PostgreValues._ValuesLeftParenSpec<I>
-        , PostgreValues._OrderByCommaSpec<I>
-        , PostgreValues._OffsetSpec<I>
-        , PostgreValues {
+        implements PostgreValues._WithSpec<I>,
+        PostgreValues._ValuesLeftParenSpec<I>,
+        PostgreValues._OrderByCommaSpec<I>,
+        PostgreValues._OffsetSpec<I>,
+        PostgreValues {
 
 
     static <I extends Item> PostgreSimpleValues<I> primaryValues(
-            @Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext, Function<Values, I> function,
+            @Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext, Function<? super Values, I> function,
             @Nullable CriteriaContext leftContext) {
-        return new SimplePrimaryValues<>(spec, outerContext, function, leftContext);
+        return new PrimarySimpleValues<>(spec, outerContext, function, leftContext);
     }
 
     static <I extends Item> PostgreSimpleValues<I> subValues(
@@ -50,19 +50,16 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
 
     @Override
-    public final _StaticCteParensSpec<_CteComma<I>> with(String name) {
-        final boolean recursive = false;
-        this.context.onBeforeWithClause(recursive);
-        return new CteComma<>(recursive, this).function.apply(name);
+    public final PostgreQuery._StaticCteParensSpec<_ValuesSpec<I>> with(String name) {
+        return PostgreQueries.complexCte(this.context, false, this::endStaticWithClause)
+                .comma(name);
     }
 
     @Override
-    public final _StaticCteParensSpec<_CteComma<I>> withRecursive(String name) {
-        final boolean recursive = true;
-        this.context.onBeforeWithClause(recursive);
-        return new CteComma<>(recursive, this).function.apply(name);
+    public final PostgreQuery._StaticCteParensSpec<_ValuesSpec<I>> withRecursive(String name) {
+        return PostgreQueries.complexCte(this.context, true, this::endStaticWithClause)
+                .comma(name);
     }
-
 
     @Override
     public final _OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
@@ -105,23 +102,23 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         return "column" + (++columnIndex);
     }
 
-    private static final class SimplePrimaryValues<I extends Item> extends PostgreSimpleValues<I>
+    private static final class PrimarySimpleValues<I extends Item> extends PostgreSimpleValues<I>
             implements Values {
 
         private final Function<? super Values, I> function;
 
 
-        private SimplePrimaryValues(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext
-                , Function<? super Values, I> function) {
-            super(spec, CriteriaContexts.primaryValuesContext(spec, outerContext));
+        private PrimarySimpleValues(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerBracketContext,
+                                    Function<? super Values, I> function, @Nullable CriteriaContext leftContext) {
+            super(spec, CriteriaContexts.primaryValuesContext(spec, outerBracketContext, leftContext));
             this.function = function;
         }
 
         @Override
-        public ValuesSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+        public _ValuesSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
             final BracketValues<I> bracket;
             bracket = new BracketValues<>(null, this.context, this::bracketEnd);
-            return new SimplePrimaryValues<>(null, bracket.context, bracket::parenRowSetEnd);
+            return new PrimarySimpleValues<>(null, bracket.context, bracket::parenRowSetEnd, null);
         }
 
         @Override
@@ -151,17 +148,17 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
         private final Function<? super SubValues, I> function;
 
-        private SimpleSubValues(@Nullable _WithClauseSpec spec, CriteriaContext outerContext
-                , Function<? super SubValues, I> function) {
-            super(spec, CriteriaContexts.subValuesContext(spec, outerContext));
+        private SimpleSubValues(@Nullable _WithClauseSpec spec, CriteriaContext outerContext,
+                                Function<? super SubValues, I> function, @Nullable CriteriaContext leftContext) {
+            super(spec, CriteriaContexts.subValuesContext(spec, outerContext, leftContext));
             this.function = function;
         }
 
         @Override
-        public ValuesSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+        public _ValuesSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
             final BracketSubValues<I> bracket;
             bracket = new BracketSubValues<>(null, this.context, this::bracketEnd);
-            return new SimpleSubValues<>(null, bracket.context, bracket::parenRowSetEnd);
+            return new SimpleSubValues<>(null, bracket.context, bracket::parenRowSetEnd, null);
         }
 
         @Override
@@ -171,7 +168,6 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
         @Override
         _QueryWithComplexSpec<I> createUnionValues(final UnionType unionType) {
-            UnionType.exceptType(this.context, unionType);
             final Function<RowSet, I> unionFun;
             unionFun = rowSet -> this.function.apply(new UnionSubValues(this, unionType, rowSet));
             return new ComplexSubValues<>(this.context.getNonNullOuterContext(), unionFun);
@@ -314,13 +310,13 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
         @Override
         public _OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
-            return new SimplePrimaryValues<>(this.getWithClause(), this.outerContext, this.function)
+            return new PrimarySimpleValues<>(this.getWithClause(), this.outerContext, this.function)
                     .values(consumer);
         }
 
         @Override
         public _PostgreValuesLeftParenClause<I> values() {
-            return new SimplePrimaryValues<>(this.getWithClause(), this.outerContext, this.function)
+            return new PrimarySimpleValues<>(this.getWithClause(), this.outerContext, this.function)
                     .values();
         }
 
@@ -380,38 +376,6 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
     }//ComplexSubValues
 
-    private static final class CteComma<I extends Item> implements _CteComma<I> {
 
-        private final boolean recursive;
-
-        private final PostgreSimpleValues<I> statement;
-
-        private final Function<String, _StaticCteParensSpec<_CteComma<I>>> function;
-
-        private CteComma(boolean recursive, PostgreSimpleValues<I> statement) {
-            this.recursive = recursive;
-            this.statement = statement;
-            this.function = PostgreQueries.complexCte(statement.context, this);
-        }
-
-        @Override
-        public _StaticCteParensSpec<_CteComma<I>> comma(String name) {
-            return this.function.apply(name);
-        }
-
-        @Override
-        public _OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
-            return this.statement.endStaticWithClause(this.recursive)
-                    .values(consumer);
-        }
-
-        @Override
-        public _PostgreValuesLeftParenClause<I> values() {
-            return this.statement.endStaticWithClause(this.recursive)
-                    .values();
-        }
-
-
-    }//CteComma
 
 }

@@ -5,8 +5,6 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.*;
 import io.army.criteria.postgre.*;
 
-import java.util.function.Function;
-
 /**
  * <p>
  * This class is Postgre SQL syntax utils.
@@ -23,74 +21,84 @@ public abstract class Postgres extends PostgreFuncSyntax {
     private Postgres() {
     }
 
-    static final Function<ReturningUpdate, ReturningUpdate> _RETURNING_UPDATE_IDENTITY = SQLs._getIdentity();
-
-    static final Function<ReturningDelete, ReturningDelete> _RETURNING_DELETE_IDENTITY = SQLs._getIdentity();
-
-    static final Function<BatchReturningUpdate, BatchReturningUpdate> _BATCH_RETURNING_UPDATE_IDENTITY = SQLs._getIdentity();
-
-    static final Function<BatchReturningDelete, BatchReturningDelete> _BATCH_RETURNING_DELETE_IDENTITY = SQLs._getIdentity();
-
+    /**
+     * <p>
+     * create single-table INSERT statement that is primary statement.
+     * </p>
+     */
     public static PostgreInsert._PrimaryOptionSpec singleInsert() {
         return PostgreInserts.singleInsert();
     }
 
+    /**
+     * <p>
+     * create SELECT statement that is primary statement.
+     * </p>
+     */
     public static PostgreQuery._WithSpec<Select> query() {
         return PostgreQueries.primaryQuery(null, ContextStack.peekIfBracket(), SQLs::_identity, null);
     }
 
-
+    /**
+     * <p>
+     * create SUB-SELECT statement that is sub query statement.
+     * </p>
+     */
     public static PostgreQuery._WithSpec<SubQuery> subQuery() {
         return PostgreQueries.subQuery(null, ContextStack.peek(), SQLs::_identity, null);
     }
 
-
+    /**
+     * <p>
+     * create SUB-SELECT statement that is sub query statement and would be converted to {@link Expression}.
+     * </p>
+     */
     public static PostgreQuery._WithSpec<Expression> scalarSubQuery() {
         return PostgreQueries.subQuery(null, ContextStack.peek(), Expressions::scalarExpression, null);
     }
 
     /**
      * <p>
-     * create new simple(non-batch) single-table UPDATE statement that is primary statement.
+     * create simple(non-batch) single-table UPDATE statement that is primary statement.
      * </p>
      */
     public static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> singleUpdate() {
-        return PostgreUpdates.simple();
+        return PostgreUpdates.simpleUpdate();
     }
 
     /**
      * <p>
-     * create new batch single-table UPDATE statement that is primary statement.
+     * create batch single-table UPDATE statement that is primary statement.
      * </p>
      */
     public static PostgreUpdate._BatchSingleWithSpec<BatchUpdate, BatchReturningUpdate> batchSingleUpdate() {
-        return PostgreUpdates.batch();
+        return PostgreUpdates.batchUpdate();
     }
 
     /**
      * <p>
-     * create new simple(non-batch) single-table DELETE statement that is primary statement.
+     * create simple(non-batch) single-table DELETE statement that is primary statement.
      * </p>
      */
     public static PostgreDelete._SingleWithSpec<Delete, ReturningDelete> singleDelete() {
-        return PostgreDeletes.simple();
+        return PostgreDeletes.simpleDelete();
     }
 
     /**
      * <p>
-     * create new batch single-table DELETE statement that is primary statement.
+     * create batch single-table DELETE statement that is primary statement.
      * </p>
      */
     public static PostgreDelete._BatchSingleWithSpec<BatchDelete, BatchReturningDelete> batchSingleDelete() {
-        return PostgreDeletes.batch();
+        return PostgreDeletes.batchDelete();
     }
 
     public static PostgreValues._WithSpec<Values> primaryValues() {
-        return PostgreSimpleValues.primaryValues(null, null, SQLs::_identity);
+        return PostgreSimpleValues.primaryValues(null, null, SQLs::_identity, null);
     }
 
     public static PostgreValues._WithSpec<SubValues> subValues() {
-        return PostgreSimpleValues.subValues(null, ContextStack.peek(), SQLs::_identity);
+        return PostgreSimpleValues.subValues(null, ContextStack.peek(), SQLs::_identity, null);
     }
 
 

@@ -489,7 +489,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _DynamicCteQuerySpec extends _ParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
+    interface _DynamicCteParensSpec extends _ParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
 
     }
 

@@ -25,6 +25,13 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * <p>
+ * This class is a abstract implementation of {@link PostgreUpdate}.
+ * </p>
+ *
+ * @since 1.0
+ */
 @SuppressWarnings("unchecked")
 abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT, JS, JC, TR, WR, WA>
         extends JoinableUpdate<I, FieldMeta<T>, SR, FT, FS, FC, JT, JS, JC, WR, WA, Object, Object, Object, Object>
@@ -45,7 +52,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
      * create new simple(non-batch) single-table UPDATE statement that is primary statement.
      * </p>
      */
-    static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> simple() {
+    static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> simpleUpdate() {
         return new PrimarySimpleUpdateClause();
     }
 
@@ -75,7 +82,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
      * create new batch single-table UPDATE statement that is primary statement.
      * </p>
      */
-    static PostgreUpdate._BatchSingleWithSpec<BatchUpdate, BatchReturningUpdate> batch() {
+    static PostgreUpdate._BatchSingleWithSpec<BatchUpdate, BatchReturningUpdate> batchUpdate() {
         return new BatchUpdateClause();
     }
 

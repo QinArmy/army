@@ -60,9 +60,9 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
 
 
     static <I extends Item> PostgreQuery._WithSpec<I> primaryQuery(
-            @Nullable _WithClauseSpec withSpec, @Nullable CriteriaContext outerContext, Function<Select, I> function,
-            @Nullable CriteriaContext leftContext) {
-        return new SimpleSelect<>(withSpec, outerContext, function, leftContext);
+            @Nullable _WithClauseSpec withSpec, @Nullable CriteriaContext outerBracketContext,
+            Function<Select, I> function, @Nullable CriteriaContext leftContext) {
+        return new SimpleSelect<>(withSpec, outerBracketContext, function, leftContext);
     }
 
 
@@ -95,37 +95,14 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
 
 
     @Override
-    public final _NestedLeftParenSpec<_JoinSpec<I>> from() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
-    }
-
-    @Override
     public final _RepeatableJoinClause<I> tableSample(final @Nullable Expression method) {
         if (method == null) {
             throw ContextStack.nullPointer(this.context);
         }
-        this.getLastTableBlock().onSampleMethod((ArmyExpression) method);
+        this.getFromBlock().onSampleMethod((ArmyExpression) method);
         return this;
     }
 
-    @Override
-    public final _RepeatableJoinClause<I> tableSample(String methodName, Expression argument) {
-        return this.tableSample(FunctionUtils.oneArgVoidFunc(methodName, argument));
-    }
-
-    @Override
-    public final _RepeatableJoinClause<I> tableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
-        final List<Expression> list = new ArrayList<>();
-        consumer.accept(list::add);
-        return this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, list));
-    }
-
-    @Override
-    public final _RepeatableJoinClause<I> tableSample(
-            BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
-            BiFunction<MappingType, Object, Expression> valueOperator, Object argument) {
-        return this.tableSample(method.apply(valueOperator, argument));
-    }
 
     @Override
     public final _RepeatableJoinClause<I> tableSample(
@@ -149,11 +126,11 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
     }
 
     @Override
-    public final _RepeatableJoinClause<I> ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
-        final List<Expression> list = new ArrayList<>();
-        consumer.accept(list::add);
-        if (list.size() > 0) {
-            this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, list));
+    public final _RepeatableJoinClause<I> ifTableSample(Supplier<Expression> supplier) {
+        final Expression expression;
+        expression = supplier.get();
+        if (expression != null) {
+            this.tableSample(expression);
         }
         return this;
     }
@@ -187,7 +164,7 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
         if (seed == null) {
             throw ContextStack.nullPointer(this.context);
         }
-        this.getLastTableBlock().onSeed((ArmyExpression) seed);
+        this.getFromBlock().onSeed((ArmyExpression) seed);
         return this;
     }
 
@@ -247,20 +224,30 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
 
     @Override
     public final _JoinSpec<I> parens(String first, String... rest) {
-        this.getLastDerived().setColumnAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
+        this.getFromDerivedBlock().onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
         return this;
     }
 
     @Override
     public final _JoinSpec<I> parens(Consumer<Consumer<String>> consumer) {
-        this.getLastDerived().setColumnAliasList(CriteriaUtils.stringList(this.context, true, consumer));
+        this.getFromDerivedBlock().onColumnAlias(CriteriaUtils.stringList(this.context, true, consumer));
         return this;
     }
 
     @Override
     public final _JoinSpec<I> ifParens(Consumer<Consumer<String>> consumer) {
-        this.getLastDerived().setColumnAliasList(CriteriaUtils.stringList(this.context, false, consumer));
+        this.getFromDerivedBlock().onColumnAlias(CriteriaUtils.stringList(this.context, false, consumer));
         return this;
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_JoinSpec<I>> from() {
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
+    }
+
+    @Override
+    public final _NestedLeftParenSpec<_JoinSpec<I>> crossJoin() {
+        return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
     }
 
     @Override
@@ -281,11 +268,6 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
     @Override
     public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> fullJoin() {
         return PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
-    }
-
-    @Override
-    public final _NestedLeftParenSpec<_JoinSpec<I>> crossJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
     }
 
     @Override
@@ -644,7 +626,10 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
         return block;
     }
 
-    private PostgreSupports.PostgreNoOnTableBlock getLastTableBlock() {
+    /**
+     * @return get the table block of last FROM or CROSS JOIN clause
+     */
+    private PostgreSupports.PostgreNoOnTableBlock getFromBlock() {
         final _TableBlock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof PostgreSupports.PostgreNoOnTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
@@ -652,14 +637,15 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
         return (PostgreSupports.PostgreNoOnTableBlock) block;
     }
 
-    private ArmyDerivedTable getLastDerived() {
-        final _TableBlock lastBlock = this.fromCrossBlock;
-        if (!(lastBlock instanceof TableBlock.NoOnModifierDerivedBlock)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        } else if (this.context.lastBlock() != lastBlock) {
+    /**
+     * @return get the derived block of last FROM or CROSS JOIN clause
+     */
+    private TableBlock.ParensDerivedJoinBlock getFromDerivedBlock() {
+        final _TableBlock block = this.fromCrossBlock;
+        if (block != this.context.lastBlock() || !(block instanceof TableBlock.ParensDerivedJoinBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (ArmyDerivedTable) ((TableBlock.NoOnModifierDerivedBlock) lastBlock).tableItem;
+        return (TableBlock.ParensDerivedJoinBlock) block;
     }
 
 
@@ -829,9 +815,9 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
 
         private final Function<? super Select, I> function;
 
-        private SimpleSelect(@Nullable _WithClauseSpec withSpec, @Nullable CriteriaContext outerContext,
+        private SimpleSelect(@Nullable _WithClauseSpec withSpec, @Nullable CriteriaContext outerBracketContext,
                              Function<? super Select, I> function, @Nullable CriteriaContext leftContext) {
-            super(withSpec, CriteriaContexts.primaryQuery(withSpec, outerContext, leftContext));
+            super(withSpec, CriteriaContexts.primaryQuery(withSpec, outerBracketContext, leftContext));
             this.function = function;
         }
 
@@ -1460,21 +1446,21 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
         }
 
         @Override
-        public PostgreInsert._CteInsertIntoClause<_CteComma<I>, _CteComma<I>> literalMode(LiteralMode mode) {
+        public PostgreInsert._CteInsertIntoClause<_CteComma<I>> literalMode(LiteralMode mode) {
             this.endQueryBeforeSelect();
             return PostgreInserts.staticSubInsert(this.context.getNonNullLeftContext(), this.function)
                     .literalMode(mode);
         }
 
         @Override
-        public PostgreInsert._DynamicSubNullOptionSpec<_CteComma<I>> migration(boolean migration) {
+        public PostgreInsert._StaticSubNullOptionSpec<_CteComma<I>> migration(boolean migration) {
             this.endQueryBeforeSelect();
             return PostgreInserts.staticSubInsert(this.context.getNonNullLeftContext(), this.function)
                     .migration(migration);
         }
 
         @Override
-        public PostgreInsert._DynamicSubPreferLiteralSpec<_CteComma<I>> nullMode(NullMode mode) {
+        public PostgreInsert._StaticSubPreferLiteralSpec<_CteComma<I>> nullMode(NullMode mode) {
             this.endQueryBeforeSelect();
             return PostgreInserts.staticSubInsert(this.context.getNonNullLeftContext(), this.function)
                     .nullMode(mode);
@@ -1491,30 +1477,30 @@ abstract class PostgreQueries<I extends Item, WE> extends SimpleQueries.WithCteS
         public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(TableMeta<T> table, SQLs.WordAs as,
                                                                                         String tableAlias) {
             this.endQueryBeforeSelect();
-            return PostgreUpdates.staticCteUpdate(this.context.getNonNullOuterContext(), this.function)
+            return PostgreUpdates.cteSimple(this.context.getNonNullOuterContext(), this.function)
                     .update(table, as, tableAlias);
         }
 
         @Override
-        public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(SQLs.WordOnly only, TableMeta<T> table,
+        public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table,
                                                                                         SQLs.WordAs as, String tableAlias) {
             this.endQueryBeforeSelect();
-            return PostgreUpdates.staticCteUpdate(this.context.getNonNullOuterContext(), this.function)
+            return PostgreUpdates.cteSimple(this.context.getNonNullOuterContext(), this.function)
                     .update(only, table, as, tableAlias);
         }
 
         @Override
         public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> delete(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
             this.endQueryBeforeSelect();
-            return PostgreDeletes.staticCteDelete(this.context.getNonNullOuterContext(), this.function)
+            return PostgreDeletes.cteSimple(this.context.getNonNullOuterContext(), this.function)
                     .delete(table, as, tableAlias);
         }
 
         @Override
-        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> delete(SQLs.WordOnly only, TableMeta<?> table,
+        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> delete(@Nullable SQLs.WordOnly only, TableMeta<?> table,
                                                                                  SQLs.WordAs as, String tableAlias) {
             this.endQueryBeforeSelect();
-            return PostgreDeletes.staticCteDelete(this.context.getNonNullOuterContext(), this.function)
+            return PostgreDeletes.cteSimple(this.context.getNonNullOuterContext(), this.function)
                     .delete(only, table, as, tableAlias);
         }
 

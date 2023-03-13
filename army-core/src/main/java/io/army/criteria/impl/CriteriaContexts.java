@@ -190,13 +190,19 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext primaryValuesContext(@Nullable _Statement._WithClauseSpec spec
-            , @Nullable CriteriaContext outerContext) {
-        return new ValuesContext(null);
+    /**
+     * @param spec        probably is {@link MultiStmtSpec}, if non-nul,then outerBracketContext and leftContext both are null.
+     * @param leftContext if non-null,then the outer context of leftContext must be outerBracketContext.
+     */
+    static CriteriaContext primaryValuesContext(@Nullable _Statement._WithClauseSpec spec,
+                                                @Nullable CriteriaContext outerBracketContext,
+                                                @Nullable CriteriaContext leftContext) {
+        throw new UnsupportedOperationException();
     }
 
-    static CriteriaContext subValuesContext(@Nullable _Statement._WithClauseSpec spec, CriteriaContext outerContext) {
-        return new ValuesContext(ContextStack.peek());
+    static CriteriaContext subValuesContext(@Nullable _Statement._WithClauseSpec spec, CriteriaContext outerContext,
+                                            @Nullable CriteriaContext leftContext) {
+        throw new UnsupportedOperationException();
     }
 
     static CriteriaContext otherPrimaryContext() {

@@ -4,10 +4,13 @@ import io.army.criteria.BatchRowPairs;
 import io.army.criteria.Item;
 import io.army.criteria.RowPairs;
 import io.army.criteria.UpdateStatement;
+import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+
+import java.util.function.Function;
 
 /**
  * <p>
@@ -122,6 +125,20 @@ public interface PostgreUpdate extends PostgreStatement {
             extends _PostgreDynamicWithClause<_SingleUpdateClause<I, Q>>,
             PostgreQuery._PostgreStaticWithClause<_SingleUpdateClause<I, Q>>,
             _SingleUpdateClause<I, Q> {
+
+    }
+
+
+    interface _DynamicCteAsClause {
+
+        PostgreCtes as(Function<_SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function);
+
+        PostgreCtes as(@Nullable Postgres.WordMaterialized modifier,
+                       Function<_SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function);
+
+    }
+
+    interface _DynamicCteParensSpec extends _ParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
 
     }
 

@@ -318,39 +318,6 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
 
-    private static final class PostgreDynamicUpdateLeftParenClause
-            extends PostgreDynamicDmlCteLeftParenClause<
-            PostgreUpdate._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>>>
-            implements PostgreUpdate._DynamicCteUpdateSpec {
-
-        private PostgreDynamicUpdateLeftParenClause(String name, PostgreCteBuilderImpl cteBuilder) {
-            super(name, cteBuilder);
-        }
-
-
-        @Override
-        public PostgreUpdate._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>> as() {
-            return PostgreUpdates.dynamicCteUpdate(this.cteBuilder.context, this::subStmtEnd);
-        }
-
-    }//PostgreDynamicUpdateLeftParenClause
-
-    private static final class PostgreDynamicDeleteLeftParenClause
-            extends PostgreDynamicDmlCteLeftParenClause<
-            PostgreDelete._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>>>
-            implements PostgreDelete._DynamicCteDeleteSpec {
-
-        private PostgreDynamicDeleteLeftParenClause(String name, PostgreCteBuilderImpl cteBuilder) {
-            super(name, cteBuilder);
-        }
-
-
-        @Override
-        public PostgreDelete._DynamicSubMaterializedSpec<Statement._AsCteClause<PostgreCtes>> as() {
-            return PostgreDeletes.cteSimple(this.cteBuilder.context, this::subStmtEnd);
-        }
-
-    }//PostgreDynamicDeleteLeftParenClause
 
     private enum CteSearchOption implements SQLWords {
 
@@ -1041,6 +1008,9 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private Postgres.WordMaterialized modifier;
 
+        /**
+         * @see PostgreCteBuilderImpl#subSingleInsert(String)
+         */
         private DynamicCteInsertParensSpec(String name, PostgreCteBuilderImpl builder) {
             super(name, builder.context);
             this.builder = builder;
@@ -1048,14 +1018,14 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public PostgreCtes as(Function<PostgreInsert._DynamicSubOptionSpec<PostgreCtes>, PostgreCtes> function) {
-            return function.apply(PostgreInserts.dynamicSubInsert(this.context, this::subInsertEnd));
+            return this.as(null, function);
         }
 
         @Override
         public PostgreCtes as(@Nullable Postgres.WordMaterialized modifier,
                               Function<PostgreInsert._DynamicSubOptionSpec<PostgreCtes>, PostgreCtes> function) {
             this.modifier = modifier;
-            return function.apply(PostgreInserts.dynamicSubInsert(this.context, this::subInsertEnd));
+            return function.apply(PostgreInserts.dynamicCteInsert(this.context, this::subInsertEnd));
         }
 
         private PostgreCtes subInsertEnd(final SubStatement statement) {
@@ -1067,6 +1037,79 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
     }//DynamicCteInsertParensSpec
+
+
+    private static final class DynamicUpdateParensClause extends CteParensClause<PostgreUpdate._DynamicCteAsClause>
+            implements PostgreUpdate._DynamicCteParensSpec {
+
+        private final PostgreCteBuilderImpl builder;
+
+        private Postgres.WordMaterialized modifier;
+
+        /**
+         * @see PostgreCteBuilderImpl#subSingleUpdate(String)
+         */
+        private DynamicUpdateParensClause(String name, PostgreCteBuilderImpl builder) {
+            super(name, builder.context);
+            this.builder = builder;
+        }
+
+        @Override
+        public PostgreCtes as(Function<PostgreUpdate._SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function) {
+            return this.as(null, function);
+        }
+
+        @Override
+        public PostgreCtes as(@Nullable Postgres.WordMaterialized modifier, Function<PostgreUpdate._SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function) {
+            this.modifier = modifier;
+            return function.apply(PostgreUpdates.cteSimple(this.context, this::subUpdateEnd));
+        }
+
+        private PostgreCtes subUpdateEnd(final SubStatement statement) {
+            final PostgreCte cte;
+            cte = new PostgreCte(this.name, this.columnAliasList, this.modifier, statement);
+            this.context.onAddCte(cte);
+            return this.builder;
+        }
+
+
+    }//DynamicUpdateParensClause
+
+    private static final class DynamicDeleteParensClause extends CteParensClause<PostgreDelete._DynamicCteAsClause>
+            implements PostgreDelete._DynamicCteParensSpec {
+
+        private final PostgreCteBuilderImpl builder;
+
+        private Postgres.WordMaterialized modifier;
+
+        /**
+         * @see PostgreCteBuilderImpl#subSingleDelete(String)
+         */
+        private DynamicDeleteParensClause(String name, PostgreCteBuilderImpl builder) {
+            super(name, builder.context);
+            this.builder = builder;
+        }
+
+        @Override
+        public PostgreCtes as(Function<PostgreDelete._SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function) {
+            return this.as(null, function);
+        }
+
+        @Override
+        public PostgreCtes as(@Nullable Postgres.WordMaterialized modifier, Function<PostgreDelete._SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function) {
+            this.modifier = modifier;
+            return function.apply(PostgreDeletes.cteSimple(this.context, this::subDeleteEnd));
+        }
+
+        private PostgreCtes subDeleteEnd(final SubStatement statement) {
+            final PostgreCte cte;
+            cte = new PostgreCte(this.name, this.columnAliasList, this.modifier, statement);
+            this.context.onAddCte(cte);
+            return this.builder;
+        }
+
+
+    }//DynamicDeleteParensClause
 
 
     private static final class PostgreCteBuilderImpl implements PostgreCtes {
@@ -1083,30 +1126,28 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public PostgreInsert._DynamicCteParensSpec singleInsert(String name) {
+        public PostgreInsert._DynamicCteParensSpec subSingleInsert(String name) {
             return new DynamicCteInsertParensSpec(name, this);
         }
 
         @Override
-        public PostgreUpdate._DynamicCteUpdateSpec singleUpdate(String name) {
-            this.context.onStartCte(name);
-            return new PostgreDynamicUpdateLeftParenClause(name, this);
+        public PostgreUpdate._DynamicCteParensSpec subSingleUpdate(String name) {
+            return new DynamicUpdateParensClause(name, this);
+        }
+
+
+        @Override
+        public PostgreDelete._DynamicCteParensSpec subSingleDelete(String name) {
+            return new DynamicDeleteParensClause(name, this);
         }
 
         @Override
-        public PostgreDelete._DynamicCteDeleteSpec singleDelete(String name) {
-            this.context.onStartCte(name);
-            return new PostgreDynamicDeleteLeftParenClause(name, this);
+        public PostgreQuery._DynamicCteParensSpec subQuery(String name) {
+            return new DynamicDeleteParensClause(name, this);
         }
 
         @Override
-        public PostgreQuery._DynamicCteQuerySpec subQuery(String name) {
-            this.context.onStartCte(name);
-            return new PostgreDynamicQueryLeftParenClause(name, this);
-        }
-
-        @Override
-        public PostgreValues._DynamicCteValuesSpec cteValues(String name) {
+        public PostgreValues._DynamicCteValuesSpec subValues(String name) {
             this.context.onStartCte(name);
             return new PostgreDynamicValuesLeftParenClause(name, this);
         }

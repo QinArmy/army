@@ -44,21 +44,40 @@ abstract class PostgreInserts extends InsertSupports {
     private PostgreInserts() {
     }
 
-
+    /**
+     * <p>
+     * create new single-table INSERT statement that is primary statement.
+     * </p>
+     */
     static PostgreInsert._PrimaryOptionSpec singleInsert() {
         return new PrimaryInsertIntoClause();
     }
 
-    static <I extends Item> PostgreInsert._ComplexOptionSpec<I> singleInsertFroMultiStmt(
+    /**
+     * <p>
+     * create new single-table INSERT statement that is primary statement for multi-statement.
+     * </p>
+     */
+    static <I extends Item> PostgreInsert._ComplexOptionSpec<I> singleInsert(
             @Nullable _Statement._WithClauseSpec withSpec, Function<PrimaryStatement, I> function) {
         return new ComplexInsertIntoClause<>(withSpec, function);
     }
 
-    static <I extends Item> PostgreInsert._DynamicSubOptionSpec<I> dynamicSubInsert(
+    /**
+     * <p>
+     * create new single-table INSERT statement that is sub insert statement in dynamic with clause.
+     * </p>
+     */
+    static <I extends Item> PostgreInsert._DynamicSubOptionSpec<I> dynamicCteInsert(
             CriteriaContext outContext, Function<SubStatement, I> function) {
         return new DynamicSubInsertIntoClause<>(outContext, function);
     }
 
+    /**
+     * <p>
+     * create new single-table INSERT statement that is sub insert statement in static with clause.
+     * </p>
+     */
     static <I extends Item> PostgreInsert._StaticSubOptionSpec<I> staticSubInsert(CriteriaContext outContext,
                                                                                   Function<SubStatement, I> function) {
         return new StaticSubInsertIntoClause<>(outContext, function);

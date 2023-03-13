@@ -12,14 +12,9 @@ package io.army.criteria;
  * @see QualifiedField#as(String)
  * @since 1.0
  */
-public interface Selection extends SelectItem, TypeInfer, SortItem {
+public interface Selection extends SelectItem, TypeInfer {
 
     String alias();
-
-
-    static Selection THIS(Selection selection) {
-        return selection;
-    }
 
 
 }

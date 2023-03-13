@@ -56,6 +56,9 @@ public abstract class SQLs extends SQLsSyntax {
 
     static final Function<SubQuery, SubQuery> _SUB_QUERY_IDENTITY = _getIdentity();
 
+    static final Function<SubQuery, Expression> _SCALAR_QUERY_IDENTITY = Expressions::scalarExpression;
+    ;
+
 
     public static StandardInsert._PrimaryOptionSpec<InsertStatement> singleInsert() {
         return StandardInserts.primaryInsert(SQLs._INSERT_IDENTITY);

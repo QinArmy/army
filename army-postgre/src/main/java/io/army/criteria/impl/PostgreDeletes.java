@@ -47,7 +47,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         PostgreDelete._PostgreDeleteClause<DR> {
 
 
-    static _SingleWithSpec<Delete, ReturningDelete> simple() {
+    static _SingleWithSpec<Delete, ReturningDelete> simpleDelete() {
         return new PrimarySimpleDelete();
     }
 
@@ -57,7 +57,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         return new PrimarySimpleDeleteForMultiStmt<>(spec, function);
     }
 
-    static _BatchSingleWithSpec<BatchDelete, BatchReturningDelete> batch() {
+    static _BatchSingleWithSpec<BatchDelete, BatchReturningDelete> batchDelete() {
         return new PostgreBatchDelete();
     }
 
