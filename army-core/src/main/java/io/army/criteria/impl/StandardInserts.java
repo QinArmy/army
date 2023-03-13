@@ -24,7 +24,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-abstract class StandardInserts extends InsertSupport {
+abstract class StandardInserts extends InsertSupports {
 
 
     private StandardInserts() {
@@ -136,7 +136,7 @@ abstract class StandardInserts extends InsertSupport {
 
 
     private static final class StandardStaticValuesClause<T, I extends Item>
-            extends InsertSupport.StaticColumnValuePairClause<
+            extends InsertSupports.StaticColumnValuePairClause<
             T,
             StandardInsert._ValueStaticLeftParenSpec<T, I>>
             implements StandardInsert._ValueStaticLeftParenSpec<T, I> {
@@ -159,7 +159,7 @@ abstract class StandardInserts extends InsertSupport {
 
 
     private static final class StandardComplexValuesClause<T, I extends Item>
-            extends InsertSupport.ComplexInsertValuesClause<
+            extends InsertSupports.ComplexInsertValuesClause<
             T,
             StandardInsert._ComplexColumnDefaultSpec<T, I>,
             StandardInsert._ValuesColumnDefaultSpec<T, I>,
@@ -399,7 +399,7 @@ abstract class StandardInserts extends InsertSupport {
 
 
     static abstract class QueryInsertStatement<I extends Statement.DmlInsert>
-            extends InsertSupport.QuerySyntaxInsertStatement<I>
+            extends InsertSupports.QuerySyntaxInsertStatement<I>
             implements InsertStatement, StandardInsert {
 
         private QueryInsertStatement(final StandardComplexValuesClause<?, ?> clause) {

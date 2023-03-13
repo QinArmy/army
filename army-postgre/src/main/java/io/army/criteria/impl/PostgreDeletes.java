@@ -463,7 +463,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
         @Override
         public final _DqlDeleteSpec<Q> returningAll() {
-            this.returningList = PostgreSupports.RETURNING_ALL;
+            this.returningList = PostgreSupports.EMPTY_SELECTION_LIST;
             return this;
         }
 
@@ -822,7 +822,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
         @Override
         public _BatchParamClause<_DqlDeleteSpec<Q>> returningAll() {
-            this.returningList = PostgreSupports.RETURNING_ALL;
+            this.returningList = PostgreSupports.EMPTY_SELECTION_LIST;
             return new BatchParamClause<>(this);
         }
 

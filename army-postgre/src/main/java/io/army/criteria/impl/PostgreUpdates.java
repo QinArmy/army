@@ -444,7 +444,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
         @Override
         public final _DqlUpdateSpec<Q> returningAll() {
-            this.returningList = PostgreSupports.RETURNING_ALL;
+            this.returningList = PostgreSupports.EMPTY_SELECTION_LIST;
             return this;
         }
 
@@ -787,7 +787,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
         @Override
         public _BatchParamClause<_DqlUpdateSpec<Q>> returningAll() {
-            this.returningList = PostgreSupports.RETURNING_ALL;
+            this.returningList = PostgreSupports.EMPTY_SELECTION_LIST;
             return new BatchParamClause<>(this);
         }
 

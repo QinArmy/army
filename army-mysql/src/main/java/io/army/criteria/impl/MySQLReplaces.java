@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class MySQLReplaces extends InsertSupport {
+abstract class MySQLReplaces extends InsertSupports {
 
     private MySQLReplaces() {
         throw new UnsupportedOperationException();
@@ -33,7 +33,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }
 
 
-    private static final class PrimaryReplaceIntoClause extends InsertSupport.NonQueryInsertOptionsImpl<
+    private static final class PrimaryReplaceIntoClause extends InsertSupports.NonQueryInsertOptionsImpl<
             MySQLReplace._PrimaryNullOptionSpec,
             MySQLReplace._PrimaryPreferLiteralSpec,
             MySQLReplace._PrimaryReplaceIntoSpec>
@@ -167,7 +167,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
 
     private static final class MySQLStaticValuesClause<I extends Item, T>
-            extends InsertSupport.StaticColumnValuePairClause<
+            extends InsertSupports.StaticColumnValuePairClause<
             T,
             MySQLReplace._StaticValuesLeftParenSpec<I, T>>
             implements MySQLReplace._StaticValuesLeftParenSpec<I, T> {
@@ -485,7 +485,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
 
     static abstract class AssignmentReplaceStatement<I extends Statement.DmlInsert>
-            extends InsertSupport.AssignmentInsertStatement<I>
+            extends InsertSupports.AssignmentInsertStatement<I>
             implements MySQLReplace, _MySQLInsert._MySQLAssignmentInsert, InsertStatement {
 
         private final List<Hint> hintList;
@@ -597,7 +597,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
 
     static abstract class QueryReplaceStatement<I extends Statement.DmlInsert>
-            extends InsertSupport.QuerySyntaxInsertStatement<I>
+            extends InsertSupports.QuerySyntaxInsertStatement<I>
             implements MySQLReplace, _MySQLInsert._MySQLQueryInsert, InsertStatement {
 
 

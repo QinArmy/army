@@ -32,7 +32,7 @@ abstract class PostgreSupports extends CriteriaSupports {
     }
 
 
-    static final List<Selection> RETURNING_ALL = Collections.emptyList();
+    static final List<Selection> EMPTY_SELECTION_LIST = Collections.emptyList();
 
     static PostgreCtes postgreCteBuilder(final boolean recursive, final CriteriaContext context) {
         return new PostgreCteBuilderImpl(recursive, context);

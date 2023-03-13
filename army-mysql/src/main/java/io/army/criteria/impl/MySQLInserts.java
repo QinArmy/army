@@ -35,7 +35,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-abstract class MySQLInserts extends InsertSupport {
+abstract class MySQLInserts extends InsertSupports {
 
     private MySQLInserts() {
         throw new UnsupportedOperationException();
@@ -47,7 +47,7 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     private static final class PrimaryInsertIntoClause<I extends Item>
-            extends InsertSupport.NonQueryInsertOptionsImpl<
+            extends InsertSupports.NonQueryInsertOptionsImpl<
             MySQLInsert._PrimaryNullOptionSpec<I>,
             MySQLInsert._PrimaryPreferLiteralSpec<I>,
             MySQLInsert._PrimaryInsertIntoSpec<I>>
@@ -501,7 +501,7 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     private static final class MySQLStaticValuesClause<I extends Item, T>
-            extends InsertSupport.StaticColumnValuePairClause<T, MySQLInsert._StaticValuesLeftParenSpec<I, T>>
+            extends InsertSupports.StaticColumnValuePairClause<T, MySQLInsert._StaticValuesLeftParenSpec<I, T>>
             implements MySQLInsert._StaticValuesLeftParenSpec<I, T> {
 
         private final MySQLComplexValuesClause<I, T> valuesClause;
@@ -943,7 +943,7 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     static abstract class PrimaryAssignmentStatement<I extends Statement.DmlInsert>
-            extends InsertSupport.AssignmentInsertStatement<I>
+            extends InsertSupports.AssignmentInsertStatement<I>
             implements MySQLInsert, _MySQLInsert._MySQLAssignmentInsert, InsertStatement {
 
         private final List<Hint> hintList;
@@ -1072,7 +1072,7 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     static abstract class PrimaryQueryInsertStatement<I extends Statement.DmlInsert>
-            extends InsertSupport.QuerySyntaxInsertStatement<I>
+            extends InsertSupports.QuerySyntaxInsertStatement<I>
             implements MySQLInsert, _MySQLInsert._MySQLQueryInsert, InsertStatement {
 
 

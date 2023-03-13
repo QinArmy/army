@@ -1,15 +1,15 @@
 package io.army.criteria.impl.inner.postgre;
 
 import io.army.criteria.SQLWords;
-import io.army.criteria.SelectItem;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 
 import java.util.List;
 
-public interface _PostgreInsert extends _Insert, _Insert._SupportReturningClauseSpec
-        , _Insert._SupportConflictClauseSpec, _Insert._SupportWithClauseInsert {
+public interface _PostgreInsert extends _Insert, _Insert._SupportConflictClauseSpec, _Insert._SupportWithClauseInsert,
+        _Statement._ReturningListSpec {
 
 
     @Nullable
@@ -21,8 +21,6 @@ public interface _PostgreInsert extends _Insert, _Insert._SupportReturningClause
 
     @Nullable
     _ConflictActionClauseResult getConflictActionResult();
-
-    List<? extends SelectItem> returningList();
 
 
     interface _ConflictActionClauseResult extends _Insert._ConflictActionClauseSpec

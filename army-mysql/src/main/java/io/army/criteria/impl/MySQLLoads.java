@@ -216,7 +216,7 @@ abstract class MySQLLoads {
 
 
     private static final class PartitionClause<I extends Item, T>
-            extends InsertSupport.AssignmentSetClause<
+            extends InsertSupports.AssignmentSetClause<
             T,
             MySQLLoadData._LoadSetSpec<I, T>>
             implements MySQLLoadData._PartitionSpec<I, T>

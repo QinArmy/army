@@ -23,7 +23,10 @@ public interface _Statement {
 
     interface _ReturningListSpec {
 
-        List<Selection> returningList();
+        /**
+         * @throws UnsupportedOperationException throw when this isn't instance of {@link _ReturningDml}
+         */
+        List<? extends Selection> returningList();
     }
 
     interface _RowCountSpec {

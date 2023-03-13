@@ -24,11 +24,11 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
                 throw nonArmyStatement(insert);
             }
         } else if (insert instanceof _Insert._AssignmentInsert) {
-            if (!(insert instanceof InsertSupport.AssignmentInsertStatement)) {
+            if (!(insert instanceof InsertSupports.AssignmentInsertStatement)) {
                 throw nonArmyStatement(insert);
             }
         } else if (insert instanceof _Insert._QueryInsert) {
-            if (!(insert instanceof InsertSupport.QuerySyntaxInsertStatement)) {
+            if (!(insert instanceof InsertSupports.QuerySyntaxInsertStatement)) {
                 throw nonArmyStatement(insert);
             }
         } else {

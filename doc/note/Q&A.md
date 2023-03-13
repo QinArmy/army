@@ -132,6 +132,12 @@
 27. 为什么表态 with clause 以 space 子句结束？
     * 因为 select 子句的 SQLs.field() 方法和 SQLs.refThis() 方法需要真实的 query context.
 
+28. 为什么 实现类不能同时实现 Insert 和 ReturningInsert?
+    * 因为 session api 上要能正确区分这两种类型,在这点上要保证类型安全,否则无法返回正确结果.Update 与
+      ReturningUpdate,Delete 与
+      ReturningDelete 同上。
+
+
 
 
     

@@ -2,7 +2,6 @@ package io.army.criteria.impl.inner;
 
 import io.army.criteria.LiteralMode;
 import io.army.criteria.NullMode;
-import io.army.criteria.SelectItem;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl._Pair;
 import io.army.lang.Nullable;
@@ -39,19 +38,6 @@ public interface _Insert extends _Statement {
         List<_Predicate> updateSetPredicateList();
     }
 
-
-
-
-    /**
-     * <p>
-     * This interface representing dialect support returning clause,for example PostgreSQL.
-     * </p>
-     */
-    interface _SupportReturningClauseSpec extends _Insert {
-
-        List<? extends SelectItem> returningList();
-
-    }
 
     /**
      * <p>

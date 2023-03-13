@@ -26,9 +26,9 @@ import java.util.function.*;
  *
  * @since 1.0
  */
-abstract class InsertSupport {
+abstract class InsertSupports {
 
-    InsertSupport() {
+    InsertSupports() {
         throw new UnsupportedOperationException();
     }
 
@@ -1756,8 +1756,8 @@ abstract class InsertSupport {
         @SuppressWarnings("unchecked")
         @Override
         public final I asInsert() {
-            if (!(this instanceof DmlInsert)) {
-                throw ContextStack.castCriteriaApi(this.context);
+            if (this instanceof _ReturningDml) {
+                throw new UnsupportedOperationException();
             }
             this.asInsertStatement();
             return (I) this;
@@ -1766,12 +1766,13 @@ abstract class InsertSupport {
         @SuppressWarnings("unchecked")
         @Override
         public final Q asReturningInsert() {
-            if (!(this instanceof DqlInsert)) {
-                throw ContextStack.castCriteriaApi(this.context);
+            if (!(this instanceof _ReturningDml)) {
+                throw new UnsupportedOperationException();
             }
             this.asInsertStatement();
             return (Q) this;
         }
+
 
         private void asInsertStatement() {
             _Assert.nonPrepared(this.prepared);
@@ -1848,8 +1849,8 @@ abstract class InsertSupport {
     }//AbstractValueSyntaxStatement
 
 
-    static abstract class ValueSyntaxInsertStatement<I extends Statement.DmlInsert>
-            extends AbstractValueSyntaxStatement<I, Statement.DqlInsert>
+    static abstract class ValueSyntaxInsertStatement<I extends Statement>
+            extends AbstractValueSyntaxStatement<I, Statement>
             implements ValueSyntaxOptions {
 
         ValueSyntaxInsertStatement(_ValuesSyntaxInsert clause) {
@@ -1861,7 +1862,7 @@ abstract class InsertSupport {
     }//ValueInsertStatement
 
 
-    private static abstract class AssignmentSyntaxInsertStatement<I extends Statement.DmlInsert, Q extends Statement.DqlInsert>
+    private static abstract class AssignmentSyntaxInsertStatement<I extends Statement, Q extends Statement>
             extends AbstractInsertStatement<I, Q> implements _Insert._AssignmentInsert, ValueSyntaxOptions {
 
         private final boolean migration;
@@ -1909,8 +1910,8 @@ abstract class InsertSupport {
 
     }//AbstractAssignmentInsertStatement
 
-    static abstract class AssignmentInsertStatement<I extends Statement.DmlInsert>
-            extends AssignmentSyntaxInsertStatement<I, Statement.DqlInsert>
+    static abstract class AssignmentInsertStatement<I extends Statement>
+            extends AssignmentSyntaxInsertStatement<I, Statement>
             implements InsertStatement {
 
         AssignmentInsertStatement(_AssignmentInsert clause) {
@@ -1980,8 +1981,8 @@ abstract class InsertSupport {
     }//AbstractQuerySyntaxInsertStatement
 
 
-    static abstract class QuerySyntaxInsertStatement<I extends Statement.DmlInsert>
-            extends AbstractQuerySyntaxInsertStatement<I, Statement.DqlInsert>
+    static abstract class QuerySyntaxInsertStatement<I extends Statement>
+            extends AbstractQuerySyntaxInsertStatement<I, Statement>
             implements InsertStatement {
 
 
@@ -2148,7 +2149,7 @@ abstract class InsertSupport {
         return parentStmt.table().id().generatorType() == GeneratorType.POST
                 && parentStmt instanceof _Insert._SupportConflictClauseSpec
                 && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction()
-                && !(parentStmt instanceof _Insert._SupportReturningClauseSpec);
+                && !(parentStmt instanceof _ReturningDml);
     }
 
     /**
