@@ -36,7 +36,7 @@ public abstract class Postgres extends PostgreFuncSyntax {
      * </p>
      */
     public static PostgreQuery._WithSpec<Select> query() {
-        return PostgreQueries.primaryQuery(null, ContextStack.peekIfBracket(), SQLs::_identity, null);
+        return PostgreQueries.simpleQuery(null, ContextStack.peekIfBracket(), SQLs::_identity, null);
     }
 
     /**
@@ -93,12 +93,12 @@ public abstract class Postgres extends PostgreFuncSyntax {
         return PostgreDeletes.batchDelete();
     }
 
-    public static PostgreValues._WithSpec<Values> primaryValues() {
-        return PostgreSimpleValues.primaryValues(null, null, SQLs::_identity, null);
+    public static PostgreValues._WithSpec<Values> simpleValues() {
+        return PostgreValuesStmt.simpleValues(ContextStack.peekIfBracket(), SQLs::_identity);
     }
 
     public static PostgreValues._WithSpec<SubValues> subValues() {
-        return PostgreSimpleValues.subValues(null, ContextStack.peek(), SQLs::_identity, null);
+        return PostgreValuesStmt.subValues(ContextStack.peek(), SQLs::_identity);
     }
 
 

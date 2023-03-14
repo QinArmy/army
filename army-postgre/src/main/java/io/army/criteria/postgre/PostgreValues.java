@@ -119,7 +119,9 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
     }
 
     interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>,
-            _PostgreDynamicWithClause<_QueryComplexSpec<I>> {
+            _PostgreDynamicWithClause<_QueryComplexSpec<I>>,
+            PostgreQuery._PostgreStaticWithClause<_QueryComplexSpec<I>>,
+            Query._DynamicParensRowSetClause<_UnionOrderBySpec<I>> {
 
     }
 

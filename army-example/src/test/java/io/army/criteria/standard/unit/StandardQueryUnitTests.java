@@ -130,7 +130,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
 
                 .unionAll()
-                .leftParen(() -> SQLs.query()
+                .parens(() -> SQLs.query()
                         .select(PillUser_.id)
                         .from(PillUser_.T, SQLs.AS, "p")
                         .where(PillUser_.id::equal, SQLs::literal, () -> 2)

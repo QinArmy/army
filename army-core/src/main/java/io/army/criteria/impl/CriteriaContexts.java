@@ -68,7 +68,7 @@ abstract class CriteriaContexts {
     }
 
     static CriteriaContext subQueryContext(final @Nullable _Statement._WithClauseSpec spec,
-                                           final CriteriaContext outerContext,
+                                           final @Nullable CriteriaContext outerContext,
                                            final @Nullable CriteriaContext leftContext) {
         assert leftContext == null || leftContext.getNonNullOuterContext() == outerContext;
         final StatementContext context;
@@ -94,7 +94,8 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
-    static CriteriaContext bracketContext(final @Nullable _Statement._WithClauseSpec spec,
+    @Deprecated
+    static CriteriaContext bracketContext(final @Nullable ArmyStmtSpec spec,
                                           final @Nullable CriteriaContext outerContext,
                                           final @Nullable CriteriaContext leftContext) {
         assert leftContext == null || leftContext.getOuterContext() == outerContext;
@@ -115,8 +116,7 @@ abstract class CriteriaContexts {
     }
 
 
-    @Deprecated
-    static CriteriaContext bracketContext(@Nullable _Statement._WithClauseSpec withSpec) {
+    static CriteriaContext bracketContext(ArmyStmtSpec spec) {
         throw new UnsupportedOperationException();
     }
 
@@ -191,7 +191,12 @@ abstract class CriteriaContexts {
 
 
     /**
-     * @param spec        probably is {@link MultiStmtSpec}, if non-nul,then outerBracketContext and leftContext both are null.
+     * @param spec        probably is below:
+     *                    <ul>
+     *                      <li>{@link MultiStmtSpec}</li>
+     *                      <li>{@link SimpleQueries},complex statement,need to migration with clause and inherit outer context</li>
+     *                    </ul>,
+     *                     if non-nul,then outerBracketContext and leftContext both are null.
      * @param leftContext if non-null,then the outer context of leftContext must be outerBracketContext.
      */
     static CriteriaContext primaryValuesContext(@Nullable _Statement._WithClauseSpec spec,
@@ -200,13 +205,33 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
-    static CriteriaContext subValuesContext(@Nullable _Statement._WithClauseSpec spec, CriteriaContext outerContext,
+    /**
+     * @param spec         <ul>
+     *                     <li>If null,then outerContext non-null.</li>
+     *                     <li>If non-null,then outerContext null and leftContext null.</li>
+     *                     </ul>
+     * @param outerContext <ul>
+     *                     <li>If null,then spec non-null and leftContext null.</li>
+     *                     <li>If non-null,then spec null.</li>
+     *                     </ul>
+     * @param leftContext  If non-null,then spec null.
+     */
+    static CriteriaContext subValuesContext(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext,
                                             @Nullable CriteriaContext leftContext) {
         throw new UnsupportedOperationException();
     }
 
     static CriteriaContext otherPrimaryContext() {
         return new OtherPrimaryContext();
+    }
+
+    static CriteriaContext dispatcherContext(@Nullable CriteriaContext outerContext,
+                                             @Nullable CriteriaContext leftContext) {
+        throw new UnsupportedOperationException();
+    }
+
+    static CriteriaContext multiStmtContext() {
+        throw new UnsupportedOperationException();
     }
 
 
@@ -744,7 +769,7 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public void endContextBeforeSelect() {
+        public void endContextBeforeCommand() {
             String m = "current context don't support endContextBeforeSelect()";
             throw ContextStack.criteriaError(this, m);
         }
@@ -979,7 +1004,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void endContextBeforeSelect() {
+        public final void endContextBeforeCommand() {
             assert this instanceof SimpleQueryContext;
             if (this.aliasToBlock != null
                     || this.tableBlockList != null

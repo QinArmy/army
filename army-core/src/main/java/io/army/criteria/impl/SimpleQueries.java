@@ -703,16 +703,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
 
-    private SR onAsSelection(final TypeInfer selection) {
-        if (!(selection instanceof ArmySelections)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        this.context.onAddSelectItem((Selection) selection);
-        return (SR) this;
-    }
-
-
-    final void endQueryBeforeSelect() {
+    final void endStmtBeforeCommand() {
         this.endQueryStatement(true);
     }
 
@@ -742,7 +733,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         final CriteriaContext context = this.context;
         if (beforeSelect) {
-            context.endContextBeforeSelect();
+            context.endContextBeforeCommand();
             this.tableBlockList = Collections.emptyList();
         } else {
             this.onEndQuery();
@@ -825,15 +816,15 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
             extends SimpleQueries<Q, W, SR, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
-            implements DialectStatement._DynamicWithClause<B, WE>
-            , _Statement._WithClauseSpec
-            , Query._WithSelectDispatcher<B, WE, W, SR, SD> {
+            implements DialectStatement._DynamicWithClause<B, WE>,
+            ArmyStmtSpec,
+            Query._WithSelectDispatcher<B, WE, W, SR, SD> {
 
         private boolean recursive;
 
         private List<_Cte> cteList;
 
-        WithCteSimpleQueries(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
+        WithCteSimpleQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
             super(context);
             if (withSpec != null) {
                 this.recursive = withSpec.isRecursive();
@@ -947,82 +938,107 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     }//LockWaitOption
 
-    @Deprecated
 
     static abstract class SelectClauseDispatcher<W extends Query.SelectModifier, SR extends Item, SD>
-            implements Query._SelectDispatcher<W, SR, SD> {
+            implements Query._SelectDispatcher<W, SR, SD>,
+            CriteriaContextSpec {
 
-        SelectClauseDispatcher() {
+        final CriteriaContext context;
+
+        SelectClauseDispatcher(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
+            this.context = CriteriaContexts.dispatcherContext(outerContext, leftContext);
+            ContextStack.push(this.context);
+        }
+
+        @Override
+        public final CriteriaContext getContext() {
+            return this.context;
         }
 
         @Override
         public final SR select(Selection selection) {
-            return this.createSelectClause().select(selection);
+            return this.createSelectClause()
+                    .select(selection);
         }
 
         @Override
         public final SR select(Function<String, Selection> function, String alias) {
-            return this.createSelectClause().select(function, alias);
+            return this.createSelectClause()
+                    .select(function, alias);
         }
 
         @Override
         public final SR select(Selection selection1, Selection selection2) {
-            return null;
+            return this.createSelectClause()
+                    .select(selection1, selection2);
         }
 
         @Override
         public final SR select(Function<String, Selection> function, String alias, Selection selection) {
-            return null;
+            return this.createSelectClause()
+                    .select(function, alias, selection);
         }
 
         @Override
         public final SR select(Selection selection, Function<String, Selection> function, String alias) {
-            return null;
+            return this.createSelectClause()
+                    .select(selection, function, alias);
         }
 
         @Override
-        public final SR select(Function<String, Selection> function1, String alias1, Function<String, Selection> function2, String alias2) {
-            return null;
+        public final SR select(Function<String, Selection> function1, String alias1,
+                               Function<String, Selection> function2, String alias2) {
+            return this.createSelectClause()
+                    .select(function1, alias1, function2, alias2);
         }
 
         @Override
         public final SR select(DataField field1, DataField field2, DataField field3) {
-            return null;
+            return this.createSelectClause()
+                    .select(field1, field2, field3);
         }
 
         @Override
         public final SR select(DataField field1, DataField field2, DataField field3, DataField field4) {
-            return null;
+            return this.createSelectClause()
+                    .select(field1, field2, field3, field4);
         }
 
         @Override
         public final SR select(String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
-            return null;
+            return this.createSelectClause()
+                    .select(tableAlias, period, table);
         }
 
         @Override
-        public <P> SR select(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
-            return null;
+        public <P> SR select(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
+                             String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+            return this.createSelectClause()
+                    .select(parenAlias, period1, parent, childAlias, period2, child);
         }
 
         @Override
         public final SR select(String derivedAlias, SQLsSyntax.SymbolPeriod period, SQLsSyntax.SymbolStar star) {
-            return null;
+            return this.createSelectClause()
+                    .select(derivedAlias, period, star);
         }
 
         @Override
         public final _StaticSelectSpaceClause<SR> select(W modifier) {
-            return this.createSelectClause().select(modifier);
+            return this.createSelectClause()
+                    .select(modifier);
         }
 
         @Override
         public final _StaticSelectSpaceClause<SR> select(List<W> modifiers) {
-            return this.createSelectClause().select(modifiers);
+            return this.createSelectClause()
+                    .select(modifiers);
         }
 
         @Override
         public final _StaticSelectSpaceClause<SR> select(Supplier<List<Hint>> hints, List<W> modifiers) {
-            return this.createSelectClause().select(hints, modifiers);
+            return this.createSelectClause()
+                    .select(hints, modifiers);
         }
 
         @Override
@@ -1054,32 +1070,22 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     static abstract class WithBuilderSelectClauseDispatcher<B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR extends Item, SD>
             extends SelectClauseDispatcher<W, SR, SD>
             implements DialectStatement._DynamicWithClause<B, WE>,
-            _WithClauseSpec, CriteriaContextSpec {
-
-        final CriteriaContext outerContext;
-
-        private CriteriaContext withClauseContext;
+            ArmyStmtSpec {
 
         private boolean recursive;
 
         private List<_Cte> cteList;
 
 
-        WithBuilderSelectClauseDispatcher(@Nullable CriteriaContext outerContext) {
-            this.outerContext = outerContext;
-        }
-
-        @Override
-        public final CriteriaContext getContext() {
-            final CriteriaContext context = this.withClauseContext;
-            assert context != null;
-            return context;
+        WithBuilderSelectClauseDispatcher(@Nullable CriteriaContext outerContext,
+                                          @Nullable CriteriaContext leftContext) {
+            super(outerContext, leftContext);
         }
 
         @Override
         public final WE with(Consumer<B> consumer) {
             final B builder;
-            builder = this.innerCreateCteBuilder(false);
+            builder = this.createCteBuilder(false, this.context);
             consumer.accept(builder);
             return this.endDynamicWithClause(builder, true);
         }
@@ -1088,7 +1094,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         @Override
         public final WE withRecursive(Consumer<B> consumer) {
             final B builder;
-            builder = this.innerCreateCteBuilder(true);
+            builder = this.createCteBuilder(true, this.context);
             consumer.accept(builder);
             return this.endDynamicWithClause(builder, true);
         }
@@ -1097,7 +1103,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         @Override
         public final WE ifWith(Consumer<B> consumer) {
             final B builder;
-            builder = this.innerCreateCteBuilder(false);
+            builder = this.createCteBuilder(false, this.context);
             consumer.accept(builder);
             return this.endDynamicWithClause(builder, false);
         }
@@ -1106,7 +1112,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         @Override
         public final WE ifWithRecursive(Consumer<B> consumer) {
             final B builder;
-            builder = this.innerCreateCteBuilder(true);
+            builder = this.createCteBuilder(true, this.context);
             consumer.accept(builder);
             return this.endDynamicWithClause(builder, false);
         }
@@ -1126,120 +1132,48 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             return cteList;
         }
 
-        abstract B createCteBuilder(boolean recursive, CriteriaContext withClauseContext);
-
-        abstract _SelectDispatcher<W, SR, SD> onSelectClause(@Nullable _WithClauseSpec spec);
-
-
-        @Override
-        final _SelectDispatcher<W, SR, SD> createSelectClause() {
-            return this.onSelectClause(this.cteList == null ? null : this);
-        }
+        abstract B createCteBuilder(boolean recursive, CriteriaContext context);
 
         @Nullable
         final _WithClauseSpec getWithClause() {
             return this.cteList == null ? null : this;
         }
 
-        final void resetWithClause() {
-            this.withClauseContext = null;
-            this.cteList = null;
-            this.recursive = false;
-        }
 
         @SuppressWarnings("unchecked")
         private WE endDynamicWithClause(final B builder, final boolean required) {
-            final CriteriaContext withClauseContext = this.withClauseContext;
-            assert withClauseContext != null;
+            final CriteriaContext context = this.context;
+            assert context != null;
             if (this.cteList != null) {
-                throw ContextStack.castCriteriaApi(withClauseContext);
+                throw ContextStack.castCriteriaApi(context);
             }
             final boolean recursive;
             recursive = builder.isRecursive();
             this.recursive = recursive;
-            this.cteList = withClauseContext.endWithClause(recursive, required);
-            ContextStack.pop(withClauseContext);
-            withClauseContext.endContext();
+            this.cteList = context.endWithClause(recursive, required);
+            ContextStack.pop(context);
+            context.endContext();
             return (WE) this;
         }
 
-        private B innerCreateCteBuilder(boolean recursive) {
-            CriteriaContext withClauseContext = this.withClauseContext;
-            if (withClauseContext != null) {
-                throw ContextStack.castCriteriaApi(withClauseContext);
+        final WE endStaticWithClause(final boolean recursive) {
+            if (this.cteList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
             }
-            withClauseContext = CriteriaContexts.withClauseContext(this.outerContext);
-            ContextStack.push(withClauseContext);
-            this.withClauseContext = withClauseContext;
-            return this.createCteBuilder(recursive, withClauseContext);
+            this.recursive = recursive;
+            this.cteList = this.context.endWithClause(recursive, true);
+            return (WE) this;
+        }
+
+
+        final void endDispatcher() {
+            ContextStack.pop(this.context)
+                    .endContext();
+
         }
 
 
     }//WithBuilderSelectClauseDispatcher
-
-
-    static abstract class ComplexSelectCommand<W extends Query.SelectModifier, SR extends Item, SD, RR>
-            extends SelectClauseDispatcher<W, SR, SD>
-            implements Statement._LeftParenStringQuadraOptionalSpec<RR>
-            , _RightParenClause<RR> {
-
-        final CriteriaContext context;
-
-        private Statement._LeftParenStringQuadraOptionalSpec<RR> quadraClause;
-
-        ComplexSelectCommand(CriteriaContext context) {
-            this.context = context;
-        }
-
-        @Override
-        public final RR rightParen() {
-            return (RR) this;
-        }
-
-        @Override
-        public final _RightParenClause<RR> leftParen(String string) {
-            this.columnAliasClauseEnd(Collections.singletonList(string));
-            return this;
-        }
-
-        @Override
-        public final _CommaStringDualSpec<RR> leftParen(String string1, String string2) {
-            return this.stringQuadraClause()
-                    .leftParen(string1, string2);
-        }
-
-        @Override
-        public final _CommaStringQuadraSpec<RR> leftParen(String string1, String string2, String string3, String string4) {
-            return this.stringQuadraClause()
-                    .leftParen(string1, string2, string3, string4);
-        }
-
-        @Override
-        public final _RightParenClause<RR> leftParen(Consumer<Consumer<String>> consumer) {
-            return this.stringQuadraClause()
-                    .leftParen(consumer);
-        }
-
-        @Override
-        public final _RightParenClause<RR> leftParenIf(Consumer<Consumer<String>> consumer) {
-            return this.stringQuadraClause()
-                    .leftParenIf(consumer);
-        }
-
-
-        abstract RR columnAliasClauseEnd(List<String> list);
-
-
-        private Statement._LeftParenStringQuadraOptionalSpec<RR> stringQuadraClause() {
-            Statement._LeftParenStringQuadraOptionalSpec<RR> clause = this.quadraClause;
-            if (clause == null) {
-                clause = CriteriaSupports.stringQuadra(this.context, this::columnAliasClauseEnd);
-                this.quadraClause = clause;
-            }
-            return clause;
-        }
-
-    }//ComplexSelectCommand
 
 
     static final class UnionSubQuery extends UnionSubRowSet implements SubQuery {

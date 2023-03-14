@@ -504,7 +504,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
     interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>,
             _PostgreDynamicWithClause<_QueryComplexSpec<I>>,
             _PostgreStaticWithClause<_QueryComplexSpec<I>>,
-            _LeftParenRowSetClause<_RightParenClause<_UnionOrderBySpec<I>>> {
+            _DynamicParensRowSetClause<_UnionOrderBySpec<I>> {
 
     }
 

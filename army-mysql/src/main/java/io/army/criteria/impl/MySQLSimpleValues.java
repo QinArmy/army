@@ -309,8 +309,8 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        MySQLCtes createCteBuilder(boolean recursive, CriteriaContext withClauseContext) {
-            return MySQLSupports.mySQLCteBuilder(recursive, withClauseContext);
+        MySQLCtes createCteBuilder(boolean recursive, CriteriaContext context) {
+            return MySQLSupports.mySQLCteBuilder(recursive, context);
         }
 
         @Override
@@ -368,8 +368,8 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        MySQLCtes createCteBuilder(boolean recursive, CriteriaContext withClauseContext) {
-            return MySQLSupports.mySQLCteBuilder(recursive, withClauseContext);
+        MySQLCtes createCteBuilder(boolean recursive, CriteriaContext context) {
+            return MySQLSupports.mySQLCteBuilder(recursive, context);
         }
 
         @Override

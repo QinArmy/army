@@ -786,7 +786,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
         @Override
         public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            this.endQueryBeforeSelect();
+            this.endStmtBeforeCommand();
 
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this.getWithClause(), this.context.getOuterContext(), this.function, null);
@@ -821,7 +821,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
         @Override
         public _MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            this.endQueryBeforeSelect();
+            this.endStmtBeforeCommand();
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this.getWithClause(), this.context.getNonNullOuterContext(), this.function,
                     null);
@@ -1330,7 +1330,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
         @Override
         public MySQLValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
-            this.endQueryBeforeSelect();
+            this.endStmtBeforeCommand();
             assert this.getWithClause() == null;
 
             return MySQLSimpleValues.subValues(this.context.getNonNullOuterContext(), this::valuesEnd)
@@ -1339,7 +1339,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
         @Override
         public MySQLValues._ValuesLeftParenClause<I> values() {
-            this.endQueryBeforeSelect();
+            this.endStmtBeforeCommand();
             assert this.getWithClause() == null;
 
             return MySQLSimpleValues.subValues(this.context.getNonNullOuterContext(), this::valuesEnd)
@@ -1348,7 +1348,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
         @Override
         public _QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            this.endQueryBeforeSelect();
+            this.endStmtBeforeCommand();
 
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this.getWithClause(), this.context.getNonNullOuterContext(), this.function,
@@ -1357,8 +1357,8 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         }
 
         @Override
-        public <S extends RowSet> _RightParenClause<_UnionOrderBySpec<I>> leftParen(final Supplier<S> supplier) {
-            this.endQueryBeforeSelect();
+        public <S extends RowSet> _RightParenClause<_UnionOrderBySpec<I>> parens(final Supplier<S> supplier) {
+            this.endStmtBeforeCommand();
 
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this.getWithClause(), this.context.getNonNullOuterContext(), this.function,
@@ -1411,7 +1411,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
         @Override
         public MySQLValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
-            this.endQueryBeforeSelect();
+            this.endStmtBeforeCommand();
             assert this.getWithClause() == null;
 
             return MySQLSimpleValues.primaryValues(this.context.getOuterContext(), this::valuesEnd)
@@ -1420,7 +1420,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
         @Override
         public MySQLValues._ValuesLeftParenClause<I> values() {
-            this.endQueryBeforeSelect();
+            this.endStmtBeforeCommand();
             assert this.getWithClause() == null;
 
             return MySQLSimpleValues.primaryValues(this.context.getOuterContext(), this::valuesEnd)
@@ -1430,7 +1430,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
         @Override
         public _QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            this.endQueryBeforeSelect();
+            this.endStmtBeforeCommand();
 
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this.getWithClause(), this.context.getOuterContext(), this.function,
@@ -1439,7 +1439,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         }
 
         @Override
-        public <S extends RowSet> _RightParenClause<_UnionOrderBySpec<I>> leftParen(Supplier<S> supplier) {
+        public <S extends RowSet> _RightParenClause<_UnionOrderBySpec<I>> parens(Supplier<S> supplier) {
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this.getWithClause(), this.context.getOuterContext(), this.function,
                     this.leftContext);

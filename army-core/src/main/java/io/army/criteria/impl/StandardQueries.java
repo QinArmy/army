@@ -326,7 +326,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         @Override
         public _SelectSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            this.endQueryBeforeSelect();
+            this.endStmtBeforeCommand();
 
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this.context.getOuterContext(), this.function, null);
@@ -334,8 +334,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        public final <S extends RowSet> _RightParenClause<_UnionOrderBySpec<I>> leftParen(Supplier<S> supplier) {
-            this.endQueryBeforeSelect();
+        public final <S extends RowSet> _RightParenClause<_UnionOrderBySpec<I>> parens(Supplier<S> supplier) {
+            this.endStmtBeforeCommand();
 
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this.context.getOuterContext(), this.function, null);
@@ -359,7 +359,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         _SelectComplexUnionSpec<I> createQueryUnion(final UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
-            UnionType.standardUnionType(this.context, unionType);
             return new SimpleSelect<>(this.context.getOuterContext(), unionFunc, this.context);
         }
 
@@ -380,7 +379,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         @Override
         public _SelectSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            this.endQueryBeforeSelect();
+            this.endStmtBeforeCommand();
 
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this.context.getNonNullOuterContext(), this.function, null);
@@ -388,8 +387,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        public final <S extends RowSet> _RightParenClause<_UnionOrderBySpec<I>> leftParen(Supplier<S> supplier) {
-            this.endQueryBeforeSelect();
+        public final <S extends RowSet> _RightParenClause<_UnionOrderBySpec<I>> parens(Supplier<S> supplier) {
+            this.endStmtBeforeCommand();
 
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this.context.getNonNullOuterContext(), this.function, null);

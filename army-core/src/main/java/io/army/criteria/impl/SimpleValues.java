@@ -303,7 +303,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
 
     @Override
     public final I asValues() {
-        this.endValuesStatement();
+        this.endValuesStatement(false);
         return this.onAsValues();
     }
 
@@ -374,8 +374,13 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
     abstract SP createUnionValues(UnionType unionType);
 
 
+    final void endStmtBeforeCommand() {
+        this.endValuesStatement(true);
+    }
+
+
     private SP onUnion(UnionType unionType) {
-        this.endValuesStatement();
+        this.endValuesStatement(false);
         return this.createUnionValues(unionType);
     }
 
@@ -396,28 +401,34 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
         return list;
     }
 
-    private void endValuesStatement() {
+    private void endValuesStatement(final boolean beforeWordValues) {
         _Assert.nonPrepared(this.prepared);
 
-        if (this.columnList != null) {
-            //here,dynamic values
-            this.rightParen();
+        if (beforeWordValues) {
+            this.context.endContextBeforeCommand();
+        } else {
+            if (this.columnList != null) {
+                //here,dynamic values
+                this.rightParen();
+            }
+            final List<List<_Expression>> rowList = this.rowList;
+            if (this.selectionList == null
+                    || !(rowList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.rowList = _CollectionUtils.unmodifiableList(rowList);
+            this.endOrderByClause();
+            this.prepared = Boolean.TRUE;
+            this.context.endContext();
         }
-        final List<List<_Expression>> rowList = this.rowList;
-        if (this.selectionList == null
-                || !(rowList instanceof ArrayList)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        this.rowList = _CollectionUtils.unmodifiableList(rowList);
-        this.endOrderByClause();
-        this.prepared = Boolean.TRUE;
+        ContextStack.pop(this.context);
     }
 
 
     static abstract class WithSimpleValues<I extends Item, B extends CteBuilderSpec, WE, RR, OR, LR, LO, LF, SP>
             extends SimpleValues<I, RR, OR, LR, LO, LF, SP>
             implements DialectStatement._DynamicWithClause<B, WE>
-            , _WithClauseSpec {
+            , ArmyStmtSpec {
 
         private boolean recursive;
 

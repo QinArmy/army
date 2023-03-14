@@ -308,7 +308,7 @@ public interface StandardQuery extends Query, StandardStatement {
     }
 
     interface _SelectComplexUnionSpec<I extends Item> extends _SelectSpec<I>,
-            _LeftParenRowSetClause<_RightParenClause<_UnionOrderBySpec<I>>> {
+            _DynamicParensRowSetClause<_RightParenClause<_UnionOrderBySpec<I>>> {
 
     }
 

@@ -25,8 +25,8 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
 
     private Boolean prepared;
 
-    BracketRowSet(CriteriaContext context) {
-        super(context);
+    BracketRowSet(ArmyStmtSpec spec) {
+        super(CriteriaContexts.bracketContext(spec)); //must migrate WITH clause and context when create bracket.
         ContextStack.push(this.context);
     }
 

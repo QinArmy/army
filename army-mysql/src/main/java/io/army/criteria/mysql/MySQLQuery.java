@@ -286,7 +286,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
             _MySQLDynamicWithClause<_QueryComplexSpec<I>>,
             _StaticWithClause<_StaticCteParensSpec<_ComplexCteComma<I>>>,
             MySQLValues._MySQLValuesClause<I>,
-            _LeftParenRowSetClause<_RightParenClause<_UnionOrderBySpec<I>>> {
+            _DynamicParensRowSetClause<_RightParenClause<_UnionOrderBySpec<I>>> {
 
     }
 

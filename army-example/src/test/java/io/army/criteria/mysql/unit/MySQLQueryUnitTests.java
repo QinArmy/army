@@ -94,7 +94,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
 
                 .unionAll()
 
-                .leftParen(() -> MySQLs.query()
+                .parens(() -> MySQLs.query()
                         .select(PillUser_.id)
                         .from(PillUser_.T, SQLs.AS, "p")
                         .where(PillUser_.id::equal, SQLs::literal, () -> 2)

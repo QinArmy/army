@@ -1,7 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.impl.inner._Statement;
-
 /**
  * <p>
  * Package interface. This interface representing multi-statement spec.
@@ -9,7 +7,7 @@ import io.army.criteria.impl.inner._Statement;
  *
  * @since 1.0
  */
-interface MultiStmtSpec extends CriteriaContextSpec, _Statement._WithClauseSpec {
+interface MultiStmtSpec extends ArmyStmtSpec {
 
 
 }

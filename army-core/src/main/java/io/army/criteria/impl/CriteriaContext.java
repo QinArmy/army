@@ -108,7 +108,7 @@ interface CriteriaContext {
      */
     List<_TableBlock> endContext();
 
-    void endContextBeforeSelect();
+    void endContextBeforeCommand();
 
     List<String> derivedColumnAliasList();
 

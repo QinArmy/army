@@ -136,6 +136,10 @@
     * 因为 session api 上要能正确区分这两种类型,在这点上要保证类型安全,否则无法返回正确结果.Update 与
       ReturningUpdate,Delete 与
       ReturningDelete 同上。
+29. 为什么创建 Bracket 只需要一个 ArmyStmtSpec?
+    * 根据最新的结构设计创建 Bracket 一定需要 WITH 子句和 context 的迁移.
+    
+
 
 
 
