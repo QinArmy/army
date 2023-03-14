@@ -62,8 +62,8 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
     }
 
 
-    static <I extends Item> _SingleWithSpec<I, I> cteSimple(CriteriaContext outerContext,
-                                                            Function<SubStatement, I> function) {
+    static <I extends Item> _SingleWithSpec<I, I> subSimpleDelete(CriteriaContext outerContext,
+                                                                  Function<SubStatement, I> function) {
         return new SubSimpleDelete<>(outerContext, function);
     }
 
@@ -758,7 +758,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         private final Function<SubStatement, I> function;
 
         /**
-         * @see #cteSimple(CriteriaContext, Function)
+         * @see #subSimpleDelete(CriteriaContext, Function)
          */
         private SubSimpleDelete(CriteriaContext outerContext, Function<SubStatement, I> function) {
             super(null, CriteriaContexts.subJoinableSingleDmlContext(outerContext));

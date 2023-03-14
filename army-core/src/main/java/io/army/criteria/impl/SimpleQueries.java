@@ -1063,6 +1063,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         abstract Query._SelectDispatcher<W, SR, SD> createSelectClause();
 
+        final void endDispatcher() {
+            ContextStack.pop(this.context)
+                    .endContext();
+
+        }
+
 
     }//SelectClauseDispatcher
 
@@ -1166,11 +1172,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
 
-        final void endDispatcher() {
-            ContextStack.pop(this.context)
-                    .endContext();
 
-        }
 
 
     }//WithBuilderSelectClauseDispatcher

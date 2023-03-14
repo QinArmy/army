@@ -36,7 +36,7 @@ public abstract class Postgres extends PostgreFuncSyntax {
      * </p>
      */
     public static PostgreQuery._WithSpec<Select> query() {
-        return PostgreQueries.simpleQuery(null, ContextStack.peekIfBracket(), SQLs::_identity, null);
+        return PostgreQueries.simpleQuery(ContextStack.peekIfBracket(), SQLs::_identity);
     }
 
     /**
@@ -45,7 +45,7 @@ public abstract class Postgres extends PostgreFuncSyntax {
      * </p>
      */
     public static PostgreQuery._WithSpec<SubQuery> subQuery() {
-        return PostgreQueries.subQuery(null, ContextStack.peek(), SQLs::_identity, null);
+        return PostgreQueries.subQuery(ContextStack.peek(), SQLs::_identity);
     }
 
     /**
@@ -54,7 +54,7 @@ public abstract class Postgres extends PostgreFuncSyntax {
      * </p>
      */
     public static PostgreQuery._WithSpec<Expression> scalarSubQuery() {
-        return PostgreQueries.subQuery(null, ContextStack.peek(), Expressions::scalarExpression, null);
+        return PostgreQueries.subQuery(ContextStack.peek(), Expressions::scalarExpression);
     }
 
     /**

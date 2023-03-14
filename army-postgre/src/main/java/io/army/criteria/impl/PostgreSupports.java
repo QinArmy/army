@@ -1062,7 +1062,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         @Override
         public PostgreCtes as(@Nullable Postgres.WordMaterialized modifier, Function<PostgreUpdate._SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function) {
             this.modifier = modifier;
-            return function.apply(PostgreUpdates.cteSimple(this.context, this::subUpdateEnd));
+            return function.apply(PostgreUpdates.subSimpleUpdate(this.context, this::subUpdateEnd));
         }
 
         private PostgreCtes subUpdateEnd(final SubStatement statement) {
@@ -1098,7 +1098,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         @Override
         public PostgreCtes as(@Nullable Postgres.WordMaterialized modifier, Function<PostgreDelete._SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function) {
             this.modifier = modifier;
-            return function.apply(PostgreDeletes.cteSimple(this.context, this::subDeleteEnd));
+            return function.apply(PostgreDeletes.subSimpleDelete(this.context, this::subDeleteEnd));
         }
 
         private PostgreCtes subDeleteEnd(final SubStatement statement) {
@@ -1146,10 +1146,10 @@ abstract class PostgreSupports extends CriteriaSupports {
             return new DynamicDeleteParensClause(name, this);
         }
 
+
         @Override
-        public PostgreValues._DynamicCteValuesSpec subValues(String name) {
-            this.context.onStartCte(name);
-            return new PostgreDynamicValuesLeftParenClause(name, this);
+        public PostgreValues._DynamicCteParensSpec subValues(String name) {
+            return null;
         }
 
         @Override

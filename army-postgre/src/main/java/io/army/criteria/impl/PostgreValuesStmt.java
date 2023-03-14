@@ -449,7 +449,7 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
         }
 
         @Override
-        PostgreQueries.PostgreSimpleQuery<I> createSelectClause() {
+        PostgreQueries<I> createSelectClause() {
             this.endDispatcher();
 
             return PostgreQueries.fromSubDispatcher(this, this.function);

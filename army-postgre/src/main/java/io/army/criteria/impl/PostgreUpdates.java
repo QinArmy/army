@@ -72,8 +72,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
      * create new simple(non-batch) single-table UPDATE statement that is sub statement in with clause.
      * </p>
      */
-    static <I extends Item> PostgreUpdate._SingleWithSpec<I, I> cteSimple(CriteriaContext outerContext,
-                                                                          Function<SubStatement, I> function) {
+    static <I extends Item> PostgreUpdate._SingleWithSpec<I, I> subSimpleUpdate(CriteriaContext outerContext,
+                                                                                Function<SubStatement, I> function) {
         return new SubSimpleUpdateClause<>(outerContext, function);
     }
 

@@ -15,8 +15,6 @@ import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -365,24 +363,6 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         @Override
-        public final TR tableSample(String methodName, Expression argument) {
-            return this.tableSample(FunctionUtils.oneArgVoidFunc(methodName, argument));
-        }
-
-        @Override
-        public final TR tableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
-            final List<Expression> list = new ArrayList<>();
-            consumer.accept(list::add);
-            return this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, list));
-        }
-
-        @Override
-        public final TR tableSample(BiFunction<BiFunction<MappingType, Object, Expression>, Object, Expression> method,
-                                    BiFunction<MappingType, Object, Expression> valueOperator, Object argument) {
-            return this.tableSample(method.apply(valueOperator, argument));
-        }
-
-        @Override
         public final TR tableSample(BiFunction<BiFunction<MappingType, Expression, Expression>, Expression, Expression> method,
                                     BiFunction<MappingType, Expression, Expression> valueOperator, Expression argument) {
             return this.tableSample(method.apply(valueOperator, argument));
@@ -401,16 +381,16 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             return this.tableSample(method.apply(valueOperator, function.apply(keyName)));
         }
 
+
         @Override
-        public final TR ifTableSample(String methodName, Consumer<Consumer<Expression>> consumer) {
-            final List<Expression> expList = new ArrayList<>();
-            consumer.accept(expList::add);
-            if (expList.size() > 0) {
-                this.tableSample(FunctionUtils.multiArgVoidFunc(methodName, expList));
+        public final TR ifTableSample(Supplier<Expression> supplier) {
+            final Expression expression;
+            expression = supplier.get();
+            if (expression != null) {
+                this.tableSample(expression);
             }
             return (TR) this;
         }
-
 
         @Override
         public final <T> TR ifTableSample(BiFunction<BiFunction<MappingType, T, Expression>, T, Expression> method,
