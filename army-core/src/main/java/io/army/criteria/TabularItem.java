@@ -25,7 +25,7 @@ public interface TabularItem extends Item {
         @Nullable
         Selection selection(String derivedAlias);
 
-        List<Selection> selectionList();
+        List<? extends Selection> selectionList();
 
         /**
          * @return empty : representing no alias list.

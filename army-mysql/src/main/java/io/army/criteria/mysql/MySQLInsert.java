@@ -206,50 +206,111 @@ public interface MySQLInsert extends MySQLStatement {
     }
 
 
-    interface _ChildIntoClause<I extends Item, P> {
+    interface _ChildIntoClause<P> {
 
-        <T> _PartitionSpec<I, T> into(ComplexTableMeta<P, T> table);
+        <T> _PartitionSpec<Insert, T> into(ComplexTableMeta<P, T> table);
 
     }
 
-    interface _ChildInsertIntoSpec<I extends Item, P> extends _InsertClause<_ChildIntoClause<I, P>> {
+    interface _ChildInsertIntoSpec<P> extends _InsertClause<_ChildIntoClause<P>> {
 
-        <T> _PartitionSpec<I, T> insertInto(ComplexTableMeta<P, T> table);
+        <T> _PartitionSpec<Insert, T> insertInto(ComplexTableMeta<P, T> table);
     }
 
 
-    interface _PrimaryIntoClause<I extends Item> {
+    interface _PrimaryIntoClause {
+
+        <T> _PartitionSpec<Insert, T> into(SimpleTableMeta<T> table);
+
+
+        <P> _PartitionSpec<InsertStatement._ParentInsert<_ChildInsertIntoSpec<P>>, P> into(ParentTableMeta<P> table);
+
+    }
+
+
+    interface _PrimaryInsertIntoSpec extends _InsertClause<_PrimaryIntoClause>, Item {
+
+        <T> _PartitionSpec<Insert, T> insertInto(SimpleTableMeta<T> table);
+
+
+        <P> _PartitionSpec<InsertStatement._ParentInsert<_ChildInsertIntoSpec<P>>, P> insertInto(ParentTableMeta<P> table);
+
+    }
+
+
+    interface _PrimaryPreferLiteralSpec
+            extends InsertStatement._PreferLiteralClause<_PrimaryInsertIntoSpec>,
+            _PrimaryInsertIntoSpec {
+
+    }
+
+    interface _PrimaryNullOptionSpec
+            extends InsertStatement._NullOptionClause<_PrimaryPreferLiteralSpec>,
+            _PrimaryPreferLiteralSpec {
+
+    }
+
+    interface _PrimaryOptionSpec
+            extends InsertStatement._MigrationOptionClause<_PrimaryNullOptionSpec>,
+            _PrimaryNullOptionSpec {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing INTO clause that support only {@link SingleTableMeta}.
+     * </p>
+     */
+    interface _PrimarySingleIntoClause<I extends Item> {
 
         <T> _PartitionSpec<I, T> into(SingleTableMeta<T> table);
 
+    }
 
-        <P> _PartitionSpec<InsertStatement._ParentInsert<_ChildInsertIntoSpec<I, P>>, P> into(ParentTableMeta<P> table);
+
+    /**
+     * <p>
+     * This interface representing INSERT INTO spec that support only {@link SingleTableMeta}.
+     * </p>
+     */
+    interface _PrimarySingleInsertIntoSpec<I extends Item> extends _InsertClause<_PrimarySingleIntoClause<I>>, Item {
+
+        <T> _PartitionSpec<I, T> insertInto(SingleTableMeta<T> table);
+
+    }
+
+    /**
+     * <p>
+     * This interface representing {@link LiteralMode} spec that support only {@link SingleTableMeta}.
+     * </p>
+     */
+    interface _PrimarySinglePreferLiteralSpec<I extends Item>
+            extends InsertStatement._PreferLiteralClause<_PrimarySingleInsertIntoSpec<I>>,
+            _PrimarySingleInsertIntoSpec<I> {
 
     }
 
 
-    interface _PrimaryInsertIntoSpec<I extends Item> extends _InsertClause<_PrimaryIntoClause<I>>, Item {
-
-        <T> _PartitionSpec<I, T> insertInto(SimpleTableMeta<T> table);
-
-
-        <P> _PartitionSpec<InsertStatement._ParentInsert<_ChildInsertIntoSpec<I, P>>, P> insertInto(ParentTableMeta<P> table);
-
-    }
-
-
-    interface _PrimaryPreferLiteralSpec<I extends Item> extends InsertStatement._PreferLiteralClause<_PrimaryInsertIntoSpec<I>>
-            , _PrimaryInsertIntoSpec<I> {
+    /**
+     * <p>
+     * This interface representing {@link NullMode} spec that support only {@link SingleTableMeta}.
+     * </p>
+     */
+    interface _PrimarySingleNullOptionSpec<I extends Item>
+            extends InsertStatement._NullOptionClause<_PrimarySinglePreferLiteralSpec<I>>,
+            _PrimarySinglePreferLiteralSpec<I> {
 
     }
 
-    interface _PrimaryNullOptionSpec<I extends Item> extends InsertStatement._NullOptionClause<_PrimaryPreferLiteralSpec<I>>
-            , _PrimaryPreferLiteralSpec<I> {
-
-    }
-
-    interface _PrimaryOptionSpec<I extends Item> extends InsertStatement._MigrationOptionClause<_PrimaryNullOptionSpec<I>>
-            , _PrimaryNullOptionSpec<I> {
+    /**
+     * <p>
+     * This interface representing migration spec that support only {@link SingleTableMeta}.
+     * </p>
+     */
+    interface _PrimarySingleOptionSpec<I extends Item>
+            extends InsertStatement._MigrationOptionClause<_PrimarySingleNullOptionSpec<I>>,
+            _PrimarySingleNullOptionSpec<I> {
 
     }
 

@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.standard.StandardUpdate;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
+import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.util._CollectionUtils;
 
@@ -29,8 +30,8 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         extends SingleUpdateStatement<I, F, SR, WR, WA, Object, Object, Object, Object>
         implements StandardUpdate, UpdateStatement {
 
-    static <I extends Item> _SingleUpdateClause<I> simpleSingle(Function<UpdateStatement, I> function) {
-        return new PrimarySimpleSingleUpdateClause<>(function);
+    static _SingleUpdateClause<Update> singleUpdate() {
+        return new PrimarySimpleSingleUpdateClause<>(null, SQLs::_identity);
     }
 
     static _DomainUpdateClause simpleDomain() {
@@ -100,7 +101,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
             _WhereSpec<I, F>,
             _DmlUpdateSpec<I>,
             _WhereAndSpec<I>>
-            implements _WhereSpec<I, F>, _WhereAndSpec<I> {
+            implements _WhereSpec<I, F>, _WhereAndSpec<I>, Update {
 
 
         private SimpleSingleUpdate(CriteriaContext context, TableMeta<?> table, String tableAlias) {
@@ -119,10 +120,10 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
     private static final class PrimarySimpleSingleUpdate<I extends Item, F extends TableField>
             extends SimpleSingleUpdate<I, F> {
 
-        private final Function<UpdateStatement, I> function;
+        private final Function<? super Update, I> function;
 
         private PrimarySimpleSingleUpdate(CriteriaContext context, TableMeta<?> table
-                , String tableAlias, Function<UpdateStatement, I> function) {
+                , String tableAlias, Function<? super Update, I> function) {
             super(context, table, tableAlias);
             this.function = function;
         }
@@ -136,7 +137,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
     }//PrimarySimpleSingleUpdate
 
 
-    private static final class SimpleDomainUpdate<F extends TableField> extends SimpleSingleUpdate<UpdateStatement, F>
+    private static final class SimpleDomainUpdate<F extends TableField> extends SimpleSingleUpdate<Update, F>
             implements _DomainUpdate {
 
         private List<_ItemPair> childItemPairList;
@@ -163,7 +164,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        UpdateStatement onAsStandardUpdate() {
+        Update onAsStandardUpdate() {
             return this;
         }
 
@@ -189,15 +190,18 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
      * @since 1.0
      */
     private static class BatchSingleUpdate<F extends TableField> extends StandardUpdates<
-            UpdateStatement,
+            BatchUpdate,
             F,
-            _BatchWhereSpec<UpdateStatement, F>,
-            _BatchParamClause<_DmlUpdateSpec<UpdateStatement>>,
-            _BatchWhereAndSpec<UpdateStatement>>
-            implements _BatchWhereSpec<UpdateStatement, F>, _BatchWhereAndSpec<UpdateStatement>, _BatchDml {
+            _BatchWhereSpec<BatchUpdate, F>,
+            _BatchParamClause<_DmlUpdateSpec<BatchUpdate>>,
+            _BatchWhereAndSpec<BatchUpdate>>
+            implements _BatchWhereSpec<BatchUpdate, F>,
+            _BatchWhereAndSpec<BatchUpdate>,
+            BatchUpdate,
+            _BatchDml {
 
         @Override
-        public _BatchWhereClause<UpdateStatement> sets(Consumer<BatchItemPairs<F>> consumer) {
+        public _BatchWhereClause<BatchUpdate> sets(Consumer<BatchItemPairs<F>> consumer) {
             consumer.accept(CriteriaSupports.batchItemPairs(this::onAddItemPair));
             return this;
         }
@@ -209,18 +213,18 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        public final <P> _DmlUpdateSpec<UpdateStatement> paramList(List<P> paramList) {
+        public final <P> _DmlUpdateSpec<BatchUpdate> paramList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
         }
 
         @Override
-        public final <P> _DmlUpdateSpec<UpdateStatement> paramList(Supplier<List<P>> supplier) {
+        public final <P> _DmlUpdateSpec<BatchUpdate> paramList(Supplier<List<P>> supplier) {
             return this.paramList(supplier.get());
         }
 
         @Override
-        public final _DmlUpdateSpec<UpdateStatement> paramList(Function<String, ?> function, String keyName) {
+        public final _DmlUpdateSpec<BatchUpdate> paramList(Function<String, ?> function, String keyName) {
             this.paramList = CriteriaUtils.paramList(this.context, (List<?>) function.apply(keyName));
             return this;
         }
@@ -235,7 +239,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        UpdateStatement onAsStandardUpdate() {
+        BatchUpdate onAsStandardUpdate() {
             return this;
         }
 
@@ -264,7 +268,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        UpdateStatement onAsStandardUpdate() {
+        BatchUpdate onAsStandardUpdate() {
             return this;
         }
 
@@ -286,10 +290,10 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
 
         private final CriteriaContext context;
 
-        private final Function<UpdateStatement, I> function;
+        private final Function<? super Update, I> function;
 
-        private PrimarySimpleSingleUpdateClause(Function<UpdateStatement, I> function) {
-            this.context = CriteriaContexts.primarySingleDmlContext(null, null);
+        private PrimarySimpleSingleUpdateClause(@Nullable ArmyStmtSpec spec, Function<? super Update, I> function) {
+            this.context = CriteriaContexts.primarySingleDmlContext(spec);
             ContextStack.push(this.context);
             this.function = function;
         }
@@ -315,24 +319,24 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         private final CriteriaContext context;
 
         private SimpleDomainUpdateClause() {
-            this.context = CriteriaContexts.primarySingleDmlContext(null, null);
+            this.context = CriteriaContexts.primarySingleDmlContext(null);
             ContextStack.push(this.context);
         }
 
         @Override
-        public _StandardSetClause<UpdateStatement, FieldMeta<?>> update(TableMeta<?> table, String tableAlias) {
+        public _StandardSetClause<Update, FieldMeta<?>> update(TableMeta<?> table, String tableAlias) {
             return new SimpleDomainUpdate<>(this.context, table, tableAlias);
         }
 
         @Override
-        public <T> _StandardSetClause<UpdateStatement, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as,
-                                                                            String tableAlias) {
+        public <T> _StandardSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as,
+                                                                   String tableAlias) {
             return new SimpleDomainUpdate<>(this.context, table, tableAlias);
         }
 
         @Override
-        public <T> _StandardSetClause<UpdateStatement, FieldMeta<? super T>> update(ChildTableMeta<T> table, SQLs.WordAs as,
-                                                                                    String tableAlias) {
+        public <T> _StandardSetClause<Update, FieldMeta<? super T>> update(ChildTableMeta<T> table, SQLs.WordAs as,
+                                                                           String tableAlias) {
             return new SimpleDomainUpdate<>(this.context, table, tableAlias);
         }
     }// SimpleDomainUpdateClause
@@ -343,20 +347,20 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         private final CriteriaContext context;
 
         private BatchSingleUpdateClause() {
-            this.context = CriteriaContexts.primarySingleDmlContext(null, null);
+            this.context = CriteriaContexts.primarySingleDmlContext(null);
             ContextStack.push(this.context);
         }
 
 
         @Override
-        public <T> _BatchSetClause<UpdateStatement, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as,
-                                                                         String tableAlias) {
+        public <T> _BatchSetClause<BatchUpdate, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as,
+                                                                     String tableAlias) {
             return new BatchSingleUpdate<>(this.context, table, tableAlias);
         }
 
         @Override
-        public <P> _BatchSetClause<UpdateStatement, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, SQLs.WordAs as,
-                                                                         String tableAlias) {
+        public <P> _BatchSetClause<BatchUpdate, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, SQLs.WordAs as,
+                                                                     String tableAlias) {
             return new BatchSingleUpdate<>(this.context, table, tableAlias);
         }
 
@@ -369,25 +373,25 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         private final CriteriaContext context;
 
         private BatchDomainUpdateClause() {
-            this.context = CriteriaContexts.primarySingleDmlContext(null, null);
+            this.context = CriteriaContexts.primarySingleDmlContext(null);
             ContextStack.push(this.context);
         }
 
 
         @Override
-        public _BatchSetClause<UpdateStatement, FieldMeta<?>> update(TableMeta<?> table, String tableAlias) {
+        public _BatchSetClause<BatchUpdate, FieldMeta<?>> update(TableMeta<?> table, String tableAlias) {
             return new BatchDomainUpdate<>(this.context, table, tableAlias);
         }
 
         @Override
-        public <T> _BatchSetClause<UpdateStatement, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as,
-                                                                         String tableAlias) {
+        public <T> _BatchSetClause<BatchUpdate, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as,
+                                                                     String tableAlias) {
             return new BatchDomainUpdate<>(this.context, table, tableAlias);
         }
 
         @Override
-        public <T> _BatchSetClause<UpdateStatement, FieldMeta<? super T>> update(ChildTableMeta<T> table, SQLs.WordAs as,
-                                                                                 String tableAlias) {
+        public <T> _BatchSetClause<BatchUpdate, FieldMeta<? super T>> update(ChildTableMeta<T> table, SQLs.WordAs as,
+                                                                             String tableAlias) {
             return new BatchDomainUpdate<>(this.context, table, tableAlias);
         }
 

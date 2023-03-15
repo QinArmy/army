@@ -60,8 +60,8 @@ public abstract class SQLs extends SQLsSyntax {
     ;
 
 
-    public static StandardInsert._PrimaryOptionSpec<InsertStatement> singleInsert() {
-        return StandardInserts.primaryInsert(SQLs._INSERT_IDENTITY);
+    public static StandardInsert._PrimaryOptionSpec singleInsert() {
+        return StandardInserts.singleInsert();
     }
 
     public static StandardUpdate._DomainUpdateClause domainUpdate() {
@@ -69,8 +69,8 @@ public abstract class SQLs extends SQLsSyntax {
     }
 
 
-    public static StandardUpdate._SingleUpdateClause<UpdateStatement> singleUpdate() {
-        return StandardUpdates.simpleSingle(SQLs._UPDATE_IDENTITY);
+    public static StandardUpdate._SingleUpdateClause<Update> singleUpdate() {
+        return StandardUpdates.singleUpdate();
     }
 
 
@@ -94,8 +94,8 @@ public abstract class SQLs extends SQLsSyntax {
     }
 
 
-    public static StandardDelete._StandardDeleteClause<DeleteStatement> singleDelete() {
-        return StandardDeletes.singleDelete(SQLs._DELETE_IDENTITY);
+    public static StandardDelete._StandardDeleteClause<Delete> singleDelete() {
+        return StandardDeletes.singleDelete();
     }
 
     public static StandardDelete._DomainDeleteClause domainDelete() {
@@ -107,8 +107,8 @@ public abstract class SQLs extends SQLsSyntax {
      * Batch domain delete
      * </p>
      */
-    public static StandardDelete._BatchDeleteClause<DeleteStatement> batchSingleDelete() {
-        return StandardDeletes.batchSingleDelete(SQLs._DELETE_IDENTITY);
+    public static StandardDelete._BatchDeleteClause batchSingleDelete() {
+        return StandardDeletes.batchSingleDelete();
     }
 
     public static StandardDelete._BatchDomainDeleteClause batchDomainDelete() {
@@ -482,9 +482,9 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public List<Selection> selectionList() {
+        public List<? extends Selection> selectionList() {
             final SubStatement subStatement = this.subStatement;
-            final List<Selection> list;
+            final List<? extends Selection> list;
             if (subStatement instanceof DerivedTable) {
                 list = ((ArmyDerivedTable) subStatement).selectionList();
             } else if (subStatement instanceof _Statement._ReturningListSpec) {

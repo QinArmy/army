@@ -1,6 +1,7 @@
 package io.army.criteria.standard;
 
-import io.army.criteria.DeleteStatement;
+import io.army.criteria.BatchDelete;
+import io.army.criteria.Delete;
 import io.army.criteria.Item;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.SingleTableMeta;
@@ -20,8 +21,8 @@ public interface StandardDelete extends StandardStatement {
     }
 
 
-    interface _WhereAndSpec<I extends Item> extends _WhereAndClause<_WhereAndSpec<I>>
-            , _DmlDeleteSpec<I> {
+    interface _WhereAndSpec<I extends Item> extends _WhereAndClause<_WhereAndSpec<I>>,
+            _DmlDeleteSpec<I> {
 
     }
 
@@ -38,14 +39,13 @@ public interface StandardDelete extends StandardStatement {
 
     interface _DomainDeleteClause {
 
-        _WhereSpec<DeleteStatement> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
+        _WhereSpec<Delete> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
 
     }
 
 
-
-    interface _BatchWhereAndSpec<I extends Item> extends _WhereAndClause<_BatchWhereAndSpec<I>>
-            , _BatchParamClause<_DmlDeleteSpec<I>> {
+    interface _BatchWhereAndSpec<I extends Item> extends _WhereAndClause<_BatchWhereAndSpec<I>>,
+            _BatchParamClause<_DmlDeleteSpec<I>> {
 
     }
 
@@ -54,13 +54,13 @@ public interface StandardDelete extends StandardStatement {
 
     }
 
-    interface _BatchDeleteClause<I extends Item> extends _DeleteFromClause<_BatchWhereSpec<I>> {
+    interface _BatchDeleteClause extends _DeleteFromClause<_BatchWhereSpec<BatchDelete>> {
 
     }
 
     interface _BatchDomainDeleteClause {
 
-        _BatchWhereSpec<DeleteStatement> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
+        _BatchWhereSpec<BatchDelete> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
 
     }
 

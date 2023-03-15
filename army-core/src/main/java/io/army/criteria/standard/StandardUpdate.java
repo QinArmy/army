@@ -7,8 +7,8 @@ import io.army.meta.*;
 public interface StandardUpdate extends StandardStatement {
 
 
-    interface _WhereAndSpec<I extends Item> extends UpdateStatement._UpdateWhereAndClause<_WhereAndSpec<I>>
-            , _DmlUpdateSpec<I> {
+    interface _WhereAndSpec<I extends Item> extends UpdateStatement._UpdateWhereAndClause<_WhereAndSpec<I>>,
+            _DmlUpdateSpec<I> {
 
     }
 
@@ -17,15 +17,15 @@ public interface StandardUpdate extends StandardStatement {
 
     }
 
-    interface _WhereSpec<I extends Item, F extends TableField> extends _StandardSetClause<I, F>
-            , _StandardWhereClause<I> {
+    interface _WhereSpec<I extends Item, F extends TableField> extends _StandardSetClause<I, F>,
+            _StandardWhereClause<I> {
 
 
     }
 
     interface _StandardSetClause<I extends Item, F extends TableField>
-            extends UpdateStatement._StaticSetClause<F, _WhereSpec<I, F>>
-            , UpdateStatement._DynamicSetClause<ItemPairs<F>, _StandardWhereClause<I>> {
+            extends UpdateStatement._StaticSetClause<F, _WhereSpec<I, F>>,
+            UpdateStatement._DynamicSetClause<ItemPairs<F>, _StandardWhereClause<I>> {
 
     }
 
@@ -40,17 +40,17 @@ public interface StandardUpdate extends StandardStatement {
 
     interface _DomainUpdateClause {
 
-        _StandardSetClause<UpdateStatement, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
+        _StandardSetClause<Update, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
 
-        <T> _StandardSetClause<UpdateStatement, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
+        <T> _StandardSetClause<Update, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
-        <T> _StandardSetClause<UpdateStatement, FieldMeta<? super T>> update(ChildTableMeta<T> table, SQLs.WordAs as, String tableAlias);
+        <T> _StandardSetClause<Update, FieldMeta<? super T>> update(ChildTableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
     }
 
     interface _BatchWhereAndSpec<I extends Item>
-            extends UpdateStatement._UpdateWhereAndClause<_BatchWhereAndSpec<I>>
-            , _BatchParamClause<_DmlUpdateSpec<I>> {
+            extends UpdateStatement._UpdateWhereAndClause<_BatchWhereAndSpec<I>>,
+            _BatchParamClause<_DmlUpdateSpec<I>> {
 
     }
 
@@ -59,33 +59,33 @@ public interface StandardUpdate extends StandardStatement {
 
     }
 
-    interface _BatchWhereSpec<I extends Item, F extends TableField> extends _BatchSetClause<I, F>
-            , _BatchWhereClause<I> {
+    interface _BatchWhereSpec<I extends Item, F extends TableField> extends _BatchSetClause<I, F>,
+            _BatchWhereClause<I> {
 
     }
 
     interface _BatchSetClause<I extends Item, F extends TableField>
-            extends UpdateStatement._StaticBatchSetClause<F, _BatchWhereSpec<I, F>>
-            , UpdateStatement._DynamicSetClause<BatchItemPairs<F>, _BatchWhereClause<I>> {
+            extends UpdateStatement._StaticBatchSetClause<F, _BatchWhereSpec<I, F>>,
+            UpdateStatement._DynamicSetClause<BatchItemPairs<F>, _BatchWhereClause<I>> {
 
 
     }
 
     interface _BatchSingleUpdateClause {
 
-        <T> _BatchSetClause<UpdateStatement, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
+        <T> _BatchSetClause<BatchUpdate, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
-        <P> _BatchSetClause<UpdateStatement, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, SQLs.WordAs as, String tableAlias);
+        <P> _BatchSetClause<BatchUpdate, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, SQLs.WordAs as, String tableAlias);
 
     }
 
     interface _BatchDomainUpdateClause {
 
-        _BatchSetClause<UpdateStatement, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
+        _BatchSetClause<BatchUpdate, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
 
-        <T> _BatchSetClause<UpdateStatement, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
+        <T> _BatchSetClause<BatchUpdate, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
-        <T> _BatchSetClause<UpdateStatement, FieldMeta<? super T>> update(ChildTableMeta<T> table, SQLs.WordAs as, String tableAlias);
+        <T> _BatchSetClause<BatchUpdate, FieldMeta<? super T>> update(ChildTableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
     }
 

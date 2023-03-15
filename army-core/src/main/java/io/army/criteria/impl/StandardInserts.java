@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.Insert;
 import io.army.criteria.InsertStatement;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
@@ -32,52 +33,49 @@ abstract class StandardInserts extends InsertSupports {
     }
 
 
-    static <I extends Item> StandardInsert._PrimaryOptionSpec<I> primaryInsert(Function<InsertStatement, I> function) {
-        return new PrimaryInsertIntoClause<>(function);
+    static StandardInsert._PrimaryOptionSpec singleInsert() {
+        return new PrimaryInsertIntoClause();
     }
 
 
     /*-------------------below standard domain insert syntax class-------------------*/
-    private static final class PrimaryInsertIntoClause<I extends Item>
+    private static final class PrimaryInsertIntoClause
             extends NonQueryInsertOptionsImpl<
-            StandardInsert._PrimaryNullOptionSpec<I>,
-            StandardInsert._PrimaryPreferLiteralSpec<I>,
-            StandardInsert._PrimaryInsertIntoClause<I>>
-            implements StandardInsert._PrimaryOptionSpec<I> {
+            StandardInsert._PrimaryNullOptionSpec,
+            StandardInsert._PrimaryPreferLiteralSpec,
+            StandardInsert._PrimaryInsertIntoClause>
+            implements StandardInsert._PrimaryOptionSpec {
 
-        private final Function<InsertStatement, I> function;
-
-        private PrimaryInsertIntoClause(Function<InsertStatement, I> function) {
+        private PrimaryInsertIntoClause() {
             super(CriteriaContexts.primaryInsertContext(null));
             ContextStack.push(this.context);
-            this.function = function;
         }
 
         @Override
-        public <T> StandardInsert._ColumnListSpec<T, I> insertInto(SingleTableMeta<T> table) {
+        public <T> StandardInsert._ColumnListSpec<T, Insert> insertInto(SingleTableMeta<T> table) {
             return new StandardComplexValuesClause<>(this, table, this::singleInsertEnd);
         }
 
 
         @Override
-        public <P> StandardInsert._ColumnListSpec<P, InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<I, P>>> insertInto(ParentTableMeta<P> table) {
+        public <P> StandardInsert._ColumnListSpec<P, InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<Insert, P>>> insertInto(ParentTableMeta<P> table) {
             return new StandardComplexValuesClause<>(this, table, this::parentInsertEnd);
         }
 
-        private <P> InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<I, P>> parentInsertEnd(final StandardComplexValuesClause<?, ?> clause) {
-            final Statement._DmlInsertClause<InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<I, P>>> spec;
+        private <P> InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<Insert, P>> parentInsertEnd(final StandardComplexValuesClause<?, ?> clause) {
+            final Statement._DmlInsertClause<InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<Insert, P>>> spec;
 
             final InsertMode mode;
             mode = clause.getInsertMode();
             switch (mode) {
                 case DOMAIN:
-                    spec = new PrimaryParentDomainInsertStatement<>(clause, this.function);
+                    spec = new PrimaryParentDomainInsertStatement<>(clause, SQLs::_identity);
                     break;
                 case VALUES:
-                    spec = new PrimaryParentValueInsertStatement<>(clause, this.function);
+                    spec = new PrimaryParentValueInsertStatement<>(clause, SQLs::_identity);
                     break;
                 case QUERY:
-                    spec = new PrimaryParentQueryInsertStatement<>(clause, this.function);
+                    spec = new PrimaryParentQueryInsertStatement<>(clause, SQLs::_identity);
                     break;
                 default:
                     throw _Exceptions.unexpectedEnum(mode);
@@ -86,8 +84,8 @@ abstract class StandardInserts extends InsertSupports {
             return spec.asInsert();
         }
 
-        private I singleInsertEnd(final StandardComplexValuesClause<?, ?> clause) {
-            final Statement._DmlInsertClause<InsertStatement> spec;
+        private Insert singleInsertEnd(final StandardComplexValuesClause<?, ?> clause) {
+            final Statement._DmlInsertClause<Insert> spec;
             final InsertMode mode;
             mode = clause.getInsertMode();
             switch (mode) {
@@ -104,7 +102,7 @@ abstract class StandardInserts extends InsertSupports {
                     throw _Exceptions.unexpectedEnum(mode);
             }
 
-            return this.function.apply(spec.asInsert());
+            return spec.asInsert();
         }
 
 
@@ -164,14 +162,14 @@ abstract class StandardInserts extends InsertSupports {
             StandardInsert._ComplexColumnDefaultSpec<T, I>,
             StandardInsert._ValuesColumnDefaultSpec<T, I>,
             Statement._DmlInsertClause<I>>
-            implements StandardInsert._ColumnListSpec<T, I>
-            , StandardInsert._ComplexColumnDefaultSpec<T, I>
-            , Statement._DmlInsertClause<I> {
+            implements StandardInsert._ColumnListSpec<T, I>,
+            StandardInsert._ComplexColumnDefaultSpec<T, I>,
+            Statement._DmlInsertClause<I> {
 
         private final Function<StandardComplexValuesClause<?, ?>, I> dmlFunction;
 
-        private StandardComplexValuesClause(ValueSyntaxOptions options, TableMeta<T> table
-                , Function<StandardComplexValuesClause<?, ?>, I> dmlFunction) {
+        private StandardComplexValuesClause(ValueSyntaxOptions options, TableMeta<T> table,
+                                            Function<StandardComplexValuesClause<?, ?>, I> dmlFunction) {
             super(options, table);
             this.dmlFunction = dmlFunction;
         }
@@ -197,9 +195,9 @@ abstract class StandardInserts extends InsertSupports {
     }//StandardComplexValuesClause
 
 
-    private static abstract class StandardValuesSyntaxStatement<I extends Statement.DmlInsert>
+    private static abstract class StandardValuesSyntaxStatement<I extends Statement>
             extends ValueSyntaxInsertStatement<I>
-            implements StandardInsert, InsertStatement {
+            implements StandardInsert, Insert {
 
         private StandardValuesSyntaxStatement(StandardComplexValuesClause<?, ?> clause) {
             super(clause);
@@ -213,7 +211,7 @@ abstract class StandardInserts extends InsertSupports {
 
     }//StandardValuesSyntaxStatement
 
-    static abstract class DomainsInsertStatement<I extends Statement.DmlInsert>
+    static abstract class DomainsInsertStatement<I extends Statement>
             extends StandardValuesSyntaxStatement<I>
             implements _Insert._DomainInsert {
 
@@ -224,7 +222,7 @@ abstract class StandardInserts extends InsertSupports {
 
     }//DomainsInsertStatement
 
-    private static final class PrimarySingleDomainInsertStatement extends DomainsInsertStatement<InsertStatement> {
+    private static final class PrimarySingleDomainInsertStatement extends DomainsInsertStatement<Insert> {
 
         private final List<?> domainList;
 
@@ -242,7 +240,7 @@ abstract class StandardInserts extends InsertSupports {
 
     }//PrimarySingleDomainInsertStatement
 
-    private static final class PrimaryChildDomainInsertStatement extends DomainsInsertStatement<InsertStatement>
+    private static final class PrimaryChildDomainInsertStatement extends DomainsInsertStatement<Insert>
             implements _Insert._ChildDomainInsert {
 
         private final List<?> domainList;
@@ -275,7 +273,7 @@ abstract class StandardInserts extends InsertSupports {
             extends DomainsInsertStatement<InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<I, P>>>
             implements InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<I, P>> {
 
-        private final Function<InsertStatement, I> function;
+        private final Function<Insert, I> function;
 
         private final List<?> originalDomainList;
 
@@ -285,7 +283,7 @@ abstract class StandardInserts extends InsertSupports {
          * @see PrimaryInsertIntoClause#parentInsertEnd(StandardComplexValuesClause)
          */
         private PrimaryParentDomainInsertStatement(StandardComplexValuesClause<?, ?> clause,
-                                                   Function<InsertStatement, I> function) {
+                                                   Function<Insert, I> function) {
             super(clause);
             assert clause.insertTable instanceof ParentTableMeta;
             this.function = function;
@@ -306,7 +304,7 @@ abstract class StandardInserts extends InsertSupports {
 
         private I childInsertEnd(final StandardComplexValuesClause<?, ?> childClause) {
             childClause.domainListForChild(this.originalDomainList);
-            final InsertStatement insert;
+            final Insert insert;
             insert = new PrimaryChildDomainInsertStatement(this, childClause)
                     .asInsert();
             return this.function.apply(insert);
@@ -315,7 +313,7 @@ abstract class StandardInserts extends InsertSupports {
 
     }//PrimaryParentDomainInsertStatement
 
-    static abstract class ValueInsertStatement<I extends Statement.DmlInsert> extends StandardValuesSyntaxStatement<I>
+    static abstract class ValueInsertStatement<I extends Statement> extends StandardValuesSyntaxStatement<I>
             implements _Insert._ValuesInsert {
 
         final List<Map<FieldMeta<?>, _Expression>> rowPairList;
@@ -334,7 +332,7 @@ abstract class StandardInserts extends InsertSupports {
     }//ValueInsertStatement
 
 
-    private static final class PrimarySingleValueInsertStatement extends ValueInsertStatement<InsertStatement> {
+    private static final class PrimarySingleValueInsertStatement extends ValueInsertStatement<Insert> {
 
         private PrimarySingleValueInsertStatement(StandardComplexValuesClause<?, ?> clause) {
             super(clause);
@@ -344,7 +342,7 @@ abstract class StandardInserts extends InsertSupports {
 
     }//PrimarySimpleValueInsertStatement
 
-    private static final class PrimaryChildValueInsertStatement extends ValueInsertStatement<InsertStatement>
+    private static final class PrimaryChildValueInsertStatement extends ValueInsertStatement<Insert>
             implements _Insert._ChildValuesInsert {
 
         private final PrimaryParentValueInsertStatement<?, ?> parentStatement;
@@ -368,10 +366,10 @@ abstract class StandardInserts extends InsertSupports {
             extends ValueInsertStatement<InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<I, P>>>
             implements InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<I, P>> {
 
-        private final Function<InsertStatement, I> function;
+        private final Function<Insert, I> function;
 
         private PrimaryParentValueInsertStatement(StandardComplexValuesClause<?, ?> clause,
-                                                  Function<InsertStatement, I> function) {
+                                                  Function<Insert, I> function) {
             super(clause);
             assert clause.insertTable instanceof ParentTableMeta;
             this.function = function;
@@ -388,7 +386,7 @@ abstract class StandardInserts extends InsertSupports {
             if (childClause.rowPairList().size() != this.rowPairList.size()) {
                 throw CriteriaUtils.childParentRowNotMatch(childClause, this);
             }
-            final InsertStatement insert;
+            final Insert insert;
             insert = new PrimaryChildValueInsertStatement(this, childClause)
                     .asInsert();
             return this.function.apply(insert);
@@ -398,9 +396,9 @@ abstract class StandardInserts extends InsertSupports {
     }//PrimaryParentValueInsertStatement
 
 
-    static abstract class QueryInsertStatement<I extends Statement.DmlInsert>
+    static abstract class QueryInsertStatement<I extends Statement>
             extends InsertSupports.QuerySyntaxInsertStatement<I>
-            implements InsertStatement, StandardInsert {
+            implements Insert, StandardInsert {
 
         private QueryInsertStatement(final StandardComplexValuesClause<?, ?> clause) {
             super(clause);
@@ -415,7 +413,7 @@ abstract class StandardInserts extends InsertSupports {
     }//QueryInsertStatement
 
 
-    private static final class PrimarySingleQueryInsertStatement extends QueryInsertStatement<InsertStatement> {
+    private static final class PrimarySingleQueryInsertStatement extends QueryInsertStatement<Insert> {
 
         private PrimarySingleQueryInsertStatement(StandardComplexValuesClause<?, ?> clause) {
             super(clause);
@@ -425,7 +423,7 @@ abstract class StandardInserts extends InsertSupports {
     }//PrimarySimpleQueryInsertStatement
 
 
-    private static final class PrimaryChildQueryInsertStatement extends QueryInsertStatement<InsertStatement>
+    private static final class PrimaryChildQueryInsertStatement extends QueryInsertStatement<Insert>
             implements _Insert._ChildQueryInsert {
 
         private final PrimaryParentQueryInsertStatement<?, ?> parentStatement;
@@ -449,10 +447,10 @@ abstract class StandardInserts extends InsertSupports {
             extends QueryInsertStatement<InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<I, P>>>
             implements InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<I, P>> {
 
-        private final Function<InsertStatement, I> function;
+        private final Function<Insert, I> function;
 
         private PrimaryParentQueryInsertStatement(StandardComplexValuesClause<?, ?> clause,
-                                                  Function<InsertStatement, I> function) {
+                                                  Function<Insert, I> function) {
             super(clause);
             assert clause.insertTable instanceof ParentTableMeta;
             this.function = function;
@@ -465,7 +463,7 @@ abstract class StandardInserts extends InsertSupports {
         }
 
         private I childInsertEnd(final StandardComplexValuesClause<?, ?> childClause) {
-            final InsertStatement insert;
+            final Insert insert;
             insert = new PrimaryChildQueryInsertStatement(this, childClause)
                     .asInsert();
             return this.function.apply(insert);

@@ -121,7 +121,7 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext primaryInsertContext(@Nullable _Statement._WithClauseSpec withSpec) {
+    static CriteriaContext primaryInsertContext(@Nullable ArmyStmtSpec spec) {
         return new PrimaryInsertContext();
     }
 
@@ -161,13 +161,8 @@ abstract class CriteriaContexts {
         return new SingleDmlContext(null);
     }
 
-    @Deprecated
-    static CriteriaContext primarySingleDmlContext(@Nullable _Statement._WithClauseSpec spec) {
-        return new SingleDmlContext(null);
-    }
 
-    static CriteriaContext primarySingleDmlContext(@Nullable _Statement._WithClauseSpec spec,
-                                                   @Nullable CriteriaContext outerContext) {
+    static CriteriaContext primarySingleDmlContext(@Nullable ArmyStmtSpec spec) {
         return new SingleDmlContext(null);
     }
 

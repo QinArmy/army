@@ -46,7 +46,7 @@ abstract class PostgreInserts extends InsertSupports {
 
     /**
      * <p>
-     * create new single-table INSERT statement that is primary statement.
+     * create new single-table INSERT statement that is primary statement and support {@link io.army.meta.ChildTableMeta}.
      * </p>
      */
     static PostgreInsert._PrimaryOptionSpec singleInsert() {
@@ -55,7 +55,7 @@ abstract class PostgreInserts extends InsertSupports {
 
     /**
      * <p>
-     * create new single-table INSERT statement that is primary statement for multi-statement.
+     * create new single-table INSERT statement that is primary statement for multi-statement and don't support {@link io.army.meta.ChildTableMeta}.
      * </p>
      */
     static <I extends Item> PostgreInsert._ComplexOptionSpec<I> singleInsert(

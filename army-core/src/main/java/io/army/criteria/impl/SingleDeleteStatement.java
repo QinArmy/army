@@ -17,9 +17,9 @@ import java.util.function.Consumer;
 
 abstract class SingleDeleteStatement<I extends Item, WR, WA, OR, LR, LO, LF>
         extends WhereClause<WR, WA, OR, LR, LO, LF>
-        implements _SingleDelete
-        , Statement
-        , Statement._DmlDeleteSpec<I> {
+        implements _SingleDelete,
+        Statement,
+        Statement._DmlDeleteSpec<I> {
 
 
     private Boolean prepared;

@@ -171,7 +171,7 @@ public interface InsertStatement extends DmlStatement, Statement.DmlInsert {
 
     }
 
-    interface _ParentInsert<CT extends Item> extends InsertStatement, _ChildPartClause<CT> {
+    interface _ParentInsert<CT extends Item> extends Insert, _ChildPartClause<CT> {
 
     }
 
