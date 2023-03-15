@@ -663,24 +663,13 @@ abstract class MySQLInserts extends InsertSupports {
 
         @Override
         public MySQLInsert._ColumnListSpec<I, T> partition(Consumer<Consumer<String>> consumer) {
-            final List<String> list = new ArrayList<>();
-            consumer.accept(list::add);
-            if (list.size() == 0) {
-                throw MySQLUtils.partitionListIsEmpty(this.context);
-            }
-            this.partitionList = _CollectionUtils.unmodifiableList(list);
+            this.partitionList = CriteriaUtils.stringList(this.context, true, consumer);
             return this;
         }
 
         @Override
         public MySQLInsert._ColumnListSpec<I, T> ifPartition(Consumer<Consumer<String>> consumer) {
-            final List<String> list = new ArrayList<>();
-            consumer.accept(list::add);
-            if (list.size() > 0) {
-                this.partitionList = _CollectionUtils.unmodifiableList(list);
-            } else {
-                this.partitionList = null;
-            }
+            this.partitionList = CriteriaUtils.stringList(this.context, false, consumer);
             return this;
         }
 

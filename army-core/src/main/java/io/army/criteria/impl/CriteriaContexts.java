@@ -849,7 +849,7 @@ abstract class CriteriaContexts {
 
         private List<String> currentDerivedAliasList;
 
-        private Function<TypeInfer, ? extends Item> function = SQLs._IDENTITY;
+        private Function<TypeInfer, ? extends Item> function = SQLs::_identity;
 
         private boolean refOuter;
 

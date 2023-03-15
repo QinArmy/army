@@ -165,21 +165,21 @@ public interface MySQLInsert extends MySQLStatement {
 
     }
 
-    interface _StaticValuesLeftParenSpec<I extends Item, T> extends _MySQLStaticValuesLeftParenClause<I, T>
-            , _OnAsRowAliasSpec<I, T> {
+    interface _StaticValuesLeftParenSpec<I extends Item, T> extends _MySQLStaticValuesLeftParenClause<I, T>,
+            _OnAsRowAliasSpec<I, T> {
 
     }
 
     interface _ValuesColumnDefaultSpec<I extends Item, T>
-            extends InsertStatement._ColumnDefaultClause<T, _ValuesColumnDefaultSpec<I, T>>
-            , InsertStatement._DomainValueClause<T, _OnAsRowAliasSpec<I, T>>
-            , InsertStatement._StaticValuesClause<_MySQLStaticValuesLeftParenClause<I, T>>
-            , InsertStatement._DynamicValuesClause<T, _OnAsRowAliasSpec<I, T>> {
+            extends InsertStatement._ColumnDefaultClause<T, _ValuesColumnDefaultSpec<I, T>>,
+            InsertStatement._DomainValueClause<T, _OnAsRowAliasSpec<I, T>>,
+            InsertStatement._StaticValuesClause<_MySQLStaticValuesLeftParenClause<I, T>>,
+            InsertStatement._DynamicValuesClause<T, _OnAsRowAliasSpec<I, T>> {
 
     }
 
-    interface _ComplexColumnDefaultSpec<I extends Item, T> extends _ValuesColumnDefaultSpec<I, T>
-            , _StaticSpaceClause<MySQLQuery._WithSpec<_OnDuplicateKeyUpdateSpec<I, T>>> {
+    interface _ComplexColumnDefaultSpec<I extends Item, T> extends _ValuesColumnDefaultSpec<I, T>,
+            _StaticSpaceClause<MySQLQuery._WithSpec<_OnDuplicateKeyUpdateSpec<I, T>>> {
 
     }
 
@@ -188,20 +188,21 @@ public interface MySQLInsert extends MySQLStatement {
 
     }
 
-    interface _StaticAssignmentSpec<I extends Item, T> extends _MySQLStaticAssignmentClause<I, T>
-            , _OnAsRowAliasSpec<I, T> {
+    interface _StaticAssignmentSpec<I extends Item, T> extends _MySQLStaticAssignmentClause<I, T>,
+            _OnAsRowAliasSpec<I, T> {
 
     }
 
-    interface _ColumnListSpec<I extends Item, T> extends InsertStatement._ColumnListClause<T, _ComplexColumnDefaultSpec<I, T>>
-            , _ValuesColumnDefaultSpec<I, T>
-            , _MySQLStaticAssignmentClause<I, T>
-            , InsertStatement._DynamicAssignmentSetClause<T, _OnAsRowAliasSpec<I, T>> {
+    interface _ColumnListSpec<I extends Item, T>
+            extends InsertStatement._ColumnListClause<T, _ComplexColumnDefaultSpec<I, T>>,
+            _ValuesColumnDefaultSpec<I, T>,
+            _MySQLStaticAssignmentClause<I, T>,
+            InsertStatement._DynamicAssignmentSetClause<T, _OnAsRowAliasSpec<I, T>> {
 
     }
 
-    interface _PartitionSpec<I extends Item, T> extends _PartitionClause<_ColumnListSpec<I, T>>
-            , _ColumnListSpec<I, T> {
+    interface _PartitionSpec<I extends Item, T> extends _PartitionClause<_ColumnListSpec<I, T>>,
+            _ColumnListSpec<I, T> {
 
     }
 

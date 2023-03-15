@@ -1,7 +1,6 @@
 package io.army.criteria;
 
 import io.army.criteria.dialect.SubDelete;
-import io.army.criteria.dialect.SubInsert;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
@@ -1319,16 +1318,17 @@ public interface Statement extends Item {
      * This is base interface of below:
      * <ul>
      *     <li>{@link InsertStatement}</li>
-     *     <li>{@link SubInsert}</li>
      * </ul>
      *
      * @since 1.0
      */
+    @Deprecated
     interface DmlInsert extends Item {
 
 
     }
 
+    @Deprecated
     interface DqlInsert extends Item {
 
     }

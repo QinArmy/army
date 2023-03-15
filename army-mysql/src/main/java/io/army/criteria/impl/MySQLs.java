@@ -24,7 +24,7 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLReplace._PrimaryOptionSpec singleReplace() {
-        return MySQLReplaces.primaryReplace();
+        return MySQLReplaces.singleReplace();
     }
 
 
