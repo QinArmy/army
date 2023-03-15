@@ -100,6 +100,14 @@ abstract class CriteriaSupports {
 
     }
 
+    /**
+     * This interface is base interface of All implementation of {@link CteBuilderSpec}
+     */
+    interface CteBuilder extends CteBuilderSpec {
+
+        void endLastCte();
+    }
+
 
     static abstract class WithClause<B extends CteBuilderSpec, WE> implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {

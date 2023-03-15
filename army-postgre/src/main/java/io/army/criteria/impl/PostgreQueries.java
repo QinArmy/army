@@ -4,7 +4,9 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.postgre._PostgreCte;
 import io.army.criteria.impl.inner.postgre._PostgreQuery;
 import io.army.criteria.postgre.*;
@@ -1221,25 +1223,12 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
 
         private _StaticCteSearchSpec<I> queryEnd(final SubQuery query) {
-
             final _StaticCteSearchSpec<I> spec;
-            final boolean supportSearch;
-            if (this.comma.recursive) {
-                _RowSet rowSet = (_RowSet) query;
-                while (rowSet instanceof _ParensRowSet) {
-                    rowSet = ((_ParensRowSet) rowSet).innerRowSet();
-                }
-                supportSearch = rowSet instanceof UnionSubQuery;
-            } else {
-                supportSearch = false;
-            }
-
-            if (supportSearch) {
+            if (this.comma.recursive && PostgreUtils.isUnionQuery(query)) {
                 spec = new StaticCteSearchSpec<>(this, query);
             } else {
                 this.subStmtEnd(query);
                 spec = PostgreSupports.noOperationStaticCteSearchSpec(this.comma::comma, this.comma::space);
-
             }
             return spec;
         }

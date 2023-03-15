@@ -1,11 +1,12 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._RowSet;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner.postgre._PostgreCte;
-import io.army.criteria.impl.inner.postgre._PostgreCteStatement;
 import io.army.criteria.impl.inner.postgre._PostgreTableBlock;
 import io.army.criteria.postgre.*;
 import io.army.dialect.DialectParser;
@@ -35,7 +36,7 @@ abstract class PostgreSupports extends CriteriaSupports {
     static final List<Selection> EMPTY_SELECTION_LIST = Collections.emptyList();
 
     static PostgreCtes postgreCteBuilder(final boolean recursive, final CriteriaContext context) {
-        return new PostgreCteBuilderImpl(recursive, context);
+        return new PostgreCteBuilder(recursive, context);
     }
 
     static PostgreWindow namedWindow(String name, CriteriaContext context, @Nullable String existingWindowName) {
@@ -46,52 +47,12 @@ abstract class PostgreSupports extends CriteriaSupports {
         return new PostgreWindow(context, existingWindowName);
     }
 
-    static <I extends Item> PostgreQuery._StaticCteSearchSpec<I> staticCteSearchSpec(
-            CriteriaContext context, Function<String, PostgreQuery._StaticCteParensSpec<I>> cteFunction,
-            Supplier<I> endSupplier) {
-        return new StaticCteSearchSpec<>(context, cteFunction, endSupplier);
-    }
-
     static <I extends Item> PostgreQuery._StaticCteSearchSpec<I> noOperationStaticCteSearchSpec(
             Function<String, PostgreQuery._StaticCteParensSpec<I>> cteFunction, Supplier<I> endSupplier) {
         return new NoOperationStaticCteSearchSpec<>(cteFunction, endSupplier);
     }
 
 
-    static final class PostgreSubStatement implements _PostgreCteStatement {
-
-        private final MaterializedOption option;
-
-        private final SubStatement statement;
-
-
-        PostgreSubStatement(@Nullable MaterializedOption option, SubStatement statement) {
-            this.option = option;
-            this.statement = statement;
-        }
-
-        @Override
-        public void prepared() {
-            this.statement.prepared();
-        }
-
-        @Override
-        public boolean isPrepared() {
-            return this.statement.isPrepared();
-        }
-
-        @Override
-        public SQLWords materializedOption() {
-            return this.option;
-        }
-
-        @Override
-        public SubStatement subStatement() {
-            return this.statement;
-        }
-
-
-    }//PostgreSubStatement
 
 
     @SuppressWarnings("unchecked")
@@ -284,11 +245,11 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final String name;
 
-        final PostgreCteBuilderImpl cteBuilder;
+        final PostgreCteBuilder cteBuilder;
 
         private List<String> columnAliasList;
 
-        private PostgreDynamicDmlCteLeftParenClause(String name, PostgreCteBuilderImpl cteBuilder) {
+        private PostgreDynamicDmlCteLeftParenClause(String name, PostgreCteBuilder cteBuilder) {
             super(cteBuilder.context);
             this.name = name;
             this.cteBuilder = cteBuilder;
@@ -315,8 +276,6 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
     }//PostgreDynamicDmlCteLeftParenClause
-
-
 
 
     private enum CteSearchOption implements SQLWords {
@@ -433,7 +392,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private _Pair<List<Selection>, Map<String, Selection>> createPair(final @Nullable _SearchClause searchClause,
                                                                           final @Nullable _CycleClause cycleClause) {
-            final List<Selection> stmtSelections;
+            final List<? extends Selection> stmtSelections;
             if (this.subStatement instanceof RowSet) {
                 stmtSelections = ((_RowSet) this.subStatement).selectionList();
             } else {
@@ -525,78 +484,73 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public final CR using(String cyclePathColumnName) {
-            throw errorOperation();
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
         @Override
         public final CR using(Supplier<String> supplier) {
-            throw errorOperation();
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
         @Override
         public final PostgreQuery._CyclePathColumnClause<CR> to(Expression cycleMarkValue, SQLs.WordDefault wordDefault,
                                                                 Expression cycleMarkDefault) {
-            throw errorOperation();
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
         @Override
         public final PostgreQuery._CyclePathColumnClause<CR> to(Consumer<BiConsumer<Expression, Expression>> consumer) {
-            throw errorOperation();
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
         @Override
         public final PostgreQuery._CyclePathColumnClause<CR> ifTo(Consumer<BiConsumer<Expression, Expression>> consumer) {
-            throw errorOperation();
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
         @Override
         public final PostgreQuery._SetCycleMarkColumnClause<CR> cycle(String firstColumnName, String... rest) {
-            throw errorOperation();
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
         @Override
         public final PostgreQuery._SetCycleMarkColumnClause<CR> cycle(Consumer<Consumer<String>> consumer) {
-            throw errorOperation();
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
         @Override
         public final PostgreQuery._SetCycleMarkColumnClause<CR> ifCycle(Consumer<Consumer<String>> consumer) {
-            throw errorOperation();
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
         @Override
         public final PostgreQuery._SetSearchSeqColumnClause<SR> firstBy(String firstColumnName, String... rest) {
-            throw errorOperation();
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
         @Override
         public final PostgreQuery._SetSearchSeqColumnClause<SR> firstBy(Consumer<Consumer<String>> consumer) {
-            throw errorOperation();
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
         @Override
         public final PostgreQuery._SearchFirstByClause<SR> searchBreadth() {
-            throw errorOperation();
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
         @Override
         public final PostgreQuery._SearchFirstByClause<SR> searchDepth() {
-            throw errorOperation();
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
         @Override
         public final PostgreQuery._SearchFirstByClause<SR> ifSearchBreadth(BooleanSupplier predicate) {
-            throw errorOperation();
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
         @Override
         public final PostgreQuery._SearchFirstByClause<SR> ifSearchDepth(BooleanSupplier predicate) {
-            throw errorOperation();
-        }
-
-        static CriteriaException errorOperation() {
-            String m = "Not recursive union query couldn't use SEARCH or CYCLE clause.";
-            return ContextStack.clearStackAndCriteriaError(m);
+            throw NoOperationStaticCteSearchSpec.errorOperation();
         }
 
     }//NoActionCteSearchSpec
@@ -620,6 +574,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             this.endSupplier = endSupplier;
         }
 
+
         @Override
         public PostgreQuery._StaticCteParensSpec<I> comma(String name) {
             return this.cteFunction.apply(name);
@@ -639,6 +594,15 @@ abstract class PostgreSupports extends CriteriaSupports {
         public NoOperationStaticCteSearchSpec<I> set(Supplier<String> supplier) {
             throw errorOperation();
         }
+
+        private static CriteriaException errorOperation() {
+            return ContextStack.clearStackAndCriteriaError(errorMessage());
+        }
+
+        private static String errorMessage() {
+            return "Not recursive union query couldn't use SEARCH or CYCLE clause.";
+        }
+
     } //NoOperationStaticCteSearchSpec
 
 
@@ -1001,34 +965,168 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//PostgreCteSearchSpec
 
 
+    private static final class NonOperationDynamicCteSearchSpec implements PostgreQuery._DynamicCteSearchSpec {
+
+        private final PostgreCteBuilder builder;
+
+        private NonOperationDynamicCteSearchSpec(PostgreCteBuilder builder) {
+            this.builder = builder;
+        }
+
+        @Override
+        public PostgreQuery._SetCycleMarkColumnClause<DialectStatement._CommaClause<PostgreCtes>> cycle(String firstColumnName, String... rest) {
+            throw errorOperation();
+        }
+
+        @Override
+        public PostgreQuery._SetCycleMarkColumnClause<DialectStatement._CommaClause<PostgreCtes>> cycle(Consumer<Consumer<String>> consumer) {
+            throw errorOperation();
+        }
+
+        @Override
+        public PostgreQuery._SetCycleMarkColumnClause<DialectStatement._CommaClause<PostgreCtes>> ifCycle(Consumer<Consumer<String>> consumer) {
+            throw errorOperation();
+        }
+
+        @Override
+        public PostgreQuery._SearchFirstByClause<PostgreQuery._DynamicCteCycleSpec> searchBreadth() {
+            throw errorOperation();
+        }
+
+        @Override
+        public PostgreQuery._SearchFirstByClause<PostgreQuery._DynamicCteCycleSpec> searchDepth() {
+            throw errorOperation();
+        }
+
+        @Override
+        public PostgreQuery._SearchFirstByClause<PostgreQuery._DynamicCteCycleSpec> ifSearchBreadth(BooleanSupplier predicate) {
+            throw errorOperation();
+        }
+
+        @Override
+        public PostgreQuery._SearchFirstByClause<PostgreQuery._DynamicCteCycleSpec> ifSearchDepth(BooleanSupplier predicate) {
+            throw errorOperation();
+        }
+
+        @Override
+        public PostgreCtes comma() {
+            return this.builder;
+        }
+
+        private CriteriaException errorOperation() {
+            return ContextStack.criteriaError(this.builder.context, NoOperationStaticCteSearchSpec.errorMessage());
+        }
+
+    }//NonOperationDynamicCteSearchSpec
+
+
+    private static final class DynamicCteSearchSpec
+            extends PostgreCteSearchSpec<PostgreQuery._DynamicCteCycleSpec>
+            implements PostgreQuery._DynamicCteSearchSpec {
+
+        private final PostgreCteBuilder builder;
+
+        private final SubQuery query;
+
+        private final Function<DynamicCteSearchSpec, PostgreCtes> function;
+
+        private DynamicCteCycleSpec cycleSpec;
+
+        /**
+         * @see DynamicQueryParensClause#subQueryEnd(SubQuery)
+         */
+        private DynamicCteSearchSpec(PostgreCteBuilder builder, SubQuery query,
+                                     Function<DynamicCteSearchSpec, PostgreCtes> function) {
+            super(builder.context);
+            this.builder = builder;
+            this.query = query;
+            this.function = function;
+
+            builder.lastQueryCteEnder = this; // store callback
+        }
+
+
+        @Override
+        public PostgreQuery._SetCycleMarkColumnClause<DialectStatement._CommaClause<PostgreCtes>> cycle(String firstColumnName, String... rest) {
+            return this.createCycleSpec().cycle(firstColumnName, rest);
+        }
+
+        @Override
+        public PostgreQuery._SetCycleMarkColumnClause<DialectStatement._CommaClause<PostgreCtes>> cycle(Consumer<Consumer<String>> consumer) {
+            return this.createCycleSpec().cycle(consumer);
+        }
+
+        @Override
+        public PostgreQuery._SetCycleMarkColumnClause<DialectStatement._CommaClause<PostgreCtes>> ifCycle(Consumer<Consumer<String>> consumer) {
+            return this.createCycleSpec().ifCycle(consumer);
+        }
+
+        @Override
+        public PostgreCtes comma() {
+            this.builder.lastQueryCteEnder = null;// must clear
+            return this.function.apply(this);
+        }
+
+        private DynamicCteCycleSpec createCycleSpec() {
+            if (this.cycleSpec != null) {
+                throw ContextStack.castCriteriaApi(this.builder.context);
+            }
+            final DynamicCteCycleSpec spec;
+            spec = new DynamicCteCycleSpec(this.builder.context, this::comma);
+            this.cycleSpec = spec;
+            return spec;
+        }
+
+
+    }//DynamicCteSearchSpec
+
+    private static final class DynamicCteCycleSpec
+            extends PostgreSupports.PostgreCteCycleClause<DialectStatement._CommaClause<PostgreCtes>>
+            implements PostgreQuery._DynamicCteCycleSpec {
+
+        private final Supplier<PostgreCtes> ender;
+
+        private DynamicCteCycleSpec(CriteriaContext context, Supplier<PostgreCtes> ender) {
+            super(context);
+            this.ender = ender;
+        }
+
+        @Override
+        public PostgreCtes comma() {
+            return this.ender.get();
+        }
+
+    }//DynamicCteCycleSpec
+
+
     private static final class DynamicCteInsertParensSpec extends CteParensClause<PostgreInsert._DynamicCteAsClause>
             implements PostgreInsert._DynamicCteParensSpec {
 
-        private final PostgreCteBuilderImpl builder;
+        private final PostgreCteBuilder builder;
 
         private Postgres.WordMaterialized modifier;
 
         /**
-         * @see PostgreCteBuilderImpl#subSingleInsert(String)
+         * @see PostgreCteBuilder#subSingleInsert(String)
          */
-        private DynamicCteInsertParensSpec(String name, PostgreCteBuilderImpl builder) {
+        private DynamicCteInsertParensSpec(String name, PostgreCteBuilder builder) {
             super(name, builder.context);
             this.builder = builder;
         }
 
         @Override
-        public PostgreCtes as(Function<PostgreInsert._DynamicSubOptionSpec<PostgreCtes>, PostgreCtes> function) {
+        public DialectStatement._CommaClause<PostgreCtes> as(Function<PostgreInsert._DynamicSubOptionSpec<DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             return this.as(null, function);
         }
 
         @Override
-        public PostgreCtes as(@Nullable Postgres.WordMaterialized modifier,
-                              Function<PostgreInsert._DynamicSubOptionSpec<PostgreCtes>, PostgreCtes> function) {
+        public DialectStatement._CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
+                                                             Function<PostgreInsert._DynamicSubOptionSpec<DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             this.modifier = modifier;
             return function.apply(PostgreInserts.dynamicCteInsert(this.context, this::subInsertEnd));
         }
 
-        private PostgreCtes subInsertEnd(final SubStatement statement) {
+        private DialectStatement._CommaClause<PostgreCtes> subInsertEnd(final SubStatement statement) {
             final PostgreCte cte;
             cte = new PostgreCte(this.name, this.columnAliasList, this.modifier, statement);
             this.context.onAddCte(cte);
@@ -1042,30 +1140,32 @@ abstract class PostgreSupports extends CriteriaSupports {
     private static final class DynamicUpdateParensClause extends CteParensClause<PostgreUpdate._DynamicCteAsClause>
             implements PostgreUpdate._DynamicCteParensSpec {
 
-        private final PostgreCteBuilderImpl builder;
+        private final PostgreCteBuilder builder;
 
         private Postgres.WordMaterialized modifier;
 
         /**
-         * @see PostgreCteBuilderImpl#subSingleUpdate(String)
+         * @see PostgreCteBuilder#subSingleUpdate(String)
          */
-        private DynamicUpdateParensClause(String name, PostgreCteBuilderImpl builder) {
+        private DynamicUpdateParensClause(String name, PostgreCteBuilder builder) {
             super(name, builder.context);
             this.builder = builder;
         }
 
         @Override
-        public PostgreCtes as(Function<PostgreUpdate._SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function) {
+        public DialectStatement._CommaClause<PostgreCtes> as(Function<PostgreUpdate._SingleWithSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             return this.as(null, function);
         }
 
         @Override
-        public PostgreCtes as(@Nullable Postgres.WordMaterialized modifier, Function<PostgreUpdate._SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function) {
+        public DialectStatement._CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
+                                                             Function<PostgreUpdate._SingleWithSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             this.modifier = modifier;
             return function.apply(PostgreUpdates.subSimpleUpdate(this.context, this::subUpdateEnd));
         }
 
-        private PostgreCtes subUpdateEnd(final SubStatement statement) {
+
+        private DialectStatement._CommaClause<PostgreCtes> subUpdateEnd(final SubStatement statement) {
             final PostgreCte cte;
             cte = new PostgreCte(this.name, this.columnAliasList, this.modifier, statement);
             this.context.onAddCte(cte);
@@ -1078,30 +1178,31 @@ abstract class PostgreSupports extends CriteriaSupports {
     private static final class DynamicDeleteParensClause extends CteParensClause<PostgreDelete._DynamicCteAsClause>
             implements PostgreDelete._DynamicCteParensSpec {
 
-        private final PostgreCteBuilderImpl builder;
+        private final PostgreCteBuilder builder;
 
         private Postgres.WordMaterialized modifier;
 
         /**
-         * @see PostgreCteBuilderImpl#subSingleDelete(String)
+         * @see PostgreCteBuilder#subSingleDelete(String)
          */
-        private DynamicDeleteParensClause(String name, PostgreCteBuilderImpl builder) {
+        private DynamicDeleteParensClause(String name, PostgreCteBuilder builder) {
             super(name, builder.context);
             this.builder = builder;
         }
 
         @Override
-        public PostgreCtes as(Function<PostgreDelete._SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function) {
+        public DialectStatement._CommaClause<PostgreCtes> as(Function<PostgreDelete._SingleWithSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             return this.as(null, function);
         }
 
         @Override
-        public PostgreCtes as(@Nullable Postgres.WordMaterialized modifier, Function<PostgreDelete._SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function) {
+        public DialectStatement._CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
+                                                             Function<PostgreDelete._SingleWithSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             this.modifier = modifier;
             return function.apply(PostgreDeletes.subSimpleDelete(this.context, this::subDeleteEnd));
         }
 
-        private PostgreCtes subDeleteEnd(final SubStatement statement) {
+        private DialectStatement._CommaClause<PostgreCtes> subDeleteEnd(final SubStatement statement) {
             final PostgreCte cte;
             cte = new PostgreCte(this.name, this.columnAliasList, this.modifier, statement);
             this.context.onAddCte(cte);
@@ -1112,13 +1213,118 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//DynamicDeleteParensClause
 
 
-    private static final class PostgreCteBuilderImpl implements PostgreCtes {
+    private static final class DynamicQueryParensClause extends CteParensClause<PostgreQuery._DynamicCteAsClause>
+            implements PostgreQuery._DynamicCteParensSpec {
+
+        private final PostgreCteBuilder builder;
+
+        private Postgres.WordMaterialized modifier;
+
+        /**
+         * @see PostgreCteBuilder#subQuery(String)
+         */
+        private DynamicQueryParensClause(String name, PostgreCteBuilder builder) {
+            super(name, builder.context);
+            this.builder = builder;
+        }
+
+        @Override
+        public PostgreQuery._DynamicCteSearchSpec as(Function<PostgreQuery._WithSpec<PostgreQuery._DynamicCteSearchSpec>, PostgreQuery._DynamicCteSearchSpec> function) {
+            return this.as(null, function);
+        }
+
+        @Override
+        public PostgreQuery._DynamicCteSearchSpec as(@Nullable Postgres.WordMaterialized materialized, Function<PostgreQuery._WithSpec<PostgreQuery._DynamicCteSearchSpec>, PostgreQuery._DynamicCteSearchSpec> function) {
+            this.modifier = materialized;
+            return function.apply(PostgreQueries.subQuery(this.builder.context, this::subQueryEnd));
+        }
+
+        private PostgreQuery._DynamicCteSearchSpec subQueryEnd(final SubQuery query) {
+            final PostgreQuery._DynamicCteSearchSpec spec;
+            if (this.builder.recursive && PostgreUtils.isUnionQuery(query)) {
+                spec = new DynamicCteSearchSpec(this.builder, query, this::searchClauseEnd);
+            } else {
+                spec = this.cteEndWithoutSearch(query);
+            }
+            return spec;
+        }
+
+
+        private PostgreQuery._DynamicCteSearchSpec cteEndWithoutSearch(final SubQuery query) {
+            final PostgreCte cte;
+            cte = new PostgreCte(this.name, this.columnAliasList, this.modifier, query);
+            this.context.onAddCte(cte);
+            return new NonOperationDynamicCteSearchSpec(this.builder);
+        }
+
+
+        PostgreCtes searchClauseEnd(DynamicCteSearchSpec spec) {
+            final _PostgreCte._SearchClause searchClause;
+            searchClause = spec.hasSearchClause() ? spec : null;
+
+            final _Cte cte;
+            cte = new PostgreSupports.PostgreCte(this.name, this.columnAliasList, this.modifier, spec.query,
+                    searchClause, spec.cycleSpec);
+            this.builder.context.onAddCte(cte);
+            return this.builder;
+        }
+
+
+    }//DynamicQueryParensClause
+
+
+    private static final class DynamicValuesParensClause extends CteParensClause<PostgreValues._DynamicCteAsClause>
+            implements PostgreValues._DynamicCteParensSpec {
+
+        private final PostgreCteBuilder builder;
+
+        private Postgres.WordMaterialized modifier;
+
+        /**
+         * @see PostgreCteBuilder#subValues(String)
+         */
+        private DynamicValuesParensClause(String name, PostgreCteBuilder builder) {
+            super(name, builder.context);
+            this.builder = builder;
+        }
+
+        @Override
+        public DialectStatement._CommaClause<PostgreCtes> as(Function<PostgreValues._WithSpec<DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
+            return this.as(null, function);
+        }
+
+        @Override
+        public DialectStatement._CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
+                                                             Function<PostgreValues._WithSpec<DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
+            this.modifier = modifier;
+            return function.apply(PostgreValuesStmt.subValues(this.context, this::subValuesEnd));
+        }
+
+        private DialectStatement._CommaClause<PostgreCtes> subValuesEnd(final SubValues statement) {
+            final PostgreCte cte;
+            cte = new PostgreCte(this.name, this.columnAliasList, this.modifier, statement);
+            this.context.onAddCte(cte);
+            return this.builder;
+        }
+
+
+    }//DynamicValuesParensClause
+
+    private static final class PostgreCteBuilder implements PostgreCtes, CteBuilder,
+            DialectStatement._CommaClause<PostgreCtes> {
 
         private final boolean recursive;
 
         private final CriteriaContext context;
 
-        private PostgreCteBuilderImpl(final boolean recursive, CriteriaContext context) {
+        /**
+         * @see DynamicCteSearchSpec#comma()
+         * @see DynamicCteSearchSpec#DynamicCteSearchSpec(PostgreCteBuilder, SubQuery, Function)
+         * @see DynamicQueryParensClause#subQueryEnd(SubQuery)
+         */
+        private DialectStatement._CommaClause<?> lastQueryCteEnder;
+
+        private PostgreCteBuilder(final boolean recursive, CriteriaContext context) {
             context.onBeforeWithClause(recursive);
             this.recursive = recursive;
             this.context = context;
@@ -1127,34 +1333,58 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public PostgreInsert._DynamicCteParensSpec subSingleInsert(String name) {
+            this.endLastCte();
+
             return new DynamicCteInsertParensSpec(name, this);
         }
 
         @Override
         public PostgreUpdate._DynamicCteParensSpec subSingleUpdate(String name) {
+            this.endLastCte();
+
             return new DynamicUpdateParensClause(name, this);
         }
 
 
         @Override
         public PostgreDelete._DynamicCteParensSpec subSingleDelete(String name) {
+            this.endLastCte();
+
             return new DynamicDeleteParensClause(name, this);
         }
 
         @Override
         public PostgreQuery._DynamicCteParensSpec subQuery(String name) {
-            return new DynamicDeleteParensClause(name, this);
+            this.endLastCte();
+
+            return new DynamicQueryParensClause(name, this);
         }
 
 
         @Override
         public PostgreValues._DynamicCteParensSpec subValues(String name) {
-            return null;
+            this.endLastCte();
+
+            return new DynamicValuesParensClause(name, this);
         }
 
         @Override
         public boolean isRecursive() {
             return this.recursive;
+        }
+
+        @Override
+        public void endLastCte() {
+            final DialectStatement._CommaClause<?> ender = this.lastQueryCteEnder;
+            this.lastQueryCteEnder = null;
+            if (ender != null) {
+                ender.comma();
+            }
+        }
+
+        @Override
+        public PostgreCtes comma() {
+            return this;
         }
 
 

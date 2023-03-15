@@ -1,9 +1,6 @@
 package io.army.criteria.postgre;
 
-import io.army.criteria.BatchRowPairs;
-import io.army.criteria.Item;
-import io.army.criteria.RowPairs;
-import io.army.criteria.UpdateStatement;
+import io.army.criteria.*;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
@@ -131,10 +128,10 @@ public interface PostgreUpdate extends PostgreStatement {
 
     interface _DynamicCteAsClause {
 
-        PostgreCtes as(Function<_SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function);
+        DialectStatement._CommaClause<PostgreCtes> as(Function<_SingleWithSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function);
 
-        PostgreCtes as(@Nullable Postgres.WordMaterialized modifier,
-                       Function<_SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function);
+        DialectStatement._CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
+                                                      Function<_SingleWithSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function);
 
     }
 

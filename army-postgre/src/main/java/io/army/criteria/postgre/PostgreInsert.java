@@ -345,10 +345,10 @@ public interface PostgreInsert extends PostgreStatement {
 
     interface _DynamicCteAsClause {
 
-        PostgreCtes as(Function<_DynamicSubOptionSpec<PostgreCtes>, PostgreCtes> function);
+        _CommaClause<PostgreCtes> as(Function<_DynamicSubOptionSpec<_CommaClause<PostgreCtes>>, _CommaClause<PostgreCtes>> function);
 
-        PostgreCtes as(@Nullable Postgres.WordMaterialized modifier,
-                       Function<_DynamicSubOptionSpec<PostgreCtes>, PostgreCtes> function);
+        _CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
+                                     Function<_DynamicSubOptionSpec<_CommaClause<PostgreCtes>>, _CommaClause<PostgreCtes>> function);
 
     }
 

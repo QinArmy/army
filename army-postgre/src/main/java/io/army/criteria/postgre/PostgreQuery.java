@@ -472,7 +472,9 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _DynamicCteCycleSpec extends _CteCycleClause<PostgreCtes> {
+
+    interface _DynamicCteCycleSpec extends _CteCycleClause<_CommaClause<PostgreCtes>>,
+            _CommaClause<PostgreCtes> {
 
     }
 

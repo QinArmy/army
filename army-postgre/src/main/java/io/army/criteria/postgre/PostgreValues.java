@@ -100,10 +100,10 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
     interface _DynamicCteAsClause {
 
-        PostgreCtes as(Function<_WithSpec<PostgreCtes>, PostgreCtes> function);
+        _CommaClause<PostgreCtes> as(Function<_WithSpec<_CommaClause<PostgreCtes>>, _CommaClause<PostgreCtes>> function);
 
-        PostgreCtes as(@Nullable Postgres.WordMaterialized modifier,
-                       Function<_WithSpec<PostgreCtes>, PostgreCtes> function);
+        _CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
+                                     Function<_WithSpec<_CommaClause<PostgreCtes>>, _CommaClause<PostgreCtes>> function);
 
     }
 

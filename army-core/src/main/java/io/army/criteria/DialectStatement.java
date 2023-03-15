@@ -350,6 +350,12 @@ public interface DialectStatement extends Statement {
 
     }
 
+
+    interface _CommaClause<R> extends Item {
+
+        R comma();
+    }
+
     interface _StaticWithCommaClause<CR> extends _CteCommaItem {
 
         CR comma(String name);

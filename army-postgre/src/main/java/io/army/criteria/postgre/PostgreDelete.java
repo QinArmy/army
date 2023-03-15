@@ -116,12 +116,13 @@ public interface PostgreDelete extends PostgreStatement {
 
     }
 
+
     interface _DynamicCteAsClause {
 
-        PostgreCtes as(Function<_SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function);
+        _CommaClause<PostgreCtes> as(Function<_SingleWithSpec<_CommaClause<PostgreCtes>, _CommaClause<PostgreCtes>>, _CommaClause<PostgreCtes>> function);
 
-        PostgreCtes as(@Nullable Postgres.WordMaterialized modifier,
-                       Function<_SingleWithSpec<PostgreCtes, PostgreCtes>, PostgreCtes> function);
+        _CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
+                                     Function<_SingleWithSpec<_CommaClause<PostgreCtes>, _CommaClause<PostgreCtes>>, _CommaClause<PostgreCtes>> function);
 
     }
 

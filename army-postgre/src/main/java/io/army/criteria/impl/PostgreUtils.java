@@ -5,6 +5,8 @@ import io.army.criteria.Select;
 import io.army.criteria.SubValues;
 import io.army.criteria.Values;
 import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.impl.inner._ParensRowSet;
+import io.army.criteria.impl.inner._RowSet;
 import io.army.criteria.postgre.PostgreQuery;
 import io.army.criteria.postgre.PostgreValues;
 import io.army.criteria.standard.StandardQuery;
@@ -58,6 +60,14 @@ abstract class PostgreUtils extends CriteriaUtils {
             throw CriteriaUtils.unknownRowSet(context, rowSet, Database.PostgreSQL);
         }
         return rowSet;
+    }
+
+    static boolean isUnionQuery(final SubQuery query) {
+        _RowSet rowSet = (_RowSet) query;
+        while (rowSet instanceof _ParensRowSet) {
+            rowSet = ((_ParensRowSet) rowSet).innerRowSet();
+        }
+        return rowSet instanceof SimpleQueries.UnionSubQuery;
     }
 
 
