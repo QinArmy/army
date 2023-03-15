@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
+import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
@@ -39,8 +40,8 @@ public interface MySQLUpdate extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _LimitSpec<I extends Item> extends Statement._DmlRowCountLimitClause<_DmlUpdateSpec<I>>
-            , _DmlUpdateSpec<I> {
+    interface _LimitSpec<I extends Item> extends Statement._DmlRowCountLimitClause<_DmlUpdateSpec<I>>,
+            _DmlUpdateSpec<I> {
 
     }
 
@@ -61,8 +62,8 @@ public interface MySQLUpdate extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _OrderBySpec<I extends Item> extends _StaticOrderByClause<_LimitSpec<I>>, _LimitSpec<I>
-            , _DynamicOrderByClause<SortItems, _LimitSpec<I>> {
+    interface _OrderBySpec<I extends Item> extends _StaticOrderByClause<_LimitSpec<I>>, _LimitSpec<I>,
+            _DynamicOrderByClause<SortItems, _LimitSpec<I>> {
 
     }
 
@@ -82,8 +83,8 @@ public interface MySQLUpdate extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _SingleWhereAndSpec<I extends Item> extends UpdateStatement._UpdateWhereAndClause<_SingleWhereAndSpec<I>>
-            , _OrderBySpec<I> {
+    interface _SingleWhereAndSpec<I extends Item> extends UpdateStatement._UpdateWhereAndClause<_SingleWhereAndSpec<I>>,
+            _OrderBySpec<I> {
 
     }
 
@@ -155,7 +156,7 @@ public interface MySQLUpdate extends MySQLStatement {
 
     }
 
-    interface _SingleUpdateClause<I extends Item> {
+    interface _SingleUpdateClause<I extends Item> extends Item {
 
         <T> _SingleIndexHintSpec<I, T> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
                                               SingleTableMeta<T> table, SQLs.WordAs wordAs, String alias);
@@ -180,15 +181,11 @@ public interface MySQLUpdate extends MySQLStatement {
     }
 
 
-    interface _SingleComma<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<_SingleComma<I>>>,
-            _StaticSpaceClause<_SingleUpdateClause<I>> {
-
-    }
-
     /**
      * <p>
      * This interface representing the composite of below:
      *     <ul>
+     *          <li>{@link _MySQLDynamicWithClause}</li>
      *          <li>{@link _MySQLDynamicWithClause}</li>
      *          <li>method {@link _SingleUpdateClause}</li>
      *     </ul>
@@ -203,10 +200,13 @@ public interface MySQLUpdate extends MySQLStatement {
      */
     interface _SingleWithSpec<I extends Item>
             extends _MySQLDynamicWithClause<_SingleUpdateClause<I>>,
-            _StaticWithClause<_StaticCteParensSpec<_SingleComma<I>>>,
+            _MySQLStaticWithClause<_SingleUpdateClause<I>>,
             _SingleUpdateClause<I> {
 
     }
+
+
+
 
     /*################################## blow batch single-table update spec ##################################*/
 
@@ -350,7 +350,7 @@ public interface MySQLUpdate extends MySQLStatement {
 
     }
 
-    interface _BatchSingleUpdateClause<I extends Item> {
+    interface _BatchSingleUpdateClause<I extends Item> extends Item {
 
 
         <T> _BatchSingleIndexHintSpec<I, T> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
@@ -376,12 +376,6 @@ public interface MySQLUpdate extends MySQLStatement {
     }
 
 
-    interface _BatchSingleComma<I extends Item>
-            extends _StaticWithCommaClause<_StaticCteParensSpec<_BatchSingleComma<I>>>,
-            _StaticSpaceClause<_BatchSingleUpdateClause<I>> {
-
-    }
-
     /**
      * <p>
      * This interface representing the composite of below:
@@ -400,13 +394,59 @@ public interface MySQLUpdate extends MySQLStatement {
      */
     interface _BatchSingleWithSpec<I extends Item>
             extends _MySQLDynamicWithClause<_BatchSingleUpdateClause<I>>,
-            _StaticWithClause<_StaticCteParensSpec<_BatchSingleComma<I>>>,
+            _MySQLStaticWithClause<_BatchSingleUpdateClause<I>>,
             _BatchSingleUpdateClause<I> {
 
     }
 
 
     /*################################## blow multi-table update api interface ##################################*/
+
+
+    interface _MultiUpdateClause<FT, FS> extends Item {
+
+
+        FT update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
+                  TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+
+        FT update(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+
+        <T extends DerivedTable> FS update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, Supplier<T> supplier);
+
+        <T extends DerivedTable> FS update(Supplier<T> supplier);
+
+        <T extends DerivedTable> FS update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
+                                           @Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
+
+        <T extends DerivedTable> FS update(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
+
+    }
+
+    interface _MultiUpdateCteNestedClause<FC extends Item> {
+
+        FC update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName);
+
+        FC update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName,
+                  SQLs.WordAs wordAs, String alias);
+
+        FC update(String cteName);
+
+        FC update(String cteName, SQLs.WordAs wordAs, String alias);
+
+        MySQLQuery._NestedLeftParenSpec<FC> update(Supplier<List<Hint>> hints,
+                                                   List<MySQLs.Modifier> modifiers);
+
+        MySQLQuery._NestedLeftParenSpec<FC> update();
+    }
+
+    interface _MultiUpdateTableClause<FP> {
+
+        FP update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
+                  TableMeta<?> table);
+
+        FP update(TableMeta<?> table);
+
+    }
 
 
     /**
@@ -425,8 +465,8 @@ public interface MySQLUpdate extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _MultiWhereAndSpec<I extends Item> extends UpdateStatement._UpdateWhereAndClause<_MultiWhereAndSpec<I>>
-            , _DmlUpdateSpec<I> {
+    interface _MultiWhereAndSpec<I extends Item> extends UpdateStatement._UpdateWhereAndClause<_MultiWhereAndSpec<I>>,
+            _DmlUpdateSpec<I> {
 
     }
 
@@ -442,8 +482,8 @@ public interface MySQLUpdate extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _MultiSetClause<I extends Item> extends UpdateStatement._StaticSetClause<TableField, _MultiWhereSpec<I>>
-            , UpdateStatement._DynamicSetClause<ItemPairs<TableField>, _MultiWhereSpec<I>> {
+    interface _MultiSetClause<I extends Item> extends UpdateStatement._StaticSetClause<TableField, _MultiWhereSpec<I>>,
+            UpdateStatement._DynamicSetClause<ItemPairs<TableField>, _MultiWhereSpec<I>> {
 
     }
 
@@ -463,8 +503,8 @@ public interface MySQLUpdate extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _MultiWhereSpec<I extends Item> extends _WhereClause<_DmlUpdateSpec<I>, _MultiWhereAndSpec<I>>
-            , _MultiSetClause<I> {
+    interface _MultiWhereSpec<I extends Item> extends _WhereClause<_DmlUpdateSpec<I>, _MultiWhereAndSpec<I>>,
+            _MultiSetClause<I> {
 
 
     }
@@ -487,8 +527,8 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _MultiIndexHintOnSpec<I extends Item>
-            extends _IndexHintForJoinClause<_MultiIndexHintOnSpec<I>>
-            , _OnClause<_MultiJoinSpec<I>> {
+            extends _IndexHintForJoinClause<_MultiIndexHintOnSpec<I>>,
+            _OnClause<_MultiJoinSpec<I>> {
 
     }
 
@@ -581,7 +621,6 @@ public interface MySQLUpdate extends MySQLStatement {
     }
 
 
-
     /**
      * <p>
      * This interface representing multi-table UPDATE clause for MySQL syntax.
@@ -594,50 +633,11 @@ public interface MySQLUpdate extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _SimpleMultiUpdateClause<I extends Item> {
+    interface _SimpleMultiUpdateClause<I extends Item>
+            extends _MultiUpdateClause<_MultiIndexHintJoinSpec<I>, _AsClause<_ParensJoinSpec<I>>>,
+            _MultiUpdateCteNestedClause<_MultiJoinSpec<I>>,
+            _MultiUpdateTableClause<_MultiPartitionJoinClause<I>> {
 
-        _MultiIndexHintJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
-                                          TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
-
-        _MultiIndexHintJoinSpec<I> update(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
-
-        <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> update(
-                Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, Supplier<T> supplier);
-
-        <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> update(Supplier<T> supplier);
-
-        <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> update(
-                Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, Query.DerivedModifier modifier,
-                Supplier<T> supplier);
-
-        <T extends DerivedTable> _AsClause<_ParensJoinSpec<I>> update(Query.DerivedModifier modifier,
-                                                                      Supplier<T> supplier);
-
-        _MultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName);
-
-        _MultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName,
-                                 SQLs.WordAs wordAs, String alias);
-
-        _MultiJoinSpec<I> update(String cteName);
-
-        _MultiJoinSpec<I> update(String cteName, SQLs.WordAs wordAs, String alias);
-
-        _MultiPartitionJoinClause<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
-                                            TableMeta<?> table);
-
-        _MultiPartitionJoinClause<I> update(TableMeta<?> table);
-
-        MySQLQuery._NestedLeftParenSpec<_MultiJoinSpec<I>> update(Supplier<List<Hint>> hints,
-                                                                  List<MySQLs.Modifier> modifiers);
-
-        MySQLQuery._NestedLeftParenSpec<_MultiJoinSpec<I>> update();
-
-    }
-
-
-    interface _MultiComma<I extends Item>
-            extends _StaticWithCommaClause<_StaticCteParensSpec<_MultiComma<I>>>,
-            _StaticSpaceClause<_SimpleMultiUpdateClause<I>> {
 
     }
 
@@ -660,7 +660,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _MultiWithSpec<I extends Item> extends _MySQLDynamicWithClause<_SimpleMultiUpdateClause<I>>,
-            _StaticWithClause<_StaticCteParensSpec<_MultiComma<I>>>,
+            _MySQLStaticWithClause<_SimpleMultiUpdateClause<I>>,
             _SimpleMultiUpdateClause<I> {
 
     }
@@ -685,8 +685,8 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchMultiWhereAndSpec<I extends Item>
-            extends UpdateStatement._UpdateWhereAndClause<_BatchMultiWhereAndSpec<I>>
-            , _BatchParamClause<_DmlUpdateSpec<I>> {
+            extends UpdateStatement._UpdateWhereAndClause<_BatchMultiWhereAndSpec<I>>,
+            _BatchParamClause<_DmlUpdateSpec<I>> {
 
 
     }
@@ -704,8 +704,8 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchMultiSetClause<I extends Item>
-            extends UpdateStatement._StaticBatchSetClause<TableField, _BatchMultiWhereSpec<I>>
-            , UpdateStatement._DynamicSetClause<BatchItemPairs<TableField>, _BatchMultiWhereSpec<I>> {
+            extends UpdateStatement._StaticBatchSetClause<TableField, _BatchMultiWhereSpec<I>>,
+            UpdateStatement._DynamicSetClause<BatchItemPairs<TableField>, _BatchMultiWhereSpec<I>> {
 
     }
 
@@ -726,8 +726,8 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchMultiWhereSpec<I extends Item>
-            extends _WhereClause<_BatchParamClause<_DmlUpdateSpec<I>>, _BatchMultiWhereAndSpec<I>>
-            , _BatchMultiSetClause<I> {
+            extends _WhereClause<_BatchParamClause<_DmlUpdateSpec<I>>, _BatchMultiWhereAndSpec<I>>,
+            _BatchMultiSetClause<I> {
 
 
     }
@@ -750,8 +750,8 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchMultiIndexHintOnSpec<I extends Item>
-            extends MySQLQuery._IndexHintForJoinClause<_BatchMultiIndexHintOnSpec<I>>
-            , _OnClause<_BatchMultiJoinSpec<I>> {
+            extends MySQLQuery._IndexHintForJoinClause<_BatchMultiIndexHintOnSpec<I>>,
+            _OnClause<_BatchMultiJoinSpec<I>> {
 
     }
 
@@ -858,50 +858,10 @@ public interface MySQLUpdate extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _BatchMultiUpdateClause<I extends Item> {
-
-        _BatchMultiIndexHintJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
-                                               TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
-
-        _BatchMultiIndexHintJoinSpec<I> update(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
-
-
-        <T extends DerivedTable> _AsClause<_BatchParensJoinSpec<I>> update(Supplier<List<Hint>> hints,
-                                                                           List<MySQLs.Modifier> modifiers,
-                                                                           Supplier<T> supplier);
-
-        <T extends DerivedTable> _AsClause<_BatchParensJoinSpec<I>> update(Supplier<T> supplier);
-
-        <T extends DerivedTable> _AsClause<_BatchParensJoinSpec<I>> update(
-                Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, Query.DerivedModifier modifier,
-                Supplier<T> supplier);
-
-        <T extends DerivedTable> _AsClause<_BatchParensJoinSpec<I>> update(Query.DerivedModifier modifier, Supplier<T> supplier);
-
-        _BatchMultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName);
-
-        _BatchMultiJoinSpec<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName,
-                                      SQLs.WordAs wordAs, String alias);
-
-        _BatchMultiJoinSpec<I> update(String cteName);
-
-        _BatchMultiJoinSpec<I> update(String cteName, SQLs.WordAs wordAs, String alias);
-
-        _BatchMultiPartitionJoinClause<I> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
-                                                 TableMeta<?> table);
-
-        _BatchMultiPartitionJoinClause<I> update(TableMeta<?> table);
-
-        _NestedLeftParenSpec<_BatchMultiJoinSpec<I>> update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers);
-
-        _NestedLeftParenSpec<_BatchMultiJoinSpec<I>> update();
-
-    }
-
-
-    interface _BatchMultiComma<I extends Item>
-            extends _StaticWithCommaClause<_StaticCteParensSpec<_BatchMultiComma<I>>>,
-            _StaticSpaceClause<_BatchMultiUpdateClause<I>> {
+    interface _BatchMultiUpdateClause<I extends Item>
+            extends _MultiUpdateClause<_BatchMultiIndexHintJoinSpec<I>, _AsClause<_BatchParensJoinSpec<I>>>,
+            _MultiUpdateCteNestedClause<_BatchMultiJoinSpec<I>>,
+            _MultiUpdateTableClause<_BatchMultiPartitionJoinClause<I>> {
 
     }
 
@@ -925,7 +885,7 @@ public interface MySQLUpdate extends MySQLStatement {
      */
     interface _BatchMultiWithSpec<I extends Item>
             extends _MySQLDynamicWithClause<_BatchMultiUpdateClause<I>>,
-            _StaticWithClause<_StaticCteParensSpec<_BatchMultiComma<I>>>,
+            _MySQLStaticWithClause<_BatchMultiUpdateClause<I>>,
             _BatchMultiUpdateClause<I> {
 
     }

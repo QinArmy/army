@@ -5,11 +5,14 @@ import io.army.criteria.Item;
 import io.army.criteria.Statement;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public interface MySQLStatement extends DialectStatement {
 
-    interface _MySQLDynamicWithClause<WE> extends _DynamicWithClause<MySQLCtes, WE> {
+    interface _MySQLDynamicWithClause<WE extends Item> extends _DynamicWithClause<MySQLCtes, WE> {
+
+    }
+
+    interface _MySQLStaticWithClause<I extends Item> extends _StaticWithClause<MySQLQuery._StaticCteParensSpec<I>> {
 
     }
 
@@ -23,6 +26,7 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
+    @Deprecated
     interface _PartitionClause_0<PR> {
 
         _LeftParenStringQuadraOptionalSpec<PR> partition();
@@ -310,25 +314,6 @@ public interface MySQLStatement extends DialectStatement {
     }
 
     interface _DynamicPartitionJoinClause extends _PartitionAsClause<_DynamicIndexHintJoinClause> {
-
-    }
-
-
-    interface _StaticCteAsClause<I extends Item> {
-        I as(Function<MySQLQuery._SelectSpec<_AsCteClause<I>>, I> function);
-    }
-
-
-    interface _StaticCteParensSpec<I extends Item>
-            extends _ParensStringClause<_StaticCteAsClause<I>>, _StaticCteAsClause<I> {
-
-    }
-
-    interface _MySQLStaticWithClause<I extends Item> extends _StaticWithClause<_StaticCteParensSpec<I>> {
-
-    }
-
-    interface _MySQLStaticCteCommaClause<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<I>> {
 
     }
 

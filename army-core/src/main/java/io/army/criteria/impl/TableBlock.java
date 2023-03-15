@@ -138,7 +138,7 @@ abstract class TableBlock implements _TableBlock {
 
         private Function<String, Selection> selectionFunction;
 
-        private Supplier<List<Selection>> selectionsSupplier;
+        private Supplier<List<? extends Selection>> selectionsSupplier;
 
         ParensDerivedJoinBlock(_JoinType joinType, @Nullable SQLWords itemWord, DerivedTable tableItem,
                                String alias) {
@@ -153,7 +153,7 @@ abstract class TableBlock implements _TableBlock {
         }
 
         @Override
-        public final List<Selection> selectionList() {
+        public final List<? extends Selection> selectionList() {
             return this.selectionsSupplier.get();
         }
 

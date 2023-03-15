@@ -323,11 +323,11 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
 
         private List<_Cte> cteList;
 
-        WithMultiUpdate(@Nullable _WithClauseSpec withSpec, CriteriaContext context) {
+        WithMultiUpdate(@Nullable ArmyStmtSpec spec, CriteriaContext context) {
             super(context);
-            if (withSpec != null) {
-                this.recursive = withSpec.isRecursive();
-                this.cteList = withSpec.cteList();
+            if (spec != null) {
+                this.recursive = spec.isRecursive();
+                this.cteList = spec.cteList();
             }
         }
 

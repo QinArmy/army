@@ -43,7 +43,7 @@ abstract class MySQLInserts extends InsertSupports {
 
     /**
      * <p>
-     * create new single-table INSERT statement that is primary statement and support {@link io.army.meta.ChildTableMeta}.
+     * create single-table INSERT statement that is primary statement and support {@link io.army.meta.ChildTableMeta}.
      * </p>
      */
     static MySQLInsert._PrimaryOptionSpec singleInsert() {
@@ -52,7 +52,7 @@ abstract class MySQLInserts extends InsertSupports {
 
     /**
      * <p>
-     * create new single-table INSERT statement that is primary statement for multi-statement and support only {@link SingleTableMeta}.
+     * create single-table INSERT statement that is primary statement for multi-statement and support only {@link SingleTableMeta}.
      * </p>
      */
     static <I extends Item> MySQLInsert._PrimarySingleOptionSpec<I> singleInsert(ArmyStmtSpec spec,

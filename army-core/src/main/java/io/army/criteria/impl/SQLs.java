@@ -179,6 +179,7 @@ public abstract class SQLs extends SQLsSyntax {
         return t;
     }
 
+    @Deprecated
     static BatchUpdate _batchUpdateIdentity(UpdateStatement update) {
         return (BatchUpdate) update;
     }

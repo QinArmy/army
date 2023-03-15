@@ -53,22 +53,22 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQLUpdate._SingleWithSpec<UpdateStatement> singleUpdate() {
-        return MySQLSingleUpdate.simple(null, SQLs::_identity);
+    public static MySQLUpdate._SingleWithSpec<Update> singleUpdate() {
+        return MySQLSingleUpdates.simple(null, SQLs::_identity);
     }
 
 
     public static MySQLUpdate._BatchSingleWithSpec<BatchUpdate> batchSingleUpdate() {
-        return MySQLSingleUpdate.batch(SQLs::_batchUpdateIdentity);
+        return MySQLSingleUpdates.batch();
     }
 
-    public static MySQLUpdate._MultiWithSpec<UpdateStatement> multiUpdate() {
-        return MySQLMultiUpdate.simple(SQLs._UPDATE_IDENTITY);
+    public static MySQLUpdate._MultiWithSpec<Update> multiUpdate() {
+        return MySQLMultiUpdates.simple(null, SQLs::_identity);
     }
 
 
-    public static MySQLUpdate._BatchMultiWithSpec<UpdateStatement> batchMultiUpdate() {
-        return MySQLMultiUpdate.batch(SQLs::_identity);
+    public static MySQLUpdate._BatchMultiWithSpec<BatchUpdate> batchMultiUpdate() {
+        return MySQLMultiUpdates.batch();
     }
 
     public static MySQLDelete._SingleWithSpec<DeleteStatement> singleDelete() {

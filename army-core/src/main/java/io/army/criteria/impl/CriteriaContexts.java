@@ -152,7 +152,7 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext primaryMultiDmlContext() {
+    static CriteriaContext primaryMultiDmlContext(@Nullable ArmyStmtSpec spec) {
         return new MultiDmlContext(null);
     }
 

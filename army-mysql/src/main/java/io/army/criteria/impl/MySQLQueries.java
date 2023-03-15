@@ -89,6 +89,11 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
         return new StaticCteParensClause<>(context, cteComma)::nextCte;
     }
 
+    static <I extends Item> _CteComma<I> complexCte(CriteriaContext context, boolean recursive
+            , Function<Boolean, I> function) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * @see #onFromTable(_JoinType, TableModifier, TableMeta, String)
      * @see #onFromDerived(_JoinType, DerivedModifier, DerivedTable)

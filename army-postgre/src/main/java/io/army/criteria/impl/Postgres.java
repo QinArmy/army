@@ -63,7 +63,7 @@ public abstract class Postgres extends PostgreFuncSyntax {
      * </p>
      */
     public static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> singleUpdate() {
-        return PostgreUpdates.simpleUpdate();
+        return PostgreUpdates.simple();
     }
 
     /**

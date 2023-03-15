@@ -69,11 +69,11 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
 
     public static void assertUpdate(final UpdateStatement update) {
         if (update instanceof _SingleUpdate) {
-            if (!(update instanceof MySQLSingleUpdate)) {
-                throw instanceNotMatch(update, MySQLSingleUpdate.class);
+            if (!(update instanceof MySQLSingleUpdates)) {
+                throw instanceNotMatch(update, MySQLSingleUpdates.class);
             }
-        } else if (!(update instanceof MySQLMultiUpdate)) {
-            throw instanceNotMatch(update, MySQLMultiUpdate.class);
+        } else if (!(update instanceof MySQLMultiUpdates)) {
+            throw instanceNotMatch(update, MySQLMultiUpdates.class);
         }
 
     }

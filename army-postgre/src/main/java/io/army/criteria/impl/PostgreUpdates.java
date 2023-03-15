@@ -52,7 +52,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
      * create new simple(non-batch) single-table UPDATE statement that is primary statement.
      * </p>
      */
-    static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> simpleUpdate() {
+    static PostgreUpdate._SingleWithSpec<Update, ReturningUpdate> simple() {
         return new PrimarySimpleUpdateClause();
     }
 

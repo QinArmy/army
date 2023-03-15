@@ -8,6 +8,7 @@ import io.army.lang.Nullable;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -243,6 +244,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
+    @Deprecated
     interface _MinWithSpec<I extends Item> extends _MySQLDynamicWithClause<_SelectSpec<I>>,
             _SelectSpec<I> {
 
@@ -250,8 +252,18 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<_CteComma<I>>>,
-            _StaticSpaceClause<_SelectSpec<I>> {
+    interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<I>>,
+            _StaticSpaceClause<I> {
+
+    }
+
+    interface _StaticCteAsClause<I extends Item> {
+        _CteComma<I> as(Function<_SelectSpec<_CteComma<I>>, _CteComma<I>> function);
+
+    }
+
+    interface _StaticCteParensSpec<I extends Item>
+            extends _ParensStringClause<_StaticCteAsClause<I>>, _StaticCteAsClause<I> {
 
     }
 
