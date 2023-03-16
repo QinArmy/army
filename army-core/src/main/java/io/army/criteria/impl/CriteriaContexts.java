@@ -186,17 +186,15 @@ abstract class CriteriaContexts {
 
 
     /**
-     * @param spec        probably is below:
-     *                    <ul>
-     *                      <li>{@link MultiStmtSpec}</li>
-     *                      <li>{@link SimpleQueries},complex statement,need to migration with clause and inherit outer context</li>
-     *                    </ul>,
-     *                     if non-nul,then outerBracketContext and leftContext both are null.
-     * @param leftContext if non-null,then the outer context of leftContext must be outerBracketContext.
+     * @param spec probably is below:
+     *             <ul>
+     *               <li>{@link MultiStmtSpec}</li>
+     *               <li>{@link SimpleQueries},complex statement,need to migration with clause and inherit outer context</li>
+     *             </ul>,
+     *              if non-nul,then outerBracketContext and leftContext both are null.
      */
-    static CriteriaContext primaryValuesContext(@Nullable _Statement._WithClauseSpec spec,
-                                                @Nullable CriteriaContext outerBracketContext,
-                                                @Nullable CriteriaContext leftContext) {
+    static CriteriaContext primaryValuesContext(@Nullable ArmyStmtSpec spec,
+                                                @Nullable CriteriaContext outerBracketContext) {
         throw new UnsupportedOperationException();
     }
 

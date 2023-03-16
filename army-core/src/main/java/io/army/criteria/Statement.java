@@ -768,6 +768,7 @@ public interface Statement extends Item {
      *
      * @since 1.0
      */
+    @Deprecated
     interface _StaticOrderByClause<OR> extends Item {
 
         OR orderBy(Expression exp);
@@ -784,12 +785,31 @@ public interface Statement extends Item {
 
     }
 
+    interface _OrderByClause<R> extends Item {
 
-    interface _DynamicOrderByClause<B extends SortItems, OR> {
+        R orderBy(SortItem sortItem);
 
-        OR orderBy(Consumer<B> consumer);
+        R orderBy(SortItem sortItem1, SortItem sortItem2);
 
-        OR ifOrderBy(Consumer<B> consumer);
+        R orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3);
+
+        R orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4);
+
+        R orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4, SortItem sortItem5);
+
+        R orderBy(Consumer<Consumer<SortItem>> consumer);
+
+        R ifOrderBy(Consumer<Consumer<SortItem>> consumer);
+
+    }
+
+
+    @Deprecated
+    interface _DynamicOrderByClause<B extends SortItems, R> {
+
+        R orderBy(Consumer<B> consumer);
+
+        R ifOrderBy(Consumer<B> consumer);
     }
 
 
@@ -805,21 +825,21 @@ public interface Statement extends Item {
      *
      * @since 1.0
      */
-    interface _RowCountLimitClause<LR> extends Item {
+    interface _RowCountLimitClause<R> extends Item {
 
-        LR limit(Expression rowCount);
+        R limit(Expression rowCount);
 
-        LR limit(BiFunction<MappingType, Number, Expression> operator, long rowCount);
+        R limit(BiFunction<MappingType, Number, Expression> operator, long rowCount);
 
-        <N extends Number> LR limit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier);
+        <N extends Number> R limit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier);
 
-        LR limit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function, String keyName);
+        R limit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function, String keyName);
 
-        <N extends Number> LR ifLimit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier);
+        <N extends Number> R ifLimit(BiFunction<MappingType, Number, Expression> operator, Supplier<N> supplier);
 
-        LR ifLimit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function, String keyName);
+        R ifLimit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function, String keyName);
 
-        LR ifLimit(Supplier<Expression> supplier);
+        R ifLimit(Supplier<Expression> supplier);
 
     }
 

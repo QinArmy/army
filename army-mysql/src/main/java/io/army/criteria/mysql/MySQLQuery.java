@@ -269,11 +269,12 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _DynamicCteAsClause extends _StaticAsClaus<_MinWithSpec<_AsCteClause<MySQLCtes>>> {
+    interface _DynamicCteAsClause {
 
+        _CommaClause<MySQLCtes> as(Function<_WithSpec<_CommaClause<MySQLCtes>>, _CommaClause<MySQLCtes>> function);
     }
 
-    interface _DynamicCteLeftParenSpec extends _LeftParenStringQuadraOptionalSpec<_DynamicCteAsClause>,
+    interface _DynamicCteParensSpec extends _ParensStringClause<_DynamicCteAsClause>,
             _DynamicCteAsClause {
 
     }

@@ -14,14 +14,13 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 @SuppressWarnings("unchecked")
 abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
-        implements CriteriaContextSpec
-        , Statement._StaticOrderByClause<OR>
-        , Statement._StaticOrderByNullsCommaClause<OR>
-        , _Statement._OrderByListSpec
-        , Statement.StatementMockSpec {
+        implements CriteriaContextSpec,
+        Statement._OrderByClause<OR>,
+        _Statement._OrderByListSpec {
 
     final CriteriaContext context;
 
@@ -38,85 +37,59 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
     }
 
     @Override
-    public final OR orderBy(Expression exp) {
-        this.onAddOrderBy(exp);
+    public final OR orderBy(SortItem sortItem) {
+        this.onAddOrderBy(sortItem);
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Expression exp, Statement.AscDesc ascDesc) {
-        this.onAddOrderBy(ArmySortItems.create(exp, ascDesc));
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2) {
+        this.onAddOrderBy(sortItem1)
+                .onAddOrderBy(sortItem2);
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Expression exp1, Expression exp2) {
-        this.onAddOrderBy(exp1)
-                .add((ArmySortItem) exp2);
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
+        this.onAddOrderBy(sortItem1)
+                .onAddOrderBy(sortItem2)
+                .onAddOrderBy(sortItem3);
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2) {
-        this.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
-                .add((ArmySortItem) exp2);
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4) {
+        this.onAddOrderBy(sortItem1)
+                .onAddOrderBy(sortItem2)
+                .onAddOrderBy(sortItem3)
+                .onAddOrderBy(sortItem4);
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Expression exp1, Expression exp2, Statement.AscDesc ascDesc2) {
-        this.onAddOrderBy(exp1)
-                .add(ArmySortItems.create(exp2, ascDesc2));
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4, SortItem sortItem5) {
+        this.onAddOrderBy(sortItem1)
+                .onAddOrderBy(sortItem2)
+                .onAddOrderBy(sortItem3)
+                .onAddOrderBy(sortItem4)
+                .onAddOrderBy(sortItem5);
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2, Statement.AscDesc ascDesc2) {
-        this.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
-                .add(ArmySortItems.create(exp2, ascDesc2));
+    public final OR orderBy(Consumer<Consumer<SortItem>> consumer) {
+        consumer.accept(this::onAddOrderBy);
+        if (this.orderByList == null) {
+            throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
+        }
         return (OR) this;
     }
 
     @Override
-    public final OR comma(Expression exp, Statement.AscDesc ascDesc) {
-        this.onAddOrderBy(ArmySortItems.create(exp, ascDesc));
+    public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
+        consumer.accept(this::onAddOrderBy);
         return (OR) this;
     }
-
-
-    @Override
-    public final OR comma(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2) {
-        this.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
-                .add((ArmySortItem) exp2);
-        return (OR) this;
-    }
-
-    @Override
-    public final OR comma(Expression exp1, Expression exp2, Statement.AscDesc ascDesc2) {
-        this.onAddOrderBy(exp1)
-                .add(ArmySortItems.create(exp2, ascDesc2));
-        return (OR) this;
-    }
-
-    @Override
-    public final OR comma(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2, Statement.AscDesc ascDesc2) {
-        this.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
-                .add(ArmySortItems.create(exp2, ascDesc2));
-        return (OR) this;
-    }
-
-    @Override
-    public final OR comma(Expression exp, Statement.NullsFirstLast nullOption) {
-        this.onAddOrderBy(ArmySortItems.create(exp, nullOption));
-        return (OR) this;
-    }
-
-    @Override
-    public final OR comma(Expression exp, Statement.AscDesc ascDesc, Statement.NullsFirstLast nullOption) {
-        this.onAddOrderBy(ArmySortItems.create(exp, ascDesc, nullOption));
-        return (OR) this;
-    }
-
 
     @Override
     public final List<? extends SortItem> orderByList() {
@@ -149,7 +122,7 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
     }
 
 
-    private List<ArmySortItem> onAddOrderBy(final SortItem sortItem) {
+    private OrderByClause<?> onAddOrderBy(final SortItem sortItem) {
         List<ArmySortItem> orderByList = this.orderByList;
         if (orderByList == null) {
             orderByList = new ArrayList<>();
@@ -160,8 +133,13 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         } else if (!(orderByList instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        orderByList.add((ArmySortItem) sortItem);
-        return orderByList;
+
+        if (sortItem instanceof ArmySortItem) {
+            orderByList.add((ArmySortItem) sortItem);
+        } else {
+            orderByList.add((ArmySortItem) sortItem.asSortItem());
+        }
+        return this;
     }
 
     interface OrderByEventListener {

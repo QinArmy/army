@@ -274,4 +274,15 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
     Selection as(String selectionAlas);
 
 
+    /**
+     * @return this
+     */
+    @Override
+    SortItem asSortItem();
+
+    SortItem asc();
+
+    SortItem desc();
+
+
 }

@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+@Deprecated
 public interface SortItems {
 
     SortItems sortItem(Expression exp);

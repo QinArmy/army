@@ -1,9 +1,11 @@
 package io.army.criteria.impl;
 
 
+import io.army.criteria.DialectStatement;
 import io.army.criteria.SQLWords;
 import io.army.criteria.Statement;
 import io.army.criteria.TabularItem;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.mysql.MySQLCtes;
@@ -13,7 +15,6 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
 import io.army.util._CollectionUtils;
-import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.ArrayList;
@@ -36,26 +37,44 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     static MySQLCtes mySQLCteBuilder(boolean recursive, CriteriaContext context) {
-        return new MySQLCteBuilderImpl(recursive, context);
+        return new MySQLCteBuilder(recursive, context);
     }
 
 
-    private static final class MySQLCteBuilderImpl
-            extends ParenStringConsumerClause<MySQLQuery._DynamicCteAsClause>
-            implements MySQLCtes
-            , MySQLQuery._DynamicCteLeftParenSpec
-            , Statement._AsCteClause<MySQLCtes> {
+    private static final class DynamicCteQueryParensSpec
+            extends CteParensClause<MySQLQuery._DynamicCteAsClause>
+            implements MySQLQuery._DynamicCteParensSpec {
+
+        private final MySQLCteBuilder builder;
+
+        private DynamicCteQueryParensSpec(MySQLCteBuilder builder, String name) {
+            super(name, builder.context);
+            this.builder = builder;
+        }
+
+
+        @Override
+        public DialectStatement._CommaClause<MySQLCtes> as(Function<MySQLQuery._WithSpec<DialectStatement._CommaClause<MySQLCtes>>, DialectStatement._CommaClause<MySQLCtes>> function) {
+            return function.apply(MySQLQueries.subQuery(this.context, this::subQueryEnd));
+        }
+
+        private DialectStatement._CommaClause<MySQLCtes> subQueryEnd(final SubQuery query) {
+            CriteriaUtils.createAndAddCte(this.context, this.name, this.columnAliasList, query);
+            return this.builder;
+        }
+
+
+    }//DynamicCteQueryParensSpec
+
+    private static final class MySQLCteBuilder implements MySQLCtes, CteBuilder,
+            DialectStatement._CommaClause<MySQLCtes> {
 
         private final boolean recursive;
 
         private final CriteriaContext context;
 
-        private String cteName;
 
-        private List<String> columnAliasList;
-
-        private MySQLCteBuilderImpl(boolean recursive, CriteriaContext context) {
-            super(context);
+        private MySQLCteBuilder(boolean recursive, CriteriaContext context) {
             this.recursive = recursive;
             this.context = context;
             context.onBeforeWithClause(recursive);
@@ -67,54 +86,22 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
         @Override
-        public MySQLQuery._DynamicCteLeftParenSpec query(final @Nullable String cteName) {
-            if (!_StringUtils.hasText(cteName)) {
-                throw ContextStack.criteriaError(this.context, _Exceptions::cteNameNotText);
-            } else if (this.cteName != null) {
-                throw CriteriaUtils.cteNotEnd(this.context, this.cteName, cteName);
-            }
-            this.cteName = cteName;
+        public MySQLQuery._DynamicCteParensSpec subQuery(String name) {
+            return new DynamicCteQueryParensSpec(this, name);
+        }
+
+        @Override
+        public void endLastCte() {
+            //no-op
+        }
+
+        @Override
+        public MySQLCtes comma() {
             return this;
         }
 
 
-        @Override
-        public MySQLQuery._MinWithSpec<Statement._AsCteClause<MySQLCtes>> as() {
-            final String cteName = this.cteName;
-            if (cteName == null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            final List<String> aliasList = this.columnAliasList;
-            final CriteriaContext context = this.context;
-            context.onStartCte(cteName);
-            if (aliasList != null) {
-                context.onCteColumnAlias(cteName, aliasList);
-            }
-            return MySQLQueries.subQuery(null, this.context, query -> {
-                CriteriaUtils.createAndAddCte(context, cteName, aliasList, query);
-                MySQLCteBuilderImpl.this.cteName = null; //clear for next cte
-                MySQLCteBuilderImpl.this.columnAliasList = null; //clear for next cte
-                return MySQLCteBuilderImpl.this;
-
-            });
-        }
-
-        @Override
-        public MySQLCtes asCte() {
-            return this;
-        }
-
-        @Override
-        MySQLQuery._DynamicCteAsClause stringConsumerEnd(List<String> stringList) {
-            if (this.cteName == null || this.columnAliasList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.columnAliasList = stringList;
-            return this;
-        }
-
-
-    }//MySQLCteBuilderImpl
+    }//MySQLCteBuilder
 
 
     interface MySQLBlockParams extends TableBlock.DialectBlockParams {

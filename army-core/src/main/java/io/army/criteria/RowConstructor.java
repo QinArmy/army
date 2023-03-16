@@ -11,21 +11,21 @@ import java.util.function.Function;
  */
 public interface RowConstructor {
 
-    RowConstructor add(Expression exp);
+    RowConstructor column(Expression exp);
 
-    RowConstructor add(Expression exp1, Expression exp2);
+    RowConstructor column(Expression exp1, Expression exp2);
 
-    RowConstructor add(Expression exp1, Expression exp2, Expression exp3);
+    RowConstructor column(Expression exp1, Expression exp2, Expression exp3);
 
-    RowConstructor add(Expression exp1, Expression exp2, Expression exp3, Expression exp4);
+    RowConstructor column(Expression exp1, Expression exp2, Expression exp3, Expression exp4);
 
-    RowConstructor add(Function<Object, Expression> valueOperator, Object value);
+    RowConstructor column(Function<Object, Expression> valueOperator, Object value);
 
-    RowConstructor add(Function<Object, Expression> valueOperator, Object value1, Object value2);
+    RowConstructor column(Function<Object, Expression> valueOperator, Object value1, Object value2);
 
-    RowConstructor add(Function<Object, Expression> valueOperator, Object value1, Object value2, Object value3);
+    RowConstructor column(Function<Object, Expression> valueOperator, Object value1, Object value2, Object value3);
 
-    RowConstructor add(Function<Object, Expression> valueOperator, Object value1, Object value2, Object value3, Object value4);
+    RowConstructor column(Function<Object, Expression> valueOperator, Object value1, Object value2, Object value3, Object value4);
 
 
     RowConstructor row();

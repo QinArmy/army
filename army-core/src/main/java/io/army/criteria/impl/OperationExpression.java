@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.Selection;
+import io.army.criteria.SortItem;
 import io.army.criteria.SqlValueParam;
 import io.army.criteria.dialect.SubQuery;
 import io.army.function.TeNamedOperator;
@@ -430,6 +431,23 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final Selection as(String selectionAlas) {
         return ArmySelections.forExp(this, selectionAlas);
+    }
+
+
+    @Override
+    public final SortItem asSortItem() {
+        //always return this
+        return this;
+    }
+
+    @Override
+    public final SortItem asc() {
+        return ArmySortItems.create(this, SQLs.ASC);
+    }
+
+    @Override
+    public final SortItem desc() {
+        return ArmySortItems.create(this, SQLs.DESC);
     }
 
 

@@ -17,19 +17,18 @@ abstract class MySQLSimpleValues<I extends Item>
         extends SimpleValues<
         I,
         MySQLValues._ValuesLeftParenSpec<I>,
-        MySQLValues._OrderByCommaSpec<I>,
+        MySQLValues._LimitSpec<I>,
         Statement._AsValuesClause<I>,
         Object,
         Object,
         MySQLValues._ValueWithComplexSpec<I>>
-        implements MySQLValues._ValueSpec<I>
-        , MySQLValues._ValuesLeftParenSpec<I>
-        , MySQLValues._OrderByCommaSpec<I>
-        , MySQLValues {
+        implements MySQLValues._ValueSpec<I>,
+        MySQLValues._ValuesLeftParenSpec<I>,
+        MySQLValues {
 
     static <I extends Item> MySQLValues._ValueSpec<I> primaryValues(final @Nullable CriteriaContext outerContext
             , Function<Values, I> function) {
-        return new SimplePrimaryValues<>(outerContext, function);
+        return new PrimarySimpleValues<>(outerContext, function);
     }
 
 
@@ -64,21 +63,6 @@ abstract class MySQLSimpleValues<I extends Item>
         return this;
     }
 
-    @Override
-    public final _LimitSpec<I> orderBy(Consumer<SortItems> consumer) {
-        consumer.accept(new OrderBySortItems(this));
-        if (!this.hasOrderByClause()) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
-        }
-        return this;
-    }
-
-    @Override
-    public final _LimitSpec<I> ifOrderBy(Consumer<SortItems> consumer) {
-        consumer.accept(new OrderBySortItems(this));
-        return this;
-    }
-
 
     @Override
     final String columnAlias(final int columnIndex) {
@@ -90,13 +74,14 @@ abstract class MySQLSimpleValues<I extends Item>
         return MySQLDialect.MySQL80;
     }
 
-    private static final class SimplePrimaryValues<I extends Item> extends MySQLSimpleValues<I>
+    private static final class PrimarySimpleValues<I extends Item> extends MySQLSimpleValues<I>
             implements Values {
 
         private final Function<? super Values, I> function;
 
-        private SimplePrimaryValues(@Nullable CriteriaContext outerContext, Function<? super Values, I> function) {
-            super(CriteriaContexts.primaryValuesContext(null, outerContext));
+        private PrimarySimpleValues(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerBracketContext,
+                                    Function<? super Values, I> function) {
+            super(CriteriaContexts.primaryValuesContext(spec, outerBracketContext));
             this.function = function;
         }
 
@@ -104,7 +89,7 @@ abstract class MySQLSimpleValues<I extends Item>
         public _ValueSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
             final BracketValues<I> bracket;
             bracket = new BracketValues<>(null, this.context, this::bracketEnd);
-            return new SimplePrimaryValues<>(bracket.context, bracket::parenRowSetEnd);
+            return new PrimarySimpleValues<>(bracket.context, bracket::parenRowSetEnd);
         }
 
         @Override
@@ -174,17 +159,17 @@ abstract class MySQLSimpleValues<I extends Item>
     }//SimpleSubValueValues
 
 
-     static abstract class MySQLBracketValues<I extends Item>
-             extends BracketRowSet<
-             I,
-             MySQLValues._UnionOrderBySpec<I>,
-             MySQLValues._UnionOrderByCommaSpec<I>,
-             _AsValuesClause<I>,
-             Object,
-             Object,
-             MySQLValues._ValueWithComplexSpec<I>>
-             implements MySQLValues._UnionOrderBySpec<I>
-             , MySQLValues {
+    static abstract class MySQLBracketValues<I extends Item>
+            extends BracketRowSet<
+            I,
+            MySQLValues._UnionOrderBySpec<I>,
+            MySQLValues._UnionLimitSpec<I>,
+            _AsValuesClause<I>,
+            Object,
+            Object,
+            MySQLValues._ValueWithComplexSpec<I>>
+            implements MySQLValues._UnionOrderBySpec<I>,
+            MySQLValues {
 
         private MySQLBracketValues(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext) {
             super(CriteriaContexts.bracketContext(spec, outerContext));
@@ -352,7 +337,7 @@ abstract class MySQLSimpleValues<I extends Item>
         private final Function<RowSet, I> function;
 
         /**
-         * @see SimplePrimaryValues#createUnionValues(UnionType)
+         * @see PrimarySimpleValues#createUnionValues(UnionType)
          */
         private ComplexValues(@Nullable CriteriaContext outerContext, Function<RowSet, I> function) {
             super(outerContext);
@@ -361,13 +346,13 @@ abstract class MySQLSimpleValues<I extends Item>
 
         @Override
         public _OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
-            return new SimplePrimaryValues<>(this.outerContext, this.function)
+            return new PrimarySimpleValues<>(this.outerContext, this.function)
                     .values(consumer);
         }
 
         @Override
         public _ValuesLeftParenClause<I> values() {
-            return new SimplePrimaryValues<>(this.outerContext, this.function)
+            return new PrimarySimpleValues<>(this.outerContext, this.function)
                     .values();
         }
 

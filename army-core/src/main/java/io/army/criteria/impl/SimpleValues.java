@@ -524,50 +524,50 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
         }
 
         @Override
-        public RowConstructor add(Expression exp) {
+        public RowConstructor column(Expression exp) {
             this.clause.comma(exp);
             return this;
         }
 
         @Override
-        public RowConstructor add(Expression exp1, Expression exp2) {
+        public RowConstructor column(Expression exp1, Expression exp2) {
             this.clause.comma(exp1, exp2);
             return this;
         }
 
         @Override
-        public RowConstructor add(Expression exp1, Expression exp2, Expression exp3) {
+        public RowConstructor column(Expression exp1, Expression exp2, Expression exp3) {
             this.clause.comma(exp1, exp2, exp3);
             return this;
         }
 
         @Override
-        public RowConstructor add(Expression exp1, Expression exp2, Expression exp3, Expression exp4) {
+        public RowConstructor column(Expression exp1, Expression exp2, Expression exp3, Expression exp4) {
             this.clause.comma(exp1, exp2, exp3, exp4);
             return this;
         }
 
         @Override
-        public RowConstructor add(Function<Object, Expression> valueOperator, Object value) {
+        public RowConstructor column(Function<Object, Expression> valueOperator, Object value) {
             this.clause.comma(valueOperator.apply(value));
             return this;
         }
 
         @Override
-        public RowConstructor add(Function<Object, Expression> valueOperator, Object value1, Object value2) {
+        public RowConstructor column(Function<Object, Expression> valueOperator, Object value1, Object value2) {
             this.clause.comma(valueOperator, value1, value2);
             return this;
         }
 
         @Override
-        public RowConstructor add(Function<Object, Expression> valueOperator, Object value1
+        public RowConstructor column(Function<Object, Expression> valueOperator, Object value1
                 , Object value2, Object value3) {
             this.clause.comma(valueOperator, value1, value2, value3);
             return this;
         }
 
         @Override
-        public RowConstructor add(Function<Object, Expression> valueOperator, Object value1
+        public RowConstructor column(Function<Object, Expression> valueOperator, Object value1
                 , Object value2, Object value3, Object value4) {
             this.clause.comma(valueOperator, value1, value2, value3, value4);
             return this;
