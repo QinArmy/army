@@ -2186,7 +2186,7 @@ abstract class InsertSupports {
         }
         //2. validate parent statement discriminator
         final List<FieldMeta<?>> fieldList;
-        final List<Selection> selectionList;
+        final List<? extends Selection> selectionList;
         if (statement instanceof _Insert._ChildQueryInsert) {
             final _Insert._QueryInsert parentStmt;
             parentStmt = ((_Insert._ChildQueryInsert) statement).parentStmt();

@@ -44,7 +44,7 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
-    static CriteriaContext primaryQuery(final @Nullable _Statement._WithClauseSpec spec,
+    static CriteriaContext primaryQuery(final @Nullable ArmyStmtSpec spec,
                                         final @Nullable CriteriaContext outerBracketContext,
                                         final @Nullable CriteriaContext leftContext) {
         assert leftContext == null || leftContext.getOuterContext() == outerBracketContext;

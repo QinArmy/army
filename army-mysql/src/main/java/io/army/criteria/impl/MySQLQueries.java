@@ -782,7 +782,7 @@ abstract class MySQLQueries<I extends Item, WE> extends SimpleQueries.WithCteSim
 
         private final Function<? super Select, I> function;
 
-        private SimpleSelect(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext,
+        private SimpleSelect(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext,
                              Function<? super Select, I> function, @Nullable CriteriaContext leftContext) {
             super(spec, CriteriaContexts.primaryQuery(spec, outerContext, leftContext));
             this.function = function;

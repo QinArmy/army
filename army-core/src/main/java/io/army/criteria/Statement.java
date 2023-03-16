@@ -267,7 +267,7 @@ public interface Statement extends Item {
      * @param <FS> next clause java type
      * @since 1.0
      */
-    interface _UsingItemClause<FT, FS extends Item> extends Item {
+    interface _UsingItemClause<FT, FS> extends Item {
 
         FT using(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
