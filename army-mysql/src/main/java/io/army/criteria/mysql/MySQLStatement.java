@@ -3,6 +3,7 @@ package io.army.criteria.mysql;
 import io.army.criteria.DialectStatement;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
+import io.army.meta.TableMeta;
 
 import java.util.function.Consumer;
 
@@ -16,12 +17,20 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
+    interface _MySQLUsingTableClause<R extends Item> {
+
+        R using(TableMeta<?> table);
+    }
 
     interface _MySQLFromClause<FT, FS> extends _FromModifierTabularClause<FT, _AsClause<FS>> {
 
     }
 
-    interface _MySQLFromNestedClause<FN extends Item> extends _FromNestedClause<_NestedLeftParenSpec<FN>> {
+    interface _MySQLFromNestedClause<R extends Item> extends _FromNestedClause<_NestedLeftParenSpec<R>> {
+
+    }
+
+    interface _MySQLUsingNestedClause<R extends Item> extends _UsingNestedClause<_NestedLeftParenSpec<R>> {
 
     }
 
@@ -33,7 +42,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _PartitionClause<R> {
+    interface _PartitionClause<R> extends Item {
 
         R partition(String first, String... rest);
 

@@ -1,10 +1,11 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.*;
+import io.army.criteria.DeleteStatement;
+import io.army.criteria.Item;
+import io.army.criteria.Query;
+import io.army.criteria.Statement;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
-import io.army.meta.TableMeta;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -15,6 +16,9 @@ import java.util.function.Supplier;
  * This interface representing MySQL delete statement,the instance of this interface can only be parsed by MySQL dialect instance.
  * </p>
  *
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html">MySQL 8.0 Optimizer Hints</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/optimizer-hints.html">MySQL 5.7 Optimizer Hints</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/delete.html">DELETE Statement</a>
  * @since 1.0
  */
 public interface MySQLDelete extends MySQLStatement {
@@ -140,12 +144,6 @@ public interface MySQLDelete extends MySQLStatement {
 
     }
 
-    interface _SingleComma<I extends Item>
-            extends _StaticWithCommaClause<_StaticCteParensSpec<_SingleComma<I>>>,
-            _StaticSpaceClause<_SimpleSingleDeleteClause<I>> {
-
-    }
-
     /**
      * <p>
      * This interface representing the composite of below:
@@ -164,10 +162,9 @@ public interface MySQLDelete extends MySQLStatement {
      * @since 1.0
      */
     interface _SingleWithSpec<I extends Item>
-            extends _DynamicWithClause<MySQLCtes, _SimpleSingleDeleteClause<I>>,
-            _StaticWithClause<_StaticCteParensSpec<_SingleComma<I>>>,
+            extends _MySQLDynamicWithClause<_SimpleSingleDeleteClause<I>>,
+            _MySQLStaticWithClause<_SimpleSingleDeleteClause<I>>,
             _SimpleSingleDeleteClause<I> {
-
 
     }
 
@@ -258,7 +255,7 @@ public interface MySQLDelete extends MySQLStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _PartitionClause_0}</li>
+     *          <li>{@link _PartitionClause}</li>
      *          <li>{@link MySQLDelete._BatchSingleWhereClause}</li>
      *     </ul>
      * </p>
@@ -292,11 +289,6 @@ public interface MySQLDelete extends MySQLStatement {
 
     }
 
-    interface _BatchSingleComma<I extends Item>
-            extends _StaticWithCommaClause<_StaticCteParensSpec<_BatchSingleComma<I>>>,
-            _StaticSpaceClause<_BatchSingleDeleteClause<I>> {
-
-    }
 
     /**
      * <p>
@@ -315,8 +307,8 @@ public interface MySQLDelete extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchSingleWithSpec<I extends Item>
-            extends _DynamicWithClause<MySQLCtes, _BatchSingleDeleteClause<I>>,
-            _StaticWithClause<_StaticCteParensSpec<_BatchSingleComma<I>>>,
+            extends _MySQLDynamicWithClause<_BatchSingleDeleteClause<I>>,
+            _MySQLStaticWithClause<_BatchSingleDeleteClause<I>>,
             _BatchSingleDeleteClause<I> {
 
     }
@@ -325,24 +317,26 @@ public interface MySQLDelete extends MySQLStatement {
 
     /*################################## blow multi-table delete api interface ##################################*/
 
-    interface _MultiDeleteFromAliasClause<FR> {
+    interface _MultiDeleteFromAliasClause<R> {
 
-        FR from(String alias1, String alias2);
+        R from(String alias);
 
-        FR from(String alias1, String alias2, String alias3);
+        R from(String alias1, String alias2);
 
-        FR from(String alias1, String alias2, String alias3, String alias4);
+        R from(String alias1, String alias2, String alias3);
 
-        FR from(List<String> aliasList);
+        R from(String alias1, String alias2, String alias3, String alias4);
 
-        FR from(Consumer<Consumer<String>> consumer);
+        R from(List<String> aliasList);
+
+        R from(Consumer<Consumer<String>> consumer);
 
     }
 
 
-    interface _MultiDeleteHintClause<DR> {
+    interface _MultiDeleteHintClause<I extends Item> extends Item {
 
-        DR delete(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers);
+        _MultiDeleteFromAliasClause<I> delete(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers);
     }
 
     /**
@@ -357,17 +351,19 @@ public interface MySQLDelete extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _MultiDeleteAliasClause<DR> {
+    interface _MultiDeleteAliasClause<R> {
 
-        DR delete(String alias1, String alias2);
+        R delete(String alias);
 
-        DR delete(String alias1, String alias2, String alias3);
+        R delete(String alias1, String alias2);
 
-        DR delete(String alias1, String alias2, String alias3, String alias4);
+        R delete(String alias1, String alias2, String alias3);
 
-        DR delete(List<String> aliasList);
+        R delete(String alias1, String alias2, String alias3, String alias4);
 
-        DR delete(Consumer<Consumer<String>> consumer);
+        R delete(List<String> aliasList);
+
+        R delete(Consumer<Consumer<String>> consumer);
     }
 
 
@@ -490,33 +486,17 @@ public interface MySQLDelete extends MySQLStatement {
     }
 
 
-    interface _MultiDeleteUsingTableClause<I extends Item> {
-
-        _MultiIndexHintJoinSpec<I> using(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
-
-        <T extends DerivedTable> Statement._AsClause<_ParensJoinSpec<I>> using(Supplier<T> supplier);
-
-        <T extends DerivedTable> Statement._AsClause<_ParensJoinSpec<I>> using(Query.DerivedModifier modifier,
-                                                                               Supplier<T> supplier);
-
-        _MultiJoinSpec<I> using(String cteName);
-
-        _MultiJoinSpec<I> using(String cteName, SQLs.WordAs wordAs, String alias);
-
-        _MultiPartitionJoinClause<I> using(TableMeta<?> table);
-
-        MySQLQuery._NestedLeftParenSpec<_MultiJoinSpec<I>> using();
+    interface _SimpleMultiDeleteUsingClause<I extends Item>
+            extends _UsingModifierClause<_MultiIndexHintJoinSpec<I>, Statement._AsClause<_ParensJoinSpec<I>>>,
+            _UsingCteClause<_MultiJoinSpec<I>>,
+            _MySQLUsingTableClause<_MultiPartitionJoinClause<I>>,
+            _MySQLUsingNestedClause<_MultiJoinSpec<I>> {
 
     }
 
-
-    interface _SimpleMultiDeleteFromAliasClause<I extends Item>
-            extends _MultiDeleteFromAliasClause<_MultiDeleteUsingTableClause<I>> {
-
-    }
 
     interface _MultiDeleteFromTableClause<I extends Item>
-            extends MySQLQuery._MySQLFromClause<_MultiIndexHintJoinSpec<I>, _ParensJoinSpec<I>>,
+            extends _MySQLFromClause<_MultiIndexHintJoinSpec<I>, _ParensJoinSpec<I>>,
             Query._DialectFromClause<_MultiPartitionJoinClause<I>>,
             _MySQLFromNestedClause<_MultiJoinSpec<I>> {
 
@@ -536,12 +516,7 @@ public interface MySQLDelete extends MySQLStatement {
      * @since 1.0
      */
     interface _SimpleMultiDeleteClause<I extends Item> extends _MultiDeleteAliasClause<_MultiDeleteFromTableClause<I>>,
-            _MultiDeleteHintClause<_SimpleMultiDeleteFromAliasClause<I>> {
-
-    }
-
-    interface _MultiComma<I extends Item> extends _MySQLStaticCteCommaClause<_MultiComma<I>>,
-            _StaticSpaceClause<_SimpleMultiDeleteClause<I>> {
+            _MultiDeleteHintClause<_SimpleMultiDeleteUsingClause<I>> {
 
     }
 
@@ -563,7 +538,7 @@ public interface MySQLDelete extends MySQLStatement {
      * @since 1.0
      */
     interface _MultiWithSpec<I extends Item> extends _MySQLDynamicWithClause<_SimpleMultiDeleteClause<I>>,
-            _MySQLStaticWithClause<_MultiComma<I>>,
+            _MySQLStaticWithClause<_SimpleMultiDeleteClause<I>>,
             _SimpleMultiDeleteClause<I> {
 
     }
@@ -669,7 +644,8 @@ public interface MySQLDelete extends MySQLStatement {
 
     }
 
-    interface _BatchParensJoinSpec<I extends Item> extends _ParensStringClause<_BatchMultiJoinSpec<I>> {
+    interface _BatchParensJoinSpec<I extends Item> extends _ParensStringClause<_BatchMultiJoinSpec<I>>,
+            _BatchMultiJoinSpec<I> {
 
     }
 
@@ -692,29 +668,14 @@ public interface MySQLDelete extends MySQLStatement {
     }
 
 
-    interface _BatchMultiDeleteUsingTableClause<I extends Item> {
-
-        _BatchMultiIndexHintJoinSpec<I> using(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
-
-        <T extends DerivedTable> Statement._AsClause<_BatchParensJoinSpec<I>> using(Supplier<T> supplier);
-
-        <T extends DerivedTable> Statement._AsClause<_BatchParensJoinSpec<I>> using(Query.DerivedModifier modifier,
-                                                                                    Supplier<T> supplier);
-
-        _BatchMultiJoinSpec<I> using(String cteName);
-
-        _BatchMultiJoinSpec<I> using(String cteName, SQLs.WordAs wordAs, String alias);
-
-        _BatchMultiPartitionJoinClause<I> using(TableMeta<?> table);
-
-        MySQLQuery._NestedLeftParenSpec<_BatchMultiJoinSpec<I>> using();
+    interface _BatchMultiDeleteUsingTableClause<I extends Item>
+            extends _UsingModifierClause<_BatchMultiIndexHintJoinSpec<I>, Statement._AsClause<_BatchParensJoinSpec<I>>>,
+            _UsingCteClause<_BatchMultiJoinSpec<I>>,
+            _MySQLUsingTableClause<_BatchMultiPartitionJoinClause<I>>,
+            _MySQLUsingNestedClause<_BatchMultiJoinSpec<I>> {
 
     }
 
-
-    interface _BatchMultiDeleteFromAliasClause<I extends Item>
-            extends _MultiDeleteFromAliasClause<_BatchMultiDeleteUsingTableClause<I>> {
-    }
 
     interface _BatchMultiDeleteFromTableClause<I extends Item>
             extends MySQLQuery._MySQLFromClause<_BatchMultiIndexHintJoinSpec<I>, _BatchParensJoinSpec<I>>,
@@ -736,15 +697,9 @@ public interface MySQLDelete extends MySQLStatement {
      * @since 1.0
      */
     interface _BatchMultiDeleteClause<I extends Item>
-            extends _MultiDeleteHintClause<_BatchMultiDeleteFromAliasClause<I>>,
+            extends _MultiDeleteHintClause<_BatchMultiDeleteUsingTableClause<I>>,
             _MultiDeleteAliasClause<_BatchMultiDeleteFromTableClause<I>> {
 
-
-    }
-
-    interface _BatchMultiComma<I extends Item>
-            extends _MySQLStaticCteCommaClause<_BatchMultiComma<I>>,
-            _StaticSpaceClause<_BatchMultiDeleteClause<I>> {
 
     }
 
@@ -767,7 +722,7 @@ public interface MySQLDelete extends MySQLStatement {
      */
     interface _BatchMultiWithSpec<I extends Item>
             extends _MySQLDynamicWithClause<_BatchMultiDeleteClause<I>>,
-            _MySQLStaticWithClause<_BatchMultiComma<I>>,
+            _MySQLStaticWithClause<_BatchMultiDeleteClause<I>>,
             _BatchMultiDeleteClause<I> {
 
     }

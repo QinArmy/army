@@ -45,7 +45,7 @@ public interface DeleteStatement extends DmlStatement {
 
     }
 
-    interface _SingleDeleteClause<DT> {
+    interface _SingleDeleteClause<DT> extends Item {
 
         DT deleteFrom(SingleTableMeta<?> table, SQLs.WordAs wordAs, String alias);
 

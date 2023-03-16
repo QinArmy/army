@@ -23,10 +23,10 @@ import java.util.function.Consumer;
  */
 abstract class JoinableDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
         extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, Object, Object, Object, Object>
-        implements _Delete
-        , _Statement._JoinableStatement
-        , Statement._DmlDeleteSpec<I>
-        , Statement {
+        implements _Delete,
+        _Statement._JoinableStatement,
+        Statement._DmlDeleteSpec<I>,
+        Statement {
 
 
     private Boolean prepared;
@@ -185,6 +185,8 @@ abstract class JoinableDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
             if (this.cteList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
+            ((CriteriaSupports.CteBuilder) builder).endLastCte();
+
             final boolean recursive;
             recursive = builder.isRecursive();
             this.recursive = recursive;
