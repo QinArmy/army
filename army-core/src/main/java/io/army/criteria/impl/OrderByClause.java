@@ -149,57 +149,6 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
     }
 
 
-    static final class OrderBySortItems implements SortItems {
-
-        private final OrderByClause<?> clause;
-
-        OrderBySortItems(OrderByClause<?> clause) {
-            this.clause = clause;
-        }
-
-        @Override
-        public SortItems sortItem(Expression exp) {
-            this.clause.onAddOrderBy(exp);
-            return this;
-        }
-
-        @Override
-        public SortItems sortItem(Expression exp, Statement.AscDesc ascDesc) {
-            this.clause.onAddOrderBy(ArmySortItems.create(exp, ascDesc));
-            return this;
-        }
-
-        @Override
-        public SortItems sortItem(Expression exp1, Expression exp2) {
-            this.clause.onAddOrderBy(exp1)
-                    .add((ArmySortItem) exp2);
-            return this;
-        }
-
-        @Override
-        public SortItems sortItem(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2) {
-            this.clause.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
-                    .add((ArmySortItem) exp2);
-            return this;
-        }
-
-        @Override
-        public SortItems sortItem(Expression exp1, Expression exp2, Statement.AscDesc ascDesc2) {
-            this.clause.onAddOrderBy(exp1)
-                    .add(ArmySortItems.create(exp2, ascDesc2));
-            return this;
-        }
-
-        @Override
-        public SortItems sortItem(Expression exp1, Statement.AscDesc ascDesc1, Expression exp2,
-                                  Statement.AscDesc ascDesc2) {
-            this.clause.onAddOrderBy(ArmySortItems.create(exp1, ascDesc1))
-                    .add(ArmySortItems.create(exp2, ascDesc2));
-            return this;
-        }
-
-    }//OrderBySortItems
-
 
     static abstract class UnionRowSet
             implements _UnionRowSet, Statement, CriteriaContextSpec, Statement.StatementMockSpec {

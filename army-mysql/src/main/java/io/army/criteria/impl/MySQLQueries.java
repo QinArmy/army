@@ -1262,8 +1262,9 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
             final RowSet rowSet;
             rowSet = MySQLUtils.primaryRowSetFromParens(this.context, supplier);
-            bracket.parenRowSetEnd(rowSet);
-            return bracket;
+
+            return bracket.parenRowSetEnd(rowSet)
+                    .rightParen();
         }
 
         @Override
@@ -1321,8 +1322,9 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
             final RowSet rowSet;
             rowSet = MySQLUtils.subRowSetFromParens(this.context, supplier);
-            bracket.parenRowSetEnd(rowSet);
-            return bracket;
+
+            return bracket.parenRowSetEnd(rowSet)
+                    .rightParen();
         }
 
 

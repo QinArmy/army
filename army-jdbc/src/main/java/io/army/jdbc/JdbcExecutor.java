@@ -143,10 +143,10 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <T> List<T> select(final SimpleStmt stmt, final int timeout, final Class<T> resultClass
-            , final Supplier<List<T>> listConstructor) {
+    public final <T> List<T> select(final SimpleStmt stmt, final int timeout, final Class<T> resultClass,
+                                    final Supplier<List<T>> listConstructor) {
 
-        final List<Selection> selectionList = stmt.selectionList();
+        final List<? extends Selection> selectionList = stmt.selectionList();
         try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql())) {
 
             bindParameter(statement, stmt.paramGroup());
@@ -208,7 +208,7 @@ abstract class JdbcExecutor implements StmtExecutor {
             , Supplier<Map<String, Object>> mapConstructor, Supplier<List<Map<String, Object>>> listConstructor)
             throws DataAccessException {
 
-        final List<Selection> selectionList = stmt.selectionList();
+        final List<? extends Selection> selectionList = stmt.selectionList();
         try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql())) {
 
             bindParameter(statement, stmt.paramGroup());
@@ -397,7 +397,7 @@ abstract class JdbcExecutor implements StmtExecutor {
     }
 
     private long executeInsert(final SimpleStmt stmt, final int timeoutSeconds) throws SQLException {
-        final List<Selection> selectionList = stmt.selectionList();
+        final List<? extends Selection> selectionList = stmt.selectionList();
         final boolean returningId;
         returningId = selectionList.size() == 1 && selectionList.get(0) instanceof PrimaryFieldMeta;
 

@@ -18,7 +18,7 @@ public class PostgreQueryUnitTests extends PostgreUnitTests {
     public void window() {
         final Select stmt;
         Postgres.query()
-                .select(SQLs::literalFrom, 1, AS, "r")
+                .select(SQLs.literalFrom(1)::as, "r")
                 .from(PillUser_.T, AS, "u")
                 .windows(s -> {
                     s.window("w1").as().partitionBy(PillUser_.userType)

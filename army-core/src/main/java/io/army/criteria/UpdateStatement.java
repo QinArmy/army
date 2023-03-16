@@ -23,7 +23,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-public interface UpdateStatement extends DmlStatement {
+public interface UpdateStatement extends NarrowDmlStatement {
 
     @Deprecated
     interface _UpdateSpec extends DmlStatement._DmlUpdateSpec<UpdateStatement> {

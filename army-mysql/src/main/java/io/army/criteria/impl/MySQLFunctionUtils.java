@@ -543,23 +543,6 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public MySQLFunction._GroupConcatSeparatorClause orderBy(Consumer<SortItems> consumer) {
-            consumer.accept(new OrderBySortItems(this));
-            if (!this.hasOrderByClause()) {
-                throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
-            }
-            this.endOrderByClause();
-            return this;
-        }
-
-        @Override
-        public MySQLFunction._GroupConcatSeparatorClause ifOrderBy(Consumer<SortItems> consumer) {
-            consumer.accept(new OrderBySortItems(this));
-            this.endOrderByClause();
-            return this;
-        }
-
-        @Override
         public Clause separator(final @Nullable String strVal) {
             this.endOrderByClause();
             if (this.stringValue != null) {

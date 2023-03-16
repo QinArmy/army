@@ -1,17 +1,19 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
-import io.army.util._Exceptions;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 abstract class MySQLSimpleValues<I extends Item>
         extends SimpleValues<
@@ -24,27 +26,28 @@ abstract class MySQLSimpleValues<I extends Item>
         MySQLValues._ValueWithComplexSpec<I>>
         implements MySQLValues._ValueSpec<I>,
         MySQLValues._ValuesLeftParenSpec<I>,
+        ArmyStmtSpec,
         MySQLValues {
 
-    static <I extends Item> MySQLValues._ValueSpec<I> primaryValues(final @Nullable CriteriaContext outerContext
-            , Function<Values, I> function) {
-        return new PrimarySimpleValues<>(outerContext, function);
+    static <I extends Item> MySQLValues._ValueSpec<I> simpleValues(@Nullable CriteriaContext outerBracketContext,
+                                                                   Function<? super Values, I> function) {
+        return new SimplePrimaryValues<>(null, outerBracketContext, function);
     }
 
 
     static <I extends Item> MySQLValues._ValueSpec<I> fromDispatcher(ArmyStmtSpec spec,
                                                                      Function<? super Values, I> function) {
-        throw new UnsupportedOperationException();
+        return new SimplePrimaryValues<>(spec, null, function);
     }
 
-    static <I extends Item> MySQLValues._ValueSpec<I> subValues(CriteriaContext outerContext
-            , Function<SubValues, I> function) {
-        return new SimpleSubValues<>(outerContext, function);
+    static <I extends Item> MySQLValues._ValueSpec<I> subValues(CriteriaContext outerContext,
+                                                                Function<? super SubValues, I> function) {
+        return new SimpleSubValues<>(null, outerContext, function);
     }
 
     static <I extends Item> MySQLValues._ValueSpec<I> fromSubDispatcher(ArmyStmtSpec spec,
                                                                         Function<? super SubValues, I> function) {
-        throw new UnsupportedOperationException();
+        return new SimpleSubValues<>(spec, null, function);
     }
 
 
@@ -63,6 +66,15 @@ abstract class MySQLSimpleValues<I extends Item>
         return this;
     }
 
+    @Override
+    public final boolean isRecursive() {
+        return false;
+    }
+
+    @Override
+    public final List<_Cte> cteList() {
+        return Collections.emptyList();
+    }
 
     @Override
     final String columnAlias(final int columnIndex) {
@@ -74,12 +86,12 @@ abstract class MySQLSimpleValues<I extends Item>
         return MySQLDialect.MySQL80;
     }
 
-    private static final class PrimarySimpleValues<I extends Item> extends MySQLSimpleValues<I>
+    private static final class SimplePrimaryValues<I extends Item> extends MySQLSimpleValues<I>
             implements Values {
 
         private final Function<? super Values, I> function;
 
-        private PrimarySimpleValues(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerBracketContext,
+        private SimplePrimaryValues(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerBracketContext,
                                     Function<? super Values, I> function) {
             super(CriteriaContexts.primaryValuesContext(spec, outerBracketContext));
             this.function = function;
@@ -87,9 +99,12 @@ abstract class MySQLSimpleValues<I extends Item>
 
         @Override
         public _ValueSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            this.endStmtBeforeCommand();
+
             final BracketValues<I> bracket;
-            bracket = new BracketValues<>(null, this.context, this::bracketEnd);
-            return new PrimarySimpleValues<>(bracket.context, bracket::parenRowSetEnd);
+            bracket = new BracketValues<>(this, this.function);
+
+            return MySQLSimpleValues.simpleValues(bracket.context, bracket::parenRowSetEnd);
         }
 
         @Override
@@ -99,17 +114,10 @@ abstract class MySQLSimpleValues<I extends Item>
 
         @Override
         _ValueWithComplexSpec<I> createUnionValues(final UnionType unionType) {
-            UnionType.standardUnionType(this.context, unionType);
 
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionValues( this, unionType, rowSet));
-            return new ComplexValues<>(this.context.getOuterContext(), unionFunc);
-        }
-
-        private I bracketEnd(Values values) {
-            ContextStack.pop(this.context)
-                    .endContext();
-            return this.function.apply(values);
+            return new ValuesDispatcher<>(this.context, unionFunc);
         }
 
 
@@ -120,16 +128,20 @@ abstract class MySQLSimpleValues<I extends Item>
 
         private final Function<? super SubValues, I> function;
 
-        private SimpleSubValues(CriteriaContext outerContext, Function<? super SubValues, I> function) {
-            super(CriteriaContexts.subValuesContext(null, outerContext));
+        private SimpleSubValues(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext,
+                                Function<? super SubValues, I> function) {
+            super(CriteriaContexts.subValuesContext(spec, outerContext));
             this.function = function;
         }
 
         @Override
         public _ValueSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            this.endStmtBeforeCommand();
+
             final BracketSubValues<I> bracket;
-            bracket = new BracketSubValues<>(null, this.context, this::bracketEnd);
-            return new SimpleSubValues<>(bracket.context, bracket::parenRowSetEnd);
+            bracket = new BracketSubValues<>(this, this.function);
+
+            return MySQLSimpleValues.subValues(bracket.context, bracket::parenRowSetEnd);
         }
 
         @Override
@@ -139,22 +151,11 @@ abstract class MySQLSimpleValues<I extends Item>
 
         @Override
         _ValueWithComplexSpec<I> createUnionValues(final UnionType unionType) {
-            UnionType.standardUnionType(this.context, unionType);
 
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSubValues(this, unionType, rowSet));
-            final CriteriaContext outerContext;
-            outerContext = this.context.getOuterContext();
-            assert outerContext != null;
-            return new ComplexSubValues<>(outerContext, unionFunc);
+            return new SubValuesDispatcher<>(this.context, unionFunc);
         }
-
-        private I bracketEnd(SubValues values) {
-            ContextStack.pop(this.context)
-                    .endContext();
-            return this.function.apply(values);
-        }
-
 
     }//SimpleSubValueValues
 
@@ -171,23 +172,8 @@ abstract class MySQLSimpleValues<I extends Item>
             implements MySQLValues._UnionOrderBySpec<I>,
             MySQLValues {
 
-        private MySQLBracketValues(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext) {
-            super(CriteriaContexts.bracketContext(spec, outerContext));
-        }
-
-        @Override
-        public final _UnionLimitSpec<I> orderBy(Consumer<SortItems> consumer) {
-            consumer.accept(new OrderBySortItems(this));
-            if (!this.hasOrderByClause()) {
-                throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
-            }
-            return this;
-        }
-
-        @Override
-        public final _UnionLimitSpec<I> ifOrderBy(Consumer<SortItems> consumer) {
-            consumer.accept(new OrderBySortItems(this));
-            return this;
+        private MySQLBracketValues(ArmyStmtSpec spec) {
+            super(spec);
         }
 
         @Override
@@ -208,9 +194,8 @@ abstract class MySQLSimpleValues<I extends Item>
 
         private final Function<? super Values, I> function;
 
-        private BracketValues(@Nullable _WithClauseSpec spec, @Nullable CriteriaContext outerContext
-                , Function<? super Values, I> function) {
-            super(spec, outerContext);
+        private BracketValues(ArmyStmtSpec spec, Function<? super Values, I> function) {
+            super(spec);
             this.function = function;
         }
 
@@ -221,11 +206,9 @@ abstract class MySQLSimpleValues<I extends Item>
 
         @Override
         _ValueWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
-            UnionType.standardUnionType(this.context, unionType);
-
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionValues( this, unionType, rowSet));
-            return new ComplexValues<>(this.context.getOuterContext(), unionFunc);
+            return new ValuesDispatcher<>(this.context, unionFunc);
         }
 
     }//BracketValues
@@ -235,9 +218,8 @@ abstract class MySQLSimpleValues<I extends Item>
 
         private final Function<? super SubValues, I> function;
 
-        private BracketSubValues(@Nullable _WithClauseSpec spec, CriteriaContext outerContext
-                , Function<? super SubValues, I> function) {
-            super(spec, outerContext);
+        private BracketSubValues(ArmyStmtSpec spec, Function<? super SubValues, I> function) {
+            super(spec);
             this.function = function;
         }
 
@@ -248,137 +230,177 @@ abstract class MySQLSimpleValues<I extends Item>
 
         @Override
         _ValueWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
-            UnionType.standardUnionType(this.context, unionType);
-
-            final CriteriaContext outerContext;
-            outerContext = this.context.getOuterContext();
-            assert outerContext != null;
 
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSubValues(this, unionType, rowSet));
-            return new ComplexSubValues<>(outerContext, unionFunc);
+            return new SubValuesDispatcher<>(this.context, unionFunc);
         }
 
     }//BracketSubValues
 
 
-    private static final class ComplexSubValues<I extends Item>
+    private static abstract class MySQLValuesDispatcher<I extends Item>
             extends SimpleQueries.WithBuilderSelectClauseDispatcher<
             MySQLCtes,
-            MySQLQuery._SelectSpec<I>,
+            MySQLValues._ValueComplexCommandSpec<I>,
             MySQLs.Modifier,
             MySQLQuery._MySQLSelectCommaSpec<I>,
             MySQLQuery._FromSpec<I>>
             implements _ValueWithComplexSpec<I> {
 
 
-        private final Function<RowSet, I> function;
+        final Function<RowSet, I> function;
 
-        private ComplexSubValues(CriteriaContext outerContext, Function<RowSet, I> function) {
-            super(outerContext);
+        private MySQLValuesDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
+            super(leftContext.getOuterContext(), leftContext);
             this.function = function;
         }
 
+        private MySQLValuesDispatcher(MySQLBracketValues<?> bracket, Function<RowSet, I> function) {
+            super(bracket.context, null);
+            this.function = function;
+        }
+
+
         @Override
-        public _OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
-            final CriteriaContext outerContext = this.outerContext;
-            assert outerContext != null;
-            return new SimpleSubValues<>(outerContext, this.function)
-                    .values(consumer);
+        public final MySQLQuery._StaticCteParensSpec<_ValueComplexCommandSpec<I>> with(String name) {
+            return MySQLQueries.staticCteComma(this.context, false, this::endStaticWithClause)
+                    .comma(name);
         }
 
         @Override
-        public _ValuesLeftParenClause<I> values() {
-            final CriteriaContext outerContext = this.outerContext;
-            assert outerContext != null;
-            return new SimpleSubValues<>(outerContext, this.function)
-                    .values();
+        public final MySQLQuery._StaticCteParensSpec<_ValueComplexCommandSpec<I>> withRecursive(String name) {
+            return MySQLQueries.staticCteComma(this.context, true, this::endStaticWithClause)
+                    .comma(name);
         }
 
         @Override
-        public _ValueWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            final CriteriaContext outerContext = this.outerContext;
-            assert outerContext != null;
-            final BracketSubValues<I> bracket;
-            bracket = new BracketSubValues<>(this.getWithClause(), outerContext, this.function);
-            return new ComplexSubValues<>(bracket.context, bracket::parenRowSetEnd);
-        }
-
-        @Override
-        MySQLCtes createCteBuilder(boolean recursive, CriteriaContext context) {
+        final MySQLCtes createCteBuilder(boolean recursive, CriteriaContext context) {
             return MySQLSupports.mySQLCteBuilder(recursive, context);
         }
 
-        @Override
-        MySQLQueries<I, ?> onSelectClause(final @Nullable _WithClauseSpec spec) {
-            final CriteriaContext outerContext = this.outerContext;
-            assert outerContext != null;
-            return MySQLQueries.subQuery(spec, outerContext, this::queryEnd);
+
+    }//MySQLValuesDispatcher
+
+
+    private static final class ValuesDispatcher<I extends Item> extends MySQLValuesDispatcher<I> {
+
+        private ValuesDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
+            super(leftContext, function);
         }
 
-        private I queryEnd(SubQuery query) {
-            return this.function.apply(query);
-        }
-
-
-    }//ComplexSubValues
-
-
-    private static final class ComplexValues<I extends Item>
-            extends SimpleQueries.WithBuilderSelectClauseDispatcher<
-            MySQLCtes,
-            MySQLQuery._SelectSpec<I>,
-            MySQLs.Modifier,
-            MySQLQuery._MySQLSelectCommaSpec<I>,
-            MySQLQuery._FromSpec<I>>
-            implements _ValueWithComplexSpec<I> {
-
-
-        private final Function<RowSet, I> function;
-
-        /**
-         * @see PrimarySimpleValues#createUnionValues(UnionType)
-         */
-        private ComplexValues(@Nullable CriteriaContext outerContext, Function<RowSet, I> function) {
-            super(outerContext);
-            this.function = function;
-        }
-
-        @Override
-        public _OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
-            return new PrimarySimpleValues<>(this.outerContext, this.function)
-                    .values(consumer);
-        }
-
-        @Override
-        public _ValuesLeftParenClause<I> values() {
-            return new PrimarySimpleValues<>(this.outerContext, this.function)
-                    .values();
+        private ValuesDispatcher(BracketValues<?> bracket, Function<RowSet, I> function) {
+            super(bracket, function);
         }
 
         @Override
         public _ValueWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            this.endDispatcher();
+
             final BracketValues<I> bracket;
-            bracket = new BracketValues<>(this.getWithClause(), this.outerContext, this.function);
-            return new ComplexValues<>(bracket.context, bracket::parenRowSetEnd);
+            bracket = new BracketValues<>(this, this.function);
+
+            return new ValuesDispatcher<>(bracket, bracket::parenRowSetEnd);
         }
 
         @Override
-        MySQLCtes createCteBuilder(boolean recursive, CriteriaContext context) {
-            return MySQLSupports.mySQLCteBuilder(recursive, context);
+        public <S extends RowSet> _UnionOrderBySpec<I> parens(Supplier<S> supplier) {
+            this.endDispatcher();
+
+            final BracketValues<I> bracket;
+            bracket = new BracketValues<>(this, this.function);
+
+            final RowSet rowSet;
+            rowSet = MySQLUtils.primaryRowSetFromParens(this.context, supplier);
+
+            return bracket.parenRowSetEnd(rowSet)
+                    .rightParen();
         }
 
         @Override
-        MySQLQueries<I, ?> onSelectClause(final @Nullable _WithClauseSpec spec) {
-            return MySQLQueries.primaryQuery(spec, this.outerContext, this::queryEnd);
+        public _OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
+            this.endDispatcher();
+
+            return MySQLSimpleValues.fromDispatcher(this, this.function)
+                    .values(consumer);
         }
 
-        private I queryEnd(Select query) {
-            return this.function.apply(query);
+        @Override
+        public _ValuesLeftParenClause<I> values() {
+            this.endDispatcher();
+
+            return MySQLSimpleValues.fromDispatcher(this, this.function)
+                    .values();
+        }
+
+        @Override
+        MySQLQueries<I> createSelectClause() {
+            this.endDispatcher();
+
+            return MySQLQueries.fromDispatcher(this, this.function);
         }
 
 
-    }//ComplexValues
+    }//ValuesDispatcher
+
+    private static final class SubValuesDispatcher<I extends Item> extends MySQLValuesDispatcher<I> {
+
+        private SubValuesDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
+            super(leftContext, function);
+        }
+
+        private SubValuesDispatcher(BracketSubValues<?> bracket, Function<RowSet, I> function) {
+            super(bracket, function);
+        }
+
+        @Override
+        public _ValueWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+            this.endDispatcher();
+
+            final BracketSubValues<I> bracket;
+            bracket = new BracketSubValues<>(this, this.function);
+
+            return new SubValuesDispatcher<>(bracket, bracket::parenRowSetEnd);
+        }
+
+        @Override
+        public <S extends RowSet> _UnionOrderBySpec<I> parens(Supplier<S> supplier) {
+            this.endDispatcher();
+
+            final BracketSubValues<I> bracket;
+            bracket = new BracketSubValues<>(this, this.function);
+
+            final RowSet rowSet;
+            rowSet = MySQLUtils.subRowSetFromParens(this.context, supplier);
+
+            return bracket.parenRowSetEnd(rowSet)
+                    .rightParen();
+        }
+
+        @Override
+        public _OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
+            this.endDispatcher();
+
+            return MySQLSimpleValues.fromSubDispatcher(this, this.function)
+                    .values(consumer);
+        }
+
+        @Override
+        public _ValuesLeftParenClause<I> values() {
+            this.endDispatcher();
+
+            return MySQLSimpleValues.fromSubDispatcher(this, this.function)
+                    .values();
+        }
+
+        @Override
+        MySQLQueries<I> createSelectClause() {
+            this.endDispatcher();
+
+            return MySQLQueries.fromSubDispatcher(this, this.function);
+        }
+
+    }//SubValuesDispatcher
 
 
 }

@@ -236,7 +236,7 @@ abstract class SelectionGroups {
 
         final String derivedAlias;
 
-        private List<Selection> selectionList;
+        private List<? extends Selection> selectionList;
 
         private DerivedSelectionGroupImpl(String derivedAlias) {
             this.derivedAlias = derivedAlias;
@@ -265,8 +265,8 @@ abstract class SelectionGroups {
         }
 
         @Override
-        public final List<Selection> selectionList() {
-            final List<Selection> selectionList = this.selectionList;
+        public final List<? extends Selection> selectionList() {
+            final List<? extends Selection> selectionList = this.selectionList;
             if (selectionList == null) {
                 throw new CriteriaException("currently,couldn't reference selection,please check syntax.");
             }
@@ -275,7 +275,7 @@ abstract class SelectionGroups {
 
         @Override
         public final void appendSql(final _SqlContext context) {
-            final List<Selection> selectionList = this.selectionList;
+            final List<? extends Selection> selectionList = this.selectionList;
             if (selectionList == null || selectionList.size() == 0) {
                 //here bug.
                 throw new CriteriaException("DerivedSelectionGroup no selection.");

@@ -66,7 +66,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _UnionOrderBySpec<I extends Item> extends _StaticOrderByClause<_UnionLimitSpec<I>>,
+    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionLimitSpec<I>>,
             _UnionLimitSpec<I>, _UnionSpec<I> {
 
     }
@@ -76,13 +76,13 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _LockWaitOptionSpec<I extends Item> extends _MinLockWaitOptionClause<_IntoOptionSpec<I>>
-            , _IntoOptionSpec<I> {
+    interface _LockWaitOptionSpec<I extends Item> extends _MinLockWaitOptionClause<_IntoOptionSpec<I>>,
+            _IntoOptionSpec<I> {
 
     }
 
-    interface _LockOfTableSpec<I extends Item> extends _LockOfTableAliasClause<_LockWaitOptionSpec<I>>
-            , _LockWaitOptionSpec<I> {
+    interface _LockOfTableSpec<I extends Item> extends _LockOfTableAliasClause<_LockWaitOptionSpec<I>>,
+            _LockWaitOptionSpec<I> {
 
     }
 
@@ -122,8 +122,9 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _OrderBySpec<I extends Item> extends _StaticOrderByClause<_OrderByWithRollupSpec<I>>, _LimitSpec<I>
-            , _UnionSpec<I> {
+    interface _OrderBySpec<I extends Item> extends _OrderByClause<_OrderByWithRollupSpec<I>>,
+            _LimitSpec<I>,
+            _UnionSpec<I> {
 
     }
 

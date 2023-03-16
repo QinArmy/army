@@ -1,20 +1,15 @@
 package io.army.criteria.postgre;
 
-import io.army.criteria.*;
+import io.army.criteria.Item;
+import io.army.criteria.Query;
+import io.army.criteria.Values;
+import io.army.criteria.ValuesQuery;
 import io.army.criteria.impl.Postgres;
 import io.army.lang.Nullable;
 
 import java.util.function.Function;
 
 public interface PostgreValues extends PostgreStatement, ValuesQuery {
-
-    interface _ValuesStaticOrderByCommaClause<OR> extends _StaticOrderByCommaClause<OR> {
-        //TODO add using operator
-    }
-
-    interface _ValuesStaticOrderByClause<OR> extends _StaticOrderByClause<OR> {
-        //TODO add using operator
-    }
 
 
     interface _UnionSpec<I extends Item> extends Query._QueryUnionClause<_QueryWithComplexSpec<I>>,
@@ -37,13 +32,10 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
     }
 
-    interface _UnionOrderByCommaSpec<I extends Item>
-            extends _ValuesStaticOrderByCommaClause<_UnionOrderByCommaSpec<I>>, _UnionLimitSpec<I> {
 
-    }
-
-    interface _UnionOrderBySpec<I extends Item> extends _ValuesStaticOrderByClause<_UnionOrderByCommaSpec<I>>,
-            _UnionLimitSpec<I>, _UnionSpec<I> {
+    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionLimitSpec<I>>,
+            _UnionLimitSpec<I>,
+            _UnionSpec<I> {
 
     }
 
@@ -60,13 +52,10 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
     }
 
-    interface _OrderByCommaSpec<I extends Item> extends _ValuesStaticOrderByCommaClause<_OrderByCommaSpec<I>>, _LimitSpec<I> {
 
-    }
-
-
-    interface _OrderBySpec<I extends Item> extends _ValuesStaticOrderByClause<_OrderByCommaSpec<I>>,
-            _DynamicOrderByClause<SortItems, _LimitSpec<I>>, _LimitSpec<I>, _UnionSpec<I> {
+    interface _OrderBySpec<I extends Item> extends _OrderByClause<_LimitSpec<I>>,
+            _LimitSpec<I>,
+            _UnionSpec<I> {
 
     }
 

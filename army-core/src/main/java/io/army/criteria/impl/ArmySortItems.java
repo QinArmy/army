@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.SortItem;
 import io.army.criteria.Statement;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -43,6 +44,12 @@ class ArmySortItems implements ArmySortItem {
     private ArmySortItems(ArmyExpression sortItem, @Nullable SQLsSyntax.KeyWordAscDesc aseWord) {
         this.sortItem = sortItem;
         this.aseWord = aseWord;
+    }
+
+    @Override
+    public final SortItem asSortItem() {
+        //always this
+        return this;
     }
 
     @Override

@@ -4,6 +4,7 @@ import io.army.criteria.Insert;
 import io.army.criteria.InsertStatement;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.standard.StandardInsert;
@@ -17,6 +18,7 @@ import io.army.util._Exceptions;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -184,6 +186,11 @@ abstract class StandardInserts extends InsertSupports {
         @Override
         public StandardQuery._StandardSelectClause<Statement._DmlInsertClause<I>> space() {
             return StandardQueries.subQuery(this.context, this::staticSpaceQueryEnd);
+        }
+
+        @Override
+        public Statement._DmlInsertClause<I> space(Supplier<SubQuery> supplier) {
+            return this.staticSpaceQueryEnd(supplier.get());
         }
 
         @Override

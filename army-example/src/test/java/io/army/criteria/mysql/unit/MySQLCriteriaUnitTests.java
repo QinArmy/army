@@ -74,7 +74,7 @@ public class MySQLCriteriaUnitTests {
                         .or(ChinaRegion_.regionType.equal(SQLs::literal, RegionType.CITY))
                 )
                 .and(ChinaRegion_.regionGdp::plus, SQLs::literal, 100, Expression::greatEqual, 0)
-                .orderBy(ChinaRegion_.name, SQLs.DESC)
+                .orderBy(ChinaRegion_.name::desc)
                 .limit(SQLs::param, map::get, "rowCount")
                 .asUpdate();
 
@@ -130,13 +130,11 @@ public class MySQLCriteriaUnitTests {
             stmt = MySQLs.singleDelete()
                     .delete(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.QUICK, MySQLs.IGNORE))
                     .from(ChinaRegion_.T, AS, "r")
-                    .partition()
-                    .leftParen("p1")
-                    .rightParen()
+                    .partition("p1")
                     .where(ChinaRegion_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTIme")
                     .and(ChinaRegion_.updateTime::between, SQLs::param, map::get, "startTime", AND, "endTIme")
                     .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")
-                    .orderBy(ChinaRegion_.name, SQLs.DESC, ChinaRegion_.id)
+                    .orderBy(ChinaRegion_.name::desc, ChinaRegion_.id)
                     .ifLimit(SQLs::param, map::get, "rowCount")
                     .asDelete();
 
@@ -190,14 +188,12 @@ public class MySQLCriteriaUnitTests {
             stmt = MySQLs.batchSingleDelete()
                     .delete(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.QUICK, MySQLs.IGNORE))
                     .from(ChinaRegion_.T, AS, "r")
-                    .partition()
-                    .leftParen("p1")
-                    .rightParen()
+                    .partition("p1")
                     .where(ChinaRegion_.name::equal, SQLs::namedParam) // batch parameter
                     .and(ChinaRegion_.regionGdp::equal, SQLs::namedParam)// batch parameter
                     .and(ChinaRegion_.updateTime::between, SQLs::literal, map::get, "startTime", AND, "endTIme")// common parameter
                     .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")// common parameter
-                    .orderBy(ChinaRegion_.name, SQLs.DESC)
+                    .orderBy(ChinaRegion_.name::desc)
                     .ifLimit(SQLs::param, map::get, "rowCount")
                     .paramList(paramList)
                     .asDelete();
@@ -239,14 +235,10 @@ public class MySQLCriteriaUnitTests {
                     .delete(hintSupplier, modifierList)
                     .from("c", "r", "u")
                     .using(ChinaCity_.T)
-                    .partition()
-                    .leftParen("p1")
-                    .rightParen()
+                    .partition("p1")
                     .as("c")
                     .join(ChinaRegion_.T)
-                    .partition()
-                    .leftParen("p1")
-                    .rightParen()
+                    .partition("p1")
                     .as("r").on(ChinaCity_.id::equal, ChinaRegion_.id)
                     .join(BankUser_.T, AS, "u").on(BankUser_.id::equal, ChinaCity_.id)// delete lonely parent testing
                     .where(ChinaRegion_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTIme")
@@ -295,14 +287,10 @@ public class MySQLCriteriaUnitTests {
                     .delete(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.QUICK, MySQLs.IGNORE))
                     .from("c", "r")
                     .using(ChinaCity_.T)
-                    .partition()
-                    .leftParen("p1")
-                    .rightParen()
+                    .partition("p1")
                     .as("c")
                     .join(ChinaRegion_.T)
-                    .partition()
-                    .leftParen("p1")
-                    .rightParen()
+                    .partition("p1")
                     .as("r").on(ChinaCity_.id::equal, ChinaRegion_.id)
                     .where(ChinaRegion_.id::equal, SQLs::namedParam)
                     .and(ChinaRegion_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTIme")

@@ -94,11 +94,11 @@ public abstract class Postgres extends PostgreFuncSyntax {
     }
 
     public static PostgreValues._WithSpec<Values> simpleValues() {
-        return PostgreValuesStmt.simpleValues(ContextStack.peekIfBracket(), SQLs::_identity);
+        return PostgreSimpleValues.simpleValues(ContextStack.peekIfBracket(), SQLs::_identity);
     }
 
     public static PostgreValues._WithSpec<SubValues> subValues() {
-        return PostgreValuesStmt.subValues(ContextStack.peek(), SQLs::_identity);
+        return PostgreSimpleValues.subValues(ContextStack.peek(), SQLs::_identity);
     }
 
 

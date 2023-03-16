@@ -1,6 +1,16 @@
 package io.army.criteria;
 
-@Deprecated
+/**
+ * <p>
+ * This interface is base interface of below:
+ *     <ul>
+ *         <li>{@link UpdateStatement}</li>
+ *         <li>{@link DeleteStatement}</li>
+ *     </ul>
+ * </p>
+ *
+ * @since 1.0
+ */
 public interface NarrowDmlStatement extends DmlStatement {
 
 }

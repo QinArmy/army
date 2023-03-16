@@ -36,7 +36,7 @@ public class MySQLValuesUnitTests {
         Values stmt;
         stmt = this.createSimpleValues(MySQLs::primaryValues)
 
-                .orderBy(SQLs.ref("column_0"), SQLs.ref("column_1"), SQLs.DESC)
+                .orderBy(SQLs.ref("column_0"), SQLs.ref("column_1")::desc)
                 .limit(SQLs::literal, 3)
                 .asValues();
 
@@ -103,7 +103,7 @@ public class MySQLValuesUnitTests {
                 .comma(SQLs::literalFrom, DayOfWeek.TUESDAY, SQLs.FALSE, SQLs.literalFrom(81).divide(SQLs::literal, 3))
                 .rightParen()
 
-                .orderBy(SQLs.ref("column_1"), SQLs.literalFrom(2), SQLs.DESC)
+                .orderBy(SQLs.ref("column_1"), SQLs.literalFrom(2)::desc)
                 .limit(SQLs::literal, 4)
                 .asValues()
                 .rightParen();

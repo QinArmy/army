@@ -54,7 +54,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link MySQLUpdate._LimitSpec}</li>
-     *          <li>method {@link _StaticOrderByClause}</li>
+     *          <li>method {@link io.army.criteria.Statement._OrderByClause}</li>
      *     </ul>
      * </p>
      * <p>
@@ -65,8 +65,8 @@ public interface MySQLUpdate extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _OrderBySpec<I extends Item> extends _StaticOrderByClause<_LimitSpec<I>>, _LimitSpec<I>,
-            _DynamicOrderByClause<SortItems, _LimitSpec<I>> {
+    interface _OrderBySpec<I extends Item> extends _OrderByClause<_LimitSpec<I>>,
+            _LimitSpec<I> {
 
     }
 
@@ -240,7 +240,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _StaticOrderByClause}</li>
+     *          <li>{@link _OrderByClause}</li>
      *          <li>method {@link _BatchLimitSpec}</li>
      *     </ul>
      * </p>
@@ -252,7 +252,7 @@ public interface MySQLUpdate extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _BatchOrderBySpec<I extends Item> extends _StaticOrderByClause<_BatchLimitSpec<I>>,
+    interface _BatchOrderBySpec<I extends Item> extends _OrderByClause<_BatchLimitSpec<I>>,
             _BatchLimitSpec<I> {
 
     }

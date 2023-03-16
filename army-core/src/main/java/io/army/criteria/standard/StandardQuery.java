@@ -29,7 +29,8 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _UnionSpec<I extends Item> extends _AsQueryClause<I>, _QueryUnionClause<_SelectComplexUnionSpec<I>> {
+    interface _UnionSpec<I extends Item> extends _AsQueryClause<I>,
+            _QueryUnionClause<_SelectComplexUnionSpec<I>> {
 
     }
 
@@ -49,11 +50,13 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _UnionLimitSpec<I extends Item> extends Statement._LimitClause<_AsQueryClause<I>>, _AsQueryClause<I> {
+    interface _UnionLimitSpec<I extends Item> extends Statement._LimitClause<_AsQueryClause<I>>,
+            _AsQueryClause<I> {
 
     }
 
-    interface _UnionLimitQuerySpec<I extends Item> extends _UnionLimitSpec<I>, _UnionSpec<I> {
+    interface _UnionLimitQuerySpec<I extends Item> extends _UnionLimitSpec<I>,
+            _UnionSpec<I> {
 
     }
 
@@ -73,9 +76,9 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _UnionOrderBySpec<I extends Item> extends Statement._StaticOrderByClause<_UnionLimitSpec<I>>
-            , _UnionLimitQuerySpec<I>
-            , _UnionSpec<I> {
+    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionLimitSpec<I>>,
+            _UnionLimitQuerySpec<I>,
+            _UnionSpec<I> {
 
     }
 
@@ -96,7 +99,8 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _LockSpec<I extends Item> extends _LockForUpdateClause<_AsQueryClause<I>>, _AsQueryClause<I> {
+    interface _LockSpec<I extends Item> extends _LockForUpdateClause<_AsQueryClause<I>>,
+            _AsQueryClause<I> {
 
 
     }
@@ -139,7 +143,8 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _OrderBySpec<I extends Item> extends _LimitSpec<I>, Statement._StaticOrderByClause<_LimitSpec<I>>,
+    interface _OrderBySpec<I extends Item> extends _LimitSpec<I>,
+            _OrderByClause<_LimitSpec<I>>,
             _UnionSpec<I> {
 
     }
@@ -308,7 +313,7 @@ public interface StandardQuery extends Query, StandardStatement {
     }
 
     interface _SelectComplexUnionSpec<I extends Item> extends _SelectSpec<I>,
-            _DynamicParensRowSetClause<_RightParenClause<_UnionOrderBySpec<I>>> {
+            _DynamicParensRowSetClause<_UnionOrderBySpec<I>> {
 
     }
 

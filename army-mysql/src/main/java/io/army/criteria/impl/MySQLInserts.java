@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner.mysql._MySQLInsert;
@@ -680,7 +681,12 @@ abstract class MySQLInserts extends InsertSupports {
 
         @Override
         public MySQLQuery._WithSpec<MySQLInsert._OnDuplicateKeyUpdateSpec<I, T>> space() {
-            return MySQLQueries.subQuery(null, this.context, this::staticSpaceQueryEnd);
+            return MySQLQueries.subQuery(this.context, this::staticSpaceQueryEnd);
+        }
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateSpec<I, T> space(Supplier<SubQuery> supplier) {
+            return this.staticSpaceQueryEnd(supplier.get());
         }
 
         @Override

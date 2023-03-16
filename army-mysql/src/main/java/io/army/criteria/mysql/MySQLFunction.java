@@ -24,8 +24,7 @@ public interface MySQLFunction extends SQLFunction {
     }
 
 
-    interface _GroupConcatOrderBySpec extends Statement._StaticOrderByClause<_GroupConcatSeparatorClause>
-            , Statement._DynamicOrderByClause<SortItems, _GroupConcatSeparatorClause>
+    interface _GroupConcatOrderBySpec extends Statement._OrderByClause<_GroupConcatSeparatorClause>
             , _GroupConcatSeparatorClause {
 
     }

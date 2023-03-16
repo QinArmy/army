@@ -26,12 +26,12 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     public void caseFunction() {
         Select stmt;
         stmt = SQLs.query()
-                .select(SQLs::cases)
-                .when(SQLs.literalFrom(1).is(TRUE))
-                .then(SQLs::literalFrom, () -> PillUserType.PARTNER)
-                .elseValue(SQLs.literalFrom(PillUserType.NONE))
-                .end()
-                .plus(SQLs.literalFrom(1)).times(SQLs::literal, 5).as("a")
+                .select(SQLs.cases()
+                        .when(SQLs.literalFrom(1).is(TRUE))
+                        .then(SQLs::literalFrom, PillUserType.PARTNER)
+                        .elseValue(SQLs.literalFrom(PillUserType.NONE))
+                        .end()
+                        .plus(SQLs.literalFrom(1)).times(SQLs::literal, 5).as("a"))
 
                 .asQuery();
         printStmt(LOG, stmt);
@@ -41,12 +41,11 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     public void scalarSubQuery() {
         Select stmt;
         stmt = SQLs.query()
-                .select(() -> SQLs.scalarSubQuery()
+                .select(SQLs.scalarSubQuery()
                         .select(PillUser_.nickName)
                         .from(PillUser_.T, AS, "u")
                         .where(PillUser_.id::equal, SQLs::param, () -> 1)
-                        .asQuery()
-                ).as("r")
+                        .asQuery().as("r"))
                 .asQuery();
 
         printStmt(LOG, stmt);
@@ -60,7 +59,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         stmt = SQLs.query()
                 .select("u", PERIOD, PillUser_.T)
                 .from(PillUser_.T, AS, "u")
-                .orderBy(PillUser_.id, DESC)
+                .orderBy(PillUser_.id::desc)
                 .limit(SQLs::literal, 0, 10)
                 .forUpdate()
                 .asQuery();
@@ -85,7 +84,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .asQuery()
                 )
                 //.and(User_.visible.equal(false))
-                .orderBy(PillPerson_.id, SQLs.DESC)
+                .orderBy(PillPerson_.id::desc)
                 .limit(SQLs::literal, 0, 10)
                 .forUpdate()
                 .asQuery();
@@ -108,7 +107,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 //.and(User_.visible.equal(false))
                 .groupBy(PillUser_.userType)
                 .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
-                .orderBy(PillUser_.id, SQLs.DESC)
+                .orderBy(PillUser_.id::desc)
                 .limit(SQLs::literal, 0, 10)
                 .asQuery()
                 .rightParen()
@@ -123,7 +122,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 //.and(User_.visible.equal(false))
                 .groupBy(PillUser_.userType)
                 .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
-                .orderBy(PillUser_.id, SQLs.DESC)
+                .orderBy(PillUser_.id::desc)
                 .limit(SQLs::literal, 0, 10)
                 .asQuery()
                 .rightParen()
@@ -139,10 +138,10 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         //.and(User_.version::equal, SQLs::literal, 2)
                         .groupBy(PillUser_.userType)
                         .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
-                        .orderBy(PillUser_.id, SQLs.DESC)
+                        .orderBy(PillUser_.id::desc)
                         .limit(SQLs::literal, 0, 10)
                         .asQuery()
-                ).rightParen()
+                )
                 .unionDistinct()
 
                 .select(PillUser_.id)
@@ -153,7 +152,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 //.and(User_.version::equal, SQLs::literal, 2)
                 .groupBy(PillUser_.userType)
                 .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
-                .orderBy(PillUser_.id, SQLs.DESC)
+                .orderBy(PillUser_.id::desc)
                 .limit(SQLs::literal, 0, 10)
 
                 .asQuery();
@@ -194,7 +193,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 .select(SQLs.refThis("us", "one"))
                 .comma("us", PERIOD, START)
                 .from(() -> SQLs.subQuery()
-                        .select(SQLs.literalFrom(1), AS, "one")
+                        .select(SQLs.literalFrom(1)::as, "one")
                         .comma("u", PERIOD, PillUser_.T)
                         .from(PillUser_.T, AS, "u")
                         .where(PillUser_.createTime::equal, SQLs::literal, LocalDateTime::now)
@@ -212,8 +211,8 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     public void nestedJoin() {
         final Select stmt;
         stmt = SQLs.query()
-                .select(BankPerson_.id, AS, "userId", SQLs.refThis("cr", "id"), AS, "regionId")
-                .comma(SQLs.refThis("cr", "name"), AS, "regionName")
+                .select(BankPerson_.id::as, "userId", SQLs.refThis("cr", "id")::as, "regionId")
+                .comma(SQLs.refThis("cr", "name")::as, "regionName")
                 .from()
 
                 .leftParen(BankPerson_.T, AS, "up")
@@ -237,8 +236,8 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     public void dynamicJoin() {
         final Select stmt;
         stmt = SQLs.query()
-                .select(BankPerson_.id, AS, "userId", SQLs.refThis("cr", "id"), AS, "regionId")
-                .comma(SQLs.refThis("cr", "name"), AS, "regionName")
+                .select(BankPerson_.id::as, "userId", SQLs.refThis("cr", "id")::as, "regionId")
+                .comma(SQLs.refThis("cr", "name")::as, "regionName")
                 .from()
 
                 .leftParen(BankPerson_.T, AS, "up")

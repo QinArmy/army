@@ -34,7 +34,7 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
 
     private final SubQuery subQuery;
 
-    private final List<Selection> querySelectionList;
+    private final List<? extends Selection> querySelectionList;
 
 
     /**
@@ -89,7 +89,7 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
     @Override
     int doAppendSubQuery(final int outputColumnSize, final List<FieldMeta<?>> fieldList) {
 
-        final List<Selection> querySelectionList;
+        final List<? extends Selection> querySelectionList;
         querySelectionList = this.querySelectionList;
         final int selectionSize;
         selectionSize = querySelectionList.size();
@@ -101,7 +101,7 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
 
 
     @Override
-    public List<Selection> selectionList() {
+    public List<? extends Selection> selectionList() {
         return this.querySelectionList;
     }
 

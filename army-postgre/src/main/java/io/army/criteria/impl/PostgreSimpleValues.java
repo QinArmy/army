@@ -8,7 +8,6 @@ import io.army.criteria.postgre.PostgreValues;
 import io.army.dialect.Dialect;
 import io.army.dialect.postgre.PostgreDialect;
 import io.army.lang.Nullable;
-import io.army.util._Exceptions;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -21,19 +20,18 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimpleValues<
+abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimpleValues<
         I,
         PostgreCtes,
         PostgreValues._ValuesSpec<I>,
         PostgreValues._ValuesLeftParenSpec<I>,
-        PostgreValues._OrderByCommaSpec<I>,
+        PostgreValues._LimitSpec<I>,
         PostgreValues._OffsetSpec<I>,
         PostgreValues._FetchSpec<I>,
         PostgreStatement._AsValuesClause<I>,
         PostgreValues._QueryWithComplexSpec<I>>
         implements PostgreValues._WithSpec<I>,
         PostgreValues._ValuesLeftParenSpec<I>,
-        PostgreValues._OrderByCommaSpec<I>,
         PostgreValues._OffsetSpec<I>,
         PostgreValues {
 
@@ -76,7 +74,7 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
     }
 
 
-    private PostgreValuesStmt(@Nullable _WithClauseSpec spec, CriteriaContext context) {
+    private PostgreSimpleValues(@Nullable _WithClauseSpec spec, CriteriaContext context) {
         super(spec, context);
     }
 
@@ -105,21 +103,6 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
     }
 
     @Override
-    public final _LimitSpec<I> orderBy(Consumer<SortItems> consumer) {
-        consumer.accept(new OrderBySortItems(this));
-        if (!this.hasOrderByClause()) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
-        }
-        return this;
-    }
-
-    @Override
-    public final _LimitSpec<I> ifOrderBy(Consumer<SortItems> consumer) {
-        consumer.accept(new OrderBySortItems(this));
-        return this;
-    }
-
-    @Override
     final Dialect statementDialect() {
         return PostgreDialect.POSTGRE15;
     }
@@ -134,7 +117,7 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
         return "column" + (++columnIndex);
     }
 
-    private static final class PrimarySimpleValues<I extends Item> extends PostgreValuesStmt<I>
+    private static final class PrimarySimpleValues<I extends Item> extends PostgreSimpleValues<I>
             implements Values {
 
         private final Function<? super Values, I> function;
@@ -146,7 +129,7 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
          */
         private PrimarySimpleValues(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerBracketContext,
                                     Function<? super Values, I> function) {
-            super(spec, CriteriaContexts.primaryValuesContext(spec, outerBracketContext, null));
+            super(spec, CriteriaContexts.primaryValuesContext(spec, outerBracketContext));
             this.function = function;
         }
 
@@ -156,7 +139,7 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
 
             final BracketValues<I> bracket;
             bracket = new BracketValues<>(this, this.function);
-            return PostgreValuesStmt.simpleValues(bracket.context, bracket::parenRowSetEnd);
+            return PostgreSimpleValues.simpleValues(bracket.context, bracket::parenRowSetEnd);
         }
 
         @Override
@@ -174,14 +157,14 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
     }//SimplePrimaryValues
 
 
-    private static final class SimpleSubValues<I extends Item> extends PostgreValuesStmt<I>
+    private static final class SimpleSubValues<I extends Item> extends PostgreSimpleValues<I>
             implements SubValues {
 
         private final Function<? super SubValues, I> function;
 
         private SimpleSubValues(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext,
                                 Function<? super SubValues, I> function) {
-            super(spec, CriteriaContexts.subValuesContext(spec, outerContext, null));
+            super(spec, CriteriaContexts.subValuesContext(spec, outerContext));
             this.function = function;
         }
 
@@ -192,7 +175,7 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
             final BracketSubValues<I> bracket;
             bracket = new BracketSubValues<>(this, this.function);
 
-            return PostgreValuesStmt.subValues(bracket.context, bracket::parenRowSetEnd);
+            return PostgreSimpleValues.subValues(bracket.context, bracket::parenRowSetEnd);
         }
 
         @Override
@@ -213,14 +196,13 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
     private static abstract class PostgreBracketValues<I extends Item> extends BracketRowSet<
             I,
             PostgreValues._UnionOrderBySpec<I>,
-            PostgreValues._UnionOrderByCommaSpec<I>,
+            PostgreValues._UnionLimitSpec<I>,
             PostgreValues._UnionOffsetSpec<I>,
             PostgreValues._UnionFetchSpec<I>,
             PostgreValues._AsValuesClause<I>,
             PostgreValues._QueryWithComplexSpec<I>>
             implements PostgreValues,
             PostgreValues._UnionOrderBySpec<I>,
-            PostgreValues._UnionOrderByCommaSpec<I>,
             PostgreValues._UnionOffsetSpec<I>,
             PostgreValues._UnionFetchSpec<I> {
 
@@ -365,8 +347,9 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
 
             final RowSet rowSet;
             rowSet = PostgreUtils.primaryRowSetFromParens(this.context, supplier);
-            bracket.parenRowSetEnd(rowSet);
-            return bracket;
+
+            return bracket.parenRowSetEnd(rowSet)
+                    .rightParen();
         }
 
 
@@ -374,7 +357,7 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
         public PostgreValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
             this.endDispatcher();
 
-            return PostgreValuesStmt.fromDispatcher(this, this.function)
+            return PostgreSimpleValues.fromDispatcher(this, this.function)
                     .values(consumer);
         }
 
@@ -383,7 +366,7 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
         public _PostgreValuesLeftParenClause<I> values() {
             this.endDispatcher();
 
-            return PostgreValuesStmt.fromDispatcher(this, this.function)
+            return PostgreSimpleValues.fromDispatcher(this, this.function)
                     .values();
         }
 
@@ -427,8 +410,9 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
 
             final RowSet rowSet;
             rowSet = PostgreUtils.subRowSetFromParens(this.context, supplier);
-            bracket.parenRowSetEnd(rowSet);
-            return bracket;
+
+            return bracket.parenRowSetEnd(rowSet)
+                    .rightParen();
         }
 
 
@@ -436,7 +420,7 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
         public _OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
             this.endDispatcher();
 
-            return PostgreValuesStmt.fromSubDispatcher(this, this.function)
+            return PostgreSimpleValues.fromSubDispatcher(this, this.function)
                     .values(consumer);
         }
 
@@ -444,7 +428,7 @@ abstract class PostgreValuesStmt<I extends Item> extends SimpleValues.WithSimple
         public _PostgreValuesLeftParenClause<I> values() {
             this.endDispatcher();
 
-            return PostgreValuesStmt.fromSubDispatcher(this, this.function)
+            return PostgreSimpleValues.fromSubDispatcher(this, this.function)
                     .values();
         }
 

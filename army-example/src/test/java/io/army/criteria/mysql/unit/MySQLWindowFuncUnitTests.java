@@ -16,9 +16,10 @@ public class MySQLWindowFuncUnitTests {
     public void rowNumber() {
         Select stmt;
         stmt = MySQLs.query()
-                .select(MySQLs::rowNumber).over(s -> s.range().unboundedFollowing()).as("rowNumber")
+                .select(MySQLs.rowNumber().over(s -> s.range().unboundedFollowing()).as("rowNumber"))
                 .comma(PillUser_.id, PillUser_.createTime)
                 .asQuery();
+        LOG.debug("{}", stmt);
     }
 
 }

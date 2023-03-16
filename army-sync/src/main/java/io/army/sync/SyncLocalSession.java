@@ -378,7 +378,7 @@ final class SyncLocalSession extends _AbstractSyncSession implements LocalSessio
     @Override
     public void flush() throws SessionException {
         long affectedRows;
-        UpdateStatement update;
+        Update update;
         TableMeta<?> table;
         for (_CacheBlock block : this.sessionCache.getChangedList()) {
             update = block.statement();

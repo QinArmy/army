@@ -1030,15 +1030,16 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
             final RowSet rowSet;
             rowSet = PostgreUtils.primaryRowSetFromParens(this.context, supplier);
-            bracket.parenRowSetEnd(rowSet);
-            return bracket;
+
+            return bracket.parenRowSetEnd(rowSet)
+                    .rightParen();
         }
 
         @Override
         public PostgreValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
             this.endDispatcher();
 
-            return PostgreValuesStmt.fromDispatcher(this, this.function)
+            return PostgreSimpleValues.fromDispatcher(this, this.function)
                     .values(consumer);
         }
 
@@ -1046,7 +1047,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         public PostgreValues._PostgreValuesLeftParenClause<I> values() {
             this.endDispatcher();
 
-            return PostgreValuesStmt.fromDispatcher(this, this.function)
+            return PostgreSimpleValues.fromDispatcher(this, this.function)
                     .values();
         }
 
@@ -1095,8 +1096,9 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
             final RowSet rowSet;
             rowSet = PostgreUtils.subRowSetFromParens(this.context, supplier);
-            bracket.parenRowSetEnd(rowSet);
-            return bracket;
+
+            return bracket.parenRowSetEnd(rowSet)
+                    .rightParen();
         }
 
 
@@ -1104,7 +1106,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         public PostgreValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
             this.endDispatcher();
 
-            return PostgreValuesStmt.fromSubDispatcher(this, this.function)
+            return PostgreSimpleValues.fromSubDispatcher(this, this.function)
                     .values(consumer);
         }
 
@@ -1112,7 +1114,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         public PostgreValues._PostgreValuesLeftParenClause<I> values() {
             this.endDispatcher();
 
-            return PostgreValuesStmt.fromSubDispatcher(this, this.function)
+            return PostgreSimpleValues.fromSubDispatcher(this, this.function)
                     .values();
         }
 
@@ -1471,7 +1473,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         public PostgreValues._OrderBySpec<_CteComma<I>> values(Consumer<RowConstructor> consumer) {
             this.endDispatcher();
 
-            return PostgreValuesStmt.fromSubDispatcher(this, this.function)
+            return PostgreSimpleValues.fromSubDispatcher(this, this.function)
                     .values(consumer);
         }
 
@@ -1479,7 +1481,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         public PostgreValues._PostgreValuesLeftParenClause<_CteComma<I>> values() {
             this.endDispatcher();
 
-            return PostgreValuesStmt.fromSubDispatcher(this, this.function)
+            return PostgreSimpleValues.fromSubDispatcher(this, this.function)
                     .values();
         }
 

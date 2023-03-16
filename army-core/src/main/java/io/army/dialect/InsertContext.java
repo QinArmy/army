@@ -417,7 +417,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
 
     @Override
-    public List<Selection> selectionList() {
+    public List<? extends Selection> selectionList() {
         //TODO optimize for postgre
         return Collections.emptyList();
     }

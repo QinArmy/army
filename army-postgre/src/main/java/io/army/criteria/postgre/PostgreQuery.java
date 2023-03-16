@@ -23,9 +23,6 @@ import java.util.function.*;
 public interface PostgreQuery extends Query, PostgreStatement {
 
 
-    interface _PostgreOrderByClause<OR> extends _StaticOrderByClause<OR> {
-        //TODO add dialect method
-    }
 
     interface _PostgreLockClause<R> extends _MinLockOptionClause<R> {
 
@@ -144,7 +141,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _WindowOrderBySpec extends _PostgreOrderByClause<_PostgreFrameUnitSpec>, _PostgreFrameUnitSpec {
+    interface _WindowOrderBySpec extends _OrderByClause<_PostgreFrameUnitSpec>, _PostgreFrameUnitSpec {
         //TODO _PostgreOrderByClause return order by comma
     }
 
@@ -175,7 +172,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _UnionOrderBySpec<I extends Item> extends _PostgreOrderByClause<_UnionLimitSpec<I>>,
+    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionLimitSpec<I>>,
             _UnionLimitSpec<I>,
             _UnionSpec<I> {
 
@@ -217,7 +214,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _OrderBySpec<I extends Item> extends _PostgreOrderByClause<_LimitSpec<I>>, _LimitSpec<I>, _UnionSpec<I> {
+    interface _OrderBySpec<I extends Item> extends _OrderByClause<_LimitSpec<I>>, _LimitSpec<I>, _UnionSpec<I> {
 
     }
 

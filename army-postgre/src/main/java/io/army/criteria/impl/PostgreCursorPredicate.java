@@ -1,16 +1,14 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.TypeInfer;
 import io.army.dialect._SqlContext;
 import io.army.util._StringUtils;
 
-final class PostgreCursorPredicate extends OperationPredicate<TypeInfer> {
+final class PostgreCursorPredicate extends OperationPredicate {
 
 
     private final String cursorName;
 
     PostgreCursorPredicate(String cursorName) {
-        super(SQLs._IDENTITY);
         this.cursorName = cursorName;
     }
 

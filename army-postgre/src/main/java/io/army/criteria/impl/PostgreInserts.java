@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.dialect.Returnings;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._ConflictTargetItem;
 import io.army.criteria.impl.inner.postgre._PostgreInsert;
@@ -58,9 +59,9 @@ abstract class PostgreInserts extends InsertSupports {
      * create new single-table INSERT statement that is primary statement for multi-statement and don't support {@link io.army.meta.ChildTableMeta}.
      * </p>
      */
-    static <I extends Item> PostgreInsert._ComplexOptionSpec<I> singleInsert(
-            @Nullable _Statement._WithClauseSpec withSpec, Function<PrimaryStatement, I> function) {
-        return new ComplexInsertIntoClause<>(withSpec, function);
+    static <I extends Item> PostgreInsert._ComplexOptionSpec<I> fromDispatcher(ArmyStmtSpec spec,
+                                                                               Function<PrimaryStatement, I> function) {
+        return new ComplexInsertIntoClause<>(spec, function);
     }
 
     /**
@@ -313,9 +314,9 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final Function<PrimaryStatement, I> function;
 
-        private ComplexInsertIntoClause(@Nullable _Statement._WithClauseSpec withSpec,
+        private ComplexInsertIntoClause(@Nullable ArmyStmtSpec spec,
                                         Function<PrimaryStatement, I> function) {
-            super(CriteriaContexts.primaryInsertContext(withSpec));
+            super(CriteriaContexts.primaryInsertContext(spec));
             this.function = function;
             ContextStack.push(this.context);
         }
@@ -833,10 +834,12 @@ abstract class PostgreInserts extends InsertSupports {
             PostgreInsert._ComplexOverridingValueSpec<T, I, Q>,
             PostgreInsert._ValuesDefaultSpec<T, I, Q>,
             PostgreInsert._OnConflictSpec<T, I, Q>>
-            implements PostgreInsert._TableAliasSpec<T, I, Q>
-            , PostgreInsert._OnConflictSpec<T, I, Q>
-            , PostgreInsert._StaticReturningCommaSpec<Q>
-            , Statement._DqlInsertClause<Q> {
+            implements PostgreInsert._TableAliasSpec<T, I, Q>,
+            PostgreInsert._OnConflictSpec<T, I, Q>,
+            PostgreInsert._ComplexOverridingValueSpec<T, I, Q>,
+            PostgreInsert._ComplexColumnDefaultSpec<T, I, Q>,
+            PostgreInsert._StaticReturningCommaSpec<Q>,
+            Statement._DqlInsertClause<Q> {
 
         private final Function<PostgreComplexValuesClause<?, ?, ?>, I> dmlFunction;
 
@@ -881,19 +884,19 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public PostgreInsert._ValuesDefaultSpec<T, I, Q> overridingSystemValue() {
+        public PostgreInsert._ComplexColumnDefaultSpec<T, I, Q> overridingSystemValue() {
             this.overridingMode = OverridingMode.OVERRIDING_SYSTEM_VALUE;
             return this;
         }
 
         @Override
-        public PostgreInsert._ValuesDefaultSpec<T, I, Q> overridingUserValue() {
+        public PostgreInsert._ComplexColumnDefaultSpec<T, I, Q> overridingUserValue() {
             this.overridingMode = OverridingMode.OVERRIDING_USER_VALUE;
             return this;
         }
 
         @Override
-        public PostgreInsert._ValuesDefaultSpec<T, I, Q> ifOverridingSystemValue(BooleanSupplier supplier) {
+        public PostgreInsert._ComplexColumnDefaultSpec<T, I, Q> ifOverridingSystemValue(BooleanSupplier supplier) {
             if (supplier.getAsBoolean()) {
                 this.overridingMode = OverridingMode.OVERRIDING_SYSTEM_VALUE;
             } else {
@@ -903,7 +906,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public PostgreInsert._ValuesDefaultSpec<T, I, Q> ifOverridingUserValue(BooleanSupplier supplier) {
+        public PostgreInsert._ComplexColumnDefaultSpec<T, I, Q> ifOverridingUserValue(BooleanSupplier supplier) {
             if (supplier.getAsBoolean()) {
                 this.overridingMode = OverridingMode.OVERRIDING_USER_VALUE;
             } else {
@@ -915,6 +918,16 @@ abstract class PostgreInserts extends InsertSupports {
         @Override
         public PostgreInsert._ValuesLeftParenClause<T, I, Q> values() {
             return new StaticValuesLeftParenClause<>(this);
+        }
+
+        @Override
+        public PostgreQuery._WithSpec<PostgreInsert._OnConflictSpec<T, I, Q>> space() {
+            return PostgreQueries.subQuery(this.context, this::staticSpaceQueryEnd);
+        }
+
+        @Override
+        public PostgreInsert._OnConflictSpec<T, I, Q> space(Supplier<SubQuery> supplier) {
+            return this.staticSpaceQueryEnd(supplier.get());
         }
 
         @Override

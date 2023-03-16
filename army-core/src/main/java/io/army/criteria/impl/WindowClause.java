@@ -29,12 +29,18 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
         extends OrderByClause<OR>
-        implements Window._PartitionByExpClause<PR>
-        , Statement._StaticOrderByClause<OR>, Window._FrameUnitExpClause<FE>, Window._FrameUnitNoExpClause<FB>
-        , Window._FrameBetweenExpClause<BE>, Statement._StaticBetweenClause<BN>
-        , Window._FrameBetweenAndExpClause<FE>, Statement._StaticAndClause<NN>
-        , Window._FrameExpBoundClause, Window._FrameNonExpBoundClause
-        , CriteriaContextSpec, ArmyWindow {
+        implements Window._PartitionByExpClause<PR>,
+        Statement._OrderByClause<OR>,
+        Window._FrameUnitExpClause<FE>,
+        Window._FrameUnitNoExpClause<FB>,
+        Window._FrameBetweenExpClause<BE>,
+        Statement._StaticBetweenClause<BN>,
+        Window._FrameBetweenAndExpClause<FE>,
+        Statement._StaticAndClause<NN>,
+        Window._FrameExpBoundClause,
+        Window._FrameNonExpBoundClause,
+        CriteriaContextSpec,
+        ArmyWindow {
 
 
     static Window._SimplePartitionBySpec namedWindow(String windowName, CriteriaContext context
@@ -161,6 +167,29 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
                 (ArmyExpression) exp1,
                 (ArmyExpression) exp2,
                 (ArmyExpression) exp3
+        );
+        return (PR) this;
+    }
+
+    @Override
+    public final PR partitionBy(Expression exp1, Expression exp2, Expression exp3, Expression exp4) {
+        this.partitionByList = _ArrayUtils.asUnmodifiableList(
+                (ArmyExpression) exp1,
+                (ArmyExpression) exp2,
+                (ArmyExpression) exp3,
+                (ArmyExpression) exp4
+        );
+        return (PR) this;
+    }
+
+    @Override
+    public final PR partitionBy(Expression exp1, Expression exp2, Expression exp3, Expression exp4, Expression exp5) {
+        this.partitionByList = _ArrayUtils.asUnmodifiableList(
+                (ArmyExpression) exp1,
+                (ArmyExpression) exp2,
+                (ArmyExpression) exp3,
+                (ArmyExpression) exp4,
+                (ArmyExpression) exp5
         );
         return (PR) this;
     }

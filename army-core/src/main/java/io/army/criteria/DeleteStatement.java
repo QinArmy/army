@@ -18,7 +18,7 @@ import io.army.meta.SingleTableMeta;
  *
  * @since 1.0
  */
-public interface DeleteStatement extends DmlStatement {
+public interface DeleteStatement extends NarrowDmlStatement {
 
 
     @Deprecated

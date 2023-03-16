@@ -18,7 +18,7 @@ public interface _StmtParams {
     /**
      * @return a unmodified list
      */
-    List<Selection> selectionList();
+    List<? extends Selection> selectionList();
 
 
 }

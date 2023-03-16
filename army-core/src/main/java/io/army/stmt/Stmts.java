@@ -134,7 +134,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public List<Selection> selectionList() {
+        public List<? extends Selection> selectionList() {
             return Collections.emptyList();
         }
 
@@ -239,7 +239,7 @@ public abstract class Stmts {
 
         private final List<SQLParam> paramGroup;
 
-        private final List<Selection> selectionList;
+        private final List<? extends Selection> selectionList;
 
         private final boolean hasOptimistic;
 
@@ -266,7 +266,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public List<Selection> selectionList() {
+        public List<? extends Selection> selectionList() {
             return this.selectionList;
         }
 
@@ -327,7 +327,7 @@ public abstract class Stmts {
 
         private final List<SQLParam> paramGroup;
 
-        private final List<Selection> selectionList;
+        private final List<? extends Selection> selectionList;
 
         private QueryStmt(_StmtParams params) {
             this.sql = params.sql();
@@ -351,7 +351,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public List<Selection> selectionList() {
+        public List<? extends Selection> selectionList() {
             return this.selectionList;
         }
 
@@ -374,7 +374,7 @@ public abstract class Stmts {
 
         private final List<SQLParam> paramList;
 
-        private final List<Selection> selectionList;
+        private final List<? extends Selection> selectionList;
 
         final PrimaryFieldMeta<?> field;
 
@@ -415,7 +415,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public final List<Selection> selectionList() {
+        public final List<? extends Selection> selectionList() {
             return this.selectionList;
         }
 

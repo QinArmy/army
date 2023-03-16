@@ -17,7 +17,6 @@ import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._CollectionUtils;
-import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -216,21 +215,6 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT, SR, WR, WA, OR, LR>
         @Override
         public _SingleWhereClause<I> sets(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
             consumer.accept(CriteriaSupports.itemPairs(this::onAddItemPair));
-            return this;
-        }
-
-        @Override
-        public _LimitSpec<I> orderBy(Consumer<SortItems> consumer) {
-            consumer.accept(new OrderBySortItems(this));
-            if (!this.hasOrderByClause()) {
-                throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
-            }
-            return this;
-        }
-
-        @Override
-        public _LimitSpec<I> ifOrderBy(Consumer<SortItems> consumer) {
-            consumer.accept(new OrderBySortItems(this));
             return this;
         }
 

@@ -44,7 +44,7 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLValues._ValueSpec<Values> primaryValues() {
-        return MySQLSimpleValues.primaryValues(ContextStack.peekIfBracket(), SQLs::_identity);
+        return MySQLSimpleValues.simpleValues(ContextStack.peekIfBracket(), SQLs::_identity);
     }
 
 

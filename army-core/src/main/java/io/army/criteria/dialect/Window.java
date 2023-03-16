@@ -107,20 +107,24 @@ public interface Window extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <PR> next clause java type
+     * @param <R> next clause java type
      * @since 1.0
      */
-    interface _PartitionByExpClause<PR> {
+    interface _PartitionByExpClause<R> {
 
-        PR partitionBy(Expression exp);
+        R partitionBy(Expression exp);
 
-        PR partitionBy(Expression exp1, Expression exp2);
+        R partitionBy(Expression exp1, Expression exp2);
 
-        PR partitionBy(Expression exp1, Expression exp2, Expression exp3);
+        R partitionBy(Expression exp1, Expression exp2, Expression exp3);
 
-        PR partitionBy(Consumer<Consumer<Expression>> consumer);
+        R partitionBy(Expression exp1, Expression exp2, Expression exp3, Expression exp4);
 
-        PR ifPartitionBy(Consumer<Consumer<Expression>> consumer);
+        R partitionBy(Expression exp1, Expression exp2, Expression exp3, Expression exp4, Expression exp5);
+
+        R partitionBy(Consumer<Consumer<Expression>> consumer);
+
+        R ifPartitionBy(Consumer<Consumer<Expression>> consumer);
 
     }
 
@@ -393,9 +397,9 @@ public interface Window extends Item {
      * @since 1.0
      */
     interface _SimpleFrameBetweenSpec
-            extends _FrameBetweenExpClause<_SimpleFrameExpBoundClause>
-            , Statement._StaticBetweenClause<_SimpleFrameNonExpBoundClause>
-            , _SimpleFrameEndNonExpBoundClause {
+            extends _FrameBetweenExpClause<_SimpleFrameExpBoundClause>,
+            Statement._StaticBetweenClause<_SimpleFrameNonExpBoundClause>,
+            _SimpleFrameEndNonExpBoundClause {
 
     }
 
@@ -416,8 +420,8 @@ public interface Window extends Item {
      * @since 1.0
      */
     interface _SimpleFrameUnitsSpec
-            extends _FrameUnitExpClause<_SimpleFrameEndExpBoundClause>
-            , _FrameUnitNoExpClause<_SimpleFrameBetweenSpec> {
+            extends _FrameUnitExpClause<_SimpleFrameEndExpBoundClause>,
+            _FrameUnitNoExpClause<_SimpleFrameBetweenSpec> {
 
     }
 
@@ -426,7 +430,7 @@ public interface Window extends Item {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link Statement._StaticOrderByClause} clause in WINDOW clause</li>
+     *          <li>{@link Statement._OrderByClause} clause in WINDOW clause</li>
      *          <li>the composite {@link _SimpleFrameUnitsSpec}</li>
      *     </ul>
      * </p>
@@ -438,7 +442,7 @@ public interface Window extends Item {
      *
      * @since 1.0
      */
-    interface _SimpleOrderBySpec extends Statement._StaticOrderByClause<_SimpleFrameUnitsSpec>
+    interface _SimpleOrderBySpec extends Statement._OrderByClause<_SimpleFrameUnitsSpec>
             , _SimpleFrameUnitsSpec {
 
     }

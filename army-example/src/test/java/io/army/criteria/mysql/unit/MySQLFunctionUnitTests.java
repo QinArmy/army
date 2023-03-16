@@ -3,7 +3,6 @@ package io.army.criteria.mysql.unit;
 import io.army.criteria.PrimaryStatement;
 import io.army.criteria.Select;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.MySQLFunctions;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.mysql.MySQLDialect;
@@ -28,23 +27,20 @@ public class MySQLFunctionUnitTests {
     public void caseFunc() {
         final Select stmt;
         stmt = MySQLs.query()
-                .select(() ->
-                        MySQLFunctions.cases(PillUser_.userType)
-                                .when(SQLs.literalFrom(PillUserType.NONE))
-                                .then(SQLs.literalFrom(1))
+                .select(MySQLs.cases(PillUser_.userType)
+                        .when(SQLs.literalFrom(PillUserType.NONE))
+                        .then(SQLs.literalFrom(1))
 
-                                .when(SQLs.literalFrom(PillUserType.PARTNER))
-                                .then(SQLs.literalFrom(2))
+                        .when(SQLs.literalFrom(PillUserType.PARTNER))
+                        .then(SQLs.literalFrom(2))
 
-                                .when(SQLs.literalFrom(PillUserType.ENTERPRISE))
-                                .then(SQLs.literalFrom(3))
+                        .when(SQLs.literalFrom(PillUserType.ENTERPRISE))
+                        .then(SQLs.literalFrom(3))
 
-                                .elseValue(SQLs.literalFrom(0))
+                        .elseValue(SQLs.literalFrom(0))
 
-                                .end()
-                                .plus(SQLs::literal, 1)
-                )
-                .as("userType")
+                        .end()
+                        .plus(SQLs::literal, 1).as("userType"))
                 .from(PillUser_.T, AS, "u")
                 .asQuery();
         printStmt(stmt);

@@ -8,4 +8,10 @@ import io.army.criteria.impl.inner._SelfDescribed;
  */
 interface ArmySortItem extends SortItem, _SelfDescribed {
 
+    /**
+     * @return always return this
+     */
+    @Override
+    SortItem asSortItem();
+
 }

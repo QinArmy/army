@@ -209,8 +209,7 @@ abstract class CriteriaContexts {
      *                     </ul>
      * @param leftContext  If non-null,then spec null.
      */
-    static CriteriaContext subValuesContext(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext,
-                                            @Nullable CriteriaContext leftContext) {
+    static CriteriaContext subValuesContext(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext) {
         throw new UnsupportedOperationException();
     }
 

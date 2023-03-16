@@ -67,8 +67,13 @@ public interface MySQLValues extends MySQLStatement, RowSet {
 
     }
 
-    interface _ValueComplexCommandSpec<I extends Item> extends _MySQLValuesClause<I>,
-            MySQLQuery._MySQLSelectClause<I>,
+
+    /**
+     * <p>
+     * VALUES statement don't support WITH clause.
+     * </p>
+     */
+    interface _ValueComplexCommandSpec<I extends Item> extends MySQLQuery._MySQLSelectClause<I>,
             _LeftParenClause<_ValueWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
@@ -78,6 +83,7 @@ public interface MySQLValues extends MySQLStatement, RowSet {
             extends _MySQLDynamicWithClause<_ValueComplexCommandSpec<I>>,
             _MySQLStaticWithClause<_ValueComplexCommandSpec<I>>,
             _ValueComplexCommandSpec<I>,
+            _MySQLValuesClause<I>,
             Query._DynamicParensRowSetClause<_UnionOrderBySpec<I>> {
 
     }

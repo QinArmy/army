@@ -15,7 +15,7 @@ public interface SimpleStmt extends GenericSimpleStmt {
     /**
      * @return a unmodifiable list
      */
-    List<Selection> selectionList();
+    List<? extends Selection> selectionList();
 
 
 }

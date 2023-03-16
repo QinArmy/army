@@ -222,7 +222,7 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
     }
 
     @Override
-    public List<Selection> selectionList() {
+    public List<? extends Selection> selectionList() {
         throw new UnsupportedOperationException();
     }
 

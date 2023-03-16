@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.criteria.dialect.SubQuery;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 
@@ -20,7 +21,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-public interface InsertStatement extends DmlStatement, Statement.DmlInsert {
+public interface InsertStatement extends DmlStatement {
 
 
     /**
@@ -92,6 +93,12 @@ public interface InsertStatement extends DmlStatement, Statement.DmlInsert {
         _StaticColumnQuadraClause<T, IR> comma(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3,
                                                FieldMeta<T> field4);
 
+    }
+
+
+    interface _DynamicQuerySpaceClause<R> {
+
+        R space(Supplier<SubQuery> supplier);
     }
 
 

@@ -441,7 +441,7 @@ abstract class CriteriaUtils {
 
     static _Pair<List<Selection>, Map<String, Selection>> forColumnAlias(final List<String> columnAliasList,
                                                                          final _DerivedTable table) {
-        final List<Selection> tableSelectionList;
+        final List<? extends Selection> tableSelectionList;
         tableSelectionList = table.selectionList();
         final int selectionSize;
         selectionSize = tableSelectionList.size();
@@ -484,9 +484,10 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, m);
     }
 
-    static CriteriaException unknownRowSet(CriteriaContext context, RowSet rowSet, Database database) {
+    static CriteriaException unknownRowSet(CriteriaContext context, RowSet rowSet, @Nullable Database database) {
         String m = String.format("%s isn't the %s that is supported by %s criteria api.",
-                _ClassUtils.safeClassName(rowSet), RowSet.class.getName(), database.name());
+                _ClassUtils.safeClassName(rowSet), RowSet.class.getName(),
+                database == null ? "standard" : database.name());
         return ContextStack.criteriaError(context, m);
     }
 

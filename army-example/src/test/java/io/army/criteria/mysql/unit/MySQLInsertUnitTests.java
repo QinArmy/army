@@ -6,7 +6,6 @@ import io.army.criteria.Expression;
 import io.army.criteria.InsertStatement;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.MySQLFunctions;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.*;
@@ -39,18 +38,18 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(this::createReginList)
                 .onDuplicateKey()
-                .update(ChinaRegion_.name, MySQLFunctions::values)
-                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLFunctions.values(ChinaRegion_.regionGdp))
+                .update(ChinaRegion_.name, MySQLs::values)
+                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .comma(ChinaRegion_.name, () -> SQLs.scalarSubQuery()// here test qualified field({tableName}.name) feature
                         .leftParen()
                         .select(HistoryChinaRegion_.name)
                         .from(HistoryChinaRegion_.T, AS, "t")
-                        .where(HistoryChinaRegion_.name::equal, MySQLFunctions.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
+                        .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                         .and(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
                         .union()
                         .select(HistoryChinaRegion_.name)
                         .from(HistoryChinaRegion_.T, AS, "t")
-                        .where(HistoryChinaRegion_.name::equal, MySQLFunctions.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
+                        .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                         .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
                         .limit(SQLs::literal, 1)
                         .asQuery()
@@ -131,7 +130,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
                 .values(provinceList)
                 .onDuplicateKey()
-                .update(ChinaProvince_.governor, MySQLFunctions::values)
+                .update(ChinaProvince_.governor, MySQLs::values)
                 .comma(ChinaProvince_.provincialCapital, () -> SQLs.scalarSubQuery()
                         .leftParen()
                         .select(HistoryChinaProvince_.provincialCapital)
@@ -219,16 +218,16 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(provinceList)
                 .onDuplicateKey() // ChinaRegion_.id.generatorType() == GeneratorType.POST, so forbid onDuplicateKey clause,must throw CriteriaException
-                .update(ChinaRegion_.name, MySQLFunctions::values)
-                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLFunctions.values(ChinaRegion_.regionGdp))
+                .update(ChinaRegion_.name, MySQLs::values)
+                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .asInsert()// parent table insert statement end
                 .child()
                 .insertInto(ChinaProvince_.T)
                 .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
                 .values(provinceList)
                 .onDuplicateKey()
-                .update(ChinaProvince_.governor, MySQLFunctions::values)
-                .comma(ChinaProvince_.provincialCapital, MySQLFunctions::values)
+                .update(ChinaProvince_.governor, MySQLs::values)
+                .comma(ChinaProvince_.provincialCapital, MySQLs::values)
                 .asInsert();
 
     }
@@ -260,18 +259,18 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .rightParen()
 
                 .onDuplicateKey()
-                .update(ChinaRegion_.name, MySQLFunctions::values)
-                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLFunctions.values(ChinaRegion_.regionGdp))
+                .update(ChinaRegion_.name, MySQLs::values)
+                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .comma(ChinaRegion_.name, () -> SQLs.scalarSubQuery()// here test qualified field({tableName}.name) feature
                         .leftParen()
                         .select(HistoryChinaRegion_.name)
                         .from(HistoryChinaRegion_.T, AS, "t")
-                        .where(HistoryChinaRegion_.name::equal, MySQLFunctions.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
+                        .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                         .and(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
                         .union()
                         .select(HistoryChinaRegion_.name)
                         .from(HistoryChinaRegion_.T, AS, "t")
-                        .where(HistoryChinaRegion_.name::equal, MySQLFunctions.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
+                        .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                         .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
                         .limit(SQLs::literal, 1)
                         .asQuery()
@@ -381,7 +380,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .rightParen()
 
                 .onDuplicateKey()
-                .update(ChinaProvince_.governor, MySQLFunctions::values)
+                .update(ChinaProvince_.governor, MySQLs::values)
                 .comma(ChinaProvince_.provincialCapital, () -> SQLs.scalarSubQuery()
                         .leftParen()
                         .select(HistoryChinaProvince_.provincialCapital)
@@ -492,8 +491,8 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .rightParen()
 
                 .onDuplicateKey() // ChinaRegion_.id.generatorType() == GeneratorType.POST, so forbid onDuplicateKey clause,must throw CriteriaException
-                .update(ChinaRegion_.name, MySQLFunctions::values)
-                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLFunctions.values(ChinaRegion_.regionGdp))
+                .update(ChinaRegion_.name, MySQLs::values)
+                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .asInsert()// parent table insert statement end
 
                 .child()
@@ -505,8 +504,8 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .rightParen()
 
                 .onDuplicateKey()
-                .update(ChinaProvince_.governor, MySQLFunctions::values)
-                .comma(ChinaProvince_.provincialCapital, MySQLFunctions::values)
+                .update(ChinaProvince_.governor, MySQLs::values)
+                .comma(ChinaProvince_.provincialCapital, MySQLs::values)
                 .asInsert();
 
 
@@ -541,18 +540,18 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
                 })
                 .onDuplicateKey()
-                .update(ChinaRegion_.name, MySQLFunctions::values)
-                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLFunctions.values(ChinaRegion_.regionGdp))
+                .update(ChinaRegion_.name, MySQLs::values)
+                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .comma(ChinaRegion_.name, () -> SQLs.scalarSubQuery()// here test qualified field({tableName}.name) feature
                         .leftParen()
                         .select(HistoryChinaRegion_.name)
                         .from(HistoryChinaRegion_.T, AS, "t")
-                        .where(HistoryChinaRegion_.name::equal, MySQLFunctions.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
+                        .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                         .and(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
                         .union()
                         .select(HistoryChinaRegion_.name)
                         .from(HistoryChinaRegion_.T, AS, "t")
-                        .where(HistoryChinaRegion_.name::equal, MySQLFunctions.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
+                        .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                         .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
                         .limit(SQLs::literal, 1)
                         .asQuery()
@@ -669,7 +668,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
                 })
                 .onDuplicateKey()
-                .update(ChinaProvince_.governor, MySQLFunctions::values)
+                .update(ChinaProvince_.governor, MySQLs::values)
                 .comma(ChinaProvince_.provincialCapital, () -> SQLs.scalarSubQuery()
                         .leftParen()
                         .select(HistoryChinaProvince_.provincialCapital)
@@ -771,8 +770,8 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
                 })
                 .onDuplicateKey() // ChinaRegion_.id.generatorType() == GeneratorType.POST, so forbid onDuplicateKey clause,must throw CriteriaException
-                .update(ChinaRegion_.name, MySQLFunctions::values)
-                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLFunctions.values(ChinaRegion_.regionGdp))
+                .update(ChinaRegion_.name, MySQLs::values)
+                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .asInsert() // parent table insert statement end
                 .child()
                 .insertInto(ChinaProvince_.T)
@@ -789,8 +788,8 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
                 })
                 .onDuplicateKey()
-                .update(ChinaProvince_.governor, MySQLFunctions::values)
-                .comma(ChinaProvince_.provincialCapital, MySQLFunctions::values)
+                .update(ChinaProvince_.governor, MySQLs::values)
+                .comma(ChinaProvince_.provincialCapital, MySQLs::values)
                 .asInsert();
 
 
@@ -812,8 +811,8 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .set(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
                 .set(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
                 .onDuplicateKey()
-                .update(ChinaRegion_.name, MySQLFunctions::values)
-                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLFunctions.values(ChinaRegion_.regionGdp))
+                .update(ChinaRegion_.name, MySQLs::values)
+                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .asInsert();
 
         printStmt(LOG, stmt);
@@ -870,8 +869,8 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .set(ChinaProvince_.governor, SQLs::param, randomPerson(random))
                 .set(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
                 .onDuplicateKey()
-                .update(ChinaProvince_.governor, MySQLFunctions::values)
-                .comma(ChinaProvince_.provincialCapital, MySQLFunctions::values)
+                .update(ChinaProvince_.governor, MySQLs::values)
+                .comma(ChinaProvince_.provincialCapital, MySQLs::values)
                 .asInsert();
 
         printStmt(LOG, stmt);
@@ -928,15 +927,15 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .set(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
                 .set(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
                 .onDuplicateKey()// ChinaRegion_.id.generatorType() == GeneratorType.POST, so forbid onDuplicateKey clause,must throw CriteriaException
-                .update(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLFunctions.values(ChinaRegion_.regionGdp))
+                .update(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .asInsert() // parent table insert statement end
                 .child()
                 .insertInto(ChinaProvince_.T)
                 .set(ChinaProvince_.governor, SQLs::param, randomPerson(random))
                 .set(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
                 .onDuplicateKey()
-                .update(ChinaProvince_.governor, MySQLFunctions::values)
-                .comma(ChinaProvince_.provincialCapital, MySQLFunctions::values)
+                .update(ChinaProvince_.governor, MySQLs::values)
+                .comma(ChinaProvince_.provincialCapital, MySQLs::values)
                 .asInsert();
 
 
@@ -959,8 +958,8 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                         .set(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
                 )
                 .onDuplicateKey()
-                .update(ChinaRegion_.name, MySQLFunctions::values)
-                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLFunctions.values(ChinaRegion_.regionGdp))
+                .update(ChinaRegion_.name, MySQLs::values)
+                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .asInsert();
 
         printStmt(LOG, stmt);
@@ -1018,8 +1017,8 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insertInto(ChinaProvince_.T)
                 .set(ChinaProvince_.governor, SQLs::param, randomPerson(random))
                 .set(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
-                .onDuplicateKeyUpdate(s -> s.set(ChinaProvince_.governor, MySQLFunctions::values)
-                        .set(ChinaProvince_.provincialCapital, MySQLFunctions::values)
+                .onDuplicateKeyUpdate(s -> s.set(ChinaProvince_.governor, MySQLs::values)
+                        .set(ChinaProvince_.provincialCapital, MySQLs::values)
                 )
                 .asInsert();
 
@@ -1080,7 +1079,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                         .set(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
                 )
                 .onDuplicateKeyUpdate(s ->
-                        s.set(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLFunctions.values(ChinaRegion_.regionGdp))
+                        s.set(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 )// ChinaRegion_.id.generatorType() == GeneratorType.POST, so forbid onDuplicateKey clause,must throw CriteriaException
                 .asInsert() // parent table insert statement end
                 .child()
@@ -1088,8 +1087,8 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .set(ChinaProvince_.governor, SQLs::param, randomPerson(random))
                 .set(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
                 .onDuplicateKey()
-                .update(ChinaProvince_.governor, MySQLFunctions::values)
-                .comma(ChinaProvince_.provincialCapital, MySQLFunctions::values)
+                .update(ChinaProvince_.governor, MySQLs::values)
+                .comma(ChinaProvince_.provincialCapital, MySQLs::values)
                 .asInsert();
 
 
@@ -1113,7 +1112,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .space()
                 .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
                 .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
-                .comma(SQLs.literalFrom(RegionType.NONE), AS, ChinaRegion_.REGION_TYPE)
+                .comma(SQLs.literalFrom(RegionType.NONE)::as, ChinaRegion_.REGION_TYPE)
                 .from(ChinaRegion_.T, AS, "c")
                 .limit(SQLs::param, 10)
                 .asQuery()
@@ -1145,7 +1144,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .space()
                 .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
                 .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
-                .comma(SQLs.literalFrom(RegionType.NONE), AS, ChinaRegion_.REGION_TYPE)
+                .comma(SQLs.literalFrom(RegionType.NONE)::as, ChinaRegion_.REGION_TYPE)
                 .from(ChinaRegion_.T, AS, "c")
                 .limit(SQLs::param, 10)
                 .asQuery()

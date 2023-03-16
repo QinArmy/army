@@ -1297,7 +1297,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         public DialectStatement._CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
                                                              Function<PostgreValues._WithSpec<DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function) {
             this.modifier = modifier;
-            return function.apply(PostgreValuesStmt.subValues(this.context, this::subValuesEnd));
+            return function.apply(PostgreSimpleValues.subValues(this.context, this::subValuesEnd));
         }
 
         private DialectStatement._CommaClause<PostgreCtes> subValuesEnd(final SubValues statement) {
