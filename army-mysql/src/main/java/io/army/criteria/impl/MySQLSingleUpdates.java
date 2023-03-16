@@ -296,13 +296,13 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT, SR, WR, WA, OR, LR>
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_SingleUpdateClause<I>> with(String name) {
-            return MySQLQueries.complexCte(this.context, false, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, false, this::endStaticWithClause)
                     .comma(name);
         }
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_SingleUpdateClause<I>> withRecursive(String name) {
-            return MySQLQueries.complexCte(this.context, true, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, true, this::endStaticWithClause)
                     .comma(name);
         }
 
@@ -465,13 +465,13 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT, SR, WR, WA, OR, LR>
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_BatchSingleUpdateClause<io.army.criteria.BatchUpdate>> with(String name) {
-            return MySQLQueries.complexCte(this.context, false, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, false, this::endStaticWithClause)
                     .comma(name);
         }
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_BatchSingleUpdateClause<io.army.criteria.BatchUpdate>> withRecursive(String name) {
-            return MySQLQueries.complexCte(this.context, true, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, true, this::endStaticWithClause)
                     .comma(name);
         }
 

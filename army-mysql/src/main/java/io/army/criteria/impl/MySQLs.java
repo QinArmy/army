@@ -29,17 +29,17 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLQuery._WithSpec<Select> query() {
-        return MySQLQueries.primaryQuery(null, ContextStack.peekIfBracket(), SQLs::_identity);
+        return MySQLQueries.simpleQuery(ContextStack.peekIfBracket(), SQLs::_identity);
     }
 
 
     public static MySQLQuery._WithSpec<SubQuery> subQuery() {
-        return MySQLQueries.subQuery(null, ContextStack.peek(), SQLs::_identity);
+        return MySQLQueries.subQuery(ContextStack.peek(), SQLs::_identity);
     }
 
 
     public static MySQLQuery._WithSpec<Expression> scalarSubQuery() {
-        return MySQLQueries.subQuery(null, ContextStack.peek(), Expressions::scalarExpression);
+        return MySQLQueries.subQuery(ContextStack.peek(), Expressions::scalarExpression);
     }
 
 

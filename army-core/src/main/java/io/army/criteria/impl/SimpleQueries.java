@@ -1061,12 +1061,16 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             return this.createSelectClause().selects(hints, modifiers, consumer);
         }
 
+        @Override
+        public final String toString() {
+            return super.toString();
+        }
+
         abstract Query._SelectDispatcher<W, SR, SD> createSelectClause();
 
         final void endDispatcher() {
-            ContextStack.pop(this.context)
-                    .endContext();
-
+            this.context.endContext();
+            ContextStack.pop(this.context);
         }
 
 
@@ -1170,9 +1174,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             this.cteList = this.context.endWithClause(recursive, true);
             return (WE) this;
         }
-
-
-
 
 
     }//WithBuilderSelectClauseDispatcher

@@ -436,13 +436,13 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT, FS
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_SimpleMultiDeleteClause<I>> with(String name) {
-            return MySQLQueries.complexCte(this.context, false, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, false, this::endStaticWithClause)
                     .comma(name);
         }
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_SimpleMultiDeleteClause<I>> withRecursive(String name) {
-            return MySQLQueries.complexCte(this.context, true, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, true, this::endStaticWithClause)
                     .comma(name);
         }
 
@@ -568,13 +568,13 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT, FS
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_BatchMultiDeleteClause<BatchDelete>> with(String name) {
-            return MySQLQueries.complexCte(this.context, false, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, false, this::endStaticWithClause)
                     .comma(name);
         }
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_BatchMultiDeleteClause<BatchDelete>> withRecursive(String name) {
-            return MySQLQueries.complexCte(this.context, true, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, true, this::endStaticWithClause)
                     .comma(name);
         }
 

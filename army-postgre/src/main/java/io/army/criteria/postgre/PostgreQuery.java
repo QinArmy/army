@@ -453,11 +453,6 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    @Deprecated
-    interface _MinWithSpec<I extends Item> extends _PostgreDynamicWithClause<_SelectSpec<I>>,
-            _SelectSpec<I> {
-
-    }
 
     /**
      * <p>

@@ -66,6 +66,7 @@ public interface Statement extends Item {
     }
 
 
+    @Deprecated
     interface _AsCteClause<I extends Item> extends Item {
 
         I asCte();

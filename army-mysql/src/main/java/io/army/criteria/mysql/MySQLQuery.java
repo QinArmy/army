@@ -240,16 +240,10 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
 
     interface _SelectSpec<I extends Item> extends _MySQLSelectClause<I>,
-            _LeftParenClause<_MinWithSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+            _LeftParenClause<_WithSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 
-    @Deprecated
-    interface _MinWithSpec<I extends Item> extends _MySQLDynamicWithClause<_SelectSpec<I>>,
-            _SelectSpec<I> {
-
-
-    }
 
 
     interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<I>>,
@@ -268,6 +262,13 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
+    interface _WithSpec<I extends Item> extends _MySQLDynamicWithClause<_SelectSpec<I>>,
+            _MySQLStaticWithClause<_SelectSpec<I>>,
+            _SelectSpec<I> {
+
+    }
+
+
     interface _DynamicCteAsClause extends _StaticAsClaus<_MinWithSpec<_AsCteClause<MySQLCtes>>> {
 
     }
@@ -277,28 +278,17 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _WithSpec<I extends Item> extends _MinWithSpec<I>,
-            _StaticWithClause<_StaticCteParensSpec<_CteComma<I>>> {
-
-    }
-
-
-    interface _ComplexCteComma<I extends Item>
-            extends _StaticWithCommaClause<_StaticCteParensSpec<_ComplexCteComma<I>>>,
-            _StaticSpaceClause<_QueryComplexSpec<I>> {
-
-    }
 
     interface _QueryComplexSpec<I extends Item> extends _MySQLSelectClause<I>,
+            MySQLValues._MySQLValuesClause<I>,
             _LeftParenClause<_QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
 
     }
 
-    interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>,
-            _MySQLDynamicWithClause<_QueryComplexSpec<I>>,
-            _StaticWithClause<_StaticCteParensSpec<_ComplexCteComma<I>>>,
-            MySQLValues._MySQLValuesClause<I>,
-            _DynamicParensRowSetClause<_RightParenClause<_UnionOrderBySpec<I>>> {
+    interface _QueryWithComplexSpec<I extends Item> extends _MySQLDynamicWithClause<_QueryComplexSpec<I>>,
+            _MySQLStaticWithClause<_QueryComplexSpec<I>>,
+            _QueryComplexSpec<I>,
+            _DynamicParensRowSetClause<_UnionOrderBySpec<I>> {
 
     }
 

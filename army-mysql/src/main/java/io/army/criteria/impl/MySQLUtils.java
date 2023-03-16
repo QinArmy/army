@@ -1,7 +1,12 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
+import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.mysql.MySQLCastType;
+import io.army.criteria.mysql.MySQLQuery;
+import io.army.criteria.mysql.MySQLValues;
+import io.army.criteria.standard.StandardQuery;
+import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.util._CollectionUtils;
 
@@ -147,6 +152,37 @@ abstract class MySQLUtils extends CriteriaUtils {
             level = -1;
         }
         return level;
+    }
+
+
+    static <S extends RowSet> RowSet primaryRowSetFromParens(CriteriaContext context, Supplier<S> supplier) {
+        final RowSet rowSet;
+        rowSet = ContextStack.unionQuerySupplier(supplier);
+        if (!(rowSet instanceof Select || rowSet instanceof Values)) {
+            throw CriteriaUtils.unknownRowSet(context, rowSet, Database.MySQL);
+        } else if (!(rowSet instanceof MySQLQuery
+                || rowSet instanceof StandardQuery
+                || rowSet instanceof SimpleQueries.UnionSelect
+                || rowSet instanceof MySQLValues
+                || rowSet instanceof SimpleValues.UnionValues)) {
+            throw CriteriaUtils.unknownRowSet(context, rowSet, Database.MySQL);
+        }
+        return rowSet;
+    }
+
+    static <S extends RowSet> RowSet subRowSetFromParens(CriteriaContext context, Supplier<S> supplier) {
+        final RowSet rowSet;
+        rowSet = ContextStack.unionQuerySupplier(supplier);
+        if (!(rowSet instanceof SubQuery || rowSet instanceof SubValues)) {
+            throw CriteriaUtils.unknownRowSet(context, rowSet, Database.MySQL);
+        } else if (!(rowSet instanceof MySQLQuery
+                || rowSet instanceof StandardQuery
+                || rowSet instanceof SimpleQueries.UnionSubQuery
+                || rowSet instanceof MySQLValues
+                || rowSet instanceof SimpleValues.UnionSubValues)) {
+            throw CriteriaUtils.unknownRowSet(context, rowSet, Database.MySQL);
+        }
+        return rowSet;
     }
 
 

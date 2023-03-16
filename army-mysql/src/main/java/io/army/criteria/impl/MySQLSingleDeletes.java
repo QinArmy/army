@@ -220,13 +220,13 @@ abstract class MySQLSingleDeletes<I extends Item, WE, DT, PR, WR, WA, OR, LR>
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_SimpleSingleDeleteClause<I>> with(String name) {
-            return MySQLQueries.complexCte(this.context, false, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, false, this::endStaticWithClause)
                     .comma(name);
         }
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_SimpleSingleDeleteClause<I>> withRecursive(String name) {
-            return MySQLQueries.complexCte(this.context, true, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, true, this::endStaticWithClause)
                     .comma(name);
         }
 
@@ -261,13 +261,13 @@ abstract class MySQLSingleDeletes<I extends Item, WE, DT, PR, WR, WA, OR, LR>
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_BatchSingleDeleteClause<BatchDelete>> with(String name) {
-            return MySQLQueries.complexCte(this.context, false, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, false, this::endStaticWithClause)
                     .comma(name);
         }
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_BatchSingleDeleteClause<BatchDelete>> withRecursive(String name) {
-            return MySQLQueries.complexCte(this.context, true, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, true, this::endStaticWithClause)
                     .comma(name);
         }
 

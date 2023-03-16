@@ -402,13 +402,13 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_SimpleMultiUpdateClause<I>> with(String name) {
-            return MySQLQueries.complexCte(this.context, false, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, false, this::endStaticWithClause)
                     .comma(name);
         }
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_SimpleMultiUpdateClause<I>> withRecursive(String name) {
-            return MySQLQueries.complexCte(this.context, true, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, true, this::endStaticWithClause)
                     .comma(name);
         }
 
@@ -547,13 +547,13 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_BatchMultiUpdateClause<BatchUpdate>> with(String name) {
-            return MySQLQueries.complexCte(this.context, false, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, false, this::endStaticWithClause)
                     .comma(name);
         }
 
         @Override
         public MySQLQuery._StaticCteParensSpec<_BatchMultiUpdateClause<BatchUpdate>> withRecursive(String name) {
-            return MySQLQueries.complexCte(this.context, true, this::endStaticWithClause)
+            return MySQLQueries.staticCteComma(this.context, true, this::endStaticWithClause)
                     .comma(name);
         }
 

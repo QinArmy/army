@@ -32,9 +32,20 @@ abstract class MySQLSimpleValues<I extends Item>
         return new SimplePrimaryValues<>(outerContext, function);
     }
 
+
+    static <I extends Item> MySQLValues._ValueSpec<I> fromDispatcher(ArmyStmtSpec spec,
+                                                                     Function<? super Values, I> function) {
+        throw new UnsupportedOperationException();
+    }
+
     static <I extends Item> MySQLValues._ValueSpec<I> subValues(CriteriaContext outerContext
             , Function<SubValues, I> function) {
         return new SimpleSubValues<>(outerContext, function);
+    }
+
+    static <I extends Item> MySQLValues._ValueSpec<I> fromSubDispatcher(ArmyStmtSpec spec,
+                                                                        Function<? super SubValues, I> function) {
+        throw new UnsupportedOperationException();
     }
 
 
