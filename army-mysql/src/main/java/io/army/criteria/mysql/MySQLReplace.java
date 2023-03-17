@@ -52,7 +52,8 @@ public interface MySQLReplace extends MySQLStatement {
     }
 
     interface _ComplexColumnDefaultSpec<I extends Item, T> extends _ValueColumnDefaultSpec<I, T>,
-            _StaticSpaceClause<MySQLQuery._WithSpec<_DmlInsertClause<I>>> {
+            _StaticSpaceClause<MySQLQuery._WithSpec<_DmlInsertClause<I>>>,
+            InsertStatement._DynamicQuerySpaceClause<MySQLQuery._WithSpec<_DmlInsertClause<I>>, _DmlInsertClause<I>> {
 
     }
 

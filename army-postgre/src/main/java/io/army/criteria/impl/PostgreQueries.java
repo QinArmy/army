@@ -59,9 +59,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         PostgreQuery._LockOfTableSpec<I> {
 
 
-    static <I extends Item> PostgreQuery._WithSpec<I> simpleQuery(@Nullable CriteriaContext outerBracketContext,
-                                                                  Function<? super Select, I> function) {
-        return new SimpleSelect<>(null, outerBracketContext, function);
+    static PostgreQuery._WithSpec<Select> simpleQuery() {
+        return new SimpleSelect<>(null, null, SQLs._SELECT_IDENTITY);
     }
 
     static <I extends Item> PostgreQueries<I> fromDispatcher(ArmyStmtSpec spec,
@@ -815,12 +814,13 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        public _WithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+        public _UnionOrderBySpec<I> parens(Function<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this, this.function);
-            return PostgreQueries.simpleQuery(bracket.context, bracket::parenRowSetEnd);
+
+            return function.apply(new SimpleSelect<>(null, bracket.context, bracket::parensEnd));
         }
 
         @Override
@@ -851,12 +851,13 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        public _WithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+        public _UnionOrderBySpec<I> parens(Function<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.function);
-            return PostgreQueries.subQuery(bracket.context, bracket::parenRowSetEnd);
+
+            return function.apply(PostgreQueries.subQuery(bracket.context, bracket::parensEnd));
         }
 
 
@@ -1013,26 +1014,13 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
 
         @Override
-        public _QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            this.endDispatcher();
-
-            final BracketSelect<I> bracket;
-            bracket = new BracketSelect<>(this, this.function);
-            return new SelectDispatcher<>(bracket, bracket::parenRowSetEnd);
-        }
-
-        @Override
-        public <S extends RowSet> _UnionOrderBySpec<I> parens(Supplier<S> supplier) {
+        public _UnionOrderBySpec<I> parens(Function<_QueryWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endDispatcher();
 
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this, this.function);
 
-            final RowSet rowSet;
-            rowSet = PostgreUtils.primaryRowSetFromParens(this.context, supplier);
-
-            return bracket.parenRowSetEnd(rowSet)
-                    .rightParen();
+            return function.apply(new SelectDispatcher<>(bracket, bracket::parensEnd));
         }
 
         @Override
@@ -1077,30 +1065,15 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
             super(bracket, function);
         }
 
-
         @Override
-        public _QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            this.endDispatcher();
-
-            final BracketSubQuery<I> bracket;
-            bracket = new BracketSubQuery<>(this, this.function);
-            return new SubQueryDispatcher<>(bracket, bracket::parenRowSetEnd);
-        }
-
-        @Override
-        public <S extends RowSet> _UnionOrderBySpec<I> parens(Supplier<S> supplier) {
+        public _UnionOrderBySpec<I> parens(Function<_QueryWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endDispatcher();
 
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.function);
 
-            final RowSet rowSet;
-            rowSet = PostgreUtils.subRowSetFromParens(this.context, supplier);
-
-            return bracket.parenRowSetEnd(rowSet)
-                    .rightParen();
+            return function.apply(new SubQueryDispatcher<>(bracket, bracket::parensEnd));
         }
-
 
         @Override
         public PostgreValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {

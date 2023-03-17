@@ -178,6 +178,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
     }
 
 
+    @Deprecated
     final Statement._RightParenClause<RR> parenRowSetEnd(final RowSet parenRowSet) {
         if (this.innerRowSet != null) {
             throw ContextStack.castCriteriaApi(this.context);
@@ -185,6 +186,11 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         this.innerRowSet = (_RowSet) parenRowSet;
         this.context.onSetInnerContext(((CriteriaContextSpec) parenRowSet).getContext());
         return this;
+    }
+
+    final RR parensEnd(final RowSet parenRowSet) {
+        return this.parenRowSetEnd(parenRowSet)
+                .rightParen();
     }
 
 

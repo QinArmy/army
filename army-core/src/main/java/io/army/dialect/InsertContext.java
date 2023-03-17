@@ -343,10 +343,9 @@ abstract class InsertContext extends StatementContext implements _InsertContext
                 // fieldList have be checked,fieldList possibly is io.army.meta.TableMeta.fieldList()
                 continue;
             }
-
             assert !(field instanceof PrimaryFieldMeta)
                     || !(field.generatorType() == GeneratorType.POST
-                    && field.tableMeta() instanceof SingleTableMeta);
+                    && field.tableMeta() instanceof ChildTableMeta);
 
             if (actualIndex > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);

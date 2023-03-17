@@ -1070,7 +1070,7 @@ abstract class SQLsSyntax extends SQLSyntax {
      * </p>
      */
     public static Expression ref(String selectionAlias) {
-        return ContextStack.peek().ref(selectionAlias);
+        return ContextStack.peek().refSelection(selectionAlias);
     }
 
     /**

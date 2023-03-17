@@ -26,9 +26,9 @@ final class QualifiedFieldImpl<T> extends OperationDataField implements Qualifie
     }
 
 
-    private final String tableAlias;
+     final String tableAlias;
 
-    private final TableFieldMeta<T> field;
+    final TableFieldMeta<T> field;
 
     private QualifiedFieldImpl(String tableAlias, FieldMeta<T> field) {
         this.field = (TableFieldMeta<T>) field;

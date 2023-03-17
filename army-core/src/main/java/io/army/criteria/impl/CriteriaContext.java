@@ -55,19 +55,23 @@ interface CriteriaContext {
 
     void addEndEventListener(Runnable listener);
 
-    @Deprecated
-    DerivedField ref(String derivedTable, String derivedFieldName);
 
-    DerivedField refThis(String derivedTable, String fieldName);
+    DerivedField refThisOrOuter(String derivedAlias, String selectionAlias);
+
+    DerivedField refThis(String derivedAlias, String selectionAlias);
 
 
     <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field);
 
-    DerivedField refOuter(String derivedTable, String fieldName);
+    /**
+     * @deprecated use {@link #refThisOrOuter(String, String)}
+     */
+    @Deprecated
+    DerivedField refOuter(String derivedAlias, String fieldName);
 
     void onOrderByStart();
 
-    Expression ref(String selectionAlias);
+    Expression refSelection(String selectionAlias);
 
     void onSetInnerContext(CriteriaContext innerContext);
 

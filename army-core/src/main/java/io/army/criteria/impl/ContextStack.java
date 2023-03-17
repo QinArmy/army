@@ -49,6 +49,7 @@ abstract class ContextStack {
      *
      * @see #unionQuerySupplier(Supplier)
      */
+    @Deprecated
     @Nullable
     static CriteriaContext peekIfBracket() {
         final Stack stack = HOLDER.get();
@@ -171,6 +172,7 @@ abstract class ContextStack {
     /**
      * @see #peekIfBracket()
      */
+    @Deprecated
     static RowSet unionQuerySupplier(Supplier<? extends RowSet> supplier) {
         try {
             final RowSet rowSet;

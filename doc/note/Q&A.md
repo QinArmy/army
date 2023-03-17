@@ -138,6 +138,9 @@
       ReturningDelete 同上。
 29. 为什么创建 Bracket 只需要一个 ArmyStmtSpec?
     * 根据最新的结构设计创建 Bracket 一定需要 WITH 子句和 context 的迁移.
+
+30. 为什么 io.army.criteria.Query._DynamicParensRowSetClause 不能提供 parens(RowSet) 方法?
+    * 因为一旦抛出异常就会污染 context stack.
     
 
 

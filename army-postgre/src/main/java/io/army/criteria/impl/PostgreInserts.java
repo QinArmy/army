@@ -59,7 +59,7 @@ abstract class PostgreInserts extends InsertSupports {
      * create new single-table INSERT statement that is primary statement for multi-statement and don't support {@link io.army.meta.ChildTableMeta}.
      * </p>
      */
-    static <I extends Item> PostgreInsert._ComplexOptionSpec<I> fromDispatcher(ArmyStmtSpec spec,
+    static <I extends Item> PostgreInsert._ComplexOptionSpec<I> fromDispatcher(MultiStmtSpec spec,
                                                                                Function<PrimaryStatement, I> function) {
         return new ComplexInsertIntoClause<>(spec, function);
     }
@@ -314,7 +314,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final Function<PrimaryStatement, I> function;
 
-        private ComplexInsertIntoClause(@Nullable ArmyStmtSpec spec,
+        private ComplexInsertIntoClause(MultiStmtSpec spec,
                                         Function<PrimaryStatement, I> function) {
             super(CriteriaContexts.primaryInsertContext(spec));
             this.function = function;
@@ -922,12 +922,17 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public PostgreQuery._WithSpec<PostgreInsert._OnConflictSpec<T, I, Q>> space() {
-            return PostgreQueries.subQuery(this.context, this::staticSpaceQueryEnd);
+            return PostgreQueries.subQuery(this.context, this::spaceQueryEnd);
         }
 
         @Override
         public PostgreInsert._OnConflictSpec<T, I, Q> space(Supplier<SubQuery> supplier) {
-            return this.staticSpaceQueryEnd(supplier.get());
+            return this.spaceQueryEnd(supplier.get());
+        }
+
+        @Override
+        public PostgreInsert._OnConflictSpec<T, I, Q> space(Function<PostgreQuery._WithSpec<PostgreInsert._OnConflictSpec<T, I, Q>>, PostgreInsert._OnConflictSpec<T, I, Q>> function) {
+            return function.apply(PostgreQueries.subQuery(this.context, this::spaceQueryEnd));
         }
 
         @Override

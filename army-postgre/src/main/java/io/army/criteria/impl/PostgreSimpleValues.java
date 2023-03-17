@@ -38,15 +38,11 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
     /**
      * <p>
-     *     create primary VALUES statement.
+     * create primary VALUES statement.
      * </p>
-     * @param outerBracketContext outer bracket context,see {@link Query._DynamicParensRowSetClause#parens(Supplier)}
-     *                            and {@link ContextStack#peekIfBracket()}
      */
-    static <I extends Item> PostgreValues._WithSpec<I> simpleValues(@Nullable CriteriaContext outerBracketContext,
-                                                                    Function<? super Values, I> function) {
-
-        return new PrimarySimpleValues<>(null, outerBracketContext, function);
+    static PostgreValues._WithSpec<Values> simpleValues() {
+        return new SimplePrimaryValues<>(null, null, SQLs::_identity);
     }
 
     /**
@@ -54,7 +50,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
      */
     static <I extends Item> PostgreValues._WithSpec<I> fromDispatcher(ArmyStmtSpec spec,
                                                                       Function<? super Values, I> function) {
-        return new PrimarySimpleValues<>(spec, null, function);
+        return new SimplePrimaryValues<>(spec, null, function);
     }
 
     /**
@@ -117,29 +113,29 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         return "column" + (++columnIndex);
     }
 
-    private static final class PrimarySimpleValues<I extends Item> extends PostgreSimpleValues<I>
+    private static final class SimplePrimaryValues<I extends Item> extends PostgreSimpleValues<I>
             implements Values {
 
         private final Function<? super Values, I> function;
 
 
         /**
-         * @param outerBracketContext outer bracket context,see {@link Query._DynamicParensRowSetClause#parens(Supplier)}
-         *                            and {@link ContextStack#peekIfBracket()}
+         * @param outerBracketContext outer bracket context
          */
-        private PrimarySimpleValues(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerBracketContext,
+        private SimplePrimaryValues(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerBracketContext,
                                     Function<? super Values, I> function) {
             super(spec, CriteriaContexts.primaryValuesContext(spec, outerBracketContext));
             this.function = function;
         }
 
         @Override
-        public _ValuesSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+        public _UnionOrderBySpec<I> parens(Function<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketValues<I> bracket;
             bracket = new BracketValues<>(this, this.function);
-            return PostgreSimpleValues.simpleValues(bracket.context, bracket::parenRowSetEnd);
+
+            return function.apply(new SimplePrimaryValues<>(null, bracket.context, bracket::parensEnd));
         }
 
         @Override
@@ -169,13 +165,13 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         }
 
         @Override
-        public _ValuesSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+        public _UnionOrderBySpec<I> parens(Function<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSubValues<I> bracket;
             bracket = new BracketSubValues<>(this, this.function);
 
-            return PostgreSimpleValues.subValues(bracket.context, bracket::parenRowSetEnd);
+            return function.apply(PostgreSimpleValues.subValues(bracket.context, bracket::parensEnd));
         }
 
         @Override
@@ -330,28 +326,14 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         }
 
         @Override
-        public PostgreValues._QueryWithComplexSpec<_RightParenClause<PostgreValues._UnionOrderBySpec<I>>> leftParen() {
-            this.endDispatcher();
-
-            final BracketValues<I> bracket;
-            bracket = new BracketValues<>(this, this.function);
-            return new ValuesDispatcher<>(bracket, bracket::parenRowSetEnd);
-        }
-
-        @Override
-        public <S extends RowSet> _UnionOrderBySpec<I> parens(Supplier<S> supplier) {
+        public _UnionOrderBySpec<I> parens(Function<_QueryWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endDispatcher();
 
             final BracketValues<I> bracket;
             bracket = new BracketValues<>(this, this.function);
 
-            final RowSet rowSet;
-            rowSet = PostgreUtils.primaryRowSetFromParens(this.context, supplier);
-
-            return bracket.parenRowSetEnd(rowSet)
-                    .rightParen();
+            return function.apply(new ValuesDispatcher<>(bracket, bracket::parensEnd));
         }
-
 
         @Override
         public PostgreValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
@@ -393,26 +375,13 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         }
 
         @Override
-        public _QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            this.endDispatcher();
-
-            final BracketSubValues<I> bracket;
-            bracket = new BracketSubValues<>(this, this.function);
-            return new SubValuesDispatcher<>(bracket, bracket::parenRowSetEnd);
-        }
-
-        @Override
-        public <S extends RowSet> _UnionOrderBySpec<I> parens(Supplier<S> supplier) {
+        public _UnionOrderBySpec<I> parens(Function<_QueryWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endDispatcher();
 
             final BracketSubValues<I> bracket;
             bracket = new BracketSubValues<>(this, this.function);
 
-            final RowSet rowSet;
-            rowSet = PostgreUtils.subRowSetFromParens(this.context, supplier);
-
-            return bracket.parenRowSetEnd(rowSet)
-                    .rightParen();
+            return function.apply(new SubValuesDispatcher<>(bracket, bracket::parensEnd));
         }
 
 

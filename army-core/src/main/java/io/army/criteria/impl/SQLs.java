@@ -117,7 +117,7 @@ public abstract class SQLs extends SQLsSyntax {
 
 
     public static StandardQuery._SelectSpec<Select> query() {
-        return StandardQueries.simpleQuery(ContextStack.peekIfBracket(), SQLs::_identity);
+        return StandardQueries.simpleQuery();
     }
 
     public static StandardQuery._SelectSpec<SubQuery> subQuery() {

@@ -29,7 +29,7 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLQuery._WithSpec<Select> query() {
-        return MySQLQueries.simpleQuery(ContextStack.peekIfBracket(), SQLs::_identity);
+        return MySQLQueries.simpleQuery();
     }
 
 
@@ -44,7 +44,7 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLValues._ValueSpec<Values> primaryValues() {
-        return MySQLSimpleValues.simpleValues(ContextStack.peekIfBracket(), SQLs::_identity);
+        return MySQLSimpleValues.simpleValues(SQLs::_identity);
     }
 
 

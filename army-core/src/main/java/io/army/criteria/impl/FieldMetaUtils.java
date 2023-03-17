@@ -146,8 +146,8 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         return inheritance != null && fieldName.equals(inheritance.value());
     }
 
-    static boolean columnInsertable(FieldMeta<?> field, @Nullable Generator generator
-            , final Column column, final boolean isDiscriminator) {
+    static boolean columnInsertable(FieldMeta<?> field, @Nullable Generator generator,
+                                    final Column column, final boolean isDiscriminator) {
         final boolean insertable;
         if (generator == null) {
             insertable = isDiscriminator

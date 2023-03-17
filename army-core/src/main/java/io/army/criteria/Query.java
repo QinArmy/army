@@ -363,11 +363,9 @@ public interface Query extends RowSet {
         SP minusDistinct();
     }
 
-    interface _DynamicParensRowSetClause<R> {
+    interface _DynamicParensQueryClause<T extends Item, R extends Item> {
 
-
-        <S extends RowSet> R parens(Supplier<S> supplier);
-
+        R parens(Function<T, R> function);
     }
 
 

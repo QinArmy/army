@@ -96,24 +96,27 @@ public interface InsertStatement extends DmlStatement {
     }
 
 
-    interface _DynamicQuerySpaceClause<R> {
+    interface _DynamicQuerySpaceClause<T extends Item, R extends Item> {
+
+        R space(Function<T, R> function);
 
         R space(Supplier<SubQuery> supplier);
+
     }
 
 
-    interface _ColumnListClause<T, RR> {
+    interface _ColumnListClause<T, R> {
 
-        Statement._RightParenClause<RR> leftParen(Consumer<Consumer<FieldMeta<T>>> consumer);
+        Statement._RightParenClause<R> leftParen(FieldMeta<T> field);
 
-        Statement._RightParenClause<RR> leftParen(FieldMeta<T> field);
+        _StaticColumnDualClause<T, R> leftParen(FieldMeta<T> field1, FieldMeta<T> field2);
 
-        _StaticColumnDualClause<T, RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2);
+        Statement._RightParenClause<R> leftParen(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3);
 
-        Statement._RightParenClause<RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3);
+        _StaticColumnQuadraClause<T, R> leftParen(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3,
+                                                  FieldMeta<T> field4);
 
-        _StaticColumnQuadraClause<T, RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3,
-                                                   FieldMeta<T> field4);
+        R parens(Consumer<Consumer<FieldMeta<T>>> consumer);
 
     }
 

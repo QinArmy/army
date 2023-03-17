@@ -36,7 +36,7 @@ public abstract class Postgres extends PostgreFuncSyntax {
      * </p>
      */
     public static PostgreQuery._WithSpec<Select> query() {
-        return PostgreQueries.simpleQuery(ContextStack.peekIfBracket(), SQLs::_identity);
+        return PostgreQueries.simpleQuery();
     }
 
     /**
@@ -94,7 +94,7 @@ public abstract class Postgres extends PostgreFuncSyntax {
     }
 
     public static PostgreValues._WithSpec<Values> simpleValues() {
-        return PostgreSimpleValues.simpleValues(ContextStack.peekIfBracket(), SQLs::_identity);
+        return PostgreSimpleValues.simpleValues();
     }
 
     public static PostgreValues._WithSpec<SubValues> subValues() {

@@ -5,6 +5,7 @@ import io.army.criteria.InsertStatement;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner.mysql._MySQLInsert;
@@ -57,7 +58,7 @@ abstract class MySQLReplaces extends InsertSupports {
      * create single-table REPLACE statement that is primary statement for multi-statement and support only {@link SingleTableMeta}.
      * </p>
      */
-    static <I extends Item> MySQLReplace._PrimarySingleOptionSpec<I> singleReplace(ArmyStmtSpec spec,
+    static <I extends Item> MySQLReplace._PrimarySingleOptionSpec<I> singleReplace(MultiStmtSpec spec,
                                                                                    Function<? super Insert, I> function) {
         return new PrimarySingleReplaceIntoClause<>(spec, function);
     }
@@ -213,7 +214,7 @@ abstract class MySQLReplaces extends InsertSupports {
 
         private List<MySQLs.Modifier> modifierList;
 
-        private PrimarySingleReplaceIntoClause(ArmyStmtSpec spec, Function<? super Insert, I> function) {
+        private PrimarySingleReplaceIntoClause(MultiStmtSpec spec, Function<? super Insert, I> function) {
             super(CriteriaContexts.primaryInsertContext(spec));
             this.function = function;
             ContextStack.push(this.context);
@@ -329,8 +330,19 @@ abstract class MySQLReplaces extends InsertSupports {
 
         @Override
         public MySQLQuery._WithSpec<Statement._DmlInsertClause<I>> space() {
-            return MySQLQueries.subQuery(this.context, this::staticSpaceQueryEnd);
+            return MySQLQueries.subQuery(this.context, this::spaceQueryEnd);
         }
+
+        @Override
+        public Statement._DmlInsertClause<I> space(Supplier<SubQuery> supplier) {
+            return this.spaceQueryEnd(supplier.get());
+        }
+
+        @Override
+        public Statement._DmlInsertClause<I> space(Function<MySQLQuery._WithSpec<Statement._DmlInsertClause<I>>, Statement._DmlInsertClause<I>> function) {
+            return function.apply(MySQLQueries.subQuery(this.context, this::spaceQueryEnd));
+        }
+
 
         @Override
         public I asInsert() {

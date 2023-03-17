@@ -99,35 +99,29 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
         stmt = SQLs.query()
 
-                .leftParen()
-                .select(PillUser_.id)
-                .from(PillUser_.T, SQLs.AS, "p")
-                .where(PillUser_.id.equal(SQLs::literal, 1))
-                .and(PillUser_.nickName::equal, SQLs::param, () -> "脉兽秀秀")
-                //.and(User_.visible.equal(false))
-                .groupBy(PillUser_.userType)
-                .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
-                .orderBy(PillUser_.id::desc)
-                .limit(SQLs::literal, 0, 10)
-                .asQuery()
-                .rightParen()
-
+                .parens(s -> s.select(PillUser_.id)
+                        .from(PillUser_.T, SQLs.AS, "p")
+                        .where(PillUser_.id.equal(SQLs::literal, 1))
+                        .and(PillUser_.nickName::equal, SQLs::param, () -> "脉兽秀秀")
+                        //.and(User_.visible.equal(false))
+                        .groupBy(PillUser_.userType)
+                        .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
+                        .orderBy(PillUser_.id::desc)
+                        .limit(SQLs::literal, 0, 10)
+                        .asQuery()
+                )
                 .union()
-
-                .leftParen()
-                .select(PillUser_.id)
-                .from(PillUser_.T, SQLs.AS, "p")
-                .where(PillUser_.id.equal(SQLs::param, "2"))
-                .and(PillUser_.nickName::equal, SQLs::param, () -> "远浪舰长")
-                //.and(User_.visible.equal(false))
-                .groupBy(PillUser_.userType)
-                .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
-                .orderBy(PillUser_.id::desc)
-                .limit(SQLs::literal, 0, 10)
-                .asQuery()
-                .rightParen()
-
-
+                .parens(s -> s.select(PillUser_.id)
+                        .from(PillUser_.T, SQLs.AS, "p")
+                        .where(PillUser_.id.equal(SQLs::param, "2"))
+                        .and(PillUser_.nickName::equal, SQLs::param, () -> "远浪舰长")
+                        //.and(User_.visible.equal(false))
+                        .groupBy(PillUser_.userType)
+                        .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
+                        .orderBy(PillUser_.id::desc)
+                        .limit(SQLs::literal, 0, 10)
+                        .asQuery()
+                )
                 .unionAll()
                 .parens(() -> SQLs.query()
                         .select(PillUser_.id)
@@ -264,14 +258,11 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     public void bracketQuery() {
         final Select stmt;
         stmt = SQLs.query()
-
-                .leftParen()
-                .select(ChinaRegion_.id, ChinaRegion_.name)
-                .from(ChinaRegion_.T, AS, "r")
-                .where(ChinaRegion_.name.equal(SQLs::literal, "万诗之海"))
-                .asQuery()
-                .rightParen()
-
+                .parens(s -> s.select(ChinaRegion_.id, ChinaRegion_.name)
+                        .from(ChinaRegion_.T, AS, "r")
+                        .where(ChinaRegion_.name.equal(SQLs::literal, "万诗之海"))
+                        .asQuery()
+                )
                 .asQuery();
 
         printStmt(LOG, stmt);

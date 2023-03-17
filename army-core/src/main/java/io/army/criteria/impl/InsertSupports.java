@@ -474,12 +474,6 @@ abstract class InsertSupports {
         }
 
         @Override
-        public final Statement._RightParenClause<RR> leftParen(Consumer<Consumer<FieldMeta<T>>> consumer) {
-            consumer.accept(this::comma);
-            return this;
-        }
-
-        @Override
         public final Statement._RightParenClause<RR> leftParen(FieldMeta<T> field) {
             return this.comma(field);
         }
@@ -509,6 +503,16 @@ abstract class InsertSupports {
             this.comma(field4);
             return this;
         }
+
+        @Override
+        public final RR parens(Consumer<Consumer<FieldMeta<T>>> consumer) {
+            consumer.accept(this::comma);
+            if (this.fieldList == null) {
+                throw ContextStack.criteriaError(this.context, "You don't add any field.");
+            }
+            return this.rightParen();
+        }
+
 
         @Override
         public final Statement._RightParenClause<RR> comma(FieldMeta<T> field) {
@@ -918,7 +922,7 @@ abstract class InsertSupports {
             return (VR) this;
         }
 
-        final VR staticSpaceQueryEnd(final SubQuery subQuery) {
+        final VR spaceQueryEnd(final SubQuery subQuery) {
             if (this.insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             } else if (!this.migration) {

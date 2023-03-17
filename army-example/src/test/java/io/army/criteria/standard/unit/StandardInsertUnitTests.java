@@ -1,7 +1,8 @@
 package io.army.criteria.standard.unit;
 
 import io.army.annotation.GeneratorType;
-import io.army.criteria.InsertStatement;
+import io.army.criteria.Insert;
+import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.*;
@@ -24,12 +25,13 @@ public class StandardInsertUnitTests extends StandardUnitTests {
     public void domainInsertParent() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = SQLs.singleInsert()
 //                .migration(true)
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId)
+                .rightParen()
                 .defaultValue(ChinaRegion_.regionGdp, SQLs::literal, "88888.88")
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .defaultValue(ChinaRegion_.parentId, SQLs::literal, 0)
@@ -45,7 +47,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
         final List<ChinaProvince> provinceList;
         provinceList = this.createProvinceList();
 
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = SQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -71,7 +73,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .setRegionGdp(new BigDecimal("666.88"))
                 .setParentId(2343L);
 
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = SQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -95,7 +97,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
 
     @Test
     public void valueInsertChild() {
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = SQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -133,7 +135,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
 
     @Test
     public void queryInsertParent() {
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = SQLs.singleInsert()
                 .migration(true)
                 .insertInto(ChinaRegion_.T)
@@ -141,10 +143,12 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .comma(ChinaRegion_.visible, ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.regionType)
                 .rightParen()
                 .space()
-                .select(HistoryChinaRegion_.id, HistoryChinaRegion_.createTime, HistoryChinaRegion_.updateTime, HistoryChinaRegion_.version)
-                .comma(HistoryChinaRegion_.visible, HistoryChinaRegion_.name, HistoryChinaRegion_.regionGdp)
-                .comma(SQLs.literalFrom(RegionType.NONE)::as, HistoryChinaRegion_.REGION_TYPE)
-                .from(HistoryChinaRegion_.T, AS, "r")
+                .parens(s -> s.select(HistoryChinaRegion_.id, HistoryChinaRegion_.createTime, HistoryChinaRegion_.updateTime, HistoryChinaRegion_.version)
+                        .comma(HistoryChinaRegion_.visible, HistoryChinaRegion_.name, HistoryChinaRegion_.regionGdp)
+                        .comma(SQLs.literalFrom(RegionType.NONE)::as, HistoryChinaRegion_.REGION_TYPE)
+                        .from(HistoryChinaRegion_.T, AS, "r")
+                        .asQuery()
+                )
                 .asQuery()
                 .asInsert();
 
@@ -155,7 +159,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
 
     @Test
     public void singleTableSubQueryInsert() {
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = SQLs.singleInsert()
                 .migration(true)
                 .insertInto(ChinaRegion_.T)

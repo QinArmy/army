@@ -77,7 +77,7 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
     }
 
     interface _ValuesSpec<I extends Item> extends _PostgreValuesClause<I>,
-            _LeftParenClause<_ValuesSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+            Query._DynamicParensQueryClause<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 
@@ -103,14 +103,13 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
     interface _QueryComplexSpec<I extends Item> extends PostgreQuery._PostgreSelectClause<I>,
             _PostgreValuesClause<I>,
-            _LeftParenClause<_QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+            Query._DynamicParensQueryClause<_QueryWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 
     interface _QueryWithComplexSpec<I extends Item> extends _QueryComplexSpec<I>,
             _PostgreDynamicWithClause<_QueryComplexSpec<I>>,
-            PostgreQuery._PostgreStaticWithClause<_QueryComplexSpec<I>>,
-            Query._DynamicParensRowSetClause<_UnionOrderBySpec<I>> {
+            PostgreQuery._PostgreStaticWithClause<_QueryComplexSpec<I>> {
 
     }
 

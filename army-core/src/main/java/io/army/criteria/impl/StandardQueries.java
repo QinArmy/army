@@ -47,10 +47,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._LockSpec<I>, // LR
         Object,
         Object,
-        StandardQuery._SelectComplexUnionSpec<I>> // SP
+        StandardQuery._SelectSpec<I>> // SP
 
         implements StandardQuery,
-        StandardQuery._SelectComplexUnionSpec<I>,//standard query no with clause,no values statement,so extends _SelectComplexUnionSpec
+        StandardQuery._SelectSpec<I>,
         StandardQuery._StandardSelectCommaClause<I>,
         StandardQuery._JoinSpec<I>,
         StandardQuery._WhereAndSpec<I>,
@@ -59,10 +59,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         _StandardQuery {
 
 
-    static <I extends Item> _SelectSpec<I> simpleQuery(@Nullable CriteriaContext outerContext,
-                                                       Function<? super Select, I> function) {
-        // primary no outer context
-        return new SimpleSelect<>(outerContext, function, null);
+    static _SelectSpec<Select> simpleQuery() {
+        return new SimpleSelect<>(null, SQLs._SELECT_IDENTITY, null);
     }
 
     static <I extends Item> _SelectSpec<I> subQuery(CriteriaContext outerContext,
@@ -325,34 +323,17 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             this.function = function;
         }
 
-        @Override
-        public _SelectSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            this.endStmtBeforeCommand();
-
-            final BracketSelect<I> bracket;
-            bracket = new BracketSelect<>(this, this.function);
-            return StandardQueries.simpleQuery(bracket.context, bracket::parenRowSetEnd);
-        }
-
 
         @Override
-        public <S extends RowSet> _UnionOrderBySpec<I> parens(Supplier<S> supplier) {
+        public _UnionOrderBySpec<I> parens(Function<_SelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this, this.function);
 
-            final RowSet rowSet;
-            rowSet = ContextStack.unionQuerySupplier(supplier);
-            if (!(rowSet instanceof Select)) {
-                throw CriteriaUtils.unknownRowSet(context, rowSet, null);
-            } else if (!(rowSet instanceof StandardQuery
-                    || rowSet instanceof SimpleQueries.UnionSelect)) {
-                throw CriteriaUtils.unknownRowSet(context, rowSet, null);
-            }
-            return bracket.parenRowSetEnd(rowSet)
-                    .rightParen();
+            return function.apply(new SimpleSelect<>(bracket.context, bracket::parensEnd, null));
         }
+
 
         @Override
         I onAsQuery() {
@@ -360,7 +341,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectComplexUnionSpec<I> createQueryUnion(final UnionType unionType) {
+        _SelectSpec<I> createQueryUnion(final UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             return new SimpleSelect<>(null, unionFunc, this.context);
@@ -381,33 +362,14 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             this.function = function;
         }
 
+
         @Override
-        public _SelectSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+        public _UnionOrderBySpec<I> parens(Function<_SelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.function);
-            return StandardQueries.subQuery(bracket.context, bracket::parenRowSetEnd);
-        }
-
-
-        @Override
-        public <S extends RowSet> _UnionOrderBySpec<I> parens(Supplier<S> supplier) {
-            this.endStmtBeforeCommand();
-
-            final BracketSubQuery<I> bracket;
-            bracket = new BracketSubQuery<>(this, this.function);
-
-            final RowSet rowSet;
-            rowSet = ContextStack.unionQuerySupplier(supplier);
-            if (!(rowSet instanceof SubQuery)) {
-                throw CriteriaUtils.unknownRowSet(this.context, rowSet, null);
-            } else if (!(rowSet instanceof StandardQuery
-                    || rowSet instanceof SimpleQueries.UnionSubQuery)) {
-                throw CriteriaUtils.unknownRowSet(this.context, rowSet, null);
-            }
-            return bracket.parenRowSetEnd(rowSet)
-                    .rightParen();
+            return function.apply(StandardQueries.subQuery(bracket.context, bracket::parensEnd));
         }
 
         @Override
@@ -416,7 +378,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectComplexUnionSpec<I> createQueryUnion(final UnionType unionType) {
+        _SelectSpec<I> createQueryUnion(final UnionType unionType) {
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
             return new SimpleSubQuery<>(this.context.getNonNullOuterContext(), unionFunc, this.context);
@@ -434,7 +396,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             _AsQueryClause<I>,
             Object,
             Object,
-            _SelectComplexUnionSpec<I>>
+            _SelectSpec<I>>
             implements StandardQuery._UnionOrderBySpec<I>,
             StandardQuery {
 
@@ -468,7 +430,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectComplexUnionSpec<I> createUnionRowSet(final UnionType unionType) {
+        _SelectSpec<I> createUnionRowSet(final UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             return new SimpleSelect<>(null, unionFunc, this.context);
@@ -493,7 +455,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectComplexUnionSpec<I> createUnionRowSet(final UnionType unionType) {
+        _SelectSpec<I> createUnionRowSet(final UnionType unionType) {
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
             return new SimpleSubQuery<>(this.context.getNonNullOuterContext(), unionFunc, this.context);

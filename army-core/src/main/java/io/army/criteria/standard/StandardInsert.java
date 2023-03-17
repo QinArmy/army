@@ -6,6 +6,7 @@ import io.army.criteria.InsertStatement;
 import io.army.criteria.Item;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
+import io.army.meta.SimpleTableMeta;
 import io.army.meta.SingleTableMeta;
 
 /**
@@ -38,8 +39,8 @@ public interface StandardInsert extends StandardStatement {
 
 
     interface _ComplexColumnDefaultSpec<T, I extends Item> extends _ValuesColumnDefaultSpec<T, I>,
-            DialectStatement._StaticSpaceClause<StandardQuery._StandardSelectClause<_DmlInsertClause<I>>>,
-            InsertStatement._DynamicQuerySpaceClause<_DmlInsertClause<I>> {
+            DialectStatement._StaticSpaceClause<StandardQuery._SelectSpec<_DmlInsertClause<I>>>,
+            InsertStatement._DynamicQuerySpaceClause<StandardQuery._SelectSpec<_DmlInsertClause<I>>, _DmlInsertClause<I>> {
 
     }
 
@@ -58,7 +59,7 @@ public interface StandardInsert extends StandardStatement {
 
     interface _PrimaryInsertIntoClause {
 
-        <T> _ColumnListSpec<T, Insert> insertInto(SingleTableMeta<T> table);
+        <T> _ColumnListSpec<T, Insert> insertInto(SimpleTableMeta<T> table);
 
         <P> _ColumnListSpec<P, InsertStatement._ParentInsert<_ChildInsertIntoClause<Insert, P>>> insertInto(ParentTableMeta<P> table);
     }

@@ -30,7 +30,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _UnionSpec<I extends Item> extends _AsQueryClause<I>,
-            _QueryUnionClause<_SelectComplexUnionSpec<I>> {
+            _QueryUnionClause<_SelectSpec<I>> {
 
     }
 
@@ -308,14 +308,10 @@ public interface StandardQuery extends Query, StandardStatement {
     }
 
     interface _SelectSpec<I extends Item> extends _StandardSelectClause<I>,
-            _LeftParenClause<_SelectSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+            _DynamicParensQueryClause<_SelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 
-    interface _SelectComplexUnionSpec<I extends Item> extends _SelectSpec<I>,
-            _DynamicParensRowSetClause<_UnionOrderBySpec<I>> {
-
-    }
 
 
 }

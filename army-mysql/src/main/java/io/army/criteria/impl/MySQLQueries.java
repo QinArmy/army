@@ -69,9 +69,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         MySQLQuery._LockOfTableSpec<I>,
         OrderByClause.OrderByEventListener {
 
-    static <I extends Item> _WithSpec<I> simpleQuery(@Nullable CriteriaContext outerBracketContext,
-                                                     Function<? super Select, I> function) {
-        return new SimpleSelect<>(null, outerBracketContext, function);
+    static _WithSpec<Select> simpleQuery() {
+        return new SimpleSelect<>(null, null, SQLs._SELECT_IDENTITY);
     }
 
     static <I extends Item> MySQLQueries<I> fromDispatcher(ArmyStmtSpec spec,
@@ -778,14 +777,14 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             this.function = function;
         }
 
-
         @Override
-        public _WithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+        public _UnionOrderBySpec<I> parens(Function<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this, this.function);
-            return MySQLQueries.simpleQuery(bracket.context, bracket::parenRowSetEnd);
+
+            return function.apply(new SimpleSelect<>(null, bracket.context, bracket::parensEnd));
         }
 
         @Override
@@ -814,12 +813,13 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        public _WithSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+        public _UnionOrderBySpec<I> parens(Function<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endStmtBeforeCommand();
 
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.function);
-            return MySQLQueries.subQuery(bracket.context, bracket::parenRowSetEnd);
+
+            return function.apply(MySQLQueries.subQuery(bracket.context, bracket::parensEnd));
         }
 
         @Override
@@ -1244,27 +1244,13 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        public _QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            this.endDispatcher();
-
-            final BracketSelect<I> bracket;
-            bracket = new BracketSelect<>(this, this.function);
-            return new SelectDispatcher<>(bracket, bracket::parenRowSetEnd);
-        }
-
-
-        @Override
-        public <S extends RowSet> _UnionOrderBySpec<I> parens(Supplier<S> supplier) {
+        public _UnionOrderBySpec<I> parens(Function<_QueryWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endDispatcher();
 
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this, this.function);
 
-            final RowSet rowSet;
-            rowSet = MySQLUtils.primaryRowSetFromParens(this.context, supplier);
-
-            return bracket.parenRowSetEnd(rowSet)
-                    .rightParen();
+            return function.apply(new SelectDispatcher<>(bracket, bracket::parensEnd));
         }
 
         @Override
@@ -1304,29 +1290,16 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
             super(bracket, function);
         }
 
-        @Override
-        public _QueryWithComplexSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
-            this.endDispatcher();
-
-            final BracketSubQuery<I> bracket;
-            bracket = new BracketSubQuery<>(this, this.function);
-            return new SubQueryDispatcher<>(bracket, bracket::parenRowSetEnd);
-        }
 
         @Override
-        public <S extends RowSet> _UnionOrderBySpec<I> parens(Supplier<S> supplier) {
+        public _UnionOrderBySpec<I> parens(Function<_QueryWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endDispatcher();
 
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.function);
 
-            final RowSet rowSet;
-            rowSet = MySQLUtils.subRowSetFromParens(this.context, supplier);
-
-            return bracket.parenRowSetEnd(rowSet)
-                    .rightParen();
+            return function.apply(new SubQueryDispatcher<>(bracket, bracket::parensEnd));
         }
-
 
         @Override
         public MySQLValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {

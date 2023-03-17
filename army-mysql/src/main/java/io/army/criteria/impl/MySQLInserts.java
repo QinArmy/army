@@ -56,7 +56,7 @@ abstract class MySQLInserts extends InsertSupports {
      * create single-table INSERT statement that is primary statement for multi-statement and support only {@link SingleTableMeta}.
      * </p>
      */
-    static <I extends Item> MySQLInsert._PrimarySingleOptionSpec<I> singleInsert(ArmyStmtSpec spec,
+    static <I extends Item> MySQLInsert._PrimarySingleOptionSpec<I> singleInsert(MultiStmtSpec spec,
                                                                                  Function<? super Insert, I> function) {
         return new PrimarySingleInsertIntoClause<>(spec, function);
     }
@@ -227,7 +227,7 @@ abstract class MySQLInserts extends InsertSupports {
 
         private List<MySQLs.Modifier> modifierList;
 
-        private PrimarySingleInsertIntoClause(ArmyStmtSpec spec, Function<? super Insert, I> function) {
+        private PrimarySingleInsertIntoClause(MultiStmtSpec spec, Function<? super Insert, I> function) {
             super(CriteriaContexts.primaryInsertContext(spec));
             this.function = function;
             ContextStack.push(this.context);
@@ -681,12 +681,17 @@ abstract class MySQLInserts extends InsertSupports {
 
         @Override
         public MySQLQuery._WithSpec<MySQLInsert._OnDuplicateKeyUpdateSpec<I, T>> space() {
-            return MySQLQueries.subQuery(this.context, this::staticSpaceQueryEnd);
+            return MySQLQueries.subQuery(this.context, this::spaceQueryEnd);
         }
 
         @Override
         public MySQLInsert._OnDuplicateKeyUpdateSpec<I, T> space(Supplier<SubQuery> supplier) {
-            return this.staticSpaceQueryEnd(supplier.get());
+            return this.spaceQueryEnd(supplier.get());
+        }
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateSpec<I, T> space(Function<MySQLQuery._WithSpec<MySQLInsert._OnDuplicateKeyUpdateSpec<I, T>>, MySQLInsert._OnDuplicateKeyUpdateSpec<I, T>> function) {
+            return function.apply(MySQLQueries.subQuery(this.context, this::spaceQueryEnd));
         }
 
         @Override

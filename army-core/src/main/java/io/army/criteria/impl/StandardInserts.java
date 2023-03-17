@@ -40,6 +40,53 @@ abstract class StandardInserts extends InsertSupports {
     }
 
 
+    /*-------------------below private method -------------------*/
+
+    private static <P> InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<Insert, P>> parentInsertEnd(
+            final StandardComplexValuesClause<?, ?> clause) {
+        final Statement._DmlInsertClause<InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<Insert, P>>> spec;
+
+        final InsertMode mode;
+        mode = clause.getInsertMode();
+        switch (mode) {
+            case DOMAIN:
+                spec = new PrimaryParentDomainInsertStatement<>(clause, SQLs::_identity);
+                break;
+            case VALUES:
+                spec = new PrimaryParentValueInsertStatement<>(clause, SQLs::_identity);
+                break;
+            case QUERY:
+                spec = new PrimaryParentQueryInsertStatement<>(clause, SQLs::_identity);
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+
+        return spec.asInsert();
+    }
+
+    private static Insert singleInsertEnd(final StandardComplexValuesClause<?, ?> clause) {
+        final Statement._DmlInsertClause<Insert> spec;
+        final InsertMode mode;
+        mode = clause.getInsertMode();
+        switch (mode) {
+            case DOMAIN:
+                spec = new PrimarySingleDomainInsertStatement(clause);
+                break;
+            case VALUES:
+                spec = new PrimarySingleValueInsertStatement(clause);
+                break;
+            case QUERY:
+                spec = new PrimarySingleQueryInsertStatement(clause);
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+
+        return spec.asInsert();
+    }
+
+
     /*-------------------below standard domain insert syntax class-------------------*/
     private static final class PrimaryInsertIntoClause
             extends NonQueryInsertOptionsImpl<
@@ -54,57 +101,14 @@ abstract class StandardInserts extends InsertSupports {
         }
 
         @Override
-        public <T> StandardInsert._ColumnListSpec<T, Insert> insertInto(SingleTableMeta<T> table) {
-            return new StandardComplexValuesClause<>(this, table, this::singleInsertEnd);
+        public <T> StandardInsert._ColumnListSpec<T, Insert> insertInto(SimpleTableMeta<T> table) {
+            return new StandardComplexValuesClause<>(this, table, StandardInserts::singleInsertEnd);
         }
 
 
         @Override
         public <P> StandardInsert._ColumnListSpec<P, InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<Insert, P>>> insertInto(ParentTableMeta<P> table) {
-            return new StandardComplexValuesClause<>(this, table, this::parentInsertEnd);
-        }
-
-        private <P> InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<Insert, P>> parentInsertEnd(final StandardComplexValuesClause<?, ?> clause) {
-            final Statement._DmlInsertClause<InsertStatement._ParentInsert<StandardInsert._ChildInsertIntoClause<Insert, P>>> spec;
-
-            final InsertMode mode;
-            mode = clause.getInsertMode();
-            switch (mode) {
-                case DOMAIN:
-                    spec = new PrimaryParentDomainInsertStatement<>(clause, SQLs::_identity);
-                    break;
-                case VALUES:
-                    spec = new PrimaryParentValueInsertStatement<>(clause, SQLs::_identity);
-                    break;
-                case QUERY:
-                    spec = new PrimaryParentQueryInsertStatement<>(clause, SQLs::_identity);
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(mode);
-            }
-
-            return spec.asInsert();
-        }
-
-        private Insert singleInsertEnd(final StandardComplexValuesClause<?, ?> clause) {
-            final Statement._DmlInsertClause<Insert> spec;
-            final InsertMode mode;
-            mode = clause.getInsertMode();
-            switch (mode) {
-                case DOMAIN:
-                    spec = new PrimarySingleDomainInsertStatement(clause);
-                    break;
-                case VALUES:
-                    spec = new PrimarySingleValueInsertStatement(clause);
-                    break;
-                case QUERY:
-                    spec = new PrimarySingleQueryInsertStatement(clause);
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(mode);
-            }
-
-            return spec.asInsert();
+            return new StandardComplexValuesClause<>(this, table, StandardInserts::parentInsertEnd);
         }
 
 
@@ -113,8 +117,8 @@ abstract class StandardInserts extends InsertSupports {
 
     private static final class ChildInsertIntoClause<I extends Item, P>
             extends SimpleValuesSyntaxOptions
-            implements StandardInsert._ChildInsertIntoClause<I, P>
-            , ValueSyntaxOptions {
+            implements StandardInsert._ChildInsertIntoClause<I, P>,
+            ValueSyntaxOptions {
 
         private final Function<StandardComplexValuesClause<?, ?>, I> dmlFunction;
 
@@ -170,7 +174,13 @@ abstract class StandardInserts extends InsertSupports {
 
         private final Function<StandardComplexValuesClause<?, ?>, I> dmlFunction;
 
-        private StandardComplexValuesClause(ValueSyntaxOptions options, TableMeta<T> table,
+        private StandardComplexValuesClause(PrimaryInsertIntoClause options, SingleTableMeta<T> table,
+                                            Function<StandardComplexValuesClause<?, ?>, I> dmlFunction) {
+            super(options, table);
+            this.dmlFunction = dmlFunction;
+        }
+
+        private StandardComplexValuesClause(ChildInsertIntoClause<?, ?> options, ChildTableMeta<T> table,
                                             Function<StandardComplexValuesClause<?, ?>, I> dmlFunction) {
             super(options, table);
             this.dmlFunction = dmlFunction;
@@ -184,13 +194,18 @@ abstract class StandardInserts extends InsertSupports {
 
 
         @Override
-        public StandardQuery._StandardSelectClause<Statement._DmlInsertClause<I>> space() {
-            return StandardQueries.subQuery(this.context, this::staticSpaceQueryEnd);
+        public StandardQuery._SelectSpec<Statement._DmlInsertClause<I>> space() {
+            return StandardQueries.subQuery(this.context, this::spaceQueryEnd);
         }
 
         @Override
         public Statement._DmlInsertClause<I> space(Supplier<SubQuery> supplier) {
-            return this.staticSpaceQueryEnd(supplier.get());
+            return this.spaceQueryEnd(supplier.get());
+        }
+
+        @Override
+        public Statement._DmlInsertClause<I> space(Function<StandardQuery._SelectSpec<Statement._DmlInsertClause<I>>, Statement._DmlInsertClause<I>> function) {
+            return function.apply(StandardQueries.subQuery(this.context, this::spaceQueryEnd));
         }
 
         @Override

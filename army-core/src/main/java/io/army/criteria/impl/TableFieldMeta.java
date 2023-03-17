@@ -498,8 +498,8 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
     private static final class DefaultPrimaryFieldMeta<T> extends DefaultUniqueFieldMeta<T>
             implements PrimaryFieldMeta<T> {
 
-        private DefaultPrimaryFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta
-                , @Nullable Boolean fieldAsc) throws MetaException {
+        private DefaultPrimaryFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta,
+                                        @Nullable Boolean fieldAsc) throws MetaException {
             super(table, field, indexMeta, fieldAsc);
             if (!_MetaBridge.ID.equals(field.getName())) {
                 String m = String.format("indexMeta[%s] not primary.", indexMeta);
