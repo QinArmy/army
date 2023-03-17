@@ -15,10 +15,6 @@ public interface StandardDelete extends StandardStatement {
 
     }
 
-    interface _DomainDeleteFromClause<DR> {
-
-        DR deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
-    }
 
 
     interface _WhereAndSpec<I extends Item> extends _WhereAndClause<_WhereAndSpec<I>>,

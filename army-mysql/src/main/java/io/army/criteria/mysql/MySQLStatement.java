@@ -26,11 +26,11 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _MySQLFromNestedClause<R extends Item> extends _FromNestedClause<_NestedLeftParenSpec<R>> {
+    interface _MySQLFromNestedClause<R extends Item> extends _FromNestedClause<_NestedLeftParenSpec<R>, R> {
 
     }
 
-    interface _MySQLUsingNestedClause<R extends Item> extends _UsingNestedClause<_NestedLeftParenSpec<R>> {
+    interface _MySQLUsingNestedClause<R extends Item> extends _UsingNestedClause<_NestedLeftParenSpec<R>, R> {
 
     }
 
@@ -63,17 +63,17 @@ public interface MySQLStatement extends DialectStatement {
 
 
     /**
-     * @param <JN> the java type that {@link _RightParenClause#rightParen()} return type
+     * @param <R> the java type that {@link _RightParenClause#rightParen()} return type
      */
-    interface _MySQLJoinNestedClause<JN extends Item> extends _JoinNestedClause<_NestedLeftParenSpec<JN>>,
-            _StraightJoinNestedClause<_NestedLeftParenSpec<JN>> {
+    interface _MySQLJoinNestedClause<R extends Item> extends _JoinNestedClause<_NestedLeftParenSpec<R>, R>,
+            _StraightJoinNestedClause<_NestedLeftParenSpec<R>, R> {
 
     }
 
     /**
-     * @param <CN> the java type that {@link _RightParenClause#rightParen()} return type
+     * @param <R> the java type that {@link _RightParenClause#rightParen()} return type
      */
-    interface _MySQLCrossNestedClause<CN extends Item> extends _CrossJoinNestedClause<_NestedLeftParenSpec<CN>> {
+    interface _MySQLCrossNestedClause<R extends Item> extends _CrossJoinNestedClause<_NestedLeftParenSpec<R>, R> {
 
     }
 

@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * <p>
@@ -77,34 +76,35 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    public final _NestedLeftParenSpec<_JoinSpec<I>> from() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
+    public final _JoinSpec<I> from(Function<_NestedLeftParenSpec<_JoinSpec<I>>, _JoinSpec<I>> function) {
+        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> leftJoin() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
+    public final _JoinSpec<I> crossJoin(Function<_NestedLeftParenSpec<_JoinSpec<I>>, _JoinSpec<I>> function) {
+        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> join() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
+    public final _OnClause<_JoinSpec<I>> leftJoin(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
+        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> rightJoin() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
+    public final _OnClause<_JoinSpec<I>> join(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
+        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> fullJoin() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
+    public final _OnClause<_JoinSpec<I>> rightJoin(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
+        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_JoinSpec<I>> crossJoin() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
+    public final _OnClause<_JoinSpec<I>> fullJoin(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
+        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
     }
+
 
     @Override
     public final _JoinSpec<I> ifLeftJoin(Consumer<StandardJoins> consumer) {
@@ -254,8 +254,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     /**
-     * @see #from()
-     * @see #crossJoin()
+     * @see #from(Function)
+     * @see #crossJoin(Function)
      */
     private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertNoneCrossType();
@@ -266,10 +266,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     /**
-     * @see #leftJoin()
-     * @see #join()
-     * @see #rightJoin()
-     * @see #fullJoin()
+     * @see #leftJoin(Function)
+     * @see #join(Function)
+     * @see #rightJoin(Function)
+     * @see #fullJoin(Function)
      */
     private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertStandardJoinType();

@@ -46,28 +46,28 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     @Override
-    public final PostgreStatement._NestedLeftParenSpec<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> leftJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
+    public final PostgreStatement._DynamicJoinSpec crossJoin(Function<PostgreStatement._NestedLeftParenSpec<PostgreStatement._DynamicJoinSpec>, PostgreStatement._DynamicJoinSpec> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd));
     }
 
     @Override
-    public final PostgreStatement._NestedLeftParenSpec<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> join() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
+    public final Statement._OnClause<PostgreStatement._DynamicJoinSpec> leftJoin(Function<PostgreStatement._NestedLeftParenSpec<Statement._OnClause<PostgreStatement._DynamicJoinSpec>>, Statement._OnClause<PostgreStatement._DynamicJoinSpec>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final PostgreStatement._NestedLeftParenSpec<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> rightJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
+    public final Statement._OnClause<PostgreStatement._DynamicJoinSpec> join(Function<PostgreStatement._NestedLeftParenSpec<Statement._OnClause<PostgreStatement._DynamicJoinSpec>>, Statement._OnClause<PostgreStatement._DynamicJoinSpec>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final PostgreStatement._NestedLeftParenSpec<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> fullJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
+    public final Statement._OnClause<PostgreStatement._DynamicJoinSpec> rightJoin(Function<PostgreStatement._NestedLeftParenSpec<Statement._OnClause<PostgreStatement._DynamicJoinSpec>>, Statement._OnClause<PostgreStatement._DynamicJoinSpec>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final PostgreStatement._NestedLeftParenSpec<PostgreStatement._DynamicJoinSpec> crossJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
+    public final Statement._OnClause<PostgreStatement._DynamicJoinSpec> fullJoin(Function<PostgreStatement._NestedLeftParenSpec<Statement._OnClause<PostgreStatement._DynamicJoinSpec>>, Statement._OnClause<PostgreStatement._DynamicJoinSpec>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
     }
 
     @Override

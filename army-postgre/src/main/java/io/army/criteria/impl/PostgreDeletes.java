@@ -40,7 +40,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         PostgreStatement._StaticTableSampleClause<TR>,
         PostgreStatement._RepeatableClause<FC>,
         Statement._ParensStringClause<FC>,
-        Statement._UsingNestedClause<PostgreQuery._NestedLeftParenSpec<FC>>,
+        PostgreStatement._PostgreUsingNestedClause<FC>,
         PostgreStatement._PostgreJoinNestedClause<Statement._OnClause<FC>>,
         PostgreStatement._PostgreCrossNestedClause<FC>,
         PostgreStatement._PostgreDynamicJoinCrossClause<FC>,
@@ -239,36 +239,34 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
     }
 
     @Override
-    public final _NestedLeftParenSpec<FC> using() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::nestedUsingEnd);
-    }
-
-
-    @Override
-    public final _NestedLeftParenSpec<_OnClause<FC>> leftJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::nestedJoinEnd);
+    public final FC using(Function<_NestedLeftParenSpec<FC>, FC> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::nestedUsingEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FC>> join() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::nestedJoinEnd);
+    public final FC crossJoin(Function<_NestedLeftParenSpec<FC>, FC> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::nestedUsingEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FC>> rightJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::nestedJoinEnd);
+    public final _OnClause<FC> leftJoin(Function<_NestedLeftParenSpec<_OnClause<FC>>, _OnClause<FC>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::nestedJoinEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FC>> fullJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::nestedJoinEnd);
+    public final _OnClause<FC> join(Function<_NestedLeftParenSpec<_OnClause<FC>>, _OnClause<FC>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::nestedJoinEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<FC> crossJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::nestedUsingEnd);
+    public final _OnClause<FC> rightJoin(Function<_NestedLeftParenSpec<_OnClause<FC>>, _OnClause<FC>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::nestedJoinEnd));
     }
 
+    @Override
+    public final _OnClause<FC> fullJoin(Function<_NestedLeftParenSpec<_OnClause<FC>>, _OnClause<FC>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::nestedJoinEnd));
+    }
 
     @Override
     public final FC ifLeftJoin(Consumer<PostgreJoins> consumer) {

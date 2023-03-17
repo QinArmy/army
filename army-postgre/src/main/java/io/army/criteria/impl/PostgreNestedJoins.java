@@ -158,28 +158,28 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         @Override
-        public final PostgreStatement._NestedLeftParenSpec<PostgreStatement._NestedOnSpec<I>> leftJoin() {
-            return new PostgreNestedJoins<>(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
+        public final PostgreStatement._NestedJoinSpec<I> crossJoin(Function<PostgreStatement._NestedLeftParenSpec<PostgreStatement._NestedJoinSpec<I>>, PostgreStatement._NestedJoinSpec<I>> function) {
+            return function.apply(new PostgreNestedJoins<>(this.context, _JoinType.CROSS_JOIN, this::crossNestedEnd));
         }
 
         @Override
-        public final PostgreStatement._NestedLeftParenSpec<PostgreStatement._NestedOnSpec<I>> join() {
-            return new PostgreNestedJoins<>(this.context, _JoinType.JOIN, this::joinNestedEnd);
+        public final PostgreStatement._NestedOnSpec<I> leftJoin(Function<PostgreStatement._NestedLeftParenSpec<PostgreStatement._NestedOnSpec<I>>, PostgreStatement._NestedOnSpec<I>> function) {
+            return function.apply(new PostgreNestedJoins<>(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
         }
 
         @Override
-        public final PostgreStatement._NestedLeftParenSpec<PostgreStatement._NestedOnSpec<I>> rightJoin() {
-            return new PostgreNestedJoins<>(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
+        public final PostgreStatement._NestedOnSpec<I> join(Function<PostgreStatement._NestedLeftParenSpec<PostgreStatement._NestedOnSpec<I>>, PostgreStatement._NestedOnSpec<I>> function) {
+            return function.apply(new PostgreNestedJoins<>(this.context, _JoinType.JOIN, this::joinNestedEnd));
         }
 
         @Override
-        public final PostgreStatement._NestedLeftParenSpec<PostgreStatement._NestedOnSpec<I>> fullJoin() {
-            return new PostgreNestedJoins<>(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
+        public final PostgreStatement._NestedOnSpec<I> rightJoin(Function<PostgreStatement._NestedLeftParenSpec<PostgreStatement._NestedOnSpec<I>>, PostgreStatement._NestedOnSpec<I>> function) {
+            return function.apply(new PostgreNestedJoins<>(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
         }
 
         @Override
-        public final PostgreStatement._NestedLeftParenSpec<PostgreStatement._NestedJoinSpec<I>> crossJoin() {
-            return new PostgreNestedJoins<>(this.context, _JoinType.CROSS_JOIN, this::crossNestedEnd);
+        public final PostgreStatement._NestedOnSpec<I> fullJoin(Function<PostgreStatement._NestedLeftParenSpec<PostgreStatement._NestedOnSpec<I>>, PostgreStatement._NestedOnSpec<I>> function) {
+            return function.apply(new PostgreNestedJoins<>(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
         }
 
         @Override
@@ -303,10 +303,10 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         /**
-         * @see #leftJoin()
-         * @see #join()
-         * @see #rightJoin()
-         * @see #fullJoin()
+         * @see #leftJoin(Function)
+         * @see #join(Function)
+         * @see #rightJoin(Function)
+         * @see #fullJoin(Function)
          */
         private PostgreStatement._NestedOnSpec<I> joinNestedEnd(final _JoinType joinType,
                                                                 final NestedItems nestedItems) {
@@ -319,7 +319,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         /**
-         * @see #crossJoin()
+         * @see #crossJoin(Function)
          */
         private PostgreStatement._NestedJoinSpec<I> crossNestedEnd(final _JoinType joinType,
                                                                    final NestedItems items) {

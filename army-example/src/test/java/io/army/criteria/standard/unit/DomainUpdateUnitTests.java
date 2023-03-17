@@ -1,8 +1,9 @@
 package io.army.criteria.standard.unit;
 
 import io.army.annotation.UpdateMode;
+import io.army.criteria.BatchUpdate;
 import io.army.criteria.Expression;
-import io.army.criteria.UpdateStatement;
+import io.army.criteria.Update;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
@@ -32,7 +33,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
         map.put("firstId", (byte) 1);
         map.put("secondId", "3");
 
-        final UpdateStatement stmt;
+        final Update stmt;
         stmt = SQLs.domainUpdate()
                 .update(ChinaRegion_.T, AS, "c")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
@@ -48,7 +49,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
     @Test
     public void updateChild() {
         final BigDecimal gdpAmount = new BigDecimal("888.8");
-        final UpdateStatement stmt;
+        final Update stmt;
         stmt = SQLs.domainUpdate()
                 .update(ChinaProvince_.T, AS, "p")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
@@ -56,7 +57,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaProvince_.provincialCapital, SQLs::param, "光明顶")
                 .set(ChinaProvince_.governor, SQLs::param, "张无忌")
                 .where(ChinaProvince_.id.equal(SQLs::literal, 1))
-                .and(ChinaRegion_.name::equal, SQLs::param, () -> "江湖")
+                .and(ChinaRegion_.name::equal, SQLs::param, "江湖")
                 .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greatEqual, BigDecimal.ZERO)
                 .and(ChinaProvince_.governor.equal(SQLs::param, "石教主").or(consumer -> {
                             consumer.accept(ChinaProvince_.governor.equal(SQLs::param, "钟教主"));
@@ -72,14 +73,14 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
 
     @Test
     public void batchUpdateParent() {
-        final UpdateStatement stmt;
+        final BatchUpdate stmt;
         stmt = SQLs.batchDomainUpdate()
                 .update(ChinaProvince_.T, AS, "p")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
                 .set(ChinaProvince_.governor, SQLs::namedParam)
                 .where(ChinaProvince_.id::equal, SQLs::namedParam)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greatEqual, BigDecimal.ZERO)
-                .and(ChinaRegion_.version::equal, SQLs::param, () -> "0")
+                .and(ChinaRegion_.version::equal, SQLs::param, "0")
                 .paramList(this::createProvinceList)
                 .asUpdate();
 
@@ -91,7 +92,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
     public void batchUpdateChild() {
         final BigDecimal gdpAmount = new BigDecimal("888.8");
 
-        final UpdateStatement stmt;
+        final BatchUpdate stmt;
         stmt = SQLs.batchDomainUpdate()
                 .update(ChinaProvince_.T, AS, "p")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
@@ -121,14 +122,14 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
     @Test
     public void updateParentWithOnlyNullMode() {
         assert PillUser_.identityId.updateMode() == UpdateMode.ONLY_NULL;
-        final UpdateStatement stmt;
+        final Update stmt;
         stmt = SQLs.domainUpdate()
                 .update(PillUser_.T, AS, "u")
                 .set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
                 .set(PillUser_.identityId, SQLs::literal, 888)
                 .set(PillUser_.nickName, SQLs::param, "令狐冲")
-                .where(PillUser_.id::equal, SQLs::literal, () -> "1")
-                .and(PillUser_.nickName::equal, SQLs::param, () -> "zoro")
+                .where(PillUser_.id::equal, SQLs::literal, "1")
+                .and(PillUser_.nickName::equal, SQLs::param, "zoro")
                 .asUpdate();
 
         printStmt(LOG, stmt);
@@ -136,14 +137,14 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
 
     @Test
     public void updateOnlyParentField() {
-        final UpdateStatement stmt;
+        final Update stmt;
         stmt = SQLs.domainUpdate()
                 .update(PillPerson_.T, AS, "up")
                 .set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
                 .set(PillUser_.identityId, SQLs::literal, 888)
                 .set(PillUser_.nickName, SQLs::param, "令狐冲")
-                .where(PillPerson_.id::equal, SQLs::literal, () -> "1")
-                .and(PillUser_.nickName::equal, SQLs::param, () -> "zoro")
+                .where(PillPerson_.id::equal, SQLs::literal, "1")
+                .and(PillUser_.nickName::equal, SQLs::param, "zoro")
                 .and(PillPerson_.birthday::equal, SQLs::param, LocalDate::now)
                 .asUpdate();
 
@@ -152,15 +153,15 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
 
     @Test
     public void dynamicSetUpdateOnlyParentField() {
-        final UpdateStatement stmt;
+        final Update stmt;
         stmt = SQLs.domainUpdate()
                 .update(PillPerson_.T, AS, "up")
                 .sets(s -> s.set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
                         .set(PillUser_.identityId, SQLs::literal, 888)
-                        .set(PillUser_.nickName, SQLs::param, "令狐冲"))
-
-                .where(PillPerson_.id::equal, SQLs::literal, () -> "1")
-                .and(PillUser_.nickName::equal, SQLs::param, () -> "zoro")
+                        .set(PillUser_.nickName, SQLs::param, "令狐冲")
+                )
+                .where(PillPerson_.id::equal, SQLs::literal, "1")
+                .and(PillUser_.nickName::equal, SQLs::param, "zoro")
                 .and(PillPerson_.birthday::equal, SQLs::param, LocalDate::now)
                 .asUpdate();
 

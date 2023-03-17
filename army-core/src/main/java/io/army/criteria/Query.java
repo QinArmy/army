@@ -234,62 +234,62 @@ public interface Query extends RowSet {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <FP> next clause java type
+     * @param <R> next clause java type
      * @see Statement._FromClause
      * @since 1.0
      */
-    interface _DialectFromClause<FP> {
+    interface _FromTableClause<R> {
 
-        FP from(TableMeta<?> table);
+        R from(TableMeta<?> table);
     }
 
 
-    interface _GroupByClause<GR> {
+    interface _GroupByClause<R> {
 
-        GR groupBy(Expression sortItem);
+        R groupBy(Expression sortItem);
 
-        GR groupBy(Expression sortItem1, Expression sortItem2);
+        R groupBy(Expression sortItem1, Expression sortItem2);
 
-        GR groupBy(Expression sortItem1, Expression sortItem2, Expression sortItem3);
+        R groupBy(Expression sortItem1, Expression sortItem2, Expression sortItem3);
 
-        GR groupBy(Consumer<Consumer<Expression>> consumer);
+        R groupBy(Consumer<Consumer<Expression>> consumer);
 
-        GR ifGroupBy(Consumer<Consumer<Expression>> consumer);
-
-    }
-
-
-    interface _HavingClause<HR> {
-
-        HR having(IPredicate predicate);
-
-        HR having(IPredicate predicate1, IPredicate predicate2);
-
-        HR having(Supplier<IPredicate> supplier);
-
-        HR having(Function<Object, IPredicate> operator, Supplier<?> operand);
-
-        HR having(Function<Object, IPredicate> operator, Function<String, ?> operand, String operandKey);
-
-        HR having(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
-
-        HR having(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
-
-        HR having(Consumer<Consumer<IPredicate>> consumer);
-
-        HR ifHaving(Consumer<Consumer<IPredicate>> consumer);
+        R ifGroupBy(Consumer<Consumer<Expression>> consumer);
 
     }
 
-    interface _LockOfTableAliasClause<OR> {
 
-        OR of(String tableAlias);
+    interface _HavingClause<R> {
 
-        OR of(String firstTableAlias, String... restTableAlias);
+        R having(IPredicate predicate);
 
-        OR of(Consumer<Consumer<String>> consumer);
+        R having(IPredicate predicate1, IPredicate predicate2);
 
-        OR ifOf(Consumer<Consumer<String>> consumer);
+        R having(Supplier<IPredicate> supplier);
+
+        R having(Function<Object, IPredicate> operator, Supplier<?> operand);
+
+        R having(Function<Object, IPredicate> operator, Function<String, ?> operand, String operandKey);
+
+        R having(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+
+        R having(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
+
+        R having(Consumer<Consumer<IPredicate>> consumer);
+
+        R ifHaving(Consumer<Consumer<IPredicate>> consumer);
+
+    }
+
+    interface _LockOfTableAliasClause<R> {
+
+        R of(String tableAlias);
+
+        R of(String firstTableAlias, String... restTableAlias);
+
+        R of(Consumer<Consumer<String>> consumer);
+
+        R ifOf(Consumer<Consumer<String>> consumer);
 
     }
 
@@ -306,20 +306,20 @@ public interface Query extends RowSet {
 
     }
 
-    interface _LockForUpdateClause<LR> {
+    interface _LockForUpdateClause<R> {
 
-        LR forUpdate();
+        R forUpdate();
 
-        LR ifForUpdate(BooleanSupplier predicate);
+        R ifForUpdate(BooleanSupplier predicate);
     }
 
 
-    interface _MinLockOptionClause<LR> extends _LockForUpdateClause<LR> {
+    interface _MinLockOptionClause<R> extends _LockForUpdateClause<R> {
 
 
-        LR forShare();
+        R forShare();
 
-        LR ifForShare(BooleanSupplier predicate);
+        R ifForShare(BooleanSupplier predicate);
 
     }
 

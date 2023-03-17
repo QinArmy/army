@@ -497,7 +497,7 @@ public interface MySQLDelete extends MySQLStatement {
 
     interface _MultiDeleteFromTableClause<I extends Item>
             extends _MySQLFromClause<_MultiIndexHintJoinSpec<I>, _ParensJoinSpec<I>>,
-            Query._DialectFromClause<_MultiPartitionJoinClause<I>>,
+            Query._FromTableClause<_MultiPartitionJoinClause<I>>,
             _MySQLFromNestedClause<_MultiJoinSpec<I>> {
 
     }
@@ -679,7 +679,7 @@ public interface MySQLDelete extends MySQLStatement {
 
     interface _BatchMultiDeleteFromTableClause<I extends Item>
             extends MySQLQuery._MySQLFromClause<_BatchMultiIndexHintJoinSpec<I>, _BatchParensJoinSpec<I>>,
-            Query._DialectFromClause<_BatchMultiPartitionJoinClause<I>>,
+            Query._FromTableClause<_BatchMultiPartitionJoinClause<I>>,
             _MySQLFromNestedClause<_BatchMultiJoinSpec<I>> {
 
     }

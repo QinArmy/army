@@ -85,28 +85,27 @@ public class MySQLValuesUnitTests {
      */
     private <V extends ValuesQuery> MySQLValues._UnionOrderBySpec<V> createSimpleValues(Supplier<MySQLValues._ValueSpec<V>> supplier) {
         return supplier.get()
-                .leftParen()
-                .values()
-                .leftParen(SQLs::literalFrom, 1, "海问香", new BigDecimal("9999.88"), LocalDate.now())
-                .comma(SQLs::literalFrom, DayOfWeek.MONDAY, SQLs.TRUE, SQLs.literalFrom(1).plus(SQLs::literal, 3))
-                .rightParen()
+                .parens(s -> s.values()
+                        .leftParen(SQLs::literalFrom, 1, "海问香", new BigDecimal("9999.88"), LocalDate.now())
+                        .comma(SQLs::literalFrom, DayOfWeek.MONDAY, SQLs.TRUE, SQLs.literalFrom(1).plus(SQLs::literal, 3))
+                        .rightParen()
 
-                .leftParen(SQLs::literalFrom, 2, "大仓", new BigDecimal("9999.66"), LocalDate.now().plusDays(1))
-                .comma(SQLs::literalFrom, DayOfWeek.SUNDAY, SQLs.TRUE, SQLs.literalFrom(13).minus(SQLs::literal, 3))
-                .rightParen()
+                        .leftParen(SQLs::literalFrom, 2, "大仓", new BigDecimal("9999.66"), LocalDate.now().plusDays(1))
+                        .comma(SQLs::literalFrom, DayOfWeek.SUNDAY, SQLs.TRUE, SQLs.literalFrom(13).minus(SQLs::literal, 3))
+                        .rightParen()
 
-                .leftParen(SQLs::literalFrom, 3, "卡拉肖克·玲", new BigDecimal("6666.88"), LocalDate.now().minusDays(3))
-                .comma(SQLs::literalFrom, DayOfWeek.FRIDAY, SQLs.TRUE, SQLs.literalFrom(3).minus(SQLs::literal, 3))
-                .rightParen()
+                        .leftParen(SQLs::literalFrom, 3, "卡拉肖克·玲", new BigDecimal("6666.88"), LocalDate.now().minusDays(3))
+                        .comma(SQLs::literalFrom, DayOfWeek.FRIDAY, SQLs.TRUE, SQLs.literalFrom(3).minus(SQLs::literal, 3))
+                        .rightParen()
 
-                .leftParen(SQLs::literalFrom, 4, "幽弥狂", new BigDecimal("8888.88"), LocalDate.now().minusDays(8))
-                .comma(SQLs::literalFrom, DayOfWeek.TUESDAY, SQLs.FALSE, SQLs.literalFrom(81).divide(SQLs::literal, 3))
-                .rightParen()
+                        .leftParen(SQLs::literalFrom, 4, "幽弥狂", new BigDecimal("8888.88"), LocalDate.now().minusDays(8))
+                        .comma(SQLs::literalFrom, DayOfWeek.TUESDAY, SQLs.FALSE, SQLs.literalFrom(81).divide(SQLs::literal, 3))
+                        .rightParen()
 
-                .orderBy(SQLs.ref("column_1"), SQLs.literalFrom(2)::desc)
-                .limit(SQLs::literal, 4)
-                .asValues()
-                .rightParen();
+                        .orderBy(SQLs.ref("column_1"), SQLs.literalFrom(2)::desc)
+                        .limit(SQLs::literal, 4)
+                        .asValues()
+                );
     }
 
 

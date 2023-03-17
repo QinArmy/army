@@ -231,33 +231,33 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     }
 
     @Override
-    public final _NestedLeftParenSpec<FC> from() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
+    public final FC from(Function<_NestedLeftParenSpec<FC>, FC> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<FC> crossJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
+    public final FC crossJoin(Function<_NestedLeftParenSpec<FC>, FC> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FC>> leftJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
+    public final _OnClause<FC> leftJoin(Function<_NestedLeftParenSpec<_OnClause<FC>>, _OnClause<FC>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FC>> join() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
+    public final _OnClause<FC> join(Function<_NestedLeftParenSpec<_OnClause<FC>>, _OnClause<FC>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FC>> rightJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
+    public final _OnClause<FC> rightJoin(Function<_NestedLeftParenSpec<_OnClause<FC>>, _OnClause<FC>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FC>> fullJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
+    public final _OnClause<FC> fullJoin(Function<_NestedLeftParenSpec<_OnClause<FC>>, _OnClause<FC>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
     }
 
     @Override

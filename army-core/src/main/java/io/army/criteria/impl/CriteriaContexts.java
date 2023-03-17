@@ -111,13 +111,23 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext withClauseContext(final @Nullable CriteriaContext outerContext) {
-        return new OnlyWithClauseContext(outerContext);
-    }
+    static CriteriaContext bracketContext(final ArmyStmtSpec spec) {
+        final CriteriaContext outerContext, leftContext;
+        final StatementContext migratedContext;
+        migratedContext = (StatementContext) spec.getContext();
 
+        if (spec instanceof MultiStmtSpec) {
+            outerContext = migratedContext;
+            leftContext = null;
+        } else {
+            outerContext = migratedContext.getOuterContext();
+            leftContext = migratedContext.getLeftContext();
+        }
+        final StatementContext context;
+        context = new BracketQueryContext(outerContext, leftContext);
 
-    static CriteriaContext bracketContext(ArmyStmtSpec spec) {
-        throw new UnsupportedOperationException();
+        migrateContext(context, migratedContext);
+        return context;
     }
 
 

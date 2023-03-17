@@ -39,15 +39,19 @@ public interface PostgreStatement extends DialectStatement {
 
     }
 
-    interface _PostgreJoinNestedClause<JN extends Item> extends _JoinNestedClause<_NestedLeftParenSpec<JN>> {
+    interface _PostgreJoinNestedClause<R extends Item> extends _JoinNestedClause<_NestedLeftParenSpec<R>, R> {
 
     }
 
-    interface _PostgreCrossNestedClause<CN extends Item> extends _CrossJoinNestedClause<_NestedLeftParenSpec<CN>> {
+    interface _PostgreCrossNestedClause<R extends Item> extends _CrossJoinNestedClause<_NestedLeftParenSpec<R>, R> {
 
     }
 
-    interface _PostgreFromNestedClause<FN extends Item> extends _FromNestedClause<_NestedLeftParenSpec<FN>> {
+    interface _PostgreFromNestedClause<R extends Item> extends _FromNestedClause<_NestedLeftParenSpec<R>, R> {
+
+    }
+
+    interface _PostgreUsingNestedClause<R extends Item> extends _UsingNestedClause<_NestedLeftParenSpec<R>, R> {
 
     }
 

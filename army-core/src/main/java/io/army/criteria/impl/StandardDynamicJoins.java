@@ -9,6 +9,7 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
@@ -37,28 +38,28 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     @Override
-    public final StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>> leftJoin() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
+    public final StandardStatement._DynamicJoinSpec crossJoin(Function<StandardStatement._NestedLeftParenSpec<StandardStatement._DynamicJoinSpec>, StandardStatement._DynamicJoinSpec> function) {
+        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::crossNestedEnd));
     }
 
     @Override
-    public final StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>> join() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
+    public final Statement._OnClause<StandardStatement._DynamicJoinSpec> leftJoin(Function<StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>>, Statement._OnClause<StandardStatement._DynamicJoinSpec>> function) {
+        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>> rightJoin() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
+    public final Statement._OnClause<StandardStatement._DynamicJoinSpec> join(Function<StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>>, Statement._OnClause<StandardStatement._DynamicJoinSpec>> function) {
+        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>> fullJoin() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
+    public final Statement._OnClause<StandardStatement._DynamicJoinSpec> rightJoin(Function<StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>>, Statement._OnClause<StandardStatement._DynamicJoinSpec>> function) {
+        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final StandardStatement._NestedLeftParenSpec<StandardStatement._DynamicJoinSpec> crossJoin() {
-        return StandardNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::crossNestedEnd);
+    public final Statement._OnClause<StandardStatement._DynamicJoinSpec> fullJoin(Function<StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>>, Statement._OnClause<StandardStatement._DynamicJoinSpec>> function) {
+        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
     }
 
     @Override

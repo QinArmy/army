@@ -100,7 +100,7 @@ public interface PostgreDelete extends PostgreStatement {
     interface _SingleUsingSpec<I extends Item, Q extends Item>
             extends _PostgreUsingClause<_TableSampleJoinSpec<I, Q>, _ParensJoinSpec<I, Q>>,
             _UsingCteClause<_SingleJoinSpec<I, Q>>,
-            _UsingNestedClause<PostgreQuery._NestedLeftParenSpec<_SingleJoinSpec<I, Q>>>,
+            _PostgreUsingNestedClause<_SingleJoinSpec<I, Q>>,
             _SingleWhereClause<I, Q> {
     }
 
@@ -207,7 +207,7 @@ public interface PostgreDelete extends PostgreStatement {
 
     interface _BatchSingleUsingSpec<I extends Item, Q extends Item>
             extends _PostgreUsingClause<_BatchTableSampleJoinSpec<I, Q>, _BatchParensJoinSpec<I, Q>>,
-            _UsingNestedClause<_NestedLeftParenSpec<_BatchSingleJoinSpec<I, Q>>>,
+            _PostgreUsingNestedClause<_BatchSingleJoinSpec<I, Q>>,
             _BatchSingleWhereClause<I, Q> {
     }
 

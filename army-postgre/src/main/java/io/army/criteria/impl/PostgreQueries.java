@@ -260,33 +260,33 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
     @Override
-    public final _NestedLeftParenSpec<_JoinSpec<I>> from() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
+    public _JoinSpec<I> from(Function<_NestedLeftParenSpec<_JoinSpec<I>>, _JoinSpec<I>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_JoinSpec<I>> crossJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
+    public final _JoinSpec<I> crossJoin(Function<_NestedLeftParenSpec<_JoinSpec<I>>, _JoinSpec<I>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> leftJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
+    public final _OnClause<_JoinSpec<I>> leftJoin(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> join() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
+    public final _OnClause<_JoinSpec<I>> join(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> rightJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
+    public final _OnClause<_JoinSpec<I>> rightJoin(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<_JoinSpec<I>>> fullJoin() {
-        return PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
+    public final _OnClause<_JoinSpec<I>> fullJoin(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
+        return function.apply(PostgreNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
     }
 
     @Override
@@ -616,8 +616,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     /*-------------------below private method -------------------*/
 
     /**
-     * @see #from()
-     * @see #crossJoin()
+     * @see #from(Function)
+     * @see #crossJoin(Function)
      */
     private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertNoneCrossType();
@@ -628,10 +628,10 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
     /**
-     * @see #leftJoin()
-     * @see #join()
-     * @see #rightJoin()
-     * @see #fullJoin()
+     * @see #leftJoin(Function)
+     * @see #join(Function)
+     * @see #rightJoin(Function)
+     * @see #fullJoin(Function)
      */
     private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertStandardJoinType();

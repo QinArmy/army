@@ -4,6 +4,13 @@ import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.*;
 
+/**
+ * <p>
+ * This interface representing standard update statement.
+ * </p>
+ *
+ * @since 1.0
+ */
 public interface StandardUpdate extends StandardStatement {
 
 

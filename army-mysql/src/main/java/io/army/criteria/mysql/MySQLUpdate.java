@@ -11,6 +11,7 @@ import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 
@@ -425,21 +426,21 @@ public interface MySQLUpdate extends MySQLStatement {
 
     }
 
-    interface _MultiUpdateCteNestedClause<FC extends Item> {
+    interface _MultiUpdateCteNestedClause<R extends Item> {
 
-        FC update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName);
+        R update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName);
 
-        FC update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName,
-                  SQLs.WordAs wordAs, String alias);
+        R update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers, String cteName,
+                 SQLs.WordAs wordAs, String alias);
 
-        FC update(String cteName);
+        R update(String cteName);
 
-        FC update(String cteName, SQLs.WordAs wordAs, String alias);
+        R update(String cteName, SQLs.WordAs wordAs, String alias);
 
-        MySQLQuery._NestedLeftParenSpec<FC> update(Supplier<List<Hint>> hints,
-                                                   List<MySQLs.Modifier> modifiers);
+        R update(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers,
+                 Function<MySQLQuery._NestedLeftParenSpec<R>, R> function);
 
-        MySQLQuery._NestedLeftParenSpec<FC> update();
+        R update(Function<MySQLQuery._NestedLeftParenSpec<R>, R> function);
     }
 
     interface _MultiUpdateTableClause<FP> {

@@ -218,9 +218,9 @@ public interface Statement extends Item {
 
     }
 
-    interface _FromNestedClause<R> {
+    interface _FromNestedClause<T extends Item, R extends Item> {
 
-        R from();
+        R from(Function<T, R> function);
 
     }
 
@@ -234,23 +234,23 @@ public interface Statement extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <FC> same with the FS of {@link _FromClause}
+     * @param <R> same with the FS of {@link _FromClause}
      * @see _FromClause
      * @since 1.0
      */
-    interface _FromCteClause<FC> {
+    interface _FromCteClause<R> {
 
-        FC from(String cteName);
+        R from(String cteName);
 
-        FC from(String cteName, SQLs.WordAs wordAs, String alias);
+        R from(String cteName, SQLs.WordAs wordAs, String alias);
 
     }
 
-    interface _FromModifierCteClause<FC> extends _FromCteClause<FC> {
+    interface _FromModifierCteClause<R> extends _FromCteClause<R> {
 
-        FC from(Query.DerivedModifier modifier, String cteName);
+        R from(Query.DerivedModifier modifier, String cteName);
 
-        FC from(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+        R from(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
     }
 
 
@@ -287,9 +287,9 @@ public interface Statement extends Item {
 
     }
 
-    interface _UsingNestedClause<FN> {
+    interface _UsingNestedClause<T extends Item, R extends Item> {
 
-        FN using();
+        R using(Function<T, R> function);
 
     }
 
@@ -416,26 +416,26 @@ public interface Statement extends Item {
 
     }
 
-    interface _JoinNestedClause<JN> {
+    interface _JoinNestedClause<T extends Item, R extends Item> {
 
-        JN leftJoin();
+        R leftJoin(Function<T, R> function);
 
-        JN join();
+        R join(Function<T, R> function);
 
-        JN rightJoin();
+        R rightJoin(Function<T, R> function);
 
-        JN fullJoin();
+        R fullJoin(Function<T, R> function);
 
     }
 
-    interface _StraightJoinNestedClause<JN> {
+    interface _StraightJoinNestedClause<T extends Item, R extends Item> {
 
-        JN straightJoin();
+        R straightJoin(Function<T, R> function);
     }
 
-    interface _CrossJoinNestedClause<FN> {
+    interface _CrossJoinNestedClause<T extends Item, R extends Item> {
 
-        FN crossJoin();
+        R crossJoin(Function<T, R> function);
     }
 
 
@@ -475,7 +475,7 @@ public interface Statement extends Item {
      * @param <LS> next clause java type
      * @since 1.0
      */
-    interface _NestedLeftParenClause<LT, LS> {
+    interface _NestedLeftParenClause<LT, LS> extends Item {
 
         LT leftParen(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 

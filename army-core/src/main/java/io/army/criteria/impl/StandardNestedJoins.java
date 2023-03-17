@@ -11,6 +11,7 @@ import io.army.util._Exceptions;
 
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -102,28 +103,28 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
         }
 
         @Override
-        public StandardStatement._NestedLeftParenSpec<StandardStatement._NestedOnSpec<I>> leftJoin() {
-            return new StandardNestedJoins<>(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
+        public StandardStatement._NestedJoinSpec<I> crossJoin(Function<StandardStatement._NestedLeftParenSpec<StandardStatement._NestedJoinSpec<I>>, StandardStatement._NestedJoinSpec<I>> function) {
+            return function.apply(new StandardNestedJoins<>(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd));
         }
 
         @Override
-        public StandardStatement._NestedLeftParenSpec<StandardStatement._NestedOnSpec<I>> join() {
-            return new StandardNestedJoins<>(this.context, _JoinType.JOIN, this::joinNestedEnd);
+        public StandardStatement._NestedOnSpec<I> leftJoin(Function<StandardStatement._NestedLeftParenSpec<StandardStatement._NestedOnSpec<I>>, StandardStatement._NestedOnSpec<I>> function) {
+            return function.apply(new StandardNestedJoins<>(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
         }
 
         @Override
-        public StandardStatement._NestedLeftParenSpec<StandardStatement._NestedOnSpec<I>> rightJoin() {
-            return new StandardNestedJoins<>(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
+        public StandardStatement._NestedOnSpec<I> join(Function<StandardStatement._NestedLeftParenSpec<StandardStatement._NestedOnSpec<I>>, StandardStatement._NestedOnSpec<I>> function) {
+            return function.apply(new StandardNestedJoins<>(this.context, _JoinType.JOIN, this::joinNestedEnd));
         }
 
         @Override
-        public StandardStatement._NestedLeftParenSpec<StandardStatement._NestedOnSpec<I>> fullJoin() {
-            return new StandardNestedJoins<>(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
+        public StandardStatement._NestedOnSpec<I> rightJoin(Function<StandardStatement._NestedLeftParenSpec<StandardStatement._NestedOnSpec<I>>, StandardStatement._NestedOnSpec<I>> function) {
+            return function.apply(new StandardNestedJoins<>(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
         }
 
         @Override
-        public StandardStatement._NestedLeftParenSpec<StandardStatement._NestedJoinSpec<I>> crossJoin() {
-            return new StandardNestedJoins<>(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
+        public StandardStatement._NestedOnSpec<I> fullJoin(Function<StandardStatement._NestedLeftParenSpec<StandardStatement._NestedOnSpec<I>>, StandardStatement._NestedOnSpec<I>> function) {
+            return function.apply(new StandardNestedJoins<>(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
         }
 
         @Override
@@ -227,10 +228,10 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
         }
 
         /**
-         * @see #leftJoin()
-         * @see #join()
-         * @see #rightJoin()
-         * @see #fullJoin()
+         * @see #leftJoin(Function)
+         * @see #join(Function)
+         * @see #rightJoin(Function)
+         * @see #fullJoin(Function)
          */
         private StandardStatement._NestedOnSpec<I> joinNestedEnd(final _JoinType joinType
                 , final NestedItems nestedItems) {
@@ -243,7 +244,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
         }
 
         /**
-         * @see #crossJoin()
+         * @see #crossJoin(Function)
          */
         private StandardStatement._NestedJoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems items) {
             assert joinType == _JoinType.CROSS_JOIN;

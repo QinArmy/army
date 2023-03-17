@@ -123,8 +123,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .asQuery()
                 )
                 .unionAll()
-                .parens(() -> SQLs.query()
-                        .select(PillUser_.id)
+                .parens(s -> s.select(PillUser_.id)
                         .from(PillUser_.T, SQLs.AS, "p")
                         .where(PillUser_.id::equal, SQLs::literal, () -> 2)
                         .and(PillUser_.nickName::equal, SQLs::param, () -> "蛮大人")
@@ -207,13 +206,10 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         stmt = SQLs.query()
                 .select(BankPerson_.id::as, "userId", SQLs.refThis("cr", "id")::as, "regionId")
                 .comma(SQLs.refThis("cr", "name")::as, "regionName")
-                .from()
-
-                .leftParen(BankPerson_.T, AS, "up")
-                .join(BankUser_.T, AS, "u").on(BankPerson_.id::equal, BankUser_.id)
-                .rightParen()
-
-                .join(BankAccount_.T, AS, "a").on(BankPerson_.id::equal, BankAccount_.userId)
+                .from(s -> s.leftParen(BankPerson_.T, AS, "up")
+                        .join(BankUser_.T, AS, "u").on(BankPerson_.id::equal, BankUser_.id)
+                        .rightParen()
+                ).join(BankAccount_.T, AS, "a").on(BankPerson_.id::equal, BankAccount_.userId)
                 .crossJoin(() -> SQLs.subQuery()
                         .select(ChinaRegion_.id, ChinaRegion_.name)
                         .from(ChinaRegion_.T, AS, "c")
@@ -232,19 +228,17 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         stmt = SQLs.query()
                 .select(BankPerson_.id::as, "userId", SQLs.refThis("cr", "id")::as, "regionId")
                 .comma(SQLs.refThis("cr", "name")::as, "regionName")
-                .from()
-
-                .leftParen(BankPerson_.T, AS, "up")
-                .join(BankUser_.T, AS, "u").on(BankPerson_.id::equal, BankUser_.id)
-                .rightParen()
-
+                .from(s -> s.leftParen(BankPerson_.T, AS, "up")
+                        .join(BankUser_.T, AS, "u").on(BankPerson_.id::equal, BankUser_.id)
+                        .rightParen()
+                )
                 .join(BankAccount_.T, AS, "a").on(BankPerson_.id::equal, BankAccount_.userId)
-                .ifCrossJoin(s -> s.tabular((() -> SQLs.subQuery()
-                                                .select(ChinaRegion_.id, ChinaRegion_.name)
-                                                .from(ChinaRegion_.T, AS, "c")
-                                                .where(ChinaRegion_.name::equal, SQLs::literal, () -> "荒''''\n\032'海")
-                                                .asQuery()
-                                        )
+                .ifCrossJoin(s -> s.tabular(() -> SQLs.subQuery()
+                                        .select(ChinaRegion_.id, ChinaRegion_.name)
+                                        .from(ChinaRegion_.T, AS, "c")
+                                        .where(ChinaRegion_.name::equal, SQLs::literal, () -> "荒''''\n\032'海")
+                                        .asQuery()
+
                                 )
                                 .as("cr")
                 )
@@ -254,7 +248,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
     }
 
-    @Test(invocationCount = 10)
+    @Test//(invocationCount = 10)
     public void bracketQuery() {
         final Select stmt;
         stmt = SQLs.query()

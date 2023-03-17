@@ -221,7 +221,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
     interface _FromSpec<I extends Item>
             extends _MySQLFromClause<_IndexHintJoinSpec<I>, _ParensJoinSpec<I>>,
             _FromCteClause<_JoinSpec<I>>,
-            _DialectFromClause<_PartitionJoinSpec<I>>,
+            _FromTableClause<_PartitionJoinSpec<I>>,
             _MySQLFromNestedClause<_JoinSpec<I>>,
             _IntoOptionSpec<I>,
             _UnionSpec<I> {

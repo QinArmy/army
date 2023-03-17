@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
@@ -80,33 +81,33 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     @Override
-    public final MySQLQuery._NestedLeftParenSpec<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> leftJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
+    public final MySQLStatement._DynamicJoinSpec crossJoin(Function<MySQLStatement._NestedLeftParenSpec<MySQLStatement._DynamicJoinSpec>, MySQLStatement._DynamicJoinSpec> function) {
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::crossNested));
     }
 
     @Override
-    public final MySQLQuery._NestedLeftParenSpec<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> join() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
+    public final Statement._OnClause<MySQLStatement._DynamicJoinSpec> leftJoin(Function<MySQLStatement._NestedLeftParenSpec<Statement._OnClause<MySQLStatement._DynamicJoinSpec>>, Statement._OnClause<MySQLStatement._DynamicJoinSpec>> function) {
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final MySQLQuery._NestedLeftParenSpec<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> rightJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
+    public final Statement._OnClause<MySQLStatement._DynamicJoinSpec> join(Function<MySQLStatement._NestedLeftParenSpec<Statement._OnClause<MySQLStatement._DynamicJoinSpec>>, Statement._OnClause<MySQLStatement._DynamicJoinSpec>> function) {
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final MySQLQuery._NestedLeftParenSpec<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> fullJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
+    public final Statement._OnClause<MySQLStatement._DynamicJoinSpec> rightJoin(Function<MySQLStatement._NestedLeftParenSpec<Statement._OnClause<MySQLStatement._DynamicJoinSpec>>, Statement._OnClause<MySQLStatement._DynamicJoinSpec>> function) {
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final MySQLQuery._NestedLeftParenSpec<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> straightJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.STRAIGHT_JOIN, this::joinNestedEnd);
+    public final Statement._OnClause<MySQLStatement._DynamicJoinSpec> fullJoin(Function<MySQLStatement._NestedLeftParenSpec<Statement._OnClause<MySQLStatement._DynamicJoinSpec>>, Statement._OnClause<MySQLStatement._DynamicJoinSpec>> function) {
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._DynamicJoinSpec> crossJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::crossNested);
+    public final Statement._OnClause<MySQLStatement._DynamicJoinSpec> straightJoin(Function<MySQLStatement._NestedLeftParenSpec<Statement._OnClause<MySQLStatement._DynamicJoinSpec>>, Statement._OnClause<MySQLStatement._DynamicJoinSpec>> function) {
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.STRAIGHT_JOIN, this::joinNestedEnd));
     }
 
     @Override

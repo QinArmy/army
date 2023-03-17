@@ -2,7 +2,6 @@ package io.army.criteria.standard.unit;
 
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
-import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.*;
@@ -143,12 +142,10 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .comma(ChinaRegion_.visible, ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.regionType)
                 .rightParen()
                 .space()
-                .parens(s -> s.select(HistoryChinaRegion_.id, HistoryChinaRegion_.createTime, HistoryChinaRegion_.updateTime, HistoryChinaRegion_.version)
-                        .comma(HistoryChinaRegion_.visible, HistoryChinaRegion_.name, HistoryChinaRegion_.regionGdp)
-                        .comma(SQLs.literalFrom(RegionType.NONE)::as, HistoryChinaRegion_.REGION_TYPE)
-                        .from(HistoryChinaRegion_.T, AS, "r")
-                        .asQuery()
-                )
+                .select(HistoryChinaRegion_.id, HistoryChinaRegion_.createTime, HistoryChinaRegion_.updateTime, HistoryChinaRegion_.version)
+                .comma(HistoryChinaRegion_.visible, HistoryChinaRegion_.name, HistoryChinaRegion_.regionGdp)
+                .comma(SQLs.literalFrom(RegionType.NONE)::as, HistoryChinaRegion_.REGION_TYPE)
+                .from(HistoryChinaRegion_.T, AS, "r")
                 .asQuery()
                 .asInsert();
 

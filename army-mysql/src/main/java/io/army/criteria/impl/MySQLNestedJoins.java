@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -186,33 +187,33 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         }
 
         @Override
-        public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._NestedOnSpec<I>> leftJoin() {
-            return new MySQLNestedJoins<>(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
+        public final MySQLStatement._NestedJoinSpec<I> crossJoin(Function<MySQLStatement._NestedLeftParenSpec<MySQLStatement._NestedJoinSpec<I>>, MySQLStatement._NestedJoinSpec<I>> function) {
+            return function.apply(new MySQLNestedJoins<>(this.context, _JoinType.CROSS_JOIN, this::crossNestedEnd));
         }
 
         @Override
-        public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._NestedOnSpec<I>> join() {
-            return new MySQLNestedJoins<>(this.context, _JoinType.JOIN, this::joinNestedEnd);
+        public final MySQLStatement._NestedOnSpec<I> leftJoin(Function<MySQLStatement._NestedLeftParenSpec<MySQLStatement._NestedOnSpec<I>>, MySQLStatement._NestedOnSpec<I>> function) {
+            return function.apply(new MySQLNestedJoins<>(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
         }
 
         @Override
-        public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._NestedOnSpec<I>> rightJoin() {
-            return new MySQLNestedJoins<>(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
+        public final MySQLStatement._NestedOnSpec<I> join(Function<MySQLStatement._NestedLeftParenSpec<MySQLStatement._NestedOnSpec<I>>, MySQLStatement._NestedOnSpec<I>> function) {
+            return function.apply(new MySQLNestedJoins<>(this.context, _JoinType.JOIN, this::joinNestedEnd));
         }
 
         @Override
-        public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._NestedOnSpec<I>> fullJoin() {
-            return new MySQLNestedJoins<>(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
+        public final MySQLStatement._NestedOnSpec<I> rightJoin(Function<MySQLStatement._NestedLeftParenSpec<MySQLStatement._NestedOnSpec<I>>, MySQLStatement._NestedOnSpec<I>> function) {
+            return function.apply(new MySQLNestedJoins<>(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
         }
 
         @Override
-        public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._NestedOnSpec<I>> straightJoin() {
-            return new MySQLNestedJoins<>(this.context, _JoinType.STRAIGHT_JOIN, this::joinNestedEnd);
+        public final MySQLStatement._NestedOnSpec<I> fullJoin(Function<MySQLStatement._NestedLeftParenSpec<MySQLStatement._NestedOnSpec<I>>, MySQLStatement._NestedOnSpec<I>> function) {
+            return function.apply(new MySQLNestedJoins<>(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
         }
 
         @Override
-        public final MySQLQuery._NestedLeftParenSpec<MySQLQuery._NestedJoinSpec<I>> crossJoin() {
-            return new MySQLNestedJoins<>(this.context, _JoinType.CROSS_JOIN, this::crossNestedEnd);
+        public final MySQLStatement._NestedOnSpec<I> straightJoin(Function<MySQLStatement._NestedLeftParenSpec<MySQLStatement._NestedOnSpec<I>>, MySQLStatement._NestedOnSpec<I>> function) {
+            return function.apply(new MySQLNestedJoins<>(this.context, _JoinType.STRAIGHT_JOIN, this::joinNestedEnd));
         }
 
         @Override

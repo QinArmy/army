@@ -128,45 +128,45 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
     }
 
     @Override
-    public final _NestedLeftParenSpec<FC> update(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers) {
+    public final FC update(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers, Function<_NestedLeftParenSpec<FC>, FC> function) {
         this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
         this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<FC> update() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd);
+    public final FC update(Function<_NestedLeftParenSpec<FC>, FC> function) {
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<FC> crossJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd);
+    public final FC crossJoin(Function<_NestedLeftParenSpec<FC>, FC> function) {
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FC>> leftJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd);
+    public final _OnClause<FC> leftJoin(Function<_NestedLeftParenSpec<_OnClause<FC>>, _OnClause<FC>> function) {
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FC>> join() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd);
+    public final _OnClause<FC> join(Function<_NestedLeftParenSpec<_OnClause<FC>>, _OnClause<FC>> function) {
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FC>> rightJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd);
+    public final _OnClause<FC> rightJoin(Function<_NestedLeftParenSpec<_OnClause<FC>>, _OnClause<FC>> function) {
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FC>> fullJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd);
+    public final _OnClause<FC> fullJoin(Function<_NestedLeftParenSpec<_OnClause<FC>>, _OnClause<FC>> function) {
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
     }
 
     @Override
-    public final _NestedLeftParenSpec<_OnClause<FC>> straightJoin() {
-        return MySQLNestedJoins.nestedItem(this.context, _JoinType.STRAIGHT_JOIN, this::joinNestedEnd);
+    public final _OnClause<FC> straightJoin(Function<_NestedLeftParenSpec<_OnClause<FC>>, _OnClause<FC>> function) {
+        return function.apply(MySQLNestedJoins.nestedItem(this.context, _JoinType.STRAIGHT_JOIN, this::joinNestedEnd));
     }
 
     @Override
