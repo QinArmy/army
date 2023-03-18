@@ -34,6 +34,11 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
+    interface _MySQLDynamicNestedClause<R extends Item>
+            extends _DynamicTabularNestedClause<_NestedLeftParenSpec<R>, R> {
+
+    }
+
 
     @Deprecated
     interface _PartitionClause_0<PR> {

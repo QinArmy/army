@@ -320,19 +320,9 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT, FS
 
     }
 
-    @Nullable
     @Override
-    final Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
-        throw ContextStack.castCriteriaApi(this.context);
-    }
-
-    @Nullable
-    @Override
-    final Query.DerivedModifier derivedModifier(final @Nullable Query.DerivedModifier modifier) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.errorModifier(this.context, modifier);
-        }
-        return modifier;
+    final boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+        return CriteriaUtils.isIllegalLateral(modifier);
     }
 
     @Override

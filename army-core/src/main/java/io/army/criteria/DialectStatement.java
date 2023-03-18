@@ -3,6 +3,7 @@ package io.army.criteria;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.SQLs;
 import io.army.function.ParensStringFunction;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -102,7 +103,7 @@ public interface DialectStatement extends Statement {
 
     interface _StraightJoinModifierTabularClause<JT, JS> extends _StraightJoinClause<JT, JS> {
 
-        <T extends DerivedTable> JS straightJoin(Query.DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> JS straightJoin(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
     }
 
 

@@ -71,8 +71,10 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final FT from(Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
-        this.tableModifier(modifier);
+    public final FT from(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
+        if (this.isIllegalTableModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         return this.onFromTable(_JoinType.NONE, modifier, table, tableAlias);
     }
 
@@ -82,7 +84,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final <T extends DerivedTable> FS from(Query.DerivedModifier modifier, Supplier<T> supplier) {
+    public final <T extends DerivedTable> FS from(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
         return this.onFromDerived(_JoinType.NONE, modifier, this.nonNull(supplier.get()));
     }
 
@@ -112,8 +114,10 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final FT using(Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
-        this.tableModifier(modifier);
+    public final FT using(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
+        if (this.isIllegalTableModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         return this.onFromTable(_JoinType.NONE, modifier, table, tableAlias);
     }
 
@@ -123,7 +127,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final <T extends DerivedTable> FS using(Query.DerivedModifier modifier, Supplier<T> supplier) {
+    public final <T extends DerivedTable> FS using(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
         return this.onFromDerived(_JoinType.NONE, modifier, this.nonNull(supplier.get()));
     }
 
@@ -173,15 +177,19 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final JT leftJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-        this.tableModifier(modifier);
+    public final JT leftJoin(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
+        if (this.isIllegalTableModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         return this.onJoinTable(_JoinType.LEFT_JOIN, modifier, table, tableAlias);
     }
 
 
     @Override
-    public final <T extends DerivedTable> JS leftJoin(Query.DerivedModifier modifier, Supplier<T> supplier) {
-        this.derivedModifier(modifier);
+    public final <T extends DerivedTable> JS leftJoin(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
+        if (this.isIllegalDerivedModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         return this.onJoinDerived(_JoinType.LEFT_JOIN, modifier, this.nonNull(supplier.get()));
     }
 
@@ -216,14 +224,18 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final JT join(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-        this.tableModifier(modifier);
+    public final JT join(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
+        if (this.isIllegalTableModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         return this.onJoinTable(_JoinType.JOIN, modifier, table, tableAlias);
     }
 
     @Override
-    public final <T extends DerivedTable> JS join(Query.DerivedModifier modifier, Supplier<T> supplier) {
-        this.derivedModifier(modifier);
+    public final <T extends DerivedTable> JS join(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
+        if (this.isIllegalDerivedModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         return this.onJoinDerived(_JoinType.JOIN, modifier, this.nonNull(supplier.get()));
     }
 
@@ -258,14 +270,18 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final JT rightJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-        this.tableModifier(modifier);
+    public final JT rightJoin(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
+        if (this.isIllegalTableModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         return this.onJoinTable(_JoinType.RIGHT_JOIN, modifier, table, tableAlias);
     }
 
     @Override
-    public final <T extends DerivedTable> JS rightJoin(Query.DerivedModifier modifier, Supplier<T> supplier) {
-        this.derivedModifier(modifier);
+    public final <T extends DerivedTable> JS rightJoin(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
+        if (this.isIllegalDerivedModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         return this.onJoinDerived(_JoinType.RIGHT_JOIN, modifier, this.nonNull(supplier.get()));
     }
 
@@ -300,14 +316,18 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final JT fullJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-        this.tableModifier(modifier);
+    public final JT fullJoin(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
+        if (this.isIllegalTableModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         return this.onJoinTable(_JoinType.FULL_JOIN, modifier, table, tableAlias);
     }
 
     @Override
-    public final <T extends DerivedTable> JS fullJoin(Query.DerivedModifier modifier, Supplier<T> supplier) {
-        this.derivedModifier(modifier);
+    public final <T extends DerivedTable> JS fullJoin(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
+        if (this.isIllegalDerivedModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         return this.onJoinDerived(_JoinType.FULL_JOIN, modifier, this.nonNull(supplier.get()));
     }
 
@@ -352,8 +372,10 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final <T extends DerivedTable> JS straightJoin(Query.DerivedModifier modifier, Supplier<T> supplier) {
-        this.derivedModifier(modifier);
+    public final <T extends DerivedTable> JS straightJoin(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
+        if (this.isIllegalDerivedModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         return this.onJoinDerived(_JoinType.STRAIGHT_JOIN, modifier, this.nonNull(supplier.get()));
     }
 
@@ -379,15 +401,19 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final FT crossJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
-        this.tableModifier(modifier);
+    public final FT crossJoin(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+        if (this.isIllegalTableModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         return this.onFromTable(_JoinType.CROSS_JOIN, modifier, table, tableAlias);
     }
 
 
     @Override
-    public final <T extends DerivedTable> FS crossJoin(Query.DerivedModifier modifier, Supplier<T> supplier) {
-        this.derivedModifier(modifier);
+    public final <T extends DerivedTable> FS crossJoin(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
+        if (this.isIllegalDerivedModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         return this.onFromDerived(_JoinType.CROSS_JOIN, modifier, this.nonNull(supplier.get()));
     }
 
@@ -401,30 +427,6 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         return this.onFromCte(_JoinType.CROSS_JOIN, modifier, this.context.refCte(cteName), this.cteAlias(alias));
     }
 
-    @Deprecated
-    _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Deprecated
-    _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Deprecated
-    JT createTableBlock(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Deprecated
-    JS createItemBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Deprecated
-    JC createCteBlock(_JoinType joinType, @Nullable Query.DerivedModifier modifier, TabularItem tableItem, String alias) {
-        throw new UnsupportedOperationException();
-    }
 
     final <T> T nonNull(final @Nullable T value) {
         if (value == null) {
@@ -440,13 +442,12 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         return alias;
     }
 
-    @Nullable
-    Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
+
+    boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
         throw ContextStack.castCriteriaApi(this.context);
     }
 
-    @Nullable
-    Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
+    boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
         throw ContextStack.castCriteriaApi(this.context);
     }
 
@@ -509,34 +510,40 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
         @Override
         public final LT leftParen(TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
-            return this.onLeftTable(_JoinType.NONE, null, table, tableAlias);
+            return this.onLeftTable(null, table, tableAlias);
         }
 
         @Override
         public final LT leftParen(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs,
                                   String tableAlias) {
-            return this.onLeftTable(_JoinType.NONE, this.tableModifier(modifier), table, tableAlias);
+            if (this.isIllegalTableModifier(modifier)) {
+                throw CriteriaUtils.errorModifier(this.context, modifier);
+            }
+            return this.onLeftTable(modifier, table, tableAlias);
         }
 
         @Override
         public final <T extends DerivedTable> LS leftParen(Supplier<T> supplier) {
-            return this.onLeftDerived(_JoinType.NONE, null, this.nonNull(supplier.get()));
+            return this.onLeftDerived(null, this.nonNull(supplier.get()));
         }
 
         @Override
         public final <T extends DerivedTable> LS leftParen(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
-            return this.onLeftDerived(_JoinType.NONE, this.derivedModifier(modifier), this.nonNull(supplier.get()));
+            if (this.isIllegalDerivedModifier(modifier)) {
+                throw CriteriaUtils.errorModifier(this.context, modifier);
+            }
+            return this.onLeftDerived(modifier, this.nonNull(supplier.get()));
         }
 
 
         @Override
         public final LC leftParen(String cteName) {
-            return this.onLeftCte(_JoinType.NONE, this.context.refCte(cteName), "");
+            return this.onLeftCte(this.context.refCte(cteName), "");
         }
 
         @Override
         public final LC leftParen(String cteName, SQLsSyntax.WordAs wordAs, String alias) {
-            return this.onLeftCte(_JoinType.NONE, this.context.refCte(cteName), alias);
+            return this.onLeftCte(this.context.refCte(cteName), alias);
         }
 
         @Override
@@ -568,21 +575,21 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
             return value;
         }
 
-        @Nullable
-        Query.TableModifier tableModifier(final @Nullable Query.TableModifier modifier) {
+
+        boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
             throw ContextStack.castCriteriaApi(this.context);
         }
 
-        @Nullable
-        Query.DerivedModifier derivedModifier(final @Nullable Query.DerivedModifier modifier) {
+        boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
             throw ContextStack.castCriteriaApi(this.context);
         }
 
-        abstract LT onLeftTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias);
 
-        abstract LS onLeftDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table);
+        abstract LT onLeftTable(@Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias);
 
-        abstract LC onLeftCte(_JoinType joinType, CteItem cteItem, String alias);
+        abstract LS onLeftDerived(@Nullable Query.DerivedModifier modifier, DerivedTable table);
+
+        abstract LC onLeftCte(CteItem cteItem, String alias);
 
         @Deprecated
         final void onAddFirstBlock(final _TableBlock block) {
@@ -756,7 +763,10 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
     }//DynamicJoinableBlock
 
-    static abstract class DynamicBuilderSupport {
+    static abstract class DynamicBuilderSupport<FT, FS, FC extends Item>
+            implements Statement._DynamicTabularModifierClause<FT, FS>,
+            Statement._DynamicTabularCteClause<FC>,
+            Statement.JoinBuilder {
 
         final CriteriaContext context;
 
@@ -764,12 +774,88 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
         final Consumer<_TableBlock> blockConsumer;
 
+        private boolean started;
 
         DynamicBuilderSupport(CriteriaContext context, _JoinType joinType, Consumer<_TableBlock> blockConsumer) {
             this.context = context;
             this.joinType = joinType;
             this.blockConsumer = blockConsumer;
         }
+
+        @Override
+        public final FT tabular(TableMeta<?> table, SQLsSyntax.WordAs wordAs, String alias) {
+            this.checkStart();
+            return this.onTable(null, table, alias);
+        }
+
+        @Override
+        public final FT tabular(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs,
+                                String alias) {
+            this.checkStart();
+            if (this.isIllegalTableModifier(modifier)) {
+                throw CriteriaUtils.errorModifier(this.context, modifier);
+            }
+            return this.onTable(modifier, table, alias);
+        }
+
+        @Override
+        public final <T extends DerivedTable> FS tabular(Supplier<T> supplier) {
+            this.checkStart();
+            return this.onDerived(null, this.nonNull(supplier.get()));
+        }
+
+        @Override
+        public final <T extends DerivedTable> FS tabular(@Nullable Query.DerivedModifier modifier,
+                                                         Supplier<T> supplier) {
+            this.checkStart();
+            if (this.isIllegalDerivedModifier(modifier)) {
+                throw CriteriaUtils.errorModifier(this.context, modifier);
+            }
+            return this.onDerived(modifier, this.nonNull(supplier.get()));
+        }
+
+        @Override
+        public final FC tabular(String cteName) {
+            this.checkStart();
+            return this.onCte(this.context.refCte(cteName), "");
+        }
+
+        @Override
+        public final FC tabular(String cteName, SQLsSyntax.WordAs as, String alias) {
+            this.checkStart();
+            return this.onCte(this.context.refCte(cteName), alias);
+        }
+
+
+        final <T> T nonNull(final @Nullable T value) {
+            if (value == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            return value;
+        }
+
+        final void checkStart() {
+            if (this.started) {
+                throw CriteriaUtils.duplicateTabularMethod(this.context);
+            }
+            this.started = true;
+        }
+
+        boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+        boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+
+        abstract FT onTable(@Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias);
+
+        abstract FS onDerived(@Nullable Query.DerivedModifier modifier, DerivedTable table);
+
+        abstract FC onCte(CteItem cteItem, String alias);
+
 
     }//DynamicBuilderSupport
 

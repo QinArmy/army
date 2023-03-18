@@ -7,7 +7,6 @@ import io.army.criteria.standard.StandardJoins;
 import io.army.criteria.standard.StandardStatement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util._Exceptions;
 
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -42,9 +41,9 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
     @Override
     StandardStatement._StandardNestedJoinClause<I> onLeftTable(
-            _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
+            @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
         final StandardNestedBlock<I> block;
-        block = new StandardNestedBlock<>(this.context, this::onAddTableBlock, joinType, table, tableAlias,
+        block = new StandardNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, table, tableAlias,
                 this::thisNestedJoinEnd);
         this.onAddTableBlock(block);
         return block;
@@ -52,10 +51,10 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
     @Override
     Statement._AsClause<StandardStatement._StandardNestedJoinClause<I>> onLeftDerived(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+            @Nullable Query.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final StandardNestedBlock<I> block;
-            block = new StandardNestedBlock<>(this.context, this::onAddTableBlock, joinType, table, alias,
+            block = new StandardNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, table, alias,
                     this::thisNestedJoinEnd);
             this.onAddTableBlock(block);
             return block;
@@ -63,7 +62,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
     }
 
     @Override
-    Object onLeftCte(_JoinType joinType, CteItem cteItem, String alias) {
+    Object onLeftCte(CteItem cteItem, String alias) {
         throw ContextStack.castCriteriaApi(this.context);
     }
 

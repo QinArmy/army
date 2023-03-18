@@ -18,6 +18,7 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -56,23 +57,21 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
     }
 
     @Override
-    public MySQLStatement._MySQLNestedJoinClause<I> leftParen(Function<MySQLStatement._NestedLeftParenSpec<MySQLStatement._MySQLNestedJoinClause<I>>, MySQLStatement._MySQLNestedJoinClause<I>> function) {
+    public MySQLStatement._MySQLNestedJoinClause<I> leftParen(
+            Function<MySQLStatement._NestedLeftParenSpec<MySQLStatement._MySQLNestedJoinClause<I>>, MySQLStatement._MySQLNestedJoinClause<I>> function) {
         return function.apply(new MySQLNestedJoins<>(this.context, _JoinType.NONE, this::nestedNestedJoinEnd));
     }
 
     @Override
-    Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw CriteriaUtils.errorModifier(this.context, modifier);
-        }
-        return modifier;
+    boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+        return CriteriaUtils.isIllegalLateral(modifier);
     }
 
     @Override
     MySQLStatement._NestedIndexHintJoinSpec<I> onLeftTable(
-            _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
+            @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
         final NestedTableJoinBlock<I> block;
-        block = new NestedTableJoinBlock<>(this.context, this::onAddTableBlock, joinType, table,
+        block = new NestedTableJoinBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, table,
                 tableAlias, this::thisNestedJoinEnd);
         this.onAddTableBlock(block);
         return block;
@@ -80,12 +79,12 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
 
     @Override
     Statement._AsClause<MySQLStatement._NestedLeftParensJoinSpec<I>> onLeftDerived(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+            @Nullable Query.DerivedModifier modifier, DerivedTable table) {
 
 
         return alias -> {
             final NestedDerivedJoinBlock<I> block;
-            block = new NestedDerivedJoinBlock<>(this.context, this::onAddTableBlock, joinType, modifier, table, alias,
+            block = new NestedDerivedJoinBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, modifier, table, alias,
                     this::thisNestedJoinEnd);
             this.onAddTableBlock(block);
             return block;
@@ -93,9 +92,9 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
     }
 
     @Override
-    MySQLStatement._MySQLNestedJoinClause<I> onLeftCte(_JoinType joinType, CteItem cteItem, String alias) {
+    MySQLStatement._MySQLNestedJoinClause<I> onLeftCte(CteItem cteItem, String alias) {
         final MySQLNestedBlock<I> block;
-        block = new MySQLNestedBlock<>(this.context, this::onAddTableBlock, joinType, null,
+        block = new MySQLNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, null,
                 cteItem, alias, this::thisNestedJoinEnd);
         this.onAddTableBlock(block);
         return block;
@@ -528,35 +527,70 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
     @SuppressWarnings("unchecked")
     private static abstract class NestedDerivedBlock<I extends Item, R> extends MySQLNestedBlock<I>
             implements Statement._ParensStringClause<R>,
-            _ModifierTableBlock {
+            _ModifierTableBlock, ArmyDerivedBlock {
+
+        private List<String> columnAliasList;
+
+        private Function<String, Selection> selectionFunction;
+
+        private Supplier<List<? extends Selection>> selectionsSupplier;
 
         private NestedDerivedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
                                    _JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
                                    String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
+            this.selectionFunction = ((ArmyDerivedTable) table)::selection;
+            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectionList;
         }
 
 
         @Override
         public final R parens(String first, String... rest) {
-            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
-            return (R) this;
+            return this.onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
         }
 
         @Override
         public final R parens(Consumer<Consumer<String>> consumer) {
-
-            final List<String> list = new ArrayList<>();
-            consumer.accept(list::add);
-            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(list);
-            return (R) this;
+            return this.onColumnAlias(CriteriaUtils.stringList(this.context, true, consumer));
         }
 
         @Override
         public final R ifParens(Consumer<Consumer<String>> consumer) {
-            final List<String> list = new ArrayList<>();
-            consumer.accept(list::add);
-            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(CriteriaUtils.optionalStringList(list));
+            return this.onColumnAlias(CriteriaUtils.stringList(this.context, false, consumer));
+        }
+
+
+        @Override
+        public final Selection selection(String name) {
+            return this.selectionFunction.apply(name);
+        }
+
+        @Override
+        public final List<? extends Selection> selectionList() {
+            return this.selectionsSupplier.get();
+        }
+
+        @Override
+        public final List<String> columnAliasList() {
+            List<String> list = this.columnAliasList;
+            if (list == null) {
+                list = Collections.emptyList();
+                this.columnAliasList = list;
+            }
+            return list;
+        }
+
+
+        private R onColumnAlias(final List<String> columnAliasList) {
+            if (this.columnAliasList != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            this.columnAliasList = columnAliasList;
+
+            final _Pair<List<Selection>, Map<String, Selection>> pair;
+            pair = CriteriaUtils.forColumnAlias(columnAliasList, (ArmyDerivedTable) this.tabularItem);
+            this.selectionsSupplier = () -> pair.first;
+            this.selectionFunction = pair.second::get;
             return (R) this;
         }
 

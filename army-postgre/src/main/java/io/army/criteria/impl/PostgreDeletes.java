@@ -361,19 +361,13 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
 
     @Override
-    final Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
-        if (modifier != null && modifier != SQLs.ONLY) {
-            throw PostgreUtils.errorModifier(this.context, modifier);
-        }
-        return modifier;
+    final boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
+        return CriteriaUtils.isIllegalOnly(modifier);
     }
 
     @Override
-    final Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw PostgreUtils.errorModifier(this.context, modifier);
-        }
-        return modifier;
+    final boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+        return CriteriaUtils.isIllegalLateral(modifier);
     }
 
     @Override

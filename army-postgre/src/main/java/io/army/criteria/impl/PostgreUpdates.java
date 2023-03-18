@@ -365,19 +365,13 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     }
 
     @Override
-    final Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
-        if (modifier != null && modifier != SQLs.ONLY) {
-            throw CriteriaUtils.errorModifier(this.context, modifier);
-        }
-        return modifier;
+    final boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
+        return CriteriaUtils.isIllegalOnly(modifier);
     }
 
     @Override
-    final Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw CriteriaUtils.errorModifier(this.context, modifier);
-        }
-        return modifier;
+    final boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+        return CriteriaUtils.isIllegalLateral(modifier);
     }
 
     @Override

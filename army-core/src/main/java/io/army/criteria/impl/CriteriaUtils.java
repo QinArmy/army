@@ -96,6 +96,14 @@ abstract class CriteriaUtils {
         return ((CriteriaContextSpec) statement).getContext();
     }
 
+    static boolean isIllegalLateral(@Nullable Query.DerivedModifier modifier) {
+        return modifier != null && modifier != SQLs.LATERAL;
+    }
+
+    static boolean isIllegalOnly(@Nullable Query.TableModifier modifier) {
+        return modifier != null && modifier != SQLs.ONLY;
+    }
+
 
     static List<_Predicate> asPredicateList(CriteriaContext context, final List<IPredicate> list) {
         final List<_Predicate> predicateList;
@@ -576,7 +584,7 @@ abstract class CriteriaUtils {
     }
 
 
-    static CriteriaException errorModifier(CriteriaContext context, Object modifier) {
+    static CriteriaException errorModifier(CriteriaContext context, @Nullable Object modifier) {
         String m = String.format("error modifier[%s]", modifier);
         return ContextStack.criteriaError(context, m);
     }

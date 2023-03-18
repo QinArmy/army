@@ -51,5 +51,10 @@ public interface StandardStatement extends Statement {
 
     }
 
+    interface _StandardDynamicNestedClause<R extends Item>
+            extends _DynamicTabularNestedClause<_NestedLeftParenSpec<R>, R> {
+
+    }
+
 
 }

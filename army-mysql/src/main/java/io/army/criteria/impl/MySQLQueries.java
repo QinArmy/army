@@ -589,16 +589,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
 
     @Override
-    final TableModifier tableModifier(final @Nullable TableModifier modifier) {
-        throw ContextStack.castCriteriaApi(this.context);
-    }
-
-    @Override
-    final DerivedModifier derivedModifier(final @Nullable DerivedModifier modifier) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.errorModifier(this.context, modifier);
-        }
-        return modifier;
+    final boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+        return CriteriaUtils.isIllegalLateral(modifier);
     }
 
     @Override
@@ -672,8 +664,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
 
     /**
-     * @see #from()
-     * @see #crossJoin()
+     * @see #from(Function)
+     * @see #crossJoin(Function)
      */
     private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertNoneCrossType();
@@ -685,11 +677,11 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     /**
-     * @see #leftJoin()
-     * @see #join()
-     * @see #rightJoin()
-     * @see #fullJoin()
-     * @see #straightJoin()
+     * @see #leftJoin(Function)
+     * @see #join(Function)
+     * @see #rightJoin(Function)
+     * @see #fullJoin(Function)
+     * @see #straightJoin(Function)
      */
     private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertMySQLJoinType();

@@ -13,8 +13,10 @@ import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
-import io.army.util._StringUtils;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -49,41 +51,37 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
     }
 
     @Override
-    public PostgreStatement._PostgreNestedJoinClause<I> leftParen(Function<PostgreStatement._NestedLeftParenSpec<PostgreStatement._PostgreNestedJoinClause<I>>, PostgreStatement._PostgreNestedJoinClause<I>> function) {
+    public PostgreStatement._PostgreNestedJoinClause<I> leftParen(
+            Function<PostgreStatement._NestedLeftParenSpec<PostgreStatement._PostgreNestedJoinClause<I>>, PostgreStatement._PostgreNestedJoinClause<I>> function) {
         return function.apply(new PostgreNestedJoins<>(this.context, _JoinType.NONE, this::nestedNestedJoinEnd));
     }
 
     @Override
-    Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
-        if (modifier != null && modifier != SQLs.ONLY) {
-            throw CriteriaUtils.errorModifier(this.context, modifier);
-        }
-        return modifier;
+    boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
+        return CriteriaUtils.isIllegalOnly(modifier);
     }
 
     @Override
-    Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw CriteriaUtils.errorModifier(this.context, modifier);
-        }
-        return modifier;
+    boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+        return CriteriaUtils.isIllegalLateral(modifier);
     }
 
     @Override
     PostgreStatement._NestedTableSampleJoinSpec<I> onLeftTable(
-            _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
+            @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
         final NestedTableJoinBlock<I> block;
-        block = new NestedTableJoinBlock<>(this.context, this::onAddTableBlock, joinType, modifier, table, tableAlias,
+        block = new NestedTableJoinBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, modifier, table, tableAlias,
                 this::thisNestedJoinEnd);
         this.onAddTableBlock(block);
         return block;
     }
 
     @Override
-    Statement._AsClause<PostgreStatement._NestedParensJoinSpec<I>> onLeftDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+    Statement._AsClause<PostgreStatement._NestedParensJoinSpec<I>> onLeftDerived(
+            @Nullable Query.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final NestedDerivedJoinBlock<I> block;
-            block = new NestedDerivedJoinBlock<>(this.context, this::onAddTableBlock, joinType, modifier,
+            block = new NestedDerivedJoinBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, modifier,
                     table, alias, this::thisNestedJoinEnd);
             this.onAddTableBlock(block);
             return block;
@@ -91,7 +89,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
     }
 
     @Override
-    PostgreStatement._PostgreNestedJoinClause<I> onLeftCte(_JoinType joinType, CteItem cteItem, String alias) {
+    PostgreStatement._PostgreNestedJoinClause<I> onLeftCte(CteItem cteItem, String alias) {
         final PostgreNestedBlock<I> block;
         block = new PostgreNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, null,
                 cteItem, alias, this::thisNestedJoinEnd);
@@ -193,19 +191,13 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
 
         @Override
-        final Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
-            if (modifier != null && modifier != SQLs.ONLY) {
-                throw PostgreUtils.errorModifier(this.context, modifier);
-            }
-            return modifier;
+        boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
+            return CriteriaUtils.isIllegalOnly(modifier);
         }
 
         @Override
-        final Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
-            if (modifier != null && modifier != SQLs.LATERAL) {
-                throw PostgreUtils.errorModifier(this.context, modifier);
-            }
-            return modifier;
+        boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+            return CriteriaUtils.isIllegalLateral(modifier);
         }
 
         @Override
@@ -509,28 +501,66 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
     @SuppressWarnings("unchecked")
     private static abstract class NestedDerivedBlock<I extends Item, R> extends PostgreNestedBlock<I>
-            implements Statement._ParensStringClause<R>, _ModifierTableBlock {
+            implements Statement._ParensStringClause<R>, _ModifierTableBlock, ArmyDerivedBlock {
+
+        private List<String> columnAliasList;
+
+        private Function<String, Selection> selectionFunction;
+
+        private Supplier<List<? extends Selection>> selectionsSupplier;
 
         private NestedDerivedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
                                    @Nullable SQLWords modifier, DerivedTable table, String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
+            this.selectionFunction = ((ArmyDerivedTable) table)::selection;
+            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectionList;
         }
 
         @Override
         public final R parens(String first, String... rest) {
-            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
-            return (R) this;
+            return this.onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
         }
 
         @Override
         public final R parens(Consumer<Consumer<String>> consumer) {
-            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(CriteriaUtils.columnAliasList(true, consumer));
-            return (R) this;
+            return this.onColumnAlias(CriteriaUtils.stringList(this.context, true, consumer));
         }
 
         @Override
         public final R ifParens(Consumer<Consumer<String>> consumer) {
-            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(CriteriaUtils.columnAliasList(false, consumer));
+            return this.onColumnAlias(CriteriaUtils.stringList(this.context, false, consumer));
+        }
+
+        @Override
+        public final Selection selection(String name) {
+            return this.selectionFunction.apply(name);
+        }
+
+        @Override
+        public final List<? extends Selection> selectionList() {
+            return this.selectionsSupplier.get();
+        }
+
+        @Override
+        public final List<String> columnAliasList() {
+            List<String> list = this.columnAliasList;
+            if (list == null) {
+                list = Collections.emptyList();
+                this.columnAliasList = list;
+            }
+            return list;
+        }
+
+        private R onColumnAlias(final List<String> columnAliasList) {
+            if (this.columnAliasList != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            this.columnAliasList = columnAliasList;
+
+            final _Pair<List<Selection>, Map<String, Selection>> pair;
+            pair = CriteriaUtils.forColumnAlias(columnAliasList, (ArmyDerivedTable) this.tabularItem);
+            this.selectionsSupplier = () -> pair.first;
+            this.selectionFunction = pair.second::get;
             return (R) this;
         }
 

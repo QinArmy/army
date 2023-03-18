@@ -92,14 +92,20 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
     @Override
     public final <T extends DerivedTable> FS update(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers,
                                                     @Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
+        if (this.isIllegalDerivedModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
         this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
         this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
-        return this.onFromDerived(_JoinType.NONE, derivedModifier(modifier), nonNull(supplier.get()));
+        return this.onFromDerived(_JoinType.NONE, modifier, nonNull(supplier.get()));
     }
 
     @Override
     public final <T extends DerivedTable> FS update(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
-        return this.onFromDerived(_JoinType.NONE, derivedModifier(modifier), nonNull(supplier.get()));
+        if (this.isIllegalDerivedModifier(modifier)) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
+        return this.onFromDerived(_JoinType.NONE, modifier, nonNull(supplier.get()));
     }
 
     @Override
@@ -293,17 +299,8 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
     }
 
     @Override
-    final @Nullable Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
-        throw ContextStack.castCriteriaApi(this.context);
-    }
-
-    @Nullable
-    @Override
-    final Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.errorModifier(this.context, modifier);
-        }
-        return modifier;
+    final boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+        return CriteriaUtils.isIllegalLateral(modifier);
     }
 
 

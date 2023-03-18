@@ -13,10 +13,12 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
 import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -257,32 +259,68 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
     private static final class DynamicDerivedBlock extends MySQLDynamicJoins implements _ModifierTableBlock,
-            Statement._ParensOnSpec<MySQLStatement._DynamicJoinSpec> {
+            Statement._ParensOnSpec<MySQLStatement._DynamicJoinSpec>,
+            ArmyDerivedBlock {
+
+        private List<String> columnAliasList;
+
+        private Function<String, Selection> selectionFunction;
+
+        private Supplier<List<? extends Selection>> selectionsSupplier;
 
         private DynamicDerivedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
                                     _JoinType joinType, @Nullable SQLWords modifier, DerivedTable table, String alias) {
             super(context, blockConsumer, joinType, modifier, table, alias);
+            this.selectionFunction = ((ArmyDerivedTable) table)::selection;
+            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectionList;
         }
 
         @Override
         public Statement._OnClause<MySQLStatement._DynamicJoinSpec> parens(String first, String... rest) {
-            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
-            return this;
+            return this.onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
         }
 
         @Override
         public Statement._OnClause<MySQLStatement._DynamicJoinSpec> parens(Consumer<Consumer<String>> consumer) {
-            final List<String> list = new ArrayList<>();
-            consumer.accept(list::add);
-            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(list);
-            return this;
+            return this.onColumnAlias(CriteriaUtils.stringList(this.context, true, consumer));
         }
 
         @Override
         public Statement._OnClause<MySQLStatement._DynamicJoinSpec> ifParens(Consumer<Consumer<String>> consumer) {
-            final List<String> list = new ArrayList<>();
-            consumer.accept(list::add);
-            ((ArmyDerivedTable) this.tabularItem).setColumnAliasList(CriteriaUtils.optionalStringList(list));
+            return this.onColumnAlias(CriteriaUtils.stringList(this.context, false, consumer));
+        }
+
+        @Override
+        public Selection selection(String name) {
+            return this.selectionFunction.apply(name);
+        }
+
+        @Override
+        public List<? extends Selection> selectionList() {
+            return this.selectionsSupplier.get();
+        }
+
+        @Override
+        public List<String> columnAliasList() {
+            List<String> list = this.columnAliasList;
+            if (list == null) {
+                list = Collections.emptyList();
+                this.columnAliasList = list;
+            }
+            return list;
+        }
+
+
+        private Statement._OnClause<MySQLStatement._DynamicJoinSpec> onColumnAlias(final List<String> columnAliasList) {
+            if (this.columnAliasList != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            this.columnAliasList = columnAliasList;
+
+            final _Pair<List<Selection>, Map<String, Selection>> pair;
+            pair = CriteriaUtils.forColumnAlias(columnAliasList, (ArmyDerivedTable) this.tabularItem);
+            this.selectionsSupplier = () -> pair.first;
+            this.selectionFunction = pair.second::get;
             return this;
         }
 
@@ -421,49 +459,10 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }//DynamicTableOnBlock
 
 
-    private static abstract class MySQLDynamicBuilderSupport extends DynamicBuilderSupport {
-
-        boolean started;
-
-        private MySQLDynamicBuilderSupport(CriteriaContext context, _JoinType joinType,
-                                           Consumer<_TableBlock> blockConsumer) {
-            super(context, joinType, blockConsumer);
-        }
-
-        final DynamicDerivedBlock onAddDerived(
-                @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table, String alias) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            if (modifier != null && modifier != SQLs.LATERAL) {
-                throw MySQLUtils.errorModifier(this.context, modifier);
-            }
-            if (table == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            final DynamicDerivedBlock block;
-            block = new DynamicDerivedBlock(this.context, this.blockConsumer, this.joinType, modifier, table, alias);
-            this.blockConsumer.accept(block);
-            return block;
-        }
-
-        final DynamicCteBlock onAddCte(CteItem cteItem, String alias) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            final DynamicCteBlock block;
-            block = new DynamicCteBlock(this.context, this.blockConsumer, this.joinType, cteItem, alias);
-            this.blockConsumer.accept(block);
-            return block;
-        }
-
-
-    }//MySQLDynamicBuilderSupport
-
-
-    private static final class MySQLJoinBuilder extends MySQLDynamicBuilderSupport implements MySQLJoins {
+    private static final class MySQLJoinBuilder extends JoinableClause.DynamicBuilderSupport<
+            MySQLQuery._DynamicIndexHintOnClause,
+            Statement._AsClause<Statement._OnClause<MySQLQuery._DynamicJoinSpec>>,
+            Statement._OnClause<MySQLQuery._DynamicJoinSpec>> implements MySQLJoins {
 
 
         private MySQLJoinBuilder(CriteriaContext context, _JoinType joinType, Consumer<_TableBlock> blockConsumer) {
@@ -471,109 +470,124 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        public MySQLQuery._DynamicIndexHintOnClause tabular(TableMeta<?> table, SQLs.WordAs wordAs, String alias) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
+        public Statement._OnClause<MySQLQuery._DynamicJoinSpec> tabular(
+                Function<MySQLStatement._NestedLeftParenSpec<Statement._OnClause<MySQLQuery._DynamicJoinSpec>>, Statement._OnClause<MySQLQuery._DynamicJoinSpec>> function) {
+            this.checkStart();
+            return function.apply(MySQLNestedJoins.nestedItem(this.context, this.joinType, this::nestedEnd));
+        }
 
+        @Override
+        public MySQLQuery._DynamicPartitionOnClause tabular(TableMeta<?> table) {
+            this.checkStart();
+            return new PartitionOnClause(this.context, this.blockConsumer, this.joinType, table);
+        }
+
+
+        @Override
+        boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+            return CriteriaUtils.isIllegalLateral(modifier);
+        }
+
+        @Override
+        MySQLQuery._DynamicIndexHintOnClause onTable(
+                @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
             final DynamicTableOnBlock block;
-            block = new DynamicTableOnBlock(this.context, this.blockConsumer, this.joinType, table, alias);
+            block = new DynamicTableOnBlock(this.context, this.blockConsumer, this.joinType, table, tableAlias);
             this.blockConsumer.accept(block);
             return block;
         }
 
         @Override
-        public MySQLQuery._DynamicPartitionOnClause tabular(TableMeta<?> table) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            return new PartitionOnClause(this.context, this.blockConsumer, this.joinType, table);
+        Statement._AsClause<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> onDerived(
+                @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+            return alias -> {
+                final DynamicDerivedBlock block;
+                block = new DynamicDerivedBlock(this.context, this.blockConsumer, this.joinType, modifier, table, alias);
+                this.blockConsumer.accept(block);
+                return block;
+            };
         }
 
         @Override
-        public <T extends DerivedTable> Statement._AsClause<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> tabular(Supplier<T> supplier) {
-            final DerivedTable table;
-            table = supplier.get();
-            return alias -> this.onAddDerived(null, table, alias);
+        Statement._OnClause<MySQLQuery._DynamicJoinSpec> onCte(CteItem cteItem, String alias) {
+            final DynamicCteBlock block;
+            block = new DynamicCteBlock(this.context, this.blockConsumer, this.joinType, cteItem, alias);
+            this.blockConsumer.accept(block);
+            return block;
         }
 
-
-        @Override
-        public <T extends DerivedTable> Statement._AsClause<Statement._OnClause<MySQLQuery._DynamicJoinSpec>> tabular(
-                final @Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
-            final DerivedTable table;
-            table = supplier.get();
-            return alias -> this.onAddDerived(modifier, table, alias);
-        }
-
-        @Override
-        public Statement._OnClause<MySQLQuery._DynamicJoinSpec> tabular(String cteName) {
-            return this.onAddCte(this.context.refCte(cteName), "");
-        }
-
-        @Override
-        public Statement._OnClause<MySQLQuery._DynamicJoinSpec> tabular(String cteName, SQLs.WordAs wordAs,
-                                                                        String alias) {
-            return this.onAddCte(this.context.refCte(cteName), alias);
+        private Statement._OnClause<MySQLQuery._DynamicJoinSpec> nestedEnd(_JoinType joinType, NestedItems items) {
+            final DynamicNestedBlock block;
+            block = new DynamicNestedBlock(this.context, this.blockConsumer, joinType, items);
+            this.blockConsumer.accept(block);
+            return block;
         }
 
 
     }//MySQLJoinBuilder
 
 
-    private static final class MySQLCrossJoinBuilder extends MySQLDynamicBuilderSupport implements MySQLCrosses {
+    private static final class MySQLCrossJoinBuilder extends JoinableClause.DynamicBuilderSupport<
+            MySQLQuery._DynamicIndexHintJoinClause,
+            Statement._AsClause<MySQLQuery._DynamicJoinSpec>,
+            MySQLQuery._DynamicJoinSpec> implements MySQLCrosses {
 
         private MySQLCrossJoinBuilder(CriteriaContext context, Consumer<_TableBlock> blockConsumer) {
             super(context, _JoinType.CROSS_JOIN, blockConsumer);
         }
 
         @Override
-        public MySQLQuery._DynamicIndexHintJoinClause tabular(TableMeta<?> table, SQLs.WordAs wordAs, String alias) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
+        public MySQLQuery._DynamicJoinSpec tabular(
+                Function<MySQLStatement._NestedLeftParenSpec<MySQLQuery._DynamicJoinSpec>, MySQLQuery._DynamicJoinSpec> function) {
+            this.checkStart();
+            return function.apply(MySQLNestedJoins.nestedItem(this.context, this.joinType, this::nestedEnd));
+        }
 
+        @Override
+        public MySQLQuery._DynamicPartitionJoinClause tabular(TableMeta<?> table) {
+            this.checkStart();
+            return new PartitionJoinClause(this.context, this.blockConsumer, this.joinType, table);
+        }
+
+        @Override
+        boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+            return CriteriaUtils.isIllegalLateral(modifier);
+        }
+
+
+        @Override
+        MySQLQuery._DynamicIndexHintJoinClause onTable(
+                @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
             final DynamicTableJoinBlock block;
-            block = new DynamicTableJoinBlock(this.context, this.blockConsumer, this.joinType, table, alias);
+            block = new DynamicTableJoinBlock(this.context, this.blockConsumer, this.joinType, table, tableAlias);
             this.blockConsumer.accept(block);
             return block;
         }
 
         @Override
-        public MySQLQuery._DynamicPartitionJoinClause tabular(TableMeta<?> table) {
-            if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
-            }
-            this.started = true;
-            return new PartitionJoinClause(this.context, this.blockConsumer, this.joinType, table);
+        Statement._AsClause<MySQLQuery._DynamicJoinSpec> onDerived(
+                @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+            return alias -> {
+                final DynamicDerivedBlock block;
+                block = new DynamicDerivedBlock(this.context, this.blockConsumer, this.joinType, modifier, table, alias);
+                this.blockConsumer.accept(block);
+                return block;
+            };
         }
 
         @Override
-        public <T extends DerivedTable> Statement._AsClause<MySQLQuery._DynamicJoinSpec> tabular(Supplier<T> supplier) {
-            final DerivedTable table;
-            table = supplier.get();
-            return alias -> this.onAddDerived(null, table, alias);
+        MySQLQuery._DynamicJoinSpec onCte(CteItem cteItem, String alias) {
+            final DynamicCteBlock block;
+            block = new DynamicCteBlock(this.context, this.blockConsumer, this.joinType, cteItem, alias);
+            this.blockConsumer.accept(block);
+            return block;
         }
 
-        @Override
-        public <T extends DerivedTable> Statement._AsClause<MySQLQuery._DynamicJoinSpec> tabular(
-                @Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
-            final DerivedTable table;
-            table = supplier.get();
-            return alias -> this.onAddDerived(modifier, table, alias);
-        }
-
-        @Override
-        public MySQLQuery._DynamicJoinSpec tabular(String cteName) {
-            return this.onAddCte(this.context.refCte(cteName), "");
-        }
-
-        @Override
-        public MySQLQuery._DynamicJoinSpec tabular(String cteName, SQLs.WordAs wordAs, String alias) {
-            return this.onAddCte(this.context.refCte(cteName), alias);
+        private MySQLQuery._DynamicJoinSpec nestedEnd(_JoinType joinType, NestedItems items) {
+            final DynamicNestedBlock block;
+            block = new DynamicNestedBlock(this.context, this.blockConsumer, joinType, items);
+            this.blockConsumer.accept(block);
+            return block;
         }
 
 

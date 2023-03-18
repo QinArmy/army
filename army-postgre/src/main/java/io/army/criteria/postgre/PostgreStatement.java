@@ -55,6 +55,11 @@ public interface PostgreStatement extends DialectStatement {
 
     }
 
+    interface _PostgreDynamicNestedClause<R extends Item>
+            extends _DynamicTabularNestedClause<_NestedLeftParenSpec<R>, R> {
+
+    }
+
     interface _PostgreUsingClause<FT, FS> extends _UsingModifierClause<FT, _AsClause<FS>> {
 
     }

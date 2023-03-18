@@ -209,12 +209,12 @@ public interface Statement extends Item {
 
     interface _FromModifierTabularClause<FT, FS> extends _FromClause<FT, FS> {
 
-        <T extends DerivedTable> FS from(Query.DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> FS from(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
     }
 
     interface _FromModifierClause<FT, FS> extends _FromModifierTabularClause<FT, FS> {
 
-        FT from(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        FT from(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
     }
 
@@ -278,12 +278,12 @@ public interface Statement extends Item {
 
     interface _UsingModifierTabularClause<FT, FS> extends _UsingItemClause<FT, FS> {
 
-        <T extends DerivedTable> FS using(Query.DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> FS using(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
     }
 
     interface _UsingModifierClause<FT, FS> extends _UsingModifierTabularClause<FT, FS> {
 
-        FT using(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        FT using(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
     }
 
@@ -362,24 +362,24 @@ public interface Statement extends Item {
 
     interface _JoinModifierTabularClause<JT, JS> extends _JoinClause<JT, JS> {
 
-        <T extends DerivedTable> JS leftJoin(Query.DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> JS leftJoin(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
 
-        <T extends DerivedTable> JS join(Query.DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> JS join(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
 
-        <T extends DerivedTable> JS rightJoin(Query.DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> JS rightJoin(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
 
-        <T extends DerivedTable> JS fullJoin(Query.DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> JS fullJoin(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
     }
 
     interface _JoinModifierClause<JT, JS> extends _JoinModifierTabularClause<JT, JS> {
 
-        JT leftJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        JT leftJoin(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        JT join(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        JT join(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        JT rightJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        JT rightJoin(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
-        JT fullJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        JT fullJoin(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
     }
 
@@ -406,12 +406,12 @@ public interface Statement extends Item {
 
     interface _CrossJoinModifierTabularClause<FT, FS> extends _CrossJoinClause<FT, FS> {
 
-        <T extends DerivedTable> FS crossJoin(Query.DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> FS crossJoin(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
     }
 
     interface _CrossJoinModifierClause<FT, FS> extends _CrossJoinModifierTabularClause<FT, FS> {
 
-        FT crossJoin(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        FT crossJoin(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
 
     }
@@ -1252,6 +1252,44 @@ public interface Statement extends Item {
 
     interface _AsParensOnClause<R> extends _AsClause<_ParensOnSpec<R>> {
 
+    }
+
+
+    interface _DynamicTabularItemClause<FT, FS> {
+
+        FT tabular(TableMeta<?> table, SQLs.WordAs wordAs, String alias);
+
+        <T extends DerivedTable> FS tabular(Supplier<T> supplier);
+
+    }
+
+    interface _DynamicTabularDerivedModifierClause<FT, FS> extends _DynamicTabularItemClause<FT, FS> {
+
+
+        <T extends DerivedTable> FS tabular(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
+
+    }
+
+
+    interface _DynamicTabularModifierClause<FT, FS> extends _DynamicTabularDerivedModifierClause<FT, FS> {
+
+
+        FT tabular(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String alias);
+
+    }
+
+
+    interface _DynamicTabularCteClause<R extends Item> {
+
+        R tabular(String cteName);
+
+        R tabular(String cteName, SQLs.WordAs as, String alias);
+
+    }
+
+    interface _DynamicTabularNestedClause<T extends Item, R extends Item> {
+
+        R tabular(Function<T, R> function);
     }
 
 
