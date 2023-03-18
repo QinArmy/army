@@ -11,11 +11,10 @@ import java.util.List;
  * <p>
  * This interface is base interface of below:
  *     <ul>
- *         <li>The implementation of a table block in sql from clause</li>
- *         <li>{@link _NoTableBlock}</li>
- *         <li>{@link _JoinType}</li>
- *         <li>{@link _LeftBracketBlock}</li>
- *         <li>{@link _RightBracketBlock}</li>
+ *         <li>{@link _ModifierTableBlock}</li>
+ *         <li>{@link _DerivedBlock}</li>
+ *         <li>{@link _NestedBock}</li>
+ *         <li>{@link _CteBlock}</li>
  *     </ul>
  * </p>
  *

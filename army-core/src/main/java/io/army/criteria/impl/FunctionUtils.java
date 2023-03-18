@@ -1258,7 +1258,7 @@ abstract class FunctionUtils {
 
 
         @Override
-        public String alias() {
+        public String selectionName() {
             return this.expAlias;
         }
 

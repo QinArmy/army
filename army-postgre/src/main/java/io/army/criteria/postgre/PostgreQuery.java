@@ -422,7 +422,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
 
     interface _StaticCteSelectSpec<I extends Item> extends PostgreQuery._PostgreSelectClause<I>,
-            _LeftParenClause<_StaticCteSelectSpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+            _DynamicParensQueryClause<_StaticCteSelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 

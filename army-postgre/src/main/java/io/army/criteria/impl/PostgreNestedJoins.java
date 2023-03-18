@@ -29,7 +29,11 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 
-final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeftParenClause<I>
+final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeftParenClause<
+        I,
+        PostgreStatement._NestedTableSampleJoinSpec<I>,
+        Statement._AsClause<PostgreStatement._NestedParensJoinSpec<I>>,
+        PostgreStatement._PostgreNestedJoinClause<I>>
         implements PostgreStatement._NestedLeftParenSpec<I> {
 
 
@@ -45,84 +49,54 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
     }
 
     @Override
-    public PostgreStatement._NestedTableSampleJoinSpec<I> leftParen(TableMeta<?> table, SQLsSyntax.WordAs wordAs,
-                                                                    String tableAlias) {
+    public PostgreStatement._PostgreNestedJoinClause<I> leftParen(Function<PostgreStatement._NestedLeftParenSpec<PostgreStatement._PostgreNestedJoinClause<I>>, PostgreStatement._PostgreNestedJoinClause<I>> function) {
+        return function.apply(new PostgreNestedJoins<>(this.context, _JoinType.NONE, this::nestedNestedJoinEnd));
+    }
+
+    @Override
+    Query.TableModifier tableModifier(@Nullable Query.TableModifier modifier) {
+        if (modifier != null && modifier != SQLs.ONLY) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
+        return modifier;
+    }
+
+    @Override
+    Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
+        if (modifier != null && modifier != SQLs.LATERAL) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
+        return modifier;
+    }
+
+    @Override
+    PostgreStatement._NestedTableSampleJoinSpec<I> onLeftTable(
+            _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
         final NestedTableJoinBlock<I> block;
-        block = new NestedTableJoinBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, null, table, tableAlias,
+        block = new NestedTableJoinBlock<>(this.context, this::onAddTableBlock, joinType, modifier, table, tableAlias,
                 this::thisNestedJoinEnd);
         this.onAddTableBlock(block);
         return block;
     }
 
     @Override
-    public PostgreStatement._NestedTableSampleJoinSpec<I> leftParen(final Query.TableModifier modifier,
-                                                                    TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
-        if (modifier != SQLs.ONLY) {
-            throw PostgreUtils.errorModifier(this.context, modifier);
-        }
-        final NestedTableJoinBlock<I> block;
-        block = new NestedTableJoinBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, modifier, table,
-                tableAlias, this::thisNestedJoinEnd);
-        this.onAddTableBlock(block);
-        return block;
-    }
-
-    @Override
-    public <T extends DerivedTable> Statement._AsClause<PostgreStatement._NestedParensJoinSpec<I>> leftParen(Supplier<T> supplier) {
-        return this.onAddDerived(null, supplier.get());
-    }
-
-    @Override
-    public <T extends DerivedTable> Statement._AsClause<PostgreStatement._NestedParensJoinSpec<I>> leftParen(
-            Query.DerivedModifier modifier, Supplier<T> supplier) {
-        if (modifier != SQLs.LATERAL) {
-            throw PostgreUtils.errorModifier(this.context, modifier);
-        }
-        return this.onAddDerived(modifier, supplier.get());
-    }
-
-
-    @Override
-    public PostgreStatement._PostgreNestedJoinClause<I> leftParen(String cteName) {
-        final CriteriaContext context = this.context;
-        final PostgreNestedBlock<I> block;
-        block = new PostgreNestedBlock<>(context, this::onAddTableBlock, _JoinType.NONE, null, context.refCte(cteName),
-                "", this::thisNestedJoinEnd);
-        this.onAddTableBlock(block);
-        return block;
-    }
-
-    @Override
-    public PostgreStatement._PostgreNestedJoinClause<I> leftParen(String cteName, SQLsSyntax.WordAs wordAs, String alias) {
-
-        if (!_StringUtils.hasText(alias)) {
-            throw ContextStack.criteriaError(this.context, _Exceptions::cteNameNotText);
-        }
-        final PostgreNestedBlock<I> block;
-        block = new PostgreNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, null,
-                this.context.refCte(cteName), alias, this::thisNestedJoinEnd);
-        this.onAddTableBlock(block);
-        return block;
-    }
-
-    @Override
-    public PostgreStatement._NestedLeftParenSpec<PostgreStatement._PostgreNestedJoinClause<I>> leftParen() {
-        return new PostgreNestedJoins<>(this.context, _JoinType.NONE, this::nestedNestedJoinEnd);
-    }
-
-
-    private Statement._AsClause<PostgreStatement._NestedParensJoinSpec<I>> onAddDerived(
-            @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
-        if (table == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
+    Statement._AsClause<PostgreStatement._NestedParensJoinSpec<I>> onLeftDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final NestedDerivedJoinBlock<I> block;
-            block = new NestedDerivedJoinBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, modifier,
+            block = new NestedDerivedJoinBlock<>(this.context, this::onAddTableBlock, joinType, modifier,
                     table, alias, this::thisNestedJoinEnd);
             this.onAddTableBlock(block);
             return block;
         };
+    }
+
+    @Override
+    PostgreStatement._PostgreNestedJoinClause<I> onLeftCte(_JoinType joinType, CteItem cteItem, String alias) {
+        final PostgreNestedBlock<I> block;
+        block = new PostgreNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, null,
+                cteItem, alias, this::thisNestedJoinEnd);
+        this.onAddTableBlock(block);
+        return block;
     }
 
     private PostgreStatement._PostgreNestedJoinClause<I> nestedNestedJoinEnd(final _JoinType joinType

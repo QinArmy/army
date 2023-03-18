@@ -318,8 +318,8 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
 
     @Override
     final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
-        final TableBlock.NoOnTableBlock block;
-        block = new TableBlock.NoOnTableBlock(joinType, cteItem, alias);
+        final TableBlocks.NoOnTableBlock block;
+        block = new TableBlocks.NoOnTableBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return (FC) this;
@@ -327,8 +327,8 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
 
     private FC fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertNoneCrossType();
-        final TableBlock.NoOnTableBlock block;
-        block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
+        final TableBlocks.NoOnTableBlock block;
+        block = new TableBlocks.NoOnTableBlock(joinType, nestedItems, "");
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return (FC) this;
@@ -342,12 +342,12 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
         return block;
     }
 
-    private TableBlock.ParensDerivedJoinBlock getFromClauseDerived() {
+    private TableBlocks.ParensDerivedJoinBlock getFromClauseDerived() {
         final _TableBlock block = this.fromCrossBlock;
-        if (block != this.context.lastBlock() || !(block instanceof TableBlock.ParensDerivedJoinBlock)) {
+        if (block != this.context.lastBlock() || !(block instanceof TableBlocks.ParensDerivedJoinBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (TableBlock.ParensDerivedJoinBlock) block;
+        return (TableBlocks.ParensDerivedJoinBlock) block;
     }
 
     /*################################## blow private method ##################################*/
@@ -465,8 +465,8 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
         _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
                                                     DerivedTable table) {
             return alias -> {
-                final TableBlock.ParensDerivedJoinBlock block;
-                block = new TableBlock.ParensDerivedJoinBlock(joinType, modifier, table, alias);
+                final TableBlocks.ParensDerivedJoinBlock block;
+                block = new TableBlocks.ParensDerivedJoinBlock(joinType, modifier, table, alias);
                 this.blockConsumer.accept(block);
                 this.fromCrossBlock = block;
                 return this;
@@ -638,8 +638,8 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
         _AsClause<_BatchParensJoinSpec<BatchUpdate>> onFromDerived(_JoinType joinType,
                                                                    @Nullable Query.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
-                final TableBlock.ParensDerivedJoinBlock block;
-                block = new TableBlock.ParensDerivedJoinBlock(joinType, modifier, table, alias);
+                final TableBlocks.ParensDerivedJoinBlock block;
+                block = new TableBlocks.ParensDerivedJoinBlock(joinType, modifier, table, alias);
                 this.blockConsumer.accept(block);
                 this.fromCrossBlock = block;
                 return this;

@@ -11,10 +11,12 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
-class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<OR> {
+class OnClauseTableBlock<OR> extends TableBlocks implements Statement._OnClause<OR> {
 
     private List<_Predicate> predicateList;
 
@@ -137,7 +139,7 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
             this.modifier = modifier;
         }
 
-        OnItemTableBlock(TableBlock.DialectBlockParams params, OR stmt) {
+        OnItemTableBlock(TableBlocks.DialectBlockParams params, OR stmt) {
             super(params, stmt);
             this.modifier = params.modifier();
         }
@@ -150,37 +152,75 @@ class OnClauseTableBlock<OR> extends TableBlock implements Statement._OnClause<O
 
     }//OnItemTableBlock
 
-    static class OnModifierParensBlock<OR> extends OnItemTableBlock<OR> implements Statement._ParensOnSpec<OR> {
+    static class OnModifierParensBlock<OR> extends OnItemTableBlock<OR> implements Statement._ParensOnSpec<OR>,
+            ArmyDerivedBlock {
+
+        private List<String> columnAliasList;
+
+        private Function<String, Selection> selectionFunction;
+
+        private Supplier<List<? extends Selection>> selectionsSupplier;
 
         OnModifierParensBlock(_JoinType joinType, @Nullable SQLWords modifier, DerivedTable tableItem, String alias,
                               OR stmt) {
             super(joinType, modifier, tableItem, alias, stmt);
+            this.selectionFunction = ((ArmyDerivedTable) tableItem)::selection;
+            this.selectionsSupplier = ((ArmyDerivedTable) tableItem)::selectionList;
         }
 
 
         @Override
         public final Statement._OnClause<OR> parens(String first, String... rest) {
-            ((ArmyDerivedTable) this.tableItem).setColumnAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
-            return this;
+            return this.onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
         }
 
         @Override
         public final Statement._OnClause<OR> parens(Consumer<Consumer<String>> consumer) {
-            final List<String> list = new ArrayList<>();
-            consumer.accept(list::add);
-            ((ArmyDerivedTable) this.tableItem).setColumnAliasList(list);
-            return this;
+            return this.onColumnAlias(CriteriaUtils.stringList(this.getContext(), true, consumer));
         }
 
         @Override
         public final Statement._OnClause<OR> ifParens(Consumer<Consumer<String>> consumer) {
-            final List<String> list = new ArrayList<>();
-            consumer.accept(list::add);
-            if (list.size() > 0) {
-                ((ArmyDerivedTable) this.tableItem).setColumnAliasList(list);
-            } else {
-                ((ArmyDerivedTable) this.tableItem).setColumnAliasList(CriteriaUtils.EMPTY_STRING_LIST);
+            return this.onColumnAlias(CriteriaUtils.stringList(this.getContext(), false, consumer));
+        }
+
+        @Override
+        public final Selection selection(final String selectionAlias) {
+            if (this.columnAliasList == null) {
+                this.columnAliasList = Collections.emptyList();
             }
+            return this.selectionFunction.apply(selectionAlias);
+        }
+
+        @Override
+        public final List<? extends Selection> selectionList() {
+            if (this.columnAliasList == null) {
+                this.columnAliasList = Collections.emptyList();
+            }
+            return this.selectionsSupplier.get();
+        }
+
+        @Override
+        public final List<String> columnAliasList() {
+            List<String> list = this.columnAliasList;
+            if (list == null) {
+                list = Collections.emptyList();
+                this.columnAliasList = list;
+            }
+            return list;
+        }
+
+
+        private Statement._OnClause<OR> onColumnAlias(final List<String> columnAliasList) {
+            if (this.columnAliasList != null) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            }
+            this.columnAliasList = columnAliasList;
+
+            final _Pair<List<Selection>, Map<String, Selection>> pair;
+            pair = CriteriaUtils.forColumnAlias(columnAliasList, (ArmyDerivedTable) this.tableItem);
+            this.selectionsSupplier = () -> pair.first;
+            this.selectionFunction = pair.second::get;
             return this;
         }
 

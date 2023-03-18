@@ -187,7 +187,7 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
 
             this.mappingType = FieldMetaUtils.fieldMappingType(field, isDiscriminator);
             if (this.mappingType instanceof ElementMappingType) {
-                this.elementTypeList = _ArrayUtils.asUnmodifiableList(field.getAnnotation(Mapping.class).elements());
+                this.elementTypeList = _ArrayUtils.unmodifiableListFrom(field.getAnnotation(Mapping.class).elements());
             } else {
                 this.elementTypeList = Collections.emptyList();
             }
@@ -235,7 +235,7 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
 
 
     @Override
-    public final String alias() {
+    public final String selectionName() {
         return this.fieldName;
     }
 

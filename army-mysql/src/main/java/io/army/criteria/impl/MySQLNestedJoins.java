@@ -30,7 +30,11 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftParenClause<I>
+final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftParenClause<
+        I,
+        MySQLStatement._NestedIndexHintJoinSpec<I>,
+        Statement._AsClause<MySQLStatement._NestedLeftParensJoinSpec<I>>,
+        MySQLStatement._MySQLNestedJoinClause<I>>
         implements MySQLQuery._NestedLeftParenSpec<I> {
 
     static <I extends Item> MySQLQuery._NestedLeftParenSpec<I> nestedItem(
@@ -44,47 +48,6 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         super(context, joinType, function);
     }
 
-    @Override
-    public MySQLStatement._NestedIndexHintJoinSpec<I> leftParen(TableMeta<?> table, SQLs.WordAs wordAs, String alias) {
-        final NestedTableJoinBlock<I> block;
-        block = new NestedTableJoinBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, table,
-                alias, this::thisNestedJoinEnd);
-        this.onAddTableBlock(block);
-        return block;
-    }
-
-
-    @Override
-    public <T extends DerivedTable> Statement._AsClause<MySQLStatement._NestedLeftParensJoinSpec<I>> leftParen(Supplier<T> supplier) {
-        return alias -> this.onAddDerived(null, supplier, alias);
-    }
-
-    @Override
-    public <T extends DerivedTable> Statement._AsClause<MySQLStatement._NestedLeftParensJoinSpec<I>> leftParen(
-            @Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
-        if (modifier == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        return alias -> this.onAddDerived(modifier, supplier, alias);
-    }
-
-    @Override
-    public MySQLStatement._MySQLNestedJoinClause<I> leftParen(String cteName) {
-        final MySQLNestedBlock<I> block;
-        block = new MySQLNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, null,
-                this.context.refCte(cteName), "", this::thisNestedJoinEnd);
-        this.onAddTableBlock(block);
-        return block;
-    }
-
-    @Override
-    public MySQLStatement._MySQLNestedJoinClause<I> leftParen(String cteName, SQLsSyntax.WordAs wordAs, String alias) {
-        final MySQLNestedBlock<I> block;
-        block = new MySQLNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, null,
-                this.context.refCte(cteName), alias, this::thisNestedJoinEnd);
-        this.onAddTableBlock(block);
-        return block;
-    }
 
     @Override
     public MySQLStatement._NestedPartitionJoinSpec<I> leftParen(TableMeta<?> table) {
@@ -93,27 +56,50 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
     }
 
     @Override
-    public MySQLStatement._NestedLeftParenSpec<MySQLStatement._MySQLNestedJoinClause<I>> leftParen() {
-        return new MySQLNestedJoins<>(this.context, _JoinType.NONE, this::nestedNestedJoinEnd);
+    public MySQLStatement._MySQLNestedJoinClause<I> leftParen(Function<MySQLStatement._NestedLeftParenSpec<MySQLStatement._MySQLNestedJoinClause<I>>, MySQLStatement._MySQLNestedJoinClause<I>> function) {
+        return function.apply(new MySQLNestedJoins<>(this.context, _JoinType.NONE, this::nestedNestedJoinEnd));
     }
 
-    private <T extends DerivedTable> NestedDerivedJoinBlock<I> onAddDerived(@Nullable Query.DerivedModifier modifier,
-                                                                            Supplier<T> supplier, String alias) {
+    @Override
+    Query.DerivedModifier derivedModifier(@Nullable Query.DerivedModifier modifier) {
         if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.errorModifier(this.context, modifier);
+            throw CriteriaUtils.errorModifier(this.context, modifier);
         }
-        final DerivedTable table;
-        table = supplier.get();
-        if (table == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        final NestedDerivedJoinBlock<I> block;
-        block = new NestedDerivedJoinBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, modifier, table, alias,
-                this::thisNestedJoinEnd);
+        return modifier;
+    }
+
+    @Override
+    MySQLStatement._NestedIndexHintJoinSpec<I> onLeftTable(
+            _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
+        final NestedTableJoinBlock<I> block;
+        block = new NestedTableJoinBlock<>(this.context, this::onAddTableBlock, joinType, table,
+                tableAlias, this::thisNestedJoinEnd);
         this.onAddTableBlock(block);
         return block;
     }
 
+    @Override
+    Statement._AsClause<MySQLStatement._NestedLeftParensJoinSpec<I>> onLeftDerived(
+            _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+
+
+        return alias -> {
+            final NestedDerivedJoinBlock<I> block;
+            block = new NestedDerivedJoinBlock<>(this.context, this::onAddTableBlock, joinType, modifier, table, alias,
+                    this::thisNestedJoinEnd);
+            this.onAddTableBlock(block);
+            return block;
+        };
+    }
+
+    @Override
+    MySQLStatement._MySQLNestedJoinClause<I> onLeftCte(_JoinType joinType, CteItem cteItem, String alias) {
+        final MySQLNestedBlock<I> block;
+        block = new MySQLNestedBlock<>(this.context, this::onAddTableBlock, joinType, null,
+                cteItem, alias, this::thisNestedJoinEnd);
+        this.onAddTableBlock(block);
+        return block;
+    }
 
     private MySQLQuery._MySQLNestedJoinClause<I> nestedNestedJoinEnd(final _JoinType joinType,
                                                                      final NestedItems nestedItems) {
@@ -340,14 +326,13 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         }
 
         /**
-         * @see #leftJoin()
-         * @see #join()
-         * @see #rightJoin()
-         * @see #fullJoin()
-         * @see #straightJoin()
+         * @see #leftJoin(Function)
+         * @see #join(Function)
+         * @see #rightJoin(Function)
+         * @see #fullJoin(Function)
+         * @see #straightJoin(Function)
          */
         private MySQLQuery._NestedOnSpec<I> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
-            joinType.assertMySQLJoinType();
             final MySQLNestedBlock<I> block;
             block = new MySQLNestedBlock<>(this.context, this.blockConsumer, joinType, null, nestedItems, "",
                     this.ender);
@@ -356,10 +341,9 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         }
 
         /**
-         * @see #crossJoin()
+         * @see #crossJoin(Function)
          */
         private MySQLQuery._NestedJoinSpec<I> crossNestedEnd(final _JoinType joinType, final NestedItems items) {
-            assert joinType == _JoinType.CROSS_JOIN;
             final MySQLNestedBlock<I> block;
             block = new MySQLNestedBlock<>(this.context, this.blockConsumer, _JoinType.CROSS_JOIN, null, items,
                     "", this.ender);

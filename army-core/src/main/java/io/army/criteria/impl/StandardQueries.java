@@ -77,32 +77,32 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
     @Override
     public final _JoinSpec<I> from(Function<_NestedLeftParenSpec<_JoinSpec<I>>, _JoinSpec<I>> function) {
-        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.NONE, this::fromNestedEnd));
+        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.NONE, this::fromNestedEnd));
     }
 
     @Override
     public final _JoinSpec<I> crossJoin(Function<_NestedLeftParenSpec<_JoinSpec<I>>, _JoinSpec<I>> function) {
-        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd));
+        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.CROSS_JOIN, this::fromNestedEnd));
     }
 
     @Override
     public final _OnClause<_JoinSpec<I>> leftJoin(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
-        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
+        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.LEFT_JOIN, this::joinNestedEnd));
     }
 
     @Override
     public final _OnClause<_JoinSpec<I>> join(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
-        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.JOIN, this::joinNestedEnd));
+        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.JOIN, this::joinNestedEnd));
     }
 
     @Override
     public final _OnClause<_JoinSpec<I>> rightJoin(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
-        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
+        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.RIGHT_JOIN, this::joinNestedEnd));
     }
 
     @Override
     public final _OnClause<_JoinSpec<I>> fullJoin(Function<_NestedLeftParenSpec<_OnClause<_JoinSpec<I>>>, _OnClause<_JoinSpec<I>>> function) {
-        return function.apply(StandardNestedJoins.nestedItem(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
+        return function.apply(StandardNestedJoins.nestedJoin(this.context, _JoinType.FULL_JOIN, this::joinNestedEnd));
     }
 
 
@@ -191,7 +191,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     @Override
     final _JoinSpec<I> onFromTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
                                    String alias) {
-        this.blockConsumer.accept(new TableBlock.NoOnTableBlock(joinType, table, alias));
+        this.blockConsumer.accept(new TableBlocks.NoOnTableBlock(joinType, table, alias));
         return this;
     }
 
@@ -258,10 +258,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
      * @see #crossJoin(Function)
      */
     private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        joinType.assertNoneCrossType();
-        final TableBlock.NoOnTableBlock block;
-        block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
-        this.blockConsumer.accept(block);
+        this.blockConsumer.accept(TableBlocks.fromNestedBlock(joinType, nestedItems));
         return this;
     }
 
@@ -272,10 +269,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
      * @see #fullJoin(Function)
      */
     private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        joinType.assertStandardJoinType();
-
-        final OnClauseTableBlock<_JoinSpec<I>> block;
-        block = new OnClauseTableBlock<>(joinType, nestedItems, "", this);
+        final TableBlocks.OnClauseBlock<_JoinSpec<I>> block;
+        block = TableBlocks.joinNestedBlock(joinType, nestedItems, this);
         this.blockConsumer.accept(block);
         return block;
     }

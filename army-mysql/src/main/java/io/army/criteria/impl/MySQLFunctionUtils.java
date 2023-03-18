@@ -21,7 +21,6 @@ import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleParam;
 import io.army.stmt.Stmt;
 import io.army.util._CollectionUtils;
-import io.army.util._Exceptions;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
@@ -1035,7 +1034,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public String alias() {
+        public String selectionName() {
             return this.name;
         }
 
@@ -1146,7 +1145,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public String alias() {
+        public String selectionName() {
             return this.name;
         }
 
@@ -2218,8 +2217,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             if (!(selectionList instanceof ArrayList && selectionMap instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            if (selectionMap.putIfAbsent(selection.alias(), selection) != null) {
-                String m = String.format("Duplicate column name[%s]", selection.alias());
+            if (selectionMap.putIfAbsent(selection.selectionName(), selection) != null) {
+                String m = String.format("Duplicate column name[%s]", selection.selectionName());
                 throw ContextStack.criteriaError(this.context, m);
             }
             selectionList.add(selection);

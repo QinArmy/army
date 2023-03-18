@@ -194,13 +194,13 @@ public interface OracleQuery extends Query, OracleStatement {
     }
 
 
-    interface _MinWithSpec<I extends Item> {
+    interface _MinWithSpec<I extends Item> extends Item {
 
     }
 
 
-    interface _UnionAndQuerySpec<I extends Item> extends _MinWithSpec<I>
-            , _LeftParenClause<_UnionAndQuerySpec<_RightParenClause<_UnionOrderBySpec<I>>>> {
+    interface _UnionAndQuerySpec<I extends Item> extends _MinWithSpec<I>,
+            _DynamicParensQueryClause<_UnionAndQuerySpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 

@@ -14,7 +14,7 @@ package io.army.criteria;
  */
 public interface Selection extends SelectItem, TypeInfer {
 
-    String alias();
+    String selectionName();
 
 
 }

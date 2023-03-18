@@ -290,8 +290,8 @@ public interface MySQLStatement extends DialectStatement {
     interface _NestedLeftParenSpec<I extends Item>
             extends _NestedLeftParenModifierTabularClause<_NestedIndexHintJoinSpec<I>, _AsClause<_NestedLeftParensJoinSpec<I>>>,
             _LeftParenCteClause<_MySQLNestedJoinClause<I>>,
-            _NestedDialectLeftParenClause<_NestedPartitionJoinSpec<I>>,
-            _LeftParenClause<_NestedLeftParenSpec<_MySQLNestedJoinClause<I>>> {
+            _NestedTableLeftParenClause<_NestedPartitionJoinSpec<I>>,
+            _LeftParenNestedClause<_NestedLeftParenSpec<_MySQLNestedJoinClause<I>>, _MySQLNestedJoinClause<I>> {
 
     }
 

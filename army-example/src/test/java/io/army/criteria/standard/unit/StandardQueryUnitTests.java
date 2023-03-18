@@ -233,7 +233,8 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .rightParen()
                 )
                 .join(BankAccount_.T, AS, "a").on(BankPerson_.id::equal, BankAccount_.userId)
-                .ifCrossJoin(s -> s.tabular(() -> SQLs.subQuery()
+                .ifCrossJoin(
+                        s -> s.tabular(() -> SQLs.subQuery()
                                         .select(ChinaRegion_.id, ChinaRegion_.name)
                                         .from(ChinaRegion_.T, AS, "c")
                                         .where(ChinaRegion_.name::equal, SQLs::literal, () -> "荒''''\n\032'海")

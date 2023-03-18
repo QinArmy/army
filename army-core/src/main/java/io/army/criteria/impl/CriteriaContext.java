@@ -56,19 +56,15 @@ interface CriteriaContext {
     void addEndEventListener(Runnable listener);
 
 
-    DerivedField refThisOrOuter(String derivedAlias, String selectionAlias);
-
     DerivedField refThis(String derivedAlias, String selectionAlias);
 
 
     <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field);
 
-    /**
-     * @deprecated use {@link #refThisOrOuter(String, String)}
-     */
-    @Deprecated
+
     DerivedField refOuter(String derivedAlias, String fieldName);
 
+    @Deprecated
     void onOrderByStart();
 
     Expression refSelection(String selectionAlias);
@@ -85,7 +81,7 @@ interface CriteriaContext {
      */
     VarExpression var(String name) throws CriteriaException;
 
-    void bufferNestedDerived(String tableAlias, DerivedTable table);
+    void bufferNestedDerived(ArmyDerivedBlock block);
 
 
     void onAddBlock(_TableBlock block);
@@ -114,6 +110,7 @@ interface CriteriaContext {
 
     void endContextBeforeCommand();
 
+    @Deprecated
     List<String> derivedColumnAliasList();
 
     List<Selection> selectionList();

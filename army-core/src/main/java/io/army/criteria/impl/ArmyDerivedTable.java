@@ -9,7 +9,7 @@ import io.army.criteria.impl.inner._DerivedTable;
  *
  * @since 1.0
  */
-interface ArmyDerivedTable extends _DerivedTable, CriteriaSupports.ArmyDerivedSpec {
+interface ArmyDerivedTable extends _DerivedTable, SelectionMap, CriteriaSupports.ArmyDerivedSpec {
 
 
 }

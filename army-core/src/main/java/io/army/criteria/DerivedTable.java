@@ -8,6 +8,7 @@ import io.army.criteria.dialect.SubQuery;
  *     <ul>
  *         <li>{@link SubQuery}</li>
  *         <li>{@link SubValues}</li>
+ *         <li>{@link CteItem}</li>
  *     </ul>
  * </p>
  *

@@ -267,11 +267,11 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
             if (selectionSize == 1) {
                 final Selection selection;
                 selection = list.get(0);
-                selectionMap = Collections.singletonMap(selection.alias(), selection);
+                selectionMap = Collections.singletonMap(selection.selectionName(), selection);
             } else {
                 selectionMap = new HashMap<>((int) (selectionSize / 0.75F));
                 for (Selection selection : list) {
-                    selectionMap.put(selection.alias(), selection);
+                    selectionMap.put(selection.selectionName(), selection);
                 }
                 selectionMap = Collections.unmodifiableMap(selectionMap);
             }

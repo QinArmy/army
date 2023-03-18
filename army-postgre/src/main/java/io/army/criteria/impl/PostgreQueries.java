@@ -566,8 +566,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
                                                       DerivedTable table) {
         return alias -> {
-            final TableBlock.NoOnModifierDerivedBlock block;
-            block = new TableBlock.NoOnModifierDerivedBlock(joinType, modifier, table, alias);
+            final TableBlocks.NoOnModifierDerivedBlock block;
+            block = new TableBlocks.NoOnModifierDerivedBlock(joinType, modifier, table, alias);
             this.blockConsumer.accept(block);
             this.fromCrossBlock = block;
             return this;
@@ -577,8 +577,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     @Override
     final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem,
                                  String alias) {
-        final TableBlock.NoOnTableBlock block;
-        block = new TableBlock.NoOnTableBlock(joinType, cteItem, alias);
+        final TableBlocks.NoOnTableBlock block;
+        block = new TableBlocks.NoOnTableBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return this;
@@ -621,8 +621,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
      */
     private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertNoneCrossType();
-        final TableBlock.NoOnTableBlock block;
-        block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
+        final TableBlocks.NoOnTableBlock block;
+        block = new TableBlocks.NoOnTableBlock(joinType, nestedItems, "");
         this.blockConsumer.accept(block);
         return this;
     }
@@ -656,12 +656,12 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     /**
      * @return get the derived block of last FROM or CROSS JOIN clause
      */
-    private TableBlock.ParensDerivedJoinBlock getFromDerivedBlock() {
+    private TableBlocks.ParensDerivedJoinBlock getFromDerivedBlock() {
         final _TableBlock block = this.fromCrossBlock;
-        if (block != this.context.lastBlock() || !(block instanceof TableBlock.ParensDerivedJoinBlock)) {
+        if (block != this.context.lastBlock() || !(block instanceof TableBlocks.ParensDerivedJoinBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (TableBlock.ParensDerivedJoinBlock) block;
+        return (TableBlocks.ParensDerivedJoinBlock) block;
     }
 
 
@@ -1328,13 +1328,14 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
             this.queryFunction = queryFunction;
         }
 
+
         @Override
-        public final _StaticCteSelectSpec<_RightParenClause<_UnionOrderBySpec<I>>> leftParen() {
+        public _UnionOrderBySpec<I> parens(Function<_StaticCteSelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endDispatcher();
 
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.queryFunction);
-            return new StaticCteSubQuery<>(bracket.context, bracket::parenRowSetEnd);
+            return function.apply(new StaticCteSubQuery<>(bracket.context, bracket::parensEnd));
         }
 
         @Override

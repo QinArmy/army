@@ -346,8 +346,8 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT, FS
 
     @Override
     final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
-        final TableBlock.NoOnTableBlock block;
-        block = new TableBlock.NoOnTableBlock(joinType, cteItem, alias);
+        final TableBlocks.NoOnTableBlock block;
+        block = new TableBlocks.NoOnTableBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return (FC) this;
@@ -359,18 +359,18 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT, FS
     }
 
 
-    private TableBlock.ParensDerivedJoinBlock getFromClauseDerived() {
+    private TableBlocks.ParensDerivedJoinBlock getFromClauseDerived() {
         final _TableBlock block = this.fromCrossBlock;
-        if (block != this.context.lastBlock() || !(block instanceof TableBlock.ParensDerivedJoinBlock)) {
+        if (block != this.context.lastBlock() || !(block instanceof TableBlocks.ParensDerivedJoinBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (TableBlock.ParensDerivedJoinBlock) block;
+        return (TableBlocks.ParensDerivedJoinBlock) block;
     }
 
     private FC fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
         joinType.assertNoneCrossType();
-        final TableBlock.NoOnTableBlock block;
-        block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
+        final TableBlocks.NoOnTableBlock block;
+        block = new TableBlocks.NoOnTableBlock(joinType, nestedItems, "");
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return (FC) this;
@@ -492,8 +492,8 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT, FS
         _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
                                                     DerivedTable table) {
             return alias -> {
-                final TableBlock.ParensDerivedJoinBlock block;
-                block = new TableBlock.ParensDerivedJoinBlock(joinType, modifier, table, alias);
+                final TableBlocks.ParensDerivedJoinBlock block;
+                block = new TableBlocks.ParensDerivedJoinBlock(joinType, modifier, table, alias);
                 this.blockConsumer.accept(block);
                 this.fromCrossBlock = block;
                 return this;
@@ -652,8 +652,8 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT, FS
         _AsClause<_BatchParensJoinSpec<BatchDelete>> onFromDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
                                                                    DerivedTable table) {
             return alias -> {
-                final TableBlock.NoOnModifierDerivedBlock block;
-                block = new TableBlock.NoOnModifierDerivedBlock(joinType, modifier, table, alias);
+                final TableBlocks.NoOnModifierDerivedBlock block;
+                block = new TableBlocks.NoOnModifierDerivedBlock(joinType, modifier, table, alias);
                 this.blockConsumer.accept(block);
                 this.fromCrossBlock = block;
                 return this;

@@ -292,7 +292,7 @@ abstract class SelectionGroups {
                     builder.append(_Constant.SPACE_COMMA);
                 }
                 selection = selectionList.get(i);
-                safeFieldAlias = dialect.identifier(selection.alias());
+                safeFieldAlias = dialect.identifier(selection.selectionName());
                 builder.append(_Constant.SPACE)
                         .append(safeAlias)
                         .append(_Constant.POINT)

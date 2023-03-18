@@ -130,9 +130,9 @@ public interface Statement extends Item {
     }
 
 
-    interface _LeftParenClause<LR> {
+    interface _LeftParenNestedClause<T extends Item, R extends Item> {
 
-        LR leftParen();
+        R leftParen(Function<T, R> function);
     }
 
     /**
@@ -485,18 +485,18 @@ public interface Statement extends Item {
 
     interface _NestedLeftParenModifierTabularClause<LT, LS> extends _NestedLeftParenClause<LT, LS> {
 
-        <T extends DerivedTable> LS leftParen(Query.DerivedModifier modifier, Supplier<T> supplier);
+        <T extends DerivedTable> LS leftParen(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
 
     }
 
     interface _NestedLeftParenModifierClause<LT, LS> extends _NestedLeftParenModifierTabularClause<LT, LS> {
 
-        LT leftParen(Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
+        LT leftParen(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
     }
 
 
-    interface _NestedDialectLeftParenClause<LP> {
+    interface _NestedTableLeftParenClause<LP> {
 
         LP leftParen(TableMeta<?> table);
 

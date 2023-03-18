@@ -2223,7 +2223,7 @@ abstract class InsertSupports {
 
         if (!(discriminatorExp instanceof LiteralExpression.SingleLiteral)) {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be literal."
-                    , Selection.class.getSimpleName(), discriminatorSelection.alias()
+                    , Selection.class.getSimpleName(), discriminatorSelection.selectionName()
                     , discriminatorField);
             throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
         }
@@ -2235,7 +2235,7 @@ abstract class InsertSupports {
 
         if (!discriminatorJavaType.isInstance(value)) {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be instance of %s."
-                    , Selection.class.getSimpleName(), discriminatorSelection.alias()
+                    , Selection.class.getSimpleName(), discriminatorSelection.selectionName()
                     , discriminatorField, discriminatorJavaType.getName());
             throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
         }
@@ -2245,7 +2245,7 @@ abstract class InsertSupports {
         assert discriminatorEnum != null;
         if (value != discriminatorEnum && (onlyParent || insertTable instanceof ChildTableMeta)) {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be %s.%s ."
-                    , Selection.class.getSimpleName(), discriminatorSelection.alias()
+                    , Selection.class.getSimpleName(), discriminatorSelection.selectionName()
                     , discriminatorField, discriminatorJavaType.getName()
                     , discriminatorEnum.name());
             throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);

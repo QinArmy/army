@@ -45,18 +45,64 @@ public abstract class _ArrayUtils {
     }
 
 
+    public static <T> List<T> asUnmodifiableList(T t1, T t2) {
+        final List<T> list = new ArrayList<>(2);
+        list.add(t1);
+        list.add(t2);
+        return Collections.unmodifiableList(list);
+    }
+
+    public static <T> List<T> asUnmodifiableList(T t1, T t2, T t3) {
+        final List<T> list = new ArrayList<>(3);
+        list.add(t1);
+        list.add(t2);
+        list.add(t3);
+        return Collections.unmodifiableList(list);
+    }
+
+    public static <T> List<T> asUnmodifiableList(T t1, T t2, T t3, T t4) {
+        final List<T> list = new ArrayList<>(4);
+        list.add(t1);
+        list.add(t2);
+        list.add(t3);
+        list.add(t4);
+        return Collections.unmodifiableList(list);
+    }
+
+
     @SafeVarargs
     @SuppressWarnings("varargs")
     @NonNull
-    public static <T> List<T> asUnmodifiableList(@Nullable T... e) {
-        List<T> list;
-        if (e == null) {
-            list = Collections.emptyList();
-        } else if (e.length == 1) {
-            list = Collections.singletonList(e[0]);
+    public static <T> List<T> asUnmodifiableList(T t1, T t2, T t3, T t4, T t5, @Nullable T... rest) {
+        final List<T> list;
+        if (rest == null) {
+            list = new ArrayList<>(5);
         } else {
-            list = new ArrayList<>(e.length);
-            Collections.addAll(list, e);
+            list = new ArrayList<>(5 + rest.length);
+        }
+
+        list.add(t1);
+        list.add(t2);
+        list.add(t3);
+        list.add(t4);
+
+        list.add(t5);
+        if (rest != null) {
+            Collections.addAll(list, rest);
+        }
+        return Collections.unmodifiableList(list);
+    }
+
+
+    public static <T> List<T> unmodifiableListFrom(@Nullable T[] array) {
+        List<T> list;
+        if (array == null || array.length == 0) {
+            list = Collections.emptyList();
+        } else if (array.length == 1) {
+            list = Collections.singletonList(array[0]);
+        } else {
+            list = new ArrayList<>(array.length);
+            Collections.addAll(list, array);
             list = Collections.unmodifiableList(list);
         }
         return list;

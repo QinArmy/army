@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Selection;
-import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
@@ -31,7 +30,7 @@ abstract class ArmySelections implements _Selection {
 
     static Selection renameSelection(Selection selection, String alias) {
         final Selection s;
-        if (selection.alias().equals(alias)) {
+        if (selection.selectionName().equals(alias)) {
             s = selection;
         } else {
             s = new RenameSelection(selection, alias);
@@ -53,7 +52,7 @@ abstract class ArmySelections implements _Selection {
 
 
     @Override
-    public final String alias() {
+    public final String selectionName() {
         return this.alias;
     }
 

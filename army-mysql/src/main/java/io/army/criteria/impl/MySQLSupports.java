@@ -104,14 +104,14 @@ abstract class MySQLSupports extends CriteriaSupports {
     }//MySQLCteBuilder
 
 
-    interface MySQLBlockParams extends TableBlock.DialectBlockParams {
+    interface MySQLBlockParams extends TableBlocks.DialectBlockParams {
 
         List<String> partitionList();
 
     }
 
 
-    static final class MySQLNoOnBlock<RR> extends TableBlock.NoOnModifierTableBlock
+    static final class MySQLNoOnBlock<RR> extends TableBlocks.NoOnModifierTableBlock
             implements _MySQLTableBlock {
 
         private final List<String> partitionList;

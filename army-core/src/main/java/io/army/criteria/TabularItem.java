@@ -20,6 +20,7 @@ import java.util.List;
 public interface TabularItem extends Item {
 
 
+    @Deprecated
     interface _DerivedTableSpec {
 
         @Nullable

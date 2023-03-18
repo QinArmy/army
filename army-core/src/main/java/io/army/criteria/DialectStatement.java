@@ -311,14 +311,14 @@ public interface DialectStatement extends Statement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <LS> same with the LS of {@link _NestedLeftParenClause}
+     * @param <R> same with the LS of {@link _NestedLeftParenClause}
      * @since 1.0
      */
-    interface _LeftParenCteClause<LS> {
+    interface _LeftParenCteClause<R> {
 
-        LS leftParen(String cteName);
+        R leftParen(String cteName);
 
-        LS leftParen(String cteName, SQLs.WordAs wordAs, String alias);
+        R leftParen(String cteName, SQLs.WordAs wordAs, String alias);
     }
 
 

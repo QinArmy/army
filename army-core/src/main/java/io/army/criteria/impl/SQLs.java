@@ -440,7 +440,7 @@ public abstract class SQLs extends SQLsSyntax {
     }//ExpressionPairImpl
 
 
-    static final class CteImpl implements _Cte {
+    static final class CteImpl implements ArmyCte {
 
         final String name;
 

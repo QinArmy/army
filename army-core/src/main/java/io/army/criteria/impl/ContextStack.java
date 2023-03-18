@@ -153,6 +153,14 @@ abstract class ContextStack {
         return new NullPointerException();
     }
 
+    static CriteriaException clearStackAnd(Supplier<CriteriaException> supplier) {
+        final Stack stack = HOLDER.get();
+        if (stack != null) {
+            HOLDER.remove();
+        }
+        return supplier.get();
+    }
+
     static NullPointerException clearStackAndNullPointer() {
         final Stack stack = HOLDER.get();
         if (stack != null) {

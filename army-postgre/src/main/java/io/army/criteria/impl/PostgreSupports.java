@@ -205,7 +205,7 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//PostgreTableOnBlock
 
 
-    static final class PostgreNoOnTableBlock extends TableBlock.NoOnModifierTableBlock
+    static final class PostgreNoOnTableBlock extends TableBlocks.NoOnModifierTableBlock
             implements _PostgreTableBlock {
 
         private ArmyExpression sampleMethod;
@@ -308,7 +308,7 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//CteSearchOption
 
 
-    static final class PostgreCte implements _PostgreCte {
+    static final class PostgreCte implements _PostgreCte, ArmyCte {
 
         private final String name;
 
@@ -432,7 +432,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             for (int i = 0; i < selectionSize; i++) {
                 selection = stmtSelections.get(i);
                 if (aliasSize == 0) {
-                    alias = selection.alias();
+                    alias = selection.selectionName();
                 } else {
                     alias = columnAliasList.get(i);
                     selection = ArmySelections.renameSelection(selection, alias);
@@ -446,20 +446,20 @@ abstract class PostgreSupports extends CriteriaSupports {
             }
 
             if (searchSeqSelection != null) {
-                if (selectionMap.putIfAbsent(searchSeqSelection.alias(), searchSeqSelection) != null) {
-                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), searchSeqSelection.alias());
+                if (selectionMap.putIfAbsent(searchSeqSelection.selectionName(), searchSeqSelection) != null) {
+                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), searchSeqSelection.selectionName());
                 }
                 selectionList.add(searchSeqSelection);
             }
 
             if (cycleMarkSelection != null) {
-                if (selectionMap.putIfAbsent(cycleMarkSelection.alias(), cycleMarkSelection) != null) {
-                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), cycleMarkSelection.alias());
+                if (selectionMap.putIfAbsent(cycleMarkSelection.selectionName(), cycleMarkSelection) != null) {
+                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), cycleMarkSelection.selectionName());
                 }
                 selectionList.add(cycleMarkSelection);
 
-                if (selectionMap.putIfAbsent(cyclePathSelection.alias(), cyclePathSelection) != null) {
-                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), cyclePathSelection.alias());
+                if (selectionMap.putIfAbsent(cyclePathSelection.selectionName(), cyclePathSelection) != null) {
+                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), cyclePathSelection.selectionName());
                 }
                 selectionList.add(cyclePathSelection);
             }

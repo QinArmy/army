@@ -391,16 +391,16 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
     @Override
     final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
-        final TableBlock.NoOnTableBlock block;
-        block = new TableBlock.NoOnTableBlock(joinType, cteItem, alias);
+        final TableBlocks.NoOnTableBlock block;
+        block = new TableBlocks.NoOnTableBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return (FC) this;
     }
 
     final FC fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        final TableBlock.NoOnTableBlock block;
-        block = new TableBlock.NoOnTableBlock(joinType, nestedItems, "");
+        final TableBlocks.NoOnTableBlock block;
+        block = new TableBlocks.NoOnTableBlock(joinType, nestedItems, "");
         this.blockConsumer.accept(block);
         return (FC) this;
     }
@@ -424,12 +424,12 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     }
 
 
-    final TableBlock.ParensDerivedJoinBlock getFromDerived() {
+    final TableBlocks.ParensDerivedJoinBlock getFromDerived() {
         final _TableBlock block = this.fromCrossBlock;
-        if (!(this.context.lastBlock() == block && block instanceof TableBlock.ParensDerivedJoinBlock)) {
+        if (!(this.context.lastBlock() == block && block instanceof TableBlocks.ParensDerivedJoinBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (TableBlock.ParensDerivedJoinBlock) block;
+        return (TableBlocks.ParensDerivedJoinBlock) block;
     }
 
 
@@ -643,8 +643,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                                                              @Nullable Query.DerivedModifier modifier,
                                                              DerivedTable table) {
             return alias -> {
-                final TableBlock.ParensDerivedJoinBlock block;
-                block = new TableBlock.ParensDerivedJoinBlock(joinType, modifier, table, alias);
+                final TableBlocks.ParensDerivedJoinBlock block;
+                block = new TableBlocks.ParensDerivedJoinBlock(joinType, modifier, table, alias);
                 this.blockConsumer.accept(block);
                 this.fromCrossBlock = block;
                 return this;
@@ -937,8 +937,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         _AsClause<_BatchParensJoinSpec<BatchUpdate, BatchReturningUpdate>> onFromDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
                                                                                          DerivedTable table) {
             return alias -> {
-                final TableBlock.ParensDerivedJoinBlock block;
-                block = new TableBlock.ParensDerivedJoinBlock(joinType, modifier, table, alias);
+                final TableBlocks.ParensDerivedJoinBlock block;
+                block = new TableBlocks.ParensDerivedJoinBlock(joinType, modifier, table, alias);
                 this.blockConsumer.accept(block);
                 this.fromCrossBlock = block;
                 return this;

@@ -487,7 +487,10 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
 
-    static abstract class NestedLeftParenClause<I extends Item> implements _NestedItems {
+    static abstract class NestedLeftParenClause<I extends Item, LT, LS, LC>
+            implements _NestedItems,
+            Statement._NestedLeftParenModifierClause<LT, LS>,
+            DialectStatement._LeftParenCteClause<LC> {
 
         final CriteriaContext context;
 
@@ -497,11 +500,43 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
         private List<_TableBlock> blockList = new ArrayList<>();
 
-        NestedLeftParenClause(CriteriaContext context, _JoinType joinType
-                , BiFunction<_JoinType, NestedItems, I> function) {
+        NestedLeftParenClause(CriteriaContext context, _JoinType joinType,
+                              BiFunction<_JoinType, NestedItems, I> function) {
             this.context = context;
             this.joinType = joinType;
             this.function = function;
+        }
+
+        @Override
+        public final LT leftParen(TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
+            return this.onLeftTable(_JoinType.NONE, null, table, tableAlias);
+        }
+
+        @Override
+        public final LT leftParen(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs,
+                                  String tableAlias) {
+            return this.onLeftTable(_JoinType.NONE, this.tableModifier(modifier), table, tableAlias);
+        }
+
+        @Override
+        public final <T extends DerivedTable> LS leftParen(Supplier<T> supplier) {
+            return this.onLeftDerived(_JoinType.NONE, null, this.nonNull(supplier.get()));
+        }
+
+        @Override
+        public final <T extends DerivedTable> LS leftParen(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier) {
+            return this.onLeftDerived(_JoinType.NONE, this.derivedModifier(modifier), this.nonNull(supplier.get()));
+        }
+
+
+        @Override
+        public final LC leftParen(String cteName) {
+            return this.onLeftCte(_JoinType.NONE, this.context.refCte(cteName), "");
+        }
+
+        @Override
+        public final LC leftParen(String cteName, SQLsSyntax.WordAs wordAs, String alias) {
+            return this.onLeftCte(_JoinType.NONE, this.context.refCte(cteName), alias);
         }
 
         @Override
@@ -519,14 +554,35 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
                 throw ContextStack.castCriteriaApi(this.context);
             }
             blockList.add(block);
-            final TabularItem item;
-            item = block.tableItem();
-            if (item instanceof DerivedTable) {
+            if (block instanceof ArmyDerivedBlock) {
                 //buffer for column alias clause
-                this.context.bufferNestedDerived(block.alias(), (DerivedTable) item);
+                this.context.bufferNestedDerived((ArmyDerivedBlock) block);
             }
 
         }
+
+        final <T> T nonNull(final @Nullable T value) {
+            if (value == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            return value;
+        }
+
+        @Nullable
+        Query.TableModifier tableModifier(final @Nullable Query.TableModifier modifier) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+        @Nullable
+        Query.DerivedModifier derivedModifier(final @Nullable Query.DerivedModifier modifier) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+
+        abstract LT onLeftTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias);
+
+        abstract LS onLeftDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table);
+
+        abstract LC onLeftCte(_JoinType joinType, CteItem cteItem, String alias);
 
         @Deprecated
         final void onAddFirstBlock(final _TableBlock block) {
@@ -574,14 +630,14 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
             this.alias = alias;
         }
 
-        JoinableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, TableBlock.BlockParams params) {
+        JoinableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, TableBlocks.BlockParams params) {
             super(context, blockConsumer);
             this.joinType = params.joinType();
             this.tabularItem = params.tableItem();
             this.alias = params.alias();
 
-            if (params instanceof TableBlock.DialectBlockParams) {
-                this.modifier = ((TableBlock.DialectBlockParams) params).modifier();
+            if (params instanceof TableBlocks.DialectBlockParams) {
+                this.modifier = ((TableBlocks.DialectBlockParams) params).modifier();
             } else {
                 this.modifier = null;
             }
@@ -666,6 +722,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
     }//JoinableBlock
 
+
     static abstract class NestedJoinableBlock<FT, FS, FC, JT, JS, JC, OR>
             extends JoinableBlock<FT, FS, FC, JT, JS, JC, OR> {
 
@@ -675,9 +732,10 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         }
 
         NestedJoinableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
-                            TableBlock.BlockParams params) {
+                            TableBlocks.BlockParams params) {
             super(context, blockConsumer, params);
         }
+
 
     }//NestedJoinClause
 
@@ -691,7 +749,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         }
 
         DynamicJoinableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
-                             TableBlock.BlockParams params) {
+                             TableBlocks.BlockParams params) {
             super(context, blockConsumer, params);
         }
 

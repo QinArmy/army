@@ -46,7 +46,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     private MySQLDynamicJoins(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
-                              TableBlock.BlockParams params) {
+                              TableBlocks.BlockParams params) {
         super(context, blockConsumer, params);
     }
 

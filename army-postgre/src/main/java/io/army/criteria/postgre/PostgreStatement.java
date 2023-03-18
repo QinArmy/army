@@ -191,7 +191,7 @@ public interface PostgreStatement extends DialectStatement {
     interface _NestedLeftParenSpec<I extends Item>
             extends _NestedLeftParenModifierClause<_NestedTableSampleJoinSpec<I>, _AsClause<_NestedParensJoinSpec<I>>>,
             _LeftParenCteClause<_PostgreNestedJoinClause<I>>,
-            _LeftParenClause<_NestedLeftParenSpec<_PostgreNestedJoinClause<I>>> {
+            _LeftParenNestedClause<_NestedLeftParenSpec<_PostgreNestedJoinClause<I>>, _PostgreNestedJoinClause<I>> {
     }
 
 

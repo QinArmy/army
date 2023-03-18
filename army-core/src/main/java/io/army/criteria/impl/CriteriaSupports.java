@@ -92,9 +92,11 @@ abstract class CriteriaSupports {
         return new SimpleFieldItemPairs<>(context, updateTable, consumer);
     }
 
+    @Deprecated
     interface ArmyDerivedSpec extends TabularItem._DerivedTableSpec {
 
 
+        @Deprecated
         void setColumnAliasList(List<String> aliasList);
 
 

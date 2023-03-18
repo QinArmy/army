@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Returnings;
-import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._RowSet;
@@ -136,16 +135,16 @@ abstract class CriteriaUtils {
 
         if (selectItemSize == 1 && selectItemList.get(0) instanceof Selection) {
             final Selection selection = (Selection) selectItemList.get(0);
-            selectionMap = Collections.singletonMap(selection.alias(), selection);
+            selectionMap = Collections.singletonMap(selection.selectionName(), selection);
         } else {
             final Map<String, Selection> map = new HashMap<>((int) (selectItemSize / 0.75F));
             for (SelectItem item : selectItemList) {
 
                 if (item instanceof Selection) {
-                    map.put(((Selection) item).alias(), (Selection) item); // if alias duplication then override. Be consistent with  statement executor.
+                    map.put(((Selection) item).selectionName(), (Selection) item); // if alias duplication then override. Be consistent with  statement executor.
                 } else if (item instanceof SelectionGroup) {
                     for (Selection selection : ((SelectionGroup) item).selectionList()) {
-                        map.put(selection.alias(), selection); // if alias duplication then override.Be consistent with  statement executor.
+                        map.put(selection.selectionName(), selection); // if alias duplication then override.Be consistent with  statement executor.
                     }
                 }
             }
@@ -440,7 +439,7 @@ abstract class CriteriaUtils {
     }
 
     static _Pair<List<Selection>, Map<String, Selection>> forColumnAlias(final List<String> columnAliasList,
-                                                                         final _DerivedTable table) {
+                                                                         final ArmyDerivedTable table) {
         final List<? extends Selection> tableSelectionList;
         tableSelectionList = table.selectionList();
         final int selectionSize;
@@ -453,7 +452,7 @@ abstract class CriteriaUtils {
             selection = ArmySelections.renameSelection(tableSelectionList.get(0), columnAliasList.get(0));
             return _Pair.create(
                     Collections.singletonList(selection),
-                    Collections.singletonMap(selection.alias(), selection)
+                    Collections.singletonMap(selection.selectionName(), selection)
             );
         }
         final List<Selection> selectionList = new ArrayList<>(selectionSize);
