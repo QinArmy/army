@@ -786,7 +786,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void bufferNestedDerived(ArmyDerivedBlock block) {
+        public void bufferNestedDerived(ArmyAliasDerivedBlock block) {
             String m = "current context don't support bufferNestedDerived(ArmyDerivedBlock,block)";
             throw ContextStack.criteriaError(this, m);
         }
@@ -862,12 +862,12 @@ abstract class CriteriaContexts {
         /**
          * buffer for column alias clause
          */
-        private Map<String, ArmyDerivedBlock> nestedDerivedBufferMap;
+        private Map<String, ArmyAliasDerivedBlock> nestedDerivedBufferMap;
 
         /**
          * buffer for column alias clause
          */
-        private ArmyDerivedBlock bufferDerivedBlock;
+        private ArmyAliasDerivedBlock bufferDerivedBlock;
 
         private List<_TableBlock> tableBlockList;
 
@@ -890,11 +890,11 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final void bufferNestedDerived(final ArmyDerivedBlock block) {
+        public final void bufferNestedDerived(final ArmyAliasDerivedBlock block) {
             if (this.isEndContext()) {
                 throw ContextStack.castCriteriaApi(this);
             }
-            Map<String, ArmyDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
+            Map<String, ArmyAliasDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
             if (nestedDerivedBufferMap == null) {
                 nestedDerivedBufferMap = new HashMap<>();
                 this.nestedDerivedBufferMap = nestedDerivedBufferMap;
@@ -911,9 +911,9 @@ abstract class CriteriaContexts {
             this.flushBufferDerivedBlock();
 
             final TabularItem tableItem;
-            if (block instanceof _DerivedBlock) {
+            if (block instanceof _AliasDerivedBlock) {
                 // buffer for column alias clause
-                this.bufferDerivedBlock = (ArmyDerivedBlock) block;
+                this.bufferDerivedBlock = (ArmyAliasDerivedBlock) block;
             } else if ((tableItem = block.tableItem()) instanceof NestedItems) {
                 removeNestedDerivedBuffer((_NestedItems) tableItem);
                 this.addTableBlock(block);
@@ -960,7 +960,7 @@ abstract class CriteriaContexts {
             //1. flush buffer _DerivedBlock
             this.flushBufferDerivedBlock();
 
-            final Map<String, ArmyDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
+            final Map<String, ArmyAliasDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
             final Map<String, _TableBlock> aliasToBlock;
             //2. get SelectionMap of last block
             final SelectionMap selectionMap;
@@ -968,17 +968,17 @@ abstract class CriteriaContexts {
             _TableBlock block;
             if (nestedDerivedBufferMap != null
                     && (block = nestedDerivedBufferMap.get(derivedAlias)) != null) {
-                selectionMap = (ArmyDerivedBlock) block;
+                selectionMap = (ArmyAliasDerivedBlock) block;
             } else if ((aliasToBlock = this.aliasToBlock) == null) {
                 selectionMap = null;
             } else if (!(aliasToBlock instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this);
             } else if ((block = aliasToBlock.get(derivedAlias)) == null) {
                 selectionMap = null;
-            } else if (block instanceof _DerivedBlock) {
-                selectionMap = (ArmyDerivedBlock) block;
-            } else if ((tabularItem = block.tableItem()) instanceof CteItem) {
-                selectionMap = (ArmyCte) tabularItem;
+            } else if (block instanceof _AliasDerivedBlock) {
+                selectionMap = (ArmyAliasDerivedBlock) block;
+            } else if ((tabularItem = block.tableItem()) instanceof DerivedTable) {
+                selectionMap = (ArmyDerivedTable) tabularItem;
             } else {
                 throw invalidRef(this, derivedAlias, selectionAlias);
             }
@@ -1049,7 +1049,7 @@ abstract class CriteriaContexts {
                 throw ContextStack.castCriteriaApi(this);
             }
             //2. assert nestedDerivedBufferMap
-            final Map<String, ArmyDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
+            final Map<String, ArmyAliasDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
             if (nestedDerivedBufferMap != null && nestedDerivedBufferMap.size() > 0) {
                 throw ContextStack.castCriteriaApi(this);
             }
@@ -1168,11 +1168,11 @@ abstract class CriteriaContexts {
          * @see #onAddBlock(_TableBlock)
          */
         private void removeNestedDerivedBuffer(final _NestedItems nestedItems) {
-            final Map<String, ArmyDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
+            final Map<String, ArmyAliasDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
             TabularItem tabularItem;
             for (_TableBlock block : nestedItems.tableBlockList()) {
 
-                if (block instanceof _DerivedBlock) {
+                if (block instanceof _AliasDerivedBlock) {
                     if (nestedDerivedBufferMap == null
                             || nestedDerivedBufferMap.remove(block.alias()) != block.tableItem()) {
                         String m = String.format("%s[%s] no buffer", DerivedTable.class.getName(), block.alias());
@@ -1197,7 +1197,7 @@ abstract class CriteriaContexts {
          * @see #onEndContext()
          */
         private void flushBufferDerivedBlock() {
-            final _DerivedBlock bufferDerivedBlock = this.bufferDerivedBlock;
+            final _AliasDerivedBlock bufferDerivedBlock = this.bufferDerivedBlock;
             if (bufferDerivedBlock != null) {
                 this.bufferDerivedBlock = null;
                 this.addTableBlock(bufferDerivedBlock);

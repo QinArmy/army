@@ -100,8 +100,11 @@ class OnClauseTableBlock<OR> extends TableBlocks implements Statement._OnClause<
 
     @Override
     public final List<_Predicate> onClauseList() {
-        final List<_Predicate> predicateList = this.predicateList;
-        if (predicateList == null | predicateList instanceof ArrayList) {
+        List<_Predicate> predicateList = this.predicateList;
+        if (predicateList == null) {
+            predicateList = Collections.emptyList();
+            this.predicateList = predicateList;
+        } else if (predicateList instanceof ArrayList) {
             throw ContextStack.castCriteriaApi(this.getContext());
         }
         return predicateList;
@@ -153,7 +156,7 @@ class OnClauseTableBlock<OR> extends TableBlocks implements Statement._OnClause<
     }//OnItemTableBlock
 
     static class OnModifierParensBlock<OR> extends OnItemTableBlock<OR> implements Statement._ParensOnSpec<OR>,
-            ArmyDerivedBlock {
+            ArmyAliasDerivedBlock {
 
         private List<String> columnAliasList;
 

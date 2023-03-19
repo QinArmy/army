@@ -31,8 +31,8 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .then(SQLs::literalFrom, PillUserType.PARTNER)
                         .elseValue(SQLs.literalFrom(PillUserType.NONE))
                         .end()
-                        .plus(SQLs.literalFrom(1)).times(SQLs::literal, 5).as("a"))
-
+                        .plus(SQLs.literalFrom(1)).times(SQLs::literal, 5).as("a")
+                )
                 .asQuery();
         printStmt(LOG, stmt);
     }
@@ -45,7 +45,8 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .select(PillUser_.nickName)
                         .from(PillUser_.T, AS, "u")
                         .where(PillUser_.id::equal, SQLs::param, () -> 1)
-                        .asQuery().as("r"))
+                        .asQuery().as("r")
+                )
                 .asQuery();
 
         printStmt(LOG, stmt);
@@ -75,7 +76,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 .from(PillPerson_.T, SQLs.AS, "p")
                 .join(PillUser_.T, SQLs.AS, "u").on(PillUser_.id::equal, PillPerson_.id)
                 .where(PillPerson_.id.equal(SQLs::literal, 1))
-                .and(PillUser_.nickName::equal, SQLs::param, () -> "脉兽秀秀")
+                .and(PillUser_.nickName::equal, SQLs::param, "脉兽秀秀")
                 .and(PillUser_.createTime.notBetween(SQLs::literal, LocalDateTime.now().minusDays(1), AND, LocalDateTime.now()))
                 .and(PillUser_.id::in, () -> SQLs.subQuery()
                         .select(RegisterRecord_.userId)
@@ -194,7 +195,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .asQuery()
                 )
                 .as("us")
-                .where(refThis("us", "one")::equal, SQLs::param, () -> "1")
+                .where(SQLs.refThis("us", "one")::equal, SQLs::param, () -> "1")
                 .asQuery();
 
         printStmt(LOG, stmt);
@@ -213,7 +214,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 .crossJoin(() -> SQLs.subQuery()
                         .select(ChinaRegion_.id, ChinaRegion_.name)
                         .from(ChinaRegion_.T, AS, "c")
-                        .where(ChinaRegion_.name::equal, SQLs::literal, () -> "荒''''\n\032'海")
+                        .where(ChinaRegion_.name::equal, SQLs::literal, "荒''''\n\032'海")
                         .asQuery()
                 ).as("cr")
                 .asQuery();

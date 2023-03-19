@@ -260,7 +260,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     private static final class DynamicDerivedBlock extends MySQLDynamicJoins implements _ModifierTableBlock,
             Statement._ParensOnSpec<MySQLStatement._DynamicJoinSpec>,
-            ArmyDerivedBlock {
+            ArmyAliasDerivedBlock {
 
         private List<String> columnAliasList;
 

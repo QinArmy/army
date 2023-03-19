@@ -81,7 +81,7 @@ interface CriteriaContext {
      */
     VarExpression var(String name) throws CriteriaException;
 
-    void bufferNestedDerived(ArmyDerivedBlock block);
+    void bufferNestedDerived(ArmyAliasDerivedBlock block);
 
 
     void onAddBlock(_TableBlock block);

@@ -561,9 +561,9 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
                 throw ContextStack.castCriteriaApi(this.context);
             }
             blockList.add(block);
-            if (block instanceof ArmyDerivedBlock) {
+            if (block instanceof ArmyAliasDerivedBlock) {
                 //buffer for column alias clause
-                this.context.bufferNestedDerived((ArmyDerivedBlock) block);
+                this.context.bufferNestedDerived((ArmyAliasDerivedBlock) block);
             }
 
         }

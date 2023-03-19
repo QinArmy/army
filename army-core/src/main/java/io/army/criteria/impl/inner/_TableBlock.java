@@ -12,7 +12,7 @@ import java.util.List;
  * This interface is base interface of below:
  *     <ul>
  *         <li>{@link _ModifierTableBlock}</li>
- *         <li>{@link _DerivedBlock}</li>
+ *         <li>{@link _AliasDerivedBlock}</li>
  *         <li>{@link _NestedBock}</li>
  *         <li>{@link _CteBlock}</li>
  *     </ul>

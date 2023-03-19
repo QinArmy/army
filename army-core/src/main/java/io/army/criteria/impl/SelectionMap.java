@@ -9,7 +9,7 @@ import java.util.List;
  * <p>
  * Package interface,this interface is base interface of below:
  *     <ul>
- *         <li>{@link ArmyDerivedBlock}</li>
+ *         <li>{@link ArmyAliasDerivedBlock}</li>
  *         <li>{@link ArmyDerivedTable}</li>
  *         <li>{@link ArmyCte}</li>
  *     </ul>

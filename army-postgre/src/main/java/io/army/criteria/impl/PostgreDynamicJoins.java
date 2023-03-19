@@ -390,7 +390,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     @SuppressWarnings("unchecked")
     private static abstract class DynamicDerivedBlock<R> extends PostgreDynamicBlock
             implements Statement._ParensStringClause<R>,
-            _ModifierTableBlock, ArmyDerivedBlock {
+            _ModifierTableBlock, ArmyAliasDerivedBlock {
 
         private List<String> columnAliasList;
 
