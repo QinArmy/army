@@ -1055,12 +1055,12 @@ abstract class SQLsSyntax extends SQLSyntax {
         return ContextStack.peek().field(tableAlias, field);
     }
 
-    public static DerivedField refThis(String derivedTable, String derivedFieldName) {
-        return ContextStack.peek().refThis(derivedTable, derivedFieldName);
+    public static DerivedField refThis(String derivedAlias, String selectionName) {
+        return ContextStack.peek().refThis(derivedAlias, selectionName);
     }
 
-    public static DerivedField refOuter(String derivedTable, String derivedFieldName) {
-        return ContextStack.peek().refOuter(derivedTable, derivedFieldName);
+    public static DerivedField refOuter(String derivedAlias, String selectionName) {
+        return ContextStack.peek().refOuter(derivedAlias, selectionName);
     }
 
 

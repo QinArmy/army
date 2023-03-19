@@ -1373,7 +1373,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         public PostgreInsert._CteInsertIntoClause<_CteComma<I>> literalMode(LiteralMode mode) {
             this.endDispatcher();
 
-            return PostgreInserts.staticSubInsert(this.context.getNonNullOuterContext(), this.function)
+            return PostgreInserts.staticSubInsert(this, this.function)
                     .literalMode(mode);
         }
 
@@ -1381,7 +1381,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         public PostgreInsert._StaticSubNullOptionSpec<_CteComma<I>> migration(boolean migration) {
             this.endDispatcher();
 
-            return PostgreInserts.staticSubInsert(this.context.getNonNullOuterContext(), this.function)
+            return PostgreInserts.staticSubInsert(this, this.function)
                     .migration(migration);
         }
 
@@ -1389,7 +1389,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         public PostgreInsert._StaticSubPreferLiteralSpec<_CteComma<I>> nullMode(NullMode mode) {
             this.endDispatcher();
 
-            return PostgreInserts.staticSubInsert(this.context.getNonNullOuterContext(), this.function)
+            return PostgreInserts.staticSubInsert(this, this.function)
                     .nullMode(mode);
         }
 
@@ -1397,7 +1397,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         public <T> PostgreInsert._TableAliasSpec<T, _CteComma<I>, _CteComma<I>> insertInto(TableMeta<T> table) {
             this.endDispatcher();
 
-            return PostgreInserts.staticSubInsert(this.context.getNonNullOuterContext(), this.function)
+            return PostgreInserts.staticSubInsert(this, this.function)
                     .insertInto(table);
         }
 

@@ -49,7 +49,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
 
     private String tableAlias;
 
-    private StandardDeletes(@Nullable ArmyStmtSpec spec) {
+    private StandardDeletes(@Nullable MultiStmtSpec spec) {
         super(CriteriaContexts.primarySingleDmlContext(spec));
     }
 
@@ -114,7 +114,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
         private final Function<? super Delete, I> function;
 
 
-        private SimpleSingleDelete(@Nullable ArmyStmtSpec spec, Function<? super Delete, I> function) {
+        private SimpleSingleDelete(@Nullable MultiStmtSpec spec, Function<? super Delete, I> function) {
             super(spec);
             this.function = function;
         }

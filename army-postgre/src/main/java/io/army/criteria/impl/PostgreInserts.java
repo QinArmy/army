@@ -79,9 +79,9 @@ abstract class PostgreInserts extends InsertSupports {
      * create new single-table INSERT statement that is sub insert statement in static with clause.
      * </p>
      */
-    static <I extends Item> PostgreInsert._StaticSubOptionSpec<I> staticSubInsert(CriteriaContext outContext,
+    static <I extends Item> PostgreInsert._StaticSubOptionSpec<I> staticSubInsert(ArmyStmtSpec spec,
                                                                                   Function<SubStatement, I> function) {
-        return new StaticSubInsertIntoClause<>(outContext, function);
+        return new StaticSubInsertIntoClause<>(spec, function);
     }
 
 
@@ -359,7 +359,7 @@ abstract class PostgreInserts extends InsertSupports {
         private final Function<SubStatement, I> function;
 
         private DynamicSubInsertIntoClause(CriteriaContext outerContext, Function<SubStatement, I> function) {
-            super(CriteriaContexts.cteInsertContext(outerContext));
+            super(CriteriaContexts.subInsertContext(null, outerContext));
             this.function = function;
             //just push sub context,here don't need to start cte
             ContextStack.push(this.context);
@@ -402,8 +402,8 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final Function<SubStatement, I> function;
 
-        private StaticSubInsertIntoClause(CriteriaContext outerContext, Function<SubStatement, I> function) {
-            super(CriteriaContexts.cteInsertContext(outerContext));
+        private StaticSubInsertIntoClause(ArmyStmtSpec spec, Function<SubStatement, I> function) {
+            super(CriteriaContexts.subInsertContext(spec, null));
             this.function = function;
             //just push sub context,here don't need to start cte
             ContextStack.push(this.context);

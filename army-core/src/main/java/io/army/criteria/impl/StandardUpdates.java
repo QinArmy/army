@@ -292,7 +292,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
 
         private final Function<? super Update, I> function;
 
-        private PrimarySimpleSingleUpdateClause(@Nullable ArmyStmtSpec spec, Function<? super Update, I> function) {
+        private PrimarySimpleSingleUpdateClause(@Nullable MultiStmtSpec spec, Function<? super Update, I> function) {
             this.context = CriteriaContexts.primarySingleDmlContext(spec);
             ContextStack.push(this.context);
             this.function = function;

@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
-import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
@@ -50,14 +49,9 @@ public abstract class SQLs extends SQLsSyntax {
     static final Function<Update, Update> _UPDATE_IDENTITY = _getIdentity();
     static final Function<Delete, Delete> _DELETE_IDENTITY = _getIdentity();
 
-    static final Function<BatchUpdate, BatchUpdate> _BATCH_UPDATE_IDENTITY = _getIdentity();
-
-    static final Function<BatchDelete, BatchDelete> _BATCH_DELETE_IDENTITY = _getIdentity();
-
     static final Function<SubQuery, SubQuery> _SUB_QUERY_IDENTITY = _getIdentity();
 
     static final Function<SubQuery, Expression> _SCALAR_QUERY_IDENTITY = Expressions::scalarExpression;
-    ;
 
 
     public static StandardInsert._PrimaryOptionSpec singleInsert() {

@@ -143,50 +143,48 @@ abstract class CriteriaContexts {
 
         if (multiStmtContext != null) {
             migrateContext(context, multiStmtContext);
+            assertNonQueryContext(multiStmtContext);
         }
         return context;
     }
 
+    /**
+     * @param spec         if non-null,then outerContext must be null.
+     * @param outerContext if non-null,then spec must be null.
+     */
+    static CriteriaContext subInsertContext(final @Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext) {
+        final StatementContext context;
+        if (spec == null) {
+            assert outerContext != null;
+            context = new SubInsertContext(outerContext);
+        } else {
+            assert outerContext == null;
+            final DispatcherContext dispatcherContext;
+            dispatcherContext = (DispatcherContext) spec.getContext();
 
-    static CriteriaContext cteInsertContext(CriteriaContext outContext) {
-        assert ContextStack.peek() == outContext;
-        final StatementContext subContext;
-        subContext = new SubInsertContext(outContext);
-        subContext.varMap = ((StatementContext) outContext).varMap;
-        return subContext;
+            context = new SubInsertContext(dispatcherContext.getNonNullOuterContext());
+
+            migrateContext(context, dispatcherContext);
+            assertNonQueryContext(dispatcherContext);
+        }
+        return context;
     }
 
+    static CriteriaContext primarySingleDmlContext(@Nullable MultiStmtSpec spec) {
+        final MultiStmtContext multiStmtContext;
+        if (spec == null) {
+            multiStmtContext = null;
+        } else {
+            multiStmtContext = (MultiStmtContext) spec.getContext();
+        }
+        final StatementContext context;
+        context = new PrimarySingleDmlContext(multiStmtContext);
 
-    static void migrateSelectClauseCache(final CriteriaContext outerQueryContext, final CriteriaContext queryContext) {
-        assert queryContext instanceof SimpleQueryContext;
-        assert queryContext.getNonNullOuterContext() == outerQueryContext;
-        assert outerQueryContext instanceof SimpleQueryContext;
-        final JoinableContext outerContext = (SimpleQueryContext) outerQueryContext;
-        final JoinableContext context = (SimpleQueryContext) queryContext;
-
-        assert context.aliasFieldMap == null;
-        context.aliasFieldMap = outerContext.aliasFieldMap;
-        outerContext.aliasFieldMap = null;//clear for next sub context
-
-        assert context.aliasToRefDerivedField == null;
-        context.aliasToRefDerivedField = outerContext.aliasToRefDerivedField;
-        outerContext.aliasToRefDerivedField = null;//clear for next sub context
-
-    }
-
-
-    static CriteriaContext primaryMultiDmlContext(@Nullable ArmyStmtSpec spec) {
-        return new MultiDmlContext(null);
-    }
-
-    @Deprecated
-    static CriteriaContext primarySingleDmlContext() {
-        return new SingleDmlContext(null);
-    }
-
-
-    static CriteriaContext primarySingleDmlContext(@Nullable ArmyStmtSpec spec) {
-        return new SingleDmlContext(null);
+        if (multiStmtContext != null) {
+            migrateContext(context, multiStmtContext);
+            assertNonQueryContext(multiStmtContext);
+        }
+        return context;
     }
 
     /**
@@ -197,6 +195,11 @@ abstract class CriteriaContexts {
     static CriteriaContext subJoinableSingleDmlContext(@Nullable CriteriaContext outerContext) {
         throw new UnsupportedOperationException();
     }
+
+    static CriteriaContext primaryMultiDmlContext(@Nullable ArmyStmtSpec spec) {
+        return new MultiDmlContext(null);
+    }
+
 
     /**
      * <p>
@@ -281,22 +284,23 @@ abstract class CriteriaContexts {
         context.refCteMap = migrated.refCteMap;
         context.endListenerList = migrated.endListenerList;
 
-        if (context instanceof InsertContext) {
-            if (!(migrated instanceof DispatcherContext)) {
-                throw new IllegalArgumentException();
-            }
-            final DispatcherContext dispatcherContext = (DispatcherContext) migrated;
-            if (dispatcherContext.fieldMap != null) {
-                String m = String.format("error,couldn't create %s before command.", QualifiedField.class.getName());
-                throw ContextStack.clearStackAndCriteriaError(m);
-            } else if (dispatcherContext.derivedMap != null) {
-                throw ContextStack.clearStackAndCriteriaError(
-                        createNotFoundDerivedFieldMessage(dispatcherContext.derivedMap)
-                );
-            }
+        migrated.withCteContext = null;
+        migrated.varMap = null;
+        migrated.refCteMap = null;
+        migrated.endListenerList = null;
+
+    }
+
+
+    private static void assertNonQueryContext(final DispatcherContext dispatcherContext) {
+        if (dispatcherContext.fieldMap != null) {
+            String m = String.format("error,couldn't create %s before command.", QualifiedField.class.getName());
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (dispatcherContext.derivedMap != null) {
+            throw ContextStack.clearStackAndCriteriaError(
+                    createNotFoundDerivedFieldMessage(dispatcherContext.derivedMap)
+            );
         }
-
-
     }
 
     /**
@@ -841,16 +845,14 @@ abstract class CriteriaContexts {
         }
 
 
-        DerivedField refThisOrOuter(String derivedAlias, String selectionAlias) {
-            String m = "current context don't support ref(derivedAlias,selectionAlias)";
-            throw ContextStack.criteriaError(this, m);
-        }
-
-
     }//StatementContext
 
 
     private interface PrimaryContext {
+
+    }
+
+    private interface SubContext {
 
     }
 
@@ -906,11 +908,7 @@ abstract class CriteriaContexts {
         @Override
         public final void onAddBlock(final _TableBlock block) {
             //1. flush bufferDerivedBlock
-            final ArmyDerivedBlock bufferBlock = this.bufferDerivedBlock;
-            if (bufferBlock != null) {
-                this.bufferDerivedBlock = null;
-                this.addTableBlock(bufferBlock);
-            }
+            this.flushBufferDerivedBlock();
 
             final TabularItem tableItem;
             if (block instanceof _DerivedBlock) {
@@ -960,15 +958,11 @@ abstract class CriteriaContexts {
         @Override
         public final DerivedField refThis(final String derivedAlias, final String selectionAlias) {
             //1. flush buffer _DerivedBlock
-            final _DerivedBlock bufferDerivedBlock = this.bufferDerivedBlock;
-            if (bufferDerivedBlock != null) {
-                this.bufferDerivedBlock = null;
-                this.addTableBlock(bufferDerivedBlock);
-            }
+            this.flushBufferDerivedBlock();
 
             final Map<String, ArmyDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
             final Map<String, _TableBlock> aliasToBlock;
-            //2. get selectionFunction of last block
+            //2. get SelectionMap of last block
             final SelectionMap selectionMap;
             final TabularItem tabularItem;
             _TableBlock block;
@@ -1062,11 +1056,7 @@ abstract class CriteriaContexts {
             this.nestedDerivedBufferMap = null; //clear
 
             //3. flush bufferDerivedBlock
-            final _TableBlock bufferBlock = this.bufferDerivedBlock;
-            if (bufferBlock != null) {
-                this.bufferDerivedBlock = null;
-                this.addTableBlock(bufferBlock);
-            }
+            this.flushBufferDerivedBlock();
 
             final List<_TableBlock> blockList;
             blockList = _CollectionUtils.safeUnmodifiableList(this.tableBlockList);
@@ -1199,6 +1189,19 @@ abstract class CriteriaContexts {
 
             }
 
+        }
+
+        /**
+         * @see #onAddBlock(_TableBlock)
+         * @see #refThis(String, String)
+         * @see #onEndContext()
+         */
+        private void flushBufferDerivedBlock() {
+            final _DerivedBlock bufferDerivedBlock = this.bufferDerivedBlock;
+            if (bufferDerivedBlock != null) {
+                this.bufferDerivedBlock = null;
+                this.addTableBlock(bufferDerivedBlock);
+            }
         }
 
         /**
@@ -1429,7 +1432,7 @@ abstract class CriteriaContexts {
     }//InsertContext
 
 
-    private static final class PrimaryInsertContext extends InsertContext {
+    private static final class PrimaryInsertContext extends InsertContext implements PrimaryContext {
 
         /**
          * @see #primaryInsertContext(MultiStmtSpec)
@@ -1443,9 +1446,9 @@ abstract class CriteriaContexts {
 
 
     /**
-     * @see #cteInsertContext(CriteriaContext)
+     * @see #subInsertContext(ArmyStmtSpec, CriteriaContext)
      */
-    private static final class SubInsertContext extends StatementContext {
+    private static final class SubInsertContext extends InsertContext implements SubContext {
 
         private SubInsertContext(CriteriaContext outerContext) {
             super(outerContext);
@@ -1454,10 +1457,7 @@ abstract class CriteriaContexts {
     }//SubInsertContext
 
 
-    /**
-     * @see #primarySingleDmlContext()
-     */
-    private static final class SingleDmlContext extends StatementContext {
+    private static class SingleDmlContext extends StatementContext {
 
         private SingleDmlContext(@Nullable CriteriaContext outerContext) {
             super(outerContext);
@@ -1465,6 +1465,17 @@ abstract class CriteriaContexts {
 
 
     }//SingleDmlContext
+
+    /**
+     * @see #primarySingleDmlContext(MultiStmtSpec)
+     */
+    private static final class PrimarySingleDmlContext extends SingleDmlContext implements PrimaryContext {
+
+        private PrimarySingleDmlContext(@Nullable MultiStmtContext outerContext) {
+            super(outerContext);
+        }
+
+    }//PrimarySingleDmlContext
 
     private static final class MultiDmlContext extends JoinableContext {
 
@@ -1987,28 +1998,10 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final DerivedField refThisOrOuter(final String derivedAlias, final String selectionAlias) {
-            this.refOuter = true;
-            final CriteriaContext outerContext = this.outerContext;
-            if (outerContext == null) {
-                String m;
-                m = String.format("Not found %s[%s.%s] from outer context.", DerivedField.class.getName(),
-                        derivedAlias, selectionAlias);
-                throw ContextStack.clearStackAndCriteriaError(m);
-            }
-            return ((StatementContext) outerContext).refThisOrOuter(derivedAlias, selectionAlias);
-        }
-
-
-        @Override
         public final Expression refSelection(final String selectionAlias) {
-            final CriteriaContext leftContext = this.leftContext;
-            if (leftContext == null) {
-                String m = String.format("Not found %s[%s] from left context.", Selection.class.getName(),
-                        selectionAlias);
-                throw ContextStack.clearStackAndCriteriaError(m);
-            }
-            return leftContext.refSelection(selectionAlias);
+            String m = String.format("You couldn't reference %s[%s] before command.",
+                    Selection.class.getName(), selectionAlias);
+            throw ContextStack.criteriaError(this, m);
         }
 
 
