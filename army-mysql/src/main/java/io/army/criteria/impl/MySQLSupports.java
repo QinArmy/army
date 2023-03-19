@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.DialectStatement;
-import io.army.criteria.SQLWords;
-import io.army.criteria.Statement;
-import io.army.criteria.TabularItem;
+import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
@@ -15,7 +12,6 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
 import io.army.util._CollectionUtils;
-import io.army.util._StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,14 +26,20 @@ abstract class MySQLSupports extends CriteriaSupports {
 
     }
 
-    static <RR> MySQLQuery._QueryIndexHintClause<RR> indexHintClause(CriteriaContext context
-            , Function<MySQLIndexHint, RR> function) {
-        return new IndexHintClause<>(context, function);
+    @Deprecated
+    static <RR> MySQLStatement._QueryIndexHintSpec<RR> indexHintClause(CriteriaContext context
+            , Function<MySQLIndexHintBlock, RR> function) {
+        return new MySQLIndexHintClause<>(context, function);
     }
 
 
     static MySQLCtes mySQLCteBuilder(boolean recursive, CriteriaContext context) {
         return new MySQLCteBuilder(recursive, context);
+    }
+
+    static <R> MySQLQuery._IndexPurposeBySpec<R> indexHintClause(CriteriaContext context, IndexHintCommand command,
+                                                                 Function<_IndexHint, R> function) {
+        return new MySQLIndexHintClause<>(context, command, function);
     }
 
 
@@ -111,28 +113,51 @@ abstract class MySQLSupports extends CriteriaSupports {
     }
 
 
-    static final class MySQLNoOnBlock<RR> extends TableBlocks.NoOnModifierTableBlock
-            implements _MySQLTableBlock {
+    private static abstract class MySQLFromClauseTableBlock<R extends Item>
+            extends TableBlocks.FromClauseTableBlock
+            implements _MySQLTableBlock,
+            MySQLStatement._QueryIndexHintSpec<R> {
 
         private final List<String> partitionList;
 
-        private final RR stmt;
+        final R clause;
 
-        private MySQLQuery._QueryIndexHintClause<RR> indexClause;
-
-        private List<MySQLIndexHint> indexHintList;
+        private List<_IndexHint> indexHintList;
 
 
-        MySQLNoOnBlock(_JoinType joinType, @Nullable SQLWords itemWord, TabularItem tableItem, String alias, RR stmt) {
-            super(joinType, itemWord, tableItem, alias);
+        private MySQLFromClauseTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
+            super(joinType, table, alias);
+            this.clause = clause;
             this.partitionList = Collections.emptyList();
-            this.stmt = stmt;
+
         }
 
-        MySQLNoOnBlock(MySQLBlockParams params, RR stmt) {
-            super(params);
+        private MySQLFromClauseTableBlock(MySQLBlockParams params, R clause) {
+            super(params.joinType(), (TableMeta<?>) params.tableItem(), params.alias());
+            this.clause = clause;
             this.partitionList = params.partitionList();
-            this.stmt = stmt;
+
+        }
+
+        @Override
+        public MySQLStatement._IndexPurposeBySpec<R> useIndex() {
+            return this.createStaticHintClause(IndexHintCommand.USE_INDEX);
+        }
+
+        @Override
+        public MySQLStatement._IndexPurposeBySpec<R> ignoreIndex() {
+            return this.createStaticHintClause(IndexHintCommand.IGNORE_INDEX);
+        }
+
+        @Override
+        public MySQLStatement._IndexPurposeBySpec<R> forceIndex() {
+            return this.createStaticHintClause(IndexHintCommand.FORCE_INDEX);
+        }
+
+        @Override
+        public SQLWords modifier() {
+            //always null
+            return null;
         }
 
         @Override
@@ -142,7 +167,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         @Override
         public List<? extends _IndexHint> indexHintList() {
-            List<MySQLIndexHint> indexHintList = this.indexHintList;
+            List<_IndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null) {
                 indexHintList = Collections.emptyList();
                 this.indexHintList = indexHintList;
@@ -153,34 +178,101 @@ abstract class MySQLSupports extends CriteriaSupports {
             return indexHintList;
         }
 
-        MySQLQuery._QueryIndexHintClause<RR> getUseIndexClause() {
-            MySQLQuery._QueryIndexHintClause<RR> indexClause = this.indexClause;
-            if (indexClause == null) {
-                final CriteriaContext context;
-                context = ((CriteriaContextSpec) this.stmt).getContext();
-                indexClause = new IndexHintClause<>(context, this::addIndexHint);
-                this.indexClause = indexClause;
-            }
-            return indexClause;
+        final MySQLIndexHintClause<R> createStaticHintClause(IndexHintCommand command) {
+            return new MySQLIndexHintClause<>(((CriteriaContextSpec) this.clause).getContext(),
+                    command, this::indexHintEnd);
         }
 
-        private RR addIndexHint(final @Nullable MySQLIndexHint indexHint) {
-            if (indexHint == null) {
-                return this.stmt;
-            }
-            List<MySQLIndexHint> indexHintList = this.indexHintList;
+        final MySQLIndexHintClause<Object> createDynamicHintClause(IndexHintCommand command) {
+            return new MySQLIndexHintClause<>(((CriteriaContextSpec) this.clause).getContext(),
+                    command, this::indexHintEndAndReturnObject);
+        }
+
+
+        private R indexHintEnd(final _IndexHint indexHint) {
+            List<_IndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null) {
                 indexHintList = new ArrayList<>();
                 this.indexHintList = indexHintList;
             } else if (!(indexHintList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(CriteriaUtils.getCriteriaContext(this.stmt));
+                throw ContextStack.castCriteriaApi(CriteriaUtils.getCriteriaContext(this.clause));
             }
             indexHintList.add(indexHint);
-            return this.stmt;
+            return this.clause;
+        }
+
+        private Object indexHintEndAndReturnObject(final _IndexHint indexHint) {
+            this.indexHintEnd(indexHint);
+            return Collections.EMPTY_LIST;
         }
 
 
-    }//MySQLNoOnBlock
+    }//MySQLFromClauseTableBlock
+
+
+    static final class MySQLFromClauseForJoinTableBlock<R extends Item> extends MySQLFromClauseTableBlock<R>
+            implements MySQLStatement._DynamicIndexHintClause<MySQLStatement._IndexForJoinSpec<Object>, R> {
+
+        MySQLFromClauseForJoinTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
+            super(joinType, table, alias, clause);
+        }
+
+        MySQLFromClauseForJoinTableBlock(MySQLBlockParams params, R clause) {
+            super(params, clause);
+        }
+
+        @Override
+        public R ifUseIndex(Consumer<MySQLStatement._IndexForJoinSpec<Object>> consumer) {
+            consumer.accept(this.createDynamicHintClause(IndexHintCommand.USE_INDEX));
+            return this.clause;
+        }
+
+        @Override
+        public R ifIgnoreIndex(Consumer<MySQLStatement._IndexForJoinSpec<Object>> consumer) {
+            consumer.accept(this.createDynamicHintClause(IndexHintCommand.IGNORE_INDEX));
+            return this.clause;
+        }
+
+        @Override
+        public R ifForceIndex(Consumer<MySQLStatement._IndexForJoinSpec<Object>> consumer) {
+            consumer.accept(this.createDynamicHintClause(IndexHintCommand.FORCE_INDEX));
+            return this.clause;
+        }
+
+
+    }//MySQLFromClauseForJoinTableBlock
+
+    static final class MySQLFromClausePurposeTableBlock<R extends Item> extends MySQLFromClauseTableBlock<R>
+            implements MySQLStatement._DynamicIndexHintClause<MySQLStatement._IndexPurposeBySpec<Object>, R> {
+
+        MySQLFromClausePurposeTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
+            super(joinType, table, alias, clause);
+        }
+
+        MySQLFromClausePurposeTableBlock(MySQLBlockParams params, R clause) {
+            super(params, clause);
+        }
+
+        @Override
+        public R ifUseIndex(Consumer<MySQLStatement._IndexPurposeBySpec<Object>> consumer) {
+            consumer.accept(this.createDynamicHintClause(IndexHintCommand.USE_INDEX));
+            return this.clause;
+        }
+
+        @Override
+        public R ifIgnoreIndex(Consumer<MySQLStatement._IndexPurposeBySpec<Object>> consumer) {
+            consumer.accept(this.createDynamicHintClause(IndexHintCommand.IGNORE_INDEX));
+            return this.clause;
+        }
+
+        @Override
+        public R ifForceIndex(Consumer<MySQLStatement._IndexPurposeBySpec<Object>> consumer) {
+            consumer.accept(this.createDynamicHintClause(IndexHintCommand.FORCE_INDEX));
+            return this.clause;
+        }
+
+
+    }//MySQLFromClausePurposeTableBlock
 
 
     /**
@@ -192,13 +284,13 @@ abstract class MySQLSupports extends CriteriaSupports {
      * @param <OR> sub interface of {@link MySQLQuery._MySQLJoinClause}
      */
     static abstract class MySQLOnBlock<RR, OR> extends OnClauseTableBlock.OnItemTableBlock<OR>
-            implements _MySQLTableBlock, MySQLQuery._QueryIndexHintClause<RR> {
+            implements _MySQLTableBlock, MySQLStatement._QueryIndexHintSpec<RR> {
 
         private final List<String> partitionList;
 
-        private List<MySQLIndexHint> indexHintList;
+        private List<MySQLIndexHintBlock> indexHintList;
 
-        private MySQLQuery._QueryIndexHintClause<RR> useIndexClause;
+        private MySQLStatement._QueryIndexHintSpec<RR> useIndexClause;
 
 
         MySQLOnBlock(_JoinType joinType, @Nullable SQLWords modifier, TabularItem tableItem, String alias, OR stmt) {
@@ -234,7 +326,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         @Override
         public final List<? extends _IndexHint> indexHintList() {
-            List<MySQLIndexHint> indexHintList = this.indexHintList;
+            List<MySQLIndexHintBlock> indexHintList = this.indexHintList;
             if (indexHintList instanceof ArrayList) {
                 indexHintList = _CollectionUtils.unmodifiableList(indexHintList);
                 this.indexHintList = indexHintList;
@@ -246,21 +338,21 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
 
-        private MySQLQuery._QueryIndexHintClause<RR> getUseIndexClause() {
-            MySQLQuery._QueryIndexHintClause<RR> useIndexClause = this.useIndexClause;
+        private MySQLStatement._QueryIndexHintSpec<RR> getUseIndexClause() {
+            MySQLStatement._QueryIndexHintSpec<RR> useIndexClause = this.useIndexClause;
             if (useIndexClause == null) {
-                useIndexClause = new IndexHintClause<>(this.getContext(), this::addIndexHint);
+                useIndexClause = new MySQLIndexHintClause<>(this.getContext(), this::addIndexHint);
                 this.useIndexClause = useIndexClause;
             }
             return useIndexClause;
         }
 
         @SuppressWarnings("unchecked")
-        private RR addIndexHint(final @Nullable MySQLIndexHint indexHint) {
+        private RR addIndexHint(final @Nullable MySQLIndexHintBlock indexHint) {
             if (indexHint == null) {
                 return (RR) this;
             }
-            List<MySQLIndexHint> indexHintList = this.indexHintList;
+            List<MySQLIndexHintBlock> indexHintList = this.indexHintList;
             if (indexHintList == null) {
                 indexHintList = new ArrayList<>();
             } else if (!(indexHintList instanceof ArrayList)) {
@@ -372,188 +464,146 @@ abstract class MySQLSupports extends CriteriaSupports {
     }//PartitionAsClause
 
 
-    static abstract class PartitionAsClause_0<AR> implements Statement._AsClause<AR>, MySQLBlockParams
-            , MySQLStatement._PartitionAndAsClause_0<AR> {
-
-        final CriteriaContext context;
-
-        final _JoinType joinType;
-
-        final TableMeta<?> table;
-
-
-        private List<String> partitionList;
-
-        String tableAlias;
-
-        PartitionAsClause_0(CriteriaContext context, _JoinType joinType, TableMeta<?> table) {
-            this.context = context;
-            this.joinType = joinType;
-            this.table = table;
-        }
-
-        @Override
-        public final Statement._LeftParenStringQuadraOptionalSpec<Statement._AsClause<AR>> partition() {
-            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
-        }
-
-        @Override
-        public final AR as(final String alias) {
-            if (!_StringUtils.hasText(alias)) {
-                throw ContextStack.criteriaError(this.context, "table alias must be non-empty.");
-            }
-            if (this.tableAlias != null || this.partitionList == null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.tableAlias = alias;
-            return this.asEnd(this);
-        }
-
-
-        @Override
-        public final _JoinType joinType() {
-            return this.joinType;
-        }
-
-        @Override
-        public final TabularItem tableItem() {
-            return this.table;
-        }
-
-        @Override
-        public final SQLWords modifier() {
-            //null,currently,MySQL table don't support LATERAL
-            return null;
-        }
-
-        @Override
-        public final String alias() {
-            final String tableAlias = this.tableAlias;
-            if (tableAlias == null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return tableAlias;
-        }
-
-        @Override
-        public final List<String> partitionList() {
-            final List<String> partitionList = this.partitionList;
-            if (partitionList == null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return partitionList;
-        }
-
-        abstract AR asEnd(MySQLBlockParams params);
-
-
-        private Statement._AsClause<AR> partitionEnd(List<String> partitionList) {
-            if (this.partitionList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.partitionList = partitionList;
-            return this;
-        }
-
-    }//PartitionAsClause
-
-
-    private static final class IndexHintClause<RR> implements MySQLQuery._IndexPurposeBySpec<RR>,
-            MySQLQuery._QueryIndexHintClause<RR> {
+    private static final class MySQLIndexHintClause<R> implements MySQLQuery._IndexPurposeBySpec<R> {
 
         private final CriteriaContext context;
 
-        private final Function<MySQLIndexHint, RR> function;
+        private final Function<_IndexHint, R> function;
 
-        private MySQLIndexHint.Command command;
+        private final IndexHintCommand command;
 
-        private MySQLIndexHint.Purpose purpose;
+        private IndexHintPurpose purpose;
 
-        private IndexHintClause(CriteriaContext context, Function<MySQLIndexHint, RR> function) {
+        private MySQLIndexHintClause(CriteriaContext context, IndexHintCommand command, Function<_IndexHint, R> function) {
             this.context = context;
+            this.command = command;
             this.function = function;
         }
 
+
         @Override
-        public MySQLQuery._IndexPurposeBySpec<RR> useIndex() {
-            this.command = MySQLIndexHint.Command.USE_INDEX;
+        public Statement._ParensStringClause<R> forJoin() {
+            this.purpose = IndexHintPurpose.FOR_JOIN;
             return this;
         }
 
         @Override
-        public MySQLQuery._IndexPurposeBySpec<RR> ignoreIndex() {
-            this.command = MySQLIndexHint.Command.IGNORE_INDEX;
+        public Statement._ParensStringClause<R> forOrderBy() {
+            this.purpose = IndexHintPurpose.FOR_ORDER_BY;
             return this;
         }
 
         @Override
-        public MySQLQuery._IndexPurposeBySpec<RR> forceIndex() {
-            this.command = MySQLIndexHint.Command.FORCE_INDEX;
+        public Statement._ParensStringClause<R> forGroupBy() {
+            this.purpose = IndexHintPurpose.FOR_GROUP_BY;
             return this;
         }
 
         @Override
-        public Statement._ParensStringClause<RR> forJoin() {
-            this.purpose = MySQLIndexHint.Purpose.FOR_JOIN;
-            return this;
-        }
-
-        @Override
-        public Statement._ParensStringClause<RR> forOrderBy() {
-            this.purpose = MySQLIndexHint.Purpose.FOR_ORDER_BY;
-            return this;
-        }
-
-        @Override
-        public Statement._ParensStringClause<RR> forGroupBy() {
-            this.purpose = MySQLIndexHint.Purpose.FOR_GROUP_BY;
-            return this;
-        }
-
-
-        @Override
-        public RR parens(String first, String... rest) {
+        public R parens(String first, String... rest) {
             return this.stringConsumerEnd(_ArrayUtils.unmodifiableListOf(first, rest));
         }
 
         @Override
-        public RR parens(Consumer<Consumer<String>> consumer) {
-            final List<String> list = new ArrayList<>();
-            consumer.accept(list::add);
-            if (list.size() > 0) {
-                throw ContextStack.criteriaError(this.context, "You don't add any index name");
-            }
-            return this.stringConsumerEnd(_CollectionUtils.unmodifiableList(list));
-        }
-
-        @Override
-        public RR ifParens(Consumer<Consumer<String>> consumer) {
-            final List<String> list = new ArrayList<>();
-            consumer.accept(list::add);
-            if (list.size() > 0) {
-                this.stringConsumerEnd(_CollectionUtils.unmodifiableList(list));
-            } else {
-                this.command = null;
-                this.purpose = null;
-            }
-            return this.function.apply(null);
+        public R parens(Consumer<Consumer<String>> consumer) {
+            return this.stringConsumerEnd(CriteriaUtils.stringList(this.context, true, consumer));
         }
 
 
-        private RR stringConsumerEnd(final List<String> stringList) {
-            final MySQLIndexHint.Command command = this.command;
-            if (command == null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            final MySQLIndexHint.Purpose purpose = this.purpose;
-            //clear below for reuse this instance
-            this.command = null;
-            this.purpose = null;
-            return this.function.apply(new MySQLIndexHint(command, purpose, stringList));
+        private R stringConsumerEnd(final List<String> stringList) {
+            return this.function.apply(new MySQLIndexHint(this.command, this.purpose, stringList));
         }
 
 
     }//IndexHintClause
+
+
+    enum IndexHintCommand implements SQLWords {
+
+        USE_INDEX(" USE INDEX"),
+        IGNORE_INDEX(" IGNORE INDEX"),
+        FORCE_INDEX(" FORCE INDEX");
+
+        private final String words;
+
+        IndexHintCommand(String words) {
+            this.words = words;
+        }
+
+        @Override
+        public final String render() {
+            return this.words;
+        }
+
+        @Override
+        public final String toString() {
+            return CriteriaUtils.sqlWordsToString(this);
+        }
+
+
+    }//IndexHintCommand
+
+    private enum IndexHintPurpose implements SQLWords {
+
+        FOR_ORDER_BY(" FOR ORDER BY"),
+        FOR_GROUP_BY(" FOR GROUP BY"),
+        FOR_JOIN(" FOR JOIN");
+
+        private final String words;
+
+        IndexHintPurpose(String words) {
+            this.words = words;
+        }
+
+        @Override
+        public final String render() {
+            return this.words;
+        }
+
+
+        @Override
+        public final String toString() {
+            return CriteriaUtils.sqlWordsToString(this);
+        }
+
+    }// IndexHintPurpose
+
+
+    private static final class MySQLIndexHint implements _IndexHint {
+
+        private final IndexHintCommand command;
+
+        private final IndexHintPurpose purpose;
+
+        private final List<String> indexNameList;
+
+        private MySQLIndexHint(IndexHintCommand command, @Nullable IndexHintPurpose purpose, List<String> indexNameList) {
+            if (indexNameList.size() == 0) {
+                throw new CriteriaException("index hint index name list must not empty.");
+            }
+            this.command = command;
+            this.purpose = purpose;
+            this.indexNameList = _CollectionUtils.asUnmodifiableList(indexNameList);
+        }
+
+
+        @Override
+        public SQLWords command() {
+            return this.command;
+        }
+
+        @Override
+        public SQLWords purpose() {
+            return this.purpose;
+        }
+
+        @Override
+        public List<String> indexNameList() {
+            return this.indexNameList;
+        }
+
+
+    }//MySQLIndexHint
 
 
 }

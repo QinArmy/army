@@ -8,6 +8,7 @@ import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
 import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLQuery;
+import io.army.criteria.mysql.MySQLStatement;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
@@ -19,6 +20,7 @@ import io.army.meta.TableMeta;
 import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -29,10 +31,14 @@ import java.util.function.Supplier;
  * This class is an implementation of single-table {@link MySQLUpdate}
  * </p>
  */
-abstract class MySQLSingleUpdates<I extends Item, T, UT, SR, WR, WA, OR, LR>
+@SuppressWarnings("unchecked")
+abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA, OR, LR>
         extends SingleUpdateStatement<I, FieldMeta<T>, SR, WR, WA, OR, LR, Object, Object>
-        implements _MySQLSingleUpdate, MySQLUpdate, UpdateStatement,
-        MySQLQuery._IndexHintForOrderByClause<UT> {
+        implements _MySQLSingleUpdate,
+        MySQLUpdate,
+        UpdateStatement,
+        MySQLStatement._IndexHintForOrderByClause<UT>,
+        MySQLStatement._DynamicIndexHintClause<MySQLStatement._IndexForOrderBySpec<Object>, UT> {
 
     /**
      * <p>
@@ -65,7 +71,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT, SR, WR, WA, OR, LR>
 
     private final List<String> partitionList;
 
-    private List<MySQLIndexHint> indexHintList;
+    private List<_IndexHint> indexHintList;
 
 
     private MySQLQuery._IndexHintForOrderByClause<UT> hintClause;
@@ -86,19 +92,42 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT, SR, WR, WA, OR, LR>
 
     @Override
     public final MySQLQuery._IndexForOrderBySpec<UT> useIndex() {
-        return this.getHintClause().useIndex();
+        return MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.USE_INDEX,
+                this::indexHintEnd);
     }
 
     @Override
     public final MySQLQuery._IndexForOrderBySpec<UT> ignoreIndex() {
-        return this.getHintClause().ignoreIndex();
+        return MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.IGNORE_INDEX,
+                this::indexHintEnd);
     }
 
     @Override
     public final MySQLQuery._IndexForOrderBySpec<UT> forceIndex() {
-        return this.getHintClause().forceIndex();
+        return MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.FORCE_INDEX,
+                this::indexHintEnd);
     }
 
+    @Override
+    public final UT ifUseIndex(Consumer<_IndexForOrderBySpec<Object>> consumer) {
+        consumer.accept(MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.USE_INDEX,
+                this::indexHintEndAndReturnObject));
+        return (UT) this;
+    }
+
+    @Override
+    public final UT ifIgnoreIndex(Consumer<_IndexForOrderBySpec<Object>> consumer) {
+        consumer.accept(MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.IGNORE_INDEX,
+                this::indexHintEndAndReturnObject));
+        return (UT) this;
+    }
+
+    @Override
+    public final UT ifForceIndex(Consumer<_IndexForOrderBySpec<Object>> consumer) {
+        consumer.accept(MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.FORCE_INDEX,
+                this::indexHintEndAndReturnObject));
+        return (UT) this;
+    }
 
     @Override
     public final boolean isRecursive() {
@@ -128,7 +157,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT, SR, WR, WA, OR, LR>
 
     @Override
     public final List<? extends _IndexHint> indexHintList() {
-        final List<MySQLIndexHint> list = this.indexHintList;
+        final List<_IndexHint> list = this.indexHintList;
         if (list == null || list instanceof ArrayList) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -158,27 +187,11 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT, SR, WR, WA, OR, LR>
 
     abstract I asMySQLUpdate();
 
-    /**
-     * @see #useIndex()
-     * @see #ignoreIndex()
-     * @see #forceIndex()
-     */
-    private MySQLQuery._IndexHintForOrderByClause<UT> getHintClause() {
-        MySQLQuery._IndexHintForOrderByClause<UT> clause = this.hintClause;
-        if (clause == null) {
-            clause = MySQLSupports.indexHintClause(this.context, this::onAddIndexHint);
-            this.hintClause = clause;
-        }
-        return clause;
-    }
-
 
     @SuppressWarnings("unchecked")
-    private UT onAddIndexHint(final @Nullable MySQLIndexHint indexHint) {
-        if (indexHint == null) {
-            return (UT) this;
-        }
-        List<MySQLIndexHint> indexHintList = this.indexHintList;
+    private UT indexHintEnd(final _IndexHint indexHint) {
+
+        List<_IndexHint> indexHintList = this.indexHintList;
         if (indexHintList == null) {
             indexHintList = new ArrayList<>();
             this.indexHintList = indexHintList;
@@ -187,6 +200,11 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT, SR, WR, WA, OR, LR>
         }
         indexHintList.add(indexHint);
         return (UT) this;
+    }
+
+    private Object indexHintEndAndReturnObject(final _IndexHint indexHint) {
+        this.indexHintEnd(indexHint);
+        return Collections.EMPTY_LIST;
     }
 
 

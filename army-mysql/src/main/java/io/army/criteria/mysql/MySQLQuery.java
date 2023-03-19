@@ -178,7 +178,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _IndexHintOnSpec<I extends Item> extends _QueryIndexHintClause<_IndexHintOnSpec<I>>
+    interface _IndexHintOnSpec<I extends Item> extends _QueryIndexHintSpec<_IndexHintOnSpec<I>>
             , _OnClause<_JoinSpec<I>> {
 
     }
@@ -203,7 +203,8 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _IndexHintJoinSpec<I extends Item> extends _QueryIndexHintClause<_IndexHintJoinSpec<I>>,
+    interface _IndexHintJoinSpec<I extends Item> extends _QueryIndexHintSpec<_IndexHintJoinSpec<I>>,
+            _DynamicIndexHintClause<_IndexPurposeBySpec<Object>, _IndexHintJoinSpec<I>>,
             _JoinSpec<I> {
 
     }
@@ -213,7 +214,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _ParensJoinSpec<I extends Item> extends _ParensStringClause<_JoinSpec<I>>, _JoinSpec<I> {
+    interface _ParensJoinSpec<I extends Item> extends _OptionalParensStringClause<_JoinSpec<I>>, _JoinSpec<I> {
 
     }
 
@@ -258,7 +259,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
     interface _StaticCteParensSpec<I extends Item>
-            extends _ParensStringClause<_StaticCteAsClause<I>>, _StaticCteAsClause<I> {
+            extends _OptionalParensStringClause<_StaticCteAsClause<I>>, _StaticCteAsClause<I> {
 
     }
 
@@ -275,7 +276,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
         _CommaClause<MySQLCtes> as(Function<_WithSpec<_CommaClause<MySQLCtes>>, _CommaClause<MySQLCtes>> function);
     }
 
-    interface _DynamicCteParensSpec extends _ParensStringClause<_DynamicCteAsClause>,
+    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_DynamicCteAsClause>,
             _DynamicCteAsClause {
 
     }

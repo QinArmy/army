@@ -148,11 +148,11 @@ public interface PostgreStatement extends DialectStatement {
 
     }
 
-    interface _NestedParensOnSpec<I extends Item> extends _ParensStringClause<_NestedOnSpec<I>>, _NestedOnSpec<I> {
+    interface _NestedParensOnSpec<I extends Item> extends _OptionalParensStringClause<_NestedOnSpec<I>>, _NestedOnSpec<I> {
 
     }
 
-    interface _NestedParensCrossSpec<I extends Item> extends _ParensStringClause<_NestedJoinSpec<I>>,
+    interface _NestedParensCrossSpec<I extends Item> extends _OptionalParensStringClause<_NestedJoinSpec<I>>,
             _NestedJoinSpec<I> {
 
     }
@@ -188,7 +188,7 @@ public interface PostgreStatement extends DialectStatement {
 
     }
 
-    interface _NestedParensJoinSpec<I extends Item> extends _ParensStringClause<_PostgreNestedJoinClause<I>>,
+    interface _NestedParensJoinSpec<I extends Item> extends _OptionalParensStringClause<_PostgreNestedJoinClause<I>>,
             _PostgreNestedJoinClause<I> {
 
     }
@@ -221,7 +221,7 @@ public interface PostgreStatement extends DialectStatement {
 
     }
 
-    interface _DynamicParensJoinSpec extends _ParensStringClause<_DynamicJoinSpec>, _DynamicJoinSpec {
+    interface _DynamicParensJoinSpec extends _OptionalParensStringClause<_DynamicJoinSpec>, _DynamicJoinSpec {
 
     }
 

@@ -29,13 +29,14 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC extends Item, JT, JS, JC, WR, WA>
+abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS extends Item, FC extends Item, JT, JS, JC, WR, WA>
         extends JoinableUpdate.WithMultiUpdate<I, MySQLCtes, WE, TableField, SR, FT, FS, FC, JT, JS, JC, WR, WA, Object, Object, Object, Object>
         implements UpdateStatement,
         _MySQLMultiUpdate,
         MySQLUpdate,
         MySQLStatement._IndexHintForJoinClause<FT>,
-        Statement._ParensStringClause<FC>,
+        MySQLStatement._DynamicIndexHintClause<MySQLStatement._IndexForJoinSpec<Object>, FT>,
+        Statement._OptionalParensStringClause<FC>,
         MySQLUpdate._MultiUpdateClause<FT, FS>,
         MySQLUpdate._MultiUpdateCteNestedClause<FC>,
         MySQLStatement._MySQLCrossNestedClause<FC>,
@@ -244,6 +245,23 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
         return this.getHintClause().forceIndex();
     }
 
+    @Override
+    public final FT ifUseIndex(Consumer<_IndexForJoinSpec<Object>> consumer) {
+        this.getHintClause().ifUseIndex(consumer);
+        return (FT) this;
+    }
+
+    @Override
+    public final FT ifIgnoreIndex(Consumer<_IndexForJoinSpec<Object>> consumer) {
+        this.getHintClause().ifIgnoreIndex(consumer);
+        return (FT) this;
+    }
+
+    @Override
+    public final FT ifForceIndex(Consumer<_IndexForJoinSpec<Object>> consumer) {
+        this.getHintClause().ifForceIndex(consumer);
+        return (FT) this;
+    }
 
     @Override
     public final List<Hint> hintList() {
@@ -306,8 +324,8 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
 
     @Override
     final FT onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
-        final MySQLSupports.MySQLNoOnBlock<FT> block;
-        block = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, (FT) this);
+        final MySQLSupports.MySQLFromClauseForJoinTableBlock<FT> block;
+        block = new MySQLSupports.MySQLFromClauseForJoinTableBlock<>(joinType, table, alias, (FT) this);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return (FT) this;
@@ -315,8 +333,8 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
 
     @Override
     final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
-        final TableBlocks.NoOnTableBlock block;
-        block = new TableBlocks.NoOnTableBlock(joinType, cteItem, alias);
+        final _TableBlock block;
+        block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return (FC) this;
@@ -355,12 +373,12 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
      * @see #ignoreIndex()
      * @see #forceIndex()
      */
-    private MySQLQuery._IndexHintForJoinClause<FT> getHintClause() {
+    private MySQLSupports.MySQLFromClauseForJoinTableBlock<FT> getHintClause() {
         final _TableBlock block = this.fromCrossBlock;
-        if (block != this.context.lastBlock() || !(block instanceof MySQLSupports.MySQLNoOnBlock)) {
+        if (block != this.context.lastBlock() || !(block instanceof MySQLSupports.MySQLFromClauseForJoinTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return ((MySQLSupports.MySQLNoOnBlock<FT>) block).getUseIndexClause();
+        return (MySQLSupports.MySQLFromClauseForJoinTableBlock<FT>) block
     }
 
 
@@ -700,8 +718,8 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
         _MultiIndexHintJoinSpec<I> asEnd(final MySQLSupports.MySQLBlockParams params) {
             final MySQLSimpleUpdate<I> stmt = this.stmt;
 
-            final MySQLSupports.MySQLNoOnBlock<MySQLUpdate._MultiIndexHintJoinSpec<I>> block;
-            block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
+            final MySQLSupports.MySQLFromClauseTableBlock<_MultiIndexHintJoinSpec<I>> block;
+            block = new MySQLSupports.MySQLFromClauseTableBlock<>(params, stmt);
 
             stmt.blockConsumer.accept(block);
             stmt.fromCrossBlock = block;
@@ -771,8 +789,8 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT, SR, FS extends Item, FC
         _BatchMultiIndexHintJoinSpec<BatchUpdate> asEnd(final MySQLSupports.MySQLBlockParams params) {
             final MySQLBatchUpdate stmt = this.stmt;
 
-            final MySQLSupports.MySQLNoOnBlock<MySQLUpdate._BatchMultiIndexHintJoinSpec<BatchUpdate>> block;
-            block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
+            final MySQLSupports.MySQLFromClauseTableBlock<_BatchMultiIndexHintJoinSpec<BatchUpdate>> block;
+            block = new MySQLSupports.MySQLFromClauseTableBlock<>(params, stmt);
 
             stmt.blockConsumer.accept(block);
             stmt.fromCrossBlock = block;// update noOnBlock

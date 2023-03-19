@@ -39,7 +39,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         _PostgreUpdate,
         PostgreStatement._StaticTableSampleClause<TR>,
         PostgreStatement._RepeatableClause<FC>,
-        Statement._ParensStringClause<FC>,
+        Statement._OptionalParensStringClause<FC>,
         PostgreStatement._PostgreFromNestedClause<FC>,
         PostgreStatement._PostgreJoinNestedClause<Statement._OnClause<FC>>,
         PostgreStatement._PostgreCrossNestedClause<FC>,

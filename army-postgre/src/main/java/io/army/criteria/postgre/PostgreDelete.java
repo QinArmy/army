@@ -80,7 +80,7 @@ public interface PostgreDelete extends PostgreStatement {
 
     }
 
-    interface _ParensJoinSpec<I extends Item, Q extends Item> extends _ParensStringClause<_SingleJoinSpec<I, Q>>,
+    interface _ParensJoinSpec<I extends Item, Q extends Item> extends _OptionalParensStringClause<_SingleJoinSpec<I, Q>>,
             _SingleJoinSpec<I, Q> {
 
     }
@@ -126,7 +126,7 @@ public interface PostgreDelete extends PostgreStatement {
 
     }
 
-    interface _DynamicCteParensSpec extends _ParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
+    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
 
     }
 
@@ -189,7 +189,7 @@ public interface PostgreDelete extends PostgreStatement {
     }
 
     interface _BatchParensJoinSpec<I extends Item, Q extends Item>
-            extends _ParensStringClause<_BatchSingleJoinSpec<I, Q>>, _BatchSingleJoinSpec<I, Q> {
+            extends _OptionalParensStringClause<_BatchSingleJoinSpec<I, Q>>, _BatchSingleJoinSpec<I, Q> {
 
     }
 

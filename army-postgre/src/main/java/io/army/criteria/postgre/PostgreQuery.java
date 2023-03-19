@@ -3,7 +3,6 @@ package io.army.criteria.postgre;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.criteria.Query;
-import io.army.criteria.Statement;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
@@ -283,7 +282,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _ParensJoinSpec<I extends Item> extends _ParensStringClause<_JoinSpec<I>>, _JoinSpec<I> {
+    interface _ParensJoinSpec<I extends Item> extends _OptionalParensStringClause<_JoinSpec<I>>, _JoinSpec<I> {
 
     }
 
@@ -396,7 +395,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
     interface _StaticCteParensSpec<I extends Item>
-            extends Statement._ParensStringClause<_StaticCteAsClause<I>>,
+            extends _OptionalParensStringClause<_StaticCteAsClause<I>>,
             _StaticCteAsClause<I> {
 
     }
@@ -483,7 +482,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _DynamicCteParensSpec extends _ParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
+    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
 
     }
 

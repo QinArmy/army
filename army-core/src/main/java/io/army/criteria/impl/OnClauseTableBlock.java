@@ -16,6 +16,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@Deprecated
 class OnClauseTableBlock<OR> extends TableBlocks implements Statement._OnClause<OR> {
 
     private List<_Predicate> predicateList;
@@ -133,7 +134,7 @@ class OnClauseTableBlock<OR> extends TableBlocks implements Statement._OnClause<
     }
 
 
-    static class OnItemTableBlock<OR> extends OnClauseTableBlock<OR> implements _ModifierTableBlock {
+    static class OnItemTableBlock<OR extends Item> extends JoinClauseTableBlock<OR> implements _ModifierTableBlock {
 
         private final SQLWords modifier;
 

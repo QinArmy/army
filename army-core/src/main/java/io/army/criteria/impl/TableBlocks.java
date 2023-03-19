@@ -58,19 +58,41 @@ abstract class TableBlocks implements _TableBlock {
     }
 
 
-    static <R extends Item> OnClauseTableBlock<R> joinTableBlock(_JoinType joinType, @Nullable SQLWords modifier,
-                                                                 TableMeta<?> table, String alias, R clause) {
-        final OnClauseTableBlock<R> block;
+    static <R extends Item> JoinClauseTableBlock<R> joinTableBlock(_JoinType joinType, @Nullable SQLWords modifier,
+                                                                   TableMeta<?> table, String alias, R clause) {
+        final JoinClauseTableBlock<R> block;
         if (modifier == null) {
             block = new OnClauseSimpleTableBlock<>(joinType, table, alias, clause);
         } else {
-            block = new OnClauseSimpleModifierTableBlock<>(joinType, modifier, table, alias, clause);
+            block = new JoinClauseSimpleModifierTableBlock<>(joinType, modifier, table, alias, clause);
         }
         return block;
     }
 
-    static <R extends Item> JoinNestedBlock<R> joinNestedBlock(_JoinType joinType, NestedItems nestedItems, R clause) {
-        return new JoinNestedBlock<>(joinType, (_NestedItems) nestedItems, clause);
+    static <R extends Item> JoinClauseDerivedBlock<R> joinDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier,
+                                                                       DerivedTable table, String alias, R clause) {
+        final JoinClauseDerivedBlock<R> block;
+        if (modifier == null) {
+            block = new JoinClauseSimpleDerivedBlock<>(joinType, table, alias, clause);
+        } else {
+            block = new JoinClauseSimpleModifierDerivedBlock<>(joinType, modifier, table, alias, clause);
+        }
+        return block;
+    }
+
+    static <R extends Item> JoinClauseSimpleModifierAliasDerivedBlock<R> joinAliasDerivedBlock(
+            _JoinType joinType, @Nullable SQLWords modifier, DerivedTable table, String alias, R clause) {
+        return new JoinClauseSimpleModifierAliasDerivedBlock<>(joinType, modifier, table, alias, clause);
+    }
+
+    static <R extends Item> JoinClauseCteBlock<R> joinCteBlock(_JoinType joinType, CteItem table,
+                                                               String alias, R clause) {
+        return new JoinClauseCteBlock<>(joinType, table, alias, clause);
+    }
+
+    static <R extends Item> JoinClauseNestedBlock<R> joinNestedBlock(_JoinType joinType, NestedItems nestedItems,
+                                                                     R clause) {
+        return new JoinClauseNestedBlock<>(joinType, (_NestedItems) nestedItems, clause);
     }
 
 
@@ -246,7 +268,7 @@ abstract class TableBlocks implements _TableBlock {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class OnClauseBlock<R extends Item> implements _TableBlock, Statement._OnClause<R> {
+    static abstract class JoinClauseBlock<R extends Item> implements _TableBlock, Statement._OnClause<R> {
 
         private final _JoinType joinType;
 
@@ -254,7 +276,7 @@ abstract class TableBlocks implements _TableBlock {
 
         private List<_Predicate> predicateList;
 
-        OnClauseBlock(_JoinType joinType, R clause) {
+        JoinClauseBlock(_JoinType joinType, R clause) {
             this.joinType = joinType;
             this.clause = clause;
         }
@@ -333,15 +355,15 @@ abstract class TableBlocks implements _TableBlock {
         }
 
 
-    }//OnClauseBlock
+    }//JoinClauseBlock
 
-    static abstract class OnClauseTableBlock<R extends Item> extends OnClauseBlock<R> {
+    static abstract class JoinClauseTableBlock<R extends Item> extends JoinClauseBlock<R> {
 
         private final TableMeta<?> table;
 
         private final String alias;
 
-        OnClauseTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
+        JoinClauseTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
             super(joinType, clause);
             this.table = table;
             this.alias = alias;
@@ -357,15 +379,15 @@ abstract class TableBlocks implements _TableBlock {
             return this.alias;
         }
 
-    }//OnClauseTableBlock
+    }//JoinClauseTableBlock
 
-    static abstract class OnClauseModifierTableBlock<R extends Item> extends OnClauseTableBlock<R>
+    static abstract class JoinClauseModifierTableBlock<R extends Item> extends JoinClauseTableBlock<R>
             implements _ModifierTableBlock {
 
         private final SQLWords modifier;
 
-        OnClauseModifierTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
-                                   String alias, R clause) {
+        JoinClauseModifierTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
+                                     String alias, R clause) {
             super(joinType, table, alias, clause);
             this.modifier = modifier;
         }
@@ -376,7 +398,167 @@ abstract class TableBlocks implements _TableBlock {
         }
 
 
-    }//OnClauseModifierTableBlock
+    }//JoinClauseModifierTableBlock
+
+
+    static abstract class JoinClauseDerivedBlock<R extends Item> extends JoinClauseBlock<R> {
+
+        final DerivedTable table;
+
+        private final String alias;
+
+        JoinClauseDerivedBlock(_JoinType joinType, DerivedTable table, String alias, R clause) {
+            super(joinType, clause);
+            this.table = table;
+            this.alias = alias;
+        }
+
+        @Override
+        public final TabularItem tableItem() {
+            return this.table;
+        }
+
+        @Override
+        public final String alias() {
+            return this.alias;
+        }
+
+
+    }//JoinClauseDerivedBlock
+
+    static abstract class JoinClauseModifierDerivedBlock<R extends Item> extends JoinClauseDerivedBlock<R>
+            implements _ModifierTableBlock {
+
+        private final SQLWords modifier;
+
+
+        JoinClauseModifierDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
+                                       String alias, R clause) {
+            super(joinType, table, alias, clause);
+            this.modifier = modifier;
+        }
+
+        @Override
+        public final SQLWords modifier() {
+            return this.modifier;
+        }
+
+
+    }//JoinClauseModifierDerivedBlock
+
+    static abstract class JoinClauseModifierAliasDerivedBlock<R extends Item>
+            extends JoinClauseModifierDerivedBlock<R>
+            implements ArmyAliasDerivedBlock, Statement._ParensOnSpec<R> {
+
+        private List<String> columnAliasList;
+
+        private Function<String, Selection> selectionFunction;
+
+        private Supplier<List<? extends Selection>> selectionsSupplier;
+
+        JoinClauseModifierAliasDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
+                                            String alias, R clause) {
+            super(joinType, modifier, table, alias, clause);
+            this.selectionFunction = ((ArmyDerivedTable) table)::selection;
+            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectionList;
+        }
+
+        @Override
+        public final Statement._OnClause<R> parens(String first, String... rest) {
+            return this.onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
+        }
+
+        @Override
+        public final Statement._OnClause<R> parens(Consumer<Consumer<String>> consumer) {
+            return this.onColumnAlias(CriteriaUtils.stringList(this.getContext(), true, consumer));
+        }
+
+        @Override
+        public final Statement._OnClause<R> ifParens(Consumer<Consumer<String>> consumer) {
+            return this.onColumnAlias(CriteriaUtils.stringList(this.getContext(), false, consumer));
+        }
+
+        @Override
+        public final Selection selection(String name) {
+            if (this.columnAliasList == null) {
+                this.columnAliasList = Collections.emptyList();
+            }
+            return this.selectionFunction.apply(name);
+        }
+
+        @Override
+        public final List<? extends Selection> selectionList() {
+            if (this.columnAliasList == null) {
+                this.columnAliasList = Collections.emptyList();
+            }
+            return this.selectionsSupplier.get();
+        }
+
+        @Override
+        public final List<String> columnAliasList() {
+            List<String> list = this.columnAliasList;
+            if (list == null) {
+                list = Collections.emptyList();
+                this.columnAliasList = list;
+            }
+            return list;
+        }
+
+        private Statement._OnClause<R> onColumnAlias(final List<String> columnAliasList) {
+            if (this.columnAliasList != null) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            }
+            this.columnAliasList = columnAliasList;
+
+            final _Pair<List<Selection>, Map<String, Selection>> pair;
+            pair = CriteriaUtils.forColumnAlias(columnAliasList, (ArmyDerivedTable) this.table);
+            this.selectionsSupplier = () -> pair.first;
+            this.selectionFunction = pair.second::get;
+            return this;
+        }
+
+
+    }//JoinClauseModifierAliasDerivedBlock
+
+
+    static final class JoinClauseCteBlock<R extends Item> extends JoinClauseDerivedBlock<R> {
+
+        /**
+         * private constructor
+         *
+         * @see #joinCteBlock(_JoinType, CteItem, String, Item)
+         */
+        private JoinClauseCteBlock(_JoinType joinType, CteItem table, String alias, R clause) {
+            super(joinType, table, alias, clause);
+        }
+
+    }//JoinClauseCteBlock
+
+    static final class JoinClauseNestedBlock<R extends Item> extends JoinClauseBlock<R> {
+
+        private final _NestedItems items;
+
+        /**
+         * private constructor
+         *
+         * @see #joinNestedBlock(_JoinType, NestedItems, Item)
+         */
+        private JoinClauseNestedBlock(_JoinType joinType, _NestedItems items, R clause) {
+            super(joinType, clause);
+            this.items = items;
+        }
+
+        @Override
+        public TabularItem tableItem() {
+            return this.items;
+        }
+
+        @Override
+        public String alias() {
+            return "";
+        }
+
+    }//JoinClauseNestedBlock
 
 
     static class NoOnTableBlock extends TableBlocks {
@@ -571,7 +753,7 @@ abstract class TableBlocks implements _TableBlock {
     }//FromClauseModifierDerivedBlock
 
 
-    private static final class OnClauseSimpleTableBlock<R extends Item> extends OnClauseTableBlock<R> {
+    private static final class OnClauseSimpleTableBlock<R extends Item> extends JoinClauseTableBlock<R> {
 
         /**
          * @see #joinTableBlock(_JoinType, SQLWords, TableMeta, String, Item)
@@ -583,43 +765,57 @@ abstract class TableBlocks implements _TableBlock {
 
     }//OnClauseSimpleTableBlock
 
-    private static final class OnClauseSimpleModifierTableBlock<R extends Item> extends OnClauseModifierTableBlock<R> {
+    private static final class JoinClauseSimpleModifierTableBlock<R extends Item> extends JoinClauseModifierTableBlock<R> {
 
         /**
          * @see #joinTableBlock(_JoinType, SQLWords, TableMeta, String, Item)
          */
-        private OnClauseSimpleModifierTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
-                                                 String alias, R clause) {
+        private JoinClauseSimpleModifierTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
+                                                   String alias, R clause) {
             super(joinType, modifier, table, alias, clause);
         }
 
 
     }//OnClauseSimpleModifierTableBlock
 
+    private static final class JoinClauseSimpleDerivedBlock<R extends Item> extends JoinClauseDerivedBlock<R> {
 
-    static final class JoinNestedBlock<R extends Item> extends OnClauseBlock<R> {
-
-        private final _NestedItems nestedItems;
-
-        private JoinNestedBlock(_JoinType joinType, _NestedItems nestedItems, R clause) {
-            super(joinType, clause);
-            assert joinType != _JoinType.NONE && joinType != _JoinType.CROSS_JOIN;
-            this.nestedItems = nestedItems;
+        /**
+         * @see #joinDerivedBlock(_JoinType, SQLWords, DerivedTable, String, Item)
+         */
+        JoinClauseSimpleDerivedBlock(_JoinType joinType, DerivedTable table, String alias, R clause) {
+            super(joinType, table, alias, clause);
         }
 
 
-        @Override
-        public _NestedItems tableItem() {
-            return this.nestedItems;
+    }//JoinClauseSimpleDerivedBlock
+
+    private static final class JoinClauseSimpleModifierDerivedBlock<R extends Item>
+            extends JoinClauseModifierDerivedBlock<R> {
+
+        /**
+         * @see #joinDerivedBlock(_JoinType, SQLWords, DerivedTable, String, Item)
+         */
+        JoinClauseSimpleModifierDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier,
+                                             DerivedTable table, String alias, R clause) {
+            super(joinType, modifier, table, alias, clause);
         }
 
-        @Override
-        public String alias() {
-            return "";
+
+    }//JoinClauseSimpleModifierDerivedBlock
+
+    private static final class JoinClauseSimpleModifierAliasDerivedBlock<R extends Item>
+            extends JoinClauseModifierAliasDerivedBlock<R> {
+
+        /**
+         * @see #joinAliasDerivedBlock(_JoinType, SQLWords, DerivedTable, String, Item)
+         */
+        private JoinClauseSimpleModifierAliasDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier,
+                                                          DerivedTable table, String alias, R clause) {
+            super(joinType, modifier, table, alias, clause);
         }
 
-
-    }//JoinNestedBlock
+    }//JoinClauseSimpleModifierAliasDerivedBlock
 
 
     private static final class FromClauseModifierAliasDerivedBock extends FromClauseAliasDerivedBock

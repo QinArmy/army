@@ -39,7 +39,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         _PostgreDelete,
         PostgreStatement._StaticTableSampleClause<TR>,
         PostgreStatement._RepeatableClause<FC>,
-        Statement._ParensStringClause<FC>,
+        Statement._OptionalParensStringClause<FC>,
         PostgreStatement._PostgreUsingNestedClause<FC>,
         PostgreStatement._PostgreJoinNestedClause<Statement._OnClause<FC>>,
         PostgreStatement._PostgreCrossNestedClause<FC>,

@@ -96,7 +96,7 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
     }
 
-    interface _DynamicCteParensSpec extends _ParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
+    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
 
     }
 

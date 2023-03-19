@@ -464,7 +464,7 @@ public interface MySQLDelete extends MySQLStatement {
 
     }
 
-    interface _ParensJoinSpec<I extends Item> extends _ParensStringClause<_MultiJoinSpec<I>>, _MultiJoinSpec<I> {
+    interface _ParensJoinSpec<I extends Item> extends _OptionalParensStringClause<_MultiJoinSpec<I>>, _MultiJoinSpec<I> {
 
     }
 
@@ -644,7 +644,7 @@ public interface MySQLDelete extends MySQLStatement {
 
     }
 
-    interface _BatchParensJoinSpec<I extends Item> extends _ParensStringClause<_BatchMultiJoinSpec<I>>,
+    interface _BatchParensJoinSpec<I extends Item> extends _OptionalParensStringClause<_BatchMultiJoinSpec<I>>,
             _BatchMultiJoinSpec<I> {
 
     }

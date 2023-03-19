@@ -152,7 +152,9 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _SingleIndexHintSpec<I extends Item, T>
-            extends MySQLQuery._IndexHintForOrderByClause<_SingleIndexHintSpec<I, T>>, _SingleSetClause<I, T> {
+            extends MySQLQuery._IndexHintForOrderByClause<_SingleIndexHintSpec<I, T>>,
+            _DynamicIndexHintClause<_IndexForOrderBySpec<Object>, _SingleIndexHintSpec<I, T>>,
+            _SingleSetClause<I, T> {
 
     }
 
@@ -345,6 +347,7 @@ public interface MySQLUpdate extends MySQLStatement {
      */
     interface _BatchSingleIndexHintSpec<I extends Item, T>
             extends MySQLQuery._IndexHintForOrderByClause<_BatchSingleIndexHintSpec<I, T>>,
+            _DynamicIndexHintClause<_IndexForOrderBySpec<Object>, _BatchSingleIndexHintSpec<I, T>>,
             _BatchSingleSetClause<I, T> {
 
     }
@@ -518,7 +521,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link MySQLQuery._IndexHintClause}</li>
+     *          <li>{@link _StaticIndexHintClause}</li>
      *          <li>method {@link Statement._AsClause}</li>
      *     </ul>
      * </p>
@@ -582,7 +585,7 @@ public interface MySQLUpdate extends MySQLStatement {
     }
 
 
-    interface _ParensJoinSpec<I extends Item> extends _ParensStringClause<_MultiJoinSpec<I>>, _MultiJoinSpec<I> {
+    interface _ParensJoinSpec<I extends Item> extends _OptionalParensStringClause<_MultiJoinSpec<I>>, _MultiJoinSpec<I> {
 
     }
 
@@ -741,7 +744,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link MySQLQuery._IndexHintClause}</li>
+     *          <li>{@link _StaticIndexHintClause}</li>
      *          <li>{@link Statement._OnClause}</li>
      *     </ul>
      * </p>
@@ -806,7 +809,7 @@ public interface MySQLUpdate extends MySQLStatement {
 
     }
 
-    interface _BatchParensJoinSpec<I extends Item> extends _ParensStringClause<_BatchMultiJoinSpec<I>>,
+    interface _BatchParensJoinSpec<I extends Item> extends _OptionalParensStringClause<_BatchMultiJoinSpec<I>>,
             _BatchMultiJoinSpec<I> {
 
     }

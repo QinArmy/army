@@ -166,40 +166,52 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
-    interface _IndexHintClause<R> {
+    interface _StaticIndexHintClause<R> extends Item {
 
         _ParensStringClause<R> useIndex();
 
         _ParensStringClause<R> ignoreIndex();
 
         _ParensStringClause<R> forceIndex();
-    }
 
-
-    interface _IndexHintForJoinClause<RR> extends _IndexHintClause<RR> {
-
-        @Override
-        _IndexForJoinSpec<RR> useIndex();
-
-        @Override
-        _IndexForJoinSpec<RR> ignoreIndex();
-
-        @Override
-        _IndexForJoinSpec<RR> forceIndex();
 
     }
 
+    interface _DynamicIndexHintClause<T extends Item, R extends Item> {
 
-    interface _IndexHintForOrderByClause<RR> extends _IndexHintClause<RR> {
+        R ifUseIndex(Consumer<T> consumer);
+
+        R ifIgnoreIndex(Consumer<T> consumer);
+
+        R ifForceIndex(Consumer<T> consumer);
+
+    }
+
+
+    interface _IndexHintForJoinClause<R> extends _StaticIndexHintClause<R> {
 
         @Override
-        _IndexForOrderBySpec<RR> useIndex();
+        _IndexForJoinSpec<R> useIndex();
 
         @Override
-        _IndexForOrderBySpec<RR> ignoreIndex();
+        _IndexForJoinSpec<R> ignoreIndex();
 
         @Override
-        _IndexForOrderBySpec<RR> forceIndex();
+        _IndexForJoinSpec<R> forceIndex();
+
+    }
+
+
+    interface _IndexHintForOrderByClause<R> extends _StaticIndexHintClause<R> {
+
+        @Override
+        _IndexForOrderBySpec<R> useIndex();
+
+        @Override
+        _IndexForOrderBySpec<R> ignoreIndex();
+
+        @Override
+        _IndexForOrderBySpec<R> forceIndex();
 
     }
 
@@ -211,7 +223,7 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
-    interface _QueryIndexHintClause<R> extends _IndexHintForJoinClause<R>, _IndexHintForOrderByClause<R> {
+    interface _QueryIndexHintSpec<R extends Item> extends _IndexHintForJoinClause<R>, _IndexHintForOrderByClause<R> {
 
         @Override
         _IndexPurposeBySpec<R> useIndex();
@@ -249,22 +261,22 @@ public interface MySQLStatement extends DialectStatement {
     }
 
 
-    interface _NestedLeftParensJoinSpec<I extends Item> extends _ParensStringClause<_MySQLNestedJoinClause<I>>,
+    interface _NestedLeftParensJoinSpec<I extends Item> extends _OptionalParensStringClause<_MySQLNestedJoinClause<I>>,
             _MySQLNestedJoinClause<I> {
 
     }
 
-    interface _NestedParenCrossSpec<I extends Item> extends _ParensStringClause<_NestedJoinSpec<I>>,
+    interface _NestedParenCrossSpec<I extends Item> extends _OptionalParensStringClause<_NestedJoinSpec<I>>,
             _NestedJoinSpec<I> {
 
     }
 
-    interface _NestedParenOnSpec<I extends Item> extends _ParensStringClause<_NestedOnSpec<I>>, _NestedOnSpec<I> {
+    interface _NestedParenOnSpec<I extends Item> extends _OptionalParensStringClause<_NestedOnSpec<I>>, _NestedOnSpec<I> {
 
 
     }
 
-    interface _NestedIndexHintOnSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintOnSpec<I>>,
+    interface _NestedIndexHintOnSpec<I extends Item> extends _QueryIndexHintSpec<_NestedIndexHintOnSpec<I>>,
             _NestedOnSpec<I> {
 
     }
@@ -273,7 +285,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _NestedIndexHintCrossSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintCrossSpec<I>>,
+    interface _NestedIndexHintCrossSpec<I extends Item> extends _QueryIndexHintSpec<_NestedIndexHintCrossSpec<I>>,
             _NestedJoinSpec<I> {
 
     }
@@ -282,7 +294,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _NestedIndexHintJoinSpec<I extends Item> extends _QueryIndexHintClause<_NestedIndexHintJoinSpec<I>>
+    interface _NestedIndexHintJoinSpec<I extends Item> extends _QueryIndexHintSpec<_NestedIndexHintJoinSpec<I>>
             , _MySQLNestedJoinClause<I> {
 
     }
@@ -300,7 +312,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _DynamicIndexHintOnClause extends _QueryIndexHintClause<_DynamicIndexHintOnClause>,
+    interface _DynamicIndexHintOnClause extends _QueryIndexHintSpec<_DynamicIndexHintOnClause>,
             _OnClause<_DynamicJoinSpec> {
 
     }
@@ -323,7 +335,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _DynamicIndexHintJoinClause extends _QueryIndexHintClause<_DynamicIndexHintJoinClause>, _DynamicJoinSpec {
+    interface _DynamicIndexHintJoinClause extends _QueryIndexHintSpec<_DynamicIndexHintJoinClause>, _DynamicJoinSpec {
 
     }
 

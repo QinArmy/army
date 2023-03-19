@@ -409,7 +409,7 @@ abstract class CriteriaSupports {
     }//ParenStringConsumerClause
 
     @SuppressWarnings("unchecked")
-    static abstract class CteParensClause<R> implements Statement._ParensStringClause<R> {
+    static abstract class CteParensClause<R> implements Statement._OptionalParensStringClause<R> {
 
         final String name;
 

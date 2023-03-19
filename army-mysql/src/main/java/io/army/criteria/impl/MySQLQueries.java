@@ -257,6 +257,24 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     @Override
+    public final _IndexHintJoinSpec<I> ifUseIndex(Consumer<_IndexPurposeBySpec<Object>> consumer) {
+        this.getIndexHintClause().ifUseIndex(consumer);
+        return this;
+    }
+
+    @Override
+    public final _IndexHintJoinSpec<I> ifIgnoreIndex(Consumer<_IndexPurposeBySpec<Object>> consumer) {
+        this.getIndexHintClause().ifIgnoreIndex(consumer);
+        return this;
+    }
+
+    @Override
+    public final _IndexHintJoinSpec<I> ifForceIndex(Consumer<_IndexPurposeBySpec<Object>> consumer) {
+        this.getIndexHintClause().ifForceIndex(consumer);
+        return this;
+    }
+
+    @Override
     public final _JoinSpec<I> parens(String first, String... rest) {
         this.getFromClauseDerived().onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
         return this;
@@ -596,8 +614,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     @Override
     final _IndexHintJoinSpec<I> onFromTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
                                             String alias) {
-        final MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>> block;
-        block = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, this);
+        final MySQLSupports.MySQLFromClausePurposeTableBlock<_IndexHintJoinSpec<I>> block;
+        block = new MySQLSupports.MySQLFromClausePurposeTableBlock<>(joinType, table, alias, this);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return this;
@@ -607,8 +625,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
                                                       DerivedTable table) {
         return alias -> {
-            final _TableBlock block;
-            block = new TableBlocks.ParensDerivedJoinBlock(joinType, modifier, table, alias);
+            final TableBlocks.FromClauseAliasDerivedBock block;
+            block = TableBlocks.fromAliasDerivedBlock(joinType, modifier, table, alias);
             this.blockConsumer.accept(block);
             this.fromCrossBlock = block;
             return this;
@@ -619,8 +637,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     @Override
     final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem,
                                  String alias) {
-        final TableBlocks.NoOnTableBlock block;
-        block = new TableBlocks.NoOnTableBlock(joinType, cteItem, alias);
+        final _TableBlock block;
+        block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return this;
@@ -698,12 +716,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      * @see #forceIndex()
      */
     @SuppressWarnings("unchecked")
-    private _QueryIndexHintClause<_IndexHintJoinSpec<I>> getIndexHintClause() {
+    private MySQLSupports.MySQLFromClausePurposeTableBlock<_IndexHintJoinSpec<I>> getIndexHintClause() {
         final _TableBlock block = this.fromCrossBlock;
-        if (this.context.lastBlock() != block || !(block instanceof MySQLSupports.MySQLNoOnBlock)) {
+        if (this.context.lastBlock() != block || !(block instanceof MySQLSupports.MySQLFromClausePurposeTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return ((MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>>) block).getUseIndexClause();
+        return (MySQLSupports.MySQLFromClausePurposeTableBlock<_IndexHintJoinSpec<I>>) block;
     }
 
 
@@ -958,8 +976,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         _IndexHintJoinSpec<I> asEnd(final MySQLSupports.MySQLBlockParams params) {
             final MySQLQueries<I> stmt = this.stmt;
 
-            MySQLSupports.MySQLNoOnBlock<_IndexHintJoinSpec<I>> block;
-            block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
+            MySQLSupports.MySQLFromClauseTableBlock<_IndexHintJoinSpec<I>> block;
+            block = new MySQLSupports.MySQLFromClauseTableBlock<>(params, stmt);
 
             stmt.blockConsumer.accept(block);
             stmt.fromCrossBlock = block;// update noOnBlock

@@ -328,13 +328,13 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }//DynamicDerivedBlock
 
     private static abstract class DynamicTableBlock<R> extends MySQLDynamicJoins implements _MySQLTableBlock,
-            MySQLStatement._QueryIndexHintClause<R> {
+            MySQLStatement._QueryIndexHintSpec<R> {
 
         private final List<String> partitionList;
 
-        private List<MySQLIndexHint> indexHintList;
+        private List<MySQLSupports.MySQLIndexHint> indexHintList;
 
-        private MySQLQuery._QueryIndexHintClause<R> indexHintClause;
+        private MySQLStatement._QueryIndexHintSpec<R> indexHintClause;
 
         private DynamicTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
                                   _JoinType joinType, TableMeta<?> table, String alias) {
@@ -374,7 +374,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         public final List<? extends _IndexHint> indexHintList() {
-            List<MySQLIndexHint> list = this.indexHintList;
+            List<MySQLSupports.MySQLIndexHint> list = this.indexHintList;
             if (list == null || list instanceof ArrayList) {
                 this.indexHintClause = null;
                 list = _CollectionUtils.safeUnmodifiableList(list);
@@ -383,8 +383,8 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             return list;
         }
 
-        private MySQLQuery._QueryIndexHintClause<R> getIndexHintClause() {
-            MySQLQuery._QueryIndexHintClause<R> clause = this.indexHintClause;
+        private MySQLStatement._QueryIndexHintSpec<R> getIndexHintClause() {
+            MySQLStatement._QueryIndexHintSpec<R> clause = this.indexHintClause;
             if (clause == null) {
                 clause = MySQLSupports.indexHintClause(this.context, this::onAddIndexHint);
                 this.indexHintClause = clause;
@@ -393,11 +393,11 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @SuppressWarnings("unchecked")
-        private R onAddIndexHint(final @Nullable MySQLIndexHint indexHint) {
+        private R onAddIndexHint(final @Nullable MySQLSupports.MySQLIndexHint indexHint) {
             if (indexHint == null) {
                 return (R) this;
             }
-            List<MySQLIndexHint> list = this.indexHintList;
+            List<MySQLSupports.MySQLIndexHint> list = this.indexHintList;
             if (list == null) {
                 list = new ArrayList<>();
                 this.indexHintList = list;

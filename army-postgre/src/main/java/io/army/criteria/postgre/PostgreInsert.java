@@ -353,7 +353,7 @@ public interface PostgreInsert extends PostgreStatement {
 
     }
 
-    interface _DynamicCteParensSpec extends _ParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
+    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
 
     }
 

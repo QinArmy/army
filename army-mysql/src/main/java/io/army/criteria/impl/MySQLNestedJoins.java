@@ -365,12 +365,12 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
      * </p>
      */
     private static abstract class MySQLTableBlock<I extends Item, RR> extends MySQLNestedBlock<I>
-            implements MySQLQuery._QueryIndexHintClause<RR>, _MySQLTableBlock {
+            implements MySQLStatement._QueryIndexHintSpec<RR>, _MySQLTableBlock {
 
         private final List<String> partitionList;
-        private List<MySQLIndexHint> indexHintList;
+        private List<MySQLSupports.MySQLIndexHint> indexHintList;
 
-        private MySQLQuery._QueryIndexHintClause<RR> hintClause;
+        private MySQLStatement._QueryIndexHintSpec<RR> hintClause;
 
         private MySQLTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
                                 _JoinType joinType, TableMeta<?> table, String alias, Supplier<I> ender) {
@@ -406,7 +406,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
 
         @Override
         public final List<? extends _IndexHint> indexHintList() {
-            List<MySQLIndexHint> indexHintList = this.indexHintList;
+            List<MySQLSupports.MySQLIndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null || indexHintList instanceof ArrayList) {
                 indexHintList = _CollectionUtils.safeUnmodifiableList(indexHintList);
                 this.indexHintList = indexHintList;
@@ -415,8 +415,8 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         }
 
 
-        private MySQLQuery._QueryIndexHintClause<RR> getHintClause() {
-            MySQLQuery._QueryIndexHintClause<RR> clause = this.hintClause;
+        private MySQLStatement._QueryIndexHintSpec<RR> getHintClause() {
+            MySQLStatement._QueryIndexHintSpec<RR> clause = this.hintClause;
             if (clause == null) {
                 clause = MySQLSupports.indexHintClause(this.context, this::onAddIndexHint);
                 this.hintClause = clause;
@@ -425,11 +425,11 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         }
 
         @SuppressWarnings("unchecked")
-        private RR onAddIndexHint(final @Nullable MySQLIndexHint indexHint) {
+        private RR onAddIndexHint(final @Nullable MySQLSupports.MySQLIndexHint indexHint) {
             if (indexHint == null) {
                 return (RR) this;
             }
-            List<MySQLIndexHint> indexHintList = this.indexHintList;
+            List<MySQLSupports.MySQLIndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null) {
                 indexHintList = new ArrayList<>();
                 this.indexHintList = indexHintList;
@@ -526,7 +526,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
 
     @SuppressWarnings("unchecked")
     private static abstract class NestedDerivedBlock<I extends Item, R> extends MySQLNestedBlock<I>
-            implements Statement._ParensStringClause<R>,
+            implements Statement._OptionalParensStringClause<R>,
             _ModifierTableBlock, ArmyAliasDerivedBlock {
 
         private List<String> columnAliasList;

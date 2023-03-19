@@ -1236,17 +1236,21 @@ public interface Statement extends Item {
 
     }
 
-    interface _ParensStringClause<R> {
+
+    interface _ParensStringClause<R> extends Item {
 
         R parens(String first, String... rest);
 
         R parens(Consumer<Consumer<String>> consumer);
+    }
+
+    interface _OptionalParensStringClause<R> extends _ParensStringClause<R> {
 
         R ifParens(Consumer<Consumer<String>> consumer);
     }
 
 
-    interface _ParensOnSpec<R> extends _ParensStringClause<_OnClause<R>>, _OnClause<R> {
+    interface _ParensOnSpec<R> extends _OptionalParensStringClause<_OnClause<R>>, _OnClause<R> {
 
     }
 

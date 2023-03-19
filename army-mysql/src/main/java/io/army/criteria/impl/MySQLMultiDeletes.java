@@ -36,7 +36,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT, FS
         MySQLDelete._MultiDeleteHintClause<FU>,
         MySQLDelete._MultiDeleteAliasClause<DT>,
         MySQLQuery._IndexHintForJoinClause<FT>,
-        Statement._ParensStringClause<FC>,
+        Statement._OptionalParensStringClause<FC>,
         MySQLStatement._MySQLCrossNestedClause<FC>,
         MySQLStatement._MySQLUsingNestedClause<FC>,
         MySQLStatement._MySQLFromNestedClause<FC>,
@@ -327,8 +327,8 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT, FS
 
     @Override
     final FT onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
-        final MySQLSupports.MySQLNoOnBlock<FT> block;
-        block = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, (FT) this);
+        final MySQLSupports.MySQLFromClauseTableBlock<FT> block;
+        block = new MySQLSupports.MySQLFromClauseTableBlock<>(joinType, null, table, alias, (FT) this);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return (FT) this;
@@ -389,10 +389,10 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT, FS
      */
     private MySQLQuery._IndexHintForJoinClause<FT> getHintClause() {
         final _TableBlock block = this.fromCrossBlock;
-        if (block != this.context.lastBlock() || !(block instanceof MySQLSupports.MySQLNoOnBlock)) {
+        if (block != this.context.lastBlock() || !(block instanceof MySQLSupports.MySQLFromClauseTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return ((MySQLSupports.MySQLNoOnBlock<FT>) block).getUseIndexClause();
+        return ((MySQLSupports.MySQLFromClauseTableBlock<FT>) block).getUseIndexClause();
     }
 
 
@@ -707,8 +707,8 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT, FS
         MySQLDelete._MultiIndexHintJoinSpec<I> asEnd(final MySQLSupports.MySQLBlockParams params) {
             final MySQLSimpleMultiDelete<I> stmt = this.stmt;
 
-            final MySQLSupports.MySQLNoOnBlock<MySQLDelete._MultiIndexHintJoinSpec<I>> block;
-            block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
+            final MySQLSupports.MySQLFromClauseTableBlock<_MultiIndexHintJoinSpec<I>> block;
+            block = new MySQLSupports.MySQLFromClauseTableBlock<>(params, stmt);
 
             stmt.blockConsumer.accept(block);
             stmt.fromCrossBlock = block;// update noOnBlock
@@ -776,8 +776,8 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT, FS
         MySQLDelete._BatchMultiIndexHintJoinSpec<BatchDelete> asEnd(final MySQLSupports.MySQLBlockParams params) {
             final MySQLBatchMultiDelete stmt = this.stmt;
 
-            final MySQLSupports.MySQLNoOnBlock<MySQLDelete._BatchMultiIndexHintJoinSpec<BatchDelete>> block;
-            block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
+            final MySQLSupports.MySQLFromClauseTableBlock<_BatchMultiIndexHintJoinSpec<BatchDelete>> block;
+            block = new MySQLSupports.MySQLFromClauseTableBlock<>(params, stmt);
 
             stmt.blockConsumer.accept(block);
             stmt.fromCrossBlock = block;// update noOnBlock

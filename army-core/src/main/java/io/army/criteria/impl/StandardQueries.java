@@ -34,10 +34,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._FromSpec<I>, // SD
         StandardQuery._JoinSpec<I>,// FT
         Statement._AsClause<StandardQuery._JoinSpec<I>>,// FS
-        Object,                          //FC
+        Void,                          //FC
         Statement._OnClause<StandardQuery._JoinSpec<I>>, // JT
         Statement._AsClause<Statement._OnClause<StandardQuery._JoinSpec<I>>>, // JS
-        Object,                               // JC
+        Void,                               // JC
         StandardQuery._GroupBySpec<I>, // WR
         StandardQuery._WhereAndSpec<I>, // AR
         StandardQuery._HavingSpec<I>, // GR
@@ -191,7 +191,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     @Override
     final _JoinSpec<I> onFromTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
                                    String alias) {
-        this.blockConsumer.accept(new TableBlocks.NoOnTableBlock(joinType, table, alias));
+        this.blockConsumer.accept(TableBlocks.fromTableBlock(joinType, modifier, table, alias));
         return this;
     }
 
@@ -199,7 +199,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     final _AsClause<_JoinSpec<I>> onFromDerived(final _JoinType joinType, @Nullable DerivedModifier modifier,
                                                 final DerivedTable table) {
         return alias -> {
-            this.blockConsumer.accept(new OnClauseTableBlock<>(joinType, table, alias, this));
+            this.blockConsumer.accept(TableBlocks.fromDerivedBlock(joinType, modifier, table, alias));
             return this;
         };
     }
@@ -208,8 +208,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     @Override
     final _OnClause<_JoinSpec<I>> onJoinTable(final _JoinType joinType, @Nullable TableModifier modifier,
                                               final TableMeta<?> table, final String alias) {
-        final OnClauseTableBlock<_JoinSpec<I>> block;
-        block = new OnClauseTableBlock<>(joinType, table, alias, this);
+        final TableBlocks.JoinClauseTableBlock<_JoinSpec<I>> block;
+        block = TableBlocks.joinTableBlock(joinType, modifier, table, alias, this);
         this.blockConsumer.accept(block);
         return block;
     }
@@ -218,8 +218,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     final _AsClause<_OnClause<_JoinSpec<I>>> onJoinDerived(final _JoinType joinType, @Nullable DerivedModifier modifier,
                                                            final DerivedTable table) {
         return alias -> {
-            final OnClauseTableBlock<_JoinSpec<I>> block;
-            block = new OnClauseTableBlock<>(joinType, table, alias, this);
+            final TableBlocks.JoinClauseDerivedBlock<_JoinSpec<I>> block;
+            block = TableBlocks.joinDerivedBlock(joinType, modifier, table, alias, this);
             this.blockConsumer.accept(block);
             return block;
         };
@@ -269,7 +269,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
      * @see #fullJoin(Function)
      */
     private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        final TableBlocks.OnClauseBlock<_JoinSpec<I>> block;
+        final TableBlocks.JoinClauseBlock<_JoinSpec<I>> block;
         block = TableBlocks.joinNestedBlock(joinType, nestedItems, this);
         this.blockConsumer.accept(block);
         return block;
