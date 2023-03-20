@@ -407,6 +407,7 @@ public interface MySQLDelete extends MySQLStatement {
 
     interface _MultiIndexHintOnSpec<I extends Item>
             extends MySQLQuery._IndexHintForJoinClause<_MultiIndexHintOnSpec<I>>,
+            _DynamicIndexHintClause<_IndexForJoinSpec<Object>, _MultiIndexHintOnSpec<I>>,
             Statement._OnClause<_MultiJoinSpec<I>> {
 
     }
@@ -588,6 +589,7 @@ public interface MySQLDelete extends MySQLStatement {
 
     interface _BatchMultiIndexHintOnSpec<I extends Item>
             extends MySQLQuery._IndexHintForJoinClause<_BatchMultiIndexHintOnSpec<I>>,
+            _DynamicIndexHintClause<_IndexForJoinSpec<Object>, _BatchMultiIndexHintOnSpec<I>>,
             Statement._OnClause<_BatchMultiJoinSpec<I>> {
 
     }

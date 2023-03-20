@@ -178,8 +178,9 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _IndexHintOnSpec<I extends Item> extends _QueryIndexHintSpec<_IndexHintOnSpec<I>>
-            , _OnClause<_JoinSpec<I>> {
+    interface _IndexHintOnSpec<I extends Item> extends _QueryIndexHintSpec<_IndexHintOnSpec<I>>,
+            _DynamicIndexHintClause<_IndexPurposeBySpec<Object>, _IndexHintOnSpec<I>>,
+            _OnClause<_JoinSpec<I>> {
 
     }
 
@@ -245,7 +246,6 @@ public interface MySQLQuery extends Query, MySQLStatement {
             _DynamicParensQueryClause<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
-
 
 
     interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<I>>,

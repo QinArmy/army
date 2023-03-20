@@ -13,7 +13,6 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util._ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
 
@@ -292,19 +291,19 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
     @Override
     public final FC parens(String first, String... rest) {
-        this.getFromDerived().onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
+        this.getFromDerived().parens(first, rest);
         return (FC) this;
     }
 
     @Override
     public final FC parens(Consumer<Consumer<String>> consumer) {
-        this.getFromDerived().onColumnAlias(CriteriaUtils.stringList(this.context, true, consumer));
+        this.getFromDerived().parens(this.context, consumer);
         return (FC) this;
     }
 
     @Override
     public final FC ifParens(Consumer<Consumer<String>> consumer) {
-        this.getFromDerived().onColumnAlias(CriteriaUtils.stringList(this.context, false, consumer));
+        this.getFromDerived().ifParens(this.context, consumer);
         return (FC) this;
     }
 
@@ -376,8 +375,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
     @Override
     final FT onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
-        final PostgreSupports.PostgreNoOnTableBlock block;
-        block = new PostgreSupports.PostgreNoOnTableBlock(joinType, modifier, table, alias);
+        final PostgreSupports.FromClauseTableBlock block;
+        block = new PostgreSupports.FromClauseTableBlock(joinType, modifier, table, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return (FT) this;
@@ -385,45 +384,43 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
     @Override
     final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
-        final TableBlocks.NoOnTableBlock block;
-        block = new TableBlocks.NoOnTableBlock(joinType, cteItem, alias);
+        final _TableBlock block;
+        block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return (FC) this;
     }
 
     final FC fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        final TableBlocks.NoOnTableBlock block;
-        block = new TableBlocks.NoOnTableBlock(joinType, nestedItems, "");
-        this.blockConsumer.accept(block);
+        this.blockConsumer.accept(TableBlocks.fromNestedBlock(joinType, nestedItems));
         return (FC) this;
     }
 
 
     final _OnClause<FC> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
 
-        final OnClauseTableBlock<FC> block;
-        block = new OnClauseTableBlock<>(joinType, nestedItems, "", (FC) this);
+        final TableBlocks.JoinClauseNestedBlock<FC> block;
+        block = TableBlocks.joinNestedBlock(joinType, nestedItems, (FC) this);
         this.blockConsumer.accept(block);
         return block;
     }
 
 
-    private PostgreSupports.PostgreNoOnTableBlock getFromCrossBlock() {
+    private PostgreSupports.FromClauseTableBlock getFromCrossBlock() {
         final _TableBlock block = this.fromCrossBlock;
-        if (!(this.context.lastBlock() == block && block instanceof PostgreSupports.PostgreNoOnTableBlock)) {
+        if (!(this.context.lastBlock() == block && block instanceof PostgreSupports.FromClauseTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (PostgreSupports.PostgreNoOnTableBlock) block;
+        return (PostgreSupports.FromClauseTableBlock) block;
     }
 
 
-    final TableBlocks.ParensDerivedJoinBlock getFromDerived() {
+    final TableBlocks.FromClauseAliasDerivedBlock getFromDerived() {
         final _TableBlock block = this.fromCrossBlock;
-        if (!(this.context.lastBlock() == block && block instanceof TableBlocks.ParensDerivedJoinBlock)) {
+        if (!(this.context.lastBlock() == block && block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (TableBlocks.ParensDerivedJoinBlock) block;
+        return (TableBlocks.FromClauseAliasDerivedBlock) block;
     }
 
 
@@ -637,8 +634,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                                                              @Nullable Query.DerivedModifier modifier,
                                                              DerivedTable table) {
             return alias -> {
-                final TableBlocks.ParensDerivedJoinBlock block;
-                block = new TableBlocks.ParensDerivedJoinBlock(joinType, modifier, table, alias);
+                final TableBlocks.FromClauseAliasDerivedBlock block;
+                block = TableBlocks.fromAliasDerivedBlock(joinType, modifier, table, alias);
                 this.blockConsumer.accept(block);
                 this.fromCrossBlock = block;
                 return this;
@@ -648,8 +645,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         @Override
         final _TableSampleOnSpec<I, Q> onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
                                                    TableMeta<?> table, String alias) {
-            final SimpleTableBlock<I, Q> block;
-            block = new SimpleTableBlock<>(joinType, modifier, table, alias, this);
+            final SimpleJoinClauseTableBlock<I, Q> block;
+            block = new SimpleJoinClauseTableBlock<>(joinType, modifier, table, alias, this);
             this.blockConsumer.accept(block);
             return block;
         }
@@ -659,8 +656,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         final _AsParensOnClause<_SingleJoinSpec<I, Q>> onJoinDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
                                                                      DerivedTable table) {
             return alias -> {
-                final OnClauseTableBlock.OnModifierParensBlock<_SingleJoinSpec<I, Q>> block;
-                block = new OnClauseTableBlock.OnModifierParensBlock<>(joinType, modifier, table, alias, this);
+                final TableBlocks.JoinClauseAliasDerivedBlock<_SingleJoinSpec<I, Q>> block;
+                block = TableBlocks.joinAliasDerivedBlock(joinType, modifier, table, alias, this);
                 this.blockConsumer.accept(block);
                 return block;
             };
@@ -669,8 +666,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         @Override
         final _OnClause<_SingleJoinSpec<I, Q>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
                                                          CteItem cteItem, String alias) {
-            final OnClauseTableBlock<_SingleJoinSpec<I, Q>> block;
-            block = new OnClauseTableBlock<>(joinType, cteItem, alias, this);
+            final TableBlocks.JoinClauseCteBlock<_SingleJoinSpec<I, Q>> block;
+            block = TableBlocks.joinCteBlock(joinType, cteItem, alias, this);
             this.blockConsumer.accept(block);
             return block;
         }
@@ -918,8 +915,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        final BatchUpdate onAsUpdate() {
-            if (this.returningList != null) {
+        BatchUpdate onAsUpdate() {
+            if (this.returningList != null || this.paramList == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.returningList = Collections.emptyList();
@@ -931,8 +928,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         _AsClause<_BatchParensJoinSpec<BatchUpdate, BatchReturningUpdate>> onFromDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
                                                                                          DerivedTable table) {
             return alias -> {
-                final TableBlocks.ParensDerivedJoinBlock block;
-                block = new TableBlocks.ParensDerivedJoinBlock(joinType, modifier, table, alias);
+                final TableBlocks.FromClauseAliasDerivedBlock block;
+                block = TableBlocks.fromAliasDerivedBlock(joinType, modifier, table, alias);
                 this.blockConsumer.accept(block);
                 this.fromCrossBlock = block;
                 return this;
@@ -943,8 +940,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         @Override
         _BatchTableSampleOnSpec<BatchUpdate, BatchReturningUpdate> onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
                                                                                TableMeta<?> table, String alias) {
-            final BatchTableBlock<BatchUpdate, BatchReturningUpdate> block;
-            block = new BatchTableBlock<>(joinType, modifier, table, alias, this);
+            final BatchJoinClauseTableBlock<BatchUpdate, BatchReturningUpdate> block;
+            block = new BatchJoinClauseTableBlock<>(joinType, modifier, table, alias, this);
             this.blockConsumer.accept(block);
             return block;
         }
@@ -954,8 +951,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                                                                                                  @Nullable Query.DerivedModifier modifier,
                                                                                                  DerivedTable table) {
             return alias -> {
-                final OnClauseTableBlock.OnModifierParensBlock<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> block;
-                block = new OnClauseTableBlock.OnModifierParensBlock<>(joinType, modifier, table, alias, this);
+                final TableBlocks.JoinClauseAliasDerivedBlock<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> block;
+                block = TableBlocks.joinAliasDerivedBlock(joinType, modifier, table, alias, this);
                 this.blockConsumer.accept(block);
                 return block;
             };
@@ -964,8 +961,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         @Override
         _OnClause<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
                                                                                      CteItem cteItem, String alias) {
-            final OnClauseTableBlock<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> block;
-            block = new OnClauseTableBlock<>(joinType, cteItem, alias, this);
+            final TableBlocks.JoinClauseCteBlock<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> block;
+            block = TableBlocks.joinCteBlock(joinType, cteItem, alias, this);
             this.blockConsumer.accept(block);
             return block;
         }
@@ -1257,35 +1254,35 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     }//BatchUpdateClause
 
 
-    private static final class SimpleTableBlock<I extends Item, Q extends Item>
+    private static final class SimpleJoinClauseTableBlock<I extends Item, Q extends Item>
             extends PostgreSupports.PostgreTableOnBlock<
             _RepeatableOnClause<I, Q>,
             _OnClause<_SingleJoinSpec<I, Q>>,
             _SingleJoinSpec<I, Q>>
             implements _TableSampleOnSpec<I, Q>, _RepeatableOnClause<I, Q> {
 
-        private SimpleTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table, String alias,
-                                 _SingleJoinSpec<I, Q> stmt) {
+        private SimpleJoinClauseTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table, String alias,
+                                           _SingleJoinSpec<I, Q> stmt) {
             super(joinType, modifier, table, alias, stmt);
         }
 
 
-    }//SimpleTableBlock
+    }//SimpleJoinClauseTableBlock
 
-    private static final class BatchTableBlock<I extends Item, Q extends Item>
+    private static final class BatchJoinClauseTableBlock<I extends Item, Q extends Item>
             extends PostgreSupports.PostgreTableOnBlock<
             _BatchRepeatableOnClause<I, Q>,
             _OnClause<_BatchSingleJoinSpec<I, Q>>,
             _BatchSingleJoinSpec<I, Q>>
             implements _BatchTableSampleOnSpec<I, Q>, _BatchRepeatableOnClause<I, Q> {
 
-        private BatchTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table, String alias,
-                                _BatchSingleJoinSpec<I, Q> stmt) {
+        private BatchJoinClauseTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table, String alias,
+                                          _BatchSingleJoinSpec<I, Q> stmt) {
             super(joinType, modifier, table, alias, stmt);
         }
 
 
-    }//BatchTableBlock
+    }//BatchJoinClauseTableBlock
 
 
     private static abstract class PostgreReturningUpdateWrapper extends CriteriaSupports.StatementMockSupport

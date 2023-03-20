@@ -535,6 +535,7 @@ public interface MySQLUpdate extends MySQLStatement {
      */
     interface _MultiIndexHintOnSpec<I extends Item>
             extends _IndexHintForJoinClause<_MultiIndexHintOnSpec<I>>,
+            _DynamicIndexHintClause<_IndexForJoinSpec<Object>, _MultiIndexHintOnSpec<I>>,
             _OnClause<_MultiJoinSpec<I>> {
 
     }
@@ -758,6 +759,7 @@ public interface MySQLUpdate extends MySQLStatement {
      */
     interface _BatchMultiIndexHintOnSpec<I extends Item>
             extends MySQLQuery._IndexHintForJoinClause<_BatchMultiIndexHintOnSpec<I>>,
+            _DynamicIndexHintClause<_IndexForJoinSpec<Object>, _BatchMultiIndexHintOnSpec<I>>,
             _OnClause<_BatchMultiJoinSpec<I>> {
 
     }

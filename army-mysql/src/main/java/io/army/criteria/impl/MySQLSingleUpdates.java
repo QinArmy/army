@@ -73,9 +73,6 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
 
     private List<_IndexHint> indexHintList;
 
-
-    private MySQLQuery._IndexHintForOrderByClause<UT> hintClause;
-
     private MySQLSingleUpdates(UpdateClause<I, ?> clause) {
         super(clause.context, clause.updateTable, clause.tableAlias);
         this.recursive = clause.isRecursive();
@@ -167,7 +164,6 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
 
     @Override
     final I onAsUpdate() {
-        this.hintClause = null;
         this.indexHintList = _CollectionUtils.safeUnmodifiableList(this.indexHintList);
         return this.asMySQLUpdate();
     }

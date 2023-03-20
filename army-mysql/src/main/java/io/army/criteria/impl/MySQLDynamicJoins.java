@@ -13,7 +13,6 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
 import io.army.util._CollectionUtils;
-import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -150,22 +149,22 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
     @Override
+    final boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
+        return CriteriaUtils.isIllegalLateral(modifier);
+    }
+
+    @Override
     final MySQLQuery._DynamicIndexHintJoinClause onFromTable(
             _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
-        final DynamicTableJoinBlock block;
-        block = new DynamicTableJoinBlock(this.context, this.blockConsumer, joinType, table, alias);
+        final FromClauseTableBlock block;
+        block = new FromClauseTableBlock(this.context, this.blockConsumer, joinType, table, alias);
         this.blockConsumer.accept(block);
         return block;
     }
 
     @Override
     final Statement._AsClause<MySQLQuery._DynamicJoinSpec> onFromDerived(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
-        if (table == null) {
-            throw ContextStack.nullPointer(this.context);
-        } else if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.errorModifier(this.context, modifier);
-        }
+            _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final DynamicDerivedBlock block;
             block = new DynamicDerivedBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
@@ -187,20 +186,15 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     @Override
     final MySQLQuery._DynamicIndexHintOnClause onJoinTable(
             _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
-        final DynamicTableOnBlock block;
-        block = new DynamicTableOnBlock(this.context, this.blockConsumer, joinType, table, alias);
+        final JoinClauseTableBlock block;
+        block = new JoinClauseTableBlock(this.context, this.blockConsumer, joinType, table, alias);
         this.blockConsumer.accept(block);
         return block;
     }
 
     @Override
     final Statement._AsParensOnClause<MySQLStatement._DynamicJoinSpec> onJoinDerived(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
-        if (modifier != null && modifier != SQLs.LATERAL) {
-            throw MySQLUtils.errorModifier(this.context, modifier);
-        } else if (table == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
+            _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final DynamicDerivedBlock block;
             block = new DynamicDerivedBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
@@ -220,7 +214,6 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     private Statement._OnClause<MySQLQuery._DynamicJoinSpec> joinNestedEnd(final _JoinType joinType,
                                                                            final NestedItems nestedItems) {
-        joinType.assertMySQLJoinType();
         final DynamicNestedBlock block;
         block = new DynamicNestedBlock(this.context, this.blockConsumer, joinType, nestedItems);
         this.blockConsumer.accept(block);
@@ -229,7 +222,6 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     private MySQLQuery._DynamicJoinSpec crossNested(final _JoinType joinType,
                                                     final NestedItems nestedItems) {
-        assert joinType == _JoinType.CROSS_JOIN;
         final DynamicNestedBlock block;
         block = new DynamicNestedBlock(this.context, this.blockConsumer, joinType, nestedItems);
         this.blockConsumer.accept(block);
@@ -292,11 +284,17 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         public Selection selection(String name) {
+            if (this.columnAliasList == null) {
+                this.columnAliasList = Collections.emptyList();
+            }
             return this.selectionFunction.apply(name);
         }
 
         @Override
         public List<? extends Selection> selectionList() {
+            if (this.columnAliasList == null) {
+                this.columnAliasList = Collections.emptyList();
+            }
             return this.selectionsSupplier.get();
         }
 
@@ -313,7 +311,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         private Statement._OnClause<MySQLStatement._DynamicJoinSpec> onColumnAlias(final List<String> columnAliasList) {
             if (this.columnAliasList != null) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+                throw ContextStack.castCriteriaApi(this.context);
             }
             this.columnAliasList = columnAliasList;
 
@@ -327,14 +325,15 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     }//DynamicDerivedBlock
 
-    private static abstract class DynamicTableBlock<R> extends MySQLDynamicJoins implements _MySQLTableBlock,
-            MySQLStatement._QueryIndexHintSpec<R> {
+    @SuppressWarnings("unchecked")
+    private static abstract class DynamicTableBlock<R extends Item> extends MySQLDynamicJoins
+            implements _MySQLTableBlock,
+            MySQLStatement._QueryIndexHintSpec<R>,
+            MySQLStatement._DynamicIndexHintClause<MySQLStatement._IndexPurposeBySpec<Object>, R> {
 
         private final List<String> partitionList;
 
-        private List<MySQLSupports.MySQLIndexHint> indexHintList;
-
-        private MySQLStatement._QueryIndexHintSpec<R> indexHintClause;
+        private List<_IndexHint> indexHintList;
 
         private DynamicTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
                                   _JoinType joinType, TableMeta<?> table, String alias) {
@@ -354,17 +353,41 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         public final MySQLStatement._IndexPurposeBySpec<R> useIndex() {
-            return this.getIndexHintClause().useIndex();
+            return MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.USE_INDEX,
+                    this::indexHintEnd);
         }
 
         @Override
         public final MySQLStatement._IndexPurposeBySpec<R> ignoreIndex() {
-            return this.getIndexHintClause().ignoreIndex();
+            return MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.IGNORE_INDEX,
+                    this::indexHintEnd);
         }
 
         @Override
         public final MySQLStatement._IndexPurposeBySpec<R> forceIndex() {
-            return this.getIndexHintClause().forceIndex();
+            return MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.FORCE_INDEX,
+                    this::indexHintEnd);
+        }
+
+        @Override
+        public final R ifUseIndex(Consumer<MySQLStatement._IndexPurposeBySpec<Object>> consumer) {
+            consumer.accept(MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.USE_INDEX,
+                    this::indexHintEndAndReturnObject));
+            return (R) this;
+        }
+
+        @Override
+        public final R ifIgnoreIndex(Consumer<MySQLStatement._IndexPurposeBySpec<Object>> consumer) {
+            consumer.accept(MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.IGNORE_INDEX,
+                    this::indexHintEndAndReturnObject));
+            return (R) this;
+        }
+
+        @Override
+        public final R ifForceIndex(Consumer<MySQLStatement._IndexPurposeBySpec<Object>> consumer) {
+            consumer.accept(MySQLSupports.indexHintClause(this.context, MySQLSupports.IndexHintCommand.FORCE_INDEX,
+                    this::indexHintEndAndReturnObject));
+            return (R) this;
         }
 
         @Override
@@ -374,30 +397,18 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         public final List<? extends _IndexHint> indexHintList() {
-            List<MySQLSupports.MySQLIndexHint> list = this.indexHintList;
+            List<_IndexHint> list = this.indexHintList;
             if (list == null || list instanceof ArrayList) {
-                this.indexHintClause = null;
                 list = _CollectionUtils.safeUnmodifiableList(list);
                 this.indexHintList = list;
             }
             return list;
         }
 
-        private MySQLStatement._QueryIndexHintSpec<R> getIndexHintClause() {
-            MySQLStatement._QueryIndexHintSpec<R> clause = this.indexHintClause;
-            if (clause == null) {
-                clause = MySQLSupports.indexHintClause(this.context, this::onAddIndexHint);
-                this.indexHintClause = clause;
-            }
-            return clause;
-        }
 
         @SuppressWarnings("unchecked")
-        private R onAddIndexHint(final @Nullable MySQLSupports.MySQLIndexHint indexHint) {
-            if (indexHint == null) {
-                return (R) this;
-            }
-            List<MySQLSupports.MySQLIndexHint> list = this.indexHintList;
+        private R indexHintEnd(final _IndexHint indexHint) {
+            List<_IndexHint> list = this.indexHintList;
             if (list == null) {
                 list = new ArrayList<>();
                 this.indexHintList = list;
@@ -408,55 +419,60 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             return (R) this;
         }
 
+        private Object indexHintEndAndReturnObject(final _IndexHint indexHint) {
+            this.indexHintEnd(indexHint);
+            return Collections.EMPTY_LIST;
+        }
+
 
     }//DynamicTableBlock
 
-    private static final class DynamicTableJoinBlock extends DynamicTableBlock<MySQLQuery._DynamicIndexHintJoinClause>
+    private static final class FromClauseTableBlock extends DynamicTableBlock<MySQLQuery._DynamicIndexHintJoinClause>
             implements MySQLQuery._DynamicIndexHintJoinClause {
 
 
         /**
          * @see MySQLJoinBuilder#tabular(TableMeta, SQLs.WordAs, String)
          */
-        private DynamicTableJoinBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
-                                      _JoinType joinType, TableMeta<?> table, String alias) {
+        private FromClauseTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+                                     _JoinType joinType, TableMeta<?> table, String alias) {
             super(context, blockConsumer, joinType, table, alias);
         }
 
         /**
          * @see PartitionJoinClause#asEnd(MySQLSupports.MySQLBlockParams)
          */
-        private DynamicTableJoinBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
-                                      MySQLSupports.MySQLBlockParams params) {
+        private FromClauseTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+                                     MySQLSupports.MySQLBlockParams params) {
             super(context, blockConsumer, params);
         }
 
 
-    }//DynamicTableJoinBlock
+    }//FromClauseTableBlock
 
 
-    private static final class DynamicTableOnBlock extends DynamicTableBlock<MySQLQuery._DynamicIndexHintOnClause>
+    private static final class JoinClauseTableBlock extends DynamicTableBlock<MySQLQuery._DynamicIndexHintOnClause>
             implements MySQLQuery._DynamicIndexHintOnClause {
 
 
         /**
          * @see MySQLJoinBuilder#tabular(TableMeta, SQLs.WordAs, String)
          */
-        private DynamicTableOnBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
-                                    _JoinType joinType, TableMeta<?> table, String alias) {
+        private JoinClauseTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+                                     _JoinType joinType, TableMeta<?> table, String alias) {
             super(context, blockConsumer, joinType, table, alias);
         }
 
         /**
          * @see PartitionOnClause#asEnd(MySQLSupports.MySQLBlockParams)
          */
-        private DynamicTableOnBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
-                                    MySQLSupports.MySQLBlockParams params) {
+        private JoinClauseTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+                                     MySQLSupports.MySQLBlockParams params) {
             super(context, blockConsumer, params);
         }
 
 
-    }//DynamicTableOnBlock
+    }//JoinClauseTableBlock
 
 
     private static final class MySQLJoinBuilder extends JoinableClause.DynamicBuilderSupport<
@@ -491,8 +507,8 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         @Override
         MySQLQuery._DynamicIndexHintOnClause onTable(
                 @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
-            final DynamicTableOnBlock block;
-            block = new DynamicTableOnBlock(this.context, this.blockConsumer, this.joinType, table, tableAlias);
+            final JoinClauseTableBlock block;
+            block = new JoinClauseTableBlock(this.context, this.blockConsumer, this.joinType, table, tableAlias);
             this.blockConsumer.accept(block);
             return block;
         }
@@ -558,8 +574,8 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         @Override
         MySQLQuery._DynamicIndexHintJoinClause onTable(
                 @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
-            final DynamicTableJoinBlock block;
-            block = new DynamicTableJoinBlock(this.context, this.blockConsumer, this.joinType, table, tableAlias);
+            final FromClauseTableBlock block;
+            block = new FromClauseTableBlock(this.context, this.blockConsumer, this.joinType, table, tableAlias);
             this.blockConsumer.accept(block);
             return block;
         }
@@ -619,8 +635,8 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         @Override
         MySQLQuery._DynamicIndexHintJoinClause asEnd(final MySQLSupports.MySQLBlockParams params) {
 
-            final DynamicTableJoinBlock block;
-            block = new DynamicTableJoinBlock(this.context, this.blockConsumer, params);
+            final FromClauseTableBlock block;
+            block = new FromClauseTableBlock(this.context, this.blockConsumer, params);
             this.blockConsumer.accept(block);
             return block;
         }
@@ -649,8 +665,8 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         MySQLQuery._DynamicIndexHintOnClause asEnd(final MySQLSupports.MySQLBlockParams params) {
-            final DynamicTableOnBlock block;
-            block = new DynamicTableOnBlock(this.context, this.blockConsumer, params);
+            final JoinClauseTableBlock block;
+            block = new JoinClauseTableBlock(this.context, this.blockConsumer, params);
             this.blockConsumer.accept(block);
             return block;
         }

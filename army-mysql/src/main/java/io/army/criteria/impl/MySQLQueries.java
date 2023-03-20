@@ -276,19 +276,19 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final _JoinSpec<I> parens(String first, String... rest) {
-        this.getFromClauseDerived().onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
+        this.getFromClauseDerived().parens(first, rest);
         return this;
     }
 
     @Override
     public final _JoinSpec<I> parens(Consumer<Consumer<String>> consumer) {
-        this.getFromClauseDerived().onColumnAlias(CriteriaUtils.stringList(this.context, true, consumer));
+        this.getFromClauseDerived().parens(this.context, consumer);
         return this;
     }
 
     @Override
     public final _JoinSpec<I> ifParens(Consumer<Consumer<String>> consumer) {
-        this.getFromClauseDerived().onColumnAlias(CriteriaUtils.stringList(this.context, false, consumer));
+        this.getFromClauseDerived().ifParens(this.context, consumer);
         return this;
     }
 
@@ -495,20 +495,13 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final _AsQueryClause<I> into(Consumer<Consumer<String>> consumer) {
-        final List<String> list = new ArrayList<>();
-        consumer.accept(list::add);
-        if (list.size() == 0) {
-            throw ContextStack.criteriaError(this.context, "no into clause.");
-        }
-        this.intoVarList = _CollectionUtils.unmodifiableList(list);
+        this.intoVarList = CriteriaUtils.stringList(this.context, true, consumer);
         return this;
     }
 
     @Override
     public final _AsQueryClause<I> ifInto(Consumer<Consumer<String>> consumer) {
-        final List<String> list = new ArrayList<>();
-        consumer.accept(list::add);
-        this.intoVarList = _CollectionUtils.unmodifiableList(list);
+        this.intoVarList = CriteriaUtils.stringList(this.context, false, consumer);
         return this;
     }
 
@@ -614,8 +607,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     @Override
     final _IndexHintJoinSpec<I> onFromTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
                                             String alias) {
-        final MySQLSupports.MySQLFromClausePurposeTableBlock<_IndexHintJoinSpec<I>> block;
-        block = new MySQLSupports.MySQLFromClausePurposeTableBlock<>(joinType, table, alias, this);
+        final MySQLSupports.FromClausePurposeTableBlock<_IndexHintJoinSpec<I>> block;
+        block = new MySQLSupports.FromClausePurposeTableBlock<>(joinType, table, alias, this);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return this;
@@ -625,7 +618,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
                                                       DerivedTable table) {
         return alias -> {
-            final TableBlocks.FromClauseAliasDerivedBock block;
+            final TableBlocks.FromClauseAliasDerivedBlock block;
             block = TableBlocks.fromAliasDerivedBlock(joinType, modifier, table, alias);
             this.blockConsumer.accept(block);
             this.fromCrossBlock = block;
@@ -647,8 +640,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     @Override
     final _IndexHintOnSpec<I> onJoinTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
                                           String alias) {
-        final IndexHintOnBlock<I> block;
-        block = new IndexHintOnBlock<>(joinType, table, alias, this);
+        final JoinClauseTableBlock<I> block;
+        block = new JoinClauseTableBlock<>(joinType, table, alias, this);
         this.blockConsumer.accept(block);
         return block;
     }
@@ -657,8 +650,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     final _AsParensOnClause<_JoinSpec<I>> onJoinDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
                                                         DerivedTable table) {
         return alias -> {
-            final OnClauseTableBlock.OnModifierParensBlock<_JoinSpec<I>> block;
-            block = new OnClauseTableBlock.OnModifierParensBlock<>(joinType, modifier, table, alias, this);
+            final TableBlocks.JoinClauseAliasDerivedBlock<_JoinSpec<I>> block;
+            block = TableBlocks.joinAliasDerivedBlock(joinType, modifier, table, alias, this);
             this.blockConsumer.accept(block);
             return block;
         };
@@ -667,8 +660,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     @Override
     final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem,
                                             String alias) {
-        final OnClauseTableBlock<_JoinSpec<I>> block;
-        block = new OnClauseTableBlock<>(joinType, cteItem, alias, this);
+        final TableBlocks.JoinClauseCteBlock<_JoinSpec<I>> block;
+        block = TableBlocks.joinCteBlock(joinType, cteItem, alias, this);
         this.blockConsumer.accept(block);
         return block;
     }
@@ -686,9 +679,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      * @see #crossJoin(Function)
      */
     private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        joinType.assertNoneCrossType();
-        final TableBlocks.NoOnTableBlock block;
-        block = new TableBlocks.NoOnTableBlock(joinType, nestedItems, "");
+        final _TableBlock block;
+        block = TableBlocks.fromNestedBlock(joinType, nestedItems);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return this;
@@ -702,10 +694,9 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      * @see #straightJoin(Function)
      */
     private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        joinType.assertMySQLJoinType();
 
-        final OnClauseTableBlock<_JoinSpec<I>> block;
-        block = new OnClauseTableBlock<>(joinType, nestedItems, "", this);
+        final TableBlocks.JoinClauseNestedBlock<_JoinSpec<I>> block;
+        block = TableBlocks.joinNestedBlock(joinType, nestedItems, this);
         this.blockConsumer.accept(block);
         return block;
     }
@@ -716,12 +707,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      * @see #forceIndex()
      */
     @SuppressWarnings("unchecked")
-    private MySQLSupports.MySQLFromClausePurposeTableBlock<_IndexHintJoinSpec<I>> getIndexHintClause() {
+    private MySQLSupports.FromClausePurposeTableBlock<_IndexHintJoinSpec<I>> getIndexHintClause() {
         final _TableBlock block = this.fromCrossBlock;
-        if (this.context.lastBlock() != block || !(block instanceof MySQLSupports.MySQLFromClausePurposeTableBlock)) {
+        if (this.context.lastBlock() != block || !(block instanceof MySQLSupports.FromClausePurposeTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (MySQLSupports.MySQLFromClausePurposeTableBlock<_IndexHintJoinSpec<I>>) block;
+        return (MySQLSupports.FromClausePurposeTableBlock<_IndexHintJoinSpec<I>>) block;
     }
 
 
@@ -731,12 +722,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      * @see #parens(Consumer)
      * @see #ifParens(Consumer)
      */
-    private TableBlocks.ParensDerivedJoinBlock getFromClauseDerived() {
+    private TableBlocks.FromClauseAliasDerivedBlock getFromClauseDerived() {
         final _TableBlock block = this.fromCrossBlock;
-        if (block != this.context.lastBlock() || !(block instanceof TableBlocks.ParensDerivedJoinBlock)) {
+        if (block != this.context.lastBlock() || !(block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (TableBlocks.ParensDerivedJoinBlock) block;
+        return (TableBlocks.FromClauseAliasDerivedBlock) block;
     }
 
     /**
@@ -976,8 +967,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         _IndexHintJoinSpec<I> asEnd(final MySQLSupports.MySQLBlockParams params) {
             final MySQLQueries<I> stmt = this.stmt;
 
-            MySQLSupports.MySQLFromClauseTableBlock<_IndexHintJoinSpec<I>> block;
-            block = new MySQLSupports.MySQLFromClauseTableBlock<>(params, stmt);
+            MySQLSupports.FromClausePurposeTableBlock<_IndexHintJoinSpec<I>> block;
+            block = new MySQLSupports.FromClausePurposeTableBlock<>(params, stmt);
 
             stmt.blockConsumer.accept(block);
             stmt.fromCrossBlock = block;// update noOnBlock
@@ -988,20 +979,23 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }//PartitionJoinClause
 
 
-    private static final class IndexHintOnBlock<I extends Item>
-            extends MySQLSupports.MySQLOnBlock<_IndexHintOnSpec<I>, _JoinSpec<I>>
+    private static final class JoinClauseTableBlock<I extends Item>
+            extends MySQLSupports.MySQLJoinClauseBlock<
+            _IndexPurposeBySpec<Object>,
+            _IndexHintOnSpec<I>,
+            _JoinSpec<I>>
             implements _IndexHintOnSpec<I> {
 
-        private IndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias, _JoinSpec<I> stmt) {
-            super(joinType, null, table, alias, stmt);
+        private JoinClauseTableBlock(_JoinType joinType, TableMeta<?> table, String alias, _JoinSpec<I> stmt) {
+            super(joinType, table, alias, stmt);
         }
 
-        private IndexHintOnBlock(MySQLSupports.MySQLBlockParams params, _JoinSpec<I> stmt) {
+        private JoinClauseTableBlock(MySQLSupports.MySQLBlockParams params, _JoinSpec<I> stmt) {
             super(params, stmt);
         }
 
 
-    }//OnTableBlock
+    }//JoinClauseIndexHintBlock
 
 
     private static final class PartitionOnClause<I extends Item>
@@ -1018,8 +1012,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         @Override
         _IndexHintOnSpec<I> asEnd(final MySQLSupports.MySQLBlockParams params) {
             final MySQLQueries<I> stmt = this.stmt;
-            final IndexHintOnBlock<I> block;
-            block = new IndexHintOnBlock<>(params, stmt);
+            final JoinClauseTableBlock<I> block;
+            block = new JoinClauseTableBlock<>(params, stmt);
             stmt.blockConsumer.accept(block);
             return block;
         }

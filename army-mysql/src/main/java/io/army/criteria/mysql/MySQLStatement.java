@@ -177,7 +177,7 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _DynamicIndexHintClause<T extends Item, R extends Item> {
+    interface _DynamicIndexHintClause<T extends Item, R extends Item> extends Item {
 
         R ifUseIndex(Consumer<T> consumer);
 
@@ -277,6 +277,7 @@ public interface MySQLStatement extends DialectStatement {
     }
 
     interface _NestedIndexHintOnSpec<I extends Item> extends _QueryIndexHintSpec<_NestedIndexHintOnSpec<I>>,
+            _DynamicIndexHintClause<_IndexPurposeBySpec<Object>, _NestedIndexHintOnSpec<I>>,
             _NestedOnSpec<I> {
 
     }
@@ -313,6 +314,7 @@ public interface MySQLStatement extends DialectStatement {
     }
 
     interface _DynamicIndexHintOnClause extends _QueryIndexHintSpec<_DynamicIndexHintOnClause>,
+            _DynamicIndexHintClause<_IndexPurposeBySpec<Object>, _DynamicIndexHintOnClause>,
             _OnClause<_DynamicJoinSpec> {
 
     }
@@ -335,7 +337,9 @@ public interface MySQLStatement extends DialectStatement {
 
     }
 
-    interface _DynamicIndexHintJoinClause extends _QueryIndexHintSpec<_DynamicIndexHintJoinClause>, _DynamicJoinSpec {
+    interface _DynamicIndexHintJoinClause extends _QueryIndexHintSpec<_DynamicIndexHintJoinClause>,
+            _DynamicIndexHintClause<_IndexPurposeBySpec<Object>, _DynamicIndexHintJoinClause>,
+            _DynamicJoinSpec {
 
     }
 

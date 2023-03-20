@@ -37,13 +37,13 @@ abstract class TableBlocks implements _TableBlock {
         return bock;
     }
 
-    static FromClauseAliasDerivedBock fromAliasDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier,
-                                                            DerivedTable table, String alias) {
-        final FromClauseAliasDerivedBock bock;
+    static FromClauseAliasDerivedBlock fromAliasDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier,
+                                                             DerivedTable table, String alias) {
+        final FromClauseAliasDerivedBlock bock;
         if (modifier == null) {
-            bock = new FromClauseAliasDerivedBock(joinType, table, alias);
+            bock = new FromClauseAliasDerivedBlock(joinType, table, alias);
         } else {
-            bock = new FromClauseModifierAliasDerivedBock(joinType, modifier, table, alias);
+            bock = new FromClauseModifierAliasDerivedBlock(joinType, modifier, table, alias);
         }
         return bock;
     }
@@ -209,7 +209,7 @@ abstract class TableBlocks implements _TableBlock {
     }//FromClauseDerivedBock
 
 
-    static class FromClauseAliasDerivedBock extends FromClauseDerivedBlock
+    static class FromClauseAliasDerivedBlock extends FromClauseDerivedBlock
             implements ArmyAliasDerivedBlock {
 
         private List<String> columnAliasList;
@@ -218,7 +218,7 @@ abstract class TableBlocks implements _TableBlock {
 
         private Supplier<List<? extends Selection>> selectionsSupplier;
 
-        private FromClauseAliasDerivedBock(_JoinType joinType, DerivedTable table, String alias) {
+        private FromClauseAliasDerivedBlock(_JoinType joinType, DerivedTable table, String alias) {
             super(joinType, table, alias);
             this.selectionFunction = ((ArmyDerivedTable) table)::selection;
             this.selectionsSupplier = ((ArmyDerivedTable) table)::selectionList;
@@ -251,7 +251,21 @@ abstract class TableBlocks implements _TableBlock {
             return list;
         }
 
-        final void onColumnAlias(final List<String> columnAliasList) {
+        final void parens(String first, String... rest) {
+            this.onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
+        }
+
+
+        final void parens(CriteriaContext context, Consumer<Consumer<String>> consumer) {
+            this.onColumnAlias(CriteriaUtils.stringList(context, true, consumer));
+        }
+
+
+        final void ifParens(CriteriaContext context, Consumer<Consumer<String>> consumer) {
+            this.onColumnAlias(CriteriaUtils.stringList(context, false, consumer));
+        }
+
+        private void onColumnAlias(final List<String> columnAliasList) {
             if (this.columnAliasList != null) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
@@ -446,7 +460,7 @@ abstract class TableBlocks implements _TableBlock {
 
     }//JoinClauseModifierDerivedBlock
 
-    static abstract class JoinClauseModifierAliasDerivedBlock<R extends Item>
+    static abstract class JoinClauseAliasDerivedBlock<R extends Item>
             extends JoinClauseModifierDerivedBlock<R>
             implements ArmyAliasDerivedBlock, Statement._ParensOnSpec<R> {
 
@@ -456,8 +470,8 @@ abstract class TableBlocks implements _TableBlock {
 
         private Supplier<List<? extends Selection>> selectionsSupplier;
 
-        JoinClauseModifierAliasDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
-                                            String alias, R clause) {
+        JoinClauseAliasDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
+                                    String alias, R clause) {
             super(joinType, modifier, table, alias, clause);
             this.selectionFunction = ((ArmyDerivedTable) table)::selection;
             this.selectionsSupplier = ((ArmyDerivedTable) table)::selectionList;
@@ -561,6 +575,7 @@ abstract class TableBlocks implements _TableBlock {
     }//JoinClauseNestedBlock
 
 
+    @Deprecated
     static class NoOnTableBlock extends TableBlocks {
 
         NoOnTableBlock(_JoinType joinType, TabularItem tableItem, String alias) {
@@ -617,6 +632,7 @@ abstract class TableBlocks implements _TableBlock {
 
     }//DialectNoOnTableBlock
 
+    @Deprecated
     static class NoOnModifierDerivedBlock extends NoOnModifierTableBlock {
 
         NoOnModifierDerivedBlock(_JoinType joinType, @Nullable SQLWords itemWord, DerivedTable tableItem,
@@ -627,6 +643,7 @@ abstract class TableBlocks implements _TableBlock {
     }//NoOnModifierDerivedBlock
 
 
+    @Deprecated
     static class ParensDerivedJoinBlock extends NoOnModifierTableBlock implements _DerivedTable, ArmyAliasDerivedBlock {
 
         private List<String> columnAliasList;
@@ -704,14 +721,14 @@ abstract class TableBlocks implements _TableBlock {
         /**
          * @see #fromTableBlock(_JoinType, SQLWords, TableMeta, String)
          */
-        private FromClauseModifierTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
-                                             String alias) {
+        FromClauseModifierTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
+                                     String alias) {
             super(joinType, table, alias);
             this.modifier = modifier;
         }
 
         @Override
-        public SQLWords modifier() {
+        public final SQLWords modifier() {
             return this.modifier;
         }
 
@@ -805,7 +822,7 @@ abstract class TableBlocks implements _TableBlock {
     }//JoinClauseSimpleModifierDerivedBlock
 
     private static final class JoinClauseSimpleModifierAliasDerivedBlock<R extends Item>
-            extends JoinClauseModifierAliasDerivedBlock<R> {
+            extends JoinClauseAliasDerivedBlock<R> {
 
         /**
          * @see #joinAliasDerivedBlock(_JoinType, SQLWords, DerivedTable, String, Item)
@@ -818,7 +835,7 @@ abstract class TableBlocks implements _TableBlock {
     }//JoinClauseSimpleModifierAliasDerivedBlock
 
 
-    private static final class FromClauseModifierAliasDerivedBock extends FromClauseAliasDerivedBock
+    private static final class FromClauseModifierAliasDerivedBlock extends FromClauseAliasDerivedBlock
             implements _ModifierTableBlock {
 
         private final SQLWords modifier;
@@ -826,8 +843,8 @@ abstract class TableBlocks implements _TableBlock {
         /**
          * @see #fromAliasDerivedBlock(_JoinType, SQLWords, DerivedTable, String)
          */
-        private FromClauseModifierAliasDerivedBock(_JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
-                                                   String alias) {
+        private FromClauseModifierAliasDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
+                                                    String alias) {
             super(joinType, table, alias);
             this.modifier = modifier;
         }

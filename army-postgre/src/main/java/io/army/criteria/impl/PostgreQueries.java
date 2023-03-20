@@ -243,19 +243,19 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
     @Override
     public final _JoinSpec<I> parens(String first, String... rest) {
-        this.getFromDerivedBlock().onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
+        this.getFromDerivedBlock().parens(first, rest);
         return this;
     }
 
     @Override
     public final _JoinSpec<I> parens(Consumer<Consumer<String>> consumer) {
-        this.getFromDerivedBlock().onColumnAlias(CriteriaUtils.stringList(this.context, true, consumer));
+        this.getFromDerivedBlock().parens(this.context, consumer);
         return this;
     }
 
     @Override
     public final _JoinSpec<I> ifParens(Consumer<Consumer<String>> consumer) {
-        this.getFromDerivedBlock().onColumnAlias(CriteriaUtils.stringList(this.context, false, consumer));
+        this.getFromDerivedBlock().ifParens(this.context, consumer);
         return this;
     }
 
@@ -549,8 +549,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     @Override
     final _TableSampleJoinSpec<I> onFromTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
                                               String alias) {
-        final PostgreSupports.PostgreNoOnTableBlock block;
-        block = new PostgreSupports.PostgreNoOnTableBlock(joinType, modifier, table, alias);
+        final PostgreSupports.FromClauseTableBlock block;
+        block = new PostgreSupports.FromClauseTableBlock(joinType, modifier, table, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return this;
@@ -560,8 +560,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
                                                       DerivedTable table) {
         return alias -> {
-            final TableBlocks.NoOnModifierDerivedBlock block;
-            block = new TableBlocks.NoOnModifierDerivedBlock(joinType, modifier, table, alias);
+            final TableBlocks.FromClauseAliasDerivedBlock block;
+            block = TableBlocks.fromAliasDerivedBlock(joinType, modifier, table, alias);
             this.blockConsumer.accept(block);
             this.fromCrossBlock = block;
             return this;
@@ -571,8 +571,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     @Override
     final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem,
                                  String alias) {
-        final TableBlocks.NoOnTableBlock block;
-        block = new TableBlocks.NoOnTableBlock(joinType, cteItem, alias);
+        final _TableBlock block;
+        block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return this;
@@ -581,8 +581,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     @Override
     final _TableSampleOnSpec<I> onJoinTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,
                                             String alias) {
-        final TableOnBlock<I> block;
-        block = new TableOnBlock<>(joinType, modifier, table, alias, this);
+        final JonClauseTableBlock<I> block;
+        block = new JonClauseTableBlock<>(joinType, modifier, table, alias, this);
         this.blockConsumer.accept(block);
         return block;
     }
@@ -591,8 +591,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     final _AsParensOnClause<_JoinSpec<I>> onJoinDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
                                                         DerivedTable table) {
         return alias -> {
-            final OnClauseTableBlock.OnModifierParensBlock<_JoinSpec<I>> block;
-            block = new OnClauseTableBlock.OnModifierParensBlock<>(joinType, modifier, table, alias, this);
+            final TableBlocks.JoinClauseAliasDerivedBlock<_JoinSpec<I>> block;
+            block = TableBlocks.joinAliasDerivedBlock(joinType, modifier, table, alias, this);
             this.blockConsumer.accept(block);
             return block;
         };
@@ -601,8 +601,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     @Override
     final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem,
                                             String alias) {
-        final OnClauseTableBlock<_JoinSpec<I>> block;
-        block = new OnClauseTableBlock<>(joinType, cteItem, alias);
+        final TableBlocks.JoinClauseCteBlock<_JoinSpec<I>> block;
+        block = TableBlocks.joinCteBlock(joinType, cteItem, alias, this);
         this.blockConsumer.accept(block);
         return block;
     }
@@ -614,10 +614,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
      * @see #crossJoin(Function)
      */
     private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        joinType.assertNoneCrossType();
-        final TableBlocks.NoOnTableBlock block;
-        block = new TableBlocks.NoOnTableBlock(joinType, nestedItems, "");
-        this.blockConsumer.accept(block);
+        this.blockConsumer.accept(TableBlocks.fromNestedBlock(joinType, nestedItems));
         return this;
     }
 
@@ -628,10 +625,9 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
      * @see #fullJoin(Function)
      */
     private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        joinType.assertStandardJoinType();
 
-        final OnClauseTableBlock<_JoinSpec<I>> block;
-        block = new OnClauseTableBlock<>(joinType, nestedItems, "", this);
+        final TableBlocks.JoinClauseNestedBlock<_JoinSpec<I>> block;
+        block = TableBlocks.joinNestedBlock(joinType, nestedItems, this);
         this.blockConsumer.accept(block);
         return block;
     }
@@ -639,23 +635,23 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     /**
      * @return get the table block of last FROM or CROSS JOIN clause
      */
-    private PostgreSupports.PostgreNoOnTableBlock getFromClauseBlock() {
+    private PostgreSupports.FromClauseTableBlock getFromClauseBlock() {
         final _TableBlock block = this.fromCrossBlock;
-        if (block != this.context.lastBlock() || !(block instanceof PostgreSupports.PostgreNoOnTableBlock)) {
+        if (block != this.context.lastBlock() || !(block instanceof PostgreSupports.FromClauseTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (PostgreSupports.PostgreNoOnTableBlock) block;
+        return (PostgreSupports.FromClauseTableBlock) block;
     }
 
     /**
      * @return get the derived block of last FROM or CROSS JOIN clause
      */
-    private TableBlocks.ParensDerivedJoinBlock getFromDerivedBlock() {
+    private TableBlocks.FromClauseAliasDerivedBlock getFromDerivedBlock() {
         final _TableBlock block = this.fromCrossBlock;
-        if (block != this.context.lastBlock() || !(block instanceof TableBlocks.ParensDerivedJoinBlock)) {
+        if (block != this.context.lastBlock() || !(block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (TableBlocks.ParensDerivedJoinBlock) block;
+        return (TableBlocks.FromClauseAliasDerivedBlock) block;
     }
 
 
@@ -754,19 +750,23 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
     }//PostgreWindowBuilder
 
-    private static final class TableOnBlock<I extends Item> extends PostgreSupports.PostgreTableOnBlock<
+    private static final class JonClauseTableBlock<I extends Item> extends PostgreSupports.PostgreTableOnBlock<
             PostgreQuery._RepeatableOnClause<I>,
             Statement._OnClause<PostgreQuery._JoinSpec<I>>,
             PostgreQuery._JoinSpec<I>>
-            implements PostgreQuery._TableSampleOnSpec<I>, PostgreQuery._RepeatableOnClause<I> {
+            implements PostgreQuery._TableSampleOnSpec<I>,
+            PostgreQuery._RepeatableOnClause<I> {
 
-        private TableOnBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> tableItem, String alias,
-                             PostgreQuery._JoinSpec<I> stmt) {
+        /**
+         * @see #onJoinTable(_JoinType, TableModifier, TableMeta, String)
+         */
+        private JonClauseTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> tableItem, String alias,
+                                    PostgreQuery._JoinSpec<I> stmt) {
             super(joinType, modifier, tableItem, alias, stmt);
         }
 
 
-    }//TableOnBlock
+    }//JonClauseTableBlock
 
 
     private enum PostgreLockMode implements SQLWords {
