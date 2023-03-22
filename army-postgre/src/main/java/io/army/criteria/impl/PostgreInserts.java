@@ -16,6 +16,7 @@ import io.army.dialect._SqlContext;
 import io.army.dialect.postgre.PostgreDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.struct.CodeEnum;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -128,7 +129,7 @@ abstract class PostgreInserts extends InsertSupports {
     }
 
     private static Insert insertEnd(PostgreComplexValuesClause<?, ?, ?> clause) {
-        final Statement._DmlInsertClause<Insert> spec;
+        final Statement._DmlInsertClause<? extends Insert> spec;
         final InsertMode mode;
         mode = clause.getInsertMode();
         switch (mode) {
@@ -138,9 +139,14 @@ abstract class PostgreInserts extends InsertSupports {
             case VALUES:
                 spec = new PrimaryValueInsertStatement(clause);
                 break;
-            case QUERY:
-                spec = new PrimaryQueryInsertStatement(clause);
-                break;
+            case QUERY: {
+                if (clause.insertTable instanceof ParentTableMeta) {
+                    spec = new PrimaryParentQueryInsertStatement<>(clause);
+                } else {
+                    spec = new PrimaryNonParentQueryInsertStatement(clause);
+                }
+            }
+            break;
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
@@ -149,7 +155,7 @@ abstract class PostgreInserts extends InsertSupports {
 
 
     private static ReturningInsert returningInsertEnd(PostgreComplexValuesClause<?, ?, ?> clause) {
-        final Statement._DqlInsertClause<ReturningInsert> spec;
+        final Statement._DqlInsertClause<? extends ReturningInsert> spec;
         final InsertMode mode;
         mode = clause.getInsertMode();
         switch (mode) {
@@ -159,9 +165,14 @@ abstract class PostgreInserts extends InsertSupports {
             case VALUES:
                 spec = new PrimaryValueReturningInsertStatement(clause);
                 break;
-            case QUERY:
-                spec = new PrimaryQueryReturningInsertStatement(clause);
-                break;
+            case QUERY: {
+                if (clause.insertTable instanceof ParentTableMeta) {
+                    spec = new PrimaryParentQueryReturningInsertStatement<>(clause);
+                } else {
+                    spec = new PrimaryNonParentQueryReturningInsertStatement(clause);
+                }
+            }
+            break;
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
@@ -170,7 +181,7 @@ abstract class PostgreInserts extends InsertSupports {
 
 
     private static SubStatement subInsertEnd(final PostgreComplexValuesClause<?, ?, ?> clause) {
-        final Statement._DmlInsertClause<SubStatement> spec;
+        final Statement._DmlInsertClause<? extends SubStatement> spec;
         final InsertMode mode = clause.getInsertMode();
         switch (mode) {
             case DOMAIN:
@@ -179,9 +190,14 @@ abstract class PostgreInserts extends InsertSupports {
             case VALUES:
                 spec = new SubValueInsertStatement(clause);
                 break;
-            case QUERY:
-                spec = new SubQueryInsertStatement(clause);
-                break;
+            case QUERY: {
+                if (clause.insertTable instanceof ParentTableMeta) {
+                    spec = new SubParentQueryInsertStatement(clause);
+                } else {
+                    spec = new SubNonParentQueryInsertStatement(clause);
+                }
+            }
+            break;
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
@@ -198,9 +214,14 @@ abstract class PostgreInserts extends InsertSupports {
             case VALUES:
                 spec = new SubValueReturningInsertStatement(clause);
                 break;
-            case QUERY:
-                spec = new SubQueryReturningInsertStatement(clause);
-                break;
+            case QUERY: {
+                if (clause.insertTable instanceof ParentTableMeta) {
+                    spec = new SubParentQueryReturingInsertStatement(clause);
+                } else {
+                    spec = new SubNonParentQueryReturningInsertStatement(clause);
+                }
+            }
+            break;
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
@@ -1778,7 +1799,7 @@ abstract class PostgreInserts extends InsertSupports {
             this.overridingMode = clause.overridingMode;
 
             this.conflictAction = clause.conflictAction;
-            if (this instanceof DqlInsert) {
+            if (this instanceof DqlStatement) {
                 this.returningList = clause.effectiveReturningList();
             } else {
                 this.returningList = Collections.emptyList();
@@ -1833,22 +1854,52 @@ abstract class PostgreInserts extends InsertSupports {
     }//QueryInsertStatement
 
 
-    private static final class PrimaryQueryInsertStatement extends QueryInsertStatement<Insert, ReturningInsert>
-            implements Insert {
+    private static abstract class ParentQueryInsertStatement<I extends Statement, Q extends Statement>
+            extends QueryInsertStatement<I, Q>
+            implements ParentQueryInsert,
+            _PostgreInsert._PostgreParentQueryInsert {
 
-        private PrimaryQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        private CodeEnum discriminatorValue;
+
+        private ParentQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
         }
 
+        @Override
+        public final void onValidateEnd(final CodeEnum discriminatorValue) {
+            assert this.discriminatorValue == null;
+            this.discriminatorValue = discriminatorValue;
+        }
 
-    }//PrimaryQueryInsertStatement
+        @Override
+        public final CodeEnum discriminatorEnum() {
+            final CodeEnum value = this.discriminatorValue;
+            assert value != null;
+            return value;
+        }
+
+
+    }//ParentQueryInsertStatement
+
+
+    private static final class PrimaryNonParentQueryInsertStatement
+            extends QueryInsertStatement<Insert, ReturningInsert>
+            implements Insert {
+
+        private PrimaryNonParentQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+            super(clause);
+            assert !(clause.insertTable instanceof ParentTableMeta);
+        }
+
+
+    }//PrimaryNonParentQueryInsertStatement
 
     private static final class PrimaryChildQueryInsertStatement extends QueryInsertStatement<Insert, ReturningInsert>
             implements _PostgreInsert._PostgreChildQueryInsert {
 
-        private final QueryInsertStatement<?, ?> parentStatement;
+        private final ParentQueryInsertStatement<?, ?> parentStatement;
 
-        private PrimaryChildQueryInsertStatement(QueryInsertStatement<?, ?> parentStatement
+        private PrimaryChildQueryInsertStatement(ParentQueryInsertStatement<?, ?> parentStatement
                 , PostgreComplexValuesClause<?, ?, ?> childClause) {
             super(childClause);
             assert parentStatement instanceof PrimaryParentQueryInsertStatement
@@ -1858,7 +1909,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public _PostgreQueryInsert parentStmt() {
+        public _PostgreParentQueryInsert parentStmt() {
             return this.parentStatement;
         }
 
@@ -1866,7 +1917,7 @@ abstract class PostgreInserts extends InsertSupports {
 
 
     private static final class PrimaryParentQueryInsertStatement<P>
-            extends QueryInsertStatement<PostgreInsert._ParentInsert<P>, ReturningInsert>
+            extends ParentQueryInsertStatement<PostgreInsert._ParentInsert<P>, ReturningInsert>
             implements PostgreInsert._ParentInsert<P> {
 
         private PrimaryParentQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
@@ -1893,24 +1944,25 @@ abstract class PostgreInserts extends InsertSupports {
 
     }//PrimaryParentQueryInsertStatement
 
-    private static final class PrimaryQueryReturningInsertStatement
+    private static final class PrimaryNonParentQueryReturningInsertStatement
             extends QueryInsertStatement<Insert, ReturningInsert>
             implements ReturningInsert, _ReturningDml {
 
-        private PrimaryQueryReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        private PrimaryNonParentQueryReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
+            assert !(clause.insertTable instanceof ParentTableMeta);
         }
 
 
-    }//PrimaryQueryReturningInsertStatement
+    }//PrimaryNonParentQueryReturningInsertStatement
 
     private static final class PrimaryChildQueryReturningInsertStatement
             extends QueryInsertStatement<Insert, ReturningInsert>
             implements ReturningInsert, _ReturningDml, _PostgreInsert._PostgreChildQueryInsert {
 
-        private final QueryInsertStatement<?, ?> parentStatement;
+        private final ParentQueryInsertStatement<?, ?> parentStatement;
 
-        private PrimaryChildQueryReturningInsertStatement(QueryInsertStatement<?, ?> parentStatement
+        private PrimaryChildQueryReturningInsertStatement(ParentQueryInsertStatement<?, ?> parentStatement
                 , PostgreComplexValuesClause<?, ?, ?> childClause) {
             super(childClause);
             assert parentStatement instanceof PrimaryParentQueryInsertStatement
@@ -1920,7 +1972,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public _PostgreQueryInsert parentStmt() {
+        public _PostgreParentQueryInsert parentStmt() {
             return this.parentStatement;
         }
 
@@ -1928,8 +1980,9 @@ abstract class PostgreInserts extends InsertSupports {
 
 
     private static final class PrimaryParentQueryReturningInsertStatement<P>
-            extends QueryInsertStatement<Insert, PostgreInsert._ParentReturnInsert<P>>
-            implements PostgreInsert._ParentReturnInsert<P>, _ReturningDml {
+            extends ParentQueryInsertStatement<Insert, PostgreInsert._ParentReturnInsert<P>>
+            implements PostgreInsert._ParentReturnInsert<P>,
+            _ReturningDml {
 
         private PrimaryParentQueryReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
@@ -1956,26 +2009,50 @@ abstract class PostgreInserts extends InsertSupports {
     }//PrimaryQueryReturningInsertStatement
 
 
-    private static final class SubQueryInsertStatement extends QueryInsertStatement<SubStatement, SubStatement>
+    private static final class SubNonParentQueryInsertStatement extends QueryInsertStatement<SubStatement, SubStatement>
             implements SubStatement {
 
-        private SubQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        private SubNonParentQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
+            assert !(clause.insertTable instanceof ParentTableMeta);
         }
 
 
-    }//SubQueryInsertStatement
+    }//SubNonParentQueryInsertStatement
 
-    private static final class SubQueryReturningInsertStatement
+    private static final class SubParentQueryInsertStatement
+            extends ParentQueryInsertStatement<SubStatement, SubStatement>
+            implements SubStatement {
+
+        private SubParentQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+            super(clause);
+            assert clause.insertTable instanceof ParentTableMeta;
+        }
+
+    }//SubParentQueryInsertStatement
+
+    private static final class SubNonParentQueryReturningInsertStatement
             extends QueryInsertStatement<SubStatement, SubStatement>
             implements SubStatement, _ReturningDml {
 
-        private SubQueryReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        private SubNonParentQueryReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
+            assert !(clause.insertTable instanceof ParentTableMeta);
         }
 
 
-    }//SubQueryInsertStatement
+    }//SubNonParentQueryReturningInsertStatement
+
+    private static final class SubParentQueryReturingInsertStatement
+            extends ParentQueryInsertStatement<SubStatement, SubStatement>
+            implements SubStatement, _ReturningDml {
+
+        private SubParentQueryReturingInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+            super(clause);
+            assert clause.insertTable instanceof ParentTableMeta;
+        }
+
+    }//SubParentQueryReturingInsertStatement
 
 
 }

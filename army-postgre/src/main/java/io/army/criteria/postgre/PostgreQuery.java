@@ -150,9 +150,9 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_QueryWithComplexSpec<I>>,
-            _QueryIntersectClause<_QueryWithComplexSpec<I>>,
-            _QueryExceptClause<_QueryWithComplexSpec<I>>,
+    interface _UnionSpec<I extends Item> extends _StaticUnionClause<_QueryWithComplexSpec<I>>,
+            _StaticIntersectClause<_QueryWithComplexSpec<I>>,
+            _StaticExceptClause<_QueryWithComplexSpec<I>>,
             _AsQueryClause<I> {
 
     }
@@ -421,7 +421,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
 
     interface _StaticCteSelectSpec<I extends Item> extends PostgreQuery._PostgreSelectClause<I>,
-            _DynamicParensQueryClause<_StaticCteSelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+            _DynamicParensRowSetClause<_StaticCteSelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 
@@ -443,9 +443,8 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-
     interface _SelectSpec<I extends Item> extends _PostgreSelectClause<I>,
-            _DynamicParensQueryClause<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+            _DynamicParensRowSetClause<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 
@@ -489,7 +488,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     interface _QueryComplexSpec<I extends Item> extends _PostgreSelectClause<I>,
             PostgreValues._PostgreValuesClause<I>,
-            _DynamicParensQueryClause<_QueryWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+            _DynamicParensRowSetClause<_QueryWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 

@@ -3,8 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.DerivedTable;
 import io.army.criteria.Selection;
-import io.army.criteria.SelectionGroup;
-import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -22,20 +21,20 @@ abstract class SelectionGroups {
         throw new UnsupportedOperationException();
     }
 
-    static <T> SelectionGroup singleGroup(
+    static <T> _SelectionGroup singleGroup(
             String tableAlias, List<FieldMeta<T>> fieldList) {
         return new TableFieldGroup<>(tableAlias, fieldList);
     }
 
-    static <T> SelectionGroup singleGroup(TableMeta<T> table, String tableAlias) {
+    static <T> _SelectionGroup singleGroup(TableMeta<T> table, String tableAlias) {
         return new TableFieldGroup<>(table, tableAlias);
     }
 
-    static <T> SelectionGroup groupWithoutId(TableMeta<T> table, String tableAlias) {
+    static <T> _SelectionGroup groupWithoutId(TableMeta<T> table, String tableAlias) {
         return new TableFieldGroup<>(tableAlias, table);
     }
 
-    static <T> SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias, String parentAlias) {
+    static <T> _SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias, String parentAlias) {
         return new ChildTableGroup<>(child, childAlias, child.parentMeta(), parentAlias);
     }
 
@@ -52,7 +51,7 @@ abstract class SelectionGroups {
     /*################################## blow static inner class  ##################################*/
 
 
-    private static final class TableFieldGroup<T> implements SelectionGroup, _SelfDescribed {
+    private static final class TableFieldGroup<T> implements _SelectionGroup {
 
         private final String tableAlias;
 
@@ -88,7 +87,7 @@ abstract class SelectionGroups {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSelectItem(final _SqlContext context) {
             final StringBuilder builder = context.sqlBuilder();
             final String tableAlias = this.tableAlias;
 
@@ -132,7 +131,7 @@ abstract class SelectionGroups {
 
 
     private static final class ChildTableGroup<P, T>
-            implements SelectionGroup, _SelfDescribed {
+            implements _SelectionGroup {
 
         private final String childAlias;
 
@@ -169,7 +168,7 @@ abstract class SelectionGroups {
 
         @SuppressWarnings("unchecked")
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSelectItem(final _SqlContext context) {
 
             final StringBuilder builder = context.sqlBuilder();
 
@@ -232,7 +231,7 @@ abstract class SelectionGroups {
 
     }//ChildTableGroup
 
-    private static class DerivedSelectionGroupImpl implements DerivedGroup, _SelfDescribed {
+    private static class DerivedSelectionGroupImpl implements DerivedGroup {
 
         final String derivedAlias;
 
@@ -251,7 +250,7 @@ abstract class SelectionGroups {
                 throw new IllegalArgumentException("subQueryAlias not match.");
             }
             if (this instanceof DerivedFieldGroup) {
-                this.selectionList = ((DerivedFieldGroup) this).createSelectionList(table);
+                this.selectionList = ((DerivedFieldGroup) this).createSelectionList((ArmyDerivedTable) table);
             } else {
                 this.selectionList = ((ArmyDerivedTable) table).selectionList();
             }
@@ -268,13 +267,14 @@ abstract class SelectionGroups {
         public final List<? extends Selection> selectionList() {
             final List<? extends Selection> selectionList = this.selectionList;
             if (selectionList == null) {
-                throw new CriteriaException("currently,couldn't reference selection,please check syntax.");
+                String m = "currently,couldn't reference selection,please check syntax.";
+                throw ContextStack.clearStackAndCriteriaError(m);
             }
             return selectionList;
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
+        public final void appendSelectItem(final _SqlContext context) {
             final List<? extends Selection> selectionList = this.selectionList;
             if (selectionList == null || selectionList.size() == 0) {
                 //here bug.
@@ -318,12 +318,12 @@ abstract class SelectionGroups {
         }
 
 
-        private List<Selection> createSelectionList(DerivedTable table) {
+        private List<Selection> createSelectionList(final ArmyDerivedTable table) {
             final List<String> derivedFieldNameList = this.derivedFieldNameList;
             final List<Selection> selectionList = new ArrayList<>(derivedFieldNameList.size());
             Selection selection;
             for (String selectionAlias : derivedFieldNameList) {
-                selection = ((ArmyDerivedTable) table).selection(selectionAlias);
+                selection = table.selection(selectionAlias);
                 if (selection == null) {
                     String m = String.format("unknown derived field %s.%s .", this.derivedAlias, selectionAlias);
                     throw new CriteriaException(m);

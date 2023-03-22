@@ -77,7 +77,7 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public void appendSelection(final _SqlContext context) {
+        public void appendSelectItem(final _SqlContext context) {
             this.expression.appendSql(context);
 
             final StringBuilder sqlBuilder;
@@ -94,7 +94,7 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public Expression selectionExp() {
+        public Expression underlyingExp() {
             return this.expression;
         }
 
@@ -136,7 +136,7 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public void appendSelection(final _SqlContext context) {
+        public void appendSelectItem(final _SqlContext context) {
             //here couldn't invoke appendSql() of this.field,avoid  visible field.
             if (this.field instanceof FieldMeta) {
                 context.appendField((FieldMeta<?>) this.field);
@@ -152,7 +152,7 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public Expression selectionExp() {
+        public Expression underlyingExp() {
             return this.field;
         }
 
@@ -232,7 +232,7 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public void appendSelection(final _SqlContext context) {
+        public void appendSelectItem(final _SqlContext context) {
             this.func.appendSql(context);
 
             final StringBuilder sqlBuilder;
@@ -243,7 +243,7 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public Expression selectionExp() {
+        public Expression underlyingExp() {
             return (Expression) this.func;
         }
 
@@ -271,7 +271,7 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public void appendSelection(final _SqlContext context) {
+        public void appendSelectItem(final _SqlContext context) {
             // here don't output selection
             context.parser().identifier(this.alias, context.sqlBuilder().append(_Constant.SPACE));
         }
@@ -282,8 +282,8 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public Expression selectionExp() {
-            return this.selection.selectionExp();
+        public Expression underlyingExp() {
+            return this.selection.underlyingExp();
         }
 
 
@@ -304,7 +304,7 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public void appendSelection(final _SqlContext context) {
+        public void appendSelectItem(final _SqlContext context) {
             context.parser().identifier(this.alias, context.sqlBuilder().append(_Constant.SPACE));
         }
 
@@ -314,7 +314,7 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public Expression selectionExp() {
+        public Expression underlyingExp() {
             return null;
         }
 

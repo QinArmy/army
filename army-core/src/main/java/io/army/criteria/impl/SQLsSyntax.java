@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -1102,12 +1103,12 @@ abstract class SQLsSyntax extends SQLSyntax {
     }
 
     @Deprecated
-    public static <T> SelectionGroup group(TableMeta<T> table, String alias) {
+    public static <T> _SelectionGroup group(TableMeta<T> table, String alias) {
         return SelectionGroups.singleGroup(table, alias);
     }
 
     @Deprecated
-    public static <T> SelectionGroup group(String tableAlias, List<FieldMeta<T>> fieldList) {
+    public static <T> _SelectionGroup group(String tableAlias, List<FieldMeta<T>> fieldList) {
         return SelectionGroups.singleGroup(tableAlias, fieldList);
     }
 
@@ -1115,23 +1116,23 @@ abstract class SQLsSyntax extends SQLSyntax {
      * @return a group that no {@link ParentTableMeta#id()} column
      */
     @Deprecated
-    public static <T> SelectionGroup groupWithoutId(TableMeta<T> table, String alias) {
+    public static <T> _SelectionGroup groupWithoutId(TableMeta<T> table, String alias) {
         return SelectionGroups.groupWithoutId(table, alias);
     }
 
     @Deprecated
-    public static <T> SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias
+    public static <T> _SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias
             , String parentAlias) {
         return SelectionGroups.childGroup(child, childAlias, parentAlias);
     }
 
     @Deprecated
-    public static SelectionGroup derivedGroup(String alias) {
+    public static _SelectionGroup derivedGroup(String alias) {
         return SelectionGroups.derivedGroup(alias);
     }
 
     @Deprecated
-    public static SelectionGroup derivedGroup(String alias, List<String> derivedFieldNameList) {
+    public static _SelectionGroup derivedGroup(String alias, List<String> derivedFieldNameList) {
         if (derivedFieldNameList.size() == 0) {
             throw new CriteriaException("derivedFieldNameList must not empty");
         }

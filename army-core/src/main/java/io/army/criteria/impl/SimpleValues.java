@@ -19,10 +19,10 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
         Values._StaticValueRowCommaDualSpec<RR>,
         Values._StaticValueRowCommaQuadraSpec<RR>,
         Statement._AsValuesClause<I>,
-        Query._QueryUnionClause<SP>,
-        Query._QueryExceptClause<SP>,
-        Query._QueryIntersectClause<SP>,
-        Query._QueryMinusClause<SP>,
+        RowSet._StaticUnionClause<SP>,
+        RowSet._StaticExceptClause<SP>,
+        RowSet._StaticIntersectClause<SP>,
+        RowSet._StaticMinusClause<SP>,
         CriteriaSupports.ArmyDerivedSpec {
 
     private List<_Expression> columnList;

@@ -67,10 +67,14 @@ public interface _PostgreInsert extends _Insert, _Insert._SupportConflictClauseS
 
     }
 
+    interface _PostgreParentQueryInsert extends _PostgreQueryInsert, _ParentQueryInsert {
+
+    }
+
     interface _PostgreChildQueryInsert extends _Insert._ChildQueryInsert, _PostgreQueryInsert {
 
         @Override
-        _PostgreQueryInsert parentStmt();
+        _PostgreParentQueryInsert parentStmt();
 
     }
 

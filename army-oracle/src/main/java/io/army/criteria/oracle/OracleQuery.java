@@ -124,9 +124,9 @@ public interface OracleQuery extends Query, OracleStatement {
     }
 
 
-    interface _UnionSpec<I extends Item> extends _QueryUnionClause<_UnionAndQuerySpec<I>>
-            , _QueryIntersectClause<_UnionAndQuerySpec<I>>
-            , _QueryMinusClause<_UnionAndQuerySpec<I>>
+    interface _UnionSpec<I extends Item> extends _StaticUnionClause<_UnionAndQuerySpec<I>>
+            , _StaticIntersectClause<_UnionAndQuerySpec<I>>
+            , _StaticMinusClause<_UnionAndQuerySpec<I>>
             , _AsQueryClause<I> {
 
     }
@@ -200,7 +200,7 @@ public interface OracleQuery extends Query, OracleStatement {
 
 
     interface _UnionAndQuerySpec<I extends Item> extends _MinWithSpec<I>,
-            _DynamicParensQueryClause<_UnionAndQuerySpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+            _DynamicParensRowSetClause<_UnionAndQuerySpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 

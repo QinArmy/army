@@ -323,52 +323,6 @@ public interface Query extends RowSet {
 
     }
 
-
-    interface _QueryUnionClause<SP> {
-
-        SP union();
-
-        SP unionAll();
-
-        SP unionDistinct();
-    }
-
-
-    interface _QueryIntersectClause<SP> {
-
-        SP intersect();
-
-        SP intersectAll();
-
-        SP intersectDistinct();
-    }
-
-
-    interface _QueryExceptClause<SP> {
-
-        SP except();
-
-        SP exceptAll();
-
-        SP exceptDistinct();
-    }
-
-
-    interface _QueryMinusClause<SP> {
-
-        SP minus();
-
-        SP minusAll();
-
-        SP minusDistinct();
-    }
-
-    interface _DynamicParensQueryClause<T extends Item, R extends Item> {
-
-        R parens(Function<T, R> function);
-    }
-
-
     interface _SelectDispatcher<W extends SelectModifier, SR extends Item, SD>
             extends _HintsModifiersListSelectClause<W, SR>, _DynamicHintModifierSelectClause<W, SD> {
 

@@ -803,7 +803,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
         private SimpleSelect(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerBracketContext,
                              Function<? super Select, I> function) {
-            super(spec, CriteriaContexts.primaryQuery(spec, outerBracketContext, null));
+            super(spec, CriteriaContexts.primaryQueryContext(spec, outerBracketContext, null));
             this.function = function;
         }
 

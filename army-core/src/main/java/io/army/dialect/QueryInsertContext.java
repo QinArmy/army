@@ -3,11 +3,12 @@ package io.army.dialect;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.dialect.SubQuery;
-import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._RowSet;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
 
@@ -34,8 +35,7 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
 
     private final SubQuery subQuery;
 
-    private final List<? extends Selection> querySelectionList;
-
+    private final int selectionSize;
 
     /**
      * <p>
@@ -49,17 +49,19 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
             , ArmyParser parser, Visible visible) {
         super(outerContext, domainStmt, parser, visible);
 
+
         final _Insert._QueryInsert targetStmt;
         if (domainStmt instanceof _Insert._ChildQueryInsert) {
             targetStmt = ((_Insert._ChildQueryInsert) domainStmt).parentStmt();
         } else {
             targetStmt = domainStmt;
-
+            if (this.insertTable instanceof ParentTableMeta) {
+                domainStmt.validateOnlyParen();
+            }
         }
         this.subQuery = targetStmt.subQuery();
-        this.querySelectionList = ((_DerivedTable) this.subQuery).selectionList();
-
-        assert this.fieldList.size() == this.querySelectionList.size();
+        this.selectionSize = ((_RowSet) this.subQuery).selectionSize();
+        assert this.fieldList.size() == this.selectionSize;
 
     }
 
@@ -75,34 +77,30 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
         super(outerContext, domainStmt, parentContext);
 
         this.subQuery = domainStmt.subQuery();
-        this.querySelectionList = ((_DerivedTable) this.subQuery).selectionList();
 
         assert this.insertTable instanceof ChildTableMeta
                 && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta()
                 && this.fieldList != parentContext.fieldList
                 && this.subQuery != parentContext.subQuery;
 
-        assert this.fieldList.size() == this.querySelectionList.size();
+        this.selectionSize = ((_RowSet) this.subQuery).selectionSize();
+        assert this.fieldList.size() == this.selectionSize;
     }
 
 
     @Override
     int doAppendSubQuery(final int outputColumnSize, final List<FieldMeta<?>> fieldList) {
 
-        final List<? extends Selection> querySelectionList;
-        querySelectionList = this.querySelectionList;
-        final int selectionSize;
-        selectionSize = querySelectionList.size();
-
-        assert outputColumnSize == selectionSize;
+        assert outputColumnSize == this.selectionSize;
         this.parser.handleQuery(this.subQuery, this);
-        return selectionSize;
+        return this.selectionSize;
     }
 
 
     @Override
     public List<? extends Selection> selectionList() {
-        return this.querySelectionList;
+        //TODO ,postgre
+        throw new UnsupportedOperationException();
     }
 
     @Override

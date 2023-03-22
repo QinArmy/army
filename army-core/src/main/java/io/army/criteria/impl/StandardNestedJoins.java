@@ -165,21 +165,16 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
         @Override
         StandardStatement._NestedJoinSpec<I> onFromTable(final _JoinType joinType, @Nullable Query.TableModifier modifier,
                                                          final TableMeta<?> table, final String alias) {
-            if (modifier != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.blockConsumer.accept(new TableBlocks.NoOnTableBlock(joinType, table, alias));
-            return this;
+            final StandardNestedBlock<I> block;
+            block = new StandardNestedBlock<>(this.context, this.blockConsumer, joinType, table, alias,
+                    this.ender);
+            this.blockConsumer.accept(block);
+            return block;
         }
 
         @Override
         Statement._AsClause<StandardStatement._NestedJoinSpec<I>> onFromDerived(
-                _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
-            if (modifier != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            } else if (table == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
+                _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
             return alias -> {
                 final StandardNestedBlock<I> block;
                 block = new StandardNestedBlock<>(this.context, this.blockConsumer, joinType, table, alias,
@@ -206,12 +201,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
         @Override
         Statement._AsClause<StandardStatement._NestedOnSpec<I>> onJoinDerived(
-                _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable item) {
-            if (item == null) {
-                throw ContextStack.nullPointer(this.context);
-            } else if (modifier != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
+                _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable item) {
             return alias -> {
                 final StandardNestedBlock<I> block;
                 block = new StandardNestedBlock<>(this.context, this.blockConsumer, joinType, item, alias,

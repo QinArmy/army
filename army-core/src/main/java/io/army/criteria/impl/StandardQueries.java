@@ -314,7 +314,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
          */
         private SimpleSelect(@Nullable CriteriaContext outerBracketContext, Function<? super Select, I> function,
                              @Nullable CriteriaContext leftContext) {
-            super(CriteriaContexts.primaryQuery(null, outerBracketContext, leftContext));
+            super(CriteriaContexts.primaryQueryContext(null, outerBracketContext, leftContext));
             this.function = function;
         }
 

@@ -96,27 +96,43 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     final StandardStatement._DynamicJoinSpec onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
                                                          TableMeta<?> table, String alias) {
 
-        return this.onAddTable(joinType, modifier, table, alias);
+        final StandardDynamicBlock block;
+        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
+        this.blockConsumer.accept(block);
+        return block;
     }
 
     @Override
     final Statement._AsClause<StandardStatement._DynamicJoinSpec> onFromDerived(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
+            _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
 
-        return alias -> this.onAddDerived(joinType, modifier, table, alias);
+        return alias -> {
+            final StandardDynamicBlock block;
+            block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
+            this.blockConsumer.accept(block);
+            return block;
+        };
     }
 
 
     @Override
     final Statement._OnClause<StandardStatement._DynamicJoinSpec> onJoinTable(
             _JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
-        return this.onAddTable(joinType, modifier, table, alias);
+        final StandardDynamicBlock block;
+        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
+        this.blockConsumer.accept(block);
+        return block;
     }
 
     @Override
     final Statement._AsClause<Statement._OnClause<StandardStatement._DynamicJoinSpec>> onJoinDerived(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, @Nullable DerivedTable table) {
-        return alias -> this.onAddDerived(joinType, modifier, table, alias);
+            _JoinType joinType, @Nullable Query.DerivedModifier modifier, DerivedTable table) {
+        return alias -> {
+            final StandardDynamicBlock block;
+            block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
+            this.blockConsumer.accept(block);
+            return block;
+        };
     }
 
     @Override
@@ -133,7 +149,6 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     private Statement._OnClause<StandardStatement._DynamicJoinSpec> joinNestedEnd(final _JoinType joinType,
                                                                                   final NestedItems nestedItems) {
-        joinType.assertStandardJoinType();
         final StandardDynamicBlock block;
         block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, nestedItems, "");
         this.blockConsumer.accept(block);
@@ -141,36 +156,12 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     private StandardStatement._DynamicJoinSpec crossNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
-        assert joinType == _JoinType.CROSS_JOIN;
         final StandardDynamicBlock block;
         block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, nestedItems, "");
         this.blockConsumer.accept(block);
         return block;
     }
 
-    private StandardDynamicBlock onAddTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
-                                            TableMeta<?> table, String alias) {
-        if (modifier != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        final StandardDynamicBlock block;
-        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
-        this.blockConsumer.accept(block);
-        return block;
-    }
-
-    private StandardDynamicBlock onAddDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
-                                              @Nullable DerivedTable table, String alias) {
-        if (modifier != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        } else if (table == null) {
-            throw ContextStack.nullPointer(this.context);
-        }
-        final StandardDynamicBlock block;
-        block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, table, alias);
-        this.blockConsumer.accept(block);
-        return block;
-    }
 
     private static final class StandardDynamicBlock extends StandardDynamicJoins {
 

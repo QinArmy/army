@@ -1,6 +1,9 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.*;
+import io.army.criteria.Item;
+import io.army.criteria.RowSet;
+import io.army.criteria.Statement;
+import io.army.criteria.Values;
 
 /**
  * <p>
@@ -18,7 +21,7 @@ public interface MySQLValues extends MySQLStatement, RowSet {
 
 
     interface _UnionSpec<I extends Item>
-            extends Query._QueryUnionClause<_ValueWithComplexSpec<I>>, _AsValuesClause<I> {
+            extends _StaticUnionClause<_ValueWithComplexSpec<I>>, _AsValuesClause<I> {
 
     }
 
@@ -63,7 +66,7 @@ public interface MySQLValues extends MySQLStatement, RowSet {
 
 
     interface _ValueSpec<I extends Item> extends _MySQLValuesClause<I>,
-            Query._DynamicParensQueryClause<_ValueSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+            _DynamicParensRowSetClause<_ValueSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 
@@ -74,7 +77,7 @@ public interface MySQLValues extends MySQLStatement, RowSet {
      * </p>
      */
     interface _SelectComplexCommandSpec<I extends Item> extends MySQLQuery._MySQLSelectClause<I>,
-            Query._DynamicParensQueryClause<_ValueWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+            _DynamicParensRowSetClause<_ValueWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 

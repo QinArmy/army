@@ -421,7 +421,7 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
     }
 
     @Override
-    public final void appendSelection(final _SqlContext context) {
+    public final void appendSelectItem(final _SqlContext context) {
         context.appendField(this);
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder()
@@ -431,7 +431,7 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
     }
 
     @Override
-    public final Expression selectionExp() {
+    public final Expression underlyingExp() {
         return this;
     }
 

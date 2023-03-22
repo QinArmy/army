@@ -149,9 +149,15 @@ public interface _Insert extends _Statement {
 
     }
 
+    interface _ParentQueryInsert extends _QueryInsert {
+
+        CodeEnum discriminatorEnum();
+    }
+
     interface _ChildQueryInsert extends _QueryInsert, _ChildInsert {
 
-        _QueryInsert parentStmt();
+        _ParentQueryInsert parentStmt();
+
     }
 
 

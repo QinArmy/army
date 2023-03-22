@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._ParensRowSet;
 import io.army.criteria.impl.inner._RowSet;
+import io.army.criteria.impl.inner._SelectItem;
 import io.army.util._Assert;
 
 import java.util.List;
@@ -11,11 +12,11 @@ import java.util.List;
 abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         extends LimitRowOrderByClause<OR, LR, LO, LF>
         implements _ParensRowSet,
-        Query._QueryUnionClause<SP>,
-        Query._QueryIntersectClause<SP>,
-        Query._QueryExceptClause<SP>,
-        Query._QueryMinusClause<SP>,
-        CriteriaSupports.ArmyDerivedSpec,
+        RowSet._StaticUnionClause<SP>,
+        RowSet._StaticIntersectClause<SP>,
+        RowSet._StaticExceptClause<SP>,
+        RowSet._StaticMinusClause<SP>,
+        SelectionMap,
         Query._AsQueryClause<I>,
         Statement._RightParenClause<RR>,
         RowSet {
@@ -122,30 +123,12 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
     }
 
     @Override
-    public final List<Selection> selectionList() {
+    public final List<? extends _SelectItem> selectionList() {
         final _RowSet rowSet = this.innerRowSet;
         if (rowSet == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         return rowSet.selectionList();
-    }
-
-    @Override
-    public final List<String> columnAliasList() {
-        final RowSet rowSet = this.innerRowSet;
-        if (!(this instanceof DerivedTable && rowSet instanceof DerivedTable)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return ((ArmyDerivedTable) rowSet).columnAliasList();
-    }
-
-    @Override
-    public final void setColumnAliasList(final List<String> aliasList) {
-        final RowSet rowSet = this.innerRowSet;
-        if (!(this instanceof DerivedTable && rowSet instanceof DerivedTable)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        ((ArmyDerivedTable) rowSet).setColumnAliasList(aliasList);
     }
 
     @Override
@@ -177,20 +160,13 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         return prepared != null && prepared;
     }
 
-
-    @Deprecated
-    final Statement._RightParenClause<RR> parenRowSetEnd(final RowSet parenRowSet) {
+    final RR parensEnd(final RowSet parenRowSet) {
         if (this.innerRowSet != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         this.innerRowSet = (_RowSet) parenRowSet;
         this.context.onSetInnerContext(((CriteriaContextSpec) parenRowSet).getContext());
-        return this;
-    }
-
-    final RR parensEnd(final RowSet parenRowSet) {
-        return this.parenRowSetEnd(parenRowSet)
-                .rightParen();
+        return (RR) this;
     }
 
 

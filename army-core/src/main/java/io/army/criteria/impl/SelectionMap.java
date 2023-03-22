@@ -3,8 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.Selection;
 import io.army.lang.Nullable;
 
-import java.util.List;
-
 /**
  * <p>
  * Package interface,this interface is base interface of below:
@@ -21,8 +19,5 @@ interface SelectionMap {
 
     @Nullable
     Selection selection(String name);
-
-
-    List<? extends Selection> selectionList();
 
 }

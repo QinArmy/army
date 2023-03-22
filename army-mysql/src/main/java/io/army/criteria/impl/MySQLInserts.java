@@ -12,6 +12,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.struct.CodeEnum;
 import io.army.util._ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -1215,7 +1216,7 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public _MySQLQueryInsert parentStmt() {
+        public _MySQLParentQueryInsert parentStmt() {
             return this.parentStatement;
         }
 
@@ -1225,7 +1226,10 @@ abstract class MySQLInserts extends InsertSupports {
 
     private static final class PrimaryParentQueryInsertStatement<P>
             extends PrimaryQueryInsertStatement<InsertStatement._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>>
-            implements InsertStatement._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>> {
+            implements InsertStatement._ParentInsert<MySQLInsert._ChildInsertIntoSpec<P>>,
+            _MySQLInsert._MySQLParentQueryInsert, ParentQueryInsert {
+
+        private CodeEnum discriminatorValue;
 
         /**
          * @see PrimaryInsertIntoClause#createParentInsert(MySQLComplexValuesClause)
@@ -1233,6 +1237,19 @@ abstract class MySQLInserts extends InsertSupports {
         private PrimaryParentQueryInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
             assert clause.insertTable instanceof ParentTableMeta;
+        }
+
+        @Override
+        public void onValidateEnd(final CodeEnum discriminatorValue) {
+            assert this.discriminatorValue == null;
+            this.discriminatorValue = discriminatorValue;
+        }
+
+        @Override
+        public CodeEnum discriminatorEnum() {
+            final CodeEnum value = this.discriminatorValue;
+            assert value != null;
+            return value;
         }
 
         @Override

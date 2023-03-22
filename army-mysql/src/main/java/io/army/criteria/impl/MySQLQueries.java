@@ -772,7 +772,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         private SimpleSelect(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerBracketContext,
                              Function<? super Select, I> function) {
-            super(spec, CriteriaContexts.primaryQuery(spec, outerBracketContext, null));
+            super(spec, CriteriaContexts.primaryQueryContext(spec, outerBracketContext, null));
             this.function = function;
         }
 

@@ -14,6 +14,7 @@ import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.*;
+import io.army.struct.CodeEnum;
 import io.army.util._ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -745,7 +746,7 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
-        final   Dialect statementDialect() {
+        final Dialect statementDialect() {
             return MySQLDialect.MySQL80;
         }
 
@@ -776,7 +777,7 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
-        public _MySQLQueryInsert parentStmt() {
+        public _MySQLParentQueryInsert parentStmt() {
             return this.parentStatement;
         }
 
@@ -786,11 +787,28 @@ abstract class MySQLReplaces extends InsertSupports {
 
     private static final class PrimaryParentQueryReplaceStatement<P>
             extends QueryReplaceStatement<MySQLReplace._ParentReplace<P>>
-            implements MySQLReplace._ParentReplace<P> {
+            implements MySQLReplace._ParentReplace<P>,
+            ParentQueryInsert,
+            _MySQLInsert._MySQLParentQueryInsert {
+
+        private CodeEnum discriminatorValue;
 
         private PrimaryParentQueryReplaceStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
             assert clause.insertTable instanceof ParentTableMeta;
+        }
+
+        @Override
+        public void onValidateEnd(final CodeEnum discriminatorValue) {
+            assert this.discriminatorValue == null;
+            this.discriminatorValue = discriminatorValue;
+        }
+
+        @Override
+        public CodeEnum discriminatorEnum() {
+            final CodeEnum value = this.discriminatorValue;
+            assert value != null;
+            return value;
         }
 
         @Override

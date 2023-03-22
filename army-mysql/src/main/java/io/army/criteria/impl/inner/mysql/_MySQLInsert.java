@@ -54,10 +54,14 @@ public interface _MySQLInsert extends _Insert, _Insert._ConflictActionClauseSpec
 
     }
 
+    interface _MySQLParentQueryInsert extends _MySQLQueryInsert, _ParentQueryInsert {
+
+    }
+
     interface _MySQLChildQueryInsert extends _Insert._ChildQueryInsert, _MySQLQueryInsert {
 
         @Override
-        _MySQLQueryInsert parentStmt();
+        _MySQLParentQueryInsert parentStmt();
 
     }
 

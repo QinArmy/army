@@ -29,8 +29,8 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _UnionSpec<I extends Item> extends _AsQueryClause<I>,
-            _QueryUnionClause<_SelectSpec<I>> {
+    interface _UnionSpec<I extends Item> extends _StaticUnionClause<_SelectSpec<I>>,
+            _AsQueryClause<I> {
 
     }
 
@@ -39,7 +39,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>LIMIT clause for standard syntax</li>
-     *          <li>the composite {@link _UnionSpec}</li>
+     *          <li> {@link _AsQueryClause}</li>
      *     </ul>
      * </p>
      * <p>
@@ -52,11 +52,6 @@ public interface StandardQuery extends Query, StandardStatement {
      */
     interface _UnionLimitSpec<I extends Item> extends Statement._LimitClause<_AsQueryClause<I>>,
             _AsQueryClause<I> {
-
-    }
-
-    interface _UnionLimitQuerySpec<I extends Item> extends _UnionLimitSpec<I>,
-            _UnionSpec<I> {
 
     }
 
@@ -77,7 +72,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionLimitSpec<I>>,
-            _UnionLimitQuerySpec<I>,
+            _UnionLimitSpec<I>,
             _UnionSpec<I> {
 
     }
@@ -165,8 +160,8 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _HavingSpec<I extends Item> extends _HavingClause<_OrderBySpec<I>>
-            , _OrderBySpec<I>, _UnionSpec<I> {
+    interface _HavingSpec<I extends Item> extends _HavingClause<_OrderBySpec<I>>,
+            _OrderBySpec<I> {
 
     }
 
@@ -308,10 +303,9 @@ public interface StandardQuery extends Query, StandardStatement {
     }
 
     interface _SelectSpec<I extends Item> extends _StandardSelectClause<I>,
-            _DynamicParensQueryClause<_SelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+            _DynamicParensRowSetClause<_SelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
-
 
 
 }

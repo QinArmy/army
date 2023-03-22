@@ -62,12 +62,12 @@ final class QualifiedFieldImpl<T> extends OperationDataField implements Qualifie
     }
 
     @Override
-    public _Expression selectionExp() {
+    public _Expression underlyingExp() {
         return this;
     }
 
     @Override
-    public void appendSelection(final _SqlContext context) {
+    public void appendSelectItem(final _SqlContext context) {
         context.appendField(this.tableAlias, this.field);
 
         final StringBuilder sqlBuilder;

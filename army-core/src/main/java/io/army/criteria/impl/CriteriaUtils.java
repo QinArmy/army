@@ -6,6 +6,7 @@ import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._RowSet;
+import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
@@ -150,8 +151,8 @@ abstract class CriteriaUtils {
 
                 if (item instanceof Selection) {
                     map.put(((Selection) item).selectionName(), (Selection) item); // if alias duplication then override. Be consistent with  statement executor.
-                } else if (item instanceof SelectionGroup) {
-                    for (Selection selection : ((SelectionGroup) item).selectionList()) {
+                } else if (item instanceof _SelectionGroup) {
+                    for (Selection selection : ((_SelectionGroup) item).selectionList()) {
                         map.put(selection.selectionName(), selection); // if alias duplication then override.Be consistent with  statement executor.
                     }
                 }
@@ -429,8 +430,8 @@ abstract class CriteriaUtils {
         for (SelectItem selectItem : ((_RowSet) rowSet).selectionList()) {
             if (selectItem instanceof Selection) {
                 count++;
-            } else if (selectItem instanceof SelectionGroup) {
-                count += ((SelectionGroup) selectItem).selectionList().size();
+            } else if (selectItem instanceof _SelectionGroup) {
+                count += ((_SelectionGroup) selectItem).selectionList().size();
             } else {
                 throw _Exceptions.unknownSelectItem(selectItem);
             }

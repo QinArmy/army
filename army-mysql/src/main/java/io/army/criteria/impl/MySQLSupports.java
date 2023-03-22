@@ -540,7 +540,9 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
         private R stringConsumerEnd(final List<String> stringList) {
-            return this.function.apply(new MySQLIndexHint(this.command, this.purpose, stringList));
+            final IndexHintPurpose hintPurpose = this.purpose;
+            this.purpose = null;// clear for next.
+            return this.function.apply(new MySQLIndexHint(this.command, hintPurpose, stringList));
         }
 
 

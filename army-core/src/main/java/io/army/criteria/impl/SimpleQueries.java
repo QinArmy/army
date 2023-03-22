@@ -42,10 +42,10 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         Query._HavingClause<HR>,
         Query._AsQueryClause<Q>,
         CriteriaSupports.ArmyDerivedSpec,
-        Query._QueryUnionClause<SP>,
-        Query._QueryIntersectClause<SP>,
-        Query._QueryExceptClause<SP>,
-        Query._QueryMinusClause<SP>,
+        RowSet._StaticUnionClause<SP>,
+        RowSet._StaticIntersectClause<SP>,
+        RowSet._StaticExceptClause<SP>,
+        RowSet._StaticMinusClause<SP>,
         Query,
         _Query {
 

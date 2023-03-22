@@ -67,6 +67,11 @@ abstract class InsertSupports {
 
     }
 
+    interface ParentQueryInsert extends _Insert._ParentQueryInsert {
+
+        void onValidateEnd(CodeEnum discriminatorValue);
+    }
+
 
     enum InsertMode {
         DOMAIN,
@@ -1960,7 +1965,10 @@ abstract class InsertSupports {
         @Override
         public final void validateOnlyParen() {
             assert this.insertTable instanceof ParentTableMeta;
-            validateQueryInsert(this, true);
+            if (((ParentQueryInsert) this).discriminatorEnum() != this.insertTable.discriminatorValue()) {
+                throw discriminatorNotMatch(this.context, this.insertTable, this.insertTable.discriminatorValue());
+            }
+
         }
 
         @Override
@@ -2089,8 +2097,10 @@ abstract class InsertSupports {
                 if (statement instanceof PrimaryStatement) {
                     validateSupportWithClauseInsert((_Insert._SupportWithClauseInsert) statement);
                 }
+            } else if (statement instanceof _Insert._ParentQueryInsert) {
+                validateParentQueryInsert((_Insert._ParentQueryInsert) statement);
             } else if (statement instanceof _Insert._QueryInsert) {
-                validateQueryInsert((_Insert._QueryInsert) statement, false);
+                validateSimpleQueryInsert((_Insert._QueryInsert) statement);
             }
         } else if (isForbidChildSyntax((_Insert._ChildInsert) statement)) {
             final ParentTableMeta<?> parentTable;
@@ -2100,7 +2110,7 @@ abstract class InsertSupports {
                     , parentTable.id().generatorType());
             throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
         } else if (statement instanceof _Insert._QueryInsert) {
-            validateQueryInsert((_Insert._QueryInsert) statement, false);
+            validateChildQueryInsert((_Insert._ChildQueryInsert) statement);
         } else if (statement instanceof _Insert._ChildDomainInsert) {
             validateChildDomainInsert((_Insert._ChildDomainInsert) statement);
         } else if (statement instanceof _Insert._ChildValuesInsert) {
@@ -2150,82 +2160,72 @@ abstract class InsertSupports {
     private static boolean isForbidChildSyntax(final _Insert._ChildInsert child) {
         final _Insert parentStmt;
         parentStmt = child.parentStmt();
-        return parentStmt.table().id().generatorType() == GeneratorType.POST
-                && parentStmt instanceof _Insert._SupportConflictClauseSpec
+        return parentStmt instanceof _Insert._SupportConflictClauseSpec
+                && parentStmt.table().id().generatorType() == GeneratorType.POST
                 && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction()
                 && !(parentStmt instanceof _ReturningDml);
     }
 
-    /**
-     * @see #insertStatementGuard(_Insert)
-     * @see AbstractQuerySyntaxInsertStatement#validateOnlyParen()
-     */
-    private static void validateQueryInsert(final _Insert._QueryInsert statement, final boolean onlyParent) {
-        SubQuery query;
-        _Insert._QueryInsert currentStatement = statement;
-        //1. validate column size and sub query selection size
-        for (int i = 0, selectionSize, columnSize; i < 2; i++) {
 
-            query = currentStatement.subQuery();
-            selectionSize = ((_RowSet) query).selectionSize();
-            columnSize = currentStatement.fieldList().size();
-            if (columnSize == 0) {
-                throw ContextStack.castCriteriaApi(((CriteriaContextSpec) statement).getContext());
-            }
-            if (selectionSize != columnSize) {
-                String m = String.format("%s insert statement selection size[%s] and column size[%s] not match"
-                        , currentStatement.table(), selectionSize, columnSize);
-                throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
-            }
-            if (!(currentStatement instanceof _Insert._ChildQueryInsert)) {
-                break;
-            }
-            currentStatement = ((_Insert._ChildQueryInsert) currentStatement).parentStmt();
+    private static void validateChildQueryInsert(final _Insert._ChildQueryInsert stmt) {
+        final CriteriaContext context;
+        context = ((CriteriaContextSpec) stmt).getContext();
+
+        //validate child query selection size
+        validateSelectionSize(context, stmt);
+
+        final CodeEnum discriminatorEnum, childEnum;
+        childEnum = stmt.table().discriminatorValue();
+        assert childEnum != null;
+
+        discriminatorEnum = stmt.parentStmt().discriminatorEnum();
+
+        if (discriminatorEnum != childEnum) {
+            throw discriminatorNotMatch(context, stmt.table(), childEnum);
         }
 
-        final TableMeta<?> insertTable;
-        insertTable = statement.table();
-        if (insertTable instanceof SimpleTableMeta) {
-            return;
-        }
-        //2. validate parent statement discriminator
-        final List<FieldMeta<?>> fieldList;
-        final List<? extends Selection> selectionList;
-        if (statement instanceof _Insert._ChildQueryInsert) {
-            final _Insert._QueryInsert parentStmt;
-            parentStmt = ((_Insert._ChildQueryInsert) statement).parentStmt();
-            fieldList = parentStmt.fieldList();
-            selectionList = ((_DerivedTable) parentStmt.subQuery()).selectionList();
-        } else {
-            fieldList = statement.fieldList();
-            selectionList = ((_DerivedTable) statement.subQuery()).selectionList();
-        }
-        //2.1 find discriminatorSelection
-        final int fieldSize = fieldList.size();
-        final FieldMeta<?> discriminatorField = insertTable.discriminator();
-        assert discriminatorField != null;
-        Selection discriminatorSelection = null;
-        for (int i = 0; i < fieldSize; i++) {
-            if (fieldList.get(i) == discriminatorField) {
-                discriminatorSelection = selectionList.get(i);
-                break;
-            }
-        }//outerFor
+    }
 
-        if (discriminatorSelection == null) {
-            //army syntax api forbid this
-            throw ContextStack.castCriteriaApi(((CriteriaContextSpec) statement).getContext());
-        }
+
+    private static void validateParentQueryInsert(final _Insert._ParentQueryInsert stmt) {
+        final CriteriaContext context;
+        context = ((CriteriaContextSpec) stmt).getContext();
+
+        final Selection discriminatorSelection;
+        //validate parent query selection size
+        discriminatorSelection = validateSelectionSize(context, stmt);
+        assert discriminatorSelection != null;
+
+        final CodeEnum discriminatorValue;
+        discriminatorValue = getDiscriminatorValue(context, discriminatorSelection, (ParentTableMeta<?>) stmt.table());
+
+        ((ParentQueryInsert) stmt).onValidateEnd(discriminatorValue);
+
+    }
+
+
+    private static void validateSimpleQueryInsert(final _Insert._QueryInsert stmt) {
+        assert stmt.table() instanceof SimpleTableMeta;
+        validateSelectionSize(((CriteriaContextSpec) stmt).getContext(), stmt);
+
+    }
+
+
+    private static CodeEnum getDiscriminatorValue(final CriteriaContext context,
+                                                  final Selection discriminatorSelection,
+                                                  final ParentTableMeta<?> insertTable) {
+        final FieldMeta<?> discriminatorField;
+        discriminatorField = insertTable.discriminator();
 
         //2.2 validate discriminatorExp
         final Expression discriminatorExp;
-        discriminatorExp = ((_Selection) discriminatorSelection).selectionExp();
+        discriminatorExp = ((_Selection) discriminatorSelection).underlyingExp();
 
         if (!(discriminatorExp instanceof LiteralExpression.SingleLiteral)) {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be literal."
                     , Selection.class.getSimpleName(), discriminatorSelection.selectionName()
                     , discriminatorField);
-            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+            throw ContextStack.criteriaError(context, m);
         }
 
         final Object value;
@@ -2237,20 +2237,83 @@ abstract class InsertSupports {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be instance of %s."
                     , Selection.class.getSimpleName(), discriminatorSelection.selectionName()
                     , discriminatorField, discriminatorJavaType.getName());
-            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
-        }
-        //TODO  parser check parent discriminatorEnum
-        final CodeEnum discriminatorEnum;
-        discriminatorEnum = insertTable.discriminatorValue();
-        assert discriminatorEnum != null;
-        if (value != discriminatorEnum && (onlyParent || insertTable instanceof ChildTableMeta)) {
-            String m = String.format("The appropriate %s[%s] of discriminator %s must be %s.%s ."
-                    , Selection.class.getSimpleName(), discriminatorSelection.selectionName()
-                    , discriminatorField, discriminatorJavaType.getName()
-                    , discriminatorEnum.name());
-            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+            throw ContextStack.criteriaError(context, m);
         }
 
+        return (CodeEnum) value;
+    }
+
+
+    @Nullable
+    private static Selection validateSelectionSize(final CriteriaContext context, final _Insert._QueryInsert stmt) {
+        final TableMeta<?> insertTable;
+        insertTable = stmt.table();
+
+        final List<FieldMeta<?>> fieldList;
+        fieldList = stmt.fieldList();
+        final int fieldSize, discriminatorIndex;
+        fieldSize = fieldList.size();
+        final FieldMeta<?> discriminatorField;
+        if (insertTable instanceof ParentTableMeta) {
+            discriminatorField = insertTable.discriminator();
+            int index = -1;
+            for (int i = 0; i < fieldSize; i++) {
+                if (fieldList.get(i) == discriminatorField) {
+                    index = i;
+                    break;
+                }
+            }
+            assert index > -1;
+            discriminatorIndex = index;
+        } else {
+            discriminatorField = null;
+            discriminatorIndex = -1;
+        }
+
+        final List<? extends _SelectItem> selectItemList;
+        selectItemList = ((_RowSet) stmt.subQuery()).selectionList();
+        final int itemSize;
+        itemSize = selectItemList.size();
+
+        _SelectItem item;
+        Selection discriminatorSelection = null;
+        List<? extends Selection> selectionList;
+        int selectionCount = 0;
+        for (int i = 0, groupSize, index; i < itemSize; i++) {
+            item = selectItemList.get(i);
+
+            if (item instanceof Selection) {
+                if (selectionCount == discriminatorIndex) {
+                    assert discriminatorSelection == null;
+                    discriminatorSelection = (Selection) item;
+                }
+                selectionCount++;
+                continue;
+            }
+            selectionList = ((_SelectionGroup) item).selectionList();
+            groupSize = selectionList.size();
+            index = discriminatorIndex - selectionCount;
+            if (index > 0 && index < groupSize) {
+                assert discriminatorSelection == null;
+                discriminatorSelection = selectionList.get(index);
+            }
+
+            selectionCount += groupSize;
+
+        }//for
+
+        if (selectionCount != fieldSize) {
+            String m = String.format("SubQuery %s size and field list size of %s not match.",
+                    Selection.class.getSimpleName(), stmt.table());
+            throw ContextStack.criteriaError(context, m);
+        }
+
+        if (discriminatorField != null && discriminatorSelection == null) {
+            String m = String.format("Not found %s for %s",
+                    Selection.class.getSimpleName(), discriminatorField);
+            throw ContextStack.criteriaError(context, m);
+        }
+        return discriminatorSelection;
     }
 
     /**
@@ -2280,6 +2343,16 @@ abstract class InsertSupports {
                     , parentPairList.size());
             throw ContextStack.criteriaError(((CriteriaContextSpec) childStmt).getContext(), m);
         }
+    }
+
+    private static CriteriaException discriminatorNotMatch(CriteriaContext context, TableMeta<?> domainTable,
+                                                           CodeEnum codeEnum) {
+        String m = String.format("The appropriate %s of discriminator %s must be %s.%s .",
+                Selection.class.getSimpleName(),
+                domainTable,
+                codeEnum.getClass().getName(),
+                codeEnum.name());
+        return ContextStack.criteriaError(context, m);
     }
 
 

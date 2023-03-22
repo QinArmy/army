@@ -1,7 +1,6 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.RowSet;
-import io.army.criteria.Selection;
 
 import java.util.List;
 
@@ -21,7 +20,7 @@ public interface _RowSet extends _Statement, RowSet {
 
     int selectionSize();
 
-    List<Selection> selectionList();
+    List<? extends _SelectItem> selectionList();
 
 
 }

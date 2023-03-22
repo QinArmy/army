@@ -1,7 +1,6 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.Item;
-import io.army.criteria.Query;
 import io.army.criteria.Values;
 import io.army.criteria.ValuesQuery;
 import io.army.criteria.impl.Postgres;
@@ -12,9 +11,9 @@ import java.util.function.Function;
 public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
 
-    interface _UnionSpec<I extends Item> extends Query._QueryUnionClause<_QueryWithComplexSpec<I>>,
-            Query._QueryIntersectClause<_QueryWithComplexSpec<I>>,
-            Query._QueryExceptClause<_QueryWithComplexSpec<I>> {
+    interface _UnionSpec<I extends Item> extends _StaticUnionClause<_QueryWithComplexSpec<I>>,
+            _StaticIntersectClause<_QueryWithComplexSpec<I>>,
+            _StaticExceptClause<_QueryWithComplexSpec<I>> {
 
     }
 
@@ -77,7 +76,7 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
     }
 
     interface _ValuesSpec<I extends Item> extends _PostgreValuesClause<I>,
-            Query._DynamicParensQueryClause<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+            _DynamicParensRowSetClause<_WithSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 
@@ -103,7 +102,7 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
     interface _QueryComplexSpec<I extends Item> extends PostgreQuery._PostgreSelectClause<I>,
             _PostgreValuesClause<I>,
-            Query._DynamicParensQueryClause<_QueryWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+            _DynamicParensRowSetClause<_QueryWithComplexSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
 
     }
 

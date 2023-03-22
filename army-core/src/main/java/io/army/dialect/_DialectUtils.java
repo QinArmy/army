@@ -6,6 +6,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
@@ -37,8 +38,8 @@ public abstract class _DialectUtils {
         for (SelectItem selectItem : selectPartList) {
             if (selectItem instanceof Selection) {
                 selectionList.add((Selection) selectItem);
-            } else if (selectItem instanceof SelectionGroup) {
-                selectionList.addAll(((SelectionGroup) selectItem).selectionList());
+            } else if (selectItem instanceof _SelectionGroup) {
+                selectionList.addAll(((_SelectionGroup) selectItem).selectionList());
             } else {
                 throw _Exceptions.unknownSelectItem(selectItem);
             }

@@ -962,7 +962,7 @@ abstract class ArmyParser implements DialectParser {
             if (i > 0) {
                 builder.append(_Constant.SPACE_COMMA);
             }
-            ((_Selection) selectionList.get(i)).appendSelection(context);
+            ((_Selection) selectionList.get(i)).appendSelectItem(context);
 
         }//for
 

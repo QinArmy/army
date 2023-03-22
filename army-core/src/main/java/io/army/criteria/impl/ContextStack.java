@@ -16,6 +16,9 @@ import java.util.function.Supplier;
 
 /**
  * <p>
+ * This class is the stack of context of {@link io.army.criteria.Statement}.
+ * </p>
+ * <p>
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
@@ -24,7 +27,7 @@ import java.util.function.Supplier;
  */
 abstract class ContextStack {
 
-    private static final Logger LOG = LoggerFactory.getLogger(io.army.criteria.impl.ContextStack.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ContextStack.class);
 
     private ContextStack() {
         throw new UnsupportedOperationException();
@@ -76,7 +79,7 @@ abstract class ContextStack {
         }
         context.contextEndEvent();
         if (LOG.isTraceEnabled()) {
-            LOG.trace("pop {},hash:{}", context.getClass().getName(), System.identityHashCode(context));
+            LOG.trace("pop {}", context);
         }
         return context;
     }
@@ -84,14 +87,12 @@ abstract class ContextStack {
     static void push(final CriteriaContext context) {
         final CriteriaContext outerContext;
         outerContext = context.getOuterContext();
-
         final Stack stack;
         if (outerContext == null) {
             //reset
             HOLDER.set(new ArmyContextStack(context));
             if (LOG.isTraceEnabled()) {
-                LOG.trace("reset stack for primary context {},hash:{}", context.getClass().getName()
-                        , System.identityHashCode(context));
+                LOG.trace("reset stack for primary context {}.", context);
             }
         } else if ((stack = HOLDER.get()) == null) {
             //no bug,never here
@@ -99,7 +100,7 @@ abstract class ContextStack {
         } else if (outerContext == stack.peek()) {
             stack.push(context);
             if (LOG.isTraceEnabled()) {
-                LOG.trace("push {},hash:{}", context.getClass().getName(), System.identityHashCode(context));
+                LOG.trace("push {}", context);
             }
         } else {
             //no bug,never here
