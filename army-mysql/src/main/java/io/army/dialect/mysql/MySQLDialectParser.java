@@ -247,7 +247,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     @Override
-    protected void parseValues(final _Values values, final _ValuesContext context) {
+    protected void parseValues(final _ValuesQuery values, final _ValuesContext context) {
         assert context.parser() == this;
         final StringBuilder sqlBuilder;
         if ((sqlBuilder = context.sqlBuilder()).length() > 0) {

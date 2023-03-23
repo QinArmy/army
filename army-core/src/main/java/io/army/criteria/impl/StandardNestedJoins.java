@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.standard.StandardCrosses;
 import io.army.criteria.standard.StandardJoins;
@@ -29,12 +31,12 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
         implements StandardStatement._NestedLeftParenSpec<I> {
 
     static <I extends Item> StandardStatement._NestedLeftParenSpec<I> nestedJoin(CriteriaContext context
-            , _JoinType joinType, BiFunction<_JoinType, NestedItems, I> function) {
+            , _JoinType joinType, BiFunction<_JoinType, _NestedItems, I> function) {
         return new StandardNestedJoins<>(context, joinType, function);
     }
 
     private StandardNestedJoins(CriteriaContext context, _JoinType joinType
-            , BiFunction<_JoinType, NestedItems, I> function) {
+            , BiFunction<_JoinType, _NestedItems, I> function) {
         super(context, joinType, function);
     }
 
@@ -62,7 +64,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
     }
 
     @Override
-    Object onLeftCte(CteItem cteItem, String alias) {
+    Object onLeftCte(_Cte cteItem, String alias) {
         throw ContextStack.castCriteriaApi(this.context);
     }
 
@@ -73,7 +75,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
     }
 
     private StandardStatement._StandardNestedJoinClause<I> nestedNestedJoinEnd(final _JoinType joinType,
-                                                                               final NestedItems nestedItems) {
+                                                                               final _NestedItems nestedItems) {
         final StandardNestedBlock<I> clause;
         clause = new StandardNestedBlock<>(this.context, this::onAddTableBlock
                 , joinType, nestedItems, "", this::thisNestedJoinEnd);
@@ -185,7 +187,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
         }
 
         @Override
-        Void onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+        Void onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
             throw ContextStack.castCriteriaApi(this.context);
         }
 
@@ -212,7 +214,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
         }
 
         @Override
-        Void onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+        Void onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
             throw ContextStack.castCriteriaApi(this.context);
         }
 
@@ -222,7 +224,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
          * @see #rightJoin(Function)
          * @see #fullJoin(Function)
          */
-        private StandardStatement._NestedOnSpec<I> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
+        private StandardStatement._NestedOnSpec<I> joinNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
             final StandardNestedBlock<I> block;
             block = new StandardNestedBlock<>(this.context, this.blockConsumer, joinType, nestedItems, "",
                     this.ender);
@@ -233,7 +235,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
         /**
          * @see #crossJoin(Function)
          */
-        private StandardStatement._NestedJoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems items) {
+        private StandardStatement._NestedJoinSpec<I> fromNestedEnd(final _JoinType joinType, final _NestedItems items) {
             assert joinType == _JoinType.CROSS_JOIN;
             final StandardNestedBlock<I> block;
             block = new StandardNestedBlock<>(this.context, this.blockConsumer, _JoinType.CROSS_JOIN, items, "",

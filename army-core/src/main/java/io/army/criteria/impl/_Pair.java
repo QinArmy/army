@@ -15,5 +15,13 @@ public final class _Pair<F, S> {
         this.second = second;
     }
 
+    F getFirst() {
+        return first;
+    }
+
+    S getSecond() {
+        return second;
+    }
+
 
 }

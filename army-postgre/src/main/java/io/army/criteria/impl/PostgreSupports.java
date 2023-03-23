@@ -2,10 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._RowSet;
-import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._PostgreCte;
 import io.army.criteria.impl.inner.postgre._PostgreTableBlock;
 import io.army.criteria.postgre.*;
@@ -33,7 +30,7 @@ abstract class PostgreSupports extends CriteriaSupports {
     }
 
 
-    static final List<Selection> EMPTY_SELECTION_LIST = Collections.emptyList();
+    static final List<_Selection> EMPTY_SELECTION_LIST = Collections.emptyList();
 
     static PostgreCtes postgreCteBuilder(final boolean recursive, final CriteriaContext context) {
         return new PostgreCteBuilder(recursive, context);
@@ -319,11 +316,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final SubStatement subStatement;
 
-
-        private final List<Selection> selectionList;
-
-        private final Map<String, Selection> selectionMap;
-
+        private final _SelectionMap selectionMap;
         private final _SearchClause searchClause;
 
         private final _CycleClause cycleClause;
@@ -337,16 +330,21 @@ abstract class PostgreSupports extends CriteriaSupports {
                    @Nullable PostgreSyntax.WordMaterialized modifier, SubStatement subStatement,
                    final @Nullable _SearchClause searchClause, final @Nullable _CycleClause cycleClause) {
             this.name = name;
-            this.columnAliasList = _CollectionUtils.safeList(columnAliasList);
+            this.columnAliasList = _CollectionUtils.safeUnmodifiableList(columnAliasList);
             this.modifier = modifier;
             this.subStatement = subStatement;
+
             this.searchClause = searchClause;
             this.cycleClause = cycleClause;
 
-            final _Pair<List<Selection>, Map<String, Selection>> pair;
-            pair = createPair(searchClause, cycleClause);
-            this.selectionList = pair.first;
-            this.selectionMap = pair.second;
+            if (!(subStatement instanceof DerivedTable)) {
+                throw CriteriaUtils.subDmlNoReturningClause(name);
+            } else if (this.columnAliasList.size() == 0) {
+                this.selectionMap = (_SelectionMap) subStatement;
+            } else {
+                this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList, (_DerivedTable) subStatement);
+            }
+
         }
 
 
@@ -357,12 +355,12 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public Selection refSelection(String derivedAlias) {
-            return this.selectionMap.get(derivedAlias);
+            return this.selectionMap.refSelection(derivedAlias);
         }
 
         @Override
-        public List<Selection> selectionList() {
-            return this.selectionList;
+        public List<? extends Selection> refAllSelection() {
+            return this.selectionMap.refAllSelection();
         }
 
         @Override
@@ -388,88 +386,6 @@ abstract class PostgreSupports extends CriteriaSupports {
         @Override
         public _CycleClause cycleClause() {
             return this.cycleClause;
-        }
-
-
-        private _Pair<List<Selection>, Map<String, Selection>> createPair(final @Nullable _SearchClause searchClause,
-                                                                          final @Nullable _CycleClause cycleClause) {
-            final List<? extends Selection> stmtSelections;
-            if (this.subStatement instanceof RowSet) {
-                stmtSelections = ((_RowSet) this.subStatement).selectItemList();
-            } else {
-                stmtSelections = ((_Statement._ReturningListSpec) this.subStatement).returningList();
-            }
-            final int selectionSize;
-            selectionSize = stmtSelections.size();
-            int newSize = selectionSize;
-            final Selection searchSeqSelection, cycleMarkSelection, cyclePathSelection;
-            if (searchClause == null) {
-                searchSeqSelection = null;
-            } else {
-                searchSeqSelection = searchClause.searchSeqSelection();
-                newSize++;
-            }
-
-            if (cycleClause == null) {
-                cycleMarkSelection = null;
-                cyclePathSelection = null;
-            } else {
-                cycleMarkSelection = cycleClause.cycleMarkSelection();
-                cyclePathSelection = cycleClause.cyclePathSelection();
-                newSize += 2;
-            }
-
-            final List<String> columnAliasList = this.columnAliasList;
-
-
-            final int aliasSize;
-            if ((aliasSize = columnAliasList.size()) > 0 && aliasSize != selectionSize) {
-                throw CriteriaUtils.cteColumnAliasNotMatch(selectionSize, aliasSize);
-            }
-            final List<Selection> selectionList = new ArrayList<>(newSize);
-            final Map<String, Selection> selectionMap = new HashMap<>((int) (newSize / 0.75f));
-            String alias;
-            Selection selection;
-            for (int i = 0; i < selectionSize; i++) {
-                selection = stmtSelections.get(i);
-                if (aliasSize == 0) {
-                    alias = selection.selectionName();
-                } else {
-                    alias = columnAliasList.get(i);
-                    selection = ArmySelections.renameSelection(selection, alias);
-                }
-
-                if (selectionMap.putIfAbsent(alias, selection) != null && aliasSize > 0) {
-                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), alias);
-                }
-                selectionList.add(selection);
-
-            }
-
-            if (searchSeqSelection != null) {
-                if (selectionMap.putIfAbsent(searchSeqSelection.selectionName(), searchSeqSelection) != null) {
-                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), searchSeqSelection.selectionName());
-                }
-                selectionList.add(searchSeqSelection);
-            }
-
-            if (cycleMarkSelection != null) {
-                if (selectionMap.putIfAbsent(cycleMarkSelection.selectionName(), cycleMarkSelection) != null) {
-                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), cycleMarkSelection.selectionName());
-                }
-                selectionList.add(cycleMarkSelection);
-
-                if (selectionMap.putIfAbsent(cyclePathSelection.selectionName(), cyclePathSelection) != null) {
-                    throw CriteriaUtils.duplicateColumnAlias(ContextStack.peek(), cyclePathSelection.selectionName());
-                }
-                selectionList.add(cyclePathSelection);
-            }
-
-            assert selectionList.size() == selectionMap.size();
-            return _Pair.create(
-                    Collections.unmodifiableList(selectionList),
-                    Collections.unmodifiableMap(selectionMap)
-            );
         }
 
 

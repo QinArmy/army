@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._RowSet;
@@ -85,12 +86,11 @@ abstract class Expressions extends OperationExpression {
     }
 
     static Expression scalarExpression(final SubQuery subQuery) {
-        final List<Selection> selectionList;
-        selectionList = ((_RowSet) subQuery).selectItemList();
+        final List<? extends Selection> selectionList;
+        selectionList = ((_DerivedTable) subQuery).refAllSelection();
         if (selectionList.size() != 1) {
             throw ContextStack.criteriaError(ContextStack.peek(), _Exceptions::nonScalarSubQuery, subQuery);
         }
-        ((ArmyDerivedTable) subQuery).setColumnAliasList(CriteriaUtils.EMPTY_STRING_LIST);
         return new ScalarExpression<>(selectionList.get(0).typeMeta(), subQuery);
     }
 
@@ -259,7 +259,7 @@ abstract class Expressions extends OperationExpression {
      */
     private static void assertColumnSubQuery(final DualOperator operator
             , final @Nullable QueryOperator queryOperator, final SubQuery subQuery) {
-        if (((_RowSet) subQuery).selectItemList().size() != 1) {
+        if (((_DerivedTable) subQuery).refAllSelection().size() != 1) {
             StringBuilder builder = new StringBuilder();
             builder.append("Operator ")
                     .append(operator.name());

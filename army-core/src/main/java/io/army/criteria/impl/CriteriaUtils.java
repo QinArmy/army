@@ -64,8 +64,8 @@ abstract class CriteriaUtils {
         return list;
     }
 
-    static List<Selection> selectionList(CriteriaContext context, Consumer<Returnings> consumer) {
-        final List<Selection> list = new ArrayList<>();
+    static List<_Selection> selectionList(CriteriaContext context, Consumer<Returnings> consumer) {
+        final List<_Selection> list = new ArrayList<>();
         consumer.accept(CriteriaSupports.returningBuilder(list::add));
         if (list.size() == 0) {
             throw CriteriaUtils.returningListIsEmpty(context);
@@ -422,19 +422,6 @@ abstract class CriteriaUtils {
     }
 
 
-    static int selectionCount(final RowSet rowSet) {
-        int count = 0;
-        for (_SelectItem selectItem : ((_RowSet) rowSet).selectItemList()) {
-            if (selectItem instanceof Selection) {
-                count++;
-            } else if (selectItem instanceof _SelectionGroup) {
-                count += ((_SelectionGroup) selectItem).selectionList().size();
-            } else {
-                throw _Exceptions.unknownSelectItem(selectItem);
-            }
-        }
-        return count;
-    }
 
     static String sqlWordsToString(Enum<?> type) {
         return _StringUtils.builder()
@@ -444,18 +431,19 @@ abstract class CriteriaUtils {
                 .toString();
     }
 
+    @Deprecated
     static _Pair<List<Selection>, Map<String, Selection>> forColumnAlias(final List<String> columnAliasList,
-                                                                         final ArmyDerivedTable table) {
-        final List<? extends _SelectItem> tableSelectionList;
-        tableSelectionList = table.selectItemList();
+                                                                         final _DerivedTable table) {
+        final List<? extends Selection> refSelectionList;
+        refSelectionList = table.refAllSelection();
         final int selectionSize;
-        selectionSize = tableSelectionList.size();
+        selectionSize = refSelectionList.size();
         if (columnAliasList.size() != selectionSize) {
             throw CriteriaUtils.cteColumnAliasNotMatch(selectionSize, columnAliasList.size());
         }
         if (selectionSize == 1) {
             final Selection selection;
-            selection = ArmySelections.renameSelection(tableSelectionList.get(0), columnAliasList.get(0));
+            selection = ArmySelections.renameSelection(refSelectionList.get(0), columnAliasList.get(0));
             return _Pair.create(
                     Collections.singletonList(selection),
                     Collections.singletonMap(selection.selectionName(), selection)
@@ -470,7 +458,7 @@ abstract class CriteriaUtils {
             if (columnAlias == null) {
                 throw ContextStack.clearStackAndNullPointer();
             }
-            selection = ArmySelections.renameSelection(tableSelectionList.get(i), columnAlias);
+            selection = ArmySelections.renameSelection(refSelectionList.get(i), columnAlias);
             if (selectionMap.putIfAbsent(columnAlias, selection) != null) {
                 throw CriteriaUtils.duplicateColumnAlias(columnAlias);
             }
@@ -483,6 +471,52 @@ abstract class CriteriaUtils {
         );
     }
 
+    static _SelectionMap createAliasSelectionMap(final List<String> columnAliasList,
+                                                 final _DerivedTable table) {
+        final List<? extends Selection> refSelectionList;
+        refSelectionList = table.refAllSelection();
+        final int selectionSize;
+        selectionSize = refSelectionList.size();
+        if (columnAliasList.size() != selectionSize) {
+            throw CriteriaUtils.cteColumnAliasNotMatch(selectionSize, columnAliasList.size());
+        }
+        if (selectionSize == 1) {
+            final Selection selection;
+            selection = ArmySelections.renameSelection(refSelectionList.get(0), columnAliasList.get(0));
+            return new SelectionMap(
+                    Collections.singletonList(selection),
+                    Collections.singletonMap(selection.selectionName(), selection)
+            );
+        }
+        final List<Selection> selectionList = new ArrayList<>(selectionSize);
+        final Map<String, Selection> selectionMap = new HashMap<>((int) (selectionSize / 0.75f));
+        Selection selection;
+        String columnAlias;
+        for (int i = 0; i < selectionSize; i++) {
+            columnAlias = columnAliasList.get(i);
+            if (columnAlias == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            selection = ArmySelections.renameSelection(refSelectionList.get(i), columnAlias);
+            if (selectionMap.putIfAbsent(columnAlias, selection) != null) {
+                throw CriteriaUtils.duplicateColumnAlias(columnAlias);
+            }
+            selectionList.add(selection);
+        }
+        assert selectionList.size() == selectionMap.size();
+        return new SelectionMap(
+                Collections.unmodifiableList(selectionList),
+                Collections.unmodifiableMap(selectionMap)
+        );
+
+
+    }
+
+
+    static CriteriaException subDmlNoReturningClause(String cteName) {
+        String m = String.format("cte[%s] no RETURNING clause,couldn't exists alias clause.", cteName);
+        throw ContextStack.clearStackAndCriteriaError(m);
+    }
 
     static CriteriaException unknownSelection(CriteriaContext context, String selectionAlias) {
         String m = String.format("unknown %s[%s]", Selection.class.getName(), selectionAlias);
@@ -646,6 +680,29 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext()
                 , _Exceptions::unknownSelectItem, item);
     }
+
+    private static final class SelectionMap implements _SelectionMap {
+
+        private final List<Selection> selectionList;
+
+        private final Map<String, Selection> selectionMap;
+
+        private SelectionMap(List<Selection> selectionList, Map<String, Selection> selectionMap) {
+            this.selectionList = selectionList;
+            this.selectionMap = selectionMap;
+        }
+
+        @Override
+        public Selection refSelection(String name) {
+            return this.selectionMap.get(name);
+        }
+
+        @Override
+        public List<? extends Selection> refAllSelection() {
+            return this.selectionList;
+        }
+
+    }//SelectionMap
 
 
 }

@@ -2044,7 +2044,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     static final class JsonTableFunction<R extends Item> extends JsonTableColumnsClause<R>
             implements TabularItem, MySQLFunction, _SelfDescribed
             , MySQLFunction._JsonTableLeftParenClause<R>
-            , ArmyDerivedTable {
+            , _DerivedTable {
 
         private ArmyExpression expr;
 
@@ -2052,7 +2052,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         private final Function<DerivedTable, R> function;
 
-        private List<Selection> selectionList = new ArrayList<>();
+        private List<_Selection> selectionList = new ArrayList<>();
 
         private Map<String, Selection> selectionMap = new HashMap<>();
 
@@ -2150,8 +2150,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
         @Override
-        public List<Selection> selectItemList() {
-            final List<Selection> selectionList = this.selectionList;
+        public List<? extends Selection> refAllSelection() {
+            final List<_Selection> selectionList = this.selectionList;
             if (selectionList == null || selectionList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -2169,50 +2169,11 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             return selectionMap.get(derivedAlias);
         }
 
-        @Override
-        public void setColumnAliasList(final List<String> aliasList) {
-            final List<Selection> selectionList = this.selectionList;
-            final int selectionSize;
-            if (this.columnAliasList != null) {
-                //no bug,never here
-                throw new IllegalStateException("columnAliasList non-null");
-            } else if (selectionList == null || selectionList instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this.context);
-            } else if (aliasList.size() != (selectionSize = selectionList.size())) {
-                String m = String.format("JSON_TABLE alias list size[%s] and column list size[%s] not match."
-                        , aliasList.size(), selectionList.size());
-                throw ContextStack.criteriaError(this.context, m);
-            }
-
-            Map<String, Selection> aliasToSelection = new HashMap<>((int) (selectionSize / 0.75f));
-            String alias;
-            for (int i = 0; i < selectionSize; i++) {
-                alias = aliasList.get(i);
-                if (aliasToSelection.putIfAbsent(alias, selectionList.get(i)) != null) {
-                    String m = String.format("Duplicate column alias[%s]", alias);
-                    throw ContextStack.criteriaError(this.context, m);
-                }
-            }
-            aliasToSelection = _CollectionUtils.unmodifiableMap(aliasToSelection);
-            assert aliasToSelection.size() == selectionSize;
-            this.selectionMap = aliasToSelection;
-            this.columnAliasList = aliasList;
-        }
-
-        @Override
-        public List<String> columnAliasList() {
-            List<String> aliasList = this.columnAliasList;
-            if (aliasList == null) {
-                aliasList = Collections.emptyList();
-                this.columnAliasList = aliasList;
-            }
-            return aliasList;
-        }
 
 
         @Override
         void onAddSelect(final Selection selection) {
-            final List<Selection> selectionList = this.selectionList;
+            final List<_Selection> selectionList = this.selectionList;
             final Map<String, Selection> selectionMap = this.selectionMap;
             if (!(selectionList instanceof ArrayList && selectionMap instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -2221,7 +2182,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 String m = String.format("Duplicate column name[%s]", selection.selectionName());
                 throw ContextStack.criteriaError(this.context, m);
             }
-            selectionList.add(selection);
+            selectionList.add((_Selection) selection);
         }
 
         @Override
@@ -2229,7 +2190,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             if (this.expr == null || this.path == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            final List<Selection> selectionList = this.selectionList;
+            final List<_Selection> selectionList = this.selectionList;
             final Map<String, Selection> selectionMap = this.selectionMap;
             if (!(selectionList instanceof ArrayList && selectionMap instanceof HashMap && selectionList.size() > 0)) {
                 throw ContextStack.castCriteriaApi(this.context);

@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.VarExpression;
+import io.army.criteria.impl.inner._AliasDerivedBlock;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._SelectItem;
 import io.army.criteria.impl.inner._TableBlock;
@@ -90,7 +91,7 @@ interface CriteriaContext {
      */
     VarExpression var(String name) throws CriteriaException;
 
-    void bufferNestedDerived(ArmyAliasDerivedBlock block);
+    void bufferNestedDerived(_AliasDerivedBlock block);
 
 
     void onAddBlock(_TableBlock block);
@@ -127,9 +128,6 @@ interface CriteriaContext {
      * @throws CriteriaException throw when context not end
      */
     List<? extends _SelectItem> selectItemList();
-
-    @Deprecated
-    void onDerivedColumnAliasList(List<String> aliasList);
 
     @Deprecated
     boolean isBracketAndNotEnd();

@@ -383,9 +383,6 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
 
 
         final WE endStaticWithClause(final boolean recursive) {
-            if (this.cteList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
             return (WE) this;
@@ -397,9 +394,8 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
 
         @SuppressWarnings("unchecked")
         private WE endDynamicWithClause(final B builder, final boolean required) {
-            if (this.cteList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
+            ((CriteriaSupports.CteBuilder) builder).endLastCte();
+
             final boolean recursive;
             recursive = builder.isRecursive();
             this.recursive = recursive;

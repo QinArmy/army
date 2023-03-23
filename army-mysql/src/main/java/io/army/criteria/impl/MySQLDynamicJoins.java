@@ -1,8 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._ModifierTableBlock;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.mysql.MySQLCrosses;
@@ -17,10 +16,8 @@ import io.army.util._CollectionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         MySQLStatement._DynamicIndexHintJoinClause,
@@ -176,7 +173,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     @Override
     final MySQLQuery._DynamicJoinSpec onFromCte(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+            _JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
         final DynamicCteBlock block;
         block = new DynamicCteBlock(this.context, this.blockConsumer, joinType, cteItem, alias);
         this.blockConsumer.accept(block);
@@ -205,7 +202,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     @Override
     final Statement._OnClause<MySQLQuery._DynamicJoinSpec> onJoinCte(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+            _JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
         final DynamicCteBlock block;
         block = new DynamicCteBlock(this.context, this.blockConsumer, joinType, cteItem, alias);
         this.blockConsumer.accept(block);
@@ -213,7 +210,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     private Statement._OnClause<MySQLQuery._DynamicJoinSpec> joinNestedEnd(final _JoinType joinType,
-                                                                           final NestedItems nestedItems) {
+                                                                           final _NestedItems nestedItems) {
         final DynamicNestedBlock block;
         block = new DynamicNestedBlock(this.context, this.blockConsumer, joinType, nestedItems);
         this.blockConsumer.accept(block);
@@ -221,7 +218,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     private MySQLQuery._DynamicJoinSpec crossNested(final _JoinType joinType,
-                                                    final NestedItems nestedItems) {
+                                                    final _NestedItems nestedItems) {
         final DynamicNestedBlock block;
         block = new DynamicNestedBlock(this.context, this.blockConsumer, joinType, nestedItems);
         this.blockConsumer.accept(block);
@@ -232,7 +229,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     private static final class DynamicNestedBlock extends MySQLDynamicJoins {
 
         private DynamicNestedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
-                                   NestedItems items) {
+                                   _NestedItems items) {
             super(context, blockConsumer, joinType, null, items, "");
         }
 
@@ -243,7 +240,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     private static final class DynamicCteBlock extends MySQLDynamicJoins {
 
         private DynamicCteBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
-                                _JoinType joinType, CteItem cteItem, String alias) {
+                                _JoinType joinType, _Cte cteItem, String alias) {
             super(context, blockConsumer, joinType, null, cteItem, alias);
         }
 
@@ -252,19 +249,16 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     private static final class DynamicDerivedBlock extends MySQLDynamicJoins implements _ModifierTableBlock,
             Statement._ParensOnSpec<MySQLStatement._DynamicJoinSpec>,
-            ArmyAliasDerivedBlock {
+            _AliasDerivedBlock {
 
         private List<String> columnAliasList;
 
-        private Function<String, Selection> selectionFunction;
-
-        private Supplier<List<? extends Selection>> selectionsSupplier;
+        private _SelectionMap selectionMap;
 
         private DynamicDerivedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
                                     _JoinType joinType, @Nullable SQLWords modifier, DerivedTable table, String alias) {
             super(context, blockConsumer, joinType, modifier, table, alias);
-            this.selectionFunction = ((ArmyDerivedTable) table)::refSelection;
-            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectItemList;
+            this.selectionMap = (_DerivedTable) table;
         }
 
         @Override
@@ -287,15 +281,15 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             if (this.columnAliasList == null) {
                 this.columnAliasList = Collections.emptyList();
             }
-            return this.selectionFunction.apply(name);
+            return this.selectionMap.refSelection(name);
         }
 
         @Override
-        public List<? extends Selection> selectionList() {
+        public List<? extends Selection> refAllSelection() {
             if (this.columnAliasList == null) {
                 this.columnAliasList = Collections.emptyList();
             }
-            return this.selectionsSupplier.get();
+            return this.selectionMap.refAllSelection();
         }
 
         @Override
@@ -314,11 +308,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.columnAliasList = columnAliasList;
-
-            final _Pair<List<Selection>, Map<String, Selection>> pair;
-            pair = CriteriaUtils.forColumnAlias(columnAliasList, (ArmyDerivedTable) this.tabularItem);
-            this.selectionsSupplier = () -> pair.first;
-            this.selectionFunction = pair.second::get;
+            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.tabularItem);
             return this;
         }
 
@@ -525,14 +515,14 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        Statement._OnClause<MySQLQuery._DynamicJoinSpec> onCte(CteItem cteItem, String alias) {
+        Statement._OnClause<MySQLQuery._DynamicJoinSpec> onCte(_Cte cteItem, String alias) {
             final DynamicCteBlock block;
             block = new DynamicCteBlock(this.context, this.blockConsumer, this.joinType, cteItem, alias);
             this.blockConsumer.accept(block);
             return block;
         }
 
-        private Statement._OnClause<MySQLQuery._DynamicJoinSpec> nestedEnd(_JoinType joinType, NestedItems items) {
+        private Statement._OnClause<MySQLQuery._DynamicJoinSpec> nestedEnd(_JoinType joinType, _NestedItems items) {
             final DynamicNestedBlock block;
             block = new DynamicNestedBlock(this.context, this.blockConsumer, joinType, items);
             this.blockConsumer.accept(block);
@@ -592,14 +582,14 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        MySQLQuery._DynamicJoinSpec onCte(CteItem cteItem, String alias) {
+        MySQLQuery._DynamicJoinSpec onCte(_Cte cteItem, String alias) {
             final DynamicCteBlock block;
             block = new DynamicCteBlock(this.context, this.blockConsumer, this.joinType, cteItem, alias);
             this.blockConsumer.accept(block);
             return block;
         }
 
-        private MySQLQuery._DynamicJoinSpec nestedEnd(_JoinType joinType, NestedItems items) {
+        private MySQLQuery._DynamicJoinSpec nestedEnd(_JoinType joinType, _NestedItems items) {
             final DynamicNestedBlock block;
             block = new DynamicNestedBlock(this.context, this.blockConsumer, joinType, items);
             this.blockConsumer.accept(block);

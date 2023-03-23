@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -563,9 +560,9 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
                 throw ContextStack.castCriteriaApi(this.context);
             }
             blockList.add(block);
-            if (block instanceof ArmyAliasDerivedBlock) {
+            if (block instanceof _AliasDerivedBlock) {
                 //buffer for column alias clause
-                this.context.bufferNestedDerived((ArmyAliasDerivedBlock) block);
+                this.context.bufferNestedDerived((_AliasDerivedBlock) block);
             }
 
         }

@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.standard.StandardCrosses;
 import io.army.criteria.standard.StandardJoins;
@@ -136,26 +138,26 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     @Override
-    final Void onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+    final Void onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
         throw ContextStack.castCriteriaApi(this.context);
     }
 
 
     @Override
-    final Void onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+    final Void onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
         throw ContextStack.castCriteriaApi(this.context);
     }
 
 
     private Statement._OnClause<StandardStatement._DynamicJoinSpec> joinNestedEnd(final _JoinType joinType,
-                                                                                  final NestedItems nestedItems) {
+                                                                                  final _NestedItems nestedItems) {
         final StandardDynamicBlock block;
         block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, nestedItems, "");
         this.blockConsumer.accept(block);
         return block;
     }
 
-    private StandardStatement._DynamicJoinSpec crossNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private StandardStatement._DynamicJoinSpec crossNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
         final StandardDynamicBlock block;
         block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, nestedItems, "");
         this.blockConsumer.accept(block);
@@ -215,11 +217,11 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        Item onCte(CteItem cteItem, String alias) {
+        Item onCte(_Cte cteItem, String alias) {
             throw ContextStack.castCriteriaApi(this.context);
         }
 
-        private Statement._OnClause<StandardStatement._DynamicJoinSpec> nestedEnd(_JoinType joinType, NestedItems items) {
+        private Statement._OnClause<StandardStatement._DynamicJoinSpec> nestedEnd(_JoinType joinType, _NestedItems items) {
             final StandardDynamicBlock block;
             block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, items, "");
             this.blockConsumer.accept(block);
@@ -267,11 +269,11 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        Item onCte(CteItem cteItem, String alias) {
+        Item onCte(_Cte cteItem, String alias) {
             throw ContextStack.castCriteriaApi(this.context);
         }
 
-        private StandardStatement._DynamicJoinSpec nestedJoinEnd(_JoinType joinType, NestedItems items) {
+        private StandardStatement._DynamicJoinSpec nestedJoinEnd(_JoinType joinType, _NestedItems items) {
             final StandardDynamicBlock block;
             block = new StandardDynamicBlock(this.context, this.blockConsumer, joinType, items, "");
             this.blockConsumer.accept(block);

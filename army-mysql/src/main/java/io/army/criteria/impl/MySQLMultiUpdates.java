@@ -3,6 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLMultiUpdate;
 import io.army.criteria.mysql.*;
@@ -43,7 +45,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
         MySQLStatement._MySQLDynamicJoinCrossClause<FC> {
 
 
-    static <I extends Item> _MultiWithSpec<I> simple(@Nullable MultiStmtSpec spec,
+    static <I extends Item> _MultiWithSpec<I> simple(@Nullable ArmyStmtSpec spec,
                                                      Function<? super Update, I> function) {
         return new MySQLSimpleUpdate<>(spec, function);
     }
@@ -59,7 +61,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
     _TableBlock fromCrossBlock;
 
 
-    private MySQLMultiUpdates(@Nullable MultiStmtSpec spec) {
+    private MySQLMultiUpdates(@Nullable ArmyStmtSpec spec) {
         super(spec, CriteriaContexts.primaryMultiDmlContext(spec));
     }
 
@@ -331,7 +333,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
     }
 
     @Override
-    final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+    final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
         final _TableBlock block;
         block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
@@ -339,7 +341,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
         return (FC) this;
     }
 
-    private FC fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private FC fromNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
         final _TableBlock block;
         block = TableBlocks.fromNestedBlock(joinType, nestedItems);
         this.blockConsumer.accept(block);
@@ -347,7 +349,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
         return (FC) this;
     }
 
-    private _OnClause<FC> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private _OnClause<FC> joinNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
         final TableBlocks.JoinClauseNestedBlock<FC> block;
         block = TableBlocks.joinNestedBlock(joinType, nestedItems, (FC) this);
         this.blockConsumer.accept(block);
@@ -407,7 +409,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
 
         private final Function<? super Update, I> function;
 
-        private MySQLSimpleUpdate(@Nullable MultiStmtSpec spec, Function<? super Update, I> function) {
+        private MySQLSimpleUpdate(@Nullable ArmyStmtSpec spec, Function<? super Update, I> function) {
             super(spec);
             this.function = function;
         }
@@ -508,7 +510,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
 
         @Override
         _OnClause<_MultiJoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
-                                               CteItem cteItem, String alias) {
+                                               _Cte cteItem, String alias) {
             final TableBlocks.JoinClauseCteBlock<_MultiJoinSpec<I>> block;
             block = TableBlocks.joinCteBlock(joinType, cteItem, alias, this);
             this.blockConsumer.accept(block);
@@ -682,7 +684,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
 
         @Override
         _OnClause<_BatchMultiJoinSpec<BatchUpdate>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
-                                                              CteItem cteItem, String alias) {
+                                                              _Cte cteItem, String alias) {
             final TableBlocks.JoinClauseCteBlock<_BatchMultiJoinSpec<BatchUpdate>> block;
             block = TableBlocks.joinCteBlock(joinType, cteItem, alias, this);
             this.blockConsumer.accept(block);

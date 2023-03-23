@@ -6,6 +6,7 @@ import io.army.criteria.dialect.Returnings;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._ItemPair;
+import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._Statement;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
@@ -52,7 +53,7 @@ abstract class CriteriaSupports {
         throw new UnsupportedOperationException();
     }
 
-    static Returnings returningBuilder(Consumer<Selection> consumer) {
+    static Returnings returningBuilder(Consumer<_Selection> consumer) {
         return new ReturningBuilderImpl(consumer);
     }
 
@@ -172,9 +173,6 @@ abstract class CriteriaSupports {
 
         @SuppressWarnings("unchecked")
         final WE endStaticWithClause(final boolean recursive) {
-            if (this.cteList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
             return (WE) this;
@@ -186,9 +184,8 @@ abstract class CriteriaSupports {
 
         @SuppressWarnings("unchecked")
         private WE endDynamicWithClause(final B builder, final boolean required) {
-            if (this.cteList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
+            ((CriteriaSupports.CteBuilder) builder).endLastCte();
+
             final boolean recursive;
             recursive = builder.isRecursive();
             this.recursive = recursive;
@@ -851,73 +848,73 @@ abstract class CriteriaSupports {
 
     private static final class ReturningBuilderImpl implements Returnings {
 
-        private final Consumer<Selection> consumer;
+        private final Consumer<_Selection> consumer;
 
-        private ReturningBuilderImpl(Consumer<Selection> consumer) {
+        private ReturningBuilderImpl(Consumer<_Selection> consumer) {
             this.consumer = consumer;
         }
 
         @Override
         public Returnings selection(Selection selection) {
-            this.consumer.accept(selection);
+            this.consumer.accept((_Selection) selection);
             return this;
         }
 
         @Override
         public Returnings selection(Selection selection1, Selection selection2) {
-            final Consumer<Selection> consumer = this.consumer;
-            consumer.accept(selection1);
-            consumer.accept(selection2);
+            final Consumer<_Selection> consumer = this.consumer;
+            consumer.accept((_Selection) selection1);
+            consumer.accept((_Selection) selection2);
             return this;
         }
 
         @Override
         public Returnings selection(Function<String, Selection> function, String alias) {
-            this.consumer.accept(function.apply(alias));
+            this.consumer.accept((_Selection) function.apply(alias));
             return this;
         }
 
         @Override
         public Returnings selection(Function<String, Selection> function1, String alias1,
                                     Function<String, Selection> function2, String alias2) {
-            final Consumer<Selection> consumer = this.consumer;
-            consumer.accept(function1.apply(alias1));
-            consumer.accept(function2.apply(alias2));
+            final Consumer<_Selection> consumer = this.consumer;
+            consumer.accept((_Selection) function1.apply(alias1));
+            consumer.accept((_Selection) function2.apply(alias2));
             return this;
         }
 
         @Override
         public Returnings selection(Function<String, Selection> function, String alias, Selection selection) {
-            final Consumer<Selection> consumer = this.consumer;
-            consumer.accept(function.apply(alias));
-            consumer.accept(selection);
+            final Consumer<_Selection> consumer = this.consumer;
+            consumer.accept((_Selection) function.apply(alias));
+            consumer.accept((_Selection) selection);
             return this;
         }
 
         @Override
         public Returnings selection(Selection selection, Function<String, Selection> function, String alias) {
-            final Consumer<Selection> consumer = this.consumer;
-            consumer.accept(selection);
-            consumer.accept(function.apply(alias));
+            final Consumer<_Selection> consumer = this.consumer;
+            consumer.accept((_Selection) selection);
+            consumer.accept((_Selection) function.apply(alias));
             return this;
         }
 
         @Override
         public Returnings selection(TableField field1, TableField field2, TableField field3) {
-            final Consumer<Selection> consumer = this.consumer;
-            consumer.accept(field1);
-            consumer.accept(field2);
-            consumer.accept(field3);
+            final Consumer<_Selection> consumer = this.consumer;
+            consumer.accept((_Selection) field1);
+            consumer.accept((_Selection) field2);
+            consumer.accept((_Selection) field3);
             return this;
         }
 
         @Override
         public Returnings selection(TableField field1, TableField field2, TableField field3, TableField field4) {
-            final Consumer<Selection> consumer = this.consumer;
-            consumer.accept(field1);
-            consumer.accept(field2);
-            consumer.accept(field3);
-            consumer.accept(field4);
+            final Consumer<_Selection> consumer = this.consumer;
+            consumer.accept((_Selection) field1);
+            consumer.accept((_Selection) field2);
+            consumer.accept((_Selection) field3);
+            consumer.accept((_Selection) field4);
             return this;
         }
 

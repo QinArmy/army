@@ -12,16 +12,16 @@ import java.util.Objects;
 
 abstract class ArmySelections implements _Selection {
 
-    static Selection forExp(final Expression exp, final String alias) {
-        final Selection selection;
+    static _Selection forExp(final Expression exp, final String alias) {
+        final _Selection selection;
         if (exp instanceof TableField) {
             if (((TableField) exp).fieldName().equals(alias)) {
-                selection = (TableField) exp;
+                selection = (_Selection) exp;
             } else {
                 selection = new FieldSelectionImpl((TableField) exp, alias);
             }
         } else if (exp instanceof DataField && ((DataField) exp).fieldName().equals(alias)) {
-            selection = (DataField) exp;
+            selection = (_Selection) exp;
         } else {
             selection = new ExpressionSelection((ArmyExpression) exp, alias);
         }
@@ -272,8 +272,8 @@ abstract class ArmySelections implements _Selection {
 
         @Override
         public void appendSelectItem(final _SqlContext context) {
-            // here don't output selection
-            context.parser().identifier(this.alias, context.sqlBuilder().append(_Constant.SPACE));
+            //no bug,never here
+            throw new CriteriaException(String.format("%s couldn't be rendered.", RenameSelection.class.getName()));
         }
 
         @Override

@@ -446,7 +446,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleValues(_SqlContext, Values, Visible)
      * @see #handleValuesQuery(ValuesQuery, _SqlContext)
      */
-    protected void parseValues(_Values values, _ValuesContext context) {
+    protected void parseValues(_ValuesQuery values, _ValuesContext context) {
         throw standardParserDontSupportDialect();
     }
 
@@ -615,10 +615,10 @@ abstract class ArmyParser implements DialectParser {
      */
     protected final void handleValuesQuery(final ValuesQuery values, final _SqlContext original) {
         this.assertRowSet(values);
-        if (values instanceof _Values) {
+        if (values instanceof _ValuesQuery) {
             final ValuesContext context;
             context = ValuesContext.create(original, values, this, original.visible());
-            this.parseValues((_Values) values, context);
+            this.parseValues((_ValuesQuery) values, context);
         } else if (values instanceof _UnionRowSet) {
             final _UnionRowSet union = (_UnionRowSet) values;
             this.handleValuesQuery((ValuesQuery) union.leftRowSet(), original);
@@ -644,7 +644,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #parseValues(_Values, _ValuesContext)
+     * @see #parseValues(_ValuesQuery, _ValuesContext)
      */
     protected final void valuesClauseOfValues(final _ValuesContext context, @Nullable String rowKeyword
             , final List<List<_Expression>> rowList) {
@@ -950,10 +950,10 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
-    protected final void selectListClause(final SelectionListContext context) {
-        final List<Selection> selectionList;
-        selectionList = context.selectionList();
-        final int size = selectionList.size();
+    protected final void selectListClause(final SelectItemListContext context) {
+        final List<? extends _SelectItem> selectItemList;
+        selectItemList = context.selectItemList();
+        final int size = selectItemList.size();
         if (size == 0) {
             throw _Exceptions.selectListIsEmpty();
         }
@@ -962,7 +962,7 @@ abstract class ArmyParser implements DialectParser {
             if (i > 0) {
                 builder.append(_Constant.SPACE_COMMA);
             }
-            ((_Selection) selectionList.get(i)).appendSelectItem(context);
+            selectItemList.get(i).appendSelectItem(context);
 
         }//for
 
@@ -1578,8 +1578,8 @@ abstract class ArmyParser implements DialectParser {
         assertRowSet(stmt);
         final _ValuesContext context;
         context = ValuesContext.create(outerContext, stmt, this, visible);
-        if (stmt instanceof _Values) {
-            this.parseValues((_Values) stmt, context);
+        if (stmt instanceof _ValuesQuery) {
+            this.parseValues((_ValuesQuery) stmt, context);
         } else if (stmt instanceof _UnionRowSet) {
             final _UnionRowSet union = (_UnionRowSet) stmt;
             this.handleValuesQuery((Values) union.leftRowSet(), context);

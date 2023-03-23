@@ -284,7 +284,7 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         }
 
         @Override
-        public final List<Selection> refAllSelection() {
+        public final List<? extends Selection> refAllSelection() {
             return ((_DerivedTable) this.left).refAllSelection();
         }
 

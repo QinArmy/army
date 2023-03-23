@@ -154,7 +154,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
 
     private static final class SimpleSubValues<I extends Item> extends PostgreSimpleValues<I>
-            implements SubValues {
+            implements ArmySubValues {
 
         private final Function<? super SubValues, I> function;
 
@@ -248,7 +248,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
 
     private static final class BracketSubValues<I extends Item> extends PostgreBracketValues<I>
-            implements SubValues {
+            implements ArmySubValues {
 
         private final Function<? super SubValues, I> function;
 

@@ -12,7 +12,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class TableBlocks implements _TableBlock {
+abstract class TableBlocks {
+
+    private TableBlocks() {
+        throw new UnsupportedOperationException();
+    }
 
     static FromClauseTableBlock fromTableBlock(_JoinType joinType, @Nullable SQLWords modifier, TableMeta<?> table,
                                                String alias) {
@@ -93,52 +97,6 @@ abstract class TableBlocks implements _TableBlock {
     static <R extends Item> JoinClauseNestedBlock<R> joinNestedBlock(_JoinType joinType, _NestedItems nestedItems,
                                                                      R clause) {
         return new JoinClauseNestedBlock<>(joinType, nestedItems, clause);
-    }
-
-
-    final _JoinType joinType;
-
-    final TabularItem tableItem;
-
-    final String alias;
-
-    TableBlocks(_JoinType joinType, TabularItem tableItem, String alias) {
-        Objects.requireNonNull(alias);
-        this.joinType = joinType;
-        this.tableItem = tableItem;
-        this.alias = alias;
-
-    }
-
-    TableBlocks(BlockParams params) {
-        this.joinType = params.joinType();
-        this.tableItem = params.tableItem();
-        this.alias = params.alias();
-    }
-
-    @Override
-    public final TabularItem tableItem() {
-        return this.tableItem;
-    }
-
-    @Override
-    public final _JoinType jointType() {
-        return this.joinType;
-    }
-
-    @Override
-    public final String alias() {
-        return this.alias;
-    }
-
-    static TableBlocks noneBlock(TabularItem tableItem, String alias) {
-        Objects.requireNonNull(tableItem);
-        return new NoOnTableBlock(_JoinType.NONE, tableItem, alias);
-    }
-
-    static TableBlocks crossBlock(TabularItem tableItem, String alias) {
-        Objects.requireNonNull(tableItem);
-        return new NoOnTableBlock(_JoinType.CROSS_JOIN, tableItem, alias);
     }
 
 
@@ -232,18 +190,15 @@ abstract class TableBlocks implements _TableBlock {
 
 
     static class FromClauseAliasDerivedBlock extends FromClauseDerivedBlock
-            implements ArmyAliasDerivedBlock {
+            implements _AliasDerivedBlock {
 
         private List<String> columnAliasList;
 
-        private Function<String, Selection> selectionFunction;
-
-        private Supplier<List<? extends Selection>> selectionsSupplier;
+        private _SelectionMap selectionMap;
 
         private FromClauseAliasDerivedBlock(_JoinType joinType, DerivedTable table, String alias) {
             super(joinType, table, alias);
-            this.selectionFunction = ((ArmyDerivedTable) table)::refSelection;
-            this.selectionsSupplier = ((ArmyDerivedTable) table)::refAllSelection;
+            this.selectionMap = (_SelectionMap) table;
         }
 
 
@@ -252,15 +207,15 @@ abstract class TableBlocks implements _TableBlock {
             if (this.columnAliasList == null) {
                 this.columnAliasList = Collections.emptyList();
             }
-            return this.selectionFunction.apply(derivedAlias);
+            return this.selectionMap.refSelection(derivedAlias);
         }
 
         @Override
-        public final List<? extends Selection> selectionList() {
+        public final List<? extends Selection> refAllSelection() {
             if (this.columnAliasList == null) {
                 this.columnAliasList = Collections.emptyList();
             }
-            return this.selectionsSupplier.get();
+            return this.selectionMap.refAllSelection();
         }
 
         @Override
@@ -293,10 +248,7 @@ abstract class TableBlocks implements _TableBlock {
             }
             this.columnAliasList = columnAliasList;
 
-            final _Pair<List<Selection>, Map<String, Selection>> pair;
-            pair = CriteriaUtils.forColumnAlias(columnAliasList, (ArmyDerivedTable) this.table);
-            this.selectionsSupplier = () -> pair.first;
-            this.selectionFunction = pair.second::get;
+            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.table);
         }
 
 
@@ -502,19 +454,17 @@ abstract class TableBlocks implements _TableBlock {
 
     static abstract class JoinClauseAliasDerivedBlock<R extends Item>
             extends JoinClauseModifierDerivedBlock<R>
-            implements ArmyAliasDerivedBlock, Statement._ParensOnSpec<R> {
+            implements _AliasDerivedBlock,
+            Statement._ParensOnSpec<R> {
 
         private List<String> columnAliasList;
 
-        private Function<String, Selection> selectionFunction;
-
-        private Supplier<List<? extends Selection>> selectionsSupplier;
+        private _SelectionMap selectionMap;
 
         JoinClauseAliasDerivedBlock(_JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
                                     String alias, R clause) {
             super(joinType, modifier, table, alias, clause);
-            this.selectionFunction = ((ArmyDerivedTable) table)::refSelection;
-            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectItemList;
+            this.selectionMap = (_SelectionMap) table;
         }
 
         @Override
@@ -537,15 +487,15 @@ abstract class TableBlocks implements _TableBlock {
             if (this.columnAliasList == null) {
                 this.columnAliasList = Collections.emptyList();
             }
-            return this.selectionFunction.apply(name);
+            return this.selectionMap.refSelection(name);
         }
 
         @Override
-        public final List<? extends Selection> selectionList() {
+        public final List<? extends Selection> refAllSelection() {
             if (this.columnAliasList == null) {
                 this.columnAliasList = Collections.emptyList();
             }
-            return this.selectionsSupplier.get();
+            return this.selectionMap.refAllSelection();
         }
 
         @Override
@@ -563,11 +513,7 @@ abstract class TableBlocks implements _TableBlock {
                 throw ContextStack.castCriteriaApi(this.getContext());
             }
             this.columnAliasList = columnAliasList;
-
-            final _Pair<List<Selection>, Map<String, Selection>> pair;
-            pair = CriteriaUtils.forColumnAlias(columnAliasList, (ArmyDerivedTable) this.table);
-            this.selectionsSupplier = () -> pair.first;
-            this.selectionFunction = pair.second::get;
+            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.table);
             return this;
         }
 
@@ -575,16 +521,33 @@ abstract class TableBlocks implements _TableBlock {
     }//JoinClauseModifierAliasDerivedBlock
 
 
-    static final class JoinClauseCteBlock<R extends Item> extends JoinClauseDerivedBlock<R> {
+    static final class JoinClauseCteBlock<R extends Item> extends JoinClauseBlock<R> {
+
+        private final _Cte cte;
+
+        private final String alias;
 
         /**
          * private constructor
          *
-         * @see #joinCteBlock(_JoinType, CteItem, String, Item)
+         * @see #joinCteBlock(_JoinType, _Cte, String, Item)
          */
-        private JoinClauseCteBlock(_JoinType joinType, CteItem table, String alias, R clause) {
-            super(joinType, table, alias, clause);
+        private JoinClauseCteBlock(_JoinType joinType, _Cte cte, String alias, R clause) {
+            super(joinType, clause);
+            this.cte = cte;
+            this.alias = alias;
         }
+
+        @Override
+        public TabularItem tableItem() {
+            return this.cte;
+        }
+
+        @Override
+        public String alias() {
+            return this.alias;
+        }
+
 
     }//JoinClauseCteBlock
 
@@ -595,7 +558,7 @@ abstract class TableBlocks implements _TableBlock {
         /**
          * private constructor
          *
-         * @see #joinNestedBlock(_JoinType, NestedItems, Item)
+         * @see #joinNestedBlock(_JoinType, _NestedItems, Item)
          */
         private JoinClauseNestedBlock(_JoinType joinType, _NestedItems items, R clause) {
             super(joinType, clause);
@@ -613,43 +576,6 @@ abstract class TableBlocks implements _TableBlock {
         }
 
     }//JoinClauseNestedBlock
-
-
-    @Deprecated
-    static class NoOnTableBlock extends TableBlocks {
-
-        NoOnTableBlock(_JoinType joinType, TabularItem tableItem, String alias) {
-            super(joinType, tableItem, alias);
-            switch (joinType) {
-                case NONE:
-                case CROSS_JOIN:
-                    break;
-                default:
-                    throw _Exceptions.castCriteriaApi();
-            }
-
-        }
-
-        NoOnTableBlock(BlockParams params) {
-            super(params);
-            switch (this.joinType) {
-                case NONE:
-                case CROSS_JOIN:
-                    break;
-                default:
-                    throw _Exceptions.castCriteriaApi();
-            }
-
-        }
-
-
-        @Override
-        public final List<_Predicate> onClauseList() {
-            return Collections.emptyList();
-        }
-
-    }//NoOnTableBlock
-
 
 
     private static final class FromClauseSimpleTableBlock extends FromClauseTableBlock {
@@ -790,9 +716,9 @@ abstract class TableBlocks implements _TableBlock {
     private static final class FromClauseNestedBlock extends FromClauseBlock {
 
         /**
-         * @see #fromNestedBlock(_JoinType, NestedItems)
+         * @see #fromNestedBlock(_JoinType, _NestedItems)
          */
-        private FromClauseNestedBlock(_JoinType joinType, NestedItems items) {
+        private FromClauseNestedBlock(_JoinType joinType, _NestedItems items) {
             super(joinType, items);
         }
 

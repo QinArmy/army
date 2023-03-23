@@ -16,6 +16,7 @@ import io.army.mapping._NullType;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.SingleParam;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -306,7 +307,7 @@ public abstract class SQLs extends SQLsSyntax {
         private RowItemPair(List<? extends DataField> fieldList, SubQuery subQuery) {
             super(subQuery);
             final int selectionCount;
-            selectionCount = CriteriaUtils.selectionCount(subQuery);
+            selectionCount = ((_RowSet) subQuery).selectionSize();
             if (fieldList.size() != selectionCount) {
                 String m = String.format("Row column count[%s] and selection count[%s] of SubQuery not match."
                         , fieldList.size(), selectionCount);
@@ -416,22 +417,6 @@ public abstract class SQLs extends SQLsSyntax {
     }//StringTypeNull
 
 
-    @Deprecated
-    static final class ExpressionPairImpl implements ExpressionPair {
-
-        final Expression first;
-
-        final Expression second;
-
-        private ExpressionPairImpl(@Nullable Expression first, @Nullable Expression second) {
-            assert first != null;
-            assert second != null;
-            this.first = first;
-            this.second = second;
-        }
-    }//ExpressionPairImpl
-
-
     static final class CteImpl implements ArmyCte {
 
         final String name;
@@ -440,17 +425,26 @@ public abstract class SQLs extends SQLsSyntax {
 
         final SubStatement subStatement;
 
+        private final _SelectionMap selectionMap;
+
         CteImpl(String name, SubStatement subStatement) {
-            this.name = name;
-            this.columnNameList = Collections.emptyList();
-            this.subStatement = subStatement;
+            this(name, null, subStatement);
         }
 
 
-        CteImpl(String name, List<String> columnNameList, SubStatement subStatement) {
+        CteImpl(String name, @Nullable List<String> columnNameList, SubStatement subStatement) {
             this.name = name;
-            this.columnNameList = columnNameList;
+            this.columnNameList = _CollectionUtils.safeUnmodifiableList(columnNameList);
             this.subStatement = subStatement;
+
+            if (!(subStatement instanceof DerivedTable)) {
+                throw CriteriaUtils.subDmlNoReturningClause(name);
+            } else if (this.columnNameList.size() == 0) {
+                this.selectionMap = (_DerivedTable) subStatement;
+            } else {
+                this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnNameList, (_DerivedTable) subStatement);
+            }
+
         }
 
         @Override
@@ -458,17 +452,6 @@ public abstract class SQLs extends SQLsSyntax {
             return this.name;
         }
 
-        @Override
-        public int selectionSize() {
-            final SubStatement stmt = this.subStatement;
-            final int size;
-            if (stmt instanceof SubQuery) {
-                size = ((_RowSet) stmt).selectionSize();
-            } else {
-                size = ((_Statement._ReturningListSpec) subStatement).returningList().size();
-            }
-            return size;
-        }
 
 
         @Override
@@ -482,37 +465,14 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public List<? extends _SelectItem> selectionList() {
-            //TODO
-            final SubStatement subStatement = this.subStatement;
-            final List<? extends _SelectItem> list;
-            if (subStatement instanceof DerivedTable) {
-                list = ((_RowSet) subStatement).selectItemList();
-            } else if (subStatement instanceof _Statement._ReturningListSpec) {
-                list = ((_Statement._ReturningListSpec) subStatement).returningList();
-            } else {
-                list = Collections.emptyList();
-            }
-            return list;
+        public List<? extends Selection> refAllSelection() {
+            return this.selectionMap.refAllSelection();
         }
 
 
         @Override
-        public Selection refSelection(final String derivedAlias) {
-            //TODO
-            final SubStatement subStatement = this.subStatement;
-            final Selection selection;
-            if (subStatement instanceof DerivedTable) {
-                selection = ((ArmyDerivedTable) subStatement).refSelection(derivedAlias);
-            } else {
-                selection = null;
-            }
-            return selection;
-        }
-
-        @Override
-        public void clear() {
-            //no-op
+        public Selection refSelection(final String name) {
+            return this.selectionMap.refSelection(name);
         }
 
 

@@ -3,6 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLMultiDelete;
 import io.army.criteria.mysql.*;
@@ -352,7 +354,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT ext
     }
 
     @Override
-    final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+    final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
         final _TableBlock block;
         block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
@@ -374,7 +376,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT ext
         return (TableBlocks.FromClauseAliasDerivedBlock) block;
     }
 
-    private FC fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private FC fromNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
         final _TableBlock block;
         block = TableBlocks.fromNestedBlock(joinType, nestedItems);
         this.blockConsumer.accept(block);
@@ -382,7 +384,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT ext
         return (FC) this;
     }
 
-    private _OnClause<FC> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private _OnClause<FC> joinNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
         final TableBlocks.JoinClauseNestedBlock<FC> block;
         block = TableBlocks.joinNestedBlock(joinType, nestedItems, (FC) this);
         this.blockConsumer.accept(block);
@@ -528,7 +530,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT ext
 
         @Override
         _OnClause<_MultiJoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
-                                               CteItem cteItem, String alias) {
+                                               _Cte cteItem, String alias) {
             final TableBlocks.JoinClauseCteBlock<_MultiJoinSpec<I>> block;
             block = TableBlocks.joinCteBlock(joinType, cteItem, alias, this);
             this.blockConsumer.accept(block);
@@ -688,7 +690,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT ext
 
         @Override
         _OnClause<_BatchMultiJoinSpec<BatchDelete>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
-                                                              CteItem cteItem, String alias) {
+                                                              _Cte cteItem, String alias) {
             final TableBlocks.JoinClauseCteBlock<_BatchMultiJoinSpec<BatchDelete>> block;
             block = TableBlocks.joinCteBlock(joinType, cteItem, alias, this);
             this.blockConsumer.accept(block);

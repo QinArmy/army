@@ -43,9 +43,9 @@ public interface _SelectionMap {
      *     </ul>
      * </p>
      *
-     * @return the list of {@link Selection} that couldn't be rendered.
+     * @return a unmodified list, the list of {@link Selection} that couldn't be rendered.
      */
-    List<Selection> refAllSelection();
+    List<? extends Selection> refAllSelection();
 
 
 }

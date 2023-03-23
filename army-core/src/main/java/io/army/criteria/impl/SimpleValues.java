@@ -1,9 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._Values;
+import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
@@ -14,7 +12,7 @@ import java.util.function.Function;
 
 
 abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends LimitRowOrderByClause<OR, LR, LO, LF>
-        implements Values, _Values,
+        implements _ValuesQuery,
         Values._StaticValueLeftParenClause<RR>,
         Values._StaticValueRowCommaDualSpec<RR>,
         Values._StaticValueRowCommaQuadraSpec<RR>,
@@ -22,13 +20,14 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
         RowSet._StaticUnionClause<SP>,
         RowSet._StaticExceptClause<SP>,
         RowSet._StaticIntersectClause<SP>,
-        RowSet._StaticMinusClause<SP> {
+        RowSet._StaticMinusClause<SP>,
+        _SelectionMap {
 
     private List<_Expression> columnList;
 
     private List<List<_Expression>> rowList = new ArrayList<>();
 
-    private List<Selection> selectionList;
+    private List<_Selection> selectionList;
 
     private Map<String, Selection> selectionMap;
 
@@ -200,7 +199,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
         } else if (columnSize == 1) {
             this.selectionList = Collections.singletonList(ArmySelections.forExp(columnList.get(0), this.columnAlias(0)));
         } else {
-            final List<Selection> selectionList = new ArrayList<>(columnSize);
+            final List<_Selection> selectionList = new ArrayList<>(columnSize);
             for (int i = 0; i < columnSize; i++) {
                 selectionList.add(ArmySelections.forExp(columnList.get(i), this.columnAlias(i)));
             }
@@ -237,6 +236,15 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
     }
 
     @Override
+    public final List<_Selection> selectionList() {
+        final List<_Selection> list = this.selectionList;
+        if (list == null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return list;
+    }
+
+    @Override
     public final List<List<_Expression>> rowList() {
         final List<List<_Expression>> list = this.rowList;
         if (list == null) {
@@ -247,7 +255,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
 
     @Override
     public final int selectionSize() {
-        final List<Selection> list = this.selectionList;
+        final List<_Selection> list = this.selectionList;
         if (list == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -255,10 +263,10 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
     }
 
     @Override
-    public final Selection selection(String derivedAlias) {
+    public final Selection refSelection(String name) {
         Map<String, Selection> selectionMap = this.selectionMap;
         if (selectionMap == null) {
-            final List<Selection> list = this.selectionList;
+            final List<_Selection> list = this.selectionList;
             if (list == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -273,31 +281,20 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
                     selectionMap.put(selection.selectionName(), selection);
                 }
                 selectionMap = Collections.unmodifiableMap(selectionMap);
+                assert selectionMap.size() == selectionSize;
             }
-            assert selectionMap.size() == list.size();
             this.selectionMap = selectionMap;
         }
-
-        return selectionMap.get(derivedAlias);
+        return selectionMap.get(name);
     }
 
     @Override
-    public final List<Selection> selectItemList() {
-        final List<Selection> list = this.selectionList;
+    public final List<? extends Selection> refAllSelection() {
+        final List<_Selection> list = this.selectionList;
         if (list == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
         return list;
-    }
-
-    @Override
-    public final List<String> columnAliasList() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public final void setColumnAliasList(final List<String> aliasList) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -423,7 +420,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
         ContextStack.pop(this.context);
     }
 
-
+    @SuppressWarnings("unchecked")
     static abstract class WithSimpleValues<I extends Item, B extends CteBuilderSpec, WE, RR, OR, LR, LO, LF, SP>
             extends SimpleValues<I, RR, OR, LR, LO, LF, SP>
             implements DialectStatement._DynamicWithClause<B, WE>
@@ -447,7 +444,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
             final B builder;
             builder = this.createCteBuilder(false);
             consumer.accept(builder);
-            return this.endWithClause(builder, true);
+            return this.endDynamicWithClause(builder, true);
         }
 
         @Override
@@ -455,7 +452,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
             final B builder;
             builder = this.createCteBuilder(true);
             consumer.accept(builder);
-            return this.endWithClause(builder, true);
+            return this.endDynamicWithClause(builder, true);
         }
 
         @Override
@@ -463,7 +460,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
             final B builder;
             builder = this.createCteBuilder(false);
             consumer.accept(builder);
-            return this.endWithClause(builder, false);
+            return this.endDynamicWithClause(builder, false);
         }
 
         @Override
@@ -471,7 +468,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
             final B builder;
             builder = this.createCteBuilder(true);
             consumer.accept(builder);
-            return this.endWithClause(builder, false);
+            return this.endDynamicWithClause(builder, false);
         }
 
 
@@ -502,7 +499,9 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
             return (WE) this;
         }
 
-        private WE endWithClause(final B builder, final boolean required) {
+        private WE endDynamicWithClause(final B builder, final boolean required) {
+            ((CriteriaSupports.CteBuilder) builder).endLastCte();
+
             final boolean recursive;
             recursive = builder.isRecursive();
             this.recursive = recursive;

@@ -1,8 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._ModifierTableBlock;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.mysql.MySQLCrosses;
@@ -39,13 +38,13 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         implements MySQLQuery._NestedLeftParenSpec<I> {
 
     static <I extends Item> MySQLQuery._NestedLeftParenSpec<I> nestedItem(
-            CriteriaContext context, _JoinType joinType, BiFunction<_JoinType, NestedItems, I> function) {
+            CriteriaContext context, _JoinType joinType, BiFunction<_JoinType, _NestedItems, I> function) {
         return new MySQLNestedJoins<>(context, joinType, function);
     }
 
 
     private MySQLNestedJoins(CriteriaContext context, _JoinType joinType,
-                             BiFunction<_JoinType, NestedItems, I> function) {
+                             BiFunction<_JoinType, _NestedItems, I> function) {
         super(context, joinType, function);
     }
 
@@ -92,7 +91,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
     }
 
     @Override
-    MySQLStatement._MySQLNestedJoinClause<I> onLeftCte(CteItem cteItem, String alias) {
+    MySQLStatement._MySQLNestedJoinClause<I> onLeftCte(_Cte cteItem, String alias) {
         final MySQLNestedBlock<I> block;
         block = new MySQLNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, null,
                 cteItem, alias, this::thisNestedJoinEnd);
@@ -101,7 +100,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
     }
 
     private MySQLQuery._MySQLNestedJoinClause<I> nestedNestedJoinEnd(final _JoinType joinType,
-                                                                     final NestedItems nestedItems) {
+                                                                     final _NestedItems nestedItems) {
         if (joinType != _JoinType.NONE) {
             throw _Exceptions.unexpectedEnum(joinType);
         }
@@ -272,7 +271,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
 
         @Override
         final MySQLQuery._NestedJoinSpec<I> onFromCte(
-                _JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+                _JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
             final MySQLNestedBlock<I> block;
             block = new MySQLNestedBlock<>(this.context, this.blockConsumer, joinType, null, cteItem, alias, this.ender);
             this.blockConsumer.accept(block);
@@ -302,7 +301,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
 
         @Override
         final MySQLQuery._NestedOnSpec<I> onJoinCte(
-                _JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+                _JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
             final MySQLNestedBlock<I> block;
             block = new MySQLNestedBlock<>(this.context, this.blockConsumer, joinType, null, cteItem, alias,
                     this.ender);
@@ -317,7 +316,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
          * @see #fullJoin(Function)
          * @see #straightJoin(Function)
          */
-        private MySQLQuery._NestedOnSpec<I> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
+        private MySQLQuery._NestedOnSpec<I> joinNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
             final MySQLNestedBlock<I> block;
             block = new MySQLNestedBlock<>(this.context, this.blockConsumer, joinType, null, nestedItems, "",
                     this.ender);
@@ -328,7 +327,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         /**
          * @see #crossJoin(Function)
          */
-        private MySQLQuery._NestedJoinSpec<I> crossNestedEnd(final _JoinType joinType, final NestedItems items) {
+        private MySQLQuery._NestedJoinSpec<I> crossNestedEnd(final _JoinType joinType, final _NestedItems items) {
             final MySQLNestedBlock<I> block;
             block = new MySQLNestedBlock<>(this.context, this.blockConsumer, _JoinType.CROSS_JOIN, null, items,
                     "", this.ender);
@@ -532,20 +531,17 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
     @SuppressWarnings("unchecked")
     private static abstract class NestedDerivedBlock<I extends Item, R> extends MySQLNestedBlock<I>
             implements Statement._OptionalParensStringClause<R>,
-            _ModifierTableBlock, ArmyAliasDerivedBlock {
+            _ModifierTableBlock, _AliasDerivedBlock {
 
         private List<String> columnAliasList;
 
-        private Function<String, Selection> selectionFunction;
-
-        private Supplier<List<? extends Selection>> selectionsSupplier;
+        private _SelectionMap selectionMap;
 
         private NestedDerivedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
                                    _JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
                                    String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
-            this.selectionFunction = ((ArmyDerivedTable) table)::refSelection;
-            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectItemList;
+            this.selectionMap = (_DerivedTable) table;
         }
 
 
@@ -569,15 +565,15 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
             if (this.columnAliasList == null) {
                 this.columnAliasList = Collections.emptyList();
             }
-            return this.selectionFunction.apply(name);
+            return this.selectionMap.refSelection(name);
         }
 
         @Override
-        public final List<? extends Selection> selectionList() {
+        public final List<? extends Selection> refAllSelection() {
             if (this.columnAliasList == null) {
                 this.columnAliasList = Collections.emptyList();
             }
-            return this.selectionsSupplier.get();
+            return this.selectionMap.refAllSelection();
         }
 
         @Override
@@ -596,11 +592,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
             this.columnAliasList = columnAliasList;
-
-            final _Pair<List<Selection>, Map<String, Selection>> pair;
-            pair = CriteriaUtils.forColumnAlias(columnAliasList, (ArmyDerivedTable) this.tabularItem);
-            this.selectionsSupplier = () -> pair.first;
-            this.selectionFunction = pair.second::get;
+            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.tabularItem);
             return (R) this;
         }
 

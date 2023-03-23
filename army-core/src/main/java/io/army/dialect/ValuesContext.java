@@ -5,6 +5,8 @@ import io.army.criteria.Values;
 import io.army.criteria.ValuesQuery;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._RowSet;
+import io.army.criteria.impl.inner._Selection;
+import io.army.criteria.impl.inner._ValuesQuery;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
@@ -21,13 +23,13 @@ final class ValuesContext extends StatementContext implements _ValuesContext {
     }
 
 
-    private final List<Selection> selectionList;
+    private final List<_Selection> selectionList;
 
     private ValuesContext(@Nullable StatementContext outerContext, ValuesQuery stmt, ArmyParser dialect
             , Visible visible) {
         super(outerContext, dialect, visible);
         if (outerContext == null && stmt instanceof Values) {
-            this.selectionList = _DialectUtils.flatSelectItem(((_RowSet) stmt).selectItemList());
+            this.selectionList = ((_ValuesQuery) stmt).selectionList();
         } else {
             this.selectionList = null;
         }
@@ -56,7 +58,7 @@ final class ValuesContext extends StatementContext implements _ValuesContext {
 
 
     @Override
-    public List<Selection> selectionList() {
+    public List<? extends Selection> selectionList() {
         return this.selectionList;
     }
 

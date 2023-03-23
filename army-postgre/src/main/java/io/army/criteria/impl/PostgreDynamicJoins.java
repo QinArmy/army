@@ -1,9 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._ModifierTableBlock;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._PostgreTableBlock;
 import io.army.criteria.postgre.PostgreCrosses;
 import io.army.criteria.postgre.PostgreJoins;
@@ -16,7 +14,6 @@ import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -135,7 +132,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     @Override
     final PostgreStatement._DynamicJoinSpec onFromCte(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+            _JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
         final PostgreDynamicBlock block;
         block = new PostgreDynamicBlock(this.context, this.blockConsumer, joinType, modifier, cteItem, alias);
         this.blockConsumer.accept(block);
@@ -164,7 +161,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     @Override
     final Statement._OnClause<PostgreStatement._DynamicJoinSpec> onJoinCte(
-            _JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+            _JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
         final PostgreDynamicBlock block;
         block = new PostgreDynamicBlock(this.context, this.blockConsumer, joinType, modifier, cteItem, alias);
         this.blockConsumer.accept(block);
@@ -177,7 +174,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     /*-------------------below private method-------------------*/
 
     private Statement._OnClause<PostgreStatement._DynamicJoinSpec> joinNestedEnd(final _JoinType joinType,
-                                                                                 final NestedItems nestedItems) {
+                                                                                 final _NestedItems nestedItems) {
         joinType.assertStandardJoinType();
         final PostgreDynamicBlock block;
         block = new PostgreDynamicBlock(this.context, this.blockConsumer, joinType, null, nestedItems, "");
@@ -186,7 +183,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     private PostgreStatement._DynamicJoinSpec fromNestedEnd(final _JoinType joinType,
-                                                            final NestedItems nestedItems) {
+                                                            final _NestedItems nestedItems) {
         assert joinType == _JoinType.CROSS_JOIN;
         final PostgreDynamicBlock block;
         block = new PostgreDynamicBlock(this.context, this.blockConsumer, joinType, null, nestedItems, "");
@@ -394,15 +391,12 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         private List<String> columnAliasList;
 
-        private Function<String, Selection> selectionFunction;
-
-        private Supplier<List<? extends Selection>> selectionsSupplier;
+        private _SelectionMap selectionMap;
 
         private DynamicDerivedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
                                     @Nullable SQLWords modifier, DerivedTable table, String alias) {
             super(context, blockConsumer, joinType, modifier, table, alias);
-            this.selectionFunction = ((ArmyDerivedTable) table)::refSelection;
-            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectItemList;
+            this.selectionMap = (_DerivedTable) table;
         }
 
         @Override
@@ -422,12 +416,18 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         public final Selection refSelection(String name) {
-            return this.selectionFunction.apply(name);
+            if (this.columnAliasList == null) {
+                this.columnAliasList = Collections.emptyList();
+            }
+            return this.selectionMap.refSelection(name);
         }
 
         @Override
-        public final List<? extends Selection> selectionList() {
-            return this.selectionsSupplier.get();
+        public final List<? extends Selection> refAllSelection() {
+            if (this.columnAliasList == null) {
+                this.columnAliasList = Collections.emptyList();
+            }
+            return this.selectionMap.refAllSelection();
         }
 
         @Override
@@ -446,11 +446,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
             this.columnAliasList = columnAliasList;
-
-            final _Pair<List<Selection>, Map<String, Selection>> pair;
-            pair = CriteriaUtils.forColumnAlias(columnAliasList, (ArmyDerivedTable) this.tabularItem);
-            this.selectionsSupplier = () -> pair.first;
-            this.selectionFunction = pair.second::get;
+            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.tabularItem);
             return (R) this;
         }
 
@@ -534,7 +530,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         @Override
         Statement._OnClause<PostgreStatement._DynamicJoinSpec> onCte(
-                CteItem cteItem, String alias) {
+                _Cte cteItem, String alias) {
             final PostgreDynamicBlock block;
             block = new PostgreDynamicBlock(this.context, this.blockConsumer, this.joinType, null,
                     cteItem, alias);
@@ -543,7 +539,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
 
-        private Statement._OnClause<PostgreStatement._DynamicJoinSpec> nestedEnd(_JoinType joinType, NestedItems items) {
+        private Statement._OnClause<PostgreStatement._DynamicJoinSpec> nestedEnd(_JoinType joinType, _NestedItems items) {
             final PostgreDynamicBlock block;
             block = new PostgreDynamicBlock(this.context, this.blockConsumer, joinType, null,
                     items, "");
@@ -604,7 +600,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        PostgreStatement._DynamicJoinSpec onCte(CteItem cteItem, String alias) {
+        PostgreStatement._DynamicJoinSpec onCte(_Cte cteItem, String alias) {
             final PostgreDynamicBlock block;
             block = new PostgreDynamicBlock(this.context, this.blockConsumer, this.joinType, null,
                     cteItem, alias);
@@ -613,7 +609,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
 
-        private PostgreStatement._DynamicJoinSpec nestedEnd(_JoinType joinType, NestedItems items) {
+        private PostgreStatement._DynamicJoinSpec nestedEnd(_JoinType joinType, _NestedItems items) {
             final PostgreDynamicBlock block;
             block = new PostgreDynamicBlock(this.context, this.blockConsumer, joinType, null,
                     items, "");

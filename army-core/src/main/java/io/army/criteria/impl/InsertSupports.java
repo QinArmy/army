@@ -91,8 +91,9 @@ abstract class InsertSupports {
 
     }
 
-    static abstract class InsertOptionsImpl<MR, PR> implements InsertOptions, InsertStatement._MigrationOptionClause<MR>
-            , InsertStatement._PreferLiteralClause<PR> {
+    static abstract class InsertOptionsImpl<MR, PR> implements InsertOptions,
+            InsertStatement._MigrationOptionClause<MR>,
+            InsertStatement._PreferLiteralClause<PR> {
 
         final CriteriaContext context;
 
@@ -190,7 +191,7 @@ abstract class InsertSupports {
             final B builder;
             builder = this.createCteBuilder(false);
             consumer.accept(builder);
-            return this.endWithClause(builder, true);
+            return this.endDynamicWithClause(builder, true);
         }
 
 
@@ -199,7 +200,7 @@ abstract class InsertSupports {
             final B builder;
             builder = this.createCteBuilder(true);
             consumer.accept(builder);
-            return this.endWithClause(builder, true);
+            return this.endDynamicWithClause(builder, true);
         }
 
 
@@ -208,7 +209,7 @@ abstract class InsertSupports {
             final B builder;
             builder = this.createCteBuilder(false);
             consumer.accept(builder);
-            return this.endWithClause(builder, false);
+            return this.endDynamicWithClause(builder, false);
         }
 
 
@@ -217,7 +218,7 @@ abstract class InsertSupports {
             final B builder;
             builder = this.createCteBuilder(true);
             consumer.accept(builder);
-            return this.endWithClause(builder, false);
+            return this.endDynamicWithClause(builder, false);
         }
 
         @Override
@@ -259,7 +260,9 @@ abstract class InsertSupports {
         abstract B createCteBuilder(boolean recursive);
 
 
-        private WE endWithClause(final B builder, final boolean required) {
+        private WE endDynamicWithClause(final B builder, final boolean required) {
+            ((CriteriaSupports.CteBuilder) builder).endLastCte();
+
             final boolean recursive;
             recursive = builder.isRecursive();
             this.recursive = recursive;
@@ -377,9 +380,6 @@ abstract class InsertSupports {
 
         @SuppressWarnings("unchecked")
         final WE endStaticWithClause(final boolean recursive) {
-            if (this.cteList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
             return (WE) this;
@@ -391,9 +391,8 @@ abstract class InsertSupports {
 
         @SuppressWarnings("unchecked")
         private WE endDynamicWithClause(final B builder, final boolean required) {
-            if (this.cteList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
+            ((CriteriaSupports.CteBuilder) builder).endLastCte();
+
             final boolean recursive;
             recursive = builder.isRecursive();
             this.recursive = recursive;
@@ -2251,10 +2250,24 @@ abstract class InsertSupports {
 
         final List<FieldMeta<?>> fieldList;
         fieldList = stmt.fieldList();
-        final int fieldSize, discriminatorIndex;
+        final int fieldSize;
         fieldSize = fieldList.size();
-        final FieldMeta<?> discriminatorField;
+
+        final List<? extends Selection> selectionList;
+        selectionList = ((_DerivedTable) stmt.subQuery()).refAllSelection();
+
+        if (selectionList.size() != fieldSize) {
+            String m = String.format("SubQuery %s size[%s] and field list size[%s] of %s not match.",
+                    Selection.class.getSimpleName(),
+                    selectionList.size(),
+                    fieldSize,
+                    stmt.table());
+            throw ContextStack.criteriaError(context, m);
+        }
+
+        final Selection discriminatorSelection;
         if (insertTable instanceof ParentTableMeta) {
+            final FieldMeta<?> discriminatorField;
             discriminatorField = insertTable.discriminator();
             int index = -1;
             for (int i = 0; i < fieldSize; i++) {
@@ -2264,54 +2277,9 @@ abstract class InsertSupports {
                 }
             }
             assert index > -1;
-            discriminatorIndex = index;
+            discriminatorSelection = selectionList.get(index);
         } else {
-            discriminatorField = null;
-            discriminatorIndex = -1;
-        }
-
-        final List<? extends _SelectItem> selectItemList;
-        selectItemList = ((_RowSet) stmt.subQuery()).selectItemList();
-        final int itemSize;
-        itemSize = selectItemList.size();
-
-        _SelectItem item;
-        Selection discriminatorSelection = null;
-        List<? extends Selection> selectionList;
-        int selectionCount = 0;
-        for (int i = 0, groupSize, index; i < itemSize; i++) {
-            item = selectItemList.get(i);
-
-            if (item instanceof Selection) {
-                if (selectionCount == discriminatorIndex) {
-                    assert discriminatorSelection == null;
-                    discriminatorSelection = (Selection) item;
-                }
-                selectionCount++;
-                continue;
-            }
-            selectionList = ((_SelectionGroup) item).selectionList();
-            groupSize = selectionList.size();
-            index = discriminatorIndex - selectionCount;
-            if (index > 0 && index < groupSize) {
-                assert discriminatorSelection == null;
-                discriminatorSelection = selectionList.get(index);
-            }
-
-            selectionCount += groupSize;
-
-        }//for
-
-        if (selectionCount != fieldSize) {
-            String m = String.format("SubQuery %s size and field list size of %s not match.",
-                    Selection.class.getSimpleName(), stmt.table());
-            throw ContextStack.criteriaError(context, m);
-        }
-
-        if (discriminatorField != null && discriminatorSelection == null) {
-            String m = String.format("Not found %s for %s",
-                    Selection.class.getSimpleName(), discriminatorField);
-            throw ContextStack.criteriaError(context, m);
+            discriminatorSelection = null;
         }
         return discriminatorSelection;
     }

@@ -3,7 +3,8 @@ package io.army.dialect;
 import io.army.criteria.Select;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._RowSet;
+import io.army.criteria.impl.inner._Query;
+import io.army.criteria.impl.inner._SelectItem;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
@@ -19,7 +20,7 @@ final class ParensSelectContext extends StatementContext implements _SelectConte
         return new ParensSelectContext((StatementContext) outerContext, select, dialect, visible);
     }
 
-    private final List<Selection> selectionList;
+    private final List<? extends _SelectItem> selectItemList;
 
     private final _SqlContext outerContext;
 
@@ -27,7 +28,7 @@ final class ParensSelectContext extends StatementContext implements _SelectConte
             , Visible visible) {
         super(outerContext, dialect, visible);
         this.outerContext = outerContext;
-        this.selectionList = _DialectUtils.flatSelectItem(((_RowSet) select).selectItemList());
+        this.selectItemList = ((_Query) select).selectItemList();
     }
 
 
@@ -62,8 +63,8 @@ final class ParensSelectContext extends StatementContext implements _SelectConte
     }
 
     @Override
-    public List<Selection> selectionList() {
-        return this.selectionList;
+    public List<? extends Selection> selectionList() {
+        return _DialectUtils.flatSelectItem(this.selectItemList);
     }
 
 

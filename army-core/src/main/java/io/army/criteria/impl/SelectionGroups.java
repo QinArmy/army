@@ -123,7 +123,7 @@ abstract class SelectionGroups {
 
         final String derivedAlias;
 
-        private List<Selection> selectionList;
+        private List<? extends Selection> selectionList;
 
         private DerivedSelectionGroupImpl(String derivedAlias) {
             this.derivedAlias = derivedAlias;

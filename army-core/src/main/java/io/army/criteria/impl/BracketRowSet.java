@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._ParensRowSet;
-import io.army.criteria.impl.inner._RowSet;
-import io.army.criteria.impl.inner._SelectItem;
-import io.army.criteria.impl.inner._SelectionMap;
+import io.army.criteria.impl.inner.*;
 import io.army.util._Assert;
 
 import java.util.List;
@@ -124,21 +121,21 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
     }
 
     @Override
-    public final List<? extends _SelectItem> selectItemList() {
-        final _RowSet rowSet = this.innerRowSet;
-        if (rowSet == null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return rowSet.selectItemList();
-    }
-
-    @Override
     public final Selection refSelection(final String derivedAlias) {
         final RowSet rowSet = this.innerRowSet;
         if (!(rowSet instanceof DerivedTable)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return ((ArmyDerivedTable) rowSet).refSelection(derivedAlias);
+        return ((_DerivedTable) rowSet).refSelection(derivedAlias);
+    }
+
+    @Override
+    public final List<? extends Selection> refAllSelection() {
+        final RowSet rowSet = this.innerRowSet;
+        if (!(rowSet instanceof DerivedTable)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return ((_DerivedTable) rowSet).refAllSelection();
     }
 
     @Override

@@ -12,7 +12,7 @@ import io.army.stmt.SimpleStmt;
  * @see _SubQueryContext
  * @since 1.0
  */
-public interface _SimpleQueryContext extends _PrimaryContext, _MultiTableStmtContext, SelectionListContext {
+public interface _SimpleQueryContext extends _PrimaryContext, _MultiTableStmtContext, SelectItemListContext {
 
     @Override
     SimpleStmt build();

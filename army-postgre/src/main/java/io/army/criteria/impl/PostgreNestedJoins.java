@@ -1,9 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._ModifierTableBlock;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._PostgreTableBlock;
 import io.army.criteria.postgre.PostgreCrosses;
 import io.army.criteria.postgre.PostgreJoins;
@@ -40,13 +38,13 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
 
     static <I extends Item> PostgreStatement._NestedLeftParenSpec<I> nestedItem(
-            CriteriaContext context, _JoinType joinType, BiFunction<_JoinType, NestedItems, I> function) {
+            CriteriaContext context, _JoinType joinType, BiFunction<_JoinType, _NestedItems, I> function) {
         return new PostgreNestedJoins<>(context, joinType, function);
     }
 
 
     private PostgreNestedJoins(CriteriaContext context, _JoinType joinType,
-                               BiFunction<_JoinType, NestedItems, I> function) {
+                               BiFunction<_JoinType, _NestedItems, I> function) {
         super(context, joinType, function);
     }
 
@@ -89,7 +87,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
     }
 
     @Override
-    PostgreStatement._PostgreNestedJoinClause<I> onLeftCte(CteItem cteItem, String alias) {
+    PostgreStatement._PostgreNestedJoinClause<I> onLeftCte(_Cte cteItem, String alias) {
         final PostgreNestedBlock<I> block;
         block = new PostgreNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, null,
                 cteItem, alias, this::thisNestedJoinEnd);
@@ -97,8 +95,8 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         return block;
     }
 
-    private PostgreStatement._PostgreNestedJoinClause<I> nestedNestedJoinEnd(final _JoinType joinType
-            , final NestedItems nestedItems) {
+    private PostgreStatement._PostgreNestedJoinClause<I> nestedNestedJoinEnd(final _JoinType joinType,
+                                                                             final _NestedItems nestedItems) {
         if (joinType != _JoinType.NONE) {
             throw _Exceptions.unexpectedEnum(joinType);
         }
@@ -226,7 +224,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         @Override
         final PostgreStatement._NestedJoinSpec<I> onFromCte(_JoinType joinType,
                                                             @Nullable Query.DerivedModifier modifier,
-                                                            CteItem cteItem, String alias) {
+                                                            _Cte cteItem, String alias) {
             final PostgreNestedBlock<I> block;
             block = new PostgreNestedBlock<>(this.context, this.blockConsumer, joinType, modifier, cteItem, alias,
                     this.ender);
@@ -260,7 +258,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         @Override
         final PostgreStatement._NestedOnSpec<I> onJoinCte(_JoinType joinType,
                                                           @Nullable Query.DerivedModifier modifier,
-                                                          CteItem cteItem, String alias) {
+                                                          _Cte cteItem, String alias) {
             final PostgreNestedBlock<I> block;
             block = new PostgreNestedBlock<>(this.context, this.blockConsumer, joinType, modifier, cteItem, alias,
                     this.ender);
@@ -275,7 +273,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
          * @see #fullJoin(Function)
          */
         private PostgreStatement._NestedOnSpec<I> joinNestedEnd(final _JoinType joinType,
-                                                                final NestedItems nestedItems) {
+                                                                final _NestedItems nestedItems) {
             joinType.assertStandardJoinType();
             final PostgreNestedBlock<I> block;
             block = new PostgreNestedBlock<>(this.context, this.blockConsumer, joinType, null, nestedItems, "",
@@ -287,8 +285,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         /**
          * @see #crossJoin(Function)
          */
-        private PostgreStatement._NestedJoinSpec<I> crossNestedEnd(final _JoinType joinType,
-                                                                   final NestedItems items) {
+        private PostgreStatement._NestedJoinSpec<I> crossNestedEnd(final _JoinType joinType, final _NestedItems items) {
             assert joinType == _JoinType.CROSS_JOIN;
             final PostgreNestedBlock<I> block;
             block = new PostgreNestedBlock<>(this.context, this.blockConsumer, _JoinType.CROSS_JOIN, null, items, "",
@@ -501,19 +498,18 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
     @SuppressWarnings("unchecked")
     private static abstract class NestedDerivedBlock<I extends Item, R> extends PostgreNestedBlock<I>
-            implements Statement._OptionalParensStringClause<R>, _ModifierTableBlock, ArmyAliasDerivedBlock {
+            implements Statement._OptionalParensStringClause<R>,
+            _ModifierTableBlock,
+            _AliasDerivedBlock {
 
         private List<String> columnAliasList;
 
-        private Function<String, Selection> selectionFunction;
-
-        private Supplier<List<? extends Selection>> selectionsSupplier;
+        private _SelectionMap selectionMap;
 
         private NestedDerivedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
                                    @Nullable SQLWords modifier, DerivedTable table, String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
-            this.selectionFunction = ((ArmyDerivedTable) table)::refSelection;
-            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectItemList;
+            this.selectionMap = (_DerivedTable) table;
         }
 
         @Override
@@ -533,12 +529,18 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         public final Selection refSelection(String name) {
-            return this.selectionFunction.apply(name);
+            if (this.columnAliasList == null) {
+                this.columnAliasList = Collections.emptyList();
+            }
+            return this.selectionMap.refSelection(name);
         }
 
         @Override
-        public final List<? extends Selection> selectionList() {
-            return this.selectionsSupplier.get();
+        public final List<? extends Selection> refAllSelection() {
+            if (this.columnAliasList == null) {
+                this.columnAliasList = Collections.emptyList();
+            }
+            return this.selectionMap.refAllSelection();
         }
 
         @Override
@@ -556,11 +558,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
             this.columnAliasList = columnAliasList;
-
-            final _Pair<List<Selection>, Map<String, Selection>> pair;
-            pair = CriteriaUtils.forColumnAlias(columnAliasList, (ArmyDerivedTable) this.tabularItem);
-            this.selectionsSupplier = () -> pair.first;
-            this.selectionFunction = pair.second::get;
+            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.tabularItem);
             return (R) this;
         }
 

@@ -2,7 +2,9 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._RowSet;
+import io.army.criteria.impl.inner._SelectItem;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -15,13 +17,14 @@ abstract class MultiTableQueryContext extends StatementContext implements _Multi
 
     final MultiTableContext multiTableContext;
 
-    private final List<Selection> selectionList;
+    private final List<? extends _SelectItem> selectItemList;
+
 
     MultiTableQueryContext(@Nullable StatementContext outerContext, Query query, TableContext tableContext
             , ArmyParser parser, Visible visible) {
         super(outerContext, parser, visible);
 
-        this.selectionList = ((_RowSet) query).selectItemList();
+        this.selectItemList = ((_Query) query).selectItemList();
         if (query instanceof SubQuery) {
             this.multiTableContext = new MultiTableContext(this, tableContext, this::appendOuterField);
         } else {
@@ -62,8 +65,13 @@ abstract class MultiTableQueryContext extends StatementContext implements _Multi
 
 
     @Override
-    public final List<Selection> selectionList() {
-        return this.selectionList;
+    public List<? extends _SelectItem> selectItemList() {
+        return this.selectItemList;
+    }
+
+    @Override
+    public final List<? extends Selection> selectionList() {
+        return _DialectUtils.flatSelectItem(this.selectItemList);
     }
 
     @Override

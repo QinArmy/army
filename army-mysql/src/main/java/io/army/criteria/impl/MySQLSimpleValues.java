@@ -123,7 +123,7 @@ abstract class MySQLSimpleValues<I extends Item>
     }//SimplePrimaryValues
 
     private static final class SimpleSubValues<I extends Item> extends MySQLSimpleValues<I>
-            implements SubValues {
+            implements ArmySubValues {
 
         private final Function<? super SubValues, I> function;
 
@@ -213,7 +213,7 @@ abstract class MySQLSimpleValues<I extends Item>
     }//BracketValues
 
     private static final class BracketSubValues<I extends Item> extends MySQLBracketValues<I>
-            implements SubValues {
+            implements ArmySubValues {
 
         private final Function<? super SubValues, I> function;
 

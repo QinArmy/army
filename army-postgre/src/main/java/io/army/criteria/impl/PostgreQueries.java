@@ -5,6 +5,7 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.postgre._PostgreCte;
@@ -569,7 +570,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
     @Override
-    final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem,
+    final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem,
                                  String alias) {
         final _TableBlock block;
         block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
@@ -599,7 +600,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
     @Override
-    final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem,
+    final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem,
                                             String alias) {
         final TableBlocks.JoinClauseCteBlock<_JoinSpec<I>> block;
         block = TableBlocks.joinCteBlock(joinType, cteItem, alias, this);
@@ -613,7 +614,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
      * @see #from(Function)
      * @see #crossJoin(Function)
      */
-    private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
         this.blockConsumer.accept(TableBlocks.fromNestedBlock(joinType, nestedItems));
         return this;
     }
@@ -624,7 +625,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
      * @see #rightJoin(Function)
      * @see #fullJoin(Function)
      */
-    private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
 
         final TableBlocks.JoinClauseNestedBlock<_JoinSpec<I>> block;
         block = TableBlocks.joinNestedBlock(joinType, nestedItems, this);

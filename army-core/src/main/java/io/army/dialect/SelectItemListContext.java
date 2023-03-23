@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.Selection;
+import io.army.criteria.impl.inner._SelectItem;
 
 import java.util.List;
 
@@ -18,7 +19,8 @@ import java.util.List;
  *
  * @since 1.0
  */
-interface SelectionListContext extends _SqlContext {
+interface SelectItemListContext extends _SqlContext {
 
-    List<Selection> selectionList();
+    List<? extends _SelectItem> selectItemList();
+
 }

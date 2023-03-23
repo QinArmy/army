@@ -834,7 +834,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             final B builder;
             builder = this.createCteBuilder(false);
             consumer.accept(builder);
-            return this.endWithClause(builder, true);
+            return this.endDynamicWithClause(builder, true);
         }
 
         @Override
@@ -842,7 +842,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             final B builder;
             builder = this.createCteBuilder(true);
             consumer.accept(builder);
-            return this.endWithClause(builder, true);
+            return this.endDynamicWithClause(builder, true);
         }
 
         @Override
@@ -850,7 +850,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             final B builder;
             builder = this.createCteBuilder(false);
             consumer.accept(builder);
-            return this.endWithClause(builder, false);
+            return this.endDynamicWithClause(builder, false);
         }
 
         @Override
@@ -858,7 +858,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             final B builder;
             builder = this.createCteBuilder(true);
             consumer.accept(builder);
-            return this.endWithClause(builder, false);
+            return this.endDynamicWithClause(builder, false);
         }
 
 
@@ -891,13 +891,9 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
 
-        @Nullable
-        final _Statement._WithClauseSpec getWithClause() {
-            return this.cteList == null ? null : this;
-        }
+        private WE endDynamicWithClause(final B builder, final boolean required) {
+            ((CriteriaSupports.CteBuilder) builder).endLastCte();
 
-
-        private WE endWithClause(final B builder, final boolean required) {
             final boolean recursive;
             recursive = builder.isRecursive();
             this.recursive = recursive;
@@ -1141,27 +1137,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         abstract B createCteBuilder(boolean recursive, CriteriaContext context);
 
-        @Nullable
-        final _WithClauseSpec getWithClause() {
-            return this.cteList == null ? null : this;
-        }
-
-
-        @SuppressWarnings("unchecked")
-        private WE endDynamicWithClause(final B builder, final boolean required) {
-            final CriteriaContext context = this.context;
-            assert context != null;
-            if (this.cteList != null) {
-                throw ContextStack.castCriteriaApi(context);
-            }
-            final boolean recursive;
-            recursive = builder.isRecursive();
-            this.recursive = recursive;
-            this.cteList = context.endWithClause(recursive, required);
-            ContextStack.pop(context);
-            context.endContext();
-            return (WE) this;
-        }
 
         final WE endStaticWithClause(final boolean recursive) {
             if (this.cteList != null) {
@@ -1169,6 +1144,18 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             }
             this.recursive = recursive;
             this.cteList = this.context.endWithClause(recursive, true);
+            return (WE) this;
+        }
+
+        @SuppressWarnings("unchecked")
+        private WE endDynamicWithClause(final B builder, final boolean required) {
+            ((CriteriaSupports.CteBuilder) builder).endLastCte();
+
+            final boolean recursive;
+            recursive = builder.isRecursive();
+
+            this.recursive = recursive;
+            this.cteList = context.endWithClause(recursive, required);
             return (WE) this;
         }
 

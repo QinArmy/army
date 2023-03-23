@@ -10,7 +10,8 @@ import io.army.criteria.impl.inner._SelectionMap;
  *
  * @since 1.0
  */
-interface ArmyAliasDerivedBlock extends _AliasDerivedBlock, _SelectionMap {
+@Deprecated
+interface ArmyAliasDerivedBlock extends _AliasDerivedBlock {
 
 
 }
