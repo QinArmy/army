@@ -3,15 +3,17 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.DerivedTable;
 import io.army.criteria.Selection;
+import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.meta.*;
-import io.army.util._CollectionUtils;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.PrimaryFieldMeta;
+import io.army.meta.TableMeta;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,30 +23,16 @@ abstract class SelectionGroups {
         throw new UnsupportedOperationException();
     }
 
-    static <T> _SelectionGroup singleGroup(
-            String tableAlias, List<FieldMeta<T>> fieldList) {
-        return new TableFieldGroup<>(tableAlias, fieldList);
-    }
-
     static <T> _SelectionGroup singleGroup(TableMeta<T> table, String tableAlias) {
         return new TableFieldGroup<>(table, tableAlias);
     }
 
-    static <T> _SelectionGroup groupWithoutId(TableMeta<T> table, String tableAlias) {
+    static <T> _SelectionGroup groupWithoutId(ChildTableMeta<T> table, String tableAlias) {
         return new TableFieldGroup<>(tableAlias, table);
     }
 
-    static <T> _SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias, String parentAlias) {
-        return new ChildTableGroup<>(child, childAlias, child.parentMeta(), parentAlias);
-    }
-
-
     static DerivedGroup derivedGroup(String alias) {
         return new DerivedSelectionGroupImpl(alias);
-    }
-
-    static DerivedGroup derivedGroup(String alias, List<String> derivedFieldNameList) {
-        return new DerivedFieldGroup(alias, new ArrayList<>(derivedFieldNameList));
     }
 
 
@@ -57,17 +45,12 @@ abstract class SelectionGroups {
 
         private final List<FieldMeta<T>> fieldList;
 
-        private TableFieldGroup(String tableAlias, List<FieldMeta<T>> fieldList) {
-            this.tableAlias = tableAlias;
-            this.fieldList = _CollectionUtils.asUnmodifiableList(fieldList);
-        }
-
         private TableFieldGroup(TableMeta<T> table, String tableAlias) {
             this.tableAlias = tableAlias;
             this.fieldList = table.fieldList();
         }
 
-        private TableFieldGroup(String tableAlias, TableMeta<T> parent) {
+        private TableFieldGroup(String tableAlias, ChildTableMeta<T> parent) {
             final List<FieldMeta<T>> fields = parent.fieldList();
             final List<FieldMeta<T>> fieldList = new ArrayList<>(fields.size() - 1);
             for (FieldMeta<T> field : fields) {
@@ -80,6 +63,10 @@ abstract class SelectionGroups {
             this.fieldList = Collections.unmodifiableList(fieldList);
         }
 
+        @Override
+        public String tableAlias() {
+            return this.tableAlias;
+        }
 
         @Override
         public List<? extends Selection> selectionList() {
@@ -90,6 +77,8 @@ abstract class SelectionGroups {
         public void appendSelectItem(final _SqlContext context) {
             final StringBuilder builder = context.sqlBuilder();
             final String tableAlias = this.tableAlias;
+            final DialectParser parser;
+            parser = context.parser();
 
             final List<FieldMeta<T>> fieldList = this.fieldList;
             final int size = fieldList.size();
@@ -101,8 +90,8 @@ abstract class SelectionGroups {
                 field = fieldList.get(i);
                 context.appendField(tableAlias, field);
 
-                builder.append(_Constant.SPACE_AS_SPACE)
-                        .append(((TableFieldMeta<T>) field).fieldName);
+                builder.append(_Constant.SPACE_AS_SPACE);
+                parser.identifier(((TableFieldMeta<T>) field).fieldName, builder);
             }
 
         }
@@ -130,141 +119,37 @@ abstract class SelectionGroups {
     }//TableFieldGroup
 
 
-    private static final class ChildTableGroup<P, T>
-            implements _SelectionGroup {
-
-        private final String childAlias;
-
-        private final String parentAlias;
-
-        private final List<FieldMeta<?>> fieldList;
-
-        private final int parentSize;
-
-        private ChildTableGroup(ChildTableMeta<T> child, String childAlias
-                , ParentTableMeta<P> parent, String parentAlias) {
-            this.parentAlias = parentAlias;
-            this.childAlias = childAlias;
-
-            final Collection<FieldMeta<P>> parentFields = parent.fieldList();
-            final Collection<FieldMeta<T>> childFields = child.fieldList();
-            this.parentSize = parentFields.size() - 1;
-
-            final List<FieldMeta<?>> fieldList = new ArrayList<>(this.parentSize + childFields.size());
-            for (FieldMeta<P> field : parentFields) {
-                if (field instanceof PrimaryFieldMeta) {
-                    continue;
-                }
-                fieldList.add(field);
-            }
-            fieldList.addAll(childFields);
-            this.fieldList = Collections.unmodifiableList(fieldList);
-        }
-
-        @Override
-        public List<? extends Selection> selectionList() {
-            return this.fieldList;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public void appendSelectItem(final _SqlContext context) {
-
-            final StringBuilder builder = context.sqlBuilder();
-
-            final List<FieldMeta<?>> fieldList = this.fieldList;
-            final int parentSize = this.parentSize;
-            final String parentAlias = this.parentAlias;
-            final String childAlias = this.childAlias;
-
-
-            final int size = fieldList.size();
-            FieldMeta<?> field;
-            for (int i = 0; i < size; i++) {
-                if (i > 0) {
-                    builder.append(_Constant.SPACE_COMMA);
-                }
-                field = fieldList.get(i);
-                if (i < parentSize) {
-                    context.appendField(parentAlias, field);
-                } else {
-                    context.appendField(childAlias, field);
-                }
-                builder.append(_Constant.SPACE_AS_SPACE)
-                        .append(((TableFieldMeta<T>) field).fieldName);
-
-            }
-
-        }
-
-        @Override
-        public String toString() {
-            final StringBuilder builder = new StringBuilder();
-
-            final List<FieldMeta<?>> fieldList = this.fieldList;
-            final int parentSize = this.parentSize;
-            final String parentAlias = this.parentAlias;
-            final String childAlias = this.childAlias;
-
-            final int size = fieldList.size();
-            FieldMeta<?> field;
-            for (int i = 0; i < size; i++) {
-                if (i > 0) {
-                    builder.append(_Constant.SPACE_COMMA);
-                }
-                builder.append(_Constant.SPACE);
-                field = fieldList.get(i);
-                if (i < parentSize) {
-                    builder.append(parentAlias);
-                } else {
-                    builder.append(childAlias);
-                }
-                builder.append(_Constant.POINT)
-                        .append(field.columnName())
-                        .append(_Constant.SPACE_AS_SPACE)
-                        .append(field.fieldName());
-
-            }
-            return builder.toString();
-        }
-
-
-    }//ChildTableGroup
-
-    private static class DerivedSelectionGroupImpl implements DerivedGroup {
+    private static final class DerivedSelectionGroupImpl implements DerivedGroup {
 
         final String derivedAlias;
 
-        private List<? extends Selection> selectionList;
+        private List<Selection> selectionList;
 
         private DerivedSelectionGroupImpl(String derivedAlias) {
             this.derivedAlias = derivedAlias;
         }
 
         @Override
-        public final void finish(DerivedTable table, String alias) {
+        public void finish(final DerivedTable table, final String alias) {
             if (this.selectionList != null) {
                 throw new IllegalStateException("duplication");
             }
             if (!this.derivedAlias.equals(alias)) {
                 throw new IllegalArgumentException("subQueryAlias not match.");
             }
-            if (this instanceof DerivedFieldGroup) {
-                this.selectionList = ((DerivedFieldGroup) this).createSelectionList((ArmyDerivedTable) table);
-            } else {
-                this.selectionList = ((ArmyDerivedTable) table).selectionList();
-            }
+
+            this.selectionList = ((_DerivedTable) table).refAllSelection();
 
         }
 
 
         @Override
-        public final String tableAlias() {
+        public String tableAlias() {
             return this.derivedAlias;
         }
 
         @Override
-        public final List<? extends Selection> selectionList() {
+        public List<? extends Selection> selectionList() {
             final List<? extends Selection> selectionList = this.selectionList;
             if (selectionList == null) {
                 String m = "currently,couldn't reference selection,please check syntax.";
@@ -274,10 +159,9 @@ abstract class SelectionGroups {
         }
 
         @Override
-        public final void appendSelectItem(final _SqlContext context) {
+        public void appendSelectItem(final _SqlContext context) {
             final List<? extends Selection> selectionList = this.selectionList;
             if (selectionList == null || selectionList.size() == 0) {
-                //here bug.
                 throw new CriteriaException("DerivedSelectionGroup no selection.");
             }
             final StringBuilder builder = context.sqlBuilder();
@@ -307,33 +191,6 @@ abstract class SelectionGroups {
     }// SubQuerySelectionGroupImpl
 
 
-    private static final class DerivedFieldGroup extends DerivedSelectionGroupImpl {
-
-
-        private final List<String> derivedFieldNameList;
-
-        private DerivedFieldGroup(String subQueryAlias, List<String> derivedFieldNameList) {
-            super(subQueryAlias);
-            this.derivedFieldNameList = _CollectionUtils.asUnmodifiableList(derivedFieldNameList);
-        }
-
-
-        private List<Selection> createSelectionList(final ArmyDerivedTable table) {
-            final List<String> derivedFieldNameList = this.derivedFieldNameList;
-            final List<Selection> selectionList = new ArrayList<>(derivedFieldNameList.size());
-            Selection selection;
-            for (String selectionAlias : derivedFieldNameList) {
-                selection = table.selection(selectionAlias);
-                if (selection == null) {
-                    String m = String.format("unknown derived field %s.%s .", this.derivedAlias, selectionAlias);
-                    throw new CriteriaException(m);
-                }
-                selectionList.add(selection);
-            }
-            return Collections.unmodifiableList(selectionList);
-        }
-
-    }//DerivedFieldGroup
 
 
 }

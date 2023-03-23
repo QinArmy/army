@@ -2271,7 +2271,7 @@ abstract class InsertSupports {
         }
 
         final List<? extends _SelectItem> selectItemList;
-        selectItemList = ((_RowSet) stmt.subQuery()).selectionList();
+        selectItemList = ((_RowSet) stmt.subQuery()).selectItemList();
         final int itemSize;
         itemSize = selectItemList.size();
 

@@ -512,8 +512,8 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         private NestedDerivedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
                                    @Nullable SQLWords modifier, DerivedTable table, String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
-            this.selectionFunction = ((ArmyDerivedTable) table)::selection;
-            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectionList;
+            this.selectionFunction = ((ArmyDerivedTable) table)::refSelection;
+            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectItemList;
         }
 
         @Override
@@ -532,7 +532,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         @Override
-        public final Selection selection(String name) {
+        public final Selection refSelection(String name) {
             return this.selectionFunction.apply(name);
         }
 

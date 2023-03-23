@@ -3,20 +3,18 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.VarExpression;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping._MappingFactory;
 import io.army.mapping._NullType;
-import io.army.meta.*;
+import io.army.meta.FieldMeta;
+import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -1098,56 +1096,6 @@ abstract class SQLsSyntax extends SQLSyntax {
         return ContextStack.root().createVar(varName, paramMeta);
     }
 
-    static CteItem refCte(String cteName) {
-        return ContextStack.peek().refCte(cteName);
-    }
-
-    @Deprecated
-    public static <T> _SelectionGroup group(TableMeta<T> table, String alias) {
-        return SelectionGroups.singleGroup(table, alias);
-    }
-
-    @Deprecated
-    public static <T> _SelectionGroup group(String tableAlias, List<FieldMeta<T>> fieldList) {
-        return SelectionGroups.singleGroup(tableAlias, fieldList);
-    }
-
-    /**
-     * @return a group that no {@link ParentTableMeta#id()} column
-     */
-    @Deprecated
-    public static <T> _SelectionGroup groupWithoutId(TableMeta<T> table, String alias) {
-        return SelectionGroups.groupWithoutId(table, alias);
-    }
-
-    @Deprecated
-    public static <T> _SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias
-            , String parentAlias) {
-        return SelectionGroups.childGroup(child, childAlias, parentAlias);
-    }
-
-    @Deprecated
-    public static _SelectionGroup derivedGroup(String alias) {
-        return SelectionGroups.derivedGroup(alias);
-    }
-
-    @Deprecated
-    public static _SelectionGroup derivedGroup(String alias, List<String> derivedFieldNameList) {
-        if (derivedFieldNameList.size() == 0) {
-            throw new CriteriaException("derivedFieldNameList must not empty");
-        }
-        return SelectionGroups.derivedGroup(alias, derivedFieldNameList);
-    }
-
-    @Deprecated
-    public static _Cte cte(String name, SubStatement subStatement) {
-        return new SQLs.CteImpl(name, subStatement);
-    }
-
-    @Deprecated
-    public static _Cte cte(String name, List<String> aliasLst, SubStatement subStatement) {
-        return new SQLs.CteImpl(name, aliasLst, subStatement);
-    }
 
 
     public static SQLFunction._CaseFuncWhenClause cases() {

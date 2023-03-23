@@ -544,8 +544,8 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
                                    _JoinType joinType, @Nullable SQLWords modifier, DerivedTable table,
                                    String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
-            this.selectionFunction = ((ArmyDerivedTable) table)::selection;
-            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectionList;
+            this.selectionFunction = ((ArmyDerivedTable) table)::refSelection;
+            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectItemList;
         }
 
 
@@ -565,7 +565,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         }
 
         @Override
-        public final Selection selection(String name) {
+        public final Selection refSelection(String name) {
             if (this.columnAliasList == null) {
                 this.columnAliasList = Collections.emptyList();
             }

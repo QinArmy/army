@@ -401,8 +401,8 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         private DynamicDerivedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
                                     @Nullable SQLWords modifier, DerivedTable table, String alias) {
             super(context, blockConsumer, joinType, modifier, table, alias);
-            this.selectionFunction = ((ArmyDerivedTable) table)::selection;
-            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectionList;
+            this.selectionFunction = ((ArmyDerivedTable) table)::refSelection;
+            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectItemList;
         }
 
         @Override
@@ -421,7 +421,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        public final Selection selection(String name) {
+        public final Selection refSelection(String name) {
             return this.selectionFunction.apply(name);
         }
 

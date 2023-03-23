@@ -1,14 +1,16 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.DerivedTable;
-import io.army.criteria.Selection;
-import io.army.lang.Nullable;
 
 
-public interface _DerivedTable extends DerivedTable, _RowSet {
+/**
+ * <p>
+ * This interface is inner interface of {@link DerivedTable}.
+ * </p>
+ *
+ * @since 1.0
+ */
+public interface _DerivedTable extends DerivedTable, _SelectionMap {
 
-
-    @Nullable
-    Selection selection(String name);
 
 }

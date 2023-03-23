@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._RowSet;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._UnionRowSet;
@@ -149,9 +150,10 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
     }
 
 
-
-    static abstract class UnionRowSet
-            implements _UnionRowSet, Statement, CriteriaContextSpec, Statement.StatementMockSpec {
+    static abstract class UnionRowSet implements _UnionRowSet,
+            Statement,
+            CriteriaContextSpec,
+            Statement.StatementMockSpec {
 
         final RowSet left;
 
@@ -160,6 +162,9 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         private final RowSet right;
 
         UnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+            if (((_RowSet) right).selectionSize() != ((_RowSet) left).selectionSize()) {
+                throw leftAndRightNotMatch(left, right);
+            }
             this.left = left;
             this.unionType = unionType;
             this.right = right;
@@ -203,11 +208,6 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         @Override
         public final int selectionSize() {
             return ((_RowSet) this.left).selectionSize();
-        }
-
-        @Override
-        public final List<Selection> selectionList() {
-            return ((_RowSet) this.left).selectionList();
         }
 
         @Override
@@ -260,11 +260,18 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
             return stmt;
         }
 
+        private static CriteriaException leftAndRightNotMatch(final RowSet left, final RowSet right) {
+            String m = String.format("left selection size[%s] and right selection size[%s] not match.",
+                    ((_RowSet) left).selectionSize(),
+                    ((_RowSet) right).selectionSize());
+            return ContextStack.clearStackAndCriteriaError(m);
+        }
+
 
     }//UnionRowSet
 
     static abstract class UnionSubRowSet extends UnionRowSet
-            implements ArmyDerivedTable {
+            implements _DerivedTable {
 
         UnionSubRowSet(RowSet left, UnionType unionType, RowSet right) {
             super(left, unionType, right);
@@ -272,20 +279,15 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
 
         @Override
-        public final Selection selection(String derivedAlias) {
-            return ((ArmyDerivedTable) this.left).selection(derivedAlias);
-        }
-
-
-        @Override
-        public final void setColumnAliasList(List<String> aliasList) {
-            ((ArmyDerivedTable) this.left).setColumnAliasList(aliasList);
+        public final Selection refSelection(String derivedAlias) {
+            return ((_DerivedTable) this.left).refSelection(derivedAlias);
         }
 
         @Override
-        public final List<String> columnAliasList() {
-            return ((ArmyDerivedTable) this.left).columnAliasList();
+        public final List<Selection> refAllSelection() {
+            return ((_DerivedTable) this.left).refAllSelection();
         }
+
 
     }//UnionSubRowSet
 

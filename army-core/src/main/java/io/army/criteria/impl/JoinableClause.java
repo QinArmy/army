@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
@@ -71,7 +72,8 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
     @Override
-    public final FT from(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
+    public final FT from(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs,
+                         String tableAlias) {
         if (this.isIllegalTableModifier(modifier)) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
         }
@@ -467,7 +469,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         throw new UnsupportedOperationException();
     }
 
-    FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem, String alias) {
+    FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
 
         throw new UnsupportedOperationException();
     }
@@ -482,7 +484,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         throw new UnsupportedOperationException();
     }
 
-    JC onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, CteItem cteItem,
+    JC onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem,
                  String alias) {
         throw new UnsupportedOperationException();
     }
@@ -497,12 +499,12 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
         private final _JoinType joinType;
 
-        private final BiFunction<_JoinType, NestedItems, I> function;
+        private final BiFunction<_JoinType, _NestedItems, I> function;
 
         private List<_TableBlock> blockList = new ArrayList<>();
 
         NestedLeftParenClause(CriteriaContext context, _JoinType joinType,
-                              BiFunction<_JoinType, NestedItems, I> function) {
+                              BiFunction<_JoinType, _NestedItems, I> function) {
             this.context = context;
             this.joinType = joinType;
             this.function = function;
@@ -589,7 +591,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
         abstract LS onLeftDerived(@Nullable Query.DerivedModifier modifier, DerivedTable table);
 
-        abstract LC onLeftCte(CteItem cteItem, String alias);
+        abstract LC onLeftCte(_Cte cteItem, String alias);
 
         @Deprecated
         final void onAddFirstBlock(final _TableBlock block) {
@@ -854,7 +856,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
         abstract FS onDerived(@Nullable Query.DerivedModifier modifier, DerivedTable table);
 
-        abstract FC onCte(CteItem cteItem, String alias);
+        abstract FC onCte(_Cte cteItem, String alias);
 
 
     }//DynamicBuilderSupport

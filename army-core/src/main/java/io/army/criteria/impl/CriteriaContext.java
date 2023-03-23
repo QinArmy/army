@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._SelectItem;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -42,12 +43,20 @@ interface CriteriaContext {
      */
     List<_Cte> endWithClause(boolean recursive, boolean required);
 
-    CteItem refCte(String cteName);
+    _Cte refCte(String cteName);
 
     CriteriaContext onAddSelectItem(SelectItem selectItem);
 
 
-    int selectionSize();
+    /**
+     * <p>
+     * This method flat {@link #selectItemList()} as list of {@link  Selection}.
+     * </p>
+     *
+     * @return a unmodified list
+     * @throws CriteriaException throw when context not end.
+     */
+    List<Selection> flatSelectItems();
 
     Selection selection(String alias);
 
@@ -113,10 +122,16 @@ interface CriteriaContext {
     @Deprecated
     List<String> derivedColumnAliasList();
 
-    List<Selection> selectionList();
+    /**
+     * @return a unmodified list
+     * @throws CriteriaException throw when context not end
+     */
+    List<? extends _SelectItem> selectItemList();
 
+    @Deprecated
     void onDerivedColumnAliasList(List<String> aliasList);
 
+    @Deprecated
     boolean isBracketAndNotEnd();
 
 

@@ -644,7 +644,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final CteItem refCte(final @Nullable String cteName) {
+        public final _Cte refCte(final @Nullable String cteName) {
             if (cteName == null) {
                 throw ContextStack.nullPointer(this);
             }
@@ -657,7 +657,7 @@ abstract class CriteriaContexts {
                 return outerContext.refCte(cteName);
             }
 
-            final CteItem thisLevelCte;
+            final _Cte thisLevelCte;
             final String currentName = withContext.currentName;
             if (currentName != null && currentName.equals(cteName)) {
                 if (!withContext.recursive) {
@@ -677,7 +677,7 @@ abstract class CriteriaContexts {
                 }
                 thisLevelCte = cteMap.get(cteName);
             }
-            final CteItem cte;
+            final _Cte cte;
             if (thisLevelCte != null) {
                 cte = thisLevelCte;
             } else if (outerContext == null) {
@@ -715,8 +715,8 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public int selectionSize() {
-            throw ContextStack.criteriaError(this, "current context don't support selectionSize()");
+        public List<Selection> flatSelectItems() {
+            throw ContextStack.criteriaError(this, "current context don't support refAllSelection()");
         }
 
         @Override
@@ -826,7 +826,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public List<Selection> selectionList() {
+        public List<? extends _SelectItem> selectItemList() {
             String m = "current context don't support selectionList()";
             throw ContextStack.criteriaError(this, m);
         }
@@ -978,7 +978,7 @@ abstract class CriteriaContexts {
             final Map<String, ArmyAliasDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
             final Map<String, _TableBlock> aliasToBlock;
             //2. get SelectionMap of last block
-            final SelectionMap selectionMap;
+            final _SelectionMap selectionMap;
             final TabularItem tabularItem;
             _TableBlock block;
             if (nestedDerivedBufferMap != null
@@ -1277,7 +1277,7 @@ abstract class CriteriaContexts {
             derivedFieldMap = aliasToSelection.computeIfAbsent(alias, k -> new HashMap<>());
             Selection selection;
             for (RefDerivedField field : fieldMap.values()) {
-                selection = derivedTable.selection(field.fieldName);
+                selection = derivedTable.refSelection(field.fieldName);
                 if (selection == null) {
                     throw invalidRef(this, alias, field.fieldName);
                 }
@@ -1318,7 +1318,7 @@ abstract class CriteriaContexts {
             return field;
         }
 
-        private DerivedField getDerivedField(final SelectionMap selectionMap, final String tableAlias,
+        private DerivedField getDerivedField(final _SelectionMap selectionMap, final String tableAlias,
                                              final String fieldName) {
             Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
             if (aliasToSelection == null) {
@@ -1329,7 +1329,7 @@ abstract class CriteriaContexts {
             return aliasToSelection.computeIfAbsent(tableAlias, k -> new HashMap<>())
                     .computeIfAbsent(fieldName, fieldNameKey -> {
                         final Selection selection;
-                        selection = selectionMap.selection(fieldNameKey);
+                        selection = selectionMap.refSelection(fieldNameKey);
                         if (selection == null) {
                             throw invalidRef(this, tableAlias, fieldNameKey);
                         }
@@ -1449,7 +1449,7 @@ abstract class CriteriaContexts {
     private static final class PrimaryInsertContext extends InsertContext implements PrimaryContext {
 
         /**
-         * @see #primaryInsertContext()
+         * @see #primaryInsertContext(ArmyStmtSpec)
          */
         private PrimaryInsertContext() {
             super(null);
@@ -1506,7 +1506,7 @@ abstract class CriteriaContexts {
         private final CriteriaContext leftContext;
 
 
-        private List<SelectItem> selectItemList;
+        private List<_SelectItem> selectItemList;
 
         /**
          * couldn't clear this field
@@ -1552,12 +1552,12 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final List<Selection> selectionList() {
-            final List<Selection> selectionList = this.selectionList;
-            if (selectionList == null) {
+        public final List<? extends _SelectItem> selectItemList() {
+            final List<? extends _SelectItem> selectItemList = this.selectItemList;
+            if (selectItemList == null || this.selectionList == null) {
                 throw ContextStack.castCriteriaApi(this);
             }
-            return selectionList;
+            return selectItemList;
         }
 
 
@@ -1568,13 +1568,13 @@ abstract class CriteriaContexts {
             } else if (this.selectionList != null) {
                 throw ContextStack.castCriteriaApi(this);
             }
-            List<SelectItem> selectItemList = this.selectItemList;
+            List<_SelectItem> selectItemList = this.selectItemList;
             if (selectItemList == null) {
                 selectItemList = new ArrayList<>();
                 this.selectItemList = selectItemList;
             }
 
-            selectItemList.add(selectItem);
+            selectItemList.add((_SelectItem) selectItem);
 
             if (selectItem instanceof DerivedGroup) {
                 List<DerivedGroup> derivedGroupList = this.derivedGroupList;
@@ -1622,12 +1622,12 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final int selectionSize() {
+        public final List<Selection> flatSelectItems() {
             final List<Selection> selectionList = this.selectionList;
             if (selectionList == null) {
                 throw ContextStack.castCriteriaApi(this);
             }
-            return selectionList.size();
+            return selectionList;
         }
 
 
@@ -1692,12 +1692,18 @@ abstract class CriteriaContexts {
         }
 
         private void endSelectClause() {
-            final List<SelectItem> selectItemList = this.selectItemList;
+            final List<_SelectItem> selectItemList = this.selectItemList;
             if (!(selectItemList instanceof ArrayList) || this.selectionList != null) {
                 throw ContextStack.castCriteriaApi(this);
             }
-            final List<Selection> selectionList = new ArrayList<>();
-            for (SelectItem selectItem : selectItemList) {
+            final int selectItemSize;
+            selectItemSize = selectItemList.size();
+            final List<Selection> selectionList = new ArrayList<>(selectItemSize);
+
+            SelectItem selectItem;
+            for (int i = 0; i < selectItemSize; i++) {
+                selectItem = selectItemList.get(i);
+
                 if (selectItem instanceof Selection) {
                     selectionList.add((Selection) selectItem);
                 } else if (selectItem instanceof _SelectionGroup) {
@@ -1706,8 +1712,8 @@ abstract class CriteriaContexts {
                     throw ContextStack.criteriaError(this, _Exceptions::unknownSelectItem, selectItem);
                 }
             }
-            assert selectionList.size() >= selectItemList.size();
-            this.selectItemList = null;
+            assert selectionList.size() >= selectItemSize;
+            this.selectItemList = _CollectionUtils.unmodifiableList(selectItemList);
             this.selectionList = _CollectionUtils.unmodifiableList(selectionList);
         }
 
@@ -2431,7 +2437,7 @@ abstract class CriteriaContexts {
     }//DerivedAliasSelection
 
 
-    static final class RecursiveCte implements CteItem {
+    static final class RecursiveCte implements _Cte {
 
         private final String name;
 
@@ -2439,6 +2445,8 @@ abstract class CriteriaContexts {
          * don't use {@link Map},because field possibly from different level,possibly duplication.
          */
         private List<RefDerivedField> refFieldList;
+
+        private _Cte actualCte;
 
         /**
          * @see StatementContext#refCte(String)
@@ -2452,6 +2460,33 @@ abstract class CriteriaContexts {
             return this.name;
         }
 
+        @Override
+        public SubStatement subStatement() {
+            final _Cte actual = this.actualCte;
+            assert actual != null;
+            return actual.subStatement();
+        }
+
+        @Override
+        public List<String> columnAliasList() {
+            final _Cte actual = this.actualCte;
+            assert actual != null;
+            return actual.columnAliasList();
+        }
+
+        @Override
+        public Selection refSelection(String name) {
+            final _Cte actual = this.actualCte;
+            assert actual != null;
+            return actual.refSelection(name);
+        }
+
+        @Override
+        public List<Selection> refAllSelection() {
+            final _Cte actual = this.actualCte;
+            assert actual != null;
+            return actual.refAllSelection();
+        }
 
         /**
          * @see JoinableContext#onEndContext()
@@ -2472,8 +2507,10 @@ abstract class CriteriaContexts {
          * @see StatementContext#onAddCte(_Cte)
          */
         @Nullable
-        private String onRecursiveCteEnd(final SQLs.CteImpl cte) {
-            assert cte.name.equals(this.name);
+        private String onRecursiveCteEnd(final _Cte cte) {
+            assert this.actualCte == null;
+            assert cte.name().equals(this.name);
+            this.actualCte = cte;
             final List<RefDerivedField> refFieldList = this.refFieldList;
             if (refFieldList == null) {
                 return null;
@@ -2482,7 +2519,7 @@ abstract class CriteriaContexts {
             Selection selection;
             StringBuilder builder = null;
             for (RefDerivedField field : refFieldList) {
-                selection = cte.selection(field.fieldName);
+                selection = cte.refSelection(field.fieldName);
                 if (selection != null) {
                     assert field.expType.selection == null;
                     field.expType.selection = selection;

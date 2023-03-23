@@ -86,7 +86,7 @@ abstract class Expressions extends OperationExpression {
 
     static Expression scalarExpression(final SubQuery subQuery) {
         final List<Selection> selectionList;
-        selectionList = ((_RowSet) subQuery).selectionList();
+        selectionList = ((_RowSet) subQuery).selectItemList();
         if (selectionList.size() != 1) {
             throw ContextStack.criteriaError(ContextStack.peek(), _Exceptions::nonScalarSubQuery, subQuery);
         }
@@ -259,7 +259,7 @@ abstract class Expressions extends OperationExpression {
      */
     private static void assertColumnSubQuery(final DualOperator operator
             , final @Nullable QueryOperator queryOperator, final SubQuery subQuery) {
-        if (((_RowSet) subQuery).selectionList().size() != 1) {
+        if (((_RowSet) subQuery).selectItemList().size() != 1) {
             StringBuilder builder = new StringBuilder();
             builder.append("Operator ")
                     .append(operator.name());

@@ -1,6 +1,5 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.Selection;
 import io.army.criteria.SortItem;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -26,7 +25,7 @@ public interface _Statement {
         /**
          * @throws UnsupportedOperationException throw when this isn't instance of {@link _ReturningDml}
          */
-        List<? extends Selection> returningList();
+        List<? extends _Selection> returningList();
     }
 
     interface _RowCountSpec {

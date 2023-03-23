@@ -95,7 +95,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
             final String tableAlias = field.tableAlias();
             final TabularItem tableItem = this.multiTableContext.aliasToTable.get(tableAlias);
             if (!(tableItem instanceof DerivedTable)
-                    || ((_DerivedTable) tableItem).selection(field.fieldName()) == null) {
+                    || ((_DerivedTable) tableItem).refSelection(field.fieldName()) == null) {
                 throw _Exceptions.unknownColumn(field);
             }
             final String safeTableAlias;

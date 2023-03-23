@@ -2150,7 +2150,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
         @Override
-        public List<Selection> selectionList() {
+        public List<Selection> selectItemList() {
             final List<Selection> selectionList = this.selectionList;
             if (selectionList == null || selectionList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -2159,7 +2159,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public Selection selection(final String derivedAlias) {
+        public Selection refSelection(final String derivedAlias) {
             final Map<String, Selection> selectionMap = this.selectionMap;
             if (selectionMap == null || selectionMap instanceof HashMap) {
                 throw ContextStack.castCriteriaApi(this.context);

@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._StandardQuery;
 import io.army.criteria.standard.StandardCrosses;
 import io.army.criteria.standard.StandardJoins;
@@ -226,12 +227,12 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
     @Override
-    final Void onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem, String alias) {
+    final Void onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem, String alias) {
         throw ContextStack.castCriteriaApi(this.context);
     }
 
     @Override
-    final Void onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, CteItem cteItem, String alias) {
+    final Void onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem, String alias) {
         throw ContextStack.castCriteriaApi(this.context);
     }
 
@@ -257,7 +258,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
      * @see #from(Function)
      * @see #crossJoin(Function)
      */
-    private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
         this.blockConsumer.accept(TableBlocks.fromNestedBlock(joinType, nestedItems));
         return this;
     }
@@ -268,7 +269,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
      * @see #rightJoin(Function)
      * @see #fullJoin(Function)
      */
-    private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final NestedItems nestedItems) {
+    private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
         final TableBlocks.JoinClauseBlock<_JoinSpec<I>> block;
         block = TableBlocks.joinNestedBlock(joinType, nestedItems, this);
         this.blockConsumer.accept(block);

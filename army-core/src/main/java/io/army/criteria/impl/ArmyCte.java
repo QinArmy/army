@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._SelectionMap;
 
 /**
  * <p>
@@ -9,7 +10,7 @@ import io.army.criteria.impl.inner._Cte;
  *
  * @since 1.0
  */
-interface ArmyCte extends _Cte, SelectionMap {
+interface ArmyCte extends _Cte, _SelectionMap {
 
 
 }

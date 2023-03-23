@@ -3,9 +3,7 @@ package io.army.criteria.impl;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
-import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._ItemPair;
-import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardDelete;
 import io.army.criteria.standard.StandardInsert;
 import io.army.criteria.standard.StandardQuery;
@@ -445,9 +443,6 @@ public abstract class SQLs extends SQLsSyntax {
         CteImpl(String name, SubStatement subStatement) {
             this.name = name;
             this.columnNameList = Collections.emptyList();
-            if (subStatement instanceof DerivedTable) {
-                ((ArmyDerivedTable) subStatement).setColumnAliasList(this.columnNameList);
-            }
             this.subStatement = subStatement;
         }
 
@@ -456,15 +451,25 @@ public abstract class SQLs extends SQLsSyntax {
             this.name = name;
             this.columnNameList = columnNameList;
             this.subStatement = subStatement;
-            if (subStatement instanceof DerivedTable) {
-                ((ArmyDerivedTable) subStatement).setColumnAliasList(columnNameList);
-            }
         }
 
         @Override
         public String name() {
             return this.name;
         }
+
+        @Override
+        public int selectionSize() {
+            final SubStatement stmt = this.subStatement;
+            final int size;
+            if (stmt instanceof SubQuery) {
+                size = ((_RowSet) stmt).selectionSize();
+            } else {
+                size = ((_Statement._ReturningListSpec) subStatement).returningList().size();
+            }
+            return size;
+        }
+
 
         @Override
         public List<String> columnAliasList() {
@@ -477,11 +482,12 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public List<? extends Selection> selectionList() {
+        public List<? extends _SelectItem> selectionList() {
+            //TODO
             final SubStatement subStatement = this.subStatement;
-            final List<? extends Selection> list;
+            final List<? extends _SelectItem> list;
             if (subStatement instanceof DerivedTable) {
-                list = ((ArmyDerivedTable) subStatement).selectionList();
+                list = ((_RowSet) subStatement).selectItemList();
             } else if (subStatement instanceof _Statement._ReturningListSpec) {
                 list = ((_Statement._ReturningListSpec) subStatement).returningList();
             } else {
@@ -492,15 +498,21 @@ public abstract class SQLs extends SQLsSyntax {
 
 
         @Override
-        public Selection selection(final String derivedAlias) {
+        public Selection refSelection(final String derivedAlias) {
+            //TODO
             final SubStatement subStatement = this.subStatement;
             final Selection selection;
             if (subStatement instanceof DerivedTable) {
-                selection = ((ArmyDerivedTable) subStatement).selection(derivedAlias);
+                selection = ((ArmyDerivedTable) subStatement).refSelection(derivedAlias);
             } else {
                 selection = null;
             }
             return selection;
+        }
+
+        @Override
+        public void clear() {
+            //no-op
         }
 
 

@@ -41,12 +41,11 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         Query._GroupByClause<GR>,
         Query._HavingClause<HR>,
         Query._AsQueryClause<Q>,
-        CriteriaSupports.ArmyDerivedSpec,
         RowSet._StaticUnionClause<SP>,
         RowSet._StaticIntersectClause<SP>,
         RowSet._StaticExceptClause<SP>,
         RowSet._StaticMinusClause<SP>,
-        Query,
+        _SelectionMap,
         _Query {
 
 
@@ -141,7 +140,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         if (child.parentMeta() != parent) {
             throw childParentNotMatch(this.context, parent, child);
         }
-        this.context.onAddSelectItem(SelectionGroups.childGroup(child, childAlias, parenAlias));
+        this.context.onAddSelectItem(SelectionGroups.singleGroup(parent, parenAlias))
+                .onAddSelectItem(SelectionGroups.groupWithoutId(child, childAlias));
         return (SR) this;
     }
 
@@ -353,7 +353,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         if (child.parentMeta() != parent) {
             throw childParentNotMatch(this.context, parent, child);
         }
-        this.context.onAddSelectItem(SelectionGroups.childGroup(child, childAlias, parenAlias));
+        this.context.onAddSelectItem(SelectionGroups.singleGroup(parent, parenAlias))
+                .onAddSelectItem(SelectionGroups.groupWithoutId(child, childAlias));
         return (SR) this;
     }
 
@@ -586,24 +587,28 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     @Override
     public final int selectionSize() {
-        return this.context.selectionSize();
+        return this.context.flatSelectItems().size();
     }
 
     @Override
-    public final List<Selection> selectionList() {
-        return this.context.selectionList();
+    public final List<? extends _SelectItem> selectItemList() {
+        return this.context.selectItemList();
     }
 
     @Override
-    public final List<String> columnAliasList() {
-        prepared();
-        return this.context.derivedColumnAliasList();
+    public final List<Selection> refAllSelection() {
+        if (!(this instanceof SubQuery)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return this.context.flatSelectItems();
     }
 
     @Override
-    public final void setColumnAliasList(final List<String> aliasList) {
-        prepared();
-        this.context.onDerivedColumnAliasList(aliasList);
+    public final Selection refSelection(final String derivedAlias) {
+        if (!(this instanceof SubQuery)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return this.context.selection(derivedAlias);
     }
 
     @Override
@@ -662,14 +667,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         this.havingList = null;
         this.onClear();
-    }
-
-    @Override
-    public final Selection selection(final String derivedAlias) {
-        if (!(this instanceof SubQuery)) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return this.context.selection(derivedAlias);
     }
 
     abstract SP createQueryUnion(UnionType unionType);
@@ -1282,7 +1279,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (child.parentMeta() != parent) {
                 throw childParentNotMatch(this.context, parent, child);
             }
-            this.context.onAddSelectItem(SelectionGroups.childGroup(child, childAlias, parenAlias));
+            this.context.onAddSelectItem(SelectionGroups.singleGroup(parent, parenAlias))
+                    .onAddSelectItem(SelectionGroups.groupWithoutId(child, childAlias));
             return this;
         }
 

@@ -263,8 +263,8 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         private DynamicDerivedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
                                     _JoinType joinType, @Nullable SQLWords modifier, DerivedTable table, String alias) {
             super(context, blockConsumer, joinType, modifier, table, alias);
-            this.selectionFunction = ((ArmyDerivedTable) table)::selection;
-            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectionList;
+            this.selectionFunction = ((ArmyDerivedTable) table)::refSelection;
+            this.selectionsSupplier = ((ArmyDerivedTable) table)::selectItemList;
         }
 
         @Override
@@ -283,7 +283,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        public Selection selection(String name) {
+        public Selection refSelection(String name) {
             if (this.columnAliasList == null) {
                 this.columnAliasList = Collections.emptyList();
             }

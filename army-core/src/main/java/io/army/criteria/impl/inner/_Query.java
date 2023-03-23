@@ -1,16 +1,26 @@
 package io.army.criteria.impl.inner;
 
+import io.army.criteria.Query;
 import io.army.criteria.SQLWords;
 import io.army.criteria.SortItem;
 import io.army.criteria.dialect.Hint;
 
 import java.util.List;
 
-public interface _Query extends _PartRowSet {
+/**
+ * <p>
+ * This interface is inner interface of {@link Query}.
+ * </p>
+ *
+ * @since 1.0
+ */
+public interface _Query extends Query, _PartRowSet {
 
     List<Hint> hintList();
 
     List<? extends SQLWords> modifierList();
+
+    List<? extends _SelectItem> selectItemList();
 
 
     List<_TableBlock> tableBlockList();

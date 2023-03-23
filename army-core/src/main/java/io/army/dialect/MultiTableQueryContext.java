@@ -21,7 +21,7 @@ abstract class MultiTableQueryContext extends StatementContext implements _Multi
             , ArmyParser parser, Visible visible) {
         super(outerContext, parser, visible);
 
-        this.selectionList = ((_RowSet) query).selectionList();
+        this.selectionList = ((_RowSet) query).selectItemList();
         if (query instanceof SubQuery) {
             this.multiTableContext = new MultiTableContext(this, tableContext, this::appendOuterField);
         } else {

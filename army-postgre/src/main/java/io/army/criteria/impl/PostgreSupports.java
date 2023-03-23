@@ -356,7 +356,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public Selection selection(String derivedAlias) {
+        public Selection refSelection(String derivedAlias) {
             return this.selectionMap.get(derivedAlias);
         }
 
@@ -395,7 +395,7 @@ abstract class PostgreSupports extends CriteriaSupports {
                                                                           final @Nullable _CycleClause cycleClause) {
             final List<? extends Selection> stmtSelections;
             if (this.subStatement instanceof RowSet) {
-                stmtSelections = ((_RowSet) this.subStatement).selectionList();
+                stmtSelections = ((_RowSet) this.subStatement).selectItemList();
             } else {
                 stmtSelections = ((_Statement._ReturningListSpec) this.subStatement).returningList();
             }

@@ -27,7 +27,7 @@ final class ParensSelectContext extends StatementContext implements _SelectConte
             , Visible visible) {
         super(outerContext, dialect, visible);
         this.outerContext = outerContext;
-        this.selectionList = _DialectUtils.flatSelectItem(((_RowSet) select).selectionList());
+        this.selectionList = _DialectUtils.flatSelectItem(((_RowSet) select).selectItemList());
     }
 
 

@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._ParensRowSet;
 import io.army.criteria.impl.inner._RowSet;
 import io.army.criteria.impl.inner._SelectItem;
+import io.army.criteria.impl.inner._SelectionMap;
 import io.army.util._Assert;
 
 import java.util.List;
@@ -16,7 +17,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         RowSet._StaticIntersectClause<SP>,
         RowSet._StaticExceptClause<SP>,
         RowSet._StaticMinusClause<SP>,
-        SelectionMap,
+        _SelectionMap,
         Query._AsQueryClause<I>,
         Statement._RightParenClause<RR>,
         RowSet {
@@ -123,21 +124,21 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
     }
 
     @Override
-    public final List<? extends _SelectItem> selectionList() {
+    public final List<? extends _SelectItem> selectItemList() {
         final _RowSet rowSet = this.innerRowSet;
         if (rowSet == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return rowSet.selectionList();
+        return rowSet.selectItemList();
     }
 
     @Override
-    public final Selection selection(final String derivedAlias) {
+    public final Selection refSelection(final String derivedAlias) {
         final RowSet rowSet = this.innerRowSet;
         if (!(rowSet instanceof DerivedTable)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return ((ArmyDerivedTable) rowSet).selection(derivedAlias);
+        return ((ArmyDerivedTable) rowSet).refSelection(derivedAlias);
     }
 
     @Override

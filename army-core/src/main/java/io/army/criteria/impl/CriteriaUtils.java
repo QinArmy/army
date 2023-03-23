@@ -3,10 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Returnings;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._RowSet;
-import io.army.criteria.impl.inner._SelectionGroup;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
@@ -427,7 +424,7 @@ abstract class CriteriaUtils {
 
     static int selectionCount(final RowSet rowSet) {
         int count = 0;
-        for (SelectItem selectItem : ((_RowSet) rowSet).selectionList()) {
+        for (_SelectItem selectItem : ((_RowSet) rowSet).selectItemList()) {
             if (selectItem instanceof Selection) {
                 count++;
             } else if (selectItem instanceof _SelectionGroup) {
@@ -449,8 +446,8 @@ abstract class CriteriaUtils {
 
     static _Pair<List<Selection>, Map<String, Selection>> forColumnAlias(final List<String> columnAliasList,
                                                                          final ArmyDerivedTable table) {
-        final List<? extends Selection> tableSelectionList;
-        tableSelectionList = table.selectionList();
+        final List<? extends _SelectItem> tableSelectionList;
+        tableSelectionList = table.selectItemList();
         final int selectionSize;
         selectionSize = tableSelectionList.size();
         if (columnAliasList.size() != selectionSize) {

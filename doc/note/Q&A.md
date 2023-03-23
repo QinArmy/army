@@ -141,8 +141,10 @@
 
 30. 为什么 io.army.criteria.Query._DynamicParensRowSetClause 不能提供 parens(RowSet) 方法?
     * 因为一旦抛出异常就会污染 context stack.
-    
 
+31. 为什么 CteItem 和 _AliasDerivedBlock 不被设计成 DerivedTable?
+    * 因为它们本质上不是,它们拥有 名字 和对 selection 重全名的能力,_AliasDerivedBlock 还有 javaType和 on 子句.
+    * 但 postgre 要特别处理,因为 postgre cte 可通过 search 和 cycle 子句追加附加字段
 
 
 

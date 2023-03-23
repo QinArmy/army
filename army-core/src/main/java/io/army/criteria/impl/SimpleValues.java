@@ -22,8 +22,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
         RowSet._StaticUnionClause<SP>,
         RowSet._StaticExceptClause<SP>,
         RowSet._StaticIntersectClause<SP>,
-        RowSet._StaticMinusClause<SP>,
-        CriteriaSupports.ArmyDerivedSpec {
+        RowSet._StaticMinusClause<SP> {
 
     private List<_Expression> columnList;
 
@@ -283,7 +282,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
     }
 
     @Override
-    public final List<Selection> selectionList() {
+    public final List<Selection> selectItemList() {
         final List<Selection> list = this.selectionList;
         if (list == null) {
             throw ContextStack.castCriteriaApi(this.context);

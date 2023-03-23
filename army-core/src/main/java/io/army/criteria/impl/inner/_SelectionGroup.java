@@ -15,6 +15,8 @@ import java.util.List;
  */
 public interface _SelectionGroup extends _SelectItem {
 
+    String tableAlias();
+
 
     /**
      * <p>
