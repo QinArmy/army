@@ -451,41 +451,25 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
     }
 
 
-    FT onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table,
-                   String alias) {
-
-        throw new UnsupportedOperationException();
-    }
+    abstract FT onFromTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table,
+                            String alias);
 
     /**
      * @see #crossJoin(Supplier)
      * @see #crossJoin(Query.DerivedModifier, Supplier)
      */
-    FS onFromDerived(final _JoinType joinType, final @Nullable Query.DerivedModifier modifier,
-                     final DerivedTable table) {
-        throw new UnsupportedOperationException();
-    }
+    abstract FS onFromDerived(final _JoinType joinType, final @Nullable Query.DerivedModifier modifier,
+                              final DerivedTable table);
 
-    FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
+    abstract FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias);
 
-        throw new UnsupportedOperationException();
-    }
+    abstract JT onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias);
 
-    JT onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier, TableMeta<?> table, String alias) {
-        throw new UnsupportedOperationException();
-    }
+    abstract JS onJoinDerived(final _JoinType joinType, final @Nullable Query.DerivedModifier modifier,
+                              final DerivedTable table);
 
-
-    JS onJoinDerived(final _JoinType joinType, final @Nullable Query.DerivedModifier modifier,
-                     final DerivedTable table) {
-        throw new UnsupportedOperationException();
-    }
-
-    JC onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem,
-                 String alias) {
-        throw new UnsupportedOperationException();
-    }
-
+    abstract JC onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem,
+                          String alias);
 
     static abstract class NestedLeftParenClause<I extends Item, LT, LS, LC>
             implements _NestedItems,

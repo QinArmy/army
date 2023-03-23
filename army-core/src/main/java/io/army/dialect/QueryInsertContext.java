@@ -92,7 +92,7 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
     int doAppendSubQuery(final int outputColumnSize, final List<FieldMeta<?>> fieldList) {
 
         assert outputColumnSize == this.selectionSize;
-        this.parser.handleQuery(this.subQuery, this);
+        this.parser.handleSubQuery(this.subQuery, this);
         return this.selectionSize;
     }
 

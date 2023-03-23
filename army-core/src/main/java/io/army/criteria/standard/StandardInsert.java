@@ -1,13 +1,11 @@
 package io.army.criteria.standard;
 
-import io.army.criteria.DialectStatement;
 import io.army.criteria.Insert;
 import io.army.criteria.InsertStatement;
 import io.army.criteria.Item;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.SimpleTableMeta;
-import io.army.meta.SingleTableMeta;
 
 /**
  * <p>
@@ -39,8 +37,7 @@ public interface StandardInsert extends StandardStatement {
 
 
     interface _ComplexColumnDefaultSpec<T, I extends Item> extends _ValuesColumnDefaultSpec<T, I>,
-            DialectStatement._StaticSpaceClause<StandardQuery._SelectSpec<_DmlInsertClause<I>>>,
-            InsertStatement._DynamicQuerySpaceClause<StandardQuery._SelectSpec<_DmlInsertClause<I>>, _DmlInsertClause<I>> {
+            InsertStatement._QueryInsertSpaceClause<StandardQuery._SelectSpec<_DmlInsertClause<I>>, _DmlInsertClause<I>> {
 
     }
 

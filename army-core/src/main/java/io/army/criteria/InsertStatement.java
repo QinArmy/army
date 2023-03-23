@@ -96,7 +96,9 @@ public interface InsertStatement extends DmlStatement {
     }
 
 
-    interface _DynamicQuerySpaceClause<T extends Item, R extends Item> {
+    interface _QueryInsertSpaceClause<T extends Item, R extends Item> {
+
+        T space();
 
         R space(Function<T, R> function);
 

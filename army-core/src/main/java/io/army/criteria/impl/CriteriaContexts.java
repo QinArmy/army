@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.VarExpression;
+import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
@@ -524,11 +525,6 @@ abstract class CriteriaContexts {
             withContext.currentAliasList = columnAliasList;
         }
 
-        @Override
-        public final List<String> derivedColumnAliasList() {
-            throw new UnsupportedOperationException();
-        }
-
 
         @Override
         public final void onAddCte(final _Cte cte) {
@@ -824,10 +820,6 @@ abstract class CriteriaContexts {
             throw ContextStack.criteriaError(this, m);
         }
 
-        @Override
-        public final boolean isBracketAndNotEnd() {
-            return this instanceof BracketContext && ((BracketContext) this).innerContext == null;
-        }
 
         @Override
         public final int hashCode() {
@@ -1036,12 +1028,18 @@ abstract class CriteriaContexts {
         @Override
         public final void endContextBeforeCommand() {
             assert this instanceof SimpleQueryContext;
-            if (this.aliasToBlock != null
+            if (this.aliasToRefDerivedField != null) {
+                String m = String.format("You couldn't reference %s before SELECT clause.", DerivedField.class.getName());
+                throw ContextStack.criteriaError(this, m);
+            } else if (this.aliasToBlock != null
+                    || this.bufferDerivedBlock != null
                     || this.tableBlockList != null
-                    || this.aliasToRefDerivedField != null
                     || this.aliasFieldMap != null
                     || ((SimpleQueryContext) this).selectItemList != null) {
                 throw ContextStack.castCriteriaApi(this);
+            } else if (((SimpleQueryContext) this).refWindowNameMap != null) {
+                String m = String.format("You couldn't reference %s before SELECT clause.", Window.class.getName());
+                throw ContextStack.criteriaError(this, m);
             }
             ((SimpleQueryContext) this).flatSelectionList = Collections.emptyList();
 

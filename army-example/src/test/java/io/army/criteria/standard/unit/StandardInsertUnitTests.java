@@ -155,7 +155,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
 
 
     @Test
-    public void singleTableSubQueryInsert() {
+    public void childTableSubQueryInsert() {
         final Insert stmt;
         stmt = SQLs.singleInsert()
                 .migration(true)

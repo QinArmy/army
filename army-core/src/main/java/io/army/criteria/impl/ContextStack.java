@@ -45,25 +45,6 @@ abstract class ContextStack {
 
     }
 
-    /**
-     * <p>
-     * This method is invoked by primary query(Values) statement.
-     * </p>
-     *
-     * @see #unionQuerySupplier(Supplier)
-     */
-    @Deprecated
-    @Nullable
-    static CriteriaContext peekIfBracket() {
-        final Stack stack = HOLDER.get();
-        final CriteriaContext current, context;
-        if (stack != null && (current = stack.peek()).isBracketAndNotEnd()) {
-            context = current;
-        } else {
-            context = null;
-        }
-        return context;
-    }
 
 
     static CriteriaContext pop(final CriteriaContext context) {

@@ -7,10 +7,11 @@ import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 abstract class TableBlocks {
 
@@ -66,7 +67,7 @@ abstract class TableBlocks {
                                                                    TableMeta<?> table, String alias, R clause) {
         final JoinClauseTableBlock<R> block;
         if (modifier == null) {
-            block = new OnClauseSimpleTableBlock<>(joinType, table, alias, clause);
+            block = new JoinClauseSimpleTableBlock<>(joinType, table, alias, clause);
         } else {
             block = new JoinClauseSimpleModifierTableBlock<>(joinType, modifier, table, alias, clause);
         }
@@ -290,7 +291,7 @@ abstract class TableBlocks {
         @Override
         public final R on(IPredicate predicate) {
             this.predicateList = Collections.singletonList((OperationPredicate) predicate);
-            return (R) this;
+            return this.clause;
         }
 
         @Override
@@ -300,13 +301,13 @@ abstract class TableBlocks {
                     (OperationPredicate) predicate1,
                     (OperationPredicate) predicate2
             );
-            return (R) this;
+            return this.clause;
         }
 
         @Override
         public final R on(Function<Expression, IPredicate> operator, DataField operandField) {
             this.predicateList = Collections.singletonList((OperationPredicate) operator.apply(operandField));
-            return (R) this;
+            return this.clause;
         }
 
         @Override
@@ -316,7 +317,7 @@ abstract class TableBlocks {
                     (OperationPredicate) operator1.apply(operandField1),
                     (OperationPredicate) operator2.apply(operandField2)
             );
-            return (R) this;
+            return this.clause;
         }
 
         @Override
@@ -325,7 +326,7 @@ abstract class TableBlocks {
             if (this.predicateList == null) {
                 throw ContextStack.criteriaError(this.getContext(), _Exceptions::predicateListIsEmpty);
             }
-            return (R) this;
+            return this.clause;
         }
 
         @Override
@@ -625,12 +626,12 @@ abstract class TableBlocks {
     }//FromClauseModifierDerivedBlock
 
 
-    private static final class OnClauseSimpleTableBlock<R extends Item> extends JoinClauseTableBlock<R> {
+    private static final class JoinClauseSimpleTableBlock<R extends Item> extends JoinClauseTableBlock<R> {
 
         /**
          * @see #joinTableBlock(_JoinType, SQLWords, TableMeta, String, Item)
          */
-        private OnClauseSimpleTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
+        private JoinClauseSimpleTableBlock(_JoinType joinType, TableMeta<?> table, String alias, R clause) {
             super(joinType, table, alias, clause);
         }
 

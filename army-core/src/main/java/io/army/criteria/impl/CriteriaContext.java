@@ -120,17 +120,12 @@ interface CriteriaContext {
 
     void endContextBeforeCommand();
 
-    @Deprecated
-    List<String> derivedColumnAliasList();
-
     /**
      * @return a unmodified list
      * @throws CriteriaException throw when context not end
      */
     List<? extends _SelectItem> selectItemList();
 
-    @Deprecated
-    boolean isBracketAndNotEnd();
 
 
 }
