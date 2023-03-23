@@ -47,7 +47,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
      *
      * @param spec non-null for multi-statement.
      */
-    static <I extends Item> _SingleWithSpec<I> simple(@Nullable MultiStmtSpec spec,
+    static <I extends Item> _SingleWithSpec<I> simple(@Nullable ArmyStmtSpec spec,
                                                       Function<? super Update, I> function) {
         return new SimpleUpdateClause<>(spec, function);
     }
@@ -253,7 +253,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
 
         String tableAlias;
 
-        private UpdateClause(@Nullable MultiStmtSpec spec) {
+        private UpdateClause(@Nullable ArmyStmtSpec spec) {
             super(spec, CriteriaContexts.primarySingleDmlContext(spec));
             ContextStack.push(this.context);
         }
@@ -287,7 +287,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
 
         private final Function<? super Update, I> function;
 
-        private SimpleUpdateClause(@Nullable MultiStmtSpec spec, Function<? super Update, I> function) {
+        private SimpleUpdateClause(@Nullable ArmyStmtSpec spec, Function<? super Update, I> function) {
             super(spec);
             this.function = function;
         }

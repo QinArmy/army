@@ -1,11 +1,11 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.CteItem;
 import io.army.criteria.SubStatement;
+import io.army.criteria.TabularItem;
 
 import java.util.List;
 
-public interface _Cte extends CteItem, _SelectionMap {
+public interface _Cte extends TabularItem, _SelectionMap {
 
 
     String name();

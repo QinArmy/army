@@ -417,7 +417,7 @@ public abstract class SQLs extends SQLsSyntax {
     }//StringTypeNull
 
 
-    static final class CteImpl implements ArmyCte {
+    static final class CteImpl implements _Cte {
 
         final String name;
 

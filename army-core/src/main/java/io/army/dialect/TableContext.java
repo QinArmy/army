@@ -161,14 +161,14 @@ final class TableContext {
             block = blockList.get(i);
             tableItem = block.tableItem();
 
-            if (tableItem instanceof NestedItems) {
+            if (tableItem instanceof _NestedItems) {
                 // recursively iterate
                 iterateTableReferences(((_NestedItems) tableItem).tableBlockList(), context);
                 continue;
             }
 
             alias = block.alias();
-            if (!(tableItem instanceof CteItem)) {
+            if (!(tableItem instanceof _Cte)) {
                 _DialectUtils.validateTableAlias(alias);
             }
             //1. create alias to tableItem map

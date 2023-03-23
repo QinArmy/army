@@ -43,7 +43,7 @@ abstract class MySQLSingleDeletes<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         DeleteStatement._SingleDeleteFromClause<DT> {
 
 
-    static <I extends Item> _SingleWithSpec<I> simple(@Nullable MultiStmtSpec spec, Function<? super Delete, I> function) {
+    static <I extends Item> _SingleWithSpec<I> simple(@Nullable ArmyStmtSpec spec, Function<? super Delete, I> function) {
         return new MySQLSimpleDelete<>(spec, function);
     }
 
@@ -62,7 +62,7 @@ abstract class MySQLSingleDeletes<I extends Item, WE, DT, PR, WR, WA, OR, LR>
     private List<String> partitionList;
 
 
-    private MySQLSingleDeletes(@Nullable MultiStmtSpec spec) {
+    private MySQLSingleDeletes(@Nullable ArmyStmtSpec spec) {
         super(spec, CriteriaContexts.primarySingleDmlContext(spec));
     }
 
@@ -213,7 +213,7 @@ abstract class MySQLSingleDeletes<I extends Item, WE, DT, PR, WR, WA, OR, LR>
 
         private final Function<? super Delete, I> function;
 
-        private MySQLSimpleDelete(@Nullable MultiStmtSpec spec, Function<? super Delete, I> function) {
+        private MySQLSimpleDelete(@Nullable ArmyStmtSpec spec, Function<? super Delete, I> function) {
             super(spec);
             this.function = function;
         }

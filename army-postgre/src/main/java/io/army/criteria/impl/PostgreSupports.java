@@ -19,7 +19,8 @@ import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.*;
 
 
@@ -306,7 +307,7 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//CteSearchOption
 
 
-    static final class PostgreCte implements _PostgreCte, ArmyCte {
+    static final class PostgreCte implements _PostgreCte {
 
         private final String name;
 

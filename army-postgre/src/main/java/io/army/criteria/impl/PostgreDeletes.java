@@ -51,7 +51,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
     }
 
 
-    static <I extends Item> _SingleWithSpec<I, I> simple(MultiStmtSpec spec,
+    static <I extends Item> _SingleWithSpec<I, I> simple(ArmyStmtSpec spec,
                                                          Function<PrimaryStatement, I> function) {
         return new PrimarySimpleDeleteForMultiStmt<>(spec, function);
     }

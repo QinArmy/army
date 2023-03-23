@@ -10,6 +10,7 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl.inner._DialectStatement;
+import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect.Dialect;
 import io.army.dialect._SqlContext;
@@ -307,18 +308,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException unknownSetTargetPart(SetLeftItem target) {
-        return new CriteriaException(String.format("Unknown %s type[%s].", SetLeftItem.class.getName(), target));
-    }
 
     public static CriteriaException unknownRowSetType(RowSet query) {
         return new CriteriaException(String.format("unknown %s type.", query.getClass().getName()));
     }
 
-    public static CriteriaException setTargetAndValuePartNotMatch(SetLeftItem target, RightOperand value) {
-        return new CriteriaException(String.format("%s[%s] and %s[%s] not match.", SetLeftItem.class.getName(), target
-                , RightOperand.class.getName(), value));
-    }
 
     public static CriteriaException selfJoinNonQualifiedField(FieldMeta<?> field) {
         return new CriteriaException(String.format("%s self join but %s don't use %s."
@@ -379,8 +373,8 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s don't support %s", dialect, joinType));
     }
 
-    public static CriteriaException nestedItemIsEmpty(NestedItems nestedItems) {
-        String m = String.format("%s %s is empty.", NestedItems.class.getName(), _ClassUtils.safeClassName(nestedItems));
+    public static CriteriaException nestedItemIsEmpty(_NestedItems nestedItems) {
+        String m = String.format("%s %s is empty.", _NestedItems.class.getName(), _ClassUtils.safeClassName(nestedItems));
         return new CriteriaException(m);
     }
 
@@ -438,7 +432,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         final CriteriaException e;
         if (nested) {
             final String m;
-            m = String.format("%s must not empty.", NestedItems.class.getName());
+            m = String.format("%s must not empty.", _NestedItems.class.getName());
             e = new CriteriaException(m);
         } else {
             e = noFromClause();
@@ -711,7 +705,7 @@ public abstract class _Exceptions extends ExceptionUtils {
 
 
     public static CriteriaException nestedItemsAliasHasText(String alias) {
-        String m = String.format("%s alias[%s] must be empty.", NestedItems.class.getName(), alias);
+        String m = String.format("%s alias[%s] must be empty.", _NestedItems.class.getName(), alias);
         return new CriteriaException(m);
     }
 

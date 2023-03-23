@@ -1004,8 +1004,8 @@ abstract class ArmyParser implements DialectParser {
                 this.handleSubQuery((SubQuery) tableItem, context);
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE)
                         .append(context.safeTableAlias(block.alias()));
-            } else if (tableItem instanceof NestedItems) {
-                _SQLConsultant.assertStandardNestedItems((NestedItems) tableItem);
+            } else if (tableItem instanceof _NestedItems) {
+                _SQLConsultant.assertStandardNestedItems((_NestedItems) tableItem);
                 if (_StringUtils.hasText(block.alias())) {
                     throw _Exceptions.nestedItemsAliasHasText(block.alias());
                 }
@@ -1263,7 +1263,7 @@ abstract class ArmyParser implements DialectParser {
         int count = 0;
         for (_TableBlock block : blockList) {
             tableItem = block.tableItem();
-            if (tableItem instanceof NestedItems) {
+            if (tableItem instanceof _NestedItems) {
                 count += multiTableVisible(((_NestedItems) tableItem).tableBlockList(), context,
                         firstPredicate && count == 0);
                 continue;

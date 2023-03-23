@@ -1,7 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._NestedItems;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.util._ClassUtils;
@@ -62,7 +64,7 @@ public abstract class _SQLConsultant {
 
     }
 
-    public static void assertStandardNestedItems(@Nullable NestedItems nestedItems) {
+    public static void assertStandardNestedItems(@Nullable _NestedItems nestedItems) {
         if (!(nestedItems instanceof StandardNestedJoins)) {
             throw illegalNestedItems(nestedItems, null);
         }
@@ -75,15 +77,15 @@ public abstract class _SQLConsultant {
     }
 
 
-    static CriteriaException illegalNestedItems(@Nullable NestedItems nestedItem, @Nullable Database database) {
+    static CriteriaException illegalNestedItems(@Nullable _NestedItems nestedItem, @Nullable Database database) {
         String m = String.format("Illegal %s %s for %s"
-                , NestedItems.class.getName()
+                , _NestedItems.class.getName()
                 , _ClassUtils.safeClassName(nestedItem)
                 , database == null ? "standard" : database);
         throw new CriteriaException(m);
     }
 
-    static CriteriaException illegalCteImpl(CteItem cte) {
+    static CriteriaException illegalCteImpl(_Cte cte) {
         return new CriteriaException(String.format("Illegal Cte %s", cte));
     }
 

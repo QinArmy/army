@@ -57,7 +57,7 @@ abstract class MySQLInserts extends InsertSupports {
      * create single-table INSERT statement that is primary statement for multi-statement and support only {@link SingleTableMeta}.
      * </p>
      */
-    static <I extends Item> MySQLInsert._PrimarySingleOptionSpec<I> singleInsert(MultiStmtSpec spec,
+    static <I extends Item> MySQLInsert._PrimarySingleOptionSpec<I> singleInsert(ArmyStmtSpec spec,
                                                                                  Function<? super Insert, I> function) {
         return new PrimarySingleInsertIntoClause<>(spec, function);
     }
@@ -228,7 +228,7 @@ abstract class MySQLInserts extends InsertSupports {
 
         private List<MySQLs.Modifier> modifierList;
 
-        private PrimarySingleInsertIntoClause(MultiStmtSpec spec, Function<? super Insert, I> function) {
+        private PrimarySingleInsertIntoClause(ArmyStmtSpec spec, Function<? super Insert, I> function) {
             super(CriteriaContexts.primaryInsertContext(spec));
             this.function = function;
             ContextStack.push(this.context);

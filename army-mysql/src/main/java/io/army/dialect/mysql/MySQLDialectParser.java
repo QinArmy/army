@@ -717,18 +717,18 @@ final class MySQLDialectParser extends MySQLParser {
                 this.handleSubQuery((SubQuery) tableItem, context);
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
-            } else if (tableItem instanceof NestedItems) {
-                _MySQLConsultant.assertNestedItems((NestedItems) tableItem);
+            } else if (tableItem instanceof _NestedItems) {
+                _MySQLConsultant.assertNestedItems((_NestedItems) tableItem);
                 if (_StringUtils.hasText(alias)) {
                     throw _Exceptions.nestedItemsAliasHasText(alias);
                 }
                 this.mysqlTableReferences(((_NestedItems) tableItem).tableBlockList(), context, true);
             } else if (!asOf80) {
                 throw _Exceptions.dontSupportTableItem(tableItem, alias, this.dialect);
-            } else if (tableItem instanceof CteItem) {
-                _MySQLConsultant.assertMySQLCte((CteItem) tableItem);
+            } else if (tableItem instanceof _Cte) {
+                _MySQLConsultant.assertMySQLCte((_Cte) tableItem);
                 sqlBuilder.append(_Constant.SPACE);
-                this.identifier(((CteItem) tableItem).name(), sqlBuilder);
+                this.identifier(((_Cte) tableItem).name(), sqlBuilder);
                 if (_StringUtils.hasText(alias)) {
                     sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                     this.identifier(alias, sqlBuilder);

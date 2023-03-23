@@ -59,7 +59,7 @@ abstract class MySQLReplaces extends InsertSupports {
      * create single-table REPLACE statement that is primary statement for multi-statement and support only {@link SingleTableMeta}.
      * </p>
      */
-    static <I extends Item> MySQLReplace._PrimarySingleOptionSpec<I> singleReplace(MultiStmtSpec spec,
+    static <I extends Item> MySQLReplace._PrimarySingleOptionSpec<I> singleReplace(ArmyStmtSpec spec,
                                                                                    Function<? super Insert, I> function) {
         return new PrimarySingleReplaceIntoClause<>(spec, function);
     }
@@ -215,7 +215,7 @@ abstract class MySQLReplaces extends InsertSupports {
 
         private List<MySQLs.Modifier> modifierList;
 
-        private PrimarySingleReplaceIntoClause(MultiStmtSpec spec, Function<? super Insert, I> function) {
+        private PrimarySingleReplaceIntoClause(ArmyStmtSpec spec, Function<? super Insert, I> function) {
             super(CriteriaContexts.primaryInsertContext(spec));
             this.function = function;
             ContextStack.push(this.context);

@@ -3,9 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._SingleDelete;
-import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.Database;
@@ -126,7 +124,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
         }
     }
 
-    public static void assertMySQLCte(final CteItem cte) {
+    public static void assertMySQLCte(final _Cte cte) {
         if (cte instanceof CriteriaContexts.RecursiveCte) {
             return;
         }
@@ -134,7 +132,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
             throw illegalCteImpl(cte);
         }
         final SubStatement subStatement;
-        subStatement = ((SQLs.CteImpl) cte).subStatement();
+        subStatement = cte.subStatement();
         if (!(subStatement instanceof MySQLQueries
                 || subStatement instanceof MySQLQueries.MySQLBracketQuery
                 || subStatement instanceof SimpleQueries.UnionSubQuery)) {
@@ -144,7 +142,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     }
 
 
-    public static void assertNestedItems(final NestedItems nestedItems) {
+    public static void assertNestedItems(final _NestedItems nestedItems) {
         if (!(nestedItems instanceof MySQLNestedJoins)) {
             throw illegalNestedItems(nestedItems, Database.MySQL);
         }

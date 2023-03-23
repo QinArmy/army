@@ -143,7 +143,7 @@ abstract class CriteriaContexts {
         return context;
     }
 
-    static CriteriaContext primarySingleDmlContext(@Nullable MultiStmtSpec spec) {
+    static CriteriaContext primarySingleDmlContext(@Nullable ArmyStmtSpec spec) {
         final MultiStmtContext multiStmtContext;
         if (spec == null) {
             multiStmtContext = null;
@@ -318,8 +318,6 @@ abstract class CriteriaContexts {
         final CriteriaContext outerContext;
         if (spec == null) {
             outerContext = null;
-        } else if (spec instanceof MultiStmtSpec) {
-            outerContext = spec.getContext();
         } else {
             outerContext = spec.getContext().getOuterContext();
         }
@@ -1152,21 +1150,21 @@ abstract class CriteriaContexts {
             final TabularItem tableItem = block.tableItem();
             String alias = block.alias();
 
-            if (tableItem instanceof CteItem) {
+            if (tableItem instanceof _Cte) {
                 if ("".equals(alias)) {
-                    alias = ((CteItem) tableItem).name();//modify alias
+                    alias = ((_Cte) tableItem).name();//modify alias
                 } else if (!_StringUtils.hasText(alias)) {
                     throw ContextStack.criteriaError(this, _Exceptions::tableItemAliasNoText, tableItem);
                 }
             }
-            if (tableItem instanceof NestedItems) {
-                this.addNestedItems((NestedItems) tableItem);
+            if (tableItem instanceof _NestedItems) {
+                this.addNestedItems((_NestedItems) tableItem);
             } else if (!_StringUtils.hasText(alias)) {
                 throw ContextStack.criteriaError(this, _Exceptions::tableItemAliasNoText, tableItem);
             } else if (aliasToBlock.putIfAbsent(alias, block) != null) {
                 throw ContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
             } else if (tableItem instanceof DerivedTable) {
-                this.doOnAddDerived(block, (ArmyDerivedTable) tableItem, alias);
+                this.doOnAddDerived(block, (_DerivedTable) tableItem, alias);
             }
 
             tableBlockList.add(block); //add to list
@@ -1215,9 +1213,9 @@ abstract class CriteriaContexts {
 
         /**
          * @see #onAddBlock(_TableBlock)
-         * @see #addNestedItems(NestedItems)
+         * @see #addNestedItems(_DerivedTable)
          */
-        private void doOnAddDerived(final _TableBlock block, final ArmyDerivedTable derivedTable, final String alias) {
+        private void doOnAddDerived(final _TableBlock block, final _DerivedTable derivedTable, final String alias) {
             if (derivedTable instanceof SubQuery) {
                 final CriteriaContext context = ((CriteriaContextSpec) derivedTable).getContext();
                 if (((JoinableContext) context).refOuter
@@ -1259,9 +1257,9 @@ abstract class CriteriaContexts {
 
 
         /**
-         * @see #doOnAddDerived(_TableBlock, ArmyDerivedTable, String)
+         * @see #doOnAddDerived(_TableBlock, _DerivedTable, String)
          */
-        private void finishRefSelections(final ArmyDerivedTable derivedTable, final String alias,
+        private void finishRefSelections(final _DerivedTable derivedTable, final String alias,
                                          final Map<String, RefDerivedField> fieldMap) {
             Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
             if (aliasToSelection == null) {
@@ -1336,30 +1334,30 @@ abstract class CriteriaContexts {
         /**
          * @see #onAddBlock(_TableBlock)
          */
-        private void addNestedItems(final NestedItems nestedItems) {
+        private void addNestedItems(final _NestedItems nestedItems) {
             final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
             TabularItem tableItem;
             String alias;
-            for (_TableBlock block : ((_NestedItems) nestedItems).tableBlockList()) {
+            for (_TableBlock block : nestedItems.tableBlockList()) {
                 tableItem = block.tableItem();
                 alias = block.alias();
-                if (tableItem instanceof CteItem) {
+                if (tableItem instanceof _Cte) {
                     if ("".equals(alias)) {
-                        alias = ((CteItem) tableItem).name();//modify alias
+                        alias = ((_Cte) tableItem).name();//modify alias
                     } else if (!_StringUtils.hasText(alias)) {
                         throw ContextStack.criteriaError(this, _Exceptions::tableItemAliasNoText, tableItem);
                     }
                 }
-                if (tableItem instanceof NestedItems) {
+                if (tableItem instanceof _NestedItems) {
                     if (_StringUtils.hasText(alias)) {
                         throw ContextStack.criteriaError(this, _Exceptions::nestedItemsAliasHasText, alias);
                     }
-                    this.addNestedItems((NestedItems) tableItem);
+                    this.addNestedItems((_NestedItems) tableItem);
                 } else if (aliasToBlock.putIfAbsent(alias, block) != null) {
                     throw ContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
                 } else if (tableItem instanceof DerivedTable) {
                     // note ,no tableBlockList.
-                    this.doOnAddDerived(block, (ArmyDerivedTable) tableItem, alias);
+                    this.doOnAddDerived(block, (_DerivedTable) tableItem, alias);
                 }
 
             }
@@ -1476,7 +1474,7 @@ abstract class CriteriaContexts {
     }//SingleDmlContext
 
     /**
-     * @see #primarySingleDmlContext(MultiStmtSpec)
+     * @see #primarySingleDmlContext(ArmyStmtSpec)
      */
     private static final class PrimarySingleDmlContext extends SingleDmlContext implements PrimaryContext {
 

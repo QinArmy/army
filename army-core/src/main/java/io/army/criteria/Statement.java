@@ -805,7 +805,7 @@ public interface Statement extends Item {
 
 
     @Deprecated
-    interface _DynamicOrderByClause<B extends SortItems, R> {
+    interface _DynamicOrderByClause<B, R> {
 
         R orderBy(Consumer<B> consumer);
 
