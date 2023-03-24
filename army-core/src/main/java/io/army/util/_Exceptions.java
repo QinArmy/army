@@ -11,7 +11,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner._TabularBock;
 import io.army.dialect.Dialect;
 import io.army.dialect._SqlContext;
 import io.army.env.ArmyKey;
@@ -79,8 +79,8 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException nonStandardTableBlock(_TableBlock block) {
-        String m = String.format("%s is non-standard %s", _ClassUtils.safeClassName(block), _TableBlock.class.getName());
+    public static CriteriaException nonStandardTableBlock(_TabularBock block) {
+        String m = String.format("%s is non-standard %s", _ClassUtils.safeClassName(block), _TabularBock.class.getName());
         return new CriteriaException(m);
     }
 

@@ -29,21 +29,21 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         MySQLStatement._DynamicJoinSpec>
         implements MySQLStatement._DynamicJoinSpec {
 
-    static MySQLJoins joinBuilder(CriteriaContext context, _JoinType joinTyp, Consumer<_TableBlock> blockConsumer) {
+    static MySQLJoins joinBuilder(CriteriaContext context, _JoinType joinTyp, Consumer<_TabularBock> blockConsumer) {
         return new MySQLJoinBuilder(context, joinTyp, blockConsumer);
     }
 
-    static MySQLCrosses crossBuilder(CriteriaContext context, Consumer<_TableBlock> blockConsumer) {
+    static MySQLCrosses crossBuilder(CriteriaContext context, Consumer<_TabularBock> blockConsumer) {
         return new MySQLCrossJoinBuilder(context, blockConsumer);
     }
 
 
-    private MySQLDynamicJoins(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+    private MySQLDynamicJoins(CriteriaContext context, Consumer<_TabularBock> blockConsumer,
                               _JoinType joinType, @Nullable SQLWords modifier, TabularItem tabularItem, String alias) {
         super(context, blockConsumer, joinType, modifier, tabularItem, alias);
     }
 
-    private MySQLDynamicJoins(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+    private MySQLDynamicJoins(CriteriaContext context, Consumer<_TabularBock> blockConsumer,
                               TableBlocks.BlockParams params) {
         super(context, blockConsumer, params);
     }
@@ -228,7 +228,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     private static final class DynamicNestedBlock extends MySQLDynamicJoins {
 
-        private DynamicNestedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+        private DynamicNestedBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                    _NestedItems items) {
             super(context, blockConsumer, joinType, null, items, "");
         }
@@ -239,7 +239,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     private static final class DynamicCteBlock extends MySQLDynamicJoins {
 
-        private DynamicCteBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+        private DynamicCteBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer,
                                 _JoinType joinType, _Cte cteItem, String alias) {
             super(context, blockConsumer, joinType, null, cteItem, alias);
         }
@@ -255,7 +255,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         private _SelectionMap selectionMap;
 
-        private DynamicDerivedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+        private DynamicDerivedBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer,
                                     _JoinType joinType, @Nullable SQLWords modifier, DerivedTable table, String alias) {
             super(context, blockConsumer, joinType, modifier, table, alias);
             this.selectionMap = (_DerivedTable) table;
@@ -325,7 +325,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         private List<_IndexHint> indexHintList;
 
-        private DynamicTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+        private DynamicTableBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer,
                                   _JoinType joinType, TableMeta<?> table, String alias) {
             super(context, blockConsumer, joinType, null, table, alias);
             this.partitionList = Collections.emptyList();
@@ -335,7 +335,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
          * @see PartitionOnClause#asEnd(MySQLSupports.MySQLBlockParams)
          */
 
-        private DynamicTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+        private DynamicTableBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer,
                                   MySQLSupports.MySQLBlockParams params) {
             super(context, blockConsumer, params);
             this.partitionList = params.partitionList();
@@ -424,7 +424,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         /**
          * @see MySQLJoinBuilder#tabular(TableMeta, SQLs.WordAs, String)
          */
-        private FromClauseTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+        private FromClauseTableBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer,
                                      _JoinType joinType, TableMeta<?> table, String alias) {
             super(context, blockConsumer, joinType, table, alias);
         }
@@ -432,7 +432,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         /**
          * @see PartitionJoinClause#asEnd(MySQLSupports.MySQLBlockParams)
          */
-        private FromClauseTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+        private FromClauseTableBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer,
                                      MySQLSupports.MySQLBlockParams params) {
             super(context, blockConsumer, params);
         }
@@ -448,7 +448,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         /**
          * @see MySQLJoinBuilder#tabular(TableMeta, SQLs.WordAs, String)
          */
-        private JoinClauseTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+        private JoinClauseTableBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer,
                                      _JoinType joinType, TableMeta<?> table, String alias) {
             super(context, blockConsumer, joinType, table, alias);
         }
@@ -456,7 +456,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         /**
          * @see PartitionOnClause#asEnd(MySQLSupports.MySQLBlockParams)
          */
-        private JoinClauseTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer,
+        private JoinClauseTableBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer,
                                      MySQLSupports.MySQLBlockParams params) {
             super(context, blockConsumer, params);
         }
@@ -471,7 +471,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             Statement._OnClause<MySQLQuery._DynamicJoinSpec>> implements MySQLJoins {
 
 
-        private MySQLJoinBuilder(CriteriaContext context, _JoinType joinType, Consumer<_TableBlock> blockConsumer) {
+        private MySQLJoinBuilder(CriteriaContext context, _JoinType joinType, Consumer<_TabularBock> blockConsumer) {
             super(context, joinType, blockConsumer);
         }
 
@@ -538,7 +538,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             Statement._AsClause<MySQLQuery._DynamicJoinSpec>,
             MySQLQuery._DynamicJoinSpec> implements MySQLCrosses {
 
-        private MySQLCrossJoinBuilder(CriteriaContext context, Consumer<_TableBlock> blockConsumer) {
+        private MySQLCrossJoinBuilder(CriteriaContext context, Consumer<_TabularBock> blockConsumer) {
             super(context, _JoinType.CROSS_JOIN, blockConsumer);
         }
 
@@ -609,13 +609,13 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             implements MySQLQuery._DynamicPartitionJoinClause {
 
 
-        private final Consumer<_TableBlock> blockConsumer;
+        private final Consumer<_TabularBock> blockConsumer;
 
         /**
          * @see MySQLDynamicJoins#crossJoin(TableMeta)
          * @see MySQLCrossJoinBuilder#tabular(TableMeta)
          */
-        private PartitionJoinClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+        private PartitionJoinClause(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                     TableMeta<?> table) {
             super(context, joinType, table);
             this.blockConsumer = blockConsumer;
@@ -638,7 +638,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             extends MySQLSupports.PartitionAsClause<MySQLQuery._DynamicIndexHintOnClause>
             implements MySQLQuery._DynamicPartitionOnClause {
 
-        private final Consumer<_TableBlock> blockConsumer;
+        private final Consumer<_TabularBock> blockConsumer;
 
         /**
          * @see MySQLDynamicJoins#leftJoin(TableMeta)
@@ -647,7 +647,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
          * @see MySQLDynamicJoins#fullJoin(TableMeta)
          * @see MySQLDynamicJoins#straightJoin(TableMeta)
          */
-        private PartitionOnClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+        private PartitionOnClause(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                   TableMeta<?> table) {
             super(context, joinType, table);
             this.blockConsumer = blockConsumer;

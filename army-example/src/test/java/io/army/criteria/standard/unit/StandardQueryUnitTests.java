@@ -279,7 +279,6 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         final Select stmt;
         stmt = SQLs.query()
                 .select(BankPerson_.id::as, "userId", SQLs.refThis("cr", "id")::as, "regionId")
-                .comma(SQLs.refThis("cr", "name")::as, "regionName")
                 .from(s -> s.leftParen(BankPerson_.T, AS, "up")
                         .join(BankUser_.T, AS, "u").on(BankPerson_.id::equal, BankUser_.id)
                         .rightParen()
@@ -289,7 +288,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         s -> s.tabular(() -> SQLs.subQuery()
                                         .select(ChinaRegion_.id, ChinaRegion_.name)
                                         .from(ChinaRegion_.T, AS, "c")
-                                        .where(ChinaRegion_.name::equal, SQLs::literal, () -> "荒''''\n\032'海")
+                                        .where(ChinaRegion_.name::equal, SQLs::literal, "荒''''\n\032'海")
                                         .asQuery()
 
                                 )

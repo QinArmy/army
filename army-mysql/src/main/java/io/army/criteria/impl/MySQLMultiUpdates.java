@@ -5,7 +5,7 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner._TabularBock;
 import io.army.criteria.impl.inner.mysql._MySQLMultiUpdate;
 import io.army.criteria.mysql.*;
 import io.army.dialect.Dialect;
@@ -58,7 +58,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
 
     List<MySQLSyntax.Modifier> modifierList;
 
-    _TableBlock fromCrossBlock;
+    _TabularBock fromCrossBlock;
 
 
     private MySQLMultiUpdates(@Nullable ArmyStmtSpec spec) {
@@ -334,7 +334,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
 
     @Override
     final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
-        final _TableBlock block;
+        final _TabularBock block;
         block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
@@ -342,7 +342,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
     }
 
     private FC fromNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
-        final _TableBlock block;
+        final _TabularBock block;
         block = TableBlocks.fromNestedBlock(joinType, nestedItems);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
@@ -357,7 +357,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
     }
 
     private TableBlocks.FromClauseAliasDerivedBlock getFromClauseDerived() {
-        final _TableBlock block = this.fromCrossBlock;
+        final _TabularBock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -373,7 +373,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
      * @see #forceIndex()
      */
     private MySQLSupports.FromClauseForJoinTableBlock<FT> getHintClause() {
-        final _TableBlock block = this.fromCrossBlock;
+        final _TabularBock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof MySQLSupports.FromClauseForJoinTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }

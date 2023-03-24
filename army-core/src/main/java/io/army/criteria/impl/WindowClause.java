@@ -112,7 +112,7 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
      * Constructor for named {@link  Window}
      * </p>
      */
-    WindowClause(String windowName, CriteriaContext context, @Nullable String existingWindowName) {
+    WindowClause(final String windowName, final CriteriaContext context, final @Nullable String existingWindowName) {
         super(context);
         if (!_StringUtils.hasText(windowName)) {
             throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
@@ -122,6 +122,7 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
             }
             context.onRefWindow(existingWindowName);
         }
+        context.onAddWindow(windowName);
         this.windowName = windowName;
         this.context = context;
         this.refWindowName = existingWindowName;
@@ -133,7 +134,7 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
      * Constructor for anonymous {@link  Window}
      * </p>
      */
-    WindowClause(CriteriaContext context, @Nullable String existingWindowName) {
+    WindowClause(final CriteriaContext context, final @Nullable String existingWindowName) {
         super(context);
         if (existingWindowName != null) {
             if (!_StringUtils.hasText(existingWindowName)) {

@@ -7,7 +7,7 @@ import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Delete;
 import io.army.criteria.impl.inner._Statement;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner._TabularBock;
 import io.army.lang.Nullable;
 import io.army.util._Assert;
 
@@ -31,7 +31,7 @@ abstract class JoinableDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
 
     private Boolean prepared;
 
-    private List<_TableBlock> tableBlockList;
+    private List<_TabularBock> tableBlockList;
 
 
     JoinableDelete(CriteriaContext context) {
@@ -68,8 +68,8 @@ abstract class JoinableDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
     }
 
     @Override
-    public final List<_TableBlock> tableBlockList() {
-        final List<_TableBlock> list = this.tableBlockList;
+    public final List<_TabularBock> tableBlockList() {
+        final List<_TabularBock> list = this.tableBlockList;
         if (list == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }

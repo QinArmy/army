@@ -9,7 +9,7 @@ import java.util.List;
  */
 public interface _NestedItems extends TabularItem {
 
-    List<_TableBlock> tableBlockList();
+    List<_TabularBock> tableBlockList();
 
 
 }

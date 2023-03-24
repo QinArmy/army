@@ -27,7 +27,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
     private static final Logger LOG = LoggerFactory.getLogger(DomainUpdateUnitTests.class);
 
     @Test
-    public void updateParent() {
+    public void domainUpdateParent() {
         final BigDecimal addGdp = new BigDecimal("888.8");
         final Map<String, Object> map = new HashMap<>();
         map.put("firstId", (byte) 1);

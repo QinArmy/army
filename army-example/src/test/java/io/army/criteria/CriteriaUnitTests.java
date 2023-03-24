@@ -1,9 +1,6 @@
 package io.army.criteria;
 
-import io.army.example.bank.domain.user.ChinaCity;
-import io.army.example.bank.domain.user.ChinaProvince;
-import io.army.example.bank.domain.user.ChinaRegion;
-import io.army.example.bank.domain.user.RegionType;
+import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillPerson;
 import io.army.example.pill.domain.PillUser;
 import io.army.example.pill.struct.IdentityType;
@@ -220,14 +217,14 @@ public abstract class CriteriaUnitTests {
     }
 
 
-    protected final List<PillUser> createUserList() {
-        final List<PillUser> list = new ArrayList<>();
-        PillUser u;
+    protected final List<PillUser<?>> createUserList() {
+        final List<PillUser<?>> list = new ArrayList<>();
+        PillUser<?> u;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
 
         for (int i = 0; i < rowSize; i++) {
-            u = new PillUser();
+            u = new PillUser<>();
 
             u.setIdentityId(i + 1L);
             u.setCreateTime(now);
@@ -239,6 +236,35 @@ public abstract class CriteriaUnitTests {
 
             list.add(u);
 
+        }
+        return list;
+    }
+
+
+    protected final List<BankUser<?>> createBankUserList() {
+        final List<BankUser<?>> list = new ArrayList<>();
+        BankUser<?> u;
+        final int rowSize = 3;
+        final LocalDateTime now = LocalDateTime.now();
+        for (int i = 0; i < rowSize; i++) {
+            u = new BankUser<>()
+                    .setId((long) i)
+                    .setCreateTime(now)
+                    .setUpdateTime(now)
+
+                    .setNickName("妖侠" + i)
+                    .setUserType(BankUserType.BANK)
+                    .setPartnerUserId(0L)
+                    .setCompleteTime(now.minusDays(1))
+
+                    .setCertificateId(0L)
+                    .setUserNo(Integer.toString(i + 9999))
+                    .setRegisterRecordId(0L)
+                    .setVersion(0)
+
+                    .setVisible(Boolean.TRUE);
+
+            list.add(u);
         }
         return list;
     }

@@ -14,7 +14,6 @@ import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -120,7 +119,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         private final Supplier<I> ender;
 
-        private PostgreNestedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+        private PostgreNestedBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                    @Nullable SQLWords modifier, TabularItem tabularItem, String alias,
                                    Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, tabularItem, alias);
@@ -308,7 +307,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         private ArmyExpression seed;
 
-        private NestedTableBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+        private NestedTableBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                  @Nullable SQLWords modifier, TableMeta<?> table, String alias,
                                  Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
@@ -458,7 +457,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             implements PostgreStatement._NestedTableSampleJoinSpec<I>,
             PostgreStatement._NestedRepeatableJoinClause<I> {
 
-        private NestedTableJoinBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+        private NestedTableJoinBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                      @Nullable SQLWords modifier, TableMeta<?> table, String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
         }
@@ -473,7 +472,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             implements PostgreStatement._NestedTableSampleCrossSpec<I>,
             PostgreStatement._NestedRepeatableCrossClause<I> {
 
-        private NestedTableCrossBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+        private NestedTableCrossBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                       @Nullable SQLWords modifier, TableMeta<?> table, String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
         }
@@ -488,7 +487,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             implements PostgreStatement._NestedTableSampleOnSpec<I>,
             PostgreStatement._NestedRepeatableOnClause<I> {
 
-        private NestedTableOnBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+        private NestedTableOnBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                    @Nullable SQLWords modifier, TableMeta<?> table, String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
         }
@@ -506,7 +505,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         private _SelectionMap selectionMap;
 
-        private NestedDerivedBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+        private NestedDerivedBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                    @Nullable SQLWords modifier, DerivedTable table, String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
             this.selectionMap = (_DerivedTable) table;
@@ -569,7 +568,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             extends NestedDerivedBlock<I, PostgreStatement._PostgreNestedJoinClause<I>>
             implements PostgreStatement._NestedParensJoinSpec<I> {
 
-        private NestedDerivedJoinBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+        private NestedDerivedJoinBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                        @Nullable SQLWords modifier, DerivedTable table, String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
         }
@@ -580,7 +579,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             extends NestedDerivedBlock<I, PostgreStatement._NestedJoinSpec<I>>
             implements PostgreStatement._NestedParensCrossSpec<I> {
 
-        private NestedDerivedCrossBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+        private NestedDerivedCrossBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                         @Nullable SQLWords modifier, DerivedTable table, String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
         }
@@ -591,7 +590,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             extends NestedDerivedBlock<I, PostgreStatement._NestedOnSpec<I>>
             implements PostgreStatement._NestedParensOnSpec<I> {
 
-        private NestedDerivedOnBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+        private NestedDerivedOnBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                      @Nullable SQLWords modifier, DerivedTable table, String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, modifier, table, alias, ender);
         }

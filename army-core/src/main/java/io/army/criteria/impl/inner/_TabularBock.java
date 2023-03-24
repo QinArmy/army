@@ -13,14 +13,12 @@ import java.util.List;
  *     <ul>
  *         <li>{@link _ModifierTableBlock}</li>
  *         <li>{@link _AliasDerivedBlock}</li>
- *         <li>{@link _NestedBock}</li>
- *         <li>{@link _CteBlock}</li>
  *     </ul>
  * </p>
  *
  * @since 1.0
  */
-public interface _TableBlock {
+public interface _TabularBock {
 
     _JoinType jointType();
 

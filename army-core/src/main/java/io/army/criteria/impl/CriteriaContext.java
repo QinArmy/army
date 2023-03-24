@@ -5,7 +5,7 @@ import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.impl.inner._AliasDerivedBlock;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._SelectItem;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner._TabularBock;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -72,7 +72,15 @@ interface CriteriaContext {
     <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field);
 
 
+    /**
+     * <p>
+     * This method always is invoked by {@link SQLs#refOuter(String, String)}
+     * </p>
+     *
+     * @see SQLs#refOuter(String, String)
+     */
     DerivedField refOuter(String derivedAlias, String fieldName);
+
 
     @Deprecated
     void onOrderByStart();
@@ -94,10 +102,10 @@ interface CriteriaContext {
     void bufferNestedDerived(_AliasDerivedBlock block);
 
 
-    void onAddBlock(_TableBlock block);
+    void onAddBlock(_TabularBock block);
 
 
-    _TableBlock lastBlock();
+    _TabularBock lastBlock();
 
 
     void onAddWindow(String windowName);
@@ -116,7 +124,7 @@ interface CriteriaContext {
      * should be invoked before {@link ContextStack#pop(CriteriaContext)}
      * </p>
      */
-    List<_TableBlock> endContext();
+    List<_TabularBock> endContext();
 
     void endContextBeforeCommand();
 

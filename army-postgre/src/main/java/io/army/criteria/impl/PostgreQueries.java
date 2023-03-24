@@ -6,7 +6,7 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner._TabularBock;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.postgre._PostgreCte;
 import io.army.criteria.impl.inner.postgre._PostgreQuery;
@@ -94,7 +94,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
     private LockWaitOption lockWaitOption;
 
-    private _TableBlock fromCrossBlock;
+    private _TabularBock fromCrossBlock;
 
 
     private PostgreQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
@@ -572,7 +572,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     @Override
     final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem,
                                  String alias) {
-        final _TableBlock block;
+        final _TabularBock block;
         block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
@@ -637,7 +637,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
      * @return get the table block of last FROM or CROSS JOIN clause
      */
     private PostgreSupports.FromClauseTableBlock getFromClauseBlock() {
-        final _TableBlock block = this.fromCrossBlock;
+        final _TabularBock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof PostgreSupports.FromClauseTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -648,7 +648,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
      * @return get the derived block of last FROM or CROSS JOIN clause
      */
     private TableBlocks.FromClauseAliasDerivedBlock getFromDerivedBlock() {
-        final _TableBlock block = this.fromCrossBlock;
+        final _TabularBock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }

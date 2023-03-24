@@ -70,7 +70,7 @@ public interface _Statement {
         /**
          * @return a unmodifiable list
          */
-        List<_TableBlock> tableBlockList();
+        List<_TabularBock> tableBlockList();
 
     }
 

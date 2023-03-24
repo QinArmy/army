@@ -120,20 +120,20 @@ public interface MySQLInsert extends MySQLStatement {
                                                       BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                       Function<String, ?> function, String keyName);
 
-        _StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field, Supplier<Expression> supplier);
+        _StaticConflictUpdateCommaClause<I, T> updateIf(FieldMeta<T> field, Supplier<Expression> supplier);
 
-        _StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+        _StaticConflictUpdateCommaClause<I, T> updateIf(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-        <E> _StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator,
+        <E> _StaticConflictUpdateCommaClause<I, T> updateIf(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator,
                                                             Supplier<E> getter);
 
-        _StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
+        _StaticConflictUpdateCommaClause<I, T> updateIf(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                         Function<String, ?> function, String keyName);
 
-        <E> _StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+        <E> _StaticConflictUpdateCommaClause<I, T> updateIf(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
                                                             BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> getter);
 
-        _StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
+        _StaticConflictUpdateCommaClause<I, T> updateIf(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
                                                         BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                                                         Function<String, ?> function, String keyName);
     }
@@ -180,7 +180,6 @@ public interface MySQLInsert extends MySQLStatement {
     }
 
     interface _ComplexColumnDefaultSpec<I extends Item, T> extends _ValuesColumnDefaultSpec<I, T>,
-            _StaticSpaceClause<MySQLQuery._WithSpec<_OnDuplicateKeyUpdateSpec<I, T>>>,
             InsertStatement._QueryInsertSpaceClause<MySQLQuery._WithSpec<_OnDuplicateKeyUpdateSpec<I, T>>, _OnDuplicateKeyUpdateSpec<I, T>> {
 
     }

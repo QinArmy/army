@@ -49,7 +49,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     private static final String SPACE_HINT_END = " */";
 
-    private static final String SPACE_PARTITION_START = " PARTITION ( ";
+    private static final String SPACE_PARTITION_START = " PARTITION( ";
 
     private static final String SPACE_WITH_ROLLUP = " WITH ROLLUP";
 
@@ -179,7 +179,7 @@ final class MySQLDialectParser extends MySQLParser {
 
         //5. select item list clause
         this.selectListClause(context);
-        final List<_TableBlock> tableBlockList;
+        final List<_TabularBock> tableBlockList;
         tableBlockList = stmt.tableBlockList();
 
         if (tableBlockList.size() > 0) {
@@ -663,7 +663,7 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      * @see #parseQuery(_Query, _SimpleQueryContext)
      */
-    private void mysqlTableReferences(final List<_TableBlock> blockList, final _MultiTableStmtContext context
+    private void mysqlTableReferences(final List<_TabularBock> blockList, final _MultiTableStmtContext context
             , final boolean nested) {
         final int blockSize = blockList.size();
         assert blockSize > 0;
@@ -675,7 +675,7 @@ final class MySQLDialectParser extends MySQLParser {
         }
         final boolean asOf80 = this.asOf80;
 
-        _TableBlock block;
+        _TabularBock block;
         TabularItem tableItem;
         TableMeta<?> table;
         String alias;

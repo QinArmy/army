@@ -340,24 +340,24 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field, Supplier<Expression> supplier) {
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(FieldMeta<T> field, Supplier<Expression> supplier) {
             return this.ifComma(field, supplier);
         }
 
         @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifUpdate(FieldMeta<T> field,
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(FieldMeta<T> field,
                                                                            Function<FieldMeta<T>, Expression> function) {
             return this.ifComma(field, function);
         }
 
         @Override
-        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifUpdate(
+        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(
                 FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> getter) {
             return this.ifComma(field, valueOperator, getter);
         }
 
         @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifUpdate(
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(
                 FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
                 Function<String, ?> function, String keyName) {
             return this.ifComma(field, valueOperator, function, keyName);
@@ -365,14 +365,14 @@ abstract class MySQLInserts extends InsertSupports {
 
 
         @Override
-        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifUpdate(
+        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(
                 FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
                 BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> getter) {
             return this.ifComma(field, fieldOperator, valueOperator, getter);
         }
 
         @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifUpdate(
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(
                 FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
                 BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function,
                 String keyName) {

@@ -24,15 +24,16 @@ public interface StandardUpdate extends StandardStatement {
 
     }
 
-    interface _WhereSpec<I extends Item, F extends TableField> extends _StandardSetClause<I, F>,
-            _StandardWhereClause<I> {
-
-
-    }
 
     interface _StandardSetClause<I extends Item, F extends TableField>
             extends UpdateStatement._StaticSetClause<F, _WhereSpec<I, F>>,
             UpdateStatement._DynamicSetClause<ItemPairs<F>, _StandardWhereClause<I>> {
+
+    }
+
+    interface _WhereSpec<I extends Item, F extends TableField> extends _StandardSetClause<I, F>,
+            _StandardWhereClause<I> {
+
 
     }
 
@@ -66,15 +67,15 @@ public interface StandardUpdate extends StandardStatement {
 
     }
 
-    interface _BatchWhereSpec<I extends Item, F extends TableField> extends _BatchSetClause<I, F>,
-            _BatchWhereClause<I> {
-
-    }
 
     interface _BatchSetClause<I extends Item, F extends TableField>
             extends UpdateStatement._StaticBatchSetClause<F, _BatchWhereSpec<I, F>>,
             UpdateStatement._DynamicSetClause<BatchItemPairs<F>, _BatchWhereClause<I>> {
 
+    }
+
+    interface _BatchWhereSpec<I extends Item, F extends TableField> extends _BatchSetClause<I, F>,
+            _BatchWhereClause<I> {
 
     }
 

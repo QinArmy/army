@@ -21,7 +21,7 @@ public interface _Query extends Query, _PartRowSet, _RowSet._SelectItemListSpec 
     List<? extends SQLWords> modifierList();
 
 
-    List<_TableBlock> tableBlockList();
+    List<_TabularBock> tableBlockList();
 
     /**
      * @return a unmodifiable list

@@ -70,7 +70,7 @@ final class TableContext {
                 throw new IllegalStateException();
             }
         }
-        final List<? extends _TableBlock> blockList;
+        final List<? extends _TabularBock> blockList;
         blockList = stmt.tableBlockList();
 
         final Context context;
@@ -99,7 +99,7 @@ final class TableContext {
             childMap.putIfAbsent((ChildTableMeta<?>) table, Boolean.TRUE);
         }
 
-        final List<? extends _TableBlock> blockList = stmt.tableBlockList();
+        final List<? extends _TabularBock> blockList = stmt.tableBlockList();
         final Context context;
         context = new Context(dialect, childMap, visible, blockList.size());
         iterateTableReferences(blockList, context);
@@ -107,7 +107,7 @@ final class TableContext {
     }
 
 
-    static TableContext forQuery(List<? extends _TableBlock> blockList, ArmyParser dialect, final Visible visible) {
+    static TableContext forQuery(List<? extends _TabularBock> blockList, ArmyParser dialect, final Visible visible) {
         final Context context;
         context = new Context(dialect, null, visible, blockList.size());
         iterateTableReferences(blockList, context);
@@ -138,7 +138,7 @@ final class TableContext {
     }
 
 
-    private static void iterateTableReferences(final List<? extends _TableBlock> blockList, final Context context) {
+    private static void iterateTableReferences(final List<? extends _TabularBock> blockList, final Context context) {
 
         final Map<String, TabularItem> aliasToTable = context.aliasToTable;
         final Map<TableMeta<?>, String> tableToSafeAlias = context.tableToSafeAlias;
@@ -150,7 +150,7 @@ final class TableContext {
         final ArmyParser dialect = context.dialect;
         final Visible visible = context.visible;
 
-        _TableBlock block, parentBlock;
+        _TabularBock block, parentBlock;
         String safeAlias, alias, parentAlias;
         TabularItem tableItem;
         ParentTableMeta<?> parent;
@@ -232,7 +232,7 @@ final class TableContext {
 
     @Nullable
     private static boolean nextIsParent(final ChildTableMeta<?> child, final String childAlias
-            , final _TableBlock block) {
+            , final _TabularBock block) {
         final boolean match;
         switch (block.jointType()) {
             case JOIN:
@@ -253,11 +253,11 @@ final class TableContext {
      * @return null : finding failure
      */
     @Nullable
-    private static _TableBlock findParentFromLeft(final ChildTableMeta<?> child, final @Nullable String parentAlias
-            , final List<? extends _TableBlock> blockList, final int fromIndex) {
+    private static _TabularBock findParentFromLeft(final ChildTableMeta<?> child, final @Nullable String parentAlias
+            , final List<? extends _TabularBock> blockList, final int fromIndex) {
 
         final ParentTableMeta<?> parent = child.parentMeta();
-        _TableBlock block, parentBlock = null;
+        _TabularBock block, parentBlock = null;
         TabularItem tableItem;
         _JoinType joinType;
         TableField parentId;

@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner._TabularBock;
 import io.army.criteria.standard.StandardCrosses;
 import io.army.criteria.standard.StandardJoins;
 import io.army.criteria.standard.StandardStatement;
@@ -24,16 +24,16 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         implements StandardStatement._DynamicJoinSpec {
 
     static StandardJoins joinBuilder(CriteriaContext context, _JoinType joinTyp
-            , Consumer<_TableBlock> blockConsumer) {
+            , Consumer<_TabularBock> blockConsumer) {
         return new StandardJoinBuilder(context, joinTyp, blockConsumer);
     }
 
-    static StandardCrosses crossBuilder(CriteriaContext context, Consumer<_TableBlock> blockConsumer) {
+    static StandardCrosses crossBuilder(CriteriaContext context, Consumer<_TabularBock> blockConsumer) {
         return new StandardCrossesBuilder(context, blockConsumer);
     }
 
 
-    private StandardDynamicJoins(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+    private StandardDynamicJoins(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                  TabularItem tabularItem, String alias) {
         super(context, blockConsumer, joinType, null, tabularItem, alias);
     }
@@ -167,7 +167,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     private static final class StandardDynamicBlock extends StandardDynamicJoins {
 
-        private StandardDynamicBlock(CriteriaContext context, Consumer<_TableBlock> blockConsumer, _JoinType joinType,
+        private StandardDynamicBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer, _JoinType joinType,
                                      TabularItem table, String alias) {
             super(context, blockConsumer, joinType, table, alias);
         }
@@ -183,7 +183,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             implements StandardJoins {
 
 
-        private StandardJoinBuilder(CriteriaContext context, _JoinType joinTyp, Consumer<_TableBlock> blockConsumer) {
+        private StandardJoinBuilder(CriteriaContext context, _JoinType joinTyp, Consumer<_TabularBock> blockConsumer) {
             super(context, joinTyp, blockConsumer);
         }
 
@@ -238,7 +238,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             implements StandardCrosses {
 
 
-        private StandardCrossesBuilder(CriteriaContext context, Consumer<_TableBlock> blockConsumer) {
+        private StandardCrossesBuilder(CriteriaContext context, Consumer<_TabularBock> blockConsumer) {
             super(context, _JoinType.CROSS_JOIN, blockConsumer);
         }
 

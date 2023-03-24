@@ -96,7 +96,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
     private final String tableAlias;
 
-    _TableBlock fromCrossBlock;
+    _TabularBock fromCrossBlock;
 
     private PostgreUpdates(PostgreUpdateClause<?> clause) {
         super(clause.context);
@@ -384,7 +384,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
     @Override
     final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
-        final _TableBlock block;
+        final _TabularBock block;
         block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
@@ -407,7 +407,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
 
     private PostgreSupports.FromClauseTableBlock getFromCrossBlock() {
-        final _TableBlock block = this.fromCrossBlock;
+        final _TabularBock block = this.fromCrossBlock;
         if (!(this.context.lastBlock() == block && block instanceof PostgreSupports.FromClauseTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -416,7 +416,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
 
     final TableBlocks.FromClauseAliasDerivedBlock getFromDerived() {
-        final _TableBlock block = this.fromCrossBlock;
+        final _TabularBock block = this.fromCrossBlock;
         if (!(this.context.lastBlock() == block && block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -1300,7 +1300,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
         private final List<_ItemPair> itemPairList;
 
-        private final List<_TableBlock> tableBlockList;
+        private final List<_TabularBock> tableBlockList;
 
         private final List<_Predicate> wherePredicateList;
 
@@ -1362,7 +1362,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public final List<_TableBlock> tableBlockList() {
+        public final List<_TabularBock> tableBlockList() {
             return this.tableBlockList;
         }
 

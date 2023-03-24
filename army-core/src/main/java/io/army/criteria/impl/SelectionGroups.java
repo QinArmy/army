@@ -1,10 +1,11 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
-import io.army.criteria.DerivedTable;
 import io.army.criteria.Selection;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._SelectionGroup;
+import io.army.criteria.impl.inner._SelectionMap;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -136,7 +137,8 @@ abstract class SelectionGroups {
         }
 
         @Override
-        public void finish(final DerivedTable table, final String alias) {
+        public void finish(final _SelectionMap table, final String alias) {
+            assert table instanceof _DerivedTable || table instanceof _Cte;
             if (this.selectionList != null) {
                 throw new IllegalStateException("duplication");
             }
@@ -144,7 +146,7 @@ abstract class SelectionGroups {
                 throw new IllegalArgumentException("subQueryAlias not match.");
             }
 
-            this.selectionList = ((_DerivedTable) table).refAllSelection();
+            this.selectionList = table.refAllSelection();
 
         }
 

@@ -53,7 +53,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     private List<? extends Query.SelectModifier> modifierList;
 
-    private List<_TableBlock> tableBlockList;
+    private List<_TabularBock> tableBlockList;
 
 
     private List<ArmySortItem> groupByList;
@@ -612,8 +612,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final List<_TableBlock> tableBlockList() {
-        final List<_TableBlock> list = this.tableBlockList;
+    public final List<_TabularBock> tableBlockList() {
+        final List<_TabularBock> list = this.tableBlockList;
         if (list == null || list instanceof ArrayList) {
             throw ContextStack.castCriteriaApi(this.context);
         }

@@ -35,7 +35,7 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
         Statement._DmlUpdateSpec<I>,
         Statement {
 
-    private List<_TableBlock> tableBlockList;
+    private List<_TabularBock> tableBlockList;
 
     private List<_ItemPair> itemPairList;
 
@@ -220,8 +220,8 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
     }
 
     @Override
-    public final List<_TableBlock> tableBlockList() {
-        final List<_TableBlock> list = this.tableBlockList;
+    public final List<_TabularBock> tableBlockList() {
+        final List<_TabularBock> list = this.tableBlockList;
         if (list == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }

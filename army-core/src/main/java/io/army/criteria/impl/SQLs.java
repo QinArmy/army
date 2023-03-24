@@ -16,7 +16,6 @@ import io.army.mapping._NullType;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.SingleParam;
-import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -428,13 +427,15 @@ public abstract class SQLs extends SQLsSyntax {
         private final _SelectionMap selectionMap;
 
         CteImpl(String name, SubStatement subStatement) {
-            this(name, null, subStatement);
+            this(name, Collections.emptyList(), subStatement);
         }
 
-
-        CteImpl(String name, @Nullable List<String> columnNameList, SubStatement subStatement) {
+        /**
+         * @param columnNameList unmodified list
+         */
+        CteImpl(String name, List<String> columnNameList, SubStatement subStatement) {
             this.name = name;
-            this.columnNameList = _CollectionUtils.safeUnmodifiableList(columnNameList);
+            this.columnNameList = columnNameList;
             this.subStatement = subStatement;
 
             if (!(subStatement instanceof DerivedTable)) {

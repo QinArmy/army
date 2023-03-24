@@ -73,7 +73,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
     private String tableAlias;
 
-    _TableBlock fromCrossBlock;
+    _TabularBock fromCrossBlock;
 
     private PostgreDeletes(@Nullable _Statement._WithClauseSpec withSpec, CriteriaContext context) {
         super(withSpec, context);
@@ -336,7 +336,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
     @Override
     final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
-        final _TableBlock block;
+        final _TabularBock block;
         block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
@@ -379,7 +379,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
     }
 
     private PostgreSupports.FromClauseTableBlock getFromCrossBlock() {
-        final _TableBlock block = this.fromCrossBlock;
+        final _TabularBock block = this.fromCrossBlock;
         if (!(this.context.lastBlock() == block && block instanceof PostgreSupports.FromClauseTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -388,7 +388,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
 
     final TableBlocks.FromClauseAliasDerivedBlock getFromDerived() {
-        final _TableBlock block = this.fromCrossBlock;
+        final _TabularBock block = this.fromCrossBlock;
         if (!(this.context.lastBlock() == block && block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -1141,7 +1141,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
         private final String tableAlias;
 
-        private final List<_TableBlock> tableBlockList;
+        private final List<_TabularBock> tableBlockList;
 
         private final List<_Predicate> wherePredicateList;
 
@@ -1218,7 +1218,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         }
 
         @Override
-        public final List<_TableBlock> tableBlockList() {
+        public final List<_TabularBock> tableBlockList() {
             return this.tableBlockList;
         }
 
