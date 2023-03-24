@@ -1,6 +1,5 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.Query;
 import io.army.criteria.ValuesQuery;
 
 import java.util.List;
@@ -13,9 +12,10 @@ import java.util.List;
  *
  * @since 1.0
  */
-public interface _ValuesQuery extends ValuesQuery, _PartRowSet {
+public interface _ValuesQuery extends ValuesQuery, _PartRowSet, _RowSet._SelectItemListSpec {
 
-    List<_Selection> selectionList();
+    @Override
+    List<_Selection> selectItemList();
 
     List<List<_Expression>> rowList();
 

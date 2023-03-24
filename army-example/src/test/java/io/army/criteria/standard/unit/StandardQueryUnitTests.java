@@ -1,5 +1,6 @@
 package io.army.criteria.standard.unit;
 
+import io.army.criteria.CriteriaException;
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.account.BankAccount_;
@@ -101,9 +102,9 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         stmt = SQLs.query()
 
                 .parens(s -> s.select(PillUser_.id)
-                        .from(PillUser_.T, SQLs.AS, "p")
+                        .from(PillUser_.T, AS, "p")
                         .where(PillUser_.id.equal(SQLs::literal, 1))
-                        .and(PillUser_.nickName::equal, SQLs::param, () -> "脉兽秀秀")
+                        .and(PillUser_.nickName::equal, SQLs::param, "脉兽秀秀")
                         //.and(User_.visible.equal(false))
                         .groupBy(PillUser_.userType)
                         .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
@@ -168,9 +169,59 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .select(ChinaProvince_.id)
                         .from(ChinaProvince_.T, AS, "p")
                         .join(ChinaRegion_.T, AS, "r").on(ChinaProvince_.id::equal, ChinaRegion_.id)
-                        .where(ChinaProvince_.governor::equal, PillUser_.nickName)
+                        .where(ChinaProvince_.governor::equal, SQLs.field("u", PillUser_.nickName))
                         .asQuery()
                 )
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+
+    @Test(expectedExceptions = CriteriaException.class)
+    public void nonLateralReferenceOuterQualifiedField() {
+        final Map<String, Object> map = new HashMap<>();
+        map.put("nickName", "蛮吉");
+
+        final Select stmt;
+        stmt = SQLs.query()
+                .select(BankUser_.nickName)
+                .from(() -> SQLs.subQuery()
+                        .select(ChinaProvince_.id)
+                        .from(ChinaProvince_.T, AS, "p")
+                        .join(ChinaRegion_.T, AS, "r").on(ChinaProvince_.id::equal, ChinaRegion_.id)
+                        .where(ChinaProvince_.governor::equal, SQLs.field("bu", BankUser_.nickName))
+                        .asQuery()
+                ).as("ps")
+                .join(BankUser_.T, AS, "bu").on(BankUser_.id::equal, SQLs.refThis("ps", ChinaProvince_.ID))
+                .where(BankUser_.nickName::equal, SQLs::param, map::get, "nickName")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    @Test(expectedExceptions = CriteriaException.class)
+    public void nonLateralReferenceOuterDerivedField() {
+        final Map<String, Object> map = new HashMap<>();
+        map.put("nickName", "蛮吉");
+
+        final Select stmt;
+        stmt = SQLs.query()
+                .select(BankUser_.nickName)
+                .from(() -> SQLs.subQuery()
+                        .select(ChinaProvince_.id)
+                        .from(ChinaProvince_.T, AS, "p")
+                        .join(ChinaRegion_.T, AS, "r").on(ChinaProvince_.id::equal, ChinaRegion_.id)
+                        .where(ChinaProvince_.governor::equal, SQLs.refOuter("bu", BankUser_.NICK_NAME))
+                        .asQuery()
+                ).as("ps")
+                .join(() -> SQLs.subQuery()
+                        .select(BankUser_.id, BankUser_.nickName)
+                        .from(BankUser_.T, AS, "bu")
+                        .limit(SQLs::literal, 10)
+                        .asQuery()
+                ).as("bu").on(SQLs.refThis("bu", BankUser_.ID)::equal, SQLs.refThis("ps", ChinaProvince_.ID))
+                .where(BankUser_.nickName::equal, SQLs::param, map::get, "nickName")
                 .asQuery();
 
         printStmt(LOG, stmt);

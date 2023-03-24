@@ -1163,20 +1163,25 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }//WithBuilderSelectClauseDispatcher
 
 
-    static final class UnionSubQuery extends UnionSubRowSet implements SubQuery {
+    static final class UnionSubQuery extends UnionSubRowSet implements ArmySubQuery {
 
-        UnionSubQuery(RowSet left, UnionType unionType, RowSet right) {
+        UnionSubQuery(SubQuery left, UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
 
 
     }//UnionSubQuery
 
-    static final class UnionSelect extends UnionRowSet implements Select {
+    static final class UnionSelect extends UnionRowSet implements ArmySelect {
 
 
-        UnionSelect(RowSet left, UnionType unionType, RowSet right) {
+        UnionSelect(Select left, UnionType unionType, RowSet right) {
             super(left, unionType, right);
+        }
+
+        @Override
+        public List<? extends _SelectItem> selectItemList() {
+            return ((_PrimaryRowSet) this.left).selectItemList();
         }
 
 

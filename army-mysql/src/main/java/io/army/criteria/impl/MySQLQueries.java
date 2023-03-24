@@ -768,7 +768,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
 
-    private static final class SimpleSelect<I extends Item> extends MySQLQueries<I> implements Select {
+    private static final class SimpleSelect<I extends Item> extends MySQLQueries<I> implements ArmySelect {
 
         private final Function<? super Select, I> function;
 
@@ -1142,7 +1142,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     }//MySQLBracketQuery
 
-    private static final class BracketSelect<I extends Item> extends MySQLBracketQuery<I> implements Select {
+    private static final class BracketSelect<I extends Item> extends MySQLBracketQuery<I> implements ArmySelect {
 
         private final Function<? super Select, I> function;
 

@@ -4,7 +4,6 @@ import io.army.criteria.Selection;
 import io.army.criteria.Values;
 import io.army.criteria.ValuesQuery;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._RowSet;
 import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._ValuesQuery;
 import io.army.lang.Nullable;
@@ -29,7 +28,7 @@ final class ValuesContext extends StatementContext implements _ValuesContext {
             , Visible visible) {
         super(outerContext, dialect, visible);
         if (outerContext == null && stmt instanceof Values) {
-            this.selectionList = ((_ValuesQuery) stmt).selectionList();
+            this.selectionList = ((_ValuesQuery) stmt).selectItemList();
         } else {
             this.selectionList = null;
         }

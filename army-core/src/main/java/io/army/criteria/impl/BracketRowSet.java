@@ -17,6 +17,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         _SelectionMap,
         Query._AsQueryClause<I>,
         Statement._RightParenClause<RR>,
+        _RowSet._SelectItemListSpec,
         RowSet {
 
 
@@ -109,6 +110,15 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
             throw ContextStack.castCriteriaApi(this.context);
         }
         return rowSet;
+    }
+
+    @Override
+    public final List<? extends _SelectItem> selectItemList() {
+        final _RowSet rowSet = this.innerRowSet;
+        if (rowSet == null || !(this instanceof _PrimaryRowSet)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return ((_PrimaryRowSet) rowSet).selectItemList();
     }
 
     @Override

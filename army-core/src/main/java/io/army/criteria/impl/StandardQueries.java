@@ -304,7 +304,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }//StandardLockMode
 
 
-    static class SimpleSelect<I extends Item> extends StandardQueries<I> implements Select {
+    static class SimpleSelect<I extends Item> extends StandardQueries<I> implements ArmySelect {
 
         private final Function<? super Select, I> function;
 
@@ -411,7 +411,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     private static final class BracketSelect<I extends Item> extends StandardBracketQuery<I>
-            implements Select {
+            implements ArmySelect {
 
         private final Function<? super Select, I> function;
 

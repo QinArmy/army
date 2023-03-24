@@ -11,7 +11,6 @@ import io.army.lang.Nullable;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * <p>
@@ -114,7 +113,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
     }
 
     private static final class SimplePrimaryValues<I extends Item> extends PostgreSimpleValues<I>
-            implements Values {
+            implements ArmyValues {
 
         private final Function<? super Values, I> function;
 
@@ -222,7 +221,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
 
     private static final class BracketValues<I extends Item> extends PostgreBracketValues<I>
-            implements Values {
+            implements ArmyValues {
 
         private final Function<? super Values, I> function;
 

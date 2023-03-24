@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.criteria.Select;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._Query;
+import io.army.criteria.impl.inner._PrimaryRowSet;
 import io.army.criteria.impl.inner._SelectItem;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -28,7 +28,7 @@ final class ParensSelectContext extends StatementContext implements _SelectConte
             , Visible visible) {
         super(outerContext, dialect, visible);
         this.outerContext = outerContext;
-        this.selectItemList = ((_Query) select).selectItemList();
+        this.selectItemList = ((_PrimaryRowSet) select).selectItemList();
     }
 
 

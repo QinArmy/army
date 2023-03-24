@@ -14,13 +14,11 @@ import java.util.List;
  *
  * @since 1.0
  */
-public interface _Query extends Query, _PartRowSet {
+public interface _Query extends Query, _PartRowSet, _RowSet._SelectItemListSpec {
 
     List<Hint> hintList();
 
     List<? extends SQLWords> modifierList();
-
-    List<? extends _SelectItem> selectItemList();
 
 
     List<_TableBlock> tableBlockList();

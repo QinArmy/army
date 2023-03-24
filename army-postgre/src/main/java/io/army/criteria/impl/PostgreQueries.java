@@ -798,7 +798,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
 
     private static final class SimpleSelect<I extends Item> extends PostgreQueries<I>
-            implements Select {
+            implements ArmySelect {
 
         private final Function<? super Select, I> function;
 
@@ -905,7 +905,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
 
     private static final class BracketSelect<I extends Item> extends PostgreBracketQuery<I>
-            implements Select {
+            implements ArmySelect {
 
         private final Function<? super Select, I> function;
 

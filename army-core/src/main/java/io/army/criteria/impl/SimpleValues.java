@@ -236,7 +236,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
     }
 
     @Override
-    public final List<_Selection> selectionList() {
+    public final List<_Selection> selectItemList() {
         final List<_Selection> list = this.selectionList;
         if (list == null) {
             throw ContextStack.castCriteriaApi(this.context);
@@ -580,7 +580,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
 
     }//RowConstructorImpl
 
-    static final class UnionSubValues extends UnionSubRowSet implements SubValues {
+    static final class UnionSubValues extends UnionSubRowSet implements ArmySubValues {
 
         UnionSubValues(RowSet left, UnionType unionType, RowSet right) {
             super(left, unionType, right);
@@ -589,12 +589,16 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
 
     }//UnionSubValues
 
-    static final class UnionValues extends UnionRowSet implements Values {
+    static final class UnionValues extends UnionRowSet implements ArmyValues {
 
-        UnionValues(RowSet left, UnionType unionType, RowSet right) {
+        UnionValues(Values left, UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
 
+        @Override
+        public List<? extends _SelectItem> selectItemList() {
+            return ((_PrimaryRowSet) this.left).selectItemList();
+        }
 
     }//UnionSelect
 

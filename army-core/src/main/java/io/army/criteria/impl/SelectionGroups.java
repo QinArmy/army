@@ -24,14 +24,14 @@ abstract class SelectionGroups {
     }
 
     static <T> _SelectionGroup singleGroup(TableMeta<T> table, String tableAlias) {
-        return new TableFieldGroup<>(table, tableAlias);
+        return new TableFieldGroupImpl<>(table, tableAlias);
     }
 
     static <T> _SelectionGroup groupWithoutId(ChildTableMeta<T> table, String tableAlias) {
-        return new TableFieldGroup<>(tableAlias, table);
+        return new TableFieldGroupImpl<>(tableAlias, table);
     }
 
-    static DerivedGroup derivedGroup(String alias) {
+    static DerivedFieldGroup derivedGroup(String alias) {
         return new DerivedSelectionGroupImpl(alias);
     }
 
@@ -39,18 +39,18 @@ abstract class SelectionGroups {
     /*################################## blow static inner class  ##################################*/
 
 
-    private static final class TableFieldGroup<T> implements _SelectionGroup {
+    static final class TableFieldGroupImpl<T> implements TableFieldGroup {
 
         private final String tableAlias;
 
         private final List<FieldMeta<T>> fieldList;
 
-        private TableFieldGroup(TableMeta<T> table, String tableAlias) {
+        private TableFieldGroupImpl(TableMeta<T> table, String tableAlias) {
             this.tableAlias = tableAlias;
             this.fieldList = table.fieldList();
         }
 
-        private TableFieldGroup(String tableAlias, ChildTableMeta<T> parent) {
+        private TableFieldGroupImpl(String tableAlias, ChildTableMeta<T> parent) {
             final List<FieldMeta<T>> fields = parent.fieldList();
             final List<FieldMeta<T>> fieldList = new ArrayList<>(fields.size() - 1);
             for (FieldMeta<T> field : fields) {
@@ -63,6 +63,7 @@ abstract class SelectionGroups {
             this.fieldList = Collections.unmodifiableList(fieldList);
         }
 
+
         @Override
         public String tableAlias() {
             return this.tableAlias;
@@ -71,6 +72,11 @@ abstract class SelectionGroups {
         @Override
         public List<? extends Selection> selectionList() {
             return this.fieldList;
+        }
+
+        @Override
+        public boolean isIllegalGroup(TableMeta<?> table) {
+            return table != this.fieldList.get(0).tableMeta();
         }
 
         @Override
@@ -119,7 +125,7 @@ abstract class SelectionGroups {
     }//TableFieldGroup
 
 
-    private static final class DerivedSelectionGroupImpl implements DerivedGroup {
+    private static final class DerivedSelectionGroupImpl implements DerivedFieldGroup {
 
         final String derivedAlias;
 

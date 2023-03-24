@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 abstract class MySQLSimpleValues<I extends Item>
         extends SimpleValues<
@@ -86,7 +85,7 @@ abstract class MySQLSimpleValues<I extends Item>
     }
 
     private static final class SimplePrimaryValues<I extends Item> extends MySQLSimpleValues<I>
-            implements Values {
+            implements ArmyValues {
 
         private final Function<? super Values, I> function;
 
@@ -189,7 +188,7 @@ abstract class MySQLSimpleValues<I extends Item>
     }//MySQLBracketValues
 
     private static final class BracketValues<I extends Item> extends MySQLBracketValues<I>
-            implements Values {
+            implements ArmyValues {
 
         private final Function<? super Values, I> function;
 

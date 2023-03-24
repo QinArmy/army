@@ -126,6 +126,15 @@ interface CriteriaContext {
      */
     List<? extends _SelectItem> selectItemList();
 
+    /**
+     * <p>
+     * This method is invoked by sub context
+     * </p>
+     */
+    void validateFieldFromSubContext(QualifiedField<?> field);
+
+
+    void singleDmlTable(TableMeta<?> table, String alias);
 
 
 }
