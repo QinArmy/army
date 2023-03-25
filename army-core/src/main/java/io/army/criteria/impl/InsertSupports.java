@@ -461,8 +461,7 @@ abstract class InsertSupports {
 
         private Map<FieldMeta<?>, Boolean> fieldMap;
 
-        private ColumnsClause(CriteriaContext context, boolean migration, @Nullable TableMeta<T> table
-                , @Nullable String tableAlias) {
+        private ColumnsClause(CriteriaContext context, boolean migration, @Nullable TableMeta<T> table) {
             if (table == null) {
                 //validate for insertInto method
                 throw ContextStack.nullPointer(context);
@@ -589,6 +588,7 @@ abstract class InsertSupports {
             List<FieldMeta<?>> fieldList = this.fieldList;
             if (fieldList == null) {
                 fieldList = Collections.emptyList();
+                this.fieldList = fieldList;
             } else if (fieldList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -705,11 +705,7 @@ abstract class InsertSupports {
         private Map<FieldMeta<?>, _Expression> commonExpMap;
 
         private ColumnDefaultClause(InsertOptions options, TableMeta<T> table) {
-            this(options, table, null);
-        }
-
-        private ColumnDefaultClause(InsertOptions options, TableMeta<T> table, @Nullable String tableAlias) {
-            super(options.getContext(), options.isMigration(), table, tableAlias);
+            super(options.getContext(), options.isMigration(), table);
             if (options instanceof ValueSyntaxOptions) {
                 this.nullHandleMode = ((ValueSyntaxOptions) options).nullHandle();
             } else {
@@ -717,6 +713,7 @@ abstract class InsertSupports {
             }
             this.literalMode = options.literalMode();
         }
+
 
         @Override
         public final DR defaultValue(final FieldMeta<T> field, final @Nullable Expression value) {
@@ -825,6 +822,8 @@ abstract class InsertSupports {
             } else {
                 throw ContextStack.castCriteriaApi(this.context);
             }
+
+            this.context.insertColumnList(this.fieldList());
         }
 
 
@@ -847,11 +846,7 @@ abstract class InsertSupports {
         private SubQuery subQuery;
 
         ComplexInsertValuesClause(InsertOptions options, TableMeta<T> table) {
-            this(options, table, null);
-        }
-
-        ComplexInsertValuesClause(InsertOptions options, TableMeta<T> table, @Nullable String tableAlias) {
-            super(options, table, tableAlias);
+            super(options, table);
         }
 
 
@@ -909,6 +904,33 @@ abstract class InsertSupports {
             consumer.accept(constructor);
             this.rowPairList = constructor.endPairConstructor();
             return (VR) this;
+        }
+
+        @Override
+        public final List<Map<FieldMeta<?>, _Expression>> rowPairList() {
+            final List<Map<FieldMeta<?>, _Expression>> list = this.rowPairList;
+            if (this.insertMode != InsertMode.VALUES) {
+                throw insertModeNotMatch();
+            } else if (list == null || list instanceof ArrayList) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return list;
+        }
+
+        @Override
+        public final SubQuery subQuery() {
+            final SubQuery query = this.subQuery;
+            if (this.insertMode != InsertMode.QUERY) {
+                throw insertModeNotMatch();
+            } else if (query == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return query;
+        }
+
+        @Override
+        public final void validateOnlyParen() {
+            throw new UnsupportedOperationException();
         }
 
 
@@ -994,32 +1016,6 @@ abstract class InsertSupports {
             }
         }
 
-        @Override
-        public final List<Map<FieldMeta<?>, _Expression>> rowPairList() {
-            final List<Map<FieldMeta<?>, _Expression>> list = this.rowPairList;
-            if (this.insertMode != InsertMode.VALUES) {
-                throw insertModeNotMatch();
-            } else if (list == null || list instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return list;
-        }
-
-        @Override
-        public final SubQuery subQuery() {
-            final SubQuery query = this.subQuery;
-            if (this.insertMode != InsertMode.QUERY) {
-                throw insertModeNotMatch();
-            } else if (query == null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return query;
-        }
-
-        @Override
-        public final void validateOnlyParen() {
-            throw new UnsupportedOperationException();
-        }
 
         final CriteriaException queryInsetSupportOnlyMigration() {
             return ContextStack.criteriaError(this.context, "query insert support only migration mode.");
@@ -1260,11 +1256,7 @@ abstract class InsertSupports {
         private Map<FieldMeta<?>, _Expression> assignmentMap;
 
         ComplexInsertValuesAssignmentClause(InsertOptions options, TableMeta<T> table) {
-            this(options, table, null);
-        }
-
-        ComplexInsertValuesAssignmentClause(InsertOptions options, TableMeta<T> table, @Nullable String tableAlias) {
-            super(options, table, tableAlias);
+            super(options, table);
         }
 
         @Override
@@ -2107,7 +2099,7 @@ abstract class InsertSupports {
             String m = String.format("%s id %s is %s ,so you couldn't use duplicate key clause(on conflict)"
                     , parentTable, GeneratorType.class.getName()
                     , parentTable.id().generatorType());
-            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), ErrorChildInsertException::new, m);
         } else if (statement instanceof _Insert._QueryInsert) {
             validateChildQueryInsert((_Insert._ChildQueryInsert) statement);
         } else if (statement instanceof _Insert._ChildDomainInsert) {

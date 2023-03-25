@@ -116,9 +116,6 @@ interface CriteriaContext {
     TableMeta<?> getTable(String tableAlias);
 
 
-    void onInsertRowAlias(String rowAlias);
-
-
     /**
      * <p>
      * should be invoked before {@link ContextStack#pop(CriteriaContext)}
@@ -143,6 +140,8 @@ interface CriteriaContext {
 
 
     void singleDmlTable(TableMeta<?> table, String alias);
+
+    void insertColumnList(List<FieldMeta<?>> columnlist);
 
 
 }

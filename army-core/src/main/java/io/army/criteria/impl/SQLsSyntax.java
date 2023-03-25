@@ -1096,6 +1096,14 @@ abstract class SQLsSyntax extends SQLSyntax {
         return ContextStack.root().createVar(varName, paramMeta);
     }
 
+    /**
+     * @see Expression#bracket()
+     * @see IPredicate#bracket()
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Expression> T parens(T expression) {
+        return (T) expression.bracket();
+    }
 
 
     public static SQLFunction._CaseFuncWhenClause cases() {

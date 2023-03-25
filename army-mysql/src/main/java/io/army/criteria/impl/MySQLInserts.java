@@ -697,7 +697,7 @@ abstract class MySQLInserts extends InsertSupports {
 
         @Override
         public MySQLInsert._OnDuplicateKeyUpdateSpec<I, T> as(final String rowAlias) {
-            this.context.onInsertRowAlias(rowAlias);
+            this.context.singleDmlTable(this.insertTable, rowAlias);
             this.rowAlias = rowAlias;
             return this;
         }

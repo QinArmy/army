@@ -1,10 +1,7 @@
 package io.army.criteria.mysql.unit;
 
 import io.army.annotation.GeneratorType;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.Expression;
-import io.army.criteria.InsertStatement;
-import io.army.criteria.LiteralMode;
+import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
@@ -722,7 +719,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         print80Stmt(LOG, stmt);
     }
 
-    @Test(expectedExceptions = CriteriaException.class)
+    @Test(expectedExceptions = ErrorChildInsertException.class)
     public void dynamicValuesInsertChildPostWithParentConflictError() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();

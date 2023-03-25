@@ -896,10 +896,8 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public PostgreInsert._ColumnListSpec<T, I, Q> as(final @Nullable String alias) {
-            if (alias == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
+        public PostgreInsert._ColumnListSpec<T, I, Q> as(final String alias) {
+            this.context.singleDmlTable(this.insertTable, alias);
             this.tableAlias = alias;
             return this;
         }

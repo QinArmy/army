@@ -849,12 +849,6 @@ abstract class CriteriaContexts {
             throw ContextStack.criteriaError(this, m);
         }
 
-        @Override
-        public void onInsertRowAlias(String rowAlias) {
-            String m = "current context don't support onInsertRowAlias(rowAlias)";
-            throw ContextStack.criteriaError(this, m);
-        }
-
 
         @Override
         public DerivedField refThis(String derivedAlias, String selectionAlias) {
@@ -932,6 +926,12 @@ abstract class CriteriaContexts {
         @Override
         public void singleDmlTable(TableMeta<?> table, String alias) {
             String m = "current context don't support singleDmlTable(TableMeta<?> table, String alias)";
+            throw ContextStack.criteriaError(this, m);
+        }
+
+        @Override
+        public void insertColumnList(List<FieldMeta<?>> columnlist) {
+            String m = "current context don't support insertColumnList(List<FieldMeta<?>> columnlist)";
             throw ContextStack.criteriaError(this, m);
         }
 
@@ -1675,6 +1675,8 @@ abstract class CriteriaContexts {
 
     private static abstract class InsertContext extends StatementContext {
 
+        private TableMeta<?> insertTable;
+
         private String rowAlias;
 
         /**
@@ -1682,23 +1684,33 @@ abstract class CriteriaContexts {
          */
         private Map<FieldMeta<?>, QualifiedField<?>> qualifiedFieldMap;
 
+        private List<FieldMeta<?>> columnlist;
+
+        private Map<String, FieldMeta<?>> columnMap;
+
         private InsertContext(@Nullable CriteriaContext outerContext) {
             super(outerContext);
         }
 
 
         @Override
-        public final void onInsertRowAlias(final @Nullable String rowAlias) {
-            if (this.rowAlias != null) {
+        public final void singleDmlTable(final TableMeta<?> table, final @Nullable String alias) {
+            if (this.insertTable != null) {
                 throw ContextStack.castCriteriaApi(this);
-            } else if (rowAlias == null) {
+            } else if (alias == null) {
                 throw ContextStack.nullPointer(this);
-            } else if (!_StringUtils.hasText(rowAlias)) {
-                throw ContextStack.criteriaError(this, "row alias no text.");
             }
-            this.rowAlias = rowAlias;
+            this.insertTable = table;
+            this.rowAlias = alias;
         }
 
+        @Override
+        public final void insertColumnList(final List<FieldMeta<?>> columnlist) {
+            if (this.columnlist != null) {
+                throw ContextStack.castCriteriaApi(this);
+            }
+            this.columnlist = columnlist;
+        }
 
         @SuppressWarnings("unchecked")
         @Override
@@ -1729,8 +1741,12 @@ abstract class CriteriaContexts {
 
         @Override
         public final void validateFieldFromSubContext(final QualifiedField<?> field) {
-            // unknown field
-            super.validateFieldFromSubContext(field);
+            final String rowAlias = this.rowAlias;
+            if (rowAlias == null || !rowAlias.equals(field.tableAlias()) || field.tableMeta() != this.insertTable) {
+                throw unknownQualifiedField(this, field);
+            } else if (this.getOrCreateColumnMap().get(field.fieldName()) != field.fieldMeta()) {
+                throw unknownQualifiedField(this, field);
+            }
         }
 
         @Override
@@ -1742,6 +1758,33 @@ abstract class CriteriaContexts {
                 this.qualifiedFieldMap = null;
             }
             return Collections.emptyList();
+        }
+
+
+        private Map<String, FieldMeta<?>> getOrCreateColumnMap() {
+            Map<String, FieldMeta<?>> columnMap = this.columnMap;
+            if (columnMap != null) {
+                return columnMap;
+            }
+            final List<FieldMeta<?>> columnList = this.columnlist;
+            if (columnList == null) {
+                columnMap = Collections.emptyMap();
+            } else {
+                final int columnSize;
+                columnSize = columnList.size();
+
+                columnMap = new HashMap<>((int) (columnSize / 0.75F));
+                FieldMeta<?> field;
+                for (int i = 0; i < columnSize; i++) {
+                    field = columnList.get(i);
+                    columnMap.put(field.fieldName(), field);
+                }
+                assert columnMap.size() == columnSize;
+                columnMap = Collections.unmodifiableMap(columnMap);
+
+            }
+            this.columnMap = columnMap;
+            return columnMap;
         }
 
 
