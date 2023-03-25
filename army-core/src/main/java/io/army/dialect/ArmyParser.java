@@ -630,7 +630,7 @@ abstract class ArmyParser implements DialectParser {
             if (original instanceof _ParenRowSetContext) {
                 context = (_ParenRowSetContext) original;
             } else {
-                context = ParenSubRowSetContext.create(original, this, original.visible());
+                context = ParenSubRowSetContext.forSimple(original, this, original.visible());
             }
             final _ParensRowSet parensRowSet = (_ParensRowSet) values;
             final StringBuilder sqlBuilder;
@@ -759,7 +759,8 @@ abstract class ArmyParser implements DialectParser {
                 }
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
-            sqlBuilder.append(_Constant.SPACE_AS).append(_Constant.SPACE_LEFT_PAREN);
+            sqlBuilder.append(_Constant.SPACE_AS)
+                    .append(_Constant.SPACE_LEFT_PAREN);
             this.handleQuery(subQuery, context);
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
@@ -781,7 +782,7 @@ abstract class ArmyParser implements DialectParser {
             if (query instanceof Select) {
                 context = SimpleSelectContext.create(original, (Select) query);
             } else if (query instanceof SubQuery) {
-                context = SimpleSubQueryContext.create(original, (SubQuery) query);
+                context = SimpleSubQueryContext.forSimple(original, (SubQuery) query);
             } else {
                 throw _Exceptions.unknownRowSetType(query);
             }
@@ -812,7 +813,7 @@ abstract class ArmyParser implements DialectParser {
             if (query instanceof Select) {
                 context = ParensSelectContext.create(original, (Select) query, this, original.visible());
             } else if (query instanceof SubQuery) {
-                context = ParenSubRowSetContext.create(original);
+                context = ParenSubRowSetContext.forSimple(original);
             } else {
                 throw _Exceptions.unknownRowSetType(query);
             }

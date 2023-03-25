@@ -1,6 +1,6 @@
 package io.army.criteria.standard.unit;
 
-import io.army.criteria.CriteriaException;
+import io.army.criteria.NonLateralException;
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.account.BankAccount_;
@@ -178,7 +178,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     }
 
 
-    @Test(expectedExceptions = CriteriaException.class)
+    @Test(expectedExceptions = NonLateralException.class)
     public void nonLateralReferenceOuterQualifiedField() {
         final Map<String, Object> map = new HashMap<>();
         map.put("nickName", "蛮吉");
@@ -200,7 +200,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         printStmt(LOG, stmt);
     }
 
-    @Test(expectedExceptions = CriteriaException.class)
+    @Test(expectedExceptions = NonLateralException.class)
     public void nonLateralReferenceOuterDerivedField() {
         final Map<String, Object> map = new HashMap<>();
         map.put("nickName", "蛮吉");

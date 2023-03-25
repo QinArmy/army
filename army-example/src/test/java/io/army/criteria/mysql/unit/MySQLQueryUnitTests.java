@@ -88,7 +88,18 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                         //.and(User_.visible.equal(false))
                         .groupBy(PillUser_.userType)
                         .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
-                        .limit(SQLs::literal, 0, 10)
+
+                        .union()
+
+                        .select(PillUser_.id)
+                        .from(PillUser_.T, SQLs.AS, "p")
+                        .where(PillUser_.id::equal, SQLs::literal, () -> 2)
+                        .and(PillUser_.nickName::equal, SQLs::param, this::randomPerson)
+                        .and(PillUser_.version.equal(SQLs::literal, 2))
+                        //.and(User_.version::equal, SQLs::literal, 2)
+                        .groupBy(PillUser_.userType)
+                        .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
+
                         .asQuery()
                 )
                 .unionAll()
@@ -128,6 +139,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                         .union()
                         .select(SQLs.refThis("cte", "n").plus(SQLs::literal, 1)::as, "n")
                         .from("cte")
+                        .where(SQLs.ref("n").less(SQLs::literal, 10))
                         .asQuery()
                 )
                 .space()

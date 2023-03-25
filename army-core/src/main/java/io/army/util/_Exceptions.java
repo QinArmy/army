@@ -243,6 +243,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException cteRefWithClauseOuterField(String cteName) {
+        String m = String.format("Cte[%s] couldn't reference WITH clause outer field.", cteName);
+        throw new CriteriaException(m);
+    }
+
     public static CriteriaException duplicateKeyAndPostIdInsert(ChildTableMeta<?> table) {
         String m;
         m = String.format("%s don't support duplicate key clause or replace insert,because %s generator type is %s"

@@ -18,8 +18,13 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
         Query._AsQueryClause<I>,
         Statement._RightParenClause<RR>,
         _RowSet._SelectItemListSpec,
+        _Statement._WithClauseSpec,
         RowSet {
 
+
+    private final boolean recursive;
+
+    private final List<_Cte> cteList;
 
     private _RowSet innerRowSet;
 
@@ -27,6 +32,8 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
 
     BracketRowSet(ArmyStmtSpec spec) {
         super(CriteriaContexts.bracketContext(spec)); //must migrate WITH clause and context when create bracket.
+        this.recursive = spec.isRecursive();
+        this.cteList = spec.cteList();
         ContextStack.push(this.context);
     }
 
@@ -110,6 +117,17 @@ abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
             throw ContextStack.castCriteriaApi(this.context);
         }
         return rowSet;
+    }
+
+
+    @Override
+    public final boolean isRecursive() {
+        return this.recursive;
+    }
+
+    @Override
+    public final List<_Cte> cteList() {
+        return this.cteList;
     }
 
     @Override

@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
@@ -314,12 +313,12 @@ abstract class CriteriaContexts {
             throw ContextStack.criteriaError(dispatcherContext, m);
         } else if (dispatcherContext.aliasToRefDerivedField != null) {
             throw ContextStack.criteriaError(dispatcherContext,
-                    createNotFoundDerivedFieldMessage(dispatcherContext.aliasToRefDerivedField)
+                    createNotFoundAllDerivedFieldMessage(dispatcherContext.aliasToRefDerivedField)
             );
         } else if (dispatcherContext.refWindowNameMap != null) {
             throw unknownWindows(dispatcherContext, dispatcherContext.refWindowNameMap);
         } else if (dispatcherContext.fieldsFromSubContext != null) {
-            throw unknownQualifiedField(dispatcherContext, dispatcherContext.fieldsFromSubContext);
+            throw unknownQualifiedFields(dispatcherContext, dispatcherContext.fieldsFromSubContext);
         }
 
     }
@@ -367,31 +366,12 @@ abstract class CriteriaContexts {
         return ContextStack.criteriaError(context, m);
     }
 
-    private static CriteriaException notFoundSelectionGroup(CriteriaContext context,
-                                                            Class<? extends _SelectionGroup> groupClass,
-                                                            Collection<? extends _SelectionGroup> groupList) {
-        final StringBuilder builder = new StringBuilder()
-                .append("Not found ")
-                .append(groupClass.getName())
-                .append('[');
-        int count = 0;
-        for (_SelectionGroup group : groupList) {
-            if (count > 0) {
-                builder.append(_Constant.SPACE_COMMA);
-            }
-            builder.append(group.tableAlias());
-            count++;
-        }
-        builder.append(']');
-        return ContextStack.criteriaError(context, builder.toString());
-    }
-
     /**
      * @see JoinableContext#validateQualifiedFieldMap()
      * @see StatementContext#validateFieldFromSubContext(QualifiedField)
      */
-    private static CriteriaException unknownQualifiedField(CriteriaContext context,
-                                                           Collection<QualifiedField<?>> fields) {
+    private static UnknownQualifiedFieldException unknownQualifiedFields(final @Nullable CriteriaContext currentContext,
+                                                                         final Collection<QualifiedField<?>> fields) {
         final StringBuilder builder = new StringBuilder();
         builder.append("unknown ")
                 .append(QualifiedField.class.getName())
@@ -407,43 +387,111 @@ abstract class CriteriaContexts {
 
             count++;
         }
-        return ContextStack.criteriaError(context, builder.toString());
+
+        final UnknownQualifiedFieldException e;
+        if (currentContext == null) {
+            e = ContextStack.clearStackAnd(UnknownQualifiedFieldException::new, builder.toString());
+        } else {
+            e = ContextStack.criteriaError(currentContext, UnknownQualifiedFieldException::new, builder.toString());
+        }
+        return e;
+    }
+
+    /**
+     * @see JoinableContext#validateQualifiedFieldMap()
+     * @see StatementContext#validateFieldFromSubContext(QualifiedField)
+     */
+    private static UnknownQualifiedFieldException unknownQualifiedField(@Nullable CriteriaContext currentContext,
+                                                                        QualifiedField<?> field) {
+        final UnknownQualifiedFieldException e;
+        final String m = String.format("unknown %s", field);
+        if (currentContext == null) {
+            e = ContextStack.clearStackAnd(UnknownQualifiedFieldException::new, m);
+        } else {
+            e = ContextStack.criteriaError(currentContext, UnknownQualifiedFieldException::new, m);
+        }
+        return e;
     }
 
 
-    private static CriteriaException unknownCte(CriteriaContext context, @Nullable String cteName) {
+    private static CriteriaException unknownCte(CriteriaContext currentContext, @Nullable String cteName) {
         String m = String.format("unknown cte[%s]", cteName);
-        return ContextStack.criteriaError(context, m);
+        return ContextStack.criteriaError(currentContext, m);
     }
 
-    private static CriteriaException unknownDerivedField(String derivedAlias, String selectionAlias) {
+    private static UnknownDerivedFieldException unknownDerivedField(String derivedAlias, String selectionAlias) {
         String m = String.format("unknown outer derived field[%s.%s].", derivedAlias, selectionAlias);
-        throw ContextStack.clearStackAndCriteriaError(m);
+        throw ContextStack.clearStackAnd(UnknownDerivedFieldException::new, m);
     }
 
 
-    private static CriteriaException notFoundDerivedField(CriteriaContext context
+    private static UnknownDerivedFieldException unknownRestDerivedField(CriteriaContext context
             , Map<String, Map<String, RefDerivedField>> aliasToRefSelection) {
-        return ContextStack.criteriaError(context, createNotFoundDerivedFieldMessage(aliasToRefSelection));
+        return ContextStack.criteriaError(context, UnknownDerivedFieldException::new,
+                createNotFoundAllDerivedFieldMessage(aliasToRefSelection));
     }
 
-    private static String createNotFoundDerivedFieldMessage(Map<String, Map<String, RefDerivedField>> aliasToRefSelection) {
+    private static UnknownDerivedFieldException unknownDerivedFields(CriteriaContext context, Map<String, RefDerivedField> map) {
+        final StringBuilder builder = new StringBuilder();
+        builder.append("Not found derived field[");
+        appendFoundDerivedFieldsMessage(map, builder, 0);
+        builder.append(']');
+        return ContextStack.criteriaError(context, UnknownDerivedFieldException::new,
+                builder.toString());
+    }
+
+    private static UnknownFieldGroupException unknownFieldDerivedGroups(final CriteriaContext currentContext,
+                                                                        final Collection<? extends _SelectionGroup> groupList) {
+        final StringBuilder builder = new StringBuilder()
+                .append("Not found ")
+                .append('[');
+        int count = 0;
+        for (_SelectionGroup group : groupList) {
+            if (count > 0) {
+                builder.append(_Constant.SPACE_COMMA);
+            }
+            builder.append(group.tableAlias());
+            count++;
+        }
+        builder.append(']');
+        return ContextStack.criteriaError(currentContext, UnknownFieldGroupException::new, builder.toString());
+    }
+
+    static UnknownFieldGroupException unknownFieldDerivedGroup(final @Nullable CriteriaContext currentContext,
+                                                               String groupAlias) {
+        final String m = String.format("unknown derived field group[%s].", groupAlias);
+        final UnknownFieldGroupException e;
+        if (currentContext == null) {
+            e = ContextStack.clearStackAnd(UnknownFieldGroupException::new, m);
+        } else {
+            e = ContextStack.criteriaError(currentContext, UnknownFieldGroupException::new, m);
+        }
+        return e;
+    }
+
+    private static String createNotFoundAllDerivedFieldMessage(Map<String, Map<String, RefDerivedField>> aliasToRefSelection) {
         final StringBuilder builder = new StringBuilder()
                 .append("Not found derived field[");
         int count = 0;
-        for (Map.Entry<String, Map<String, RefDerivedField>> e : aliasToRefSelection.entrySet()) {
-            for (RefDerivedField s : e.getValue().values()) {
-                if (count > 0) {
-                    builder.append(_Constant.SPACE_COMMA);
-                }
-                builder.append(s.tableName)
-                        .append(_Constant.POINT)
-                        .append(s.fieldName);
-                count++;
-            }
+        for (Map<String, RefDerivedField> map : aliasToRefSelection.values()) {
+            count = appendFoundDerivedFieldsMessage(map, builder, count);
         }
         builder.append(']');
         return builder.toString();
+    }
+
+    private static int appendFoundDerivedFieldsMessage(final Map<String, RefDerivedField> map,
+                                                       final StringBuilder builder, int count) {
+        for (RefDerivedField s : map.values()) {
+            if (count > 0) {
+                builder.append(_Constant.SPACE_COMMA);
+            }
+            builder.append(s.tableName)
+                    .append(_Constant.POINT)
+                    .append(s.fieldName);
+            count++;
+        }
+        return count;
     }
 
     private static CriteriaException unknownWindows(CriteriaContext context, Map<String, Boolean> refWindowNameMap) {
@@ -618,7 +666,7 @@ abstract class CriteriaContexts {
             if (recursiveCteMap != null
                     && (recursiveCte = recursiveCteMap.remove(currentName)) != null
                     && (errorMsg = recursiveCte.onRecursiveCteEnd(cte)) != null) {
-                throw ContextStack.criteriaError(this, errorMsg);
+                throw ContextStack.criteriaError(this, UnknownDerivedFieldException::new, errorMsg);
             }
 
             // clear current for next cte
@@ -878,7 +926,7 @@ abstract class CriteriaContexts {
 
         @Override
         public void validateFieldFromSubContext(QualifiedField<?> field) {
-            throw unknownQualifiedField(this, Collections.singleton(field));
+            throw unknownQualifiedField(this, field);
         }
 
         @Override
@@ -1017,10 +1065,10 @@ abstract class CriteriaContexts {
         @SuppressWarnings("unchecked")
         @Override
         public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
-            final Map<String, _TabularBock> aliasToBlock = this.aliasToBlock;
-            if (aliasToBlock != null && !(aliasToBlock instanceof HashMap)) {
+            if (this.isEndContext()) {
                 throw ContextStack.castCriteriaApi(this);
             }
+
             Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasFieldMap = this.aliasFieldMap;
             if (aliasFieldMap == null) {
                 aliasFieldMap = new HashMap<>();
@@ -1128,7 +1176,7 @@ abstract class CriteriaContexts {
         @Override
         public final void validateFieldFromSubContext(final QualifiedField<?> field) {
             if (this.isInWithClause()) {
-                throw unknownQualifiedField(ContextStack.peek(), Collections.singletonList(field));
+                throw unknownQualifiedField(null, field);
             }
             final Map<String, _TabularBock> aliasToBlock = this.aliasToBlock;
             final _TabularBock block;
@@ -1143,7 +1191,7 @@ abstract class CriteriaContexts {
                 aliasSame = tableAlias.equals(((JoinableSingleDmlContext) this).tableAlias);
                 notExists = aliasSame && field.tableMeta() != ((JoinableSingleDmlContext) this).table;
                 if (aliasSame && notExists) {
-                    throw unknownQualifiedField(ContextStack.peek(), Collections.singletonList(field));
+                    throw unknownQualifiedField(null, field);
                 }
             } else {
                 notExists = true;
@@ -1162,12 +1210,21 @@ abstract class CriteriaContexts {
 
         @Override
         final List<_TabularBock> onEndContext() {
-            Map<String, _TabularBock> aliasToBlock = this.aliasToBlock;
+
             //1. assert not duplication
-            if (aliasToBlock != null && !(aliasToBlock instanceof HashMap)) {
+            if (this.isEndContext()) {
                 //no bug,never here
                 throw ContextStack.castCriteriaApi(this);
             }
+            final Map<String, _TabularBock> aliasToBlock;
+            aliasToBlock = _CollectionUtils.safeUnmodifiableMap(this.aliasToBlock);
+            this.aliasToBlock = aliasToBlock;
+
+            final List<_TabularBock> blockList;
+            blockList = _CollectionUtils.safeUnmodifiableList(this.tableBlockList);
+            this.tableBlockList = blockList;//store for recursive checking
+
+
             //2. assert nestedDerivedBufferMap
             final Map<String, _AliasDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
             if (nestedDerivedBufferMap != null && nestedDerivedBufferMap.size() > 0) {
@@ -1178,17 +1235,14 @@ abstract class CriteriaContexts {
             //3. flush bufferDerivedBlock
             this.flushBufferDerivedBlock();
 
-            final List<_TabularBock> blockList;
-            blockList = _CollectionUtils.safeUnmodifiableList(this.tableBlockList);
+
             //4. validate aliasToBlock
             final int blockSize = blockList.size();
             if (blockSize == 0 && !(this instanceof SimpleQueryContext || this instanceof JoinableSingleDmlContext)) {
                 throw ContextStack.castCriteriaApi(this);
             }
-            assert aliasToBlock == null || aliasToBlock.size() >= blockSize;
-            this.tableBlockList = blockList;//store for recursive checking
-            aliasToBlock = _CollectionUtils.safeUnmodifiableMap(aliasToBlock);// unmodifiable
-            this.aliasToBlock = aliasToBlock;
+            assert aliasToBlock.size() >= blockSize;// nested items
+
 
             //5. validate aliasToRefSelection
             if (this.aliasToRefDerivedField != null) {
@@ -1225,30 +1279,32 @@ abstract class CriteriaContexts {
          */
         private void validateDerivedFieldMap() {
             final Map<String, _TabularBock> aliasToBlock = this.aliasToBlock;
-            final Map<String, Map<String, RefDerivedField>> aliasToRefSelection = this.aliasToRefDerivedField;
-            assert aliasToRefSelection != null && aliasToBlock != null;
+            final Map<String, Map<String, RefDerivedField>> aliasToRefDerivedField = this.aliasToRefDerivedField;
+            assert aliasToRefDerivedField != null;
+            if (aliasToBlock == null) {
+                throw unknownRestDerivedField(this, aliasToRefDerivedField);
+            }
 
             _TabularBock block;
             TabularItem tabularItem;
             Map<String, RefDerivedField> refFieldMap;
-            for (String itemAlias : aliasToRefSelection.keySet()) {
+            for (String itemAlias : aliasToRefDerivedField.keySet()) {
                 block = aliasToBlock.get(itemAlias);
                 if (block == null) {
-                    String m = String.format("unknown derived table[%s]", itemAlias);
-                    throw ContextStack.criteriaError(this, m);
+                    throw unknownDerivedFields(this, aliasToRefDerivedField.get(itemAlias));
                 }
                 tabularItem = block.tableItem();
                 if (!(tabularItem instanceof RecursiveCte)) {
                     continue;
                 }
-                refFieldMap = aliasToRefSelection.remove(itemAlias);
+                refFieldMap = aliasToRefDerivedField.remove(itemAlias);
                 if (refFieldMap != null && refFieldMap.size() > 0) {
                     ((RecursiveCte) tabularItem).addRefFields(refFieldMap.values());
                 }
             }
 
-            if (aliasToRefSelection.size() > 0) {
-                throw notFoundDerivedField(this, aliasToRefSelection);
+            if (aliasToRefDerivedField.size() > 0) {
+                throw unknownRestDerivedField(this, aliasToRefDerivedField);
             }
             this.aliasToRefDerivedField = null;//clear
         }
@@ -1266,32 +1322,32 @@ abstract class CriteriaContexts {
 
             String tableAlias;
             TableMeta<?> firstFieldTable;
-            QualifiedField<?> firstField;
             _TabularBock block;
             for (Map.Entry<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasEntry : aliasFieldMap.entrySet()) {
 
-                firstField = null;
                 firstFieldTable = null;
                 for (QualifiedField<?> field : aliasEntry.getValue().values()) {
-                    if (firstField == null) {
-                        firstField = field;
-                        firstFieldTable = firstField.tableMeta();
-                    } else if (field.tableMeta() != firstFieldTable) {
-                        throw qualifiedFieldNotMatch(firstField, field);
+                    if (firstFieldTable != null) {
+                        if (field.tableMeta() != firstFieldTable) {
+                            throw unknownQualifiedField(this, field);
+                        }
+                        continue;
                     }
-                }
 
-                assert firstField != null;
+                    firstFieldTable = field.tableMeta();
 
-                tableAlias = aliasEntry.getKey();
-                if (aliasToBlock != null && (block = aliasToBlock.get(tableAlias)) != null) {
-                    if (block.tableItem() != firstFieldTable) {
-                        throw unknownQualifiedField(this, aliasEntry.getValue().values());
+                    tableAlias = aliasEntry.getKey();
+                    if (aliasToBlock != null && (block = aliasToBlock.get(tableAlias)) != null) {
+                        if (block.tableItem() != firstFieldTable) {
+                            throw unknownQualifiedField(this, field);
+                        }
+                    } else if (outerContext != null) {
+                        this.refOuter = true;
+                        outerContext.validateFieldFromSubContext(field);
                     }
-                } else if (outerContext != null) {
-                    this.refOuter = true;
-                    outerContext.validateFieldFromSubContext(firstField);
-                }
+
+                }// inner for
+
 
             }// outer for
 
@@ -1308,13 +1364,13 @@ abstract class CriteriaContexts {
             assert fieldList != null;
             final Map<String, _TabularBock> aliasToBlock = this.aliasToBlock;
             if (aliasToBlock == null) {
-                throw unknownQualifiedField(this, fieldList);
+                throw unknownQualifiedFields(this, fieldList);
             }
             _TabularBock block;
             for (QualifiedField<?> field : fieldList) {
                 block = aliasToBlock.get(field.tableAlias());
                 if (block == null || block.tableItem() != field.tableMeta()) {
-                    throw unknownQualifiedField(this, Collections.singletonList(field));
+                    throw unknownQualifiedField(this, field);
                 }
             }
 
@@ -1369,11 +1425,10 @@ abstract class CriteriaContexts {
                 throw ContextStack.criteriaError(this, _Exceptions::tableItemAliasNoText, tableItem);
             } else if (aliasToBlock.putIfAbsent(alias, block) != null) {
                 throw ContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
+            } else if (tableItem instanceof RecursiveCte) {
+                this.onAddRecursiveCte((RecursiveCte) tableItem, alias);
             } else if (tableItem instanceof DerivedTable || tableItem instanceof _Cte) {
-                this.doOnAddDerived(block, (_SelectionMap) tableItem, alias);
-                if (this instanceof SimpleQueryContext) {
-                    ((SimpleQueryContext) this).onAddTabularItem(tableItem, alias);
-                }
+                this.onAddDerived(block, (_SelectionMap) tableItem, alias);
             } else if (tableItem instanceof TableMeta) {
                 if (this instanceof SimpleQueryContext) {
                     ((SimpleQueryContext) this).onAddTabularItem(tableItem, alias);
@@ -1427,18 +1482,20 @@ abstract class CriteriaContexts {
         }
 
         /**
-         * @param derivedTable {@link _DerivedTable} or {@link _Cte}
          * @see #addTableBlock(_TabularBock)
          * @see #addNestedItems(_NestedItems)
          */
-        private void doOnAddDerived(final _TabularBock block, final _SelectionMap derivedTable, final String alias) {
-            if (derivedTable instanceof SubQuery) {
+        private void onAddDerived(final _TabularBock block, final _SelectionMap derivedTable, final String alias) {
+            if (derivedTable instanceof DerivedTable && derivedTable instanceof CriteriaContextSpec) {
                 final CriteriaContext context = ((CriteriaContextSpec) derivedTable).getContext();
-                if (((JoinableContext) context).refOuter
+                if (context.getOuterContext() != this) {
+                    String m = String.format("%s[%s] context not match.", DerivedTable.class.getSimpleName(), alias);
+                    throw ContextStack.criteriaError(this, CriteriaException::new, m);
+                } else if (((JoinableContext) context).refOuter
                         && (!(block instanceof _ModifierTableBlock)
                         || ((_ModifierTableBlock) block).modifier() != SQLs.LATERAL)) {
                     String m = String.format("DerivedTable[%s] isn't LATERAL,couldn't reference outer field.", alias);
-                    throw ContextStack.criteriaError(this, m);
+                    throw ContextStack.criteriaError(this, NonLateralException::new, m);
                 }
             }
             final Map<String, Map<String, RefDerivedField>> aliasToRefSelection = this.aliasToRefDerivedField;
@@ -1454,27 +1511,52 @@ abstract class CriteriaContexts {
                 }
             }
 
+            if (this instanceof SimpleQueryContext) {
+                ((SimpleQueryContext) this).onAddTabularItem((TabularItem) derivedTable, alias);
+            }
+
+        }
+
+        /**
+         * @see #addTableBlock(_TabularBock)
+         * @see #addNestedItems(_NestedItems)
+         */
+        private void onAddRecursiveCte(final RecursiveCte cte, final String cteAlias) {
+            final Map<String, Map<String, RefDerivedField>> aliasToRefSelection = this.aliasToRefDerivedField;
+            final Map<String, RefDerivedField> fieldMap;
+            if (aliasToRefSelection != null && (fieldMap = aliasToRefSelection.remove(cteAlias)) != null) {
+                cte.addRefFields(fieldMap.values());
+            }
+
+            if (this instanceof SimpleQueryContext) {
+                ((SimpleQueryContext) this).onAddTabularItem(cte, cteAlias);
+            }
+
         }
 
 
         /**
-         * @param derivedTable {@link _DerivedTable} or {@link _Cte}
-         * @see #doOnAddDerived(_TabularBock, _SelectionMap, String)
+         * @param derivedTable {@link _DerivedTable} or {@link _Cte},but not {@link RecursiveCte}
+         * @see #onAddDerived(_TabularBock, _SelectionMap, String)
          */
-        private void finishRefSelections(final _SelectionMap derivedTable, final String alias,
+        private void finishRefSelections(final _SelectionMap derivedTable, final String tableAlias,
                                          final Map<String, RefDerivedField> fieldMap) {
+            assert !(derivedTable instanceof RecursiveCte)
+                    && (derivedTable instanceof _DerivedTable || derivedTable instanceof _Cte);
+
             Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
             if (aliasToSelection == null) {
                 aliasToSelection = new HashMap<>();
                 this.aliasToDerivedField = aliasToSelection;
             }
             final Map<String, DerivedField> derivedFieldMap;
-            derivedFieldMap = aliasToSelection.computeIfAbsent(alias, k -> new HashMap<>());
+            derivedFieldMap = aliasToSelection.computeIfAbsent(tableAlias, k -> new HashMap<>());
+
             Selection selection;
             for (RefDerivedField field : fieldMap.values()) {
                 selection = derivedTable.refSelection(field.fieldName);
                 if (selection == null) {
-                    throw invalidRef(this, alias, field.fieldName);
+                    throw invalidRef(this, tableAlias, field.fieldName);
                 }
                 assert field.expType.selection == null;
                 field.expType.selection = selection;
@@ -1562,9 +1644,15 @@ abstract class CriteriaContexts {
                     this.addNestedItems((_NestedItems) tableItem);
                 } else if (aliasToBlock.putIfAbsent(alias, block) != null) {
                     throw ContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
+                } else if (tableItem instanceof RecursiveCte) {
+                    this.onAddRecursiveCte((RecursiveCte) tableItem, alias);
                 } else if (tableItem instanceof DerivedTable || tableItem instanceof _Cte) {
                     // note ,no tableBlockList.
-                    this.doOnAddDerived(block, (_SelectionMap) tableItem, alias);
+                    this.onAddDerived(block, (_SelectionMap) tableItem, alias);
+                } else if (tableItem instanceof TableMeta) {
+                    if (this instanceof SimpleQueryContext) {
+                        ((SimpleQueryContext) this).onAddTabularItem(tableItem, alias);
+                    }
                 }
 
             }
@@ -1713,7 +1801,7 @@ abstract class CriteriaContexts {
             if (this.isInWithClause()
                     || field.tableMeta() != this.table
                     || !field.tableAlias().equals(this.tableAlias)) {
-                throw unknownQualifiedField(this, Collections.singletonList(field));
+                throw unknownQualifiedField(this, field);
             }
         }
 
@@ -1814,9 +1902,8 @@ abstract class CriteriaContexts {
          */
         private List<Selection> flatSelectionList;
 
-        private Map<String, TableFieldGroup> tableGroupMap;
+        private Map<String, _SelectionGroup> selectionGroupMap;
 
-        private Map<String, DerivedFieldGroup> derivedGroupMap;
 
         /**
          * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketContext#refSelection(String)}
@@ -1880,29 +1967,20 @@ abstract class CriteriaContexts {
 
             selectItemList.add((_SelectItem) selectItem);
 
-            if (selectItem instanceof DerivedFieldGroup) {
-                Map<String, DerivedFieldGroup> map = this.derivedGroupMap;
+
+            if (selectItem instanceof _SelectionGroup) {
+                Map<String, _SelectionGroup> map = this.selectionGroupMap;
                 if (map == null) {
                     map = new HashMap<>();
-                    this.derivedGroupMap = map;
+                    this.selectionGroupMap = map;
                 }
-                final DerivedFieldGroup group = (DerivedFieldGroup) selectItem;
+                final _SelectionGroup group = (_SelectionGroup) selectItem;
                 if (map.putIfAbsent(group.tableAlias(), group) != null) {
-                    String m = String.format("derived field group[%s] duplication", group.tableAlias());
-                    throw ContextStack.criteriaError(this, m);
-                }
-            } else if (selectItem instanceof TableFieldGroup) {
-                Map<String, TableFieldGroup> map = this.tableGroupMap;
-                if (map == null) {
-                    map = new HashMap<>();
-                    this.tableGroupMap = map;
-                }
-                final TableFieldGroup group = (TableFieldGroup) selectItem;
-                if (map.putIfAbsent(group.tableAlias(), group) != null) {
-                    String m = String.format("%s group[%s] duplication", FieldMeta.class.getSimpleName(),
+                    String m = String.format("%s group[%s] duplication", Selection.class.getName(),
                             group.tableAlias());
                     throw ContextStack.criteriaError(this, m);
                 }
+
             }
             return this;
         }
@@ -2011,35 +2089,39 @@ abstract class CriteriaContexts {
             refWindowNameMap.putIfAbsent(windowName, Boolean.TRUE);
         }
 
-
         private void onAddTabularItem(final TabularItem table, final String alias) {
-            if (table instanceof DerivedTable || table instanceof _Cte) {
-                final Map<String, DerivedFieldGroup> map = this.derivedGroupMap;
-                final DerivedFieldGroup group;
-                if (map != null && (group = map.remove(alias)) != null) {
-                    group.finish((_SelectionMap) table, alias);
-                }
-            } else if (table instanceof TableMeta) {
-                final Map<String, TableFieldGroup> map = this.tableGroupMap;
-                final TableFieldGroup group;
-                if (map != null && (group = map.remove(alias)) != null && group.isIllegalGroup((TableMeta<?>) table)) {
-                    String m = String.format("%s group[%s] and %s[%s] not match.",
-                            FieldMeta.class.getName(), group.tableAlias(), table, alias);
-                    throw ContextStack.criteriaError(this, m);
-                }
+            final Map<String, _SelectionGroup> groupMap = this.selectionGroupMap;
+
+            final _SelectionGroup group;
+            if (groupMap == null || (group = groupMap.remove(alias)) == null) {
+                return;
             }
+
+            if (group instanceof TableFieldGroup) {
+                if (!(table instanceof TableMeta)) {
+                    throw unknownFieldDerivedGroup(this, alias);
+                } else if (((TableFieldGroup) group).isIllegalGroup((TableMeta<?>) table)) {
+                    throw unknownFieldDerivedGroup(this, alias);
+                }
+            } else if (!(group instanceof DerivedFieldGroup)) {
+                throw unknownFieldDerivedGroup(this, alias);
+            } else if (table instanceof RecursiveCte) {
+                ((RecursiveCte) table).addFieldGroup((DerivedFieldGroup) group);
+            } else if (table instanceof DerivedTable || table instanceof _Cte) {
+                ((DerivedFieldGroup) group).finish((_SelectionMap) table, alias);
+            } else {
+                throw unknownFieldDerivedGroup(this, alias);
+            }
+
         }
 
 
         private void endQueryContext() {
             //validate DerivedGroup list
-            final Map<String, DerivedFieldGroup> derivedGroupMap = this.derivedGroupMap;
-            if (derivedGroupMap != null && derivedGroupMap.size() > 0) {
-                throw notFoundSelectionGroup(this, DerivedFieldGroup.class, derivedGroupMap.values());
-            }
-            final Map<String, TableFieldGroup> tableGroupMap = this.tableGroupMap;
-            if (tableGroupMap != null && tableGroupMap.size() > 0) {
-                throw notFoundSelectionGroup(this, TableFieldGroup.class, tableGroupMap.values());
+            final Map<String, _SelectionGroup> groupMap = this.selectionGroupMap;
+
+            if (groupMap != null && groupMap.size() > 0) {
+                throw unknownFieldDerivedGroups(this, groupMap.values());
             }
 
             final Map<String, Boolean> refWindowNameMap = this.refWindowNameMap;
@@ -2049,8 +2131,7 @@ abstract class CriteriaContexts {
 
             this.endSelectClauseIfNeed();
 
-            this.derivedGroupMap = null;
-            this.tableGroupMap = null;
+            this.selectionGroupMap = null;
             this.refWindowNameMap = null;
             this.windowNameMap = null;
         }
@@ -2239,7 +2320,7 @@ abstract class CriteriaContexts {
         public final void validateFieldFromSubContext(final QualifiedField<?> field) {
             final CriteriaContext outerContext = this.outerContext;
             if (outerContext == null) {
-                throw unknownQualifiedField(ContextStack.peek(), Collections.singletonList(field));
+                throw unknownQualifiedField(null, field);
             }
             outerContext.validateFieldFromSubContext(field);
         }
@@ -2400,6 +2481,7 @@ abstract class CriteriaContexts {
             Map<String, Map<FieldMeta<?>, QualifiedField<?>>> fieldMap = this.aliasFieldMap;
             if (fieldMap == null) {
                 fieldMap = new HashMap<>();
+                this.aliasFieldMap = fieldMap;
             }
             return (QualifiedField<T>) fieldMap.computeIfAbsent(tableAlias, k -> new HashMap<>())
                     .computeIfAbsent(field, k -> QualifiedFieldImpl.create(tableAlias, k));
@@ -2415,6 +2497,7 @@ abstract class CriteriaContexts {
             Map<String, Map<String, RefDerivedField>> derivedMap = this.aliasToRefDerivedField;
             if (derivedMap == null) {
                 derivedMap = new HashMap<>();
+                this.aliasToRefDerivedField = derivedMap;
             }
             return derivedMap.computeIfAbsent(derivedAlias, k -> new HashMap<>())
                     .computeIfAbsent(selectionAlias, k -> new RefDerivedField(derivedAlias, k));
@@ -2459,7 +2542,7 @@ abstract class CriteriaContexts {
         @Override
         public final void validateFieldFromSubContext(final QualifiedField<?> field) {
             if (this.isInWithClause()) {
-                throw unknownQualifiedField(ContextStack.peek(), Collections.singletonList(field));
+                throw unknownQualifiedFields(null, Collections.singletonList(field));
             }
             List<QualifiedField<?>> list = this.fieldsFromSubContext;
             if (list == null) {
@@ -2821,6 +2904,8 @@ abstract class CriteriaContexts {
 
         private _Cte actualCte;
 
+        private List<DerivedFieldGroup> fieldGroupList;
+
         /**
          * @see StatementContext#refCte(String)
          */
@@ -2862,7 +2947,8 @@ abstract class CriteriaContexts {
         }
 
         /**
-         * @see JoinableContext#onEndContext()
+         * @see JoinableContext#validateDerivedFieldMap()
+         * @see JoinableContext#onAddRecursiveCte(RecursiveCte, String)
          */
         private void addRefFields(final Collection<RefDerivedField> refFields) {
 
@@ -2876,7 +2962,19 @@ abstract class CriteriaContexts {
         }
 
         /**
-         * @return error message
+         * @see SimpleQueryContext#onAddTabularItem(TabularItem, String)
+         */
+        private void addFieldGroup(final DerivedFieldGroup group) {
+            List<DerivedFieldGroup> groupList = this.fieldGroupList;
+            if (groupList == null) {
+                groupList = new ArrayList<>(1);
+                this.fieldGroupList = groupList;
+            }
+            groupList.add(group);
+        }
+
+        /**
+         * @return not found derived field message
          * @see StatementContext#onAddCte(_Cte)
          */
         @Nullable
@@ -2884,6 +2982,17 @@ abstract class CriteriaContexts {
             assert this.actualCte == null;
             assert cte.name().equals(this.name);
             this.actualCte = cte;
+
+            final List<DerivedFieldGroup> groupList = this.fieldGroupList;
+
+            if (groupList != null) {
+                for (DerivedFieldGroup group : groupList) {
+                    group.finish(cte, group.tableAlias());
+                }
+
+                this.fieldGroupList = null;
+            }
+
             final List<RefDerivedField> refFieldList = this.refFieldList;
             if (refFieldList == null) {
                 return null;
@@ -2907,7 +3016,9 @@ abstract class CriteriaContexts {
                             .append(field.fieldName);
                 }
             }
+
             this.refFieldList = null;
+
             final String errorMsg;
             if (builder == null) {
                 errorMsg = null;

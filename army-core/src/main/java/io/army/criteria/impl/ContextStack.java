@@ -143,6 +143,14 @@ abstract class ContextStack {
         return supplier.get();
     }
 
+    static <T, E extends CriteriaException> E clearStackAnd(Function<T, E> function, @Nullable T input) {
+        final Stack stack = HOLDER.get();
+        if (stack != null) {
+            HOLDER.remove();
+        }
+        return function.apply(input);
+    }
+
     static NullPointerException clearStackAndNullPointer() {
         final Stack stack = HOLDER.get();
         if (stack != null) {
@@ -192,8 +200,8 @@ abstract class ContextStack {
         return function.apply(input);
     }
 
-    static <T> CriteriaException criteriaError(CriteriaContext criteriaContext,
-                                               Function<T, CriteriaException> function, @Nullable T input) {
+    static <T, E extends CriteriaException> E criteriaError(final CriteriaContext criteriaContext,
+                                                            Function<T, E> function, @Nullable T input) {
         clearStackOnError(criteriaContext);
         return function.apply(input);
     }
