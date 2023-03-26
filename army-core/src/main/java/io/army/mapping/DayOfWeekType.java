@@ -49,13 +49,13 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public String beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public DayOfWeekType afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public DayOfWeekType afterGet(SqlType type, MappingEnv env, Object nonNull) {
         //TODO
         throw new UnsupportedOperationException();
     }

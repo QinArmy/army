@@ -37,25 +37,25 @@ public final class MySQLTinyBlobType extends AbstractMappingType {
     }
 
     @Override
-    public byte[] beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public byte[] beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof byte[])) {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         final byte[] value = (byte[]) nonNull;
         if (value.length > MAX_LENGTH) {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return value;
     }
 
     @Override
-    public byte[] afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public byte[] afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof byte[])) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         final byte[] value = (byte[]) nonNull;
         if (value.length > MAX_LENGTH) {
-            throw errorValueForSqlType(sqlType, nonNull, valueOutOfMapping(nonNull, MySQLTinyBlobType.class));
+            throw errorValueForSqlType(type, nonNull, valueOutOfMapping(nonNull, MySQLTinyBlobType.class));
         }
         return value;
     }

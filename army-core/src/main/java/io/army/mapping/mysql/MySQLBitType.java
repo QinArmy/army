@@ -41,14 +41,14 @@ public final class MySQLBitType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Long beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
-        return beforeBind(sqlType, nonNull);
+    public Long beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+        return beforeBind(type, nonNull);
     }
 
     @Override
-    public Long afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Long afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Long)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return (Long) nonNull;
     }

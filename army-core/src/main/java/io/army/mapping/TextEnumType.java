@@ -51,24 +51,24 @@ public final class TextEnumType extends AbstractMappingType {
     }
 
     @Override
-    public String beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         if (!this.javaType.isInstance(nonNull)) {
             String m = String.format("%s isn't %s type.", nonNull.getClass().getName(), this.javaType.getName());
-            throw outRangeOfSqlType(sqlType, nonNull, new CriteriaException(m));
+            throw outRangeOfSqlType(type, nonNull, new CriteriaException(m));
         }
         return ((TextEnum) nonNull).text();
     }
 
     @Override
-    public TextEnum afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public TextEnum afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         final TextEnum value;
         value = this.textMap.get(nonNull);
         if (value == null) {
             String m = String.format("%s don't contain text[%s]", this.javaType.getName(), nonNull);
-            throw errorValueForSqlType(sqlType, nonNull, new IllegalArgumentException(m));
+            throw errorValueForSqlType(type, nonNull, new IllegalArgumentException(m));
         }
         return value;
     }

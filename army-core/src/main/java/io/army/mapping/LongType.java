@@ -46,14 +46,14 @@ public final class LongType extends _NumericType._IntegerType {
     }
 
     @Override
-    public Long beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return beforeBind(sqlType, nonNull, Long.MIN_VALUE, Long.MAX_VALUE);
+    public Long beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        return beforeBind(type, nonNull, Long.MIN_VALUE, Long.MAX_VALUE);
     }
 
     @Override
-    public Long afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Long afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Long)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return (Long) nonNull;
     }

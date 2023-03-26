@@ -50,14 +50,14 @@ public final class JsonType extends AbstractMappingType {
     }
 
     @Override
-    public String beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return StringType.beforeBind(sqlType, nonNull);
+    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        return StringType.beforeBind(type, nonNull);
     }
 
     @Override
-    public String afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public String afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return (String) nonNull;
     }

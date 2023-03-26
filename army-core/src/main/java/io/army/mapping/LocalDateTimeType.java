@@ -51,7 +51,7 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public LocalDateTime beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public LocalDateTime beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         final LocalDateTime value;
         if (nonNull instanceof LocalDateTime) {
             value = (LocalDateTime) nonNull;
@@ -59,18 +59,18 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping {
             try {
                 value = LocalDateTime.parse((String) nonNull, _TimeUtils.getDatetimeFormatter(6));
             } catch (DateTimeException e) {
-                throw valueOutRange(sqlType, nonNull, e);
+                throw valueOutRange(type, nonNull, e);
             }
         } else {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return value;
     }
 
     @Override
-    public LocalDateTime afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public LocalDateTime afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof LocalDateTime)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return (LocalDateTime) nonNull;
     }

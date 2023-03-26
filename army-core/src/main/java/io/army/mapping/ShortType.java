@@ -47,24 +47,24 @@ public final class ShortType extends _NumericType._IntegerType {
     }
 
     @Override
-    public Short beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
-        return (short) IntegerType.beforeBind(sqlType, nonNull, Short.MIN_VALUE, Short.MAX_VALUE);
+    public Short beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+        return (short) IntegerType.beforeBind(type, nonNull, Short.MIN_VALUE, Short.MAX_VALUE);
     }
 
     @Override
-    public Short afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Short afterGet(SqlType type, MappingEnv env, Object nonNull) {
         final short value;
-        switch (sqlType.database()) {
+        switch (type.database()) {
             case MySQL:
             case PostgreSQL: {
                 if (!(nonNull instanceof Short)) {
-                    throw errorJavaTypeForSqlType(sqlType, nonNull);
+                    throw errorJavaTypeForSqlType(type, nonNull);
                 }
                 value = (Short) nonNull;
             }
             break;
             default:
-                throw errorJavaTypeForSqlType(sqlType, nonNull);
+                throw errorJavaTypeForSqlType(type, nonNull);
         }
         return value;
     }

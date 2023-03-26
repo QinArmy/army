@@ -52,13 +52,13 @@ public final class SQLCharType extends AbstractMappingType {
 
 
     @Override
-    public String beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return StringType.beforeBind(sqlType, nonNull);
+    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        return StringType.beforeBind(type, nonNull);
     }
 
     @Override
-    public String afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return StringType.INSTANCE.afterGet(sqlType, env, nonNull);
+    public String afterGet(SqlType type, MappingEnv env, Object nonNull) {
+        return StringType.INSTANCE.afterGet(type, env, nonNull);
     }
 
 

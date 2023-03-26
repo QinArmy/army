@@ -23,12 +23,12 @@ public final class VoidType extends _ArmyInnerMapping {
     }
 
     @Override
-    public Object beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) {
         throw new UnsupportedOperationException();
     }
 

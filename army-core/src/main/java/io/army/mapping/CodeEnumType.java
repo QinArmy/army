@@ -60,24 +60,24 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Integer beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Integer beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         if (!this.enumClass.isInstance(nonNull)) {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return ((CodeEnum) nonNull).code();
     }
 
     @Override
-    public CodeEnum afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public CodeEnum afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         final CodeEnum value;
         value = this.codeMap.get(nonNull);
         if (value == null) {
             String m = String.format("Not found enum instance for code[%s] in enum[%s]."
                     , nonNull, this.enumClass.getName());
-            throw errorValueForSqlType(sqlType, nonNull, new MetaException(m));
+            throw errorValueForSqlType(type, nonNull, new MetaException(m));
         }
         return value;
     }

@@ -47,22 +47,22 @@ public final class YearType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public Object beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         final Object value;
-        switch (sqlType.database()) {
+        switch (type.database()) {
             case MySQL: {
                 if (nonNull instanceof Year) {
                     value = ((Year) nonNull).getValue();
                 } else if (nonNull instanceof Integer || nonNull instanceof Short) {
                     value = ((Number) nonNull).intValue();
                 } else {
-                    throw outRangeOfSqlType(sqlType, nonNull);
+                    throw outRangeOfSqlType(type, nonNull);
                 }
             }
             break;
             case PostgreSQL: {
                 if (!(nonNull instanceof Integer)) {
-                    throw outRangeOfSqlType(sqlType, nonNull);
+                    throw outRangeOfSqlType(type, nonNull);
                 }
                 value = nonNull;
             }
@@ -71,26 +71,26 @@ public final class YearType extends _ArmyNoInjectionMapping {
             case Oracle:
             case H2:
             default:
-                throw outRangeOfSqlType(sqlType, nonNull);
+                throw outRangeOfSqlType(type, nonNull);
 
         }
         return value;
     }
 
     @Override
-    public Year afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Year afterGet(SqlType type, MappingEnv env, Object nonNull) {
         final Year value;
-        switch (sqlType.database()) {
+        switch (type.database()) {
             case MySQL: {
                 if (!(nonNull instanceof Year)) {
-                    throw errorJavaTypeForSqlType(sqlType, nonNull);
+                    throw errorJavaTypeForSqlType(type, nonNull);
                 }
                 value = (Year) nonNull;
             }
             break;
             case PostgreSQL: {
                 if (!(nonNull instanceof Integer)) {
-                    throw errorJavaTypeForSqlType(sqlType, nonNull);
+                    throw errorJavaTypeForSqlType(type, nonNull);
                 }
                 value = Year.of((Integer) nonNull);
             }
@@ -98,7 +98,7 @@ public final class YearType extends _ArmyNoInjectionMapping {
             case H2:
             case Oracle:
             default:
-                throw errorJavaTypeForSqlType(sqlType, nonNull);
+                throw errorJavaTypeForSqlType(type, nonNull);
         }
         return value;
     }

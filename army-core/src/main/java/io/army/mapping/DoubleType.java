@@ -42,7 +42,7 @@ public final class DoubleType extends _NumericType._FloatNumericType {
     }
 
     @Override
-    public Double beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Double beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         final double value;
         if (nonNull instanceof Double) {
             value = (Double) nonNull;
@@ -52,18 +52,18 @@ public final class DoubleType extends _NumericType._FloatNumericType {
             try {
                 value = Double.parseDouble((String) nonNull);
             } catch (NumberFormatException e) {
-                throw valueOutRange(sqlType, nonNull, e);
+                throw valueOutRange(type, nonNull, e);
             }
         } else {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return value;
     }
 
     @Override
-    public Double afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Double afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Double)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return (Double) nonNull;
     }

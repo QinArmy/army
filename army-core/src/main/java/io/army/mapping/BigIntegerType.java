@@ -11,7 +11,7 @@ public final class BigIntegerType extends _NumericType._IntegerType {
     public static final BigIntegerType INSTANCE = new BigIntegerType();
 
     public static BigIntegerType from(Class<?> fieldType) {
-        if (fieldType != BigDecimal.class) {
+        if (fieldType != BigInteger.class) {
             throw errorJavaType(BigIntegerType.class, fieldType);
         }
         return INSTANCE;
@@ -34,23 +34,23 @@ public final class BigIntegerType extends _NumericType._IntegerType {
     }
 
     @Override
-    public BigDecimal beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public BigDecimal beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         final BigDecimal value;
-        value = BigDecimalType.INSTANCE.beforeBind(sqlType, env, nonNull);
+        value = BigDecimalType.INSTANCE.beforeBind(type, env, nonNull);
         if (value.scale() != 0) {
-            throw valueOutRange(sqlType, nonNull, null);
+            throw valueOutRange(type, nonNull, null);
         }
         return value;
     }
 
     @Override
-    public BigInteger afterGet(final SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public BigInteger afterGet(final SqlType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof BigDecimal)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         final BigDecimal value = ((BigDecimal) nonNull).stripTrailingZeros();
         if (value.scale() != 0) {
-            throw errorValueForSqlType(sqlType, nonNull, null);
+            throw errorValueForSqlType(type, nonNull, null);
         }
         return value.toBigInteger();
     }

@@ -62,23 +62,23 @@ public final class StringType extends _SQLStringType {
     }
 
     @Override
-    public String beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
-        return beforeBind(sqlType, nonNull);
+    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+        return beforeBind(type, nonNull);
     }
 
     @Override
-    public String afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public String afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         final String value;
         if (nonNull instanceof String) {
             value = (String) nonNull;
         } else if (nonNull instanceof LongString) {
             final LongString v = (LongString) nonNull;
             if (!(v.isString())) {
-                throw errorValueForSqlType(sqlType, nonNull, null);
+                throw errorValueForSqlType(type, nonNull, null);
             }
             value = v.asString();
         } else {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return value;
     }

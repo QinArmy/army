@@ -48,14 +48,14 @@ public final class IntegerType extends _NumericType._IntegerType {
     }
 
     @Override
-    public Integer beforeBind(SqlType sqlType, final MappingEnv env, final Object nonNull) {
-        return beforeBind(sqlType, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE);
+    public Integer beforeBind(SqlType type, final MappingEnv env, final Object nonNull) {
+        return beforeBind(type, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
     @Override
-    public Integer afterGet(SqlType sqlType, final MappingEnv env, Object nonNull) {
+    public Integer afterGet(SqlType type, final MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return (Integer) nonNull;
     }

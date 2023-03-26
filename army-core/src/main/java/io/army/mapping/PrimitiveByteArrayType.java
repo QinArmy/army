@@ -46,21 +46,21 @@ public final class PrimitiveByteArrayType extends AbstractMappingType {
     }
 
     @Override
-    public byte[] beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public byte[] beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return (byte[]) nonNull;
     }
 
     @Override
-    public byte[] afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public byte[] afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         final byte[] value;
-        switch (sqlType.database()) {
+        switch (type.database()) {
             case MySQL:
             case H2: {
                 if (!(nonNull instanceof byte[])) {
-                    throw errorJavaTypeForSqlType(sqlType, nonNull);
+                    throw errorJavaTypeForSqlType(type, nonNull);
                 }
                 value = (byte[]) nonNull;
             }
@@ -68,7 +68,7 @@ public final class PrimitiveByteArrayType extends AbstractMappingType {
             case PostgreSQL://TODO
             case Oracle://TODO
             default:
-                throw errorJavaTypeForSqlType(sqlType, nonNull);
+                throw errorJavaTypeForSqlType(type, nonNull);
         }
         return value;
     }

@@ -52,7 +52,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
 
 
     @Override
-    public Boolean beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public Boolean beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         final boolean value;
         if (nonNull instanceof Boolean) {
             value = (Boolean) nonNull;
@@ -66,7 +66,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
             } else if (FALSE.equalsIgnoreCase((String) nonNull)) {
                 value = false;
             } else {
-                throw valueOutRange(sqlType, nonNull, null);
+                throw valueOutRange(type, nonNull, null);
             }
         } else if (nonNull instanceof BigDecimal) {
             value = BigDecimal.ZERO.compareTo((BigDecimal) nonNull) != 0;
@@ -75,15 +75,15 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof Double || nonNull instanceof Float) {
             value = Double.compare(((Number) nonNull).doubleValue(), 0.0D) != 0;
         } else {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return value;
     }
 
     @Override
-    public Boolean afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public Boolean afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof Boolean)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return (Boolean) nonNull;
     }

@@ -37,7 +37,7 @@ public final class YearMonthType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public LocalDate beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public LocalDate beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         final YearMonth value;
         if (nonNull instanceof YearMonth) {
             value = (YearMonth) nonNull;
@@ -45,18 +45,18 @@ public final class YearMonthType extends _ArmyNoInjectionMapping {
             try {
                 value = YearMonth.parse((String) nonNull);
             } catch (DateTimeException e) {
-                throw valueOutRange(sqlType, nonNull, e);
+                throw valueOutRange(type, nonNull, e);
             }
         } else {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return LocalDate.of(value.getYear(), value.getMonth(), 1);
     }
 
     @Override
-    public YearMonth afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public YearMonth afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof LocalDate)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         final LocalDate v = (LocalDate) nonNull;
         return YearMonth.of(v.getYear(), v.getMonth());

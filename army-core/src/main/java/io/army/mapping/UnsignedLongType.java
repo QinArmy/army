@@ -50,23 +50,23 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
-    public BigDecimal beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public BigDecimal beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         final BigDecimal value;
-        value = BigIntegerType.INSTANCE.beforeBind(sqlType, env, nonNull);
+        value = BigIntegerType.INSTANCE.beforeBind(type, env, nonNull);
         if (value.compareTo(BigDecimal.ZERO) < 0 || value.compareTo(new BigDecimal(MAX)) > 0) {
-            throw valueOutRange(sqlType, nonNull, null);
+            throw valueOutRange(type, nonNull, null);
         }
         return value;
     }
 
     @Override
-    public BigInteger afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public BigInteger afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof BigDecimal)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
         if (v.scale() != 0 || v.compareTo(BigDecimal.ZERO) < 0 || v.compareTo(new BigDecimal(MAX)) > 0) {
-            throw errorValueForSqlType(sqlType, nonNull, null);
+            throw errorValueForSqlType(type, nonNull, null);
         }
         return v.toBigInteger();
     }

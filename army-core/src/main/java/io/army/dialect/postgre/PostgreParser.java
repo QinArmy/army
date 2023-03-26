@@ -84,23 +84,23 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 if (!(value instanceof Integer)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
                 }
-                sqlBuilder.append(value)
-                        .append("::INTEGER");
+                sqlBuilder.append(value);
             }
             break;
             case BIGINT: {
                 if (!(value instanceof Long)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
                 }
-                sqlBuilder.append(value)
-                        .append("::BIGINT");
+                sqlBuilder.append(value);
             }
             break;
             case DECIMAL: {
                 if (!(value instanceof BigDecimal)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
                 }
-                sqlBuilder.append(((BigDecimal) value).toPlainString())
+                sqlBuilder.append(_Constant.QUOTE)
+                        .append(((BigDecimal) value).toPlainString())
+                        .append(_Constant.QUOTE)
                         .append("::DECIMAL");
             }
             break;
@@ -108,7 +108,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 if (!(value instanceof Double)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
                 }
-                sqlBuilder.append(value)
+                sqlBuilder.append(_Constant.QUOTE)
+                        .append(value)
+                        .append(_Constant.QUOTE)
                         .append("::DOUBLE");
             }
             break;
@@ -116,7 +118,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 if (!(value instanceof Float)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
                 }
-                sqlBuilder.append(value)
+                sqlBuilder.append(_Constant.QUOTE)
+                        .append(value)
+                        .append(_Constant.QUOTE)
                         .append("::REAL");
             }
             break;
@@ -184,41 +188,112 @@ abstract class PostgreParser extends _ArmyDialectParser {
                         .append("::BIT VARYING");
                 break;
             case JSONB:
-
-            case BOX:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::JSONB");
+                break;
             case XML:
-            case CIDR:
-
-            case INET:
-
-            case LINE:
-            case PATH:
-
-            case UUID:
-            case MONEY:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::XML");
+                break;
+            // Geometric Types
             case POINT:
-
-            case CIRCLES:
-            case MACADDR:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::POINT");
+                break;
+            case LINE:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::LINE");
+                break;
+            case LSEG:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::LSEG");
+                break;
+            case BOX:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::BOX");
+                break;
+            case PATH:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::PATH");
+                break;
             case POLYGON:
-            case TSQUERY:
-            case TSRANGE:
-
-            case INTERVAL:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::POLYGON");
+                break;
+            case CIRCLES:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::CIRCLES");
+                break;
+            // Network Address Types
+            case CIDR:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::CIDR");
+                break;
+            case INET:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::INET");
+                break;
+            case MACADDR:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::MACADDR");
+                break;
             case MACADDR8:
-            case NUMRANGE:
-
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::MACADDR8");
+                break;
+            //
+            case UUID:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::UUID");
+                break;
+            case MONEY:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::MONEY");
+                break;
+            case TSQUERY:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::TSQUERY");
+                break;
             case TSVECTOR:
-
-            case DATERANGE:
-            case BOX_ARRAY:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::TSVECTOR");
+                break;
+            // Range Types
             case INT4RANGE:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::INT4RANGE");
+                break;
             case INT8RANGE:
-            case OID_ARRAY:
-            case LINE_SEGMENT:
-
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::INT8RANGE");
+                break;
+            case NUMRANGE:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::NUMRANGE");
+                break;
+            case TSRANGE:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::TSRANGE");
+                break;
             case TSTZRANGE:
-
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::TSTZRANGE");
+                break;
+            case DATERANGE:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::DATERANGE");
+                break;
+            case INTERVAL:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::INTERVAL");
+                break;
+            case REF_CURSOR:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::REF_CURSOR");
+                break;
+            // below array
+            case BOX_ARRAY:
+            case OID_ARRAY:
             case BIT_ARRAY:
             case XML_ARRAY:
             case CHAR_ARRAY:
@@ -229,7 +304,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case LINE_ARRAY:
             case PATH_ARRAY:
             case REAL_ARRAY:
-            case REF_CURSOR:
             case TEXT_ARRAY:
             case TIME_ARRAY:
             case UUID_ARRAY:
@@ -262,6 +336,8 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case TSTZRANGE_ARRAY:
             case TIMESTAMPTZ_ARRAY:
             case LINE_SEGMENT_ARRAY:
+                //TODO check array syntax
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
                 break;
             default:
                 throw _Exceptions.unexpectedEnum((PostgreType) type);

@@ -48,22 +48,22 @@ public final class UnsignedIntegerType extends _NumericType._UnsignedIntegerType
     }
 
     @Override
-    public Long beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return LongType.beforeBind(sqlType, nonNull, 0L, 0xFFFF_FFFFL);
+    public Long beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        return LongType.beforeBind(type, nonNull, 0L, 0xFFFF_FFFFL);
     }
 
     @Override
-    public Long afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Long afterGet(SqlType type, MappingEnv env, Object nonNull) {
         final long value;
-        switch (sqlType.database()) {
+        switch (type.database()) {
             case MySQL:
             case PostgreSQL: {
                 if (!(nonNull instanceof Long)) {
-                    throw errorJavaTypeForSqlType(sqlType, nonNull);
+                    throw errorJavaTypeForSqlType(type, nonNull);
                 }
                 value = (Long) nonNull;
                 if (value < 0L || value > 0xFFFF_FFFFL) {
-                    throw errorValueForSqlType(sqlType, nonNull, null);
+                    throw errorValueForSqlType(type, nonNull, null);
                 }
             }
             break;
@@ -71,7 +71,7 @@ public final class UnsignedIntegerType extends _NumericType._UnsignedIntegerType
             case Oracle:
             case H2:
             default:
-                throw errorJavaTypeForSqlType(sqlType, nonNull);
+                throw errorJavaTypeForSqlType(type, nonNull);
         }
         return value;
     }

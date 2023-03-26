@@ -52,12 +52,14 @@ public enum PostgreType implements SqlType {
     XML,
     POINT,
     CIRCLES,
+    @Deprecated
     LINE_SEGMENT,
     PATH,
 
     // below Geometries use ResultRow.get
     BOX,
     LINE,
+    LSEG,
     POLYGON,
 
     JSON,

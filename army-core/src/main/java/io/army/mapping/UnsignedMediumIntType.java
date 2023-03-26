@@ -47,18 +47,18 @@ public final class UnsignedMediumIntType extends _NumericType._UnsignedIntegerTy
     }
 
     @Override
-    public Integer beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return IntegerType.beforeBind(sqlType, nonNull, 0, MAX);
+    public Integer beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        return IntegerType.beforeBind(type, nonNull, 0, MAX);
     }
 
     @Override
-    public Integer afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Integer afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         final int value = (Integer) nonNull;
         if (value < 0 || value > MAX) {
-            throw errorValueForSqlType(sqlType, nonNull, valueOutOfMapping(nonNull, UnsignedMediumIntType.class));
+            throw errorValueForSqlType(type, nonNull, valueOutOfMapping(nonNull, UnsignedMediumIntType.class));
         }
         return value;
     }

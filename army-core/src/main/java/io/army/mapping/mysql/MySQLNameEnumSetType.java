@@ -56,16 +56,16 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
     }
 
     @Override
-    public String beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Set)) {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         final StringBuilder builder = new StringBuilder();
         final Class<?> elementJavaType = this.elementTypes.get(0);
         int index = 0;
         for (Object e : (Set<?>) nonNull) {
             if (!elementJavaType.isInstance(e)) {
-                throw valueOutRange(sqlType, nonNull, null);
+                throw valueOutRange(type, nonNull, null);
             }
             if (index > 0) {
                 builder.append(_Constant.COMMA);
@@ -77,14 +77,14 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
     }
 
     @Override
-    public Set<?> afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Set<?> afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         try {
             return parseToSet(this.elementTypes.get(0), (String) nonNull);
         } catch (IllegalArgumentException e) {
-            throw errorValueForSqlType(sqlType, nonNull, e);
+            throw errorValueForSqlType(type, nonNull, e);
         }
     }
 

@@ -30,42 +30,42 @@ public final class BigDecimalType extends _NumericType implements _NumericType._
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        final SqlType sqlDataType;
+        final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySQLTypes.DECIMAL;
+                type = MySQLTypes.DECIMAL;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreType.DECIMAL;
+                type = PostgreType.DECIMAL;
                 break;
             case H2:
-                sqlDataType = H2DataType.DECIMAL;
+                type = H2DataType.DECIMAL;
                 break;
             case Oracle:
-                sqlDataType = OracleDataType.NUMBER;
+                type = OracleDataType.NUMBER;
                 break;
             default:
                 throw noMappingError(meta);
 
         }
-        return sqlDataType;
+        return type;
     }
 
     @Override
-    public BigDecimal beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
-        return beforeBind(sqlType, nonNull);
+    public BigDecimal beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+        return convertToBigDecimal(type, nonNull);
     }
 
     @Override
-    public BigDecimal afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public BigDecimal afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof BigDecimal)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return (BigDecimal) nonNull;
     }
 
 
-    public static BigDecimal beforeBind(final SqlType sqlType, final Object nonNull) {
+    public static BigDecimal convertToBigDecimal(final SqlType type, final Object nonNull) {
         final BigDecimal value;
         if (nonNull instanceof BigDecimal) {
             value = (BigDecimal) nonNull;
@@ -78,18 +78,16 @@ public final class BigDecimalType extends _NumericType implements _NumericType._
             value = new BigDecimal((BigInteger) nonNull);
         } else if (nonNull instanceof Boolean) {
             value = (Boolean) nonNull ? BigDecimal.ONE : BigDecimal.ZERO;
-        } else if (nonNull instanceof Double) {
-            value = BigDecimal.valueOf((Double) nonNull);
-        } else if (nonNull instanceof Float) {
-            value = BigDecimal.valueOf((Float) nonNull);
+        } else if (nonNull instanceof Double || nonNull instanceof Float) {
+            value = new BigDecimal(nonNull.toString());
         } else if (nonNull instanceof String) {
             try {
                 value = new BigDecimal((String) nonNull);
             } catch (NumberFormatException e) {
-                throw valueOutRange(sqlType, nonNull, e);
+                throw valueOutRange(type, nonNull, e);
             }
         } else {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return value;
     }

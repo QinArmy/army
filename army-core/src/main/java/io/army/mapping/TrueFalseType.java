@@ -56,13 +56,13 @@ public final class TrueFalseType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public Object beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof Boolean)) {
             String m = String.format("%s support only %s", TrueFalseType.class.getName(), Boolean.class.getName());
-            throw outRangeOfSqlType(sqlType, nonNull, new CriteriaException(m));
+            throw outRangeOfSqlType(type, nonNull, new CriteriaException(m));
         }
         final Object value;
-        if (sqlType.database() == Database.PostgreSQL) {
+        if (type.database() == Database.PostgreSQL) {
             value = nonNull;
         } else {
             value = ((Boolean) nonNull) ? T : F;
@@ -71,23 +71,23 @@ public final class TrueFalseType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Boolean afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public Boolean afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         final Boolean value;
-        if (sqlType.database() == Database.PostgreSQL) {
+        if (type.database() == Database.PostgreSQL) {
             if (!(nonNull instanceof Boolean)) {
-                throw errorJavaTypeForSqlType(sqlType, nonNull);
+                throw errorJavaTypeForSqlType(type, nonNull);
             }
             value = (Boolean) nonNull;
         } else {
             if (!(nonNull instanceof String)) {
-                throw errorJavaTypeForSqlType(sqlType, nonNull);
+                throw errorJavaTypeForSqlType(type, nonNull);
             }
             if (T.equalsIgnoreCase((String) nonNull)) {
                 value = Boolean.TRUE;
             } else if (F.equalsIgnoreCase((String) nonNull)) {
                 value = Boolean.FALSE;
             } else {
-                throw errorJavaTypeForSqlType(sqlType, nonNull);
+                throw errorJavaTypeForSqlType(type, nonNull);
             }
         }
         return value;

@@ -42,23 +42,23 @@ public final class MySQLTextType extends AbstractMappingType {
     }
 
     @Override
-    public String beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         final String value;
-        value = StringType.beforeBind(sqlType, nonNull);
+        value = StringType.beforeBind(type, nonNull);
         if (value.length() > MAX_LENGTH) {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return value;
     }
 
     @Override
-    public String afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public String afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         final String value = (String) nonNull;
         if (value.length() > MAX_LENGTH) {
-            throw errorValueForSqlType(sqlType, nonNull, valueOutOfMapping(nonNull, MySQLTextType.class));
+            throw errorValueForSqlType(type, nonNull, valueOutOfMapping(nonNull, MySQLTextType.class));
         }
         return value;
     }

@@ -49,18 +49,18 @@ public final class MediumIntType extends _NumericType {
     }
 
     @Override
-    public Integer beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return IntegerType.beforeBind(sqlType, nonNull, MIN, MAX);
+    public Integer beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        return IntegerType.beforeBind(type, nonNull, MIN, MAX);
     }
 
     @Override
-    public Integer afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Integer afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         final int value = (Integer) nonNull;
         if (value < MIN || value > MAX) {
-            throw errorValueForSqlType(sqlType, nonNull, valueOutOfMapping(nonNull, MediumIntType.class));
+            throw errorValueForSqlType(type, nonNull, valueOutOfMapping(nonNull, MediumIntType.class));
         }
         return value;
     }

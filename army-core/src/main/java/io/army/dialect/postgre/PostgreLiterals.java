@@ -7,16 +7,16 @@ import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-abstract class PostgreLiterals extends _Literals {
+ abstract class PostgreLiterals extends _Literals {
 
-    private PostgreLiterals() {
-    }
+     private PostgreLiterals() {
+     }
 
 
-    static StringBuilder postgreBackslashEscapes(final TypeMeta typeMeta, final SqlType type, final Object value,
-                                                 final StringBuilder sqlBuilder) {
-        if (!(value instanceof String)) {//TODO think long string
-            throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+     static StringBuilder postgreBackslashEscapes(final TypeMeta typeMeta, final SqlType type, final Object value,
+                                                  final StringBuilder sqlBuilder) {
+         if (!(value instanceof String)) {//TODO think long string
+             throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
         }
 
         final char[] charArray = ((String) value).toCharArray();
@@ -94,4 +94,4 @@ abstract class PostgreLiterals extends _Literals {
     }
 
 
-}
+ }

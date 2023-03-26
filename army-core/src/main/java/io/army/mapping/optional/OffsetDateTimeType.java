@@ -53,7 +53,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public OffsetDateTime beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public OffsetDateTime beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         final OffsetDateTime value;
         if (nonNull instanceof OffsetDateTime) {
             value = (OffsetDateTime) nonNull;
@@ -63,18 +63,18 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping {
             try {
                 value = OffsetDateTime.parse((String) nonNull, _TimeUtils.getDatetimeOffsetFormatter(6));
             } catch (DateTimeException e) {
-                throw valueOutRange(sqlType, nonNull, e);
+                throw valueOutRange(type, nonNull, e);
             }
         } else {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return value;
     }
 
     @Override
-    public OffsetDateTime afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public OffsetDateTime afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof OffsetDateTime)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return (OffsetDateTime) nonNull;
     }

@@ -31,13 +31,13 @@ public final class PathType extends AbstractMappingType {
     }
 
     @Override
-    public Object beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) {
         //TODO
         throw new UnsupportedOperationException();
     }

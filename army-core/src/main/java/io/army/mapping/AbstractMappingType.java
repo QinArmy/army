@@ -10,6 +10,7 @@ import io.army.meta.TypeMeta;
 import io.army.session.DataAccessException;
 import io.army.session.ParamException;
 import io.army.sqltype.SqlType;
+import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 
 import java.nio.charset.Charset;
@@ -113,6 +114,16 @@ public abstract class AbstractMappingType implements MappingType {
             , Class<? extends MappingType> typeClass) {
         String m = String.format("value[%s] out of range of %s .", nonNull, typeClass.getName());
         return new IllegalArgumentException(m);
+    }
+
+
+    /**
+     * @see #convert(MappingEnv, Object)
+     */
+    protected final CriteriaException dontSupportConvertType(Object nonNull) {
+        String m = String.format("%s don't support convert %s", this.getClass().getName(),
+                _ClassUtils.safeClassName(nonNull));
+        throw new CriteriaException(m);
     }
 
     protected static Charset getCharset(Class<?> javaType, Mapping mapping) throws MetaException {

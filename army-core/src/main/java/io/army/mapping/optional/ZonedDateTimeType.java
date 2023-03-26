@@ -37,14 +37,14 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public OffsetDateTime beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return OffsetDateTimeType.INSTANCE.beforeBind(sqlType, env, nonNull);
+    public OffsetDateTime beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        return OffsetDateTimeType.INSTANCE.beforeBind(type, env, nonNull);
     }
 
     @Override
-    public ZonedDateTime afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public ZonedDateTime afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof OffsetDateTime)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return ((OffsetDateTime) nonNull).toZonedDateTime();
     }

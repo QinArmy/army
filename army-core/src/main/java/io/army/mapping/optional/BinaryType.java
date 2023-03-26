@@ -52,13 +52,13 @@ public final class BinaryType extends AbstractMappingType {
 
 
     @Override
-    public byte[] beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return PrimitiveByteArrayType.INSTANCE.beforeBind(sqlType, env, nonNull);
+    public byte[] beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        return PrimitiveByteArrayType.INSTANCE.beforeBind(type, env, nonNull);
     }
 
     @Override
-    public byte[] afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return PrimitiveByteArrayType.INSTANCE.afterGet(sqlType, env, nonNull);
+    public byte[] afterGet(SqlType type, MappingEnv env, Object nonNull) {
+        return PrimitiveByteArrayType.INSTANCE.afterGet(type, env, nonNull);
     }
 
 

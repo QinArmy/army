@@ -56,11 +56,11 @@ public final class MySQLLongBlobType extends AbstractMappingType {
     }
 
     @Override
-    public Object beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         if (nonNull instanceof Path) {
             if (Files.notExists((Path) nonNull)) {
                 String m = String.format("%s not exists.", nonNull);
-                throw outRangeOfSqlType(sqlType, nonNull, new IOException(m));
+                throw outRangeOfSqlType(type, nonNull, new IOException(m));
             }
             try {
                 final long size;
@@ -68,38 +68,38 @@ public final class MySQLLongBlobType extends AbstractMappingType {
                 if (size > MAX_LENGTH) {
                     String m = String.format("%s size[%s] > %s.MAX_LENGTH[%s].", nonNull, size
                             , MySQLLongBlobType.class.getName(), MAX_LENGTH);
-                    throw outRangeOfSqlType(sqlType, nonNull, new IllegalArgumentException(m));
+                    throw outRangeOfSqlType(type, nonNull, new IllegalArgumentException(m));
                 }
             } catch (IOException e) {
-                throw outRangeOfSqlType(sqlType, nonNull, e);
+                throw outRangeOfSqlType(type, nonNull, e);
             }
         } else if (!(nonNull instanceof byte[])) {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return nonNull;
     }
 
     @Override
-    public Object afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) {
         final Object value;
         if (this.javaType == byte[].class) {
             if (nonNull instanceof byte[]) {
                 value = nonNull;
             } else if (nonNull instanceof Path) {
-                value = readBytesFromPath(sqlType, (Path) nonNull);
+                value = readBytesFromPath(type, (Path) nonNull);
             } else {
-                throw errorJavaTypeForSqlType(sqlType, nonNull);
+                throw errorJavaTypeForSqlType(type, nonNull);
             }
         } else if (this.javaType == Path.class) {
             if (nonNull instanceof Path) {
                 value = nonNull;
             } else if (nonNull instanceof byte[]) {
-                value = writeBytesToPath(sqlType, (byte[]) nonNull);
+                value = writeBytesToPath(type, (byte[]) nonNull);
             } else {
-                throw errorJavaTypeForSqlType(sqlType, nonNull);
+                throw errorJavaTypeForSqlType(type, nonNull);
             }
         } else {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return value;
     }

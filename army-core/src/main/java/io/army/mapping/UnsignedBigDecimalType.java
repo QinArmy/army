@@ -48,18 +48,18 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
     }
 
     @Override
-    public BigDecimal beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return BigDecimalType.beforeBind(sqlType, nonNull);
+    public BigDecimal beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        return BigDecimalType.convertToBigDecimal(type, nonNull);
     }
 
     @Override
-    public BigDecimal afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public BigDecimal afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof BigDecimal)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         final BigDecimal value = (BigDecimal) nonNull;
         if (value.compareTo(BigDecimal.ZERO) < 0) {
-            throw errorValueForSqlType(sqlType, nonNull, valueOutOfMapping(nonNull, UnsignedBigDecimalType.class));
+            throw errorValueForSqlType(type, nonNull, valueOutOfMapping(nonNull, UnsignedBigDecimalType.class));
         }
         return value;
     }

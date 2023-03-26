@@ -44,31 +44,31 @@ public final class ByteType extends _NumericType._IntegerType {
     }
 
     @Override
-    public Byte beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
-        return (byte) IntegerType.beforeBind(sqlType, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE);
+    public Byte beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+        return (byte) IntegerType.beforeBind(type, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE);
     }
 
 
     @Override
-    public Byte afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Byte afterGet(SqlType type, MappingEnv env, Object nonNull) {
         final byte value;
-        switch (sqlType.database()) {
+        switch (type.database()) {
             case MySQL: {
                 if (!(nonNull instanceof Byte)) {
-                    throw errorJavaTypeForSqlType(sqlType, nonNull);
+                    throw errorJavaTypeForSqlType(type, nonNull);
                 }
                 value = (Byte) nonNull;
             }
             break;
             case PostgreSQL: {
                 if (!(nonNull instanceof Short)) {
-                    throw errorJavaTypeForSqlType(sqlType, nonNull);
+                    throw errorJavaTypeForSqlType(type, nonNull);
                 }
                 value = ((Short) nonNull).byteValue();
             }
             break;
             default:
-                throw errorJavaTypeForSqlType(sqlType, nonNull);
+                throw errorJavaTypeForSqlType(type, nonNull);
         }
         return value;
     }

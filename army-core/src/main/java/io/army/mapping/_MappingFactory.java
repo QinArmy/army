@@ -17,6 +17,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.time.*;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -201,7 +202,7 @@ public abstract class _MappingFactory {
         map.put(Year.class, YearType::from);
         map.put(OffsetDateTime.class, OffsetDateTimeType::from);
         map.put(OffsetTime.class, OffsetTimeType::from);
-
+        map.put(BitSet.class, BitSetType::from);
         return Collections.unmodifiableMap(map);
     }
 

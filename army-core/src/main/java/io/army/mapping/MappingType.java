@@ -26,9 +26,9 @@ public interface MappingType extends TypeMeta, TypeInfer {
 
     SqlType map(ServerMeta meta);
 
-    Object beforeBind(SqlType sqlType, MappingEnv env, Object nonNull);
+    Object beforeBind(SqlType type, MappingEnv env, Object nonNull);
 
-    Object afterGet(SqlType sqlType, MappingEnv env, Object nonNull);
+    Object afterGet(SqlType type, MappingEnv env, Object nonNull);
 
 
     default Object convert(MappingEnv env, Object nonNull) throws CriteriaException {

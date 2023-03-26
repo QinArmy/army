@@ -48,23 +48,23 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
-    public Integer beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public Integer beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         final int value;
-        value = IntegerType.beforeBind(sqlType, nonNull, 0, 0xFFFF);
+        value = IntegerType.beforeBind(type, nonNull, 0, 0xFFFF);
         if (value < 0 || value > 0xFFFF) {
-            throw valueOutRange(sqlType, nonNull, valueOutOfMapping(nonNull));
+            throw valueOutRange(type, nonNull, valueOutOfMapping(nonNull));
         }
         return value;
     }
 
     @Override
-    public Integer afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Integer afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         final int value = (Integer) nonNull;
         if (value < 0 || value > 0xFFFF) {
-            throw errorValueForSqlType(sqlType, nonNull, valueOutOfMapping(nonNull));
+            throw errorValueForSqlType(type, nonNull, valueOutOfMapping(nonNull));
         }
         return value;
     }

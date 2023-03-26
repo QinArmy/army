@@ -496,6 +496,33 @@ abstract class ArmyParser implements DialectParser {
 
     /*-------------------below final protected method -------------------*/
 
+
+    /**
+     * <p>
+     * Append  literal
+     * </p>
+     */
+    protected final void literal(final TypeMeta typeMeta, final Object nonNull, final StringBuilder sqlBuilder) {
+        final MappingType mappingType;
+        if (typeMeta instanceof MappingType) {
+            mappingType = (MappingType) typeMeta;
+        } else {
+            mappingType = typeMeta.mappingType();
+        }
+        final SqlType sqlType;
+        sqlType = mappingType.map(this.serverMeta);
+
+        final Object value;
+        if (this.isNeedConvert(sqlType, nonNull)) {
+            value = mappingType.beforeBind(sqlType, this.mappingEnv, nonNull);
+        } else {
+            value = nonNull;
+        }
+        //TODO validate non-field codec
+        this.bindLiteral(typeMeta, sqlType, value, sqlBuilder);
+
+    }
+
     protected final _SingleUpdateContext createSingleUpdateContext(final @Nullable _SqlContext outerContext
             , final _SingleUpdate stmt, final Visible visible) {
         return SingleUpdateContext.create(outerContext, stmt, this, visible);
@@ -1359,31 +1386,6 @@ abstract class ArmyParser implements DialectParser {
 
     /*-------------------below package method -------------------*/
 
-    /**
-     * <p>
-     * Append  literal
-     * </p>
-     */
-    final void literal(final TypeMeta typeMeta, final Object nonNull, final StringBuilder sqlBuilder) {
-        final MappingType mappingType;
-        if (typeMeta instanceof MappingType) {
-            mappingType = (MappingType) typeMeta;
-        } else {
-            mappingType = typeMeta.mappingType();
-        }
-        final SqlType sqlType;
-        sqlType = mappingType.map(this.serverMeta);
-
-        final Object value;
-        if (this.isNeedConvert(sqlType, nonNull)) {
-            value = mappingType.beforeBind(sqlType, this.mappingEnv, nonNull);
-        } else {
-            value = nonNull;
-        }
-        //TODO validate non-field codec
-        this.bindLiteral(typeMeta, sqlType, value, sqlBuilder);
-
-    }
 
 
     /*################################## blow private method ##################################*/

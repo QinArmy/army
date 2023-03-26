@@ -50,17 +50,17 @@ public final class MySQLLongTextType extends AbstractMappingType {
     }
 
     @Override
-    public Object beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String || nonNull instanceof Reader)) {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return nonNull;
     }
 
     @Override
-    public String afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public String afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return (String) nonNull;
     }

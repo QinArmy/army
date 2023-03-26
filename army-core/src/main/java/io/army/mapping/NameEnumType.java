@@ -60,23 +60,23 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public String beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         if (!this.enumClass.isInstance(nonNull)) {
             String m = String.format("%s isn't %s type.", nonNull.getClass().getName(), this.enumClass.getName());
-            throw outRangeOfSqlType(sqlType, nonNull, new CriteriaException(m));
+            throw outRangeOfSqlType(type, nonNull, new CriteriaException(m));
         }
         return ((Enum<?>) nonNull).name();
     }
 
     @Override
-    public Enum<?> afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Enum<?> afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         try {
             return valueOf(this.enumClass, (String) nonNull);
         } catch (IllegalArgumentException e) {
-            throw errorValueForSqlType(sqlType, nonNull, e);
+            throw errorValueForSqlType(type, nonNull, e);
         }
     }
 

@@ -49,17 +49,17 @@ public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
-    public Short beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
-        return (short) IntegerType.beforeBind(sqlType, nonNull, 0, 0xFF);
+    public Short beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        return (short) IntegerType.beforeBind(type, nonNull, 0, 0xFF);
     }
 
     @Override
-    public Short afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
-        switch (sqlType.database()) {
+    public Short afterGet(SqlType type, MappingEnv env, Object nonNull) {
+        switch (type.database()) {
             case MySQL:
             case PostgreSQL: {
                 if (!(nonNull instanceof Short)) {
-                    throw errorJavaTypeForSqlType(sqlType, nonNull);
+                    throw errorJavaTypeForSqlType(type, nonNull);
                 }
             }
             break;
@@ -67,11 +67,11 @@ public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
             case Oracle:
             case H2:
             default:
-                throw errorJavaTypeForSqlType(sqlType, nonNull);
+                throw errorJavaTypeForSqlType(type, nonNull);
         }
         final Short value = (Short) nonNull;
         if (value < 0 || value > 0xFF) {
-            throw errorValueForSqlType(sqlType, nonNull, null);
+            throw errorValueForSqlType(type, nonNull, null);
         }
         return value;
     }

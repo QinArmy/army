@@ -43,7 +43,7 @@ public final class FloatType extends _NumericType._FloatNumericType {
     }
 
     @Override
-    public Float beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Float beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         final float value;
         if (nonNull instanceof Float) {
             value = (Float) nonNull;
@@ -51,18 +51,18 @@ public final class FloatType extends _NumericType._FloatNumericType {
             try {
                 value = Float.parseFloat((String) nonNull);
             } catch (NumberFormatException e) {
-                throw valueOutRange(sqlType, nonNull, null);
+                throw valueOutRange(type, nonNull, null);
             }
         } else {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return value;
     }
 
     @Override
-    public Float afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
+    public Float afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Float)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         return (Float) nonNull;
     }

@@ -49,7 +49,7 @@ public final class MonthDayType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public LocalDate beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public LocalDate beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         final MonthDay value;
         if (nonNull instanceof MonthDay) {
             value = (MonthDay) nonNull;
@@ -62,18 +62,18 @@ public final class MonthDayType extends _ArmyNoInjectionMapping {
                     value = MonthDay.parse(v, FORMATTER);
                 }
             } catch (DateTimeException e) {
-                throw valueOutRange(sqlType, nonNull, e);
+                throw valueOutRange(type, nonNull, e);
             }
         } else {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw outRangeOfSqlType(type, nonNull);
         }
         return LocalDate.of(1970, value.getMonth(), value.getDayOfMonth());
     }
 
     @Override
-    public MonthDay afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
+    public MonthDay afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof LocalDate)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
+            throw errorJavaTypeForSqlType(type, nonNull);
         }
         final LocalDate v = (LocalDate) nonNull;
         return MonthDay.of(v.getMonth(), v.getDayOfMonth());
