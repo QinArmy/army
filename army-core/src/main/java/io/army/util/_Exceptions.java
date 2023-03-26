@@ -498,7 +498,7 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException valueOutRange(final SqlType sqlType, final Object nonNull
             , @Nullable Throwable cause) {
-        String m = String.format("Value[%s] out of %s.%s.", nonNull, sqlType.getClass().getName(), sqlType.name());
+        String m = String.format("Value[%s] out of %s.", nonNull, sqlType);
         final CriteriaException exception;
         if (cause == null) {
             exception = new CriteriaException(m);

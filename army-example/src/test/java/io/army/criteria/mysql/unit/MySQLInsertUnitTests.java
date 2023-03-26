@@ -1,7 +1,10 @@
 package io.army.criteria.mysql.unit;
 
 import io.army.annotation.GeneratorType;
-import io.army.criteria.*;
+import io.army.criteria.ErrorChildInsertException;
+import io.army.criteria.Expression;
+import io.army.criteria.InsertStatement;
+import io.army.criteria.LiteralMode;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
@@ -195,7 +198,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         print80Stmt(LOG, stmt);
     }
 
-    @Test(expectedExceptions = CriteriaException.class)
+    @Test(expectedExceptions = ErrorChildInsertException.class)
     public void domainInsertChildPostWithParentConflictError() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -456,7 +459,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         print80Stmt(LOG, stmt);
     }
 
-    @Test(expectedExceptions = CriteriaException.class)
+    @Test(expectedExceptions = ErrorChildInsertException.class)
     public void staticValuesInsertChildPostWithParentConflictError() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
@@ -887,7 +890,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
     }
 
-    @Test(expectedExceptions = CriteriaException.class)
+    @Test(expectedExceptions = ErrorChildInsertException.class)
     public void assignmentInsertChildPostWithParentConflictError() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
@@ -1038,7 +1041,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
     }
 
-    @Test(expectedExceptions = CriteriaException.class)
+    @Test(expectedExceptions = ErrorChildInsertException.class)
     public void dynamicAssignmentInsertChildPostWithParentConflictError() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
@@ -1070,7 +1073,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
     /*-------------------below query insert tests -------------------*/
 
-    @Test(enabled = false)
+    @Test(enabled = false)//TODO
     public void queryInsertParent() {
 
         final InsertStatement stmt;
@@ -1095,7 +1098,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
     }
 
-    @Test(enabled = false)
+    @Test(enabled = false) //TODO
     public void queryInsert80Parent() {
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {

@@ -8,7 +8,7 @@ public enum Isolation {
      *
      * @see java.sql.Connection
      */
-    DEFAULT((byte) 0, ""),
+    DEFAULT(0, ""),
 
     /**
      * A constant indicating that dirty reads, non-repeatable reads and phantom reads
@@ -19,7 +19,7 @@ public enum Isolation {
      *
      * @see java.sql.Connection#TRANSACTION_READ_UNCOMMITTED
      */
-    READ_UNCOMMITTED((byte) 1, "READ UNCOMMITTED"),
+    READ_UNCOMMITTED(1, "READ UNCOMMITTED"),
 
     /**
      * A constant indicating that dirty reads are prevented; non-repeatable reads
@@ -28,7 +28,7 @@ public enum Isolation {
      *
      * @see java.sql.Connection#TRANSACTION_READ_COMMITTED
      */
-    READ_COMMITTED((byte) 2, "READ COMMITTED"),
+    READ_COMMITTED(2, "READ COMMITTED"),
 
     /**
      * A constant indicating that dirty reads and non-repeatable reads are
@@ -40,7 +40,7 @@ public enum Isolation {
      *
      * @see java.sql.Connection#TRANSACTION_REPEATABLE_READ
      */
-    REPEATABLE_READ((byte) 4, "REPEATABLE READ"),
+    REPEATABLE_READ(4, "REPEATABLE READ"),
 
     /**
      * A constant indicating that dirty reads, non-repeatable reads and phantom
@@ -53,14 +53,15 @@ public enum Isolation {
      *
      * @see java.sql.Connection#TRANSACTION_SERIALIZABLE
      */
-    SERIALIZABLE((byte) 8, "SERIALIZABLE");
+    SERIALIZABLE(8, "SERIALIZABLE");
 
     public final byte level;
 
     public final String command;
 
-    Isolation(byte level, String command) {
-        this.level = level;
+    Isolation(int level, String command) {
+        assert level <= Byte.MAX_VALUE;
+        this.level = (byte) level;
         this.command = command;
     }
 

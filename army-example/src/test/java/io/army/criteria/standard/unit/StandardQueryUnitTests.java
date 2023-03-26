@@ -183,8 +183,8 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         final Map<String, Object> map = new HashMap<>();
         map.put("nickName", "蛮吉");
 
-        final Select stmt;
-        stmt = SQLs.query()
+
+        SQLs.query()
                 .select(BankUser_.nickName)
                 .from(() -> SQLs.subQuery()
                         .select(ChinaProvince_.id)
@@ -197,7 +197,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 .where(BankUser_.nickName::equal, SQLs::param, map::get, "nickName")
                 .asQuery();
 
-        printStmt(LOG, stmt);
+
     }
 
     @Test(expectedExceptions = NonLateralException.class)
@@ -205,8 +205,8 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         final Map<String, Object> map = new HashMap<>();
         map.put("nickName", "蛮吉");
 
-        final Select stmt;
-        stmt = SQLs.query()
+
+        SQLs.query()
                 .select(BankUser_.nickName)
                 .from(() -> SQLs.subQuery()
                         .select(ChinaProvince_.id)
@@ -224,7 +224,6 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 .where(BankUser_.nickName::equal, SQLs::param, map::get, "nickName")
                 .asQuery();
 
-        printStmt(LOG, stmt);
     }
 
     @Test

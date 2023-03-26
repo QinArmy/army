@@ -14,11 +14,13 @@ import io.army.criteria.standard.StandardQuery;
 import io.army.criteria.standard.StandardUpdate;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.schema._FieldResult;
 import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
+import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -348,12 +350,10 @@ abstract class ArmyParser implements DialectParser {
 
     public abstract StringBuilder safeObjectName(DatabaseObject object, StringBuilder builder);
 
-    /**
-     * <p>
-     * Append  literal
-     * </p>
-     */
-    protected abstract StringBuilder literal(TypeMeta paramMeta, Object nonNull, StringBuilder sqlBuilder);
+
+    protected abstract boolean isNeedConvert(SqlType type, Object nonNull);
+
+    protected abstract void bindLiteral(TypeMeta typeMeta, SqlType type, Object value, StringBuilder sqlBuilder);
 
     protected abstract DdlDialect createDdlDialect();
 
@@ -1353,6 +1353,35 @@ abstract class ArmyParser implements DialectParser {
                     .append(" + 1");
 
         }
+
+    }
+
+
+    /*-------------------below package method -------------------*/
+
+    /**
+     * <p>
+     * Append  literal
+     * </p>
+     */
+    final void literal(final TypeMeta typeMeta, final Object nonNull, final StringBuilder sqlBuilder) {
+        final MappingType mappingType;
+        if (typeMeta instanceof MappingType) {
+            mappingType = (MappingType) typeMeta;
+        } else {
+            mappingType = typeMeta.mappingType();
+        }
+        final SqlType sqlType;
+        sqlType = mappingType.map(this.serverMeta);
+
+        final Object value;
+        if (this.isNeedConvert(sqlType, nonNull)) {
+            value = mappingType.beforeBind(sqlType, this.mappingEnv, nonNull);
+        } else {
+            value = nonNull;
+        }
+        //TODO validate non-field codec
+        this.bindLiteral(typeMeta, sqlType, value, sqlBuilder);
 
     }
 
