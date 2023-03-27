@@ -1,14 +1,16 @@
 package io.army.mapping;
 
+import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
-import io.army.util._Exceptions;
+import io.army.util._MappingUtils;
 
 import java.math.BigInteger;
 import java.util.BitSet;
+import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -20,6 +22,7 @@ import java.util.BitSet;
  *     <li>{@link Integer}</li>
  *     <li>{@link Long}</li>
  *     <li>{@link java.math.BigInteger}</li>
+ *     <li>{@link Boolean}</li>
  *     <li>{@link String} , it must be bit string.</li>
  *     <li>{@code  byte[]}, non-empty</li>
  *     <li>{@code long[]}, non-empty</li>
@@ -67,6 +70,33 @@ public final class BitSetType extends _ArmyNoInjectionMapping {
 
     @Override
     public BitSet convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
+        return convertToBitSet(this, nonNull, PARAM_ERROR_HANDLER);
+    }
+
+    @Override
+    public Object beforeBind(final SqlType type, final MappingEnv env, final Object nonNull) {
+        final Object value;
+        switch (type.database()) {
+            case MySQL:
+                value = _MappingUtils.bitwiseToLong(this, nonNull, PARAM_ERROR_HANDLER);
+                break;
+            case PostgreSQL:
+                value = _MappingUtils.bitwiseToString(this, nonNull, PARAM_ERROR_HANDLER);
+                break;
+            default:
+                throw outRangeOfSqlType(type, nonNull);
+        }
+        return value;
+    }
+
+    @Override
+    public BitSet afterGet(final SqlType type, final MappingEnv env, final Object nonNull) {
+        return convertToBitSet(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+    }
+
+
+    private static BitSet convertToBitSet(final MappingType type, final Object nonNull,
+                                          final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final BitSet value;
         if (nonNull instanceof BitSet) {
             value = (BitSet) nonNull;
@@ -80,92 +110,25 @@ public final class BitSetType extends _ArmyNoInjectionMapping {
             value = BitSet.valueOf(new long[]{v & 0xffffL});
         } else if (nonNull instanceof Byte) {
             value = BitSet.valueOf(new byte[]{(Byte) nonNull});
+        } else if (nonNull instanceof Boolean) {
+            value = new BitSet(1);
+            value.set(0, (Boolean) nonNull);
         } else if (nonNull instanceof BigInteger) {
-            value = bitStringToBitSet(((BigInteger) nonNull).toString(2));
+            value = _MappingUtils.bitStringToBitSet(((BigInteger) nonNull).toString(2));
         } else if (nonNull instanceof long[]) {
             value = BitSet.valueOf((long[]) nonNull);
         } else if (nonNull instanceof byte[]) {
             value = BitSet.valueOf((byte[]) nonNull);
         } else if (nonNull instanceof String) {
             try {
-                value = bitStringToBitSet((String) nonNull);
+                value = _MappingUtils.bitStringToBitSet((String) nonNull);
             } catch (IllegalArgumentException e) {
-                String m = String.format("non-bit string couldn't convert to %s .", BitSet.class.getName());
-                throw new CriteriaException(m, e);
+                throw errorHandler.apply(type, nonNull);
             }
         } else {
-            throw dontSupportConvertType(nonNull);
+            throw errorHandler.apply(type, nonNull);
         }
         return value;
-    }
-
-    @Override
-    public Object beforeBind(final SqlType type, final MappingEnv env, final Object nonNull) {
-        final Object value;
-        switch (type.database()) {
-            case MySQL:
-                value = _MappingUtils.bitwiseToLong(type, nonNull);
-                break;
-            case PostgreSQL:
-                value = _MappingUtils.bitwiseToString(type, nonNull);
-                break;
-            default:
-                throw outRangeOfSqlType(type, nonNull);
-        }
-        return value;
-    }
-
-    @Override
-    public BitSet afterGet(final SqlType type, final MappingEnv env, final Object nonNull) {
-        final BitSet value;
-        switch (type.database()) {
-            case MySQL: {
-                if (!(nonNull instanceof Long)) {
-                    throw errorJavaTypeForSqlType(type, nonNull);
-                }
-                value = BitSet.valueOf(new long[]{(Long) nonNull});
-            }
-            break;
-            case PostgreSQL: {
-                if (!(nonNull instanceof String)) {
-                    throw errorJavaTypeForSqlType(type, nonNull);
-                }
-                try {
-                    value = bitStringToBitSet((String) nonNull);
-                } catch (IllegalArgumentException e) {
-                    throw errorValueForSqlType(type, nonNull, e);
-                }
-            }
-            break;
-            default:
-                throw _Exceptions.unexpectedEnum(type.database());
-        }
-
-        return value;
-    }
-
-
-    private static BitSet bitStringToBitSet(final String bitStr) throws IllegalArgumentException {
-        final int bitLength;
-        bitLength = bitStr.length();
-        if (bitLength == 0) {
-            throw new IllegalArgumentException("bit string must non-empty.");
-        }
-        final BitSet bitSet = new BitSet(bitLength);
-        final int maxIndex = bitLength - 1;
-        for (int i = 0; i < bitLength; i++) {
-            switch (bitStr.charAt(maxIndex - i)) {
-                case '0':
-                    bitSet.set(i, false);
-                    break;
-                case '1':
-                    bitSet.set(i, true);
-                    break;
-                default:
-                    throw new IllegalArgumentException("non-bit string");
-            }
-        }
-        return bitSet;
     }
 
 

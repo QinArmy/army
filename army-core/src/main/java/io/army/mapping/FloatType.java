@@ -1,9 +1,13 @@
 package io.army.mapping;
 
+import io.army.ArmyException;
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
+
+import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -13,6 +17,7 @@ import io.army.sqltype.SqlType;
  *     <li>{@link Byte}</li>
  *     <li>{@link Short}</li>
  *     <li>{@link Float}</li>
+ *     <li>{@link Boolean},true:1f,false:0f</li>
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link Float},if overflow,throw {@link io.army.ArmyException}
@@ -41,7 +46,7 @@ public final class FloatType extends _NumericType._FloatNumericType {
 
 
     @Override
-    public SqlType map(ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.database()) {
             case MySQL:
@@ -56,31 +61,42 @@ public final class FloatType extends _NumericType._FloatNumericType {
         return type;
     }
 
+
+    @Override
+    public Float convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return convertToFloat(this, nonNull, PARAM_ERROR_HANDLER);
+    }
+
     @Override
     public Float beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+        return convertToFloat(this, nonNull, PARAM_ERROR_HANDLER);
+    }
+
+    @Override
+    public Float afterGet(SqlType type, MappingEnv env, Object nonNull) {
+        return convertToFloat(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+    }
+
+    private static float convertToFloat(final MappingType type, final Object nonNull,
+                                        final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final float value;
         if (nonNull instanceof Float) {
             value = (Float) nonNull;
-        } else if (nonNull instanceof Short || nonNull instanceof Byte) {
+        } else if (nonNull instanceof Short
+                || nonNull instanceof Byte) {
             value = ((Number) nonNull).floatValue();
         } else if (nonNull instanceof String) {
             try {
                 value = Float.parseFloat((String) nonNull);
             } catch (NumberFormatException e) {
-                throw valueOutRange(type, nonNull, null);
+                throw errorHandler.apply(type, nonNull);
             }
-        } else {
-            throw outRangeOfSqlType(type, nonNull);
+        } else if (nonNull instanceof Boolean) {
+            value = ((Boolean) nonNull) ? 1f : 0f;
+        } else {//TODO consider int,long,double
+            throw errorHandler.apply(type, nonNull);
         }
         return value;
-    }
-
-    @Override
-    public Float afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof Float)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
-        }
-        return (Float) nonNull;
     }
 
 

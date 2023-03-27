@@ -27,6 +27,9 @@ public interface MappingType extends TypeMeta, TypeInfer {
 
     SqlType map(ServerMeta meta);
 
+    /**
+     * @return the instance of the type that {@link SqlType} allow.
+     */
     Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException;
 
     /**
@@ -35,6 +38,9 @@ public interface MappingType extends TypeMeta, TypeInfer {
     Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException;
 
 
+    /**
+     * @return the instance of {@link #javaType()}.
+     */
     default Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
         throw new UnsupportedOperationException();
     }

@@ -1,5 +1,6 @@
 package io.army.mapping;
 
+import io.army.ArmyException;
 import io.army.annotation.Mapping;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
@@ -14,8 +15,15 @@ import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 
 import java.nio.charset.Charset;
+import java.time.temporal.Temporal;
+import java.util.function.BiFunction;
 
 public abstract class AbstractMappingType implements MappingType {
+
+    protected static final BiFunction<MappingType, Object, ArmyException> PARAM_ERROR_HANDLER = AbstractMappingType::paramError;
+
+    protected static final BiFunction<MappingType, Object, ArmyException> DATA_ACCESS_ERROR_HANDLER = AbstractMappingType::dataAccessError;
+
 
     protected AbstractMappingType() {
     }
@@ -146,6 +154,32 @@ public abstract class AbstractMappingType implements MappingType {
             String m = String.format("%s don't specify error charset[%s]", javaType.getName(), mapping.charset());
             throw new MetaException(m, e);
         }
+    }
+
+    protected static CriteriaException convertMethodError(final MappingType type, final Object nonNull) {
+        return new CriteriaException(createConvertErrorMessage(type, nonNull));
+    }
+
+    private static CriteriaException paramError(final MappingType type, final Object nonNull) {
+        return new CriteriaException(createConvertErrorMessage(type, nonNull));
+    }
+
+    private static DataAccessException dataAccessError(final MappingType type, final Object nonNull) {
+        return new DataAccessException(createConvertErrorMessage(type, nonNull));
+    }
+
+    private static String createConvertErrorMessage(final MappingType type, final Object nonNull) {
+        final StringBuilder builder = new StringBuilder();
+        builder.append(_ClassUtils.safeClassName(nonNull));
+
+        if (nonNull instanceof Number || nonNull instanceof Enum || nonNull instanceof Temporal) {
+            builder.append('[')
+                    .append(nonNull)
+                    .append(']');
+        }
+        return builder.append(" couldn't be converted by ")
+                .append(type)
+                .toString();
     }
 
 

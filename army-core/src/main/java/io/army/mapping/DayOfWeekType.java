@@ -58,7 +58,7 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
     @Override
     public DayOfWeek convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof DayOfWeek)) {
-            throw dontSupportConvertType(nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
         }
         return (DayOfWeek) nonNull;
     }
@@ -66,7 +66,7 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
     @Override
     public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof DayOfWeek)) {
-            throw dontSupportConvertType(nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
         }
         return ((DayOfWeek) nonNull).name();
     }
@@ -74,12 +74,12 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
     @Override
     public DayOfWeek afterGet(SqlType type, MappingEnv env, final Object nonNull) throws DataAccessException {
         if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
+            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
         }
         try {
             return DayOfWeek.valueOf((String) nonNull);
         } catch (IllegalArgumentException e) {
-            throw this.errorValueForMapping(nonNull, e);
+            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
         }
     }
 

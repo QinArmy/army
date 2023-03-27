@@ -1,9 +1,13 @@
 package io.army.mapping;
 
+import io.army.ArmyException;
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
+
+import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -14,6 +18,7 @@ import io.army.sqltype.SqlType;
  *     <li>{@link Short}</li>
  *     <li>{@link Integer}</li>
  *     <li>{@link Float}</li>
+ *     <li>{@link Boolean},true:1d,false:0d</li>
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link Double},if overflow,throw {@link io.army.ArmyException}
@@ -57,8 +62,25 @@ public final class DoubleType extends _NumericType._FloatNumericType {
         return type;
     }
 
+
+    @Override
+    public Object convert(MappingEnv env, final Object nonNull) throws CriteriaException {
+        return convertToDouble(this, nonNull, PARAM_ERROR_HANDLER);
+    }
+
     @Override
     public Double beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+        return convertToDouble(this, nonNull, PARAM_ERROR_HANDLER);
+    }
+
+    @Override
+    public Double afterGet(SqlType type, MappingEnv env, Object nonNull) {
+        return convertToDouble(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+    }
+
+
+    private static double convertToDouble(final MappingType type, final Object nonNull,
+                                          final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final double value;
         if (nonNull instanceof Double) {
             value = (Double) nonNull;
@@ -71,20 +93,15 @@ public final class DoubleType extends _NumericType._FloatNumericType {
             try {
                 value = Double.parseDouble((String) nonNull);
             } catch (NumberFormatException e) {
-                throw valueOutRange(type, nonNull, e);
+                throw errorHandler.apply(type, nonNull);
             }
-        } else {
-            throw outRangeOfSqlType(type, nonNull);
+        } else if (nonNull instanceof Boolean) {
+            value = ((Boolean) nonNull) ? 1d : 0d;
+        } else {//TODO consider Long
+            throw errorHandler.apply(type, nonNull);
         }
-        return value;
-    }
 
-    @Override
-    public Double afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof Double)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
-        }
-        return (Double) nonNull;
+        return value;
     }
 
 

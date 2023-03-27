@@ -1,11 +1,11 @@
-package io.army.mapping;
+package io.army.util;
 
-import io.army.criteria.CriteriaException;
-import io.army.sqltype.SqlType;
-import io.army.util._StringUtils;
+import io.army.ArmyException;
+import io.army.mapping.MappingType;
 
 import java.math.BigInteger;
 import java.util.BitSet;
+import java.util.function.BiFunction;
 
 public abstract class _MappingUtils {
 
@@ -14,7 +14,8 @@ public abstract class _MappingUtils {
     }
 
 
-    public static long bitwiseToLong(final SqlType type, final Object nonNull) throws CriteriaException {
+    public static long bitwiseToLong(final MappingType type, final Object nonNull,
+                                     final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final long value;
         if (nonNull instanceof Long) {
             value = (Long) nonNull;
@@ -23,7 +24,7 @@ public abstract class _MappingUtils {
         } else if (nonNull instanceof BitSet) {
             final BitSet v = (BitSet) nonNull;
             if (v.length() > 64) {
-                throw AbstractMappingType.valueOutRange(type, nonNull, null);
+                throw errorHandler.apply(type, nonNull);
             } else if (v.length() == 0) {
                 value = 0L;
             } else {
@@ -33,18 +34,20 @@ public abstract class _MappingUtils {
             value = ((Short) nonNull) & 0xffffL;
         } else if (nonNull instanceof Byte) {
             value = ((Byte) nonNull) & 0xffL;
+        } else if (nonNull instanceof Boolean) {
+            value = ((Boolean) nonNull) ? 1L : 0L;
         } else if (nonNull instanceof BigInteger) {
             final BigInteger v = (BigInteger) nonNull;
             try {
                 value = v.longValueExact();
             } catch (ArithmeticException e) {
-                throw AbstractMappingType.valueOutRange(type, nonNull, e);
+                throw errorHandler.apply(type, nonNull);
             }
         } else if (nonNull instanceof String) {
             try {
                 value = Long.parseUnsignedLong((String) nonNull, 2);
             } catch (NumberFormatException e) {
-                throw AbstractMappingType.valueOutRange(type, nonNull, e);
+                throw errorHandler.apply(type, nonNull);
             }
         } else if (nonNull instanceof long[]) {
             final long[] v = (long[]) nonNull;
@@ -56,7 +59,7 @@ public abstract class _MappingUtils {
                     value = v[0];
                     break;
                 default:
-                    throw AbstractMappingType.valueOutRange(type, nonNull, null);
+                    throw errorHandler.apply(type, nonNull);
             }
         } else if (nonNull instanceof byte[]) {
             final byte[] v = (byte[]) nonNull;
@@ -69,20 +72,21 @@ public abstract class _MappingUtils {
                 }
                 value = bits;
             } else {
-                throw AbstractMappingType.valueOutRange(type, nonNull, null);
+                throw errorHandler.apply(type, nonNull);
             }
         } else {
-            throw AbstractMappingType.outRangeOfSqlType(type, nonNull);
+            throw errorHandler.apply(type, nonNull);
         }
         return value;
     }
 
-    public static String bitwiseToString(final SqlType type, final Object nonNull) {
+    public static String bitwiseToString(final MappingType type, final Object nonNull,
+                                         final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final String value;
         if (nonNull instanceof String) {
             value = (String) nonNull;
             if (!_StringUtils.isBinary(value)) {
-                throw AbstractMappingType.valueOutRange(type, nonNull, null);
+                throw errorHandler.apply(type, nonNull);
             }
         } else if (nonNull instanceof Long) {
             value = Long.toBinaryString((Long) nonNull);
@@ -94,6 +98,8 @@ public abstract class _MappingUtils {
             value = Integer.toBinaryString(((Short) nonNull) & 0xffff);
         } else if (nonNull instanceof Byte) {
             value = Integer.toBinaryString(((Byte) nonNull) & 0xff);
+        } else if (nonNull instanceof Boolean) {
+            value = ((Boolean) nonNull) ? "1" : "0";
         } else if (nonNull instanceof BigInteger) {
             value = ((BigInteger) nonNull).toString(2);
         } else if (nonNull instanceof long[]) {
@@ -101,9 +107,33 @@ public abstract class _MappingUtils {
         } else if (nonNull instanceof byte[]) {
             value = littleEndianToBitString(BitSet.valueOf((byte[]) nonNull).toLongArray());
         } else {
-            throw AbstractMappingType.outRangeOfSqlType(type, nonNull);
+            throw errorHandler.apply(type, nonNull);
         }
         return value;
+    }
+
+
+    public static BitSet bitStringToBitSet(final String bitStr) throws IllegalArgumentException {
+        final int bitLength;
+        bitLength = bitStr.length();
+        if (bitLength == 0) {
+            throw new IllegalArgumentException("bit string must non-empty.");
+        }
+        final BitSet bitSet = new BitSet(bitLength);
+        final int maxIndex = bitLength - 1;
+        for (int i = 0; i < bitLength; i++) {
+            switch (bitStr.charAt(maxIndex - i)) {
+                case '0':
+                    bitSet.set(i, false);
+                    break;
+                case '1':
+                    bitSet.set(i, true);
+                    break;
+                default:
+                    throw new IllegalArgumentException("non-bit string");
+            }
+        }
+        return bitSet;
     }
 
 

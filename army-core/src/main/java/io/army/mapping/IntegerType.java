@@ -1,5 +1,7 @@
 package io.army.mapping;
 
+import io.army.ArmyException;
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
@@ -7,6 +9,7 @@ import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -19,6 +22,7 @@ import java.math.BigInteger;
  *     <li>{@link Long}</li>
  *     <li>{@link java.math.BigInteger}</li>
  *     <li>{@link java.math.BigDecimal},it has a zero fractional part</li>
+ *     <li>{@link Boolean} true : 1 , false: 0</li>
  *     <li>{@link String} </li>
  * </ul>
  *  to {@link Integer},if overflow,throw {@link io.army.ArmyException}
@@ -66,19 +70,22 @@ public final class IntegerType extends _NumericType._IntegerType {
     }
 
     @Override
+    public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return _convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER);
+    }
+
+    @Override
     public Integer beforeBind(SqlType type, final MappingEnv env, final Object nonNull) {
-        return _beforeBind(type, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        return _convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Integer afterGet(SqlType type, final MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof Integer)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
-        }
-        return (Integer) nonNull;
+        return _convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, DATA_ACCESS_ERROR_HANDLER);
     }
 
 
+    @Deprecated
     public static int _beforeBind(final SqlType sqlType, final Object nonNull, final int min, final int max) {
         final int value;
         if (nonNull instanceof Integer
@@ -124,6 +131,49 @@ public final class IntegerType extends _NumericType._IntegerType {
             throw outRangeOfSqlType(sqlType, nonNull);
         }
         return value;
+    }
+
+    public static int _convertToInt(final MappingType type, final Object nonNull, final int min, final int max,
+                                    final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+        final int value;
+        if (nonNull instanceof Integer) {
+            value = (Integer) nonNull;
+        } else if (nonNull instanceof Short || nonNull instanceof Byte) {
+            value = ((Number) nonNull).intValue();
+        } else if (nonNull instanceof Long) {
+            final long v = (Long) nonNull;
+            if (v < min || v > max) {
+                throw errorHandler.apply(type, nonNull);
+            }
+            value = (byte) v;
+        } else if (nonNull instanceof BigDecimal) {
+            try {
+                value = ((BigDecimal) nonNull).intValueExact();
+            } catch (ArithmeticException e) {
+                throw errorHandler.apply(type, nonNull);
+            }
+        } else if (nonNull instanceof BigInteger) {
+            try {
+                value = ((BigInteger) nonNull).intValueExact();
+            } catch (ArithmeticException e) {
+                throw errorHandler.apply(type, nonNull);
+            }
+        } else if (nonNull instanceof String) {
+            try {
+                value = Integer.parseInt((String) nonNull);
+            } catch (NumberFormatException e) {
+                throw errorHandler.apply(type, nonNull);
+            }
+        } else if (nonNull instanceof Boolean) {
+            value = ((Boolean) nonNull) ? 1 : 0;
+        } else {
+            throw errorHandler.apply(type, nonNull);
+        }
+        if (value < min || value > max) {
+            throw errorHandler.apply(type, nonNull);
+        }
+        return value;
+
     }
 
 

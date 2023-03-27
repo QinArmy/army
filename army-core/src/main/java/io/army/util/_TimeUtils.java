@@ -52,7 +52,7 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
             .toFormatter(Locale.ENGLISH);
 
 
-    private static final DateTimeFormatter DATETIME_FORMATTER_6 = new DateTimeFormatterBuilder()
+    public static final DateTimeFormatter DATETIME_FORMATTER_6 = new DateTimeFormatterBuilder()
             .append(DATETIME_FORMATTER_0)
             .optionalStart()
             .appendFraction(MICRO_OF_SECOND, 0, 6, true)
