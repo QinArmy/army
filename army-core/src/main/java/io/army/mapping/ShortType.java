@@ -48,7 +48,7 @@ public final class ShortType extends _NumericType._IntegerType {
 
     @Override
     public Short beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return (short) IntegerType.beforeBind(type, nonNull, Short.MIN_VALUE, Short.MAX_VALUE);
+        return (short) IntegerType._beforeBind(type, nonNull, Short.MIN_VALUE, Short.MAX_VALUE);
     }
 
     @Override

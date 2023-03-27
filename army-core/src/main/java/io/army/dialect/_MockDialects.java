@@ -103,24 +103,37 @@ public abstract class _MockDialects implements DialectEnv {
 
 
     private static ServerMeta createMySQLServerMeta(final MySQLDialect dialect) {
-        final ServerMeta meta;
+        final ServerMeta.Builder builder;
+        builder = ServerMeta.builder()
+                .name("MySQL")
+                .database(Database.MySQL)
+                .usedDialect(dialect)
+                .supportSavePoint(true);
         switch (dialect) {
             case MySQL55:
-                meta = ServerMeta.create("MySQL", Database.MySQL, "5.5.36", 5, 5);
+                builder.version("5.5.36")
+                        .major(5)
+                        .minor(5);
                 break;
             case MySQL56:
-                meta = ServerMeta.create("MySQL", Database.MySQL, "5.6.36", 5, 6);
+                builder.version("5.6.36")
+                        .major(5)
+                        .minor(6);
                 break;
             case MySQL57:
-                meta = ServerMeta.create("MySQL", Database.MySQL, "5.7.36", 5, 7);
+                builder.version("5.7.36")
+                        .major(5)
+                        .minor(7);
                 break;
             case MySQL80:
-                meta = ServerMeta.create("MySQL", Database.MySQL, "8.0.27", 8, 0);
+                builder.version("8.0.27")
+                        .major(8)
+                        .minor(0);
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(dialect);
         }
-        return meta;
+        return builder.build();
     }
 
 

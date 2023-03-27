@@ -24,7 +24,11 @@ public interface ExecutorFactory {
 
     MetaExecutor createMetaExecutor() throws DataAccessException;
 
-
+    /**
+     * <p>
+     * close {@link ExecutorFactory},but don't close underlying data source(eg:{@code  javax.sql.DataSource}).
+     * </p>
+     */
     void close() throws DataAccessException;
 
 }

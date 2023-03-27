@@ -1,5 +1,6 @@
 package io.army.sync.executor;
 
+import io.army.dialect.Dialect;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -19,7 +20,7 @@ import io.army.session.DataAccessException;
  */
 public interface ExecutorProvider {
 
-    ServerMeta createServerMeta() throws DataAccessException;
+    ServerMeta createServerMeta(Dialect usedDialect) throws DataAccessException;
 
 
     /**

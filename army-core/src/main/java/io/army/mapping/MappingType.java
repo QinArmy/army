@@ -4,6 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.TypeInfer;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
+import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 
 
@@ -26,9 +27,12 @@ public interface MappingType extends TypeMeta, TypeInfer {
 
     SqlType map(ServerMeta meta);
 
-    Object beforeBind(SqlType type, MappingEnv env, Object nonNull);
+    Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException;
 
-    Object afterGet(SqlType type, MappingEnv env, Object nonNull);
+    /**
+     * @return the instance of {@link #javaType()}.
+     */
+    Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException;
 
 
     default Object convert(MappingEnv env, Object nonNull) throws CriteriaException {

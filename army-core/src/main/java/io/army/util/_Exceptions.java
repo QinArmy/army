@@ -12,6 +12,7 @@ import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TabularBock;
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect._SqlContext;
 import io.army.env.ArmyKey;
@@ -697,10 +698,16 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static IllegalArgumentException dialectDatabaseNotMatch(Dialect dialect, ServerMeta meta) {
-        String m = String.format("ArmyKey %s %s database not match with server %s", ArmyKey.DIALECT, dialect, meta);
+    public static IllegalArgumentException dialectDatabaseNotMatch(Dialect usedDialect, ServerMeta meta) {
+        String m = String.format("ArmyKey %s %s database not match with server %s", ArmyKey.DIALECT, usedDialect, meta);
         return new IllegalArgumentException(m);
     }
+
+    public static IllegalArgumentException databaseNotCompatible(Dialect usedDialect, Database database) {
+        String m = String.format("ArmyKey %s %s database not match with  %s", ArmyKey.DIALECT, usedDialect, database);
+        return new IllegalArgumentException(m);
+    }
+
 
     public static IllegalArgumentException dialectVersionNotCompatibility(Dialect dialect, ServerMeta meta) {
         String m = String.format("ArmyKey %s %s version not compatibility with server %s"

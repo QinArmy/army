@@ -7,6 +7,7 @@ import io.army.dialect.oracle.OracleDialect;
 import io.army.dialect.postgre.PostgreDialect;
 import io.army.meta.ServerMeta;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -39,10 +40,14 @@ public enum Database {
         return this.function.apply(name);
     }
 
+    public final boolean isCompatible(Dialect dialect) {
+        return dialect.database() == this;
+    }
+
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", Database.class.getName(), this.name());
+        return _StringUtils.enumToString(this);
     }
 
     public static Dialect from(final ServerMeta meta) {

@@ -50,7 +50,7 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
     @Override
     public Integer beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         final int value;
-        value = IntegerType.beforeBind(type, nonNull, 0, 0xFFFF);
+        value = IntegerType._beforeBind(type, nonNull, 0, 0xFFFF);
         if (value < 0 || value > 0xFFFF) {
             throw valueOutRange(type, nonNull, valueOutOfMapping(nonNull));
         }

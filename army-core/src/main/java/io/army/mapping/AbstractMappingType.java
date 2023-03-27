@@ -85,6 +85,7 @@ public abstract class AbstractMappingType implements MappingType {
         return exception;
     }
 
+
     protected static CriteriaException valueOutRange(SqlType sqlType, final Object nonNull, @Nullable Throwable cause) {
         return _Exceptions.valueOutRange(sqlType, nonNull, cause);
     }
@@ -124,6 +125,18 @@ public abstract class AbstractMappingType implements MappingType {
         String m = String.format("%s don't support convert %s", this.getClass().getName(),
                 _ClassUtils.safeClassName(nonNull));
         throw new CriteriaException(m);
+    }
+
+    protected final DataAccessException errorValueForMapping(final Object nonNull, @Nullable Throwable cause) {
+        final DataAccessException e;
+        String m = String.format("the value[type:%s] from database driver out of %s.",
+                _ClassUtils.safeClassName(nonNull), this.getClass().getName());
+        if (cause == null) {
+            e = new DataAccessException(m);
+        } else {
+            e = new DataAccessException(m, cause);
+        }
+        return e;
     }
 
     protected static Charset getCharset(Class<?> javaType, Mapping mapping) throws MetaException {

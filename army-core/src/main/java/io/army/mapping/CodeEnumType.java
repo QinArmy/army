@@ -1,6 +1,5 @@
 package io.army.mapping;
 
-import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
@@ -13,8 +12,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * <p>
+ * This class is mapping of enum that implements {@link CodeEnum}.
+ * </p>
+ *
  * @see Enum
  * @see io.army.struct.CodeEnum
+ * @since 1.0
  */
 public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
@@ -44,19 +48,19 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
 
     @Override
-    public SqlType map(ServerMeta meta) {
-        final SqlType sqlType;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySQLTypes.INT;
+                type = MySQLTypes.INT;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.INTEGER;
+                type = PostgreType.INTEGER;
                 break;
             default:
                 throw noMappingError(meta);
         }
-        return sqlType;
+        return type;
     }
 
     @Override
@@ -77,7 +81,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
         if (value == null) {
             String m = String.format("Not found enum instance for code[%s] in enum[%s]."
                     , nonNull, this.enumClass.getName());
-            throw errorValueForSqlType(type, nonNull, new MetaException(m));
+            throw errorValueForSqlType(type, nonNull, new IllegalArgumentException(m));
         }
         return value;
     }

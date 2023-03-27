@@ -26,4 +26,17 @@ public class MappingUtilsTests {
         Assert.assertEquals(bitStr, "100000000000000000000000000000000011111111111111111111111111111111");
     }
 
+    @Test
+    public void bitwiseToLong() {
+        final long[] words;
+        words = new long[]{0xffff_ffffL, -1L, 0, 45346534};
+
+        BitSet bitSet;
+        for (long word : words) {
+            bitSet = BitSet.valueOf(new long[]{word});
+            Assert.assertEquals(_MappingUtils.bitwiseToLong(MySQLTypes.BIT, bitSet.toByteArray()), word);
+        }
+
+    }
+
 }

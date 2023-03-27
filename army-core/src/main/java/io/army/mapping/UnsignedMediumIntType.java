@@ -48,7 +48,7 @@ public final class UnsignedMediumIntType extends _NumericType._UnsignedIntegerTy
 
     @Override
     public Integer beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return IntegerType.beforeBind(type, nonNull, 0, MAX);
+        return IntegerType._beforeBind(type, nonNull, 0, MAX);
     }
 
     @Override

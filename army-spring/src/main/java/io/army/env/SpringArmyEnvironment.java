@@ -20,6 +20,11 @@ public final class SpringArmyEnvironment implements ArmyEnvironment {
     }
 
     @Override
+    public <T> T getRequired(ArmyKey<T> key) throws IllegalStateException {
+        return this.env.getRequiredProperty(this.prefix + key.name, key.javaType);
+    }
+
+    @Override
     public <T> T getOrDefault(final ArmyKey<T> key) {
         final T defaultValue;
         defaultValue = key.defaultValue;

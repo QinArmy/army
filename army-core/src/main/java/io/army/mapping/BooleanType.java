@@ -9,6 +9,24 @@ import io.army.sqltype.SqlType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+/**
+ * <p>
+ * This class is mapping class of {@link Boolean}.
+ * This mapping type can convert below java type:
+ * <ul>
+ *     <li>{@link Byte},non-zero is true</li>
+ *     <li>{@link Short},non-zero is true</li>
+ *     <li>{@link Integer},non-zero is true</li>
+ *     <li>{@link Long},non-zero is true</li>
+ *     <li>{@link java.math.BigInteger},non-zero is true</li>
+ *     <li>{@link java.math.BigDecimal},non-zero is true</li>
+ *     <li>{@link String} , true or false ,case insensitive</li>
+ * </ul>
+ *  to {@link Boolean},if overflow,throw {@link io.army.ArmyException}
+ * </p>
+ *
+ * @since 1.0
+ */
 public final class BooleanType extends _ArmyNoInjectionMapping {
 
 

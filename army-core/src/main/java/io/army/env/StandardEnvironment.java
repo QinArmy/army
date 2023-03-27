@@ -33,7 +33,7 @@ public final class StandardEnvironment implements ArmyEnvironment {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T get(ArmyKey<T> key) {
+    public <T> T get(final ArmyKey<T> key) {
         final String textValue;
         textValue = this.map.get(key.name);
         if (textValue == null) {
@@ -50,6 +50,17 @@ public final class StandardEnvironment implements ArmyEnvironment {
             throw new IllegalStateException(m);
         }
         return converter.convert(textValue);
+    }
+
+    @Override
+    public <T> T getRequired(final ArmyKey<T> key) {
+        final T value;
+        value = this.get(key);
+        if (value == null) {
+            String m = String.format("value of %s is null", key.name);
+            throw new IllegalStateException(m);
+        }
+        return value;
     }
 
     @Override

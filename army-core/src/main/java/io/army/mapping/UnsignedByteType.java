@@ -50,7 +50,7 @@ public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
 
     @Override
     public Short beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return (short) IntegerType.beforeBind(type, nonNull, 0, 0xFF);
+        return (short) IntegerType._beforeBind(type, nonNull, 0, 0xFF);
     }
 
     @Override

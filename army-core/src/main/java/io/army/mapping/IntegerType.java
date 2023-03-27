@@ -8,6 +8,24 @@ import io.army.sqltype.SqlType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+/**
+ * <p>
+ * This class is mapping class of {@link Integer}.
+ * This mapping type can convert below java type:
+ * <ul>
+ *     <li>{@link Byte}</li>
+ *     <li>{@link Short}</li>
+ *     <li>{@link Integer}</li>
+ *     <li>{@link Long}</li>
+ *     <li>{@link java.math.BigInteger}</li>
+ *     <li>{@link java.math.BigDecimal},it has a zero fractional part</li>
+ *     <li>{@link String} </li>
+ * </ul>
+ *  to {@link Integer},if overflow,throw {@link io.army.ArmyException}
+ * </p>
+ *
+ * @since 1.0
+ */
 public final class IntegerType extends _NumericType._IntegerType {
 
 
@@ -31,25 +49,25 @@ public final class IntegerType extends _NumericType._IntegerType {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) {
-        final SqlType sqlType;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySQLTypes.INT;
+                type = MySQLTypes.INT;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.INTEGER;
+                type = PostgreType.INTEGER;
                 break;
             default:
                 throw noMappingError(meta);
 
         }
-        return sqlType;
+        return type;
     }
 
     @Override
     public Integer beforeBind(SqlType type, final MappingEnv env, final Object nonNull) {
-        return beforeBind(type, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        return _beforeBind(type, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
     @Override
@@ -61,7 +79,7 @@ public final class IntegerType extends _NumericType._IntegerType {
     }
 
 
-    public static int beforeBind(final SqlType sqlType, final Object nonNull, final int min, final int max) {
+    public static int _beforeBind(final SqlType sqlType, final Object nonNull, final int min, final int max) {
         final int value;
         if (nonNull instanceof Integer
                 || nonNull instanceof Short

@@ -1,13 +1,17 @@
 package io.army.meta;
 
 import io.army.dialect.Database;
+import io.army.dialect.Dialect;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.Objects;
 
 final class ServerMetaImpl implements ServerMeta {
 
-    static ServerMetaImpl create(String name, Database database, String version, int major, int minor) {
-        return new ServerMetaImpl(name, database, version, major, minor);
+
+    static Builder builder() {
+        return new ServerMetaBuilder();
     }
 
     private final String name;
@@ -20,12 +24,32 @@ final class ServerMetaImpl implements ServerMeta {
 
     private final int minor;
 
-    private ServerMetaImpl(String name, Database database, String version, int major, int minor) {
-        this.name = name;
-        this.database = database;
-        this.version = version;
-        this.major = major;
-        this.minor = minor;
+    private final Dialect usedDialect;
+
+    private final boolean supportSavePoint;
+
+
+    private ServerMetaImpl(ServerMetaBuilder builder) {
+        this.name = builder.name;
+        this.database = builder.database;
+        this.version = builder.version;
+        this.major = builder.major;
+
+        this.minor = builder.minor;
+        this.usedDialect = builder.usedDialect;
+        this.supportSavePoint = builder.supportSavePoint;
+
+        if (_StringUtils.isEmpty(this.name)
+                || this.database == null
+                || _StringUtils.isEmpty(this.version)
+                || this.major < 0
+                || this.minor < 0
+                || this.usedDialect == null) {
+            throw new IllegalArgumentException(String.format("server meta %s error.", this));
+        } else if (this.database.isCompatible(this.usedDialect)) {
+            throw _Exceptions.databaseNotCompatible(this.usedDialect, this.database);
+        }
+
     }
 
     @Override
@@ -54,13 +78,19 @@ final class ServerMetaImpl implements ServerMeta {
     }
 
     @Override
+    public Dialect usedDialect() {
+        return this.usedDialect;
+    }
+
+    @Override
     public boolean meetsMinimum(final int major, final int minor) {
         return this.major > major || (this.major == major && this.minor >= minor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.name, this.database, this.version, this.major, this.minor);
+        return Objects.hash(this.name, this.database, this.version, this.major,
+                this.minor, this.usedDialect, this.supportSavePoint);
     }
 
     @Override
@@ -74,7 +104,9 @@ final class ServerMetaImpl implements ServerMeta {
                     && this.database == o.database()
                     && this.version.equals(o.version())
                     && this.major == o.major()
-                    && this.minor == o.minor();
+                    && this.minor == o.minor()
+                    && this.usedDialect == o.usedDialect()
+                    && this.supportSavePoint == o.isSupportSavePoints();
         } else {
             match = false;
         }
@@ -84,7 +116,7 @@ final class ServerMetaImpl implements ServerMeta {
 
     @Override
     public String toString() {
-        return createBuilder()
+        return _StringUtils.builder()
                 .append("[name:")
                 .append(this.name)
                 .append(",database:")
@@ -95,15 +127,82 @@ final class ServerMetaImpl implements ServerMeta {
                 .append(this.major)
                 .append(",minor:")
                 .append(this.minor)
+                .append(",usedDialect:")
+                .append(this.usedDialect.name())
+                .append(",supportSavePoint:")
+                .append(this.supportSavePoint)
                 .append(",hash:")
                 .append(System.identityHashCode(this))
                 .append("]")
                 .toString();
     }
 
-    private static StringBuilder createBuilder() {
-        return new StringBuilder(ServerMetaImpl.class.getSimpleName());
-    }
+
+    private static final class ServerMetaBuilder implements ServerMeta.Builder {
+
+        private String name;
+
+        private Database database;
+
+        private String version;
+
+        private int major;
+
+        private int minor;
+
+        private Dialect usedDialect;
+
+        private boolean supportSavePoint;
+
+        @Override
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        @Override
+        public Builder database(Database database) {
+            this.database = database;
+            return this;
+        }
+
+        @Override
+        public Builder version(String version) {
+            this.version = version;
+            return this;
+        }
+
+        @Override
+        public Builder major(int major) {
+            this.major = major;
+            return this;
+        }
+
+        @Override
+        public Builder minor(int minor) {
+            this.minor = minor;
+            return this;
+        }
+
+        @Override
+        public Builder usedDialect(Dialect dialect) {
+            this.usedDialect = dialect;
+            return this;
+        }
+
+        @Override
+        public Builder supportSavePoint(boolean support) {
+            this.supportSavePoint = support;
+            return this;
+        }
+
+        @Override
+        public ServerMeta build() {
+            return new ServerMetaImpl(this);
+        }
+
+
+    }//ServerMetaBuilder
 
 
 }

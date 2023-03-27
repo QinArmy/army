@@ -1,6 +1,7 @@
 package io.army.jdbc;
 
 import io.army.dialect.Database;
+import io.army.dialect.Dialect;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -42,17 +43,17 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
 
 
     @Override
-    public ServerMeta createServerMeta() throws DataAccessException {
+    public ServerMeta createServerMeta(final Dialect usedDialect) throws DataAccessException {
         final CommonDataSource dataSource = this.dataSource;
 
         XAConnection xaConnection = null;
         final ServerMeta meta;
         try {
             if (dataSource instanceof DataSource) {
-                meta = this.innerCreateServerMeta(((DataSource) dataSource).getConnection());
+                meta = this.innerCreateServerMeta(((DataSource) dataSource).getConnection(), usedDialect);
             } else if (dataSource instanceof XADataSource) {
                 xaConnection = ((XADataSource) dataSource).getXAConnection();
-                meta = this.innerCreateServerMeta(xaConnection.getConnection());
+                meta = this.innerCreateServerMeta(xaConnection.getConnection(), usedDialect);
             } else {
                 //no bug,never here
                 throw unsupportedDataSource(dataSource);
@@ -101,10 +102,10 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
     }
 
 
-    private ServerMeta innerCreateServerMeta(final Connection connection) {
+    private ServerMeta innerCreateServerMeta(final Connection connection, final Dialect usedDialect) {
         try (Connection conn = connection) {
             final ServerMeta serverMeta;
-            serverMeta = doCreateServerMeta(conn);
+            serverMeta = doCreateServerMeta(conn, usedDialect);
             int methodFlag = 0;
             try (PreparedStatement statement = conn.prepareStatement("SELECT 1 + ? AS armyJdbcTest")) {
                 final Class<?> clazz = statement.getClass();
@@ -140,22 +141,27 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
         }
     }
 
-    private static ServerMeta doCreateServerMeta(final Connection conn) throws SQLException {
+    private static ServerMeta doCreateServerMeta(final Connection conn, final Dialect usedDialect)
+            throws SQLException {
         final DatabaseMetaData metaData;
         metaData = conn.getMetaData();
 
         final String name, version;
         name = metaData.getDatabaseProductName();
-        version = metaData.getDatabaseProductVersion();
 
         final Database database;
         database = getDatabase(name);
 
-        final int major, minor;
-        major = metaData.getDatabaseMajorVersion();
-        minor = metaData.getDatabaseMinorVersion();
-
-        return ServerMeta.create(name, database, version, major, minor);
+        // return ServerMeta.create(name, database, version, major, minor);
+        return ServerMeta.builder()
+                .name(name)
+                .database(database)
+                .version(metaData.getDatabaseProductVersion())
+                .major(metaData.getDatabaseMajorVersion())
+                .minor(metaData.getDatabaseMinorVersion())
+                .usedDialect(usedDialect)
+                .supportSavePoint(metaData.supportsSavepoints())
+                .build();
     }
 
 

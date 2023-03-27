@@ -133,7 +133,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
             executorProvider = createExecutorProvider(env, Objects.requireNonNull(this.dataSource));
             //3. create ServerMeta
             final ServerMeta serverMeta;
-            serverMeta = executorProvider.createServerMeta();
+            serverMeta = executorProvider.createServerMeta(env.getRequired(ArmyKey.DIALECT));
 
             //4. create MappingEnv
             final MappingEnv mappingEnv;

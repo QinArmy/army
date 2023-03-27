@@ -13,8 +13,10 @@ import io.army.session.SessionFactory;
 public interface ArmyEnvironment {
 
     @Nullable
-    <T> T get(ArmyKey<T> key);
+    <T> T get(ArmyKey<T> key) throws IllegalStateException;
 
-    <T> T getOrDefault(ArmyKey<T> key);
+    <T> T getRequired(ArmyKey<T> key) throws IllegalStateException;
+
+    <T> T getOrDefault(ArmyKey<T> key) throws IllegalStateException;
 
 }

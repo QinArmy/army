@@ -24,8 +24,11 @@ public abstract class _MappingUtils {
             final BitSet v = (BitSet) nonNull;
             if (v.length() > 64) {
                 throw AbstractMappingType.valueOutRange(type, nonNull, null);
+            } else if (v.length() == 0) {
+                value = 0L;
+            } else {
+                value = v.toLongArray()[0];
             }
-            value = v.toLongArray()[0];
         } else if (nonNull instanceof Short) {
             value = ((Short) nonNull) & 0xffffL;
         } else if (nonNull instanceof Byte) {
@@ -42,6 +45,31 @@ public abstract class _MappingUtils {
                 value = Long.parseUnsignedLong((String) nonNull, 2);
             } catch (NumberFormatException e) {
                 throw AbstractMappingType.valueOutRange(type, nonNull, e);
+            }
+        } else if (nonNull instanceof long[]) {
+            final long[] v = (long[]) nonNull;
+            switch (v.length) {
+                case 0:
+                    value = 0L;
+                    break;
+                case 1:
+                    value = v[0];
+                    break;
+                default:
+                    throw AbstractMappingType.valueOutRange(type, nonNull, null);
+            }
+        } else if (nonNull instanceof byte[]) {
+            final byte[] v = (byte[]) nonNull;
+            if (v.length == 0) {
+                value = 0L;
+            } else if (v.length < 9) {
+                long bits = 0L;
+                for (int i = 0, bitNum = 0; i < v.length; i++, bitNum += 8) {
+                    bits |= ((v[i] & 0xffL) << bitNum);
+                }
+                value = bits;
+            } else {
+                throw AbstractMappingType.valueOutRange(type, nonNull, null);
             }
         } else {
             throw AbstractMappingType.outRangeOfSqlType(type, nonNull);
@@ -68,6 +96,10 @@ public abstract class _MappingUtils {
             value = Integer.toBinaryString(((Byte) nonNull) & 0xff);
         } else if (nonNull instanceof BigInteger) {
             value = ((BigInteger) nonNull).toString(2);
+        } else if (nonNull instanceof long[]) {
+            value = littleEndianToBitString((long[]) nonNull);
+        } else if (nonNull instanceof byte[]) {
+            value = littleEndianToBitString(BitSet.valueOf((byte[]) nonNull).toLongArray());
         } else {
             throw AbstractMappingType.outRangeOfSqlType(type, nonNull);
         }

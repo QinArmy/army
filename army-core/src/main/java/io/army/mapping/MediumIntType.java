@@ -50,7 +50,7 @@ public final class MediumIntType extends _NumericType {
 
     @Override
     public Integer beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return IntegerType.beforeBind(type, nonNull, MIN, MAX);
+        return IntegerType._beforeBind(type, nonNull, MIN, MAX);
     }
 
     @Override
