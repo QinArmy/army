@@ -1,5 +1,7 @@
 package io.army.mapping;
 
+import io.army.ArmyException;
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
@@ -7,7 +9,27 @@ import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.function.BiFunction;
 
+/**
+ * <p>
+ * This class is mapping class of {@link Long}.
+ * This mapping type can convert below java type:
+ * <ul>
+ *     <li>{@link Byte}</li>
+ *     <li>{@link Short}</li>
+ *     <li>{@link Integer}</li>
+ *     <li>{@link Long}</li>
+ *     <li>{@link java.math.BigInteger}</li>
+ *     <li>{@link java.math.BigDecimal},it has a zero fractional part</li>
+ *     <li>{@link Boolean} true : 1 , false: 0</li>
+ *     <li>{@link String} </li>
+ * </ul>
+ *  to {@link Long},if overflow,throw {@link io.army.ArmyException}
+ * </p>
+ *
+ * @since 1.0
+ */
 public final class LongType extends _NumericType._IntegerType {
 
     public static final LongType INSTANCE = new LongType();
@@ -29,36 +51,41 @@ public final class LongType extends _NumericType._IntegerType {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) {
-        final SqlType sqlType;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySQLTypes.BIGINT;
+                type = MySQLTypes.BIGINT;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.BIGINT;
+                type = PostgreType.BIGINT;
                 break;
             default:
                 throw noMappingError(meta);
 
         }
-        return sqlType;
+        return type;
+    }
+
+
+    @Override
+    public Long convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Long beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return beforeBind(type, nonNull, Long.MIN_VALUE, Long.MAX_VALUE);
+        return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Long afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof Long)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
-        }
-        return (Long) nonNull;
+        return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, DATA_ACCESS_ERROR_HANDLER);
     }
 
-    public static long beforeBind(SqlType sqlType, final Object nonNull, final long min, final long max) {
+
+    static long _convertToLong(final MappingType type, final Object nonNull, final long min, final long max,
+                               final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final long value;
         if (nonNull instanceof Long) {
             value = (Long) nonNull;
@@ -66,34 +93,32 @@ public final class LongType extends _NumericType._IntegerType {
                 || nonNull instanceof Short
                 || nonNull instanceof Byte) {
             value = ((Number) nonNull).longValue();
-            if (value < min || value > max) {
-                throw valueOutRange(sqlType, nonNull, null);
-            }
-        } else if (nonNull instanceof BigDecimal) {
-            final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
-            if (v.scale() != 0
-                    || v.compareTo(BigDecimal.valueOf(max)) > 0
-                    || v.compareTo(BigDecimal.valueOf(min)) < 0) {
-                throw valueOutRange(sqlType, nonNull, null);
-            }
-            value = v.longValue();
-        } else if (nonNull instanceof BigInteger) {
-            final BigInteger v = ((BigInteger) nonNull);
-            if (v.compareTo(BigInteger.valueOf(max)) > 0 || v.compareTo(BigInteger.valueOf(min)) < 0) {
-                throw valueOutRange(sqlType, nonNull, null);
-            }
-            value = v.longValue();
         } else if (nonNull instanceof String) {
             try {
                 value = Long.parseLong((String) nonNull);
             } catch (NumberFormatException e) {
-                throw valueOutRange(sqlType, nonNull, e);
+                throw errorHandler.apply(type, nonNull);
             }
-            if (value < min || value > max) {
-                throw valueOutRange(sqlType, nonNull, null);
+        } else if (nonNull instanceof BigDecimal) {
+            try {
+                value = ((BigDecimal) nonNull).longValueExact();
+            } catch (ArithmeticException e) {
+                throw errorHandler.apply(type, nonNull);
             }
+        } else if (nonNull instanceof BigInteger) {
+            try {
+                value = ((BigInteger) nonNull).longValueExact();
+            } catch (ArithmeticException e) {
+                throw errorHandler.apply(type, nonNull);
+            }
+        } else if (nonNull instanceof Boolean) {
+            value = ((Boolean) nonNull) ? 1L : 0L;
         } else {
-            throw outRangeOfSqlType(sqlType, nonNull);
+            throw errorHandler.apply(type, nonNull);
+        }
+
+        if (value < min || value > max) {
+            throw errorHandler.apply(type, nonNull);
         }
         return value;
     }

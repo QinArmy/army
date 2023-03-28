@@ -1,5 +1,6 @@
 package io.army.session;
 
+@Deprecated
 public class ParamException extends DataAccessException {
 
 

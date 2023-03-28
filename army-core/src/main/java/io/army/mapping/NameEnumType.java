@@ -1,7 +1,6 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
-import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.H2DataType;
 import io.army.sqltype.MySQLTypes;
@@ -51,33 +50,43 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        final SqlType sqlType;
-        sqlType = mapToSqlType(meta);
-        if (sqlType == null) {
-            throw noMappingError(meta);
-        }
-        return sqlType;
+        return mapToSqlEnumType(this, meta);
+    }
+
+
+    @Override
+    public Enum<?> convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return this.convertToEnum(nonNull);
     }
 
     @Override
     public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        if (!this.enumClass.isInstance(nonNull)) {
-            String m = String.format("%s isn't %s type.", nonNull.getClass().getName(), this.enumClass.getName());
-            throw outRangeOfSqlType(type, nonNull, new CriteriaException(m));
-        }
-        return ((Enum<?>) nonNull).name();
+        return this.convertToEnum(nonNull).name();
     }
 
     @Override
     public Enum<?> afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
+            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
         }
         try {
             return valueOf(this.enumClass, (String) nonNull);
         } catch (IllegalArgumentException e) {
-            throw errorValueForSqlType(type, nonNull, e);
+            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
         }
+    }
+
+
+    private Enum<?> convertToEnum(final Object nonNull) {
+        final Enum<?> value;
+        if (nonNull instanceof String) {
+            value = valueOf(this.enumClass, (String) nonNull);
+        } else if (this.enumClass.isInstance(nonNull)) {
+            value = (Enum<?>) nonNull;
+        } else {
+            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+        }
+        return value;
     }
 
     @SuppressWarnings("unchecked")
@@ -89,8 +98,7 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     }
 
 
-    @Nullable
-    public static SqlType mapToSqlType(final ServerMeta meta) {
+    static SqlType mapToSqlEnumType(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
@@ -103,7 +111,7 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
                 sqlType = H2DataType.ENUM;
                 break;
             default:
-                sqlType = null;
+                throw MAP_ERROR_HANDLER.apply(type, meta);
 
         }
         return sqlType;

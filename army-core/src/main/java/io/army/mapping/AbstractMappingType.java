@@ -1,11 +1,9 @@
 package io.army.mapping;
 
 import io.army.ArmyException;
-import io.army.annotation.Mapping;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
-import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.session.DataAccessException;
@@ -13,8 +11,8 @@ import io.army.session.ParamException;
 import io.army.sqltype.SqlType;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
-import java.nio.charset.Charset;
 import java.time.temporal.Temporal;
 import java.util.function.BiFunction;
 
@@ -24,18 +22,11 @@ public abstract class AbstractMappingType implements MappingType {
 
     protected static final BiFunction<MappingType, Object, ArmyException> DATA_ACCESS_ERROR_HANDLER = AbstractMappingType::dataAccessError;
 
+    protected static final BiFunction<MappingType, ServerMeta, NotSupportDialectException> MAP_ERROR_HANDLER = AbstractMappingType::mapError;
+    ;
+
 
     protected AbstractMappingType() {
-    }
-
-    @Override
-    public final int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public final boolean equals(Object obj) {
-        return this == obj;
     }
 
     @Override
@@ -49,14 +40,28 @@ public abstract class AbstractMappingType implements MappingType {
     }
 
     @Override
-    public final String toString() {
-        return String.format("%s Mapping javaType[%s]", super.toString(), javaType().getName());
+    public final int hashCode() {
+        return super.hashCode();
     }
 
-    protected final ParamException notSupportConvertBeforeBind(final Object nonNull) {
-        String m = String.format("Not support convert %s for %s bind.", nonNull, javaType().getName());
-        return new ParamException(m);
+    @Override
+    public final boolean equals(Object obj) {
+        return this == obj;
     }
+
+
+    @Override
+    public final String toString() {
+        return _StringUtils.builder()
+                .append(this.getClass().getName())
+                .append("[javaType:")
+                .append(this.javaType().getName())
+                .append(",hash:")
+                .append(System.identityHashCode(this))
+                .append(']')
+                .toString();
+    }
+
 
     @Deprecated
     protected final ParamException notSupportConvertAfterGet(final Object nonNull) {
@@ -108,6 +113,7 @@ public abstract class AbstractMappingType implements MappingType {
     }
 
 
+    @Deprecated
     protected final NotSupportDialectException noMappingError(ServerMeta serverMeta) {
         String m = String.format("No mapping from java type[%s] to Server[%s]", javaType(), serverMeta);
         return new NotSupportDialectException(m);
@@ -126,46 +132,17 @@ public abstract class AbstractMappingType implements MappingType {
     }
 
 
-    /**
-     * @see #convert(MappingEnv, Object)
-     */
-    protected final CriteriaException dontSupportConvertType(Object nonNull) {
-        String m = String.format("%s don't support convert %s", this.getClass().getName(),
-                _ClassUtils.safeClassName(nonNull));
-        throw new CriteriaException(m);
-    }
-
-    protected final DataAccessException errorValueForMapping(final Object nonNull, @Nullable Throwable cause) {
-        final DataAccessException e;
-        String m = String.format("the value[type:%s] from database driver out of %s.",
-                _ClassUtils.safeClassName(nonNull), this.getClass().getName());
-        if (cause == null) {
-            e = new DataAccessException(m);
-        } else {
-            e = new DataAccessException(m, cause);
-        }
-        return e;
-    }
-
-    protected static Charset getCharset(Class<?> javaType, Mapping mapping) throws MetaException {
-        try {
-            return Charset.forName(mapping.charset());
-        } catch (Exception e) {
-            String m = String.format("%s don't specify error charset[%s]", javaType.getName(), mapping.charset());
-            throw new MetaException(m, e);
-        }
-    }
-
-    protected static CriteriaException convertMethodError(final MappingType type, final Object nonNull) {
-        return new CriteriaException(createConvertErrorMessage(type, nonNull));
-    }
-
     private static CriteriaException paramError(final MappingType type, final Object nonNull) {
         return new CriteriaException(createConvertErrorMessage(type, nonNull));
     }
 
     private static DataAccessException dataAccessError(final MappingType type, final Object nonNull) {
         return new DataAccessException(createConvertErrorMessage(type, nonNull));
+    }
+
+    private static NotSupportDialectException mapError(final MappingType type, final ServerMeta meta) {
+        String m = String.format("%s don't support %s", type, meta);
+        return new NotSupportDialectException(m);
     }
 
     private static String createConvertErrorMessage(final MappingType type, final Object nonNull) {

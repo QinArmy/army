@@ -133,17 +133,17 @@ public final class IntegerType extends _NumericType._IntegerType {
         return value;
     }
 
-    public static int _convertToInt(final MappingType type, final Object nonNull, final int min, final int max,
-                                    final BiFunction<MappingType, Object, ArmyException> errorHandler) {
-        final int value;
-        if (nonNull instanceof Integer) {
-            value = (Integer) nonNull;
-        } else if (nonNull instanceof Short || nonNull instanceof Byte) {
-            value = ((Number) nonNull).intValue();
-        } else if (nonNull instanceof Long) {
-            final long v = (Long) nonNull;
-            if (v < min || v > max) {
-                throw errorHandler.apply(type, nonNull);
+     static int _convertToInt(final MappingType type, final Object nonNull, final int min, final int max,
+                              final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+         final int value;
+         if (nonNull instanceof Integer) {
+             value = (Integer) nonNull;
+         } else if (nonNull instanceof Short || nonNull instanceof Byte) {
+             value = ((Number) nonNull).intValue();
+         } else if (nonNull instanceof Long) {
+             final long v = (Long) nonNull;
+             if (v < min || v > max) {
+                 throw errorHandler.apply(type, nonNull);
             }
             value = (byte) v;
         } else if (nonNull instanceof BigDecimal) {

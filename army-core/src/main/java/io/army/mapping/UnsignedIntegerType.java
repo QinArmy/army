@@ -1,5 +1,6 @@
 package io.army.mapping;
 
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
@@ -47,33 +48,20 @@ public final class UnsignedIntegerType extends _NumericType._UnsignedIntegerType
         return sqlType;
     }
 
+
+    @Override
+    public Long convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return LongType._convertToLong(this, nonNull, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
+    }
+
     @Override
     public Long beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return LongType.beforeBind(type, nonNull, 0L, 0xFFFF_FFFFL);
+        return LongType._convertToLong(this, nonNull, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Long afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        final long value;
-        switch (type.database()) {
-            case MySQL:
-            case PostgreSQL: {
-                if (!(nonNull instanceof Long)) {
-                    throw errorJavaTypeForSqlType(type, nonNull);
-                }
-                value = (Long) nonNull;
-                if (value < 0L || value > 0xFFFF_FFFFL) {
-                    throw errorValueForSqlType(type, nonNull, null);
-                }
-            }
-            break;
-
-            case Oracle:
-            case H2:
-            default:
-                throw errorJavaTypeForSqlType(type, nonNull);
-        }
-        return value;
+        return LongType._convertToLong(this, nonNull, 0L, 0xFFFF_FFFFL, DATA_ACCESS_ERROR_HANDLER);
     }
 
 

@@ -1,8 +1,16 @@
 package io.army.mapping;
 
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
+/**
+ * <p>
+ * This class is mapping class of {@code byte[]}.
+ * </p>
+ *
+ * @since 1.0
+ */
 public final class PrimitiveByteArrayType extends AbstractMappingType {
 
     public static final PrimitiveByteArrayType INSTANCE = new PrimitiveByteArrayType();
@@ -24,52 +32,50 @@ public final class PrimitiveByteArrayType extends AbstractMappingType {
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        final SqlType sqlType;
+        final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySQLTypes.VARBINARY;
+                type = MySQLTypes.VARBINARY;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.BYTEA;
+                type = PostgreType.BYTEA;
                 break;
             case Oracle:
-                sqlType = OracleDataType.BLOB;
+                type = OracleDataType.BLOB;
                 break;
             case H2:
-                sqlType = H2DataType.VARBINARY;
+                type = H2DataType.VARBINARY;
                 break;
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
-        return sqlType;
+        return type;
+    }
+
+    @Override
+    public byte[] convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        if (!(nonNull instanceof byte[])) {
+            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+        }
+        return (byte[]) nonNull;
     }
 
     @Override
     public byte[] beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
-            throw outRangeOfSqlType(type, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
         }
         return (byte[]) nonNull;
     }
 
     @Override
     public byte[] afterGet(SqlType type, MappingEnv env, final Object nonNull) {
-        final byte[] value;
-        switch (type.database()) {
-            case MySQL:
-            case H2: {
-                if (!(nonNull instanceof byte[])) {
-                    throw errorJavaTypeForSqlType(type, nonNull);
-                }
-                value = (byte[]) nonNull;
-            }
-            break;
-            case PostgreSQL://TODO
-            case Oracle://TODO
-            default:
-                throw errorJavaTypeForSqlType(type, nonNull);
+        if (!(nonNull instanceof byte[])) {
+            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
         }
-        return value;
+        return (byte[]) nonNull;
     }
+
+
 }

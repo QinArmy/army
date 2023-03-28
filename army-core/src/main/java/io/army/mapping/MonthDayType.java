@@ -1,20 +1,36 @@
 package io.army.mapping;
 
+import io.army.ArmyException;
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 
-import java.time.DateTimeException;
-import java.time.LocalDate;
-import java.time.MonthDay;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
 import java.util.Locale;
+import java.util.function.BiFunction;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
 
 /**
- * @see MonthDay
+ * <p>
+ * This class is mapping class of {@link MonthDay}.
+ * This mapping type can convert below java type:
+ * <ul>
+ *     <li>{@link LocalDate}</li>
+ *     <li>{@link LocalDateTime}</li>
+ *     <li>{@link java.time.LocalDate}</li>
+ *     <li>{@link java.time.OffsetDateTime}</li>
+ *     <li>{@link java.time.ZonedDateTime}</li>
+ *     <li>{@link String} </li>
+ * </ul>
+ *  to {@link MonthDay},if error,throw {@link io.army.ArmyException}
+ * </p>
+ *
+ * @since 1.0
  */
 public final class MonthDayType extends _ArmyNoInjectionMapping {
 
@@ -49,34 +65,60 @@ public final class MonthDayType extends _ArmyNoInjectionMapping {
     }
 
     @Override
+    public MonthDay convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return convertToMonthDay(this, env, nonNull, PARAM_ERROR_HANDLER);
+    }
+
+    @Override
     public LocalDate beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         final MonthDay value;
-        if (nonNull instanceof MonthDay) {
-            value = (MonthDay) nonNull;
-        } else if (nonNull instanceof String) {
-            try {
-                final String v = (String) nonNull;
-                if (v.startsWith("--")) {
-                    value = MonthDay.parse(v);
-                } else {
-                    value = MonthDay.parse(v, FORMATTER);
-                }
-            } catch (DateTimeException e) {
-                throw valueOutRange(type, nonNull, e);
-            }
-        } else {
-            throw outRangeOfSqlType(type, nonNull);
-        }
+        value = convertToMonthDay(this, env, nonNull, PARAM_ERROR_HANDLER);
         return LocalDate.of(1970, value.getMonth(), value.getDayOfMonth());
     }
 
     @Override
     public MonthDay afterGet(SqlType type, MappingEnv env, final Object nonNull) {
-        if (!(nonNull instanceof LocalDate)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
+        return convertToMonthDay(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER);
+
+    }
+
+
+    private static MonthDay convertToMonthDay(final MappingType type, final MappingEnv env, final Object nonNull,
+                                              final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+        final MonthDay value;
+        if (nonNull instanceof MonthDay) {
+            value = (MonthDay) nonNull;
+        } else if (nonNull instanceof LocalDate) {
+            value = MonthDay.from((LocalDate) nonNull);
+        } else if (nonNull instanceof LocalDateTime) {
+            final LocalDateTime v = (LocalDateTime) nonNull;
+            value = MonthDay.of(v.getMonth(), v.getDayOfMonth());
+        } else if (nonNull instanceof OffsetDateTime) {
+            value = MonthDay.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.zoneId()));
+        } else if (nonNull instanceof ZonedDateTime) {
+            value = MonthDay.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.zoneId()));
+        } else if (!(nonNull instanceof String)) {
+            throw errorHandler.apply(type, nonNull);
+        } else if (((String) nonNull).startsWith("--")) {
+            try {
+                value = MonthDay.parse((String) nonNull);
+            } catch (DateTimeParseException e) {
+                throw errorHandler.apply(type, nonNull);
+            }
+        } else if (((String) nonNull).length() == 5) {
+            try {
+                value = MonthDay.parse((String) nonNull, FORMATTER);
+            } catch (DateTimeParseException e) {
+                throw errorHandler.apply(type, nonNull);
+            }
+        } else {
+            try {
+                value = MonthDay.parse((String) nonNull, DateTimeFormatter.ISO_LOCAL_DATE);
+            } catch (DateTimeParseException e) {
+                throw errorHandler.apply(type, nonNull);
+            }
         }
-        final LocalDate v = (LocalDate) nonNull;
-        return MonthDay.of(v.getMonth(), v.getDayOfMonth());
+        return value;
     }
 
 

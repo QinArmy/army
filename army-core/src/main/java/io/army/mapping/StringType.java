@@ -41,24 +41,24 @@ public final class StringType extends _SQLStringType {
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        final SqlType sqlDataType;
+        final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySQLTypes.VARCHAR;
+                type = MySQLTypes.VARCHAR;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreType.VARCHAR;
+                type = PostgreType.VARCHAR;
                 break;
             case Oracle:
-                sqlDataType = OracleDataType.VARCHAR2;
+                type = OracleDataType.VARCHAR2;
                 break;
 
             case H2:
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
-        return sqlDataType;
+        return type;
     }
 
     @Override

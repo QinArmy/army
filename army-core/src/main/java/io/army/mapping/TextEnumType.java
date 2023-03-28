@@ -42,12 +42,7 @@ public final class TextEnumType extends AbstractMappingType {
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        final SqlType sqlType;
-        sqlType = NameEnumType.mapToSqlType(meta);
-        if (sqlType == null) {
-            throw noMappingError(meta);
-        }
-        return sqlType;
+        return NameEnumType.mapToSqlEnumType(this, meta);
     }
 
     @Override

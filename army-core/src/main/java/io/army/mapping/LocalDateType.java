@@ -84,17 +84,17 @@ public final class LocalDateType extends _ArmyNoInjectionMapping {
         return convertToLocalDateTime(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER);
     }
 
-    private static LocalDate convertToLocalDateTime(final MappingType type, final MappingEnv env, final Object nonNull,
-                                                    final BiFunction<MappingType, Object, ArmyException> errorHandler) {
-        final LocalDate value;
-        if (nonNull instanceof LocalDate) {
-            value = (LocalDate) nonNull;
-        } else if (nonNull instanceof String) {
-            //TODO consider format
-            try {
-                value = LocalDate.parse((String) nonNull);
-            } catch (DateTimeParseException e) {
-                throw errorHandler.apply(type, nonNull);
+     static LocalDate convertToLocalDateTime(final MappingType type, final MappingEnv env, final Object nonNull,
+                                             final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+         final LocalDate value;
+         if (nonNull instanceof LocalDate) {
+             value = (LocalDate) nonNull;
+         } else if (nonNull instanceof String) {
+             //TODO consider format
+             try {
+                 value = LocalDate.parse((String) nonNull);
+             } catch (DateTimeParseException e) {
+                 throw errorHandler.apply(type, nonNull);
             }
         } else if (nonNull instanceof LocalDateTime) {
             value = ((LocalDateTime) nonNull).toLocalDate();
