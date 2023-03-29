@@ -4,26 +4,32 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.*;
 
+
 /**
  * <p>
  * This class is mapping class of {@code byte[]}.
  * </p>
  *
+ * @see PrimitiveByteArrayType
+ * @see BlobType
  * @since 1.0
  */
-public final class PrimitiveByteArrayType extends _ArmyInnerMapping {
+public final class MediumBlobType extends _ArmyInnerMapping {
 
-    public static final PrimitiveByteArrayType INSTANCE = new PrimitiveByteArrayType();
 
-    public static PrimitiveByteArrayType from(final Class<?> fieldType) {
+    public static final MediumBlobType INSTANCE = new MediumBlobType();
+
+    public static MediumBlobType from(final Class<?> fieldType) {
         if (fieldType != byte[].class) {
-            throw errorJavaType(PrimitiveByteArrayType.class, fieldType);
+            throw errorJavaType(MediumBlobType.class, fieldType);
         }
         return INSTANCE;
     }
 
-    private PrimitiveByteArrayType() {
+
+    private MediumBlobType() {
     }
+
 
     @Override
     public Class<?> javaType() {
@@ -35,7 +41,7 @@ public final class PrimitiveByteArrayType extends _ArmyInnerMapping {
         final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                type = MySQLTypes.VARBINARY;
+                type = MySQLTypes.MEDIUMBLOB;
                 break;
             case PostgreSQL:
                 type = PostgreTypes.BYTEA;

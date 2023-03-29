@@ -6,7 +6,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.meta.DatabaseObject;
 import io.army.meta.TypeMeta;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 import io.army.tx.Isolation;
 import io.army.util._Exceptions;
@@ -72,7 +72,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
     @Override
     protected final void bindLiteral(final TypeMeta typeMeta, final SqlType type, final Object value,
                                      final StringBuilder sqlBuilder) {
-        switch ((PostgreType) type) {
+        switch ((PostgreTypes) type) {
             case BOOLEAN: {
                 if (!(value instanceof Boolean)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
@@ -340,7 +340,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
                 break;
             default:
-                throw _Exceptions.unexpectedEnum((PostgreType) type);
+                throw _Exceptions.unexpectedEnum((PostgreTypes) type);
 
         }// switch
 

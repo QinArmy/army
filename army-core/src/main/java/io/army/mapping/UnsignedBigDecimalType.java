@@ -1,12 +1,20 @@
 package io.army.mapping;
 
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 
+/**
+ * <p>
+ * This class representing the mapping from {@link BigDecimal} to unsigned decimal.
+ * </p>
+ *
+ * @see BigDecimal
+ */
 public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericType
         implements _NumericType._DecimalNumeric {
 
@@ -30,36 +38,48 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        final SqlType sqlType;
+        final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySQLTypes.DECIMAL_UNSIGNED;
+                type = MySQLTypes.DECIMAL_UNSIGNED;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.DECIMAL;
+                type = PostgreTypes.DECIMAL;
                 break;
-
             case Oracle:
             case H2:
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return sqlType;
+        return type;
+    }
+
+    @Override
+    public BigDecimal convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        final BigDecimal value;
+        value = BigDecimalType._convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER);
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+        }
+        return value;
     }
 
     @Override
     public BigDecimal beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return BigDecimalType.convertToBigDecimal(type, nonNull);
+        final BigDecimal value;
+        value = BigDecimalType._convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER);
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+        }
+        return value;
     }
 
     @Override
     public BigDecimal afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof BigDecimal)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
-        }
-        final BigDecimal value = (BigDecimal) nonNull;
+        final BigDecimal value;
+        value = BigDecimalType._convertToBigDecimal(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
         if (value.compareTo(BigDecimal.ZERO) < 0) {
-            throw errorValueForSqlType(type, nonNull, valueOutOfMapping(nonNull, UnsignedBigDecimalType.class));
+            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
         }
         return value;
     }

@@ -34,7 +34,7 @@ public final class BinaryType extends AbstractMappingType {
                 sqlType = MySQLTypes.BINARY;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.BYTEA;
+                sqlType = PostgreTypes.BYTEA;
                 break;
             case Oracle:
                 sqlType = OracleDataType.BLOB;

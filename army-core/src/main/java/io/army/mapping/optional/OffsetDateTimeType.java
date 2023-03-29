@@ -4,7 +4,7 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 import io.army.util._TimeUtils;
 
@@ -40,7 +40,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping {
         final SqlType sqlType;
         switch (meta.database()) {
             case PostgreSQL:
-                sqlType = PostgreType.TIMESTAMPTZ;
+                sqlType = PostgreTypes.TIMESTAMPTZ;
                 break;
             case Oracle:
                 sqlType = OracleDataType.TIMESTAMPTZ;

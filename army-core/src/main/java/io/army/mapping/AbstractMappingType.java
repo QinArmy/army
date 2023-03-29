@@ -149,7 +149,10 @@ public abstract class AbstractMappingType implements MappingType {
         final StringBuilder builder = new StringBuilder();
         builder.append(_ClassUtils.safeClassName(nonNull));
 
-        if (nonNull instanceof Number || nonNull instanceof Enum || nonNull instanceof Temporal) {
+        if (type instanceof _ArmyNoInjectionMapping
+                || nonNull instanceof Number
+                || nonNull instanceof Enum
+                || nonNull instanceof Temporal) {
             builder.append('[')
                     .append(nonNull)
                     .append(']');

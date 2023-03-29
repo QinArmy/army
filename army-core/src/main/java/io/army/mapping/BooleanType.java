@@ -5,7 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
@@ -63,7 +63,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
                 sqlType = MySQLTypes.BOOLEAN;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.BOOLEAN;
+                sqlType = PostgreTypes.BOOLEAN;
                 break;
             default:
                 throw noMappingError(meta);

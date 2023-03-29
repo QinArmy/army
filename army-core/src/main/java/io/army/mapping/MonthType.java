@@ -51,7 +51,7 @@ public final class MonthType extends _ArmyNoInjectionMapping {
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        return LocalDateType.INSTANCE.map(meta);
+        return NameEnumType.mapToSqlEnumType(this, meta);
     }
 
     @Override
@@ -60,10 +60,9 @@ public final class MonthType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public LocalDate beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        final Month month;
-        month = convertToMoth(this, env, nonNull, PARAM_ERROR_HANDLER);
-        return LocalDate.of(1970, month, 1);
+    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        return convertToMoth(this, env, nonNull, PARAM_ERROR_HANDLER)
+                .name();
     }
 
     @Override

@@ -1,14 +1,34 @@
 package io.army.mapping;
 
+import io.army.ArmyException;
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 
-import java.time.Year;
+import java.time.*;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.Temporal;
+import java.util.function.BiFunction;
 
 /**
- * @see Year
+ * <p>
+ * This class is mapping class of {@link Year}.
+ * This mapping type can convert below java type:
+ * <ul>
+ *     <li>{@link LocalDate}</li>
+ *     <li>{@link LocalDateTime}</li>
+ *     <li>{@link java.time.LocalDate}</li>
+ *     <li>{@link java.time.OffsetDateTime}</li>
+ *     <li>{@link java.time.ZonedDateTime}</li>
+ *     <li>{@link YearMonth}</li>
+ *     <li>{@link String} ,{@link Year} string {@link YearMonth} string or {@link LocalDate} string</li>
+ * </ul>
+ *  to {@link Year},if error,throw {@link io.army.ArmyException}
+ * </p>
+ *
+ * @since 1.0
  */
 public final class YearType extends _ArmyNoInjectionMapping {
 
@@ -30,75 +50,90 @@ public final class YearType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) {
-        final SqlType sqlType;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySQLTypes.YEAR;
+                type = MySQLTypes.YEAR;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.INTEGER;
+                type = PostgreTypes.DATE;
                 break;
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
-        return sqlType;
+        return type;
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        final Object value;
+    public Year convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER);
+    }
+
+    @Override
+    public Temporal beforeBind(final SqlType type, final MappingEnv env, final Object nonNull) {
+        final Temporal value;
         switch (type.database()) {
-            case MySQL: {
-                if (nonNull instanceof Year) {
-                    value = ((Year) nonNull).getValue();
-                } else if (nonNull instanceof Integer || nonNull instanceof Short) {
-                    value = ((Number) nonNull).intValue();
-                } else {
-                    throw outRangeOfSqlType(type, nonNull);
-                }
-            }
-            break;
+            case MySQL:
+                value = _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER);
+                break;
             case PostgreSQL: {
-                if (!(nonNull instanceof Integer)) {
-                    throw outRangeOfSqlType(type, nonNull);
+                if (nonNull instanceof LocalDate) {
+                    value = (LocalDate) nonNull;
+                } else if (nonNull instanceof LocalDateTime) {
+                    value = ((LocalDateTime) nonNull).toLocalDate();
+                } else {
+                    final Year year;
+                    year = _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER);
+                    value = LocalDate.of(year.getValue(), Month.JANUARY, 1);
                 }
-                value = nonNull;
             }
             break;
-
-            case Oracle:
-            case H2:
             default:
-                throw outRangeOfSqlType(type, nonNull);
-
+                throw PARAM_ERROR_HANDLER.apply(this, nonNull);
         }
         return value;
     }
 
     @Override
     public Year afterGet(SqlType type, MappingEnv env, Object nonNull) {
+        return _convertToYear(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER);
+    }
+
+    private static Year _convertToYear(final MappingType type, final MappingEnv env, final Object nonNull,
+                                       final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final Year value;
-        switch (type.database()) {
-            case MySQL: {
-                if (!(nonNull instanceof Year)) {
-                    throw errorJavaTypeForSqlType(type, nonNull);
+        if (nonNull instanceof Year) {
+            value = (Year) nonNull;
+        } else if (nonNull instanceof LocalDate) {
+            value = Year.from((LocalDate) nonNull);
+        } else if (nonNull instanceof LocalDateTime) {
+            value = Year.from((LocalDateTime) nonNull);
+        } else if (nonNull instanceof OffsetDateTime) {
+            value = Year.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.zoneId()));
+        } else if (nonNull instanceof ZonedDateTime) {
+            value = Year.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.zoneId()));
+        } else if (nonNull instanceof YearMonth) {
+            value = Year.from((YearMonth) nonNull);
+        } else if (!(nonNull instanceof String)) {
+            throw errorHandler.apply(type, nonNull);
+        } else {
+            final String text = (String) nonNull;
+            final int index = text.indexOf('-');
+
+            try {
+                if (index < 0) {
+                    value = Year.parse((String) nonNull);
+                } else if (index == text.lastIndexOf('-')) {
+                    value = Year.from(YearMonth.parse((String) nonNull));
+                } else {
+                    value = Year.from(LocalDate.parse((String) nonNull));
                 }
-                value = (Year) nonNull;
+            } catch (DateTimeParseException e) {
+                throw errorHandler.apply(type, nonNull);
             }
-            break;
-            case PostgreSQL: {
-                if (!(nonNull instanceof Integer)) {
-                    throw errorJavaTypeForSqlType(type, nonNull);
-                }
-                value = Year.of((Integer) nonNull);
-            }
-            break;
-            case H2:
-            case Oracle:
-            default:
-                throw errorJavaTypeForSqlType(type, nonNull);
+
         }
         return value;
     }

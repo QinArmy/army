@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 
 /**
@@ -57,7 +57,7 @@ public final class MediumIntType extends _NumericType {
                 sqlType = MySQLTypes.MEDIUMINT;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.INTEGER;
+                sqlType = PostgreTypes.INTEGER;
                 break;
 
             case Oracle:

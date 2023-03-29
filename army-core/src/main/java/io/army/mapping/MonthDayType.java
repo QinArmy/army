@@ -91,8 +91,7 @@ public final class MonthDayType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof LocalDate) {
             value = MonthDay.from((LocalDate) nonNull);
         } else if (nonNull instanceof LocalDateTime) {
-            final LocalDateTime v = (LocalDateTime) nonNull;
-            value = MonthDay.of(v.getMonth(), v.getDayOfMonth());
+            value = MonthDay.from((LocalDateTime) nonNull);
         } else if (nonNull instanceof OffsetDateTime) {
             value = MonthDay.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.zoneId()));
         } else if (nonNull instanceof ZonedDateTime) {

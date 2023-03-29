@@ -1,8 +1,16 @@
 package io.army.mapping;
 
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 
+/**
+ * <p>
+ * This class representing the mapping from {@link Void} to nothing,that returned by some special {@link io.army.criteria.Expression}.
+ * </p>
+ *
+ * @see Void
+ */
 public final class VoidType extends _ArmyInnerMapping {
 
     public static final VoidType INSTANCE = new VoidType();
@@ -19,6 +27,11 @@ public final class VoidType extends _ArmyInnerMapping {
 
     @Override
     public SqlType map(ServerMeta meta) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
         throw new UnsupportedOperationException();
     }
 

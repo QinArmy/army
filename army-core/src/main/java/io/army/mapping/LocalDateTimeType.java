@@ -4,7 +4,7 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 import io.army.util._TimeUtils;
 
@@ -57,7 +57,7 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping {
                 type = MySQLTypes.DATETIME;
                 break;
             case PostgreSQL:
-                type = PostgreType.TIMESTAMP;
+                type = PostgreTypes.TIMESTAMP;
                 break;
             default:
                 throw noMappingError(meta);

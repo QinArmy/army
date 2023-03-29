@@ -4,7 +4,7 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
@@ -60,10 +60,10 @@ public final class IntegerType extends _NumericType._IntegerType {
                 type = MySQLTypes.INT;
                 break;
             case PostgreSQL:
-                type = PostgreType.INTEGER;
+                type = PostgreTypes.INTEGER;
                 break;
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
         return type;
@@ -84,54 +84,6 @@ public final class IntegerType extends _NumericType._IntegerType {
         return _convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, DATA_ACCESS_ERROR_HANDLER);
     }
 
-
-    @Deprecated
-    public static int _beforeBind(final SqlType sqlType, final Object nonNull, final int min, final int max) {
-        final int value;
-        if (nonNull instanceof Integer
-                || nonNull instanceof Short
-                || nonNull instanceof Byte) {
-            final int v = ((Number) nonNull).intValue();
-            if (v < min || v > max) {
-                throw valueOutRange(sqlType, nonNull, null);
-            }
-            value = (byte) v;
-        } else if (nonNull instanceof Long) {
-            final long v = (Long) nonNull;
-            if (v < min || v > max) {
-                throw valueOutRange(sqlType, nonNull, null);
-            }
-            value = (byte) v;
-        } else if (nonNull instanceof BigDecimal) {
-            final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
-            if (v.compareTo(BigDecimal.valueOf(min)) < 0
-                    || v.compareTo(BigDecimal.valueOf(max)) > 0) {
-                throw valueOutRange(sqlType, nonNull, null);
-            }
-            value = v.byteValue();
-        } else if (nonNull instanceof BigInteger) {
-            final BigInteger v = (BigInteger) nonNull;
-            if (v.compareTo(BigInteger.valueOf(min)) < 0
-                    || v.compareTo(BigInteger.valueOf(max)) > 0) {
-                throw valueOutRange(sqlType, nonNull, null);
-            }
-            value = v.byteValue();
-        } else if (nonNull instanceof String) {
-            final int v;
-            try {
-                v = Integer.parseInt((String) nonNull);
-                if (v < min || v > max) {
-                    throw valueOutRange(sqlType, nonNull, null);
-                }
-            } catch (NumberFormatException e) {
-                throw valueOutRange(sqlType, nonNull, e);
-            }
-            value = v;
-        } else {
-            throw outRangeOfSqlType(sqlType, nonNull);
-        }
-        return value;
-    }
 
      static int _convertToInt(final MappingType type, final Object nonNull, final int min, final int max,
                               final BiFunction<MappingType, Object, ArmyException> errorHandler) {

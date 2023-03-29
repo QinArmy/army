@@ -1,11 +1,16 @@
 package io.army.mapping;
 
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 
 /**
+ * <p>
+ * This class representing the mapping from {@link Short} to (unsigned TINY)  INT.
+ * </p>
+ *
  * @see Short
  */
 public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
@@ -30,50 +35,42 @@ public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) {
-        final SqlType sqlType;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySQLTypes.TINYINT_UNSIGNED;
+                type = MySQLTypes.TINYINT_UNSIGNED;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.SMALLINT;
+                type = PostgreTypes.SMALLINT;
                 break;
-
             case Oracle:
             case H2:
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return sqlType;
+        return type;
+    }
+
+    @Override
+    public Short convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        final int value;
+        value = IntegerType._convertToInt(this, nonNull, 0, 0xFF, PARAM_ERROR_HANDLER);
+        return (short) value;
     }
 
     @Override
     public Short beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return (short) IntegerType._beforeBind(type, nonNull, 0, 0xFF);
+        final int value;
+        value = IntegerType._convertToInt(this, nonNull, 0, 0xFF, PARAM_ERROR_HANDLER);
+        return (short) value;
     }
 
     @Override
     public Short afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        switch (type.database()) {
-            case MySQL:
-            case PostgreSQL: {
-                if (!(nonNull instanceof Short)) {
-                    throw errorJavaTypeForSqlType(type, nonNull);
-                }
-            }
-            break;
-
-            case Oracle:
-            case H2:
-            default:
-                throw errorJavaTypeForSqlType(type, nonNull);
-        }
-        final Short value = (Short) nonNull;
-        if (value < 0 || value > 0xFF) {
-            throw errorValueForSqlType(type, nonNull, null);
-        }
-        return value;
+        final int value;
+        value = IntegerType._convertToInt(this, nonNull, 0, 0xFF, DATA_ACCESS_ERROR_HANDLER);
+        return (short) value;
     }
 
 

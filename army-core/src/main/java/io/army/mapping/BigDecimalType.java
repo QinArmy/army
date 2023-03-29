@@ -59,7 +59,7 @@ public final class BigDecimalType extends _NumericType implements _NumericType._
                 type = MySQLTypes.DECIMAL;
                 break;
             case PostgreSQL:
-                type = PostgreType.DECIMAL;
+                type = PostgreTypes.DECIMAL;
                 break;
             case H2:
                 type = H2DataType.DECIMAL;
@@ -118,8 +118,8 @@ public final class BigDecimalType extends _NumericType implements _NumericType._
         return value;
     }
 
-    public static BigDecimal _convertToBigDecimal(final MappingType type, final Object nonNull,
-                                                  final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    static BigDecimal _convertToBigDecimal(final MappingType type, final Object nonNull,
+                                           final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final BigDecimal value;
         if (nonNull instanceof BigDecimal) {
             value = (BigDecimal) nonNull;

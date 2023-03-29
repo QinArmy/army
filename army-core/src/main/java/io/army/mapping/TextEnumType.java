@@ -2,6 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
+import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.struct.TextEnum;
 
@@ -10,6 +11,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * <p>
+ * This class representing the mapping from {@link TextEnum} to {@link SqlType}.
+ * </p>
+ *
  * @see TextEnum
  * @see NameEnumType
  * @see CodeEnumType
@@ -19,10 +24,16 @@ public final class TextEnumType extends AbstractMappingType {
     private static final ConcurrentMap<Class<?>, TextEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     public static TextEnumType from(final Class<?> fieldType) {
-        if (!fieldType.isEnum() || !TextEnum.class.isAssignableFrom(fieldType)) {
+        if (!Enum.class.isAssignableFrom(fieldType) || !TextEnum.class.isAssignableFrom(fieldType)) {
             throw errorJavaType(TextEnumType.class, fieldType);
         }
-        return INSTANCE_MAP.computeIfAbsent(fieldType, TextEnumType::new);
+        final Class<?> actualType;
+        if (fieldType.isAnonymousClass()) {
+            actualType = fieldType.getSuperclass();
+        } else {
+            actualType = fieldType;
+        }
+        return INSTANCE_MAP.computeIfAbsent(actualType, TextEnumType::new);
     }
 
 
@@ -46,10 +57,17 @@ public final class TextEnumType extends AbstractMappingType {
     }
 
     @Override
+    public TextEnum convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        if (!this.javaType.isInstance(nonNull)) {
+            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+        }
+        return (TextEnum) nonNull;
+    }
+
+    @Override
     public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         if (!this.javaType.isInstance(nonNull)) {
-            String m = String.format("%s isn't %s type.", nonNull.getClass().getName(), this.javaType.getName());
-            throw outRangeOfSqlType(type, nonNull, new CriteriaException(m));
+            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
         }
         return ((TextEnum) nonNull).text();
     }
@@ -57,13 +75,13 @@ public final class TextEnumType extends AbstractMappingType {
     @Override
     public TextEnum afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
+            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
         }
         final TextEnum value;
         value = this.textMap.get(nonNull);
         if (value == null) {
             String m = String.format("%s don't contain text[%s]", this.javaType.getName(), nonNull);
-            throw errorValueForSqlType(type, nonNull, new IllegalArgumentException(m));
+            throw new DataAccessException(m);
         }
         return value;
     }

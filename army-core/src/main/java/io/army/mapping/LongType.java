@@ -4,7 +4,7 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
@@ -58,7 +58,7 @@ public final class LongType extends _NumericType._IntegerType {
                 type = MySQLTypes.BIGINT;
                 break;
             case PostgreSQL:
-                type = PostgreType.BIGINT;
+                type = PostgreTypes.BIGINT;
                 break;
             default:
                 throw noMappingError(meta);

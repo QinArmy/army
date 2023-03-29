@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.H2DataType;
 import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
@@ -21,7 +21,7 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     private static final ConcurrentMap<Class<?>, NameEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     public static NameEnumType from(final Class<?> fieldType) {
-        if (!fieldType.isEnum()) {
+        if (!Enum.class.isAssignableFrom(fieldType)) {
             throw errorJavaType(NameEnumType.class, fieldType);
         }
         if (CodeEnum.class.isAssignableFrom(fieldType)) {
@@ -34,7 +34,13 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
                     , fieldType.getName(), TextEnum.class.getName(), TextEnumType.class.getName());
             throw new IllegalArgumentException(m);
         }
-        return INSTANCE_MAP.computeIfAbsent(fieldType, NameEnumType::new);
+        final Class<?> actualType;
+        if (fieldType.isAnonymousClass()) {
+            actualType = fieldType.getSuperclass();
+        } else {
+            actualType = fieldType;
+        }
+        return INSTANCE_MAP.computeIfAbsent(actualType, NameEnumType::new);
     }
 
     private final Class<?> enumClass;
@@ -105,7 +111,7 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
                 sqlType = MySQLTypes.ENUM;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.VARCHAR;
+                sqlType = PostgreTypes.VARCHAR;
                 break;
             case H2:
                 sqlType = H2DataType.ENUM;

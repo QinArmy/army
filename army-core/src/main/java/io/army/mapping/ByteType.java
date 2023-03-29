@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 
 /**
@@ -52,7 +52,7 @@ public final class ByteType extends _NumericType._IntegerType {
                 type = MySQLTypes.TINYINT;
                 break;
             case PostgreSQL:
-                type = PostgreType.SMALLINT;
+                type = PostgreTypes.SMALLINT;
                 break;
 
             case Oracle:

@@ -7,7 +7,7 @@ import io.army.mapping.MappingType;
 /**
  * @see <a href="https://www.postgresql.org/docs/11/datatype.html">Postgre Data Types</a>
  */
-public enum PostgreType implements SqlType {
+public enum PostgreTypes implements SqlType {
 
 
     /**
@@ -154,7 +154,7 @@ public enum PostgreType implements SqlType {
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", PostgreType.class.getName(), this.name());
+        return String.format("%s.%s", PostgreTypes.class.getName(), this.name());
     }
 
 

@@ -2,6 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.TypeInfer;
+import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.session.DataAccessException;
@@ -25,7 +26,7 @@ public interface MappingType extends TypeMeta, TypeInfer {
 
     Class<?> javaType();
 
-    SqlType map(ServerMeta meta);
+    SqlType map(ServerMeta meta) throws NotSupportDialectException;
 
     /**
      * @return the instance of {@link #javaType()}.

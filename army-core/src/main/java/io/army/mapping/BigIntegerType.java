@@ -77,17 +77,17 @@ public final class BigIntegerType extends _NumericType._IntegerType {
         return _convertToBigInteger(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
     }
 
-    public static BigInteger _convertToBigInteger(final MappingType type, final Object nonNull,
-                                                  final BiFunction<MappingType, Object, ArmyException> errorHandler) {
-        final BigInteger value;
-        if (nonNull instanceof BigInteger) {
-            value = (BigInteger) nonNull;
-        } else if (nonNull instanceof Integer
-                || nonNull instanceof Long
-                || nonNull instanceof Short
-                || nonNull instanceof Byte) {
-            value = BigInteger.valueOf(((Number) nonNull).longValue());
-        } else if (nonNull instanceof Boolean) {
+     static BigInteger _convertToBigInteger(final MappingType type, final Object nonNull,
+                                            final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+         final BigInteger value;
+         if (nonNull instanceof BigInteger) {
+             value = (BigInteger) nonNull;
+         } else if (nonNull instanceof Integer
+                 || nonNull instanceof Long
+                 || nonNull instanceof Short
+                 || nonNull instanceof Byte) {
+             value = BigInteger.valueOf(((Number) nonNull).longValue());
+         } else if (nonNull instanceof Boolean) {
             value = (Boolean) nonNull ? BigInteger.ONE : BigInteger.ZERO;
         } else if (nonNull instanceof BigDecimal) {
             try {

@@ -1,12 +1,29 @@
 package io.army.mapping;
 
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 
 /**
- * @see Integer
+ * <p>
+ * This class is mapping class of {@link Integer}.
+ * This mapping type can convert below java type:
+ * <ul>
+ *     <li>{@link Byte}</li>
+ *     <li>{@link Short}</li>
+ *     <li>{@link Integer}</li>
+ *     <li>{@link Long}</li>
+ *     <li>{@link java.math.BigInteger}</li>
+ *     <li>{@link java.math.BigDecimal},it has a zero fractional part</li>
+ *     <li>{@link Boolean} true : 1 , false: 0</li>
+ *     <li>{@link String} </li>
+ * </ul>
+ *  to  (unsigned medium) int,if overflow,throw {@link io.army.ArmyException}
+ * </p>
+ *
+ * @since 1.0
  */
 public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
 
@@ -30,49 +47,37 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        final SqlType sqlType;
+        final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySQLTypes.SMALLINT_UNSIGNED;
+                type = MySQLTypes.SMALLINT_UNSIGNED;
                 break;
             case PostgreSQL:
-                sqlType = PostgreType.INTEGER;
+                type = PostgreTypes.INTEGER;
                 break;
-
             case Oracle:
             case H2:
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return sqlType;
+        return type;
+    }
+
+    @Override
+    public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return IntegerType._convertToInt(this, nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Integer beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        final int value;
-        value = IntegerType._beforeBind(type, nonNull, 0, 0xFFFF);
-        if (value < 0 || value > 0xFFFF) {
-            throw valueOutRange(type, nonNull, valueOutOfMapping(nonNull));
-        }
-        return value;
+        return IntegerType._convertToInt(this, nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public Integer afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof Integer)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
-        }
-        final int value = (Integer) nonNull;
-        if (value < 0 || value > 0xFFFF) {
-            throw errorValueForSqlType(type, nonNull, valueOutOfMapping(nonNull));
-        }
-        return value;
+        return IntegerType._convertToInt(this, nonNull, 0, 0xFFFF, DATA_ACCESS_ERROR_HANDLER);
     }
 
-    private static IllegalArgumentException valueOutOfMapping(final Object nonNull) {
-        String m = String.format("value[%s] out of range of %s .", nonNull, UnsignedShortType.class.getName());
-        return new IllegalArgumentException(m);
-    }
 
 
 }

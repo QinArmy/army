@@ -1,15 +1,31 @@
 package io.army.mapping;
 
+import io.army.ArmyException;
+import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 
-import java.time.DateTimeException;
-import java.time.LocalDate;
-import java.time.YearMonth;
+import java.time.*;
+import java.time.format.DateTimeParseException;
+import java.util.function.BiFunction;
 
 /**
- * @see {@link YearMonth}
+ * <p>
+ * This class is mapping class of {@link YearMonth}.
+ * This mapping type can convert below java type:
+ * <ul>
+ *     <li>{@link LocalDate}</li>
+ *     <li>{@link LocalDateTime}</li>
+ *     <li>{@link java.time.LocalDate}</li>
+ *     <li>{@link java.time.OffsetDateTime}</li>
+ *     <li>{@link java.time.ZonedDateTime}</li>
+ *     <li>{@link String} ,{@link YearMonth} string or {@link LocalDate} string</li>
+ * </ul>
+ *  to {@link YearMonth},if error,throw {@link io.army.ArmyException}
+ * </p>
+ *
+ * @since 1.0
  */
 public final class YearMonthType extends _ArmyNoInjectionMapping {
 
@@ -36,30 +52,62 @@ public final class YearMonthType extends _ArmyNoInjectionMapping {
         return LocalDateType.INSTANCE.map(meta);
     }
 
+
     @Override
-    public LocalDate beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        final YearMonth value;
-        if (nonNull instanceof YearMonth) {
-            value = (YearMonth) nonNull;
-        } else if (nonNull instanceof String) {
-            try {
-                value = YearMonth.parse((String) nonNull);
-            } catch (DateTimeException e) {
-                throw valueOutRange(type, nonNull, e);
-            }
+    public YearMonth convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return _convertToYearMonth(this, env, nonNull, PARAM_ERROR_HANDLER);
+    }
+
+    @Override
+    public LocalDate beforeBind(SqlType type, final MappingEnv env, final Object nonNull) {
+        final LocalDate value;
+        if (nonNull instanceof LocalDate) {
+            value = (LocalDate) nonNull;
+        } else if (nonNull instanceof LocalDateTime) {
+            value = ((LocalDateTime) nonNull).toLocalDate();
         } else {
-            throw outRangeOfSqlType(type, nonNull);
+            final YearMonth v;
+            v = _convertToYearMonth(this, env, nonNull, PARAM_ERROR_HANDLER);
+            value = LocalDate.of(v.getYear(), v.getMonth(), 1);
         }
-        return LocalDate.of(value.getYear(), value.getMonth(), 1);
+        return value;
     }
 
     @Override
     public YearMonth afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        if (!(nonNull instanceof LocalDate)) {
-            throw errorJavaTypeForSqlType(type, nonNull);
+        return _convertToYearMonth(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER);
+    }
+
+
+    private static YearMonth _convertToYearMonth(final MappingType type, final MappingEnv env, final Object nonNull,
+                                                 final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+        final YearMonth value;
+        if (nonNull instanceof YearMonth) {
+            value = (YearMonth) nonNull;
+        } else if (nonNull instanceof LocalDate) {
+            value = YearMonth.from((LocalDate) nonNull);
+        } else if (nonNull instanceof LocalDateTime) {
+            value = YearMonth.from((LocalDateTime) nonNull);
+        } else if (nonNull instanceof OffsetDateTime) {
+            value = YearMonth.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.zoneId()));
+        } else if (nonNull instanceof ZonedDateTime) {
+            value = YearMonth.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.zoneId()));
+        } else if (!(nonNull instanceof String)) {
+            throw errorHandler.apply(type, nonNull);
+        } else {
+            final String text = (String) nonNull;
+            try {
+                if (text.indexOf('-') == text.lastIndexOf('-')) {
+                    value = YearMonth.parse((String) nonNull);
+                } else {
+                    value = YearMonth.from(LocalDate.parse((String) nonNull));
+                }
+            } catch (DateTimeParseException e) {
+                throw errorHandler.apply(type, nonNull);
+            }
+
         }
-        final LocalDate v = (LocalDate) nonNull;
-        return YearMonth.of(v.getYear(), v.getMonth());
+        return value;
     }
 
 

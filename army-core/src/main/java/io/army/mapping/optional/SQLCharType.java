@@ -6,7 +6,7 @@ import io.army.mapping.StringType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PostgreType;
+import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 
 public final class SQLCharType extends AbstractMappingType {
@@ -36,7 +36,7 @@ public final class SQLCharType extends AbstractMappingType {
                 sqlDataType = MySQLTypes.CHAR;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreType.CHAR;
+                sqlDataType = PostgreTypes.CHAR;
                 break;
             case Oracle:
                 sqlDataType = OracleDataType.CHAR;
