@@ -53,43 +53,47 @@ public final class LocalDateType extends _ArmyNoInjectionMapping {
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        final SqlType type;
-        switch (meta.database()) {
-            case MySQL:
-                type = MySQLTypes.DATE;
-                break;
-            case PostgreSQL:
-                type = PostgreTypes.DATE;
-                break;
-            default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
-
-        }
-        return type;
+        return mapToSqlType(this, meta);
     }
 
     @Override
     public LocalDate convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToLocalDateTime(this, env, nonNull, PARAM_ERROR_HANDLER);
+        return _convertToLocalDateTime(this, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public LocalDate beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return _convertToLocalDateTime(this, env, nonNull, PARAM_ERROR_HANDLER);
+        return _convertToLocalDateTime(this, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public LocalDate afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return _convertToLocalDateTime(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return _convertToLocalDateTime(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
     }
 
-    static LocalDate _convertToLocalDateTime(final MappingType type, final MappingEnv env, final Object nonNull,
+
+    static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
+            case MySQL:
+                sqlType = MySQLTypes.DATE;
+                break;
+            case PostgreSQL:
+                sqlType = PostgreTypes.DATE;
+                break;
+            default:
+                throw MAP_ERROR_HANDLER.apply(type, meta);
+
+        }
+        return sqlType;
+    }
+
+    static LocalDate _convertToLocalDateTime(final MappingType type, final Object nonNull,
                                              final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final LocalDate value;
         if (nonNull instanceof LocalDate) {
             value = (LocalDate) nonNull;
         } else if (nonNull instanceof String) {
-            //TODO consider other format
             try {
                 value = LocalDate.parse((String) nonNull);
             } catch (DateTimeParseException e) {
@@ -98,10 +102,10 @@ public final class LocalDateType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof LocalDateTime) {
             value = ((LocalDateTime) nonNull).toLocalDate();
         } else if (nonNull instanceof OffsetDateTime) {
-            value = ((OffsetDateTime) nonNull).atZoneSameInstant(env.databaseZoneOffset())
+            value = ((OffsetDateTime) nonNull).atZoneSameInstant(ZoneId.systemDefault())
                     .toLocalDate();
         } else if (nonNull instanceof ZonedDateTime) {
-            value = ((ZonedDateTime) nonNull).withZoneSameInstant(env.databaseZoneOffset())
+            value = ((ZonedDateTime) nonNull).withZoneSameInstant(ZoneId.systemDefault())
                     .toLocalDate();
         } else if (nonNull instanceof YearMonth) {
             final YearMonth v = (YearMonth) nonNull;

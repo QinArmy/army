@@ -61,29 +61,41 @@ public final class MonthDayType extends _ArmyNoInjectionMapping {
 
     @Override
     public SqlType map(ServerMeta meta) {
-        return LocalDateType.INSTANCE.map(meta);
+        return LocalDateType.mapToSqlType(this, meta);
     }
 
     @Override
     public MonthDay convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToMonthDay(this, env, nonNull, PARAM_ERROR_HANDLER);
+        return convertToMonthDay(this, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public LocalDate beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        final MonthDay value;
-        value = convertToMonthDay(this, env, nonNull, PARAM_ERROR_HANDLER);
-        return LocalDate.of(1970, value.getMonth(), value.getDayOfMonth());
+        final LocalDate value;
+        if (nonNull instanceof LocalDate) {
+            value = (LocalDate) nonNull;
+        } else if (nonNull instanceof LocalDateTime) {
+            value = ((LocalDateTime) nonNull).toLocalDate();
+        } else if (nonNull instanceof OffsetDateTime) {
+            value = ((OffsetDateTime) nonNull).toLocalDate();
+        } else if (nonNull instanceof ZonedDateTime) {
+            value = ((ZonedDateTime) nonNull).toLocalDate();
+        } else {
+            final MonthDay monthDay;
+            monthDay = convertToMonthDay(this, nonNull, PARAM_ERROR_HANDLER);
+            value = LocalDate.of(1970, monthDay.getMonth(), monthDay.getDayOfMonth());
+        }
+        return value;
     }
 
     @Override
     public MonthDay afterGet(SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToMonthDay(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return convertToMonthDay(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
 
     }
 
 
-    private static MonthDay convertToMonthDay(final MappingType type, final MappingEnv env, final Object nonNull,
+    private static MonthDay convertToMonthDay(final MappingType type, final Object nonNull,
                                               final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final MonthDay value;
         if (nonNull instanceof MonthDay) {
@@ -93,9 +105,9 @@ public final class MonthDayType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof LocalDateTime) {
             value = MonthDay.from((LocalDateTime) nonNull);
         } else if (nonNull instanceof OffsetDateTime) {
-            value = MonthDay.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.databaseZoneOffset()));
+            value = MonthDay.from(((OffsetDateTime) nonNull));
         } else if (nonNull instanceof ZonedDateTime) {
-            value = MonthDay.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.databaseZoneOffset()));
+            value = MonthDay.from(((ZonedDateTime) nonNull));
         } else if (!(nonNull instanceof String)) {
             throw errorHandler.apply(type, nonNull);
         } else if (((String) nonNull).contains("--")) {

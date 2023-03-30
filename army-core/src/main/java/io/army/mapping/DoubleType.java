@@ -57,7 +57,7 @@ public final class DoubleType extends _NumericType._FloatNumericType {
                 type = PostgreTypes.DOUBLE;
                 break;
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return type;
     }

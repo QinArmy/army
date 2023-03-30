@@ -38,21 +38,9 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        final SqlType type;
-        switch (meta.database()) {
-            case MySQL:
-                type = MySQLTypes.DECIMAL_UNSIGNED;
-                break;
-            case PostgreSQL:
-                type = PostgreTypes.DECIMAL;
-                break;
-            case Oracle:
-            case H2:
-            default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
-        }
-        return type;
+        return mapToSqlType(this, meta);
     }
+
 
     @Override
     public BigDecimal convert(MappingEnv env, Object nonNull) throws CriteriaException {
@@ -82,6 +70,24 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
             throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
         }
         return value;
+    }
+
+
+    static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
+            case MySQL:
+                sqlType = MySQLTypes.DECIMAL_UNSIGNED;
+                break;
+            case PostgreSQL:
+                sqlType = PostgreTypes.DECIMAL;
+                break;
+            case Oracle:
+            case H2:
+            default:
+                throw MAP_ERROR_HANDLER.apply(type, meta);
+        }
+        return sqlType;
     }
 
 

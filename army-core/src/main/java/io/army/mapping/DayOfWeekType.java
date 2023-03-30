@@ -56,21 +56,21 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
 
     @Override
     public DayOfWeek convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
-        return convertToDayOfWeek(this, env, nonNull, PARAM_ERROR_HANDLER);
+        return convertToDayOfWeek(this, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) throws CriteriaException {
-        return convertToDayOfWeek(this, env, nonNull, PARAM_ERROR_HANDLER)
+        return convertToDayOfWeek(this, nonNull, PARAM_ERROR_HANDLER)
                 .name();
     }
 
     @Override
     public DayOfWeek afterGet(SqlType type, MappingEnv env, final Object nonNull) throws DataAccessException {
-        return convertToDayOfWeek(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return convertToDayOfWeek(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
     }
 
-    private static DayOfWeek convertToDayOfWeek(final MappingType type, final MappingEnv env, final Object nonNull,
+    private static DayOfWeek convertToDayOfWeek(final MappingType type, final Object nonNull,
                                                 final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final DayOfWeek value;
         if (nonNull instanceof DayOfWeek) {
@@ -79,12 +79,12 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
                 || nonNull instanceof LocalDateTime) {
             value = DayOfWeek.from((TemporalAccessor) nonNull);
         } else if (nonNull instanceof OffsetDateTime) {
-            value = DayOfWeek.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.databaseZoneOffset()));
+            value = DayOfWeek.from(((OffsetDateTime) nonNull));
         } else if (nonNull instanceof ZonedDateTime) {
-            value = DayOfWeek.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.databaseZoneOffset()));
+            value = DayOfWeek.from(((ZonedDateTime) nonNull));
         } else if (!(nonNull instanceof String) || ((String) nonNull).length() == 0) {
             throw errorHandler.apply(type, nonNull);
-        } else if (Character.isLetter(((String) nonNull).charAt(0))) {
+        } else if (((String) nonNull).indexOf('-') < 0) {
             try {
                 value = DayOfWeek.valueOf((String) nonNull);
             } catch (IllegalArgumentException e) {

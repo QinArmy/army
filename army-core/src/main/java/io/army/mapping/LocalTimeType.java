@@ -6,11 +6,9 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
+import io.army.util._TimeUtils;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeParseException;
 import java.util.function.BiFunction;
 
@@ -64,7 +62,7 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping {
                 type = PostgreTypes.TIME;
                 break;
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
         return type;
@@ -73,39 +71,38 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping {
 
     @Override
     public LocalTime convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToLocalDateTime(this, env, nonNull, PARAM_ERROR_HANDLER);
+        return convertToLocalTime(this, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public LocalTime beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToLocalDateTime(this, env, nonNull, PARAM_ERROR_HANDLER);
+        return convertToLocalTime(this, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public LocalTime afterGet(SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToLocalDateTime(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER);
+    public LocalTime afterGet(final SqlType type, MappingEnv env, final Object nonNull) {
+        return convertToLocalTime(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
     }
 
-    private static LocalTime convertToLocalDateTime(final MappingType type, final MappingEnv env, final Object nonNull,
-                                                    final BiFunction<MappingType, Object, ArmyException> errorHandler) {
+    private static LocalTime convertToLocalTime(final MappingType type, final Object nonNull,
+                                                final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final LocalTime value;
         if (nonNull instanceof LocalTime) {
             value = (LocalTime) nonNull;
-        } else if (nonNull instanceof String) {
-            //TODO consider format
-            try {
-                value = LocalTime.parse((String) nonNull);
-            } catch (DateTimeParseException e) {
-                throw errorHandler.apply(type, nonNull);
-            }
         } else if (nonNull instanceof LocalDateTime) {
             value = ((LocalDateTime) nonNull).toLocalTime();
         } else if (nonNull instanceof OffsetDateTime) {
-            value = ((OffsetDateTime) nonNull).atZoneSameInstant(env.databaseZoneOffset())
+            value = ((OffsetDateTime) nonNull).atZoneSameInstant(ZoneId.systemDefault())
                     .toLocalTime();
         } else if (nonNull instanceof ZonedDateTime) {
-            value = ((ZonedDateTime) nonNull).withZoneSameInstant(env.databaseZoneOffset())
+            value = ((ZonedDateTime) nonNull).withZoneSameInstant(ZoneId.systemDefault())
                     .toLocalTime();
+        } else if (nonNull instanceof String) {
+            try {
+                value = LocalTime.parse((String) nonNull, _TimeUtils.TIME_FORMATTER_6);
+            } catch (DateTimeParseException e) {
+                throw errorHandler.apply(type, nonNull);
+            }
         } else {
             throw errorHandler.apply(type, nonNull);
         }

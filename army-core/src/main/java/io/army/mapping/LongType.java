@@ -61,7 +61,7 @@ public final class LongType extends _NumericType._IntegerType {
                 type = PostgreTypes.BIGINT;
                 break;
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
         return type;

@@ -19,17 +19,17 @@ public final class JsonBeanType extends AbstractMappingType {
 
     @Override
     public SqlType map(ServerMeta meta) {
-        return null;
+         throw new UnsupportedOperationException();
     }
 
     @Override
     public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Object afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
 

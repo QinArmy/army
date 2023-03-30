@@ -66,7 +66,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
                 sqlType = PostgreTypes.BOOLEAN;
                 break;
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return sqlType;
     }

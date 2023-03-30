@@ -49,13 +49,13 @@ public final class YearMonthType extends _ArmyNoInjectionMapping {
 
     @Override
     public SqlType map(ServerMeta meta) throws NotSupportDialectException {
-        return LocalDateType.INSTANCE.map(meta);
+        return LocalDateType.mapToSqlType(this, meta);
     }
 
 
     @Override
     public YearMonth convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToYearMonth(this, env, nonNull, PARAM_ERROR_HANDLER);
+        return _convertToYearMonth(this, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
@@ -67,7 +67,7 @@ public final class YearMonthType extends _ArmyNoInjectionMapping {
             value = ((LocalDateTime) nonNull).toLocalDate();
         } else {
             final YearMonth v;
-            v = _convertToYearMonth(this, env, nonNull, PARAM_ERROR_HANDLER);
+            v = _convertToYearMonth(this, nonNull, PARAM_ERROR_HANDLER);
             value = LocalDate.of(v.getYear(), v.getMonth(), 1);
         }
         return value;
@@ -75,11 +75,11 @@ public final class YearMonthType extends _ArmyNoInjectionMapping {
 
     @Override
     public YearMonth afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return _convertToYearMonth(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return _convertToYearMonth(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
     }
 
 
-    private static YearMonth _convertToYearMonth(final MappingType type, final MappingEnv env, final Object nonNull,
+    private static YearMonth _convertToYearMonth(final MappingType type, final Object nonNull,
                                                  final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final YearMonth value;
         if (nonNull instanceof YearMonth) {
@@ -89,9 +89,9 @@ public final class YearMonthType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof LocalDateTime) {
             value = YearMonth.from((LocalDateTime) nonNull);
         } else if (nonNull instanceof OffsetDateTime) {
-            value = YearMonth.from(((OffsetDateTime) nonNull).withOffsetSameInstant(env.databaseZoneOffset()));
+            value = YearMonth.from(((OffsetDateTime) nonNull));
         } else if (nonNull instanceof ZonedDateTime) {
-            value = YearMonth.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.databaseZoneOffset()));
+            value = YearMonth.from(((ZonedDateTime) nonNull));
         } else if (!(nonNull instanceof String)) {
             throw errorHandler.apply(type, nonNull);
         } else {

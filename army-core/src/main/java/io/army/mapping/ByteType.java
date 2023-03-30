@@ -58,7 +58,7 @@ public final class ByteType extends _NumericType._IntegerType {
             case Oracle:
             case H2:
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return type;
     }

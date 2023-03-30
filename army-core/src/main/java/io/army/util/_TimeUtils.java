@@ -85,7 +85,7 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
     }
 
     public static ZoneOffset systemZoneOffset() {
-        return ZoneId.systemDefault().getRules().getOffset(Instant.now());
+        return ZoneId.systemDefault().getRules().getOffset(Instant.EPOCH);
     }
 
 

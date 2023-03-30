@@ -52,7 +52,7 @@ public final class BigIntegerType extends _NumericType._IntegerType {
 
     @Override
     public SqlType map(ServerMeta meta) {
-        return BigDecimalType.INSTANCE.map(meta);
+        return BigDecimalType.mapToDecimal(this, meta);
     }
 
 

@@ -37,7 +37,7 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        return UnsignedBigDecimalType.INSTANCE.map(meta);
+        return UnsignedBigDecimalType.mapToSqlType(this, meta);
     }
 
     @Override

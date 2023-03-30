@@ -60,7 +60,7 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping {
                 type = PostgreTypes.TIMESTAMP;
                 break;
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
         return type;
@@ -68,26 +68,25 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping {
 
     @Override
     public LocalDateTime convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
-        return convertToLocalDateTime(this, env, nonNull, PARAM_ERROR_HANDLER);
+        return convertToLocalDateTime(this, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public LocalDateTime beforeBind(SqlType type, final MappingEnv env, final Object nonNull) {
-        return convertToLocalDateTime(this, env, nonNull, PARAM_ERROR_HANDLER);
+        return convertToLocalDateTime(this, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public LocalDateTime afterGet(SqlType type, final MappingEnv env, Object nonNull) {
-        return convertToLocalDateTime(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return convertToLocalDateTime(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
     }
 
-    private static LocalDateTime convertToLocalDateTime(final MappingType type, final MappingEnv env, final Object nonNull,
+    private static LocalDateTime convertToLocalDateTime(final MappingType type, final Object nonNull,
                                                         final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final LocalDateTime value;
         if (nonNull instanceof LocalDateTime) {
             value = (LocalDateTime) nonNull;
         } else if (nonNull instanceof String) {
-            //TODO consider format
             try {
                 value = LocalDateTime.parse((String) nonNull, _TimeUtils.DATETIME_FORMATTER_6);
             } catch (DateTimeParseException e) {
@@ -96,10 +95,10 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof LocalDate) {
             value = LocalDateTime.of((LocalDate) nonNull, LocalTime.MIDNIGHT);
         } else if (nonNull instanceof OffsetDateTime) {
-            value = ((OffsetDateTime) nonNull).atZoneSameInstant(env.databaseZoneOffset())
+            value = ((OffsetDateTime) nonNull).atZoneSameInstant(ZoneId.systemDefault())
                     .toLocalDateTime();
         } else if (nonNull instanceof ZonedDateTime) {
-            value = ((ZonedDateTime) nonNull).withZoneSameInstant(env.databaseZoneOffset())
+            value = ((ZonedDateTime) nonNull).withZoneSameInstant(ZoneId.systemDefault())
                     .toLocalDateTime();
         } else {
             throw errorHandler.apply(type, nonNull);

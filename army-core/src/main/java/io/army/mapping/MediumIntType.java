@@ -63,7 +63,7 @@ public final class MediumIntType extends _NumericType {
             case Oracle:
             case H2:
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return sqlType;
     }

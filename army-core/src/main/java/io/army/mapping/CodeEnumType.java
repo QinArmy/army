@@ -56,7 +56,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        return IntegerType.INSTANCE.map(meta);
+        return IntegerType.mapToInteger(this, meta);
     }
 
     @Override

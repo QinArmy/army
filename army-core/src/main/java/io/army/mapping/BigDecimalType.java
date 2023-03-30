@@ -53,26 +53,9 @@ public final class BigDecimalType extends _NumericType implements _NumericType._
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        final SqlType type;
-        switch (meta.database()) {
-            case MySQL:
-                type = MySQLTypes.DECIMAL;
-                break;
-            case PostgreSQL:
-                type = PostgreTypes.DECIMAL;
-                break;
-            case H2:
-                type = H2DataType.DECIMAL;
-                break;
-            case Oracle:
-                type = OracleDataType.NUMBER;
-                break;
-            default:
-                throw noMappingError(meta);
-
-        }
-        return type;
+        return mapToDecimal(this, meta);
     }
+
 
     @Override
     public BigDecimal convert(MappingEnv env, Object nonNull) throws CriteriaException {
@@ -144,6 +127,28 @@ public final class BigDecimalType extends _NumericType implements _NumericType._
             throw errorHandler.apply(type, nonNull);
         }
         return value;
+    }
+
+    static SqlType mapToDecimal(final MappingType type, final ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
+            case MySQL:
+                sqlType = MySQLTypes.DECIMAL;
+                break;
+            case PostgreSQL:
+                sqlType = PostgreTypes.DECIMAL;
+                break;
+            case H2:
+                sqlType = H2DataType.DECIMAL;
+                break;
+            case Oracle:
+                sqlType = OracleDataType.NUMBER;
+                break;
+            default:
+                throw MAP_ERROR_HANDLER.apply(type, meta);
+
+        }
+        return sqlType;
     }
 
 

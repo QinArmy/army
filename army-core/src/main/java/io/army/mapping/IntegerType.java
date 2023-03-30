@@ -54,19 +54,7 @@ public final class IntegerType extends _NumericType._IntegerType {
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        final SqlType type;
-        switch (meta.database()) {
-            case MySQL:
-                type = MySQLTypes.INT;
-                break;
-            case PostgreSQL:
-                type = PostgreTypes.INTEGER;
-                break;
-            default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
-
-        }
-        return type;
+        return mapToInteger(this, meta);
     }
 
     @Override
@@ -118,14 +106,30 @@ public final class IntegerType extends _NumericType._IntegerType {
             }
         } else if (nonNull instanceof Boolean) {
             value = ((Boolean) nonNull) ? 1 : 0;
-        } else {
-            throw errorHandler.apply(type, nonNull);
-        }
-        if (value < min || value > max) {
-            throw errorHandler.apply(type, nonNull);
-        }
-        return value;
+         } else {
+             throw errorHandler.apply(type, nonNull);
+         }
+         if (value < min || value > max) {
+             throw errorHandler.apply(type, nonNull);
+         }
+         return value;
 
+     }
+
+    static SqlType mapToInteger(final MappingType type, final ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
+            case MySQL:
+                sqlType = MySQLTypes.INT;
+                break;
+            case PostgreSQL:
+                sqlType = PostgreTypes.INTEGER;
+                break;
+            default:
+                throw MAP_ERROR_HANDLER.apply(type, meta);
+
+        }
+        return sqlType;
     }
 
 

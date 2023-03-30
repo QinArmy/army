@@ -56,7 +56,7 @@ public final class FloatType extends _NumericType._FloatNumericType {
                 type = PostgreTypes.REAL;
                 break;
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return type;
     }

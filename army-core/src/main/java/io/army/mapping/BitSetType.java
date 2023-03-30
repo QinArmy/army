@@ -62,7 +62,7 @@ public final class BitSetType extends _ArmyNoInjectionMapping {
                 type = PostgreTypes.VARBIT;
                 break;
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
         return type;
