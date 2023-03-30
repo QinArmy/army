@@ -79,9 +79,9 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
                 || nonNull instanceof LocalDateTime) {
             value = DayOfWeek.from((TemporalAccessor) nonNull);
         } else if (nonNull instanceof OffsetDateTime) {
-            value = DayOfWeek.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.zoneId()));
+            value = DayOfWeek.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.databaseZoneOffset()));
         } else if (nonNull instanceof ZonedDateTime) {
-            value = DayOfWeek.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.zoneId()));
+            value = DayOfWeek.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.databaseZoneOffset()));
         } else if (!(nonNull instanceof String) || ((String) nonNull).length() == 0) {
             throw errorHandler.apply(type, nonNull);
         } else if (Character.isLetter(((String) nonNull).charAt(0))) {

@@ -101,10 +101,10 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof LocalDateTime) {
             value = ((LocalDateTime) nonNull).toLocalTime();
         } else if (nonNull instanceof OffsetDateTime) {
-            value = ((OffsetDateTime) nonNull).atZoneSameInstant(env.zoneId())
+            value = ((OffsetDateTime) nonNull).atZoneSameInstant(env.databaseZoneOffset())
                     .toLocalTime();
         } else if (nonNull instanceof ZonedDateTime) {
-            value = ((ZonedDateTime) nonNull).withZoneSameInstant(env.zoneId())
+            value = ((ZonedDateTime) nonNull).withZoneSameInstant(env.databaseZoneOffset())
                     .toLocalTime();
         } else {
             throw errorHandler.apply(type, nonNull);

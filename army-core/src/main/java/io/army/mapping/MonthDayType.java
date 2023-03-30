@@ -93,12 +93,12 @@ public final class MonthDayType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof LocalDateTime) {
             value = MonthDay.from((LocalDateTime) nonNull);
         } else if (nonNull instanceof OffsetDateTime) {
-            value = MonthDay.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.zoneId()));
+            value = MonthDay.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.databaseZoneOffset()));
         } else if (nonNull instanceof ZonedDateTime) {
-            value = MonthDay.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.zoneId()));
+            value = MonthDay.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.databaseZoneOffset()));
         } else if (!(nonNull instanceof String)) {
             throw errorHandler.apply(type, nonNull);
-        } else if (((String) nonNull).startsWith("--")) {
+        } else if (((String) nonNull).contains("--")) {
             try {
                 value = MonthDay.parse((String) nonNull);
             } catch (DateTimeParseException e) {

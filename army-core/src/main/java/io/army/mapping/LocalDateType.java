@@ -98,10 +98,10 @@ public final class LocalDateType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof LocalDateTime) {
             value = ((LocalDateTime) nonNull).toLocalDate();
         } else if (nonNull instanceof OffsetDateTime) {
-            value = ((OffsetDateTime) nonNull).atZoneSameInstant(env.zoneId())
+            value = ((OffsetDateTime) nonNull).atZoneSameInstant(env.databaseZoneOffset())
                     .toLocalDate();
         } else if (nonNull instanceof ZonedDateTime) {
-            value = ((ZonedDateTime) nonNull).withZoneSameInstant(env.zoneId())
+            value = ((ZonedDateTime) nonNull).withZoneSameInstant(env.databaseZoneOffset())
                     .toLocalDate();
         } else if (nonNull instanceof YearMonth) {
             final YearMonth v = (YearMonth) nonNull;

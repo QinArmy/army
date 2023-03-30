@@ -13,7 +13,7 @@ import io.army.util._Exceptions;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.List;
@@ -23,19 +23,19 @@ import java.util.function.Supplier;
 abstract class FieldValuesGenerators implements FieldValueGenerator {
 
 
-    static FieldValuesGenerators create(Supplier<ZoneId> zoneIdSupplier
+    static FieldValuesGenerators create(Supplier<ZoneOffset> zoneIdSupplier
             , Map<FieldMeta<?>, FieldGenerator> generatorMap) {
         return new DefaultFieldValuesGenerator(zoneIdSupplier, generatorMap);
     }
 
-    static FieldValuesGenerators mock(Supplier<ZoneId> zoneIdSupplier) {
+    static FieldValuesGenerators mock(Supplier<ZoneOffset> zoneIdSupplier) {
         return new MockFieldValuesGenerator(zoneIdSupplier);
     }
 
 
-    private final Supplier<ZoneId> zoneIdSupplier;
+    private final Supplier<ZoneOffset> zoneIdSupplier;
 
-    private FieldValuesGenerators(Supplier<ZoneId> zoneIdSupplier) {
+    private FieldValuesGenerators(Supplier<ZoneOffset> zoneIdSupplier) {
         this.zoneIdSupplier = zoneIdSupplier;
     }
 
@@ -199,7 +199,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
         private final Map<FieldMeta<?>, FieldGenerator> generatorMap;
 
-        private DefaultFieldValuesGenerator(Supplier<ZoneId> zoneIdSupplier
+        private DefaultFieldValuesGenerator(Supplier<ZoneOffset> zoneIdSupplier
                 , Map<FieldMeta<?>, FieldGenerator> generatorMap) {
             super(zoneIdSupplier);
             this.generatorMap = generatorMap;
@@ -229,7 +229,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
     private static final class MockFieldValuesGenerator extends FieldValuesGenerators {
 
-        private MockFieldValuesGenerator(Supplier<ZoneId> supplier) {
+        private MockFieldValuesGenerator(Supplier<ZoneOffset> supplier) {
             super(supplier);
         }
 

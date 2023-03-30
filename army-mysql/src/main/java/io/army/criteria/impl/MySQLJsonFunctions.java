@@ -4,8 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLFunction;
 import io.army.mapping.*;
-import io.army.mapping.optional.JsonListType;
-import io.army.mapping.optional.JsonMapType;
 import io.army.meta.TypeMeta;
 
 import java.util.*;

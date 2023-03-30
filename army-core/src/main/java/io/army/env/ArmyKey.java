@@ -5,7 +5,7 @@ import io.army.lang.Nullable;
 import io.army.session.DdlMode;
 import io.army.session.QueryInsertMode;
 
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -19,7 +19,7 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<Dialect> DIALECT = new ArmyKey<>("dialect", Dialect.class, null);
 
-    public static final ArmyKey<ZoneId> ZONE_ID = new ArmyKey<>("zone.id", ZoneId.class, null);
+    public static final ArmyKey<ZoneOffset> ZONE_OFFSET = new ArmyKey<>("zone.offset", ZoneOffset.class, null);
 
     public static final ArmyKey<QueryInsertMode> SUBQUERY_INSERT_MODE = new ArmyKey<>("subquery.insert.mode", QueryInsertMode.class, QueryInsertMode.ONLY_MIGRATION);
 

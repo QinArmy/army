@@ -8,12 +8,7 @@ import io.army.criteria.dialect.Window;
 import io.army.criteria.mysql.MySQLFunction;
 import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
-import io.army.mapping.DoubleType;
-import io.army.mapping.LongType;
-import io.army.mapping.MappingType;
-import io.army.mapping.StringType;
-import io.army.mapping.optional.JsonListType;
-import io.army.mapping.optional.JsonMapType;
+import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 

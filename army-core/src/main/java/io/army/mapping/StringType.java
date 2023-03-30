@@ -70,24 +70,7 @@ public final class StringType extends _SQLStringType {
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        final SqlType type;
-        switch (meta.database()) {
-            case MySQL:
-                type = MySQLTypes.VARCHAR;
-                break;
-            case PostgreSQL:
-                type = PostgreTypes.VARCHAR;
-                break;
-            case Oracle:
-                type = OracleDataType.VARCHAR2;
-                break;
-
-            case H2:
-            default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
-
-        }
-        return type;
+        return mapToSqlType(this, meta);
     }
 
 
@@ -109,6 +92,27 @@ public final class StringType extends _SQLStringType {
     @Deprecated
     public static String beforeBind(SqlType sqlType, final Object nonNull) {
         throw new UnsupportedOperationException();
+    }
+
+    static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
+            case MySQL:
+                sqlType = MySQLTypes.VARCHAR;
+                break;
+            case PostgreSQL:
+                sqlType = PostgreTypes.VARCHAR;
+                break;
+            case Oracle:
+                sqlType = OracleDataType.VARCHAR2;
+                break;
+
+            case H2:
+            default:
+                throw MAP_ERROR_HANDLER.apply(type, meta);
+
+        }
+        return sqlType;
     }
 
     static String _convertToString(final MappingType type, final SqlType sqlType, final Object nonNull,

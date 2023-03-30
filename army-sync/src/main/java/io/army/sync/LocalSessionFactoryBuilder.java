@@ -137,7 +137,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
 
             //4. create MappingEnv
             final MappingEnv mappingEnv;
-            mappingEnv = MappingEnv.create(false, serverMeta, env.get(ArmyKey.ZONE_ID), new MockJsonCodec());
+            mappingEnv = MappingEnv.create(false, serverMeta, env.get(ArmyKey.ZONE_OFFSET), new MockJsonCodec());
 
             //5. create ExecutorEnv
             final String factoryName = Objects.requireNonNull(this.name);

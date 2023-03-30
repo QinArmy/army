@@ -4,11 +4,13 @@ import io.army.codec.JsonCodec;
 import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 
+import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 final class MappingEnvImpl implements MappingEnv {
 
-    static MappingEnvImpl create(boolean reactive, ServerMeta serverMeta, @Nullable ZoneId zoneId
+    static MappingEnvImpl create(boolean reactive, ServerMeta serverMeta, @Nullable ZoneOffset zoneId
             , JsonCodec jsonCodec) {
         return new MappingEnvImpl(reactive, serverMeta, zoneId, jsonCodec);
     }
@@ -17,11 +19,11 @@ final class MappingEnvImpl implements MappingEnv {
 
     private final ServerMeta serverMeta;
 
-    private final ZoneId zoneId;
+    private final ZoneOffset zoneId;
 
     private final JsonCodec jsonCodec;
 
-    private MappingEnvImpl(boolean reactive, ServerMeta serverMeta, @Nullable ZoneId zoneId, JsonCodec jsonCodec) {
+    private MappingEnvImpl(boolean reactive, ServerMeta serverMeta, @Nullable ZoneOffset zoneId, JsonCodec jsonCodec) {
         this.reactive = reactive;
         this.serverMeta = serverMeta;
         this.zoneId = zoneId;
@@ -39,9 +41,12 @@ final class MappingEnvImpl implements MappingEnv {
     }
 
     @Override
-    public ZoneId zoneId() {
-        final ZoneId zoneId = this.zoneId;
-        return zoneId == null ? ZoneId.systemDefault() : zoneId;
+    public ZoneOffset databaseZoneOffset() {
+        ZoneOffset zoneId = this.zoneId;
+        if (zoneId == null) {
+            zoneId = ZoneId.systemDefault().getRules().getOffset(Instant.now());
+        }
+        return zoneId;
     }
 
     @Override

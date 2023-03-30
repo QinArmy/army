@@ -1,34 +1,29 @@
-package io.army.mapping.optional;
+package io.army.mapping;
 
-import io.army.criteria.CriteriaException;
-import io.army.mapping.MappingEnv;
-import io.army.mapping._ArmyNoInjectionMapping;
+
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 
-import java.time.ZoneId;
+import java.util.List;
 
-public final class ZoneIdType extends _ArmyNoInjectionMapping {
+public final class JsonListType extends AbstractMappingType {
 
-    public static final ZoneIdType INSTANCE = new ZoneIdType();
+    public static JsonListType from(MappingType elementType) {
+        throw new UnsupportedOperationException();
+    }
 
-    private ZoneIdType() {
+    private JsonListType() {
     }
 
     @Override
     public Class<?> javaType() {
-        return ZoneId.class;
+        return List.class;
     }
 
     @Override
     public SqlType map(final ServerMeta meta) {
         //TODO
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return super.convert(env, nonNull);
     }
 
     @Override

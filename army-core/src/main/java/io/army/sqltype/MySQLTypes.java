@@ -6,7 +6,6 @@ import io.army.dialect._Constant;
 import io.army.mapping.ByteType;
 import io.army.mapping.MappingType;
 import io.army.mapping.ShortType;
-import io.army.mapping.mysql.MySQLBitType;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -183,8 +182,6 @@ public enum MySQLTypes implements SqlType, SQLWords {
             case SMALLINT_UNSIGNED:
             case INT:
             case BIT:
-                t = MySQLBitType.INSTANCE;
-                break;
             case SET:
             case BLOB:
             case CHAR:

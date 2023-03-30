@@ -1,8 +1,6 @@
-package io.army.mapping.optional;
+package io.army.mapping;
 
-import io.army.mapping.AbstractMappingType;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.StringType;
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.OracleDataType;
@@ -30,35 +28,40 @@ public final class SQLCharType extends AbstractMappingType {
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        final SqlType sqlDataType;
+        final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySQLTypes.CHAR;
+                type = MySQLTypes.CHAR;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreTypes.CHAR;
+                type = PostgreTypes.CHAR;
                 break;
             case Oracle:
-                sqlDataType = OracleDataType.CHAR;
+                type = OracleDataType.CHAR;
                 break;
 
             case H2:
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
-        return sqlDataType;
+        return type;
     }
 
 
     @Override
+    public String convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return StringType._convertToString(this, this.map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+    }
+
+    @Override
     public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return StringType.beforeBind(type, nonNull);
+        return StringType._convertToString(this, type, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
     public String afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return StringType.INSTANCE.afterGet(type, env, nonNull);
+        return StringType._convertToString(this, type, nonNull, DATA_ACCESS_ERROR_HANDLER);
     }
 
 

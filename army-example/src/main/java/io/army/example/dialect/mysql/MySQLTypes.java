@@ -13,7 +13,7 @@ import java.util.Set;
 @Table(name = "mysql_army_types", comment = "mysql types for army example")
 public class MySQLTypes extends VersionDomain implements FieldAccessBean {
 
-    private static final String CHAR_TYPE = "io.army.mapping.optional.SQLCharType";
+    private static final String CHAR_TYPE = "io.army.mapping.SQLCharType";
 
     private static final String BINARY_TYPE = "io.army.mapping.optional.BinaryType";
 

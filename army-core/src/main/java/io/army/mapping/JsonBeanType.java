@@ -1,7 +1,5 @@
-package io.army.mapping.optional;
+package io.army.mapping;
 
-import io.army.mapping.AbstractMappingType;
-import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 

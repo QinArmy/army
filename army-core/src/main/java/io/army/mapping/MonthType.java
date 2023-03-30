@@ -82,9 +82,9 @@ public final class MonthType extends _ArmyNoInjectionMapping {
                 || nonNull instanceof LocalDateTime) {
             value = Month.from((TemporalAccessor) nonNull);
         } else if (nonNull instanceof OffsetDateTime) {
-            value = Month.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.zoneId()));
+            value = Month.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.databaseZoneOffset()));
         } else if (nonNull instanceof ZonedDateTime) {
-            value = Month.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.zoneId()));
+            value = Month.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.databaseZoneOffset()));
         } else if (!(nonNull instanceof String) || ((String) nonNull).length() == 0) {
             throw errorHandler.apply(type, nonNull);
         } else if (Character.isLetter(((String) nonNull).charAt(0))) {

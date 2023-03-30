@@ -121,9 +121,9 @@ abstract class ArmyParser implements DialectParser {
 
         this.keyWordSet = Collections.unmodifiableSet(this.createKeyWordSet());
         if (this.mockEnv) {
-            this.generator = FieldValuesGenerators.mock(this.mappingEnv::zoneId);
+            this.generator = FieldValuesGenerators.mock(this.mappingEnv::databaseZoneOffset);
         } else {
-            this.generator = FieldValuesGenerators.create(this.mappingEnv::zoneId, dialectEnv.fieldGeneratorMap());
+            this.generator = FieldValuesGenerators.create(this.mappingEnv::databaseZoneOffset, dialectEnv.fieldGeneratorMap());
         }
     }
 
@@ -1328,9 +1328,9 @@ abstract class ArmyParser implements DialectParser {
         if (javaType == LocalDateTime.class) {
             updateTimeValue = LocalDateTime.now();
         } else if (javaType == OffsetDateTime.class) {
-            updateTimeValue = OffsetDateTime.now(this.mappingEnv.zoneId());
+            updateTimeValue = OffsetDateTime.now(this.mappingEnv.databaseZoneOffset());
         } else if (javaType == ZonedDateTime.class) {
-            updateTimeValue = ZonedDateTime.now(this.mappingEnv.zoneId());
+            updateTimeValue = ZonedDateTime.now(this.mappingEnv.databaseZoneOffset());
         } else {
             // FieldMeta no bug,never here
             throw _Exceptions.dontSupportJavaType(field, javaType);

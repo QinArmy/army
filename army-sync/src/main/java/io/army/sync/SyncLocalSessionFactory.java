@@ -68,7 +68,7 @@ final class SyncLocalSessionFactory extends _AbstractSessionFactory implements L
 
     @Override
     public ZoneId zoneId() {
-        return this.mappingEnv.zoneId();
+        return this.mappingEnv.databaseZoneOffset();
     }
 
 
