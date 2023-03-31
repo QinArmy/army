@@ -1,15 +1,16 @@
 package io.army.dialect.postgre;
 
+import io.army.criteria.CriteriaException;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
-import io.army.meta.DatabaseObject;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 import io.army.tx.Isolation;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -348,29 +349,62 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final char identifierQuote() {
-        return _Constant.DOUBLE_QUOTE;
-    }
-
-    @Override
-    protected final boolean isIdentifierCaseSensitivity() {
-        //Postgre identifier not case sensitivity
-        return false;
-    }
-
-    @Override
     protected final PostgreDdl createDdlDialect() {
         return PostgreDdl.create(this);
     }
 
 
     @Override
-    public String safeObjectName(DatabaseObject object) {
-        return null;
+    public final String identifier(final String identifier) {
+        return this.identifier(identifier, new StringBuilder(2 + identifier.length()))
+                .toString();
+    }
+
+
+    @Override
+    public final StringBuilder identifier(final String identifier, final StringBuilder builder) {
+        // due to postgre identifier is case insensitivity,so have to use quoted identifier.
+        if (!_StringUtils.hasText(identifier)) {
+            throw _Exceptions.identifierNoText();
+        } else if (identifier.indexOf(_Constant.DOUBLE_QUOTE) > -1) {
+            String m = String.format("%s identifier[%s] couldn't contains double-quotes.",
+                    Database.PostgreSQL, identifier);
+            throw new CriteriaException(m);
+        }
+        return builder.append(_Constant.DOUBLE_QUOTE)
+                .append(identifier)
+                .append(_Constant.DOUBLE_QUOTE);
     }
 
     @Override
-    public StringBuilder safeObjectName(DatabaseObject object, StringBuilder builder) {
+    protected final String doSafeObjectName(final String objectName) {
+        final String safeObjectName;
+        if (_DialectUtils.isSafeIdentifier(objectName)) {
+            safeObjectName = objectName;
+        } else if (objectName.indexOf(_Constant.DOUBLE_QUOTE) > -1) {
+            throw objectNameContainsDoubleQuotes(objectName);
+        } else {
+            final StringBuilder builder = new StringBuilder(2 + objectName.length());
+            safeObjectName = builder.append(_Constant.DOUBLE_QUOTE)
+                    .append(objectName)
+                    .append(_Constant.DOUBLE_QUOTE)
+                    .toString();
+        }
+        return safeObjectName;
+    }
+
+
+    @Override
+    protected final StringBuilder doSafeObjectName(final String objectName, final StringBuilder builder) {
+        if (_DialectUtils.isSafeIdentifier(objectName)) {
+            builder.append(objectName);
+        } else if (objectName.indexOf(_Constant.DOUBLE_QUOTE) > -1) {
+            throw objectNameContainsDoubleQuotes(objectName);
+        } else {
+            builder.append(_Constant.DOUBLE_QUOTE)
+                    .append(objectName)
+                    .append(_Constant.DOUBLE_QUOTE);
+        }
         return builder;
     }
 
@@ -391,53 +425,69 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected Set<String> createKeyWordSet() {
-        return null;
+    protected final Set<String> createKeyWordSet() {
+        return PostgreDialectUtils.createKeywordsSet();
     }
 
     @Override
-    protected String defaultFuncName() {
-        return null;
+    protected final String defaultFuncName() {
+        //Postgre don't support DEFAULT() function
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    protected boolean isSupportZone() {
+    protected final boolean isSupportZone() {
+        //Postgre support zone
+        return true;
+    }
+
+    @Override
+    protected final boolean isSetClauseTableAlias() {
+        //Postgre don't support table alias in SET clause
         return false;
     }
 
     @Override
-    protected boolean isSetClauseTableAlias() {
-        return false;
+    protected final boolean isTableAliasAfterAs() {
+        //Postgre support AS key word
+        return true;
     }
 
     @Override
-    protected boolean isTableAliasAfterAs() {
-        return false;
+    protected final _ChildUpdateMode childUpdateMode() {
+        // Postgre support DML in cte.
+        return _ChildUpdateMode.CTE;
     }
 
     @Override
-    protected _ChildUpdateMode childUpdateMode() {
-        return null;
+    protected final boolean isSupportSingleUpdateAlias() {
+        // Postgre support single table update alias
+        return true;
     }
 
     @Override
-    protected boolean isSupportSingleUpdateAlias() {
-        return false;
+    protected final boolean isSupportSingleDeleteAlias() {
+        // Postgre support single table DELETE alias
+        return true;
     }
 
     @Override
-    protected boolean isSupportSingleDeleteAlias() {
-        return false;
+    protected final boolean isSupportUpdateRow() {
+        // Postgre support update row
+        return true;
     }
 
     @Override
-    protected boolean isSupportUpdateRow() {
+    protected final boolean isSupportUpdateDerivedField() {
+        // Postgre don't support update derived field
         return false;
     }
 
-    @Override
-    protected boolean isSupportUpdateDerivedField() {
-        return false;
+
+    private static CriteriaException objectNameContainsDoubleQuotes(String objectName) {
+        String m = String.format("%s table/column name[%s] couldn't contains double-quotes.",
+                Database.PostgreSQL, objectName);
+        throw new CriteriaException(m);
     }
 
 

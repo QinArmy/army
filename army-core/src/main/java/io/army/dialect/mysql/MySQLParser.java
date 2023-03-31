@@ -10,7 +10,6 @@ import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.meta.ChildTableMeta;
-import io.army.meta.DatabaseObject;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
@@ -69,22 +68,48 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     @Override
-    public final String safeObjectName(final DatabaseObject object) {
-        final StringBuilder builder = new StringBuilder();
-        return this.safeObjectName(object, builder)
+    protected final String doSafeObjectName(final String objectName) {
+        return this.doSafeObjectName(objectName, new StringBuilder())
                 .toString();
     }
 
     @Override
-    public final StringBuilder safeObjectName(final DatabaseObject object, final StringBuilder builder) {
-        final String objectName;
-        objectName = object.objectName();
+    protected final StringBuilder doSafeObjectName(final String objectName, final StringBuilder builder) {
         if (this.keyWordSet.contains(objectName)) {
             builder.append(IDENTIFIER_QUOTE)
                     .append(objectName)
                     .append(IDENTIFIER_QUOTE);
         } else {
             builder.append(objectName);
+        }
+        return builder;
+    }
+
+    @Override
+    public final String identifier(final String identifier) {
+        final String safeIdentifier;
+        if (!this.keyWordSet.contains(identifier) && _DialectUtils.isSafeIdentifier(identifier)) {
+            safeIdentifier = identifier;
+        } else if (identifier.indexOf(IDENTIFIER_QUOTE) > -1) {
+
+        } else {
+            final StringBuilder builder = new StringBuilder(identifier.length() + 2);
+            safeIdentifier = builder.append(IDENTIFIER_QUOTE)
+                    .append(identifier)
+                    .append(IDENTIFIER_QUOTE)
+                    .toString();
+        }
+        return safeIdentifier;
+    }
+
+    @Override
+    public final StringBuilder identifier(final String identifier, final StringBuilder builder) {
+        if (!this.identifierCaseSensitivity || this.keyWordSet.contains(identifier)) {
+            builder.append(this.identifierQuote)
+                    .append(identifier)
+                    .append(this.identifierQuote);
+        } else {
+            builder.append(identifier);
         }
         return builder;
     }

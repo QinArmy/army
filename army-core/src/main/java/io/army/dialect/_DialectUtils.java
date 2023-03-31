@@ -3,7 +3,10 @@ package io.army.dialect;
 import io.army.bean.ObjectAccessException;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
@@ -42,6 +45,29 @@ public abstract class _DialectUtils {
             }
         }
         return Collections.unmodifiableList(selectionList);
+    }
+
+
+    /**
+     * @see ArmyParser#safeObjectName(DatabaseObject)
+     */
+    public static boolean isSafeIdentifier(final String objectName) {
+        final int length = objectName.length();
+        char ch;
+        boolean match = true;
+        for (int i = 0; i < length; i++) {
+            ch = objectName.charAt(i);
+            if (ch == '_'
+                    || (ch >= 'a' && ch <= 'z')
+                    || (ch >= 'A' && ch <= 'Z')) {
+                continue;
+            } else if (i > 0 && (ch >= '0' && ch <= '9')) {
+                continue;
+            }
+            match = false;
+            break;
+        }
+        return match;
     }
 
 

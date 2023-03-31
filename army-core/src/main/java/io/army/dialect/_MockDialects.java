@@ -98,7 +98,7 @@ public abstract class _MockDialects implements DialectEnv {
         }
         final MappingEnv mappingEnv;
         mappingEnv = MappingEnv.create(false, meta, null, new MockJsonCodec());
-        return _DialectFactory.createDialect(new MockDialectEnv(mappingEnv));
+        return DialectParserFactory.createDialect(new MockDialectEnv(mappingEnv));
     }
 
 

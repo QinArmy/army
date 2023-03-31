@@ -2,7 +2,7 @@ package io.army.sync;
 
 import io.army.dialect.DialectEnv;
 import io.army.dialect.DialectParser;
-import io.army.dialect._DialectFactory;
+import io.army.dialect.DialectParserFactory;
 import io.army.env.SyncKey;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
@@ -51,7 +51,7 @@ final class SyncLocalSessionFactory extends _AbstractSessionFactory implements L
         assert this.executorFactory != null;
         final DialectEnv dialectEnv = builder.dialectEnv;
         assert dialectEnv != null;
-        this.dialectParser = _DialectFactory.createDialect(dialectEnv);
+        this.dialectParser = DialectParserFactory.createDialect(dialectEnv);
         this.mappingEnv = dialectEnv.mappingEnv();
         this.sessionContext = getSessionContext();
         //this.sessionCacheFactory = SessionCacheFactory.build(this);

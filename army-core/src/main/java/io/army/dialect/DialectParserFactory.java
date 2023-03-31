@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.dialect.mysql._MySQLDialectFactory;
+import io.army.dialect.postgre._PostgreDialectFactory;
 import io.army.env.ArmyKey;
 import io.army.meta.ServerMeta;
 import io.army.util._Exceptions;
@@ -9,26 +10,28 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-public abstract class _DialectFactory {
+public abstract class DialectParserFactory {
 
-    protected _DialectFactory() {
+    protected DialectParserFactory() {
         throw new UnsupportedOperationException();
     }
 
     public static DialectParser createDialect(DialectEnv environment) {
         final Database database;
         database = environment.mappingEnv().serverMeta().database();
-        final DialectParser dialect;
+        final DialectParser parser;
         switch (database) {
             case MySQL:
-                dialect = _MySQLDialectFactory.createDialect(environment);
+                parser = _MySQLDialectFactory.mysqlDialectParser(environment);
                 break;
             case PostgreSQL:
+                parser = _PostgreDialectFactory.postgreDialectParser(environment);
+                break;
             case Oracle:
             default:
                 throw _Exceptions.unexpectedEnum(database);
         }
-        return dialect;
+        return parser;
     }
 
     /**
@@ -79,7 +82,7 @@ public abstract class _DialectFactory {
         }
         final Dialect serverDialect;
         serverDialect = Database.from(meta);
-        Dialect targetDialect;
+        Dialect targetDialect; // TODO get from server meta
         targetDialect = environment.environment().get(ArmyKey.DIALECT);
         if (targetDialect == null) {
             targetDialect = Database.from(meta);

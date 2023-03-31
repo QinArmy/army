@@ -202,6 +202,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException identifierNoText() {
+        return new CriteriaException("identifier must have text.");
+    }
+
     public static CriteriaException nonNullField(DataField field) {
         return new CriteriaException(String.format("%s is non-null.", field));
     }

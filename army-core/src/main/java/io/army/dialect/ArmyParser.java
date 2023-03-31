@@ -63,10 +63,6 @@ abstract class ArmyParser implements DialectParser {
      */
     protected final Set<String> keyWordSet;
 
-    protected final char identifierQuote;
-
-    protected final boolean identifierCaseSensitivity;
-
     protected final Dialect dialect;
 
     final boolean supportSingleUpdateAlias;
@@ -101,9 +97,6 @@ abstract class ArmyParser implements DialectParser {
         this.mockEnv = this.dialectEnv instanceof _MockDialects;
 
         assert dialect.database() == this.serverMeta.database();
-
-        this.identifierQuote = identifierQuote();
-        this.identifierCaseSensitivity = this.isIdentifierCaseSensitivity();
         this.childUpdateMode = this.childUpdateMode();
         this.aliasAfterAs = this.isTableAliasAfterAs();
 
@@ -259,28 +252,6 @@ abstract class ArmyParser implements DialectParser {
         return Collections.unmodifiableList(ddlList);
     }
 
-    @Override
-    public final String identifier(final String identifier) {
-        final String safeIdentifier;
-        if (!this.identifierCaseSensitivity || this.keyWordSet.contains(identifier)) {
-            safeIdentifier = this.identifierQuote + identifier + this.identifierQuote;
-        } else {
-            safeIdentifier = identifier;
-        }
-        return safeIdentifier;
-    }
-
-    @Override
-    public final StringBuilder identifier(final String identifier, final StringBuilder builder) {
-        if (!this.identifierCaseSensitivity || this.keyWordSet.contains(identifier)) {
-            builder.append(this.identifierQuote)
-                    .append(identifier)
-                    .append(this.identifierQuote);
-        } else {
-            builder.append(identifier);
-        }
-        return builder;
-    }
 
     @Override
     public final Dialect dialect() {
@@ -328,10 +299,6 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract boolean isSupportTableOnly();
 
-    protected abstract char identifierQuote();
-
-    protected abstract boolean isIdentifierCaseSensitivity();
-
     protected abstract _ChildUpdateMode childUpdateMode();
 
     protected abstract boolean isSupportSingleUpdateAlias();
@@ -346,10 +313,20 @@ abstract class ArmyParser implements DialectParser {
 
     /*################################## blow dialect template method ##################################*/
 
-    public abstract String safeObjectName(DatabaseObject object);
+    public final String safeObjectName(DatabaseObject object) {
+        //TODO append Qualified for table name
+        return this.doSafeObjectName(object.objectName());
+    }
 
-    public abstract StringBuilder safeObjectName(DatabaseObject object, StringBuilder builder);
+    public final StringBuilder safeObjectName(DatabaseObject object, StringBuilder builder) {
+        //TODO append Qualified for table name
+        return this.doSafeObjectName(object.objectName(), builder);
+    }
 
+
+    protected abstract String doSafeObjectName(String objectName);
+
+    protected abstract StringBuilder doSafeObjectName(String objectName, StringBuilder builder);
 
     protected abstract boolean isNeedConvert(SqlType type, Object nonNull);
 

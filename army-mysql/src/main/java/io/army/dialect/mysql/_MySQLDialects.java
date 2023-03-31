@@ -2,11 +2,11 @@ package io.army.dialect.mysql;
 
 import io.army.dialect.Database;
 import io.army.dialect.DialectEnv;
-import io.army.dialect._DialectFactory;
+import io.army.dialect.DialectParserFactory;
 import io.army.util._Exceptions;
 
 @SuppressWarnings("unused")
-public abstract class _MySQLDialects extends _DialectFactory {
+public abstract class _MySQLDialects extends DialectParserFactory {
 
     private _MySQLDialects() {
         throw new UnsupportedOperationException();
