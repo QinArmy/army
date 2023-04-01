@@ -53,6 +53,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
         stmt = SQLs.domainUpdate()
                 .update(ChinaProvince_.T, AS, "p")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
+                .set(ChinaRegion_.name, ChinaProvince_.provincialCapital) // test SET child field in parent SET clause
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
                 .set(ChinaProvince_.provincialCapital, SQLs::param, "光明顶")
                 .set(ChinaProvince_.governor, SQLs::param, "张无忌")

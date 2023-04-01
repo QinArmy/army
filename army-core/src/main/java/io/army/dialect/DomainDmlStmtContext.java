@@ -7,10 +7,13 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
-abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _SingleTableContext {
+abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _SingleTableContext
+        , _DmlContext._DomainUpdateSpec {
 
 
     private final String safeRelatedAlias;
+
+    private boolean existsChildFiledInSetClause;
 
     DomainDmlStmtContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
@@ -59,7 +62,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
         } else if (targetTable instanceof ChildTableMeta
                 && fieldTable == ((ChildTableMeta<?>) targetTable).parentMeta()) {
             // parent table filed
-            if (this.parser.childUpdateMode == _ChildUpdateMode.CTE) { // for example POST domain update
+            if (this.parser.childUpdateMode == _ChildUpdateMode.CTE) {
                 assert this.safeRelatedAlias != null;
                 sqlBuilder.append(_Constant.SPACE)
                         .append(this.safeRelatedAlias)
@@ -69,13 +72,26 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
                 this.parentColumnFromSubQuery(field);
             }
         } else if (targetTable instanceof ParentTableMeta && fieldTable == this.domainTable) {
-            this.childColumnFromSubQuery(field);
+            if (this.parser.childUpdateMode == _ChildUpdateMode.CTE) {
+                assert this.safeRelatedAlias != null;
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(this.safeRelatedAlias)
+                        .append(_Constant.POINT);
+                this.parser.safeObjectName(field, sqlBuilder);
+            } else {
+                this.childColumnFromSubQuery(field);
+            }
+            this.existsChildFiledInSetClause = true;
         } else {
             throw _Exceptions.unknownColumn(field);
         }
 
     }
 
+    @Override
+    public final boolean isExistsChildFiledInSetClause() {
+        return this.existsChildFiledInSetClause;
+    }
 
     final void parentColumnFromSubQuery(final FieldMeta<?> parentField) {
         final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) parentField.tableMeta();

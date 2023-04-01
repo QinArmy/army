@@ -227,7 +227,6 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
     }
 
 
-
     private String findTableAlias(final TableMeta<?> table) {
         final String safeTableAlias;
         safeTableAlias = this.multiTableContext.tableToSafeAlias.get(table);

@@ -89,23 +89,23 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 if (!(value instanceof Integer)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
                 }
-                sqlBuilder.append(value);
+                sqlBuilder.append(value)
+                        .append("::INTEGER");
             }
             break;
             case BIGINT: {
                 if (!(value instanceof Long)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
                 }
-                sqlBuilder.append(value);
+                sqlBuilder.append(value)
+                        .append("::BIGINT");
             }
             break;
             case DECIMAL: {
                 if (!(value instanceof BigDecimal)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
                 }
-                sqlBuilder.append(_Constant.QUOTE)
-                        .append(((BigDecimal) value).toPlainString())
-                        .append(_Constant.QUOTE)
+                sqlBuilder.append(((BigDecimal) value).toPlainString())
                         .append("::DECIMAL");
             }
             break;
@@ -113,9 +113,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 if (!(value instanceof Double)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
                 }
-                sqlBuilder.append(_Constant.QUOTE)
-                        .append(value)
-                        .append(_Constant.QUOTE)
+                sqlBuilder.append(value)
                         .append("::DOUBLE");
             }
             break;
@@ -123,9 +121,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 if (!(value instanceof Float)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
                 }
-                sqlBuilder.append(_Constant.QUOTE)
-                        .append(value)
-                        .append(_Constant.QUOTE)
+                sqlBuilder.append(value)
                         .append("::REAL");
             }
             break;
@@ -514,8 +510,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
         final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) parentContext.targetTable();
         assert domainTable.parentMeta() == parentTable;
         final String safeParentAlias = parentContext.safeTargetTableAlias();
-        final String safeParentTableName;
+        final String safeParentTableName, safeChildTableName;
         safeParentTableName = this.safeObjectName(parentTable);
+        safeChildTableName = this.safeObjectName(domainTable);
 
         final StringBuilder sqlBuilder;
         sqlBuilder = childContext.sqlBuilder();
@@ -526,11 +523,13 @@ abstract class PostgreParser extends _ArmyDialectParser {
         }
 
         // append child table update cte statement
-        final String childCte = "child_cte";
+        final String childCte;
+        childCte = this.identifier(childContext.targetTableAlias() + "_update_cte");
         sqlBuilder.append(_Constant.WITH)
                 .append(_Constant.SPACE)
                 .append(childCte)
                 .append(_Constant.SPACE_LEFT_PAREN)
+                .append(_Constant.SPACE)
                 .append(_MetaBridge.ID)
                 .append(_Constant.SPACE_RIGHT_PAREN)
                 .append(_Constant.SPACE_AS)
@@ -540,7 +539,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 .append(_Constant.SPACE_ONLY)
                 .append(_Constant.SPACE);
 
-        this.safeObjectName(domainTable, sqlBuilder)// child table name.
+        sqlBuilder.append(safeChildTableName)// child table name.
                 .append(_Constant.SPACE_AS_SPACE)
                 .append(safeChildTableAlias);
 
@@ -581,11 +580,27 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 .append(_Constant.SPACE_AS_SPACE)
                 .append(safeParentAlias);
 
-
         this.singleTableSetClause(stmt.itemPairList(), parentContext); // parent SET clause
+
         // parent part FROM clause
         sqlBuilder.append(_Constant.SPACE_FROM_SPACE)
                 .append(childCte);
+
+        if (((_DmlContext._DomainUpdateSpec) parentContext).isExistsChildFiledInSetClause()) { // after SET clause
+            sqlBuilder.append(_Constant.SPACE_JOIN_SPACE)
+                    .append(safeChildTableName)
+                    .append(_Constant.SPACE_AS_SPACE)
+                    .append(safeChildTableAlias)
+                    .append(_Constant.SPACE_ON_SPACE)
+                    .append(safeChildTableAlias)
+                    .append(_Constant.POINT)
+                    .append(_MetaBridge.ID)
+                    .append(_Constant.SPACE_EQUAL_SPACE)
+                    .append(childCte)
+                    .append(_Constant.POINT)
+                    .append(_MetaBridge.ID);
+
+        }
 
         sqlBuilder.append(_Constant.SPACE_WHERE)
                 .append(safeParentAlias)

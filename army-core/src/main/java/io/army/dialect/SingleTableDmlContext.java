@@ -163,6 +163,7 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
         }
     }
 
+
     void onAddConditionField(TableField field) {
         throw new UnsupportedOperationException();
     }

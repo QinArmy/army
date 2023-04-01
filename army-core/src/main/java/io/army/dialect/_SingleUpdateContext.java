@@ -8,5 +8,4 @@ package io.army.dialect;
 public interface _SingleUpdateContext extends _UpdateContext, _SingleTableContext, _SetClauseContext {
 
 
-
 }

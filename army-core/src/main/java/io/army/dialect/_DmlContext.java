@@ -41,6 +41,20 @@ public  interface _DmlContext extends _PrimaryContext {
     interface _SetClauseContextSpec {
 
         void appendSetLeftItem(DataField dataField);
+
+
+    }
+
+    interface _DomainUpdateSpec {
+        /**
+         * <p>
+         * supported only by domain update.
+         * </p>
+         *
+         * @throws UnsupportedOperationException throw when non-domain update.
+         */
+        boolean isExistsChildFiledInSetClause();
+
     }
 
     interface _SingleTableContextSpec {
