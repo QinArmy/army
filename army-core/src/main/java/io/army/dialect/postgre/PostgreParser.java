@@ -499,20 +499,25 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
     @Override
     protected final void parseDomainChildUpdate(final _SingleUpdate stmt, final _UpdateContext context) {
+
         final _SingleUpdateContext childContext = (_SingleUpdateContext) context;
         final _SingleUpdateContext parentContext = (_SingleUpdateContext) childContext.parentContext();
         assert parentContext != null;
 
+        final String safeParentTableName, safeChildTableName, safeParentAlias, safeChildTableAlias;
+
+        // child table part
         final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) childContext.domainTable();
         assert domainTable == stmt.table() && domainTable == childContext.targetTable();
-        final String safeChildTableAlias = childContext.safeTargetTableAlias();
+        safeChildTableName = this.safeObjectName(domainTable);
+        safeChildTableAlias = childContext.safeTargetTableAlias();
 
+        // parent table part
         final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) parentContext.targetTable();
         assert domainTable.parentMeta() == parentTable;
-        final String safeParentAlias = parentContext.safeTargetTableAlias();
-        final String safeParentTableName, safeChildTableName;
         safeParentTableName = this.safeObjectName(parentTable);
-        safeChildTableName = this.safeObjectName(domainTable);
+        safeParentAlias = parentContext.safeTargetTableAlias();
+
 
         final StringBuilder sqlBuilder;
         sqlBuilder = childContext.sqlBuilder();
@@ -530,16 +535,17 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 .append(childCte)
                 .append(_Constant.SPACE_LEFT_PAREN)
                 .append(_Constant.SPACE)
+                .append(_Constant.DOUBLE_QUOTE)
                 .append(_MetaBridge.ID)
+                .append(_Constant.DOUBLE_QUOTE)
                 .append(_Constant.SPACE_RIGHT_PAREN)
                 .append(_Constant.SPACE_AS)
                 .append(_Constant.SPACE_LEFT_PAREN)
                 .append(_Constant.SPACE)
                 .append(_Constant.UPDATE)
                 .append(_Constant.SPACE_ONLY)
-                .append(_Constant.SPACE);
-
-        sqlBuilder.append(safeChildTableName)// child table name.
+                .append(_Constant.SPACE)
+                .append(safeChildTableName)// child table name.
                 .append(_Constant.SPACE_AS_SPACE)
                 .append(safeChildTableAlias);
 
@@ -552,6 +558,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
         // child cte WHERE clause
         this.childDomainCteWhereClause(stmt.wherePredicateList(), childContext);
+        this.discriminator(domainTable, safeParentAlias, context);
         childContext.appendConditionFields();
         this.visiblePredicate(parentTable, safeParentAlias, childContext, false);
 
@@ -560,7 +567,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 .append(_Constant.SPACE)
                 .append(safeChildTableAlias)
                 .append(_Constant.POINT)
+                .append(_Constant.DOUBLE_QUOTE)
                 .append(_MetaBridge.ID)
+                .append(_Constant.DOUBLE_QUOTE)
                 .append(_Constant.SPACE_AS_SPACE)
                 .append(_Constant.DOUBLE_QUOTE)
                 .append(_MetaBridge.ID)
@@ -587,6 +596,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 .append(childCte);
 
         if (((_DmlContext._DomainUpdateSpec) parentContext).isExistsChildFiledInSetClause()) { // after SET clause
+            // append join child table
             sqlBuilder.append(_Constant.SPACE_JOIN_SPACE)
                     .append(safeChildTableName)
                     .append(_Constant.SPACE_AS_SPACE)
@@ -594,29 +604,136 @@ abstract class PostgreParser extends _ArmyDialectParser {
                     .append(_Constant.SPACE_ON_SPACE)
                     .append(safeChildTableAlias)
                     .append(_Constant.POINT)
+                    .append(_Constant.DOUBLE_QUOTE)
                     .append(_MetaBridge.ID)
+                    .append(_Constant.DOUBLE_QUOTE)
                     .append(_Constant.SPACE_EQUAL_SPACE)
                     .append(childCte)
                     .append(_Constant.POINT)
-                    .append(_MetaBridge.ID);
+                    .append(_Constant.DOUBLE_QUOTE)
+                    .append(_MetaBridge.ID)
+                    .append(_Constant.DOUBLE_QUOTE);
 
         }
 
         sqlBuilder.append(_Constant.SPACE_WHERE)
                 .append(safeParentAlias)
                 .append(_Constant.POINT)
+                .append(_Constant.DOUBLE_QUOTE)
                 .append(_MetaBridge.ID)
+                .append(_Constant.DOUBLE_QUOTE)
                 .append(_Constant.SPACE_EQUAL_SPACE)
                 .append(childCte)
                 .append(_Constant.POINT)
-                .append(_MetaBridge.ID);
+                .append(_Constant.DOUBLE_QUOTE)
+                .append(_MetaBridge.ID)
+                .append(_Constant.DOUBLE_QUOTE);
 
 
     }
 
     @Override
-    protected final void parseDomainChildDelete(final _SingleDelete delete, final _DeleteContext context) {
-        super.parseDomainChildDelete(delete, context);
+    protected final void parseDomainChildDelete(final _SingleDelete stmt, final _DeleteContext context) {
+
+        final _SingleDeleteContext childContext = (_SingleDeleteContext) context;
+        final _SingleDeleteContext parentContext = (_SingleDeleteContext) childContext.parentContext();
+        assert parentContext != null;
+
+        final String safeParentTableName, safeChildTableName, safeParentAlias, safeChildTableAlias;
+
+        // child table part
+        final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) childContext.domainTable();
+        assert domainTable == stmt.table() && domainTable == childContext.targetTable();
+        safeChildTableName = this.safeObjectName(domainTable);
+        safeChildTableAlias = childContext.safeTargetTableAlias();
+
+        // parent table part
+        final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) parentContext.targetTable();
+        assert domainTable.parentMeta() == parentTable;
+        safeParentTableName = this.safeObjectName(parentTable);
+        safeParentAlias = parentContext.safeTargetTableAlias();
+
+
+        final StringBuilder sqlBuilder;
+        sqlBuilder = childContext.sqlBuilder();
+        assert parentContext.sqlBuilder() == sqlBuilder; // must assert
+
+        if (sqlBuilder.length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+
+        // append child table DELETE cte statement
+        final String deleteCte;
+        deleteCte = this.identifier(childContext.targetTableAlias() + "_delete_cte");
+        sqlBuilder.append(_Constant.WITH)
+                .append(_Constant.SPACE)
+                .append(deleteCte)
+                .append(_Constant.SPACE_LEFT_PAREN)
+                .append(_Constant.SPACE)
+                .append(_Constant.DOUBLE_QUOTE)
+                .append(_MetaBridge.ID)
+                .append(_Constant.DOUBLE_QUOTE)
+                .append(_Constant.SPACE_RIGHT_PAREN)
+                .append(_Constant.SPACE_AS)
+                .append(_Constant.SPACE_LEFT_PAREN)
+                .append(_Constant.SPACE)
+                .append(_Constant.DELETE_FROM)
+                .append(_Constant.SPACE_ONLY)
+                .append(_Constant.SPACE)
+                .append(safeChildTableName)// child table name.
+                .append(_Constant.SPACE_AS_SPACE)
+                .append(safeChildTableAlias)
+                .append(_Constant.SPACE_USING)
+                .append(_Constant.SPACE)
+                .append(safeParentTableName)
+                .append(_Constant.SPACE_AS_SPACE)
+                .append(safeParentAlias);
+
+        // child cte WHERE clause
+        this.childDomainCteWhereClause(stmt.wherePredicateList(), childContext);
+        this.discriminator(domainTable, safeParentAlias, context);
+        this.visiblePredicate(parentTable, safeParentAlias, childContext, false);
+
+        // RETURNING clause
+        sqlBuilder.append(_Constant.SPACE_RETURNING)
+                .append(_Constant.SPACE)
+                .append(safeChildTableAlias)
+                .append(_Constant.POINT)
+                .append(_Constant.DOUBLE_QUOTE)
+                .append(_MetaBridge.ID)
+                .append(_Constant.DOUBLE_QUOTE)
+                .append(_Constant.SPACE_AS_SPACE)
+                .append(_Constant.DOUBLE_QUOTE)
+                .append(_MetaBridge.ID)
+                .append(_Constant.DOUBLE_QUOTE)
+                .append(_Constant.SPACE_RIGHT_PAREN);
+
+        // child cte end
+
+
+        // below primary DELETE statement part, parent table.
+        sqlBuilder.append(_Constant.SPACE)
+                .append(_Constant.DELETE_FROM)
+                .append(_Constant.SPACE_ONLY)
+                .append(_Constant.SPACE)
+                .append(safeParentTableName)// parent table name.
+                .append(_Constant.SPACE_AS_SPACE)
+                .append(safeParentAlias)
+                .append(_Constant.SPACE_USING)   // parent part USING clause
+                .append(deleteCte)
+                .append(_Constant.SPACE_WHERE)
+                .append(_Constant.SPACE)
+                .append(safeParentAlias)
+                .append(_Constant.POINT)
+                .append(_Constant.DOUBLE_QUOTE)
+                .append(_MetaBridge.ID)
+                .append(_Constant.DOUBLE_QUOTE)
+                .append(_Constant.SPACE_EQUAL_SPACE)
+                .append(deleteCte)
+                .append(_Constant.POINT)
+                .append(_Constant.DOUBLE_QUOTE)
+                .append(_MetaBridge.ID)
+                .append(_Constant.DOUBLE_QUOTE);
     }
 
 

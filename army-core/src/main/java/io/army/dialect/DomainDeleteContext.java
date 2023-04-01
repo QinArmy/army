@@ -6,8 +6,8 @@ import io.army.lang.Nullable;
 
 final class DomainDeleteContext extends DomainDmlStmtContext implements _SingleDeleteContext {
 
-    static DomainDeleteContext create(@Nullable _SqlContext outerContext, _DomainDelete stmt, ArmyParser parser
-            , Visible visible) {
+    static DomainDeleteContext forSingle(@Nullable _SqlContext outerContext, _DomainDelete stmt, ArmyParser parser,
+                                         Visible visible) {
         return new DomainDeleteContext((StatementContext) outerContext, stmt, parser, visible);
     }
 

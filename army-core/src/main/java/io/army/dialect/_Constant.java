@@ -30,6 +30,7 @@ public interface _Constant {
 
     String DELETE_SPACE = "DELETE ";
 
+    String DELETE_FROM = "DELETE FROM";
     String DELETE_FROM_SPACE = "DELETE FROM ";
 
     String SPACE_FROM = " FROM";

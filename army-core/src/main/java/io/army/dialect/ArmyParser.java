@@ -848,8 +848,7 @@ abstract class ArmyParser implements DialectParser {
     protected final void singleTableSetClause(final List<_ItemPair> itemPairList, final _SingleUpdateContext context) {
         final TableMeta<?> targetTable = context.targetTable();
         final int itemPairSize = itemPairList.size();
-        if (itemPairSize == 0
-                && !(targetTable instanceof ParentTableMeta && this.childUpdateMode == _ChildUpdateMode.CTE)) {
+        if (itemPairSize == 0 && !(targetTable instanceof ParentTableMeta)) {
             throw _Exceptions.setClauseNotExists();
         }
 
@@ -864,7 +863,7 @@ abstract class ArmyParser implements DialectParser {
 
         if (targetTable instanceof SingleTableMeta) {
             final String safeTableAlias;
-            if (this.supportSingleUpdateAlias && this.setClauseTableAlias) {
+            if (this.supportSingleUpdateAlias) {
                 safeTableAlias = context.safeTargetTableAlias();
             } else {
                 safeTableAlias = null;
@@ -1270,16 +1269,19 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @param context must be instance of {@link DomainUpdateContext}
+     * @param context must be instance of {@link DomainDmlStmtContext}
      */
     protected final void childDomainCteWhereClause(final List<_Predicate> predicateList,
-                                                   final _SingleUpdateContext context) {
+                                                   final _DmlContext context) {
+
+        final DomainDmlStmtContext childContext = (DomainDmlStmtContext) context;
+        assert childContext.parentContext() != null;
+
         final int predicateCount = predicateList.size();
         if (predicateCount == 0) {
             throw _Exceptions.noWhereClause(context);
         }
-        final DomainUpdateContext childContext = (DomainUpdateContext) context;
-        assert childContext.parentContext != null;
+
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childContext.targetTable;
 
         final StringBuilder sqlBuilder = childContext.sqlBuilder();
@@ -1386,7 +1388,7 @@ abstract class ArmyParser implements DialectParser {
             sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
         }
 
-        if (safeTableAlias != null) {
+        if (safeTableAlias != null && this.setClauseTableAlias) {
             sqlBuilder.append(safeTableAlias)
                     .append(_Constant.POINT);
         }
@@ -1408,13 +1410,13 @@ abstract class ArmyParser implements DialectParser {
             versionColumnName = this.safeObjectName(field);
             sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
 
-            if (safeTableAlias != null) {
+            if (safeTableAlias != null && this.setClauseTableAlias) {
                 sqlBuilder.append(safeTableAlias)
                         .append(_Constant.POINT);
             }
             sqlBuilder.append(versionColumnName)
                     .append(_Constant.SPACE_EQUAL_SPACE);
-            if (safeTableAlias != null) {
+            if (safeTableAlias != null) {  // no setClauseTableAlias
                 sqlBuilder.append(safeTableAlias)
                         .append(_Constant.POINT);
             }
@@ -1951,7 +1953,7 @@ abstract class ArmyParser implements DialectParser {
         final _DeleteContext context;
         final _ChildUpdateMode mode = this.childUpdateMode;
         if (!(stmt.table() instanceof ChildTableMeta)) {
-            context = DomainDeleteContext.create(outerContext, stmt, this, visible);
+            context = DomainDeleteContext.forSingle(outerContext, stmt, this, visible);
             this.parseStandardSingleDelete(stmt, (_SingleDeleteContext) context);
             if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
                 multiStmtBatch(stmt, (_SingleDeleteContext) context, this::parseStandardSingleDelete);
@@ -1963,7 +1965,9 @@ abstract class ArmyParser implements DialectParser {
                 multiStmtBatch(stmt, context, this::parseDomainChildDelete);
             }
         } else if (mode == _ChildUpdateMode.CTE) {
-            context = SingleJoinableDeleteContext.create(outerContext, stmt, this, visible);
+            final DomainDeleteContext primaryContext;
+            primaryContext = DomainDeleteContext.forSingle(outerContext, stmt, this, visible);
+            context = DomainDeleteContext.forChild(stmt, primaryContext);
             this.parseDomainChildDelete(stmt, context);
             if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
                 multiStmtBatch(stmt, context, this::parseDomainChildDelete);
@@ -1971,7 +1975,7 @@ abstract class ArmyParser implements DialectParser {
         } else if (mode == _ChildUpdateMode.WITH_ID) {
             assert outerContext == null; //now don't support multi statement.
             final DomainDeleteContext parentContext;
-            parentContext = DomainDeleteContext.create(null, stmt, this, visible);
+            parentContext = DomainDeleteContext.forSingle(null, stmt, this, visible);
             context = DomainDeleteContext.forChild(stmt, parentContext);
             assert parentContext.domainTable == ((DomainDeleteContext) context).domainTable;
             assert parentContext.targetTable instanceof ParentTableMeta;
