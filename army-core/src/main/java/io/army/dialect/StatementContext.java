@@ -53,29 +53,29 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
         this(outerContext, outerContext.parser, outerContext.visible);
     }
 
-    protected StatementContext(@Nullable StatementContext outerContext, ArmyParser parser, Visible visible) {
-        if (outerContext == null) {
+    protected StatementContext(@Nullable StatementContext parentOrOuterContext, ArmyParser parser, Visible visible) {
+        if (parentOrOuterContext == null) {
             this.parser = parser;
             this.visible = visible;
             this.sqlBuilder = new StringBuilder(128);
         } else {
-            this.parser = outerContext.parser;
-            this.visible = outerContext.visible;
-            this.sqlBuilder = outerContext.sqlBuilder;
+            this.parser = parentOrOuterContext.parser;
+            this.visible = parentOrOuterContext.visible;
+            this.sqlBuilder = parentOrOuterContext.sqlBuilder;
         }
 
         if (this instanceof _InsertContext && !(this instanceof _QueryInsertContext)) {
-            if (outerContext == null) {
+            if (parentOrOuterContext == null) {
                 this.paramConsumer = new ParamConsumer(this::currentRowNamedValue);
             } else {
-                this.paramConsumer = new ParamConsumerWithOuter(outerContext.paramConsumer, this::currentRowNamedValue);
+                this.paramConsumer = new ParamConsumerWithOuter(parentOrOuterContext.paramConsumer, this::currentRowNamedValue);
             }
-        } else if (outerContext instanceof _MultiStatementContext && this instanceof NarrowDmlContext) {
-            this.paramConsumer = new ParamConsumerWithOuter(outerContext.paramConsumer, this::currentRowNamedValue);
-        } else if (outerContext == null) {
+        } else if (parentOrOuterContext instanceof _MultiStatementContext && this instanceof NarrowDmlContext) {
+            this.paramConsumer = new ParamConsumerWithOuter(parentOrOuterContext.paramConsumer, this::currentRowNamedValue);
+        } else if (parentOrOuterContext == null) {
             this.paramConsumer = new ParamConsumer(null);
         } else {
-            this.paramConsumer = outerContext.paramConsumer;
+            this.paramConsumer = parentOrOuterContext.paramConsumer;
         }
 
     }

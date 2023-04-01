@@ -8,9 +8,9 @@ interface _SingleTableContext extends _PrimaryContext {
 
     TableMeta<?> domainTable();
 
-    String tableAlias();
+    String targetTableAlias();
 
-    String safeTableAlias();
+    String safeTargetTableAlias();
 
 
 }

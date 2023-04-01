@@ -31,12 +31,21 @@ abstract class StandardUnitTests {
 
 
     static void printStmt(final Logger logger, final PrimaryStatement statement) {
-        for (Dialect dialect : Database.MySQL.dialects()) {
-            logger.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+        for (Database database : Database.values()) {
+            switch (database) {
+                case MySQL:
+                case PostgreSQL:
+                    break;
+                default:
+                    continue;
+            }
+            for (Dialect dialect : database.dialects()) {
+                logger.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+            }
         }
 
-    }
 
+    }
 
 
 }

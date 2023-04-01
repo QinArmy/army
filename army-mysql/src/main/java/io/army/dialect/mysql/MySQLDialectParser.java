@@ -306,7 +306,7 @@ final class MySQLDialectParser extends MySQLParser {
         this.partitionClause(stmt.partitionList(), sqlBuilder);
 
         final String safeTableAlias;
-        safeTableAlias = context.safeTableAlias();
+        safeTableAlias = context.safeTargetTableAlias();
         //7. table alias
         sqlBuilder.append(_Constant.SPACE_AS_SPACE).append(safeTableAlias);
 
@@ -395,7 +395,7 @@ final class MySQLDialectParser extends MySQLParser {
 
         final String safeTableAlias;
         if (this.asOf80) {
-            safeTableAlias = context.safeTableAlias();
+            safeTableAlias = context.safeTargetTableAlias();
         } else {
             safeTableAlias = null;
         }

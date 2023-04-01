@@ -14,14 +14,12 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
 
     DomainDmlStmtContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
-        if (this.targetTable instanceof ParentTableMeta && this.domainTable instanceof ChildTableMeta) {
-            if (this.safeTargetTableName == null) {
-                this.safeRelatedAlias = parser.identifier(stmt.tableAlias());
-            } else {
-                this.safeRelatedAlias = parser.safeObjectName(this.domainTable);
-            }
-        } else {
+        if (!(this.targetTable instanceof ParentTableMeta && this.domainTable instanceof ChildTableMeta)) {
             this.safeRelatedAlias = null;
+        } else if (this.safeTargetTableName == null) {
+            this.safeRelatedAlias = parser.identifier(stmt.tableAlias());
+        } else {
+            this.safeRelatedAlias = parser.safeObjectName(this.domainTable);
         }
 
     }
@@ -61,7 +59,15 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
         } else if (targetTable instanceof ChildTableMeta
                 && fieldTable == ((ChildTableMeta<?>) targetTable).parentMeta()) {
             // parent table filed
-            this.parentColumnFromSubQuery(field);
+            if (this.parser.childUpdateMode == _ChildUpdateMode.CTE) { // for example POST domain update
+                assert this.safeRelatedAlias != null;
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(this.safeRelatedAlias)
+                        .append(_Constant.POINT);
+                this.parser.safeObjectName(field, sqlBuilder);
+            } else {
+                this.parentColumnFromSubQuery(field);
+            }
         } else if (targetTable instanceof ParentTableMeta && fieldTable == this.domainTable) {
             this.childColumnFromSubQuery(field);
         } else {

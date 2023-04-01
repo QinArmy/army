@@ -46,7 +46,7 @@ final class ServerMetaImpl implements ServerMeta {
                 || this.minor < 0
                 || this.usedDialect == null) {
             throw new IllegalArgumentException(String.format("server meta %s error.", this));
-        } else if (this.database.isCompatible(this.usedDialect)) {
+        } else if (!this.database.isCompatible(this.usedDialect)) {
             throw _Exceptions.databaseNotCompatible(this.usedDialect, this.database);
         }
 

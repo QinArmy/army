@@ -12,7 +12,7 @@ import java.util.List;
 
 final class DomainUpdateContext extends DomainDmlStmtContext implements _SingleUpdateContext {
 
-    static DomainUpdateContext create(@Nullable _SqlContext outerContext, _DomainUpdate stmt, ArmyParser parser
+    static DomainUpdateContext forSingle(@Nullable _SqlContext outerContext, _DomainUpdate stmt, ArmyParser parser
             , Visible visible) {
         return new DomainUpdateContext((StatementContext) outerContext, stmt, parser, visible);
     }

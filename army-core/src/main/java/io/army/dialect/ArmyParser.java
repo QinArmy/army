@@ -13,6 +13,7 @@ import io.army.criteria.standard.StandardInsert;
 import io.army.criteria.standard.StandardQuery;
 import io.army.criteria.standard.StandardUpdate;
 import io.army.lang.Nullable;
+import io.army.mapping.BooleanType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -65,9 +66,13 @@ abstract class ArmyParser implements DialectParser {
 
     protected final Dialect dialect;
 
+    protected final char identifierQuote;
+
     final boolean supportSingleUpdateAlias;
 
     final boolean supportSingleDeleteAlias;
+
+    final boolean supportOnlyDefault;
 
     final boolean supportRowAlias;
 
@@ -99,15 +104,18 @@ abstract class ArmyParser implements DialectParser {
         assert dialect.database() == this.serverMeta.database();
         this.childUpdateMode = this.childUpdateMode();
         this.aliasAfterAs = this.isTableAliasAfterAs();
+        this.identifierQuote = this.identifierDelimitedQuote();
 
         this.singleDmlAliasAfterAs = this.aliasAfterAs;
         this.supportSingleUpdateAlias = this.isSupportSingleUpdateAlias();
         this.supportSingleDeleteAlias = this.isSupportSingleDeleteAlias();
         this.supportZone = this.isSupportZone();
 
+        this.supportOnlyDefault = this.isSupportOnlyDefault();
         this.tableOnlyModifier = this.isSupportTableOnly();
         this.setClauseTableAlias = this.isSetClauseTableAlias();
         this.supportUpdateRow = this.isSupportUpdateRow();
+
         this.supportUpdateDerivedField = this.isSupportUpdateDerivedField();
 
         this.supportRowAlias = this.isSupportRowAlias();
@@ -285,6 +293,8 @@ abstract class ArmyParser implements DialectParser {
     protected abstract Set<String> createKeyWordSet();
 
 
+    protected abstract char identifierDelimitedQuote();
+
     protected abstract String defaultFuncName();
 
     protected abstract boolean isSupportZone();
@@ -315,18 +325,18 @@ abstract class ArmyParser implements DialectParser {
 
     public final String safeObjectName(DatabaseObject object) {
         //TODO append Qualified for table name
-        return this.doSafeObjectName(object.objectName());
+        return this.doSafeObjectName(object);
     }
 
     public final StringBuilder safeObjectName(DatabaseObject object, StringBuilder builder) {
         //TODO append Qualified for table name
-        return this.doSafeObjectName(object.objectName(), builder);
+        return this.doSafeObjectName(object, builder);
     }
 
 
-    protected abstract String doSafeObjectName(String objectName);
+    protected abstract String doSafeObjectName(DatabaseObject object);
 
-    protected abstract StringBuilder doSafeObjectName(String objectName, StringBuilder builder);
+    protected abstract StringBuilder doSafeObjectName(DatabaseObject object, StringBuilder builder);
 
     protected abstract boolean isNeedConvert(SqlType type, Object nonNull);
 
@@ -335,14 +345,14 @@ abstract class ArmyParser implements DialectParser {
     protected abstract DdlDialect createDdlDialect();
 
     protected void assertInsert(InsertStatement insert) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     /**
      * @see #update(UpdateStatement, Visible)
      */
     protected void assertUpdate(UpdateStatement update) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     protected String beautifySql(String sql) {
@@ -350,11 +360,11 @@ abstract class ArmyParser implements DialectParser {
     }
 
     protected void assertDelete(DeleteStatement delete) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     protected void assertRowSet(RowSet query) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     /**
@@ -362,43 +372,43 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleValueInsert(_SqlContext, _Insert._ValuesInsert, Visible)
      */
     protected void parseValuesInsert(_ValueInsertContext context, _Insert._ValuesSyntaxInsert insert) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     protected void parseAssignmentInsert(_AssignmentInsertContext context, _Insert._AssignmentInsert insert) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     protected void parseQueryInsert(_QueryInsertContext context, _Insert._QueryInsert insert) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     /**
      * @see #handleUpdate(_SqlContext, UpdateStatement, Visible, Function)
      */
     protected void parseSingleUpdate(_SingleUpdate update, _SingleUpdateContext context) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     /**
      * @see #handleUpdate(_SqlContext, UpdateStatement, Visible, Function)
      */
     protected void parseMultiUpdate(_MultiUpdate update, _MultiUpdateContext context) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     /**
      * @see #handleDelete(_SqlContext, DeleteStatement, Visible, Function)
      */
     protected void parseMultiDelete(final _MultiDelete delete, _MultiDeleteContext context) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     /**
      * @see #handleDelete(_SqlContext, DeleteStatement, Visible, Function)
      */
     protected void parseSingleDelete(_SingleDelete delete, _SingleDeleteContext context) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     /**
@@ -408,7 +418,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleValues(_SqlContext, Values, Visible)
      */
     protected void parseWithClause(_Statement._WithClauseSpec spec, _SqlContext context) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     /**
@@ -416,7 +426,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleQuery(Query, _SqlContext)
      */
     protected void parseQuery(_Query query, _SimpleQueryContext context) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     /**
@@ -424,7 +434,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleValuesQuery(ValuesQuery, _SqlContext)
      */
     protected void parseValues(_ValuesQuery values, _ValuesContext context) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     /**
@@ -432,7 +442,7 @@ abstract class ArmyParser implements DialectParser {
      */
     protected _PrimaryContext handleDialectDml(@Nullable _SqlContext outerContext, DmlStatement statement
             , Visible visible) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
     /**
@@ -440,7 +450,7 @@ abstract class ArmyParser implements DialectParser {
      */
     protected _PrimaryContext handleDialectDql(@Nullable _SqlContext outerContext, DqlStatement statement
             , Visible visible) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
 
@@ -448,6 +458,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, Visible)
      */
     protected void parseDomainChildUpdate(_SingleUpdate update, _UpdateContext context) {
+
         throw new UnsupportedOperationException();
     }
 
@@ -467,7 +478,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleValuesQuery(ValuesQuery, _SqlContext)
      */
     protected void parseParensRowSet(_ParensRowSet values, _ParenRowSetContext context) {
-        throw standardParserDontSupportDialect();
+        throw standardParserDontSupportDialect(this.dialect);
     }
 
 
@@ -835,11 +846,13 @@ abstract class ArmyParser implements DialectParser {
      * @see #parseStandardSingleUpdate(_SingleUpdate, _SingleUpdateContext)
      */
     protected final void singleTableSetClause(final List<_ItemPair> itemPairList, final _SingleUpdateContext context) {
-
+        final TableMeta<?> targetTable = context.targetTable();
         final int itemPairSize = itemPairList.size();
-        if (itemPairSize == 0) {
+        if (itemPairSize == 0
+                && !(targetTable instanceof ParentTableMeta && this.childUpdateMode == _ChildUpdateMode.CTE)) {
             throw _Exceptions.setClauseNotExists();
         }
+
         final StringBuilder sqlBuilder = context.sqlBuilder()
                 .append(_Constant.SPACE_SET);
         for (int i = 0; i < itemPairSize; i++) {
@@ -848,15 +861,15 @@ abstract class ArmyParser implements DialectParser {
             }
             itemPairList.get(i).appendItemPair(context);
         }
-        final TableMeta<?> targetTable = context.targetTable();
+
         if (targetTable instanceof SingleTableMeta) {
             final String safeTableAlias;
-            if (this.supportSingleUpdateAlias) {
-                safeTableAlias = context.safeTableAlias();
+            if (this.supportSingleUpdateAlias && this.setClauseTableAlias) {
+                safeTableAlias = context.safeTargetTableAlias();
             } else {
                 safeTableAlias = null;
             }
-            this.appendUpdateTimeAndVersion((SingleTableMeta<?>) targetTable, safeTableAlias, context, false);
+            this.appendUpdateTimeAndVersion((SingleTableMeta<?>) targetTable, safeTableAlias, context, itemPairSize == 0);
         }
     }
 
@@ -1216,26 +1229,27 @@ abstract class ArmyParser implements DialectParser {
         final FieldMeta<?> field = table.getField(_MetaBridge.VISIBLE);
         final Boolean visibleValue;
         visibleValue = context.visible().value;
-        if (visibleValue != null) {
-            final StringBuilder sqlBuilder = context.sqlBuilder();
-            if (firstPredicate) {
-                sqlBuilder.append(_Constant.SPACE);
-            } else {
-                sqlBuilder.append(_Constant.SPACE_AND_SPACE);
-            }
-            if (safeTableAlias != null) {
-                sqlBuilder.append(safeTableAlias);
-            } else if (context instanceof _SingleDeleteContext) {
-                this.safeObjectName(table, sqlBuilder);
-            } else {
-                throw new IllegalArgumentException();
-            }
-            sqlBuilder.append(_Constant.POINT);
-            this.safeObjectName(field, sqlBuilder)
-                    .append(_Constant.SPACE_EQUAL_SPACE);
-            this.literal(field.mappingType(), visibleValue, sqlBuilder);
+        if (visibleValue == null) {
+            return;
         }
 
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        if (firstPredicate) {
+            sqlBuilder.append(_Constant.SPACE);
+        } else {
+            sqlBuilder.append(_Constant.SPACE_AND_SPACE);
+        }
+        if (safeTableAlias != null) {
+            sqlBuilder.append(safeTableAlias);
+        } else if (context instanceof _SingleDeleteContext) {
+            this.safeObjectName(table, sqlBuilder);
+        } else {
+            throw new IllegalArgumentException();
+        }
+        sqlBuilder.append(_Constant.POINT);
+        this.safeObjectName(field, sqlBuilder)
+                .append(_Constant.SPACE_EQUAL_SPACE);
+        this.literal(field.mappingType(), visibleValue, sqlBuilder);
     }
 
 
@@ -1251,6 +1265,33 @@ abstract class ArmyParser implements DialectParser {
                 sqlBuilder.append(_Constant.SPACE_AND);
             }
             predicateList.get(i).appendSql(context);
+        }
+
+    }
+
+    /**
+     * @param context must be instance of {@link DomainUpdateContext}
+     */
+    protected final void childDomainCteWhereClause(final List<_Predicate> predicateList,
+                                                   final _SingleUpdateContext context) {
+        final int predicateCount = predicateList.size();
+        if (predicateCount == 0) {
+            throw _Exceptions.noWhereClause(context);
+        }
+        final DomainUpdateContext childContext = (DomainUpdateContext) context;
+        assert childContext.parentContext != null;
+        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childContext.targetTable;
+
+        final StringBuilder sqlBuilder = childContext.sqlBuilder();
+        sqlBuilder.append(_Constant.SPACE_WHERE);
+
+        childContext.appendField(childTable.id());
+        sqlBuilder.append(_Constant.SPACE_EQUAL);
+        childContext.appendField(childTable.parentMeta().id());
+
+        for (int i = 0; i < predicateCount; i++) {
+            sqlBuilder.append(_Constant.SPACE_AND);
+            predicateList.get(i).appendSql(childContext);
         }
 
     }
@@ -1286,6 +1327,30 @@ abstract class ArmyParser implements DialectParser {
             count++;
         }
         return count;
+    }
+
+    protected final void appendParentVisible(final _SingleTableContext childContext) {
+        assert this.childUpdateMode == _ChildUpdateMode.WITH_ID;
+
+        final _DmlContext parentContext = ((NarrowDmlContext) childContext).parentContext();
+        assert parentContext != null;
+        // child WHERE must have predicate
+        final StringBuilder sqlBuilder;
+        sqlBuilder = childContext.sqlBuilder().append(_Constant.SPACE_AND);
+
+        assert parentContext.sqlBuilder() == sqlBuilder;
+
+        final ParentTableMeta<?> parentTable;
+        parentTable = ((ChildTableMeta<?>) childContext.domainTable()).parentMeta();
+        ((DomainDmlStmtContext) childContext).parentColumnFromSubQuery(parentTable.getField(_MetaBridge.VISIBLE));
+
+        final Boolean visibleValue;
+        visibleValue = ((DomainDmlStmtContext) childContext).visible.value;
+        if (visibleValue != null) {
+            sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE)
+                    .append(visibleValue ? BooleanType.TRUE : BooleanType.FALSE);
+        }
+
     }
 
 
@@ -1673,7 +1738,7 @@ abstract class ArmyParser implements DialectParser {
         final _UpdateContext context;
         final _ChildUpdateMode mode = this.childUpdateMode;
         if (!(stmt.table() instanceof ChildTableMeta) || stmt.childItemPairList().size() == 0) {
-            context = DomainUpdateContext.create(outerContext, stmt, this, visible);
+            context = DomainUpdateContext.forSingle(outerContext, stmt, this, visible);
             this.parseStandardSingleUpdate(stmt, (_SingleUpdateContext) context);
             if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
                 multiStmtBatch(stmt, (_SingleUpdateContext) context, this::parseStandardSingleUpdate);
@@ -1685,7 +1750,9 @@ abstract class ArmyParser implements DialectParser {
                 multiStmtBatch(stmt, context, this::parseDomainChildUpdate);
             }
         } else if (mode == _ChildUpdateMode.CTE) {
-            context = SingleJoinableUpdateContext.create(outerContext, stmt, this, visible);
+            final DomainUpdateContext primaryContext;
+            primaryContext = DomainUpdateContext.forSingle(outerContext, stmt, this, visible);
+            context = DomainUpdateContext.forChild(stmt, primaryContext);
             this.parseDomainChildUpdate(stmt, context);
             if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
                 multiStmtBatch(stmt, context, this::parseDomainChildUpdate);
@@ -1693,7 +1760,7 @@ abstract class ArmyParser implements DialectParser {
         } else if (mode == _ChildUpdateMode.WITH_ID) {
             assert outerContext == null; //now don't support multi statement.
             final DomainUpdateContext parentContext;
-            parentContext = DomainUpdateContext.create(null, stmt, this, visible);
+            parentContext = DomainUpdateContext.forSingle(null, stmt, this, visible);
             context = DomainUpdateContext.forChild(stmt, parentContext);
             assert parentContext.domainTable == ((DomainUpdateContext) context).domainTable;
             assert parentContext.targetTable instanceof ParentTableMeta;
@@ -1707,6 +1774,7 @@ abstract class ArmyParser implements DialectParser {
         }
         return context;
     }
+
 
     /**
      * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, Visible)
@@ -2095,7 +2163,7 @@ abstract class ArmyParser implements DialectParser {
             } else {
                 sqlBuilder.append(_Constant.SPACE);
             }
-            safeTableAlias = context.safeTableAlias();
+            safeTableAlias = context.safeTargetTableAlias();
             sqlBuilder.append(safeTableAlias);
         } else {
             safeTableAlias = null;
@@ -2135,7 +2203,7 @@ abstract class ArmyParser implements DialectParser {
         //1.2 updateTable alias
         final String safeTableAlias;
         if (this.supportSingleUpdateAlias) {
-            safeTableAlias = context.safeTableAlias();
+            safeTableAlias = context.safeTargetTableAlias();
         } else {
             safeTableAlias = null;
         }
@@ -2251,6 +2319,10 @@ abstract class ArmyParser implements DialectParser {
         final Stmt stmt;
         if (context instanceof _MultiUpdateContext || (parentContext = context.parentContext()) == null) {
             stmt = context.build();
+        } else if (this.childUpdateMode == _ChildUpdateMode.CTE) {
+            assert context instanceof DomainUpdateContext;
+            assert parentContext.sqlBuilder() == context.sqlBuilder();
+            stmt = context.build();
         } else {
             assert parentContext instanceof _SingleUpdateContext;
             final Stmt parentStmt, childStmt;
@@ -2274,6 +2346,10 @@ abstract class ArmyParser implements DialectParser {
         final _DeleteContext parentContext;
         final Stmt stmt;
         if (context instanceof _MultiDeleteContext || (parentContext = context.parentContext()) == null) {
+            stmt = context.build();
+        } else if (this.childUpdateMode == _ChildUpdateMode.CTE) {
+            assert context instanceof DomainDeleteContext;
+            assert parentContext.sqlBuilder() == context.sqlBuilder();
             stmt = context.build();
         } else {
             assert parentContext instanceof _SingleDeleteContext;
@@ -2300,8 +2376,8 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
-    private CriteriaException standardParserDontSupportDialect() {
-        return new CriteriaException(String.format("standard parser[%s] don't support dialect api", this.dialect));
+    protected static CriteriaException standardParserDontSupportDialect(Dialect dialect) {
+        return new CriteriaException(String.format("standard parser[%s] don't support dialect api", dialect));
     }
 
 

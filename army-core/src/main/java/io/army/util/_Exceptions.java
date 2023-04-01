@@ -206,6 +206,23 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("identifier must have text.");
     }
 
+    public static CriteriaException identifierContainsDelimited(Database database, String identifier, char delimited) {
+        String m = String.format("%s identifier[%s] couldn't contains delimited identifier[%s].",
+                database.name(), identifier, delimited);
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException objectNameContainsDelimited(Database database, DatabaseObject object, char delimited) {
+        String m = String.format("%s DatabaseObject[%s] couldn't contains delimited identifier[%s].",
+                database.name(), object, delimited);
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException dontSupportAssignmentInsert(Dialect dialect) {
+        String m = String.format("%s don't support assignment insert.", dialect);
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException nonNullField(DataField field) {
         return new CriteriaException(String.format("%s is non-null.", field));
     }

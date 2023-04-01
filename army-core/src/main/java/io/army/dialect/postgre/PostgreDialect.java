@@ -8,6 +8,9 @@ import io.army.util._StringUtils;
 
 public enum PostgreDialect implements Dialect {
 
+    POSTGRE11(11),
+    POSTGRE12(12),
+    POSTGRE13(13),
     POSTGRE14(14),
     POSTGRE15(15);
 
@@ -40,8 +43,28 @@ public enum PostgreDialect implements Dialect {
 
 
     public static PostgreDialect from(final ServerMeta meta) {
-        //TODO
-        throw new UnsupportedOperationException();
+        final PostgreDialect dialect;
+        switch (meta.major()) {
+            case 11:
+                dialect = PostgreDialect.POSTGRE11;
+                break;
+            case 12:
+                dialect = PostgreDialect.POSTGRE12;
+                break;
+            case 13:
+                dialect = PostgreDialect.POSTGRE13;
+                break;
+            case 14:
+                dialect = PostgreDialect.POSTGRE14;
+                break;
+            case 15:
+                dialect = PostgreDialect.POSTGRE15;
+                break;
+            default:
+                throw Database.unsupportedVersion(meta);
+        }
+        return dialect;
+
     }
 
 

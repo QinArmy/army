@@ -1,11 +1,15 @@
 package io.army.dialect.postgre;
 
 import io.army.criteria.CriteriaException;
-import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.DatabaseObject;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TypeMeta;
+import io.army.modelgen._MetaBridge;
 import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 import io.army.tx.Isolation;
@@ -377,12 +381,13 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final String doSafeObjectName(final String objectName) {
-        final String safeObjectName;
-        if (_DialectUtils.isSafeIdentifier(objectName)) {
+    protected final String doSafeObjectName(final DatabaseObject object) {
+        final String objectName, safeObjectName;
+        objectName = object.objectName();
+        if (!this.keyWordSet.contains(objectName) && _DialectUtils.isSafeIdentifier(objectName)) {
             safeObjectName = objectName;
         } else if (objectName.indexOf(_Constant.DOUBLE_QUOTE) > -1) {
-            throw objectNameContainsDoubleQuotes(objectName);
+            throw _Exceptions.objectNameContainsDelimited(Database.PostgreSQL, object, _Constant.DOUBLE_QUOTE);
         } else {
             final StringBuilder builder = new StringBuilder(2 + objectName.length());
             safeObjectName = builder.append(_Constant.DOUBLE_QUOTE)
@@ -395,11 +400,13 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
 
     @Override
-    protected final StringBuilder doSafeObjectName(final String objectName, final StringBuilder builder) {
-        if (_DialectUtils.isSafeIdentifier(objectName)) {
+    protected final StringBuilder doSafeObjectName(final DatabaseObject object, final StringBuilder builder) {
+        final String objectName;
+        objectName = object.objectName();
+        if (!this.keyWordSet.contains(objectName) && _DialectUtils.isSafeIdentifier(objectName)) {
             builder.append(objectName);
         } else if (objectName.indexOf(_Constant.DOUBLE_QUOTE) > -1) {
-            throw objectNameContainsDoubleQuotes(objectName);
+            throw _Exceptions.objectNameContainsDelimited(Database.PostgreSQL, object, _Constant.DOUBLE_QUOTE);
         } else {
             builder.append(_Constant.DOUBLE_QUOTE)
                     .append(objectName)
@@ -427,6 +434,11 @@ abstract class PostgreParser extends _ArmyDialectParser {
     @Override
     protected final Set<String> createKeyWordSet() {
         return PostgreDialectUtils.createKeywordsSet();
+    }
+
+    @Override
+    protected final char identifierDelimitedQuote() {
+        return _Constant.DOUBLE_QUOTE;
     }
 
     @Override
@@ -484,10 +496,112 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
 
-    private static CriteriaException objectNameContainsDoubleQuotes(String objectName) {
-        String m = String.format("%s table/column name[%s] couldn't contains double-quotes.",
-                Database.PostgreSQL, objectName);
-        throw new CriteriaException(m);
+    @Override
+    protected final void parseAssignmentInsert(_AssignmentInsertContext context, _Insert._AssignmentInsert insert) {
+        throw _Exceptions.dontSupportAssignmentInsert(this.dialect);
+    }
+
+    @Override
+    protected final void parseDomainChildUpdate(final _SingleUpdate stmt, final _UpdateContext context) {
+        final _SingleUpdateContext childContext = (_SingleUpdateContext) context;
+        final _SingleUpdateContext parentContext = (_SingleUpdateContext) childContext.parentContext();
+        assert parentContext != null;
+
+        final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) childContext.domainTable();
+        assert domainTable == stmt.table() && domainTable == childContext.targetTable();
+        final String safeChildTableAlias = childContext.safeTargetTableAlias();
+
+        final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) parentContext.targetTable();
+        assert domainTable.parentMeta() == parentTable;
+        final String safeParentAlias = parentContext.safeTargetTableAlias();
+        final String safeParentTableName;
+        safeParentTableName = this.safeObjectName(parentTable);
+
+        final StringBuilder sqlBuilder;
+        sqlBuilder = childContext.sqlBuilder();
+        assert parentContext.sqlBuilder() == sqlBuilder; // must assert
+
+        if (sqlBuilder.length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+
+        // append child table update cte statement
+        final String childCte = "child_cte";
+        sqlBuilder.append(_Constant.WITH)
+                .append(_Constant.SPACE)
+                .append(childCte)
+                .append(_Constant.SPACE_LEFT_PAREN)
+                .append(_MetaBridge.ID)
+                .append(_Constant.SPACE_RIGHT_PAREN)
+                .append(_Constant.SPACE_AS)
+                .append(_Constant.SPACE_LEFT_PAREN)
+                .append(_Constant.SPACE)
+                .append(_Constant.UPDATE)
+                .append(_Constant.SPACE_ONLY)
+                .append(_Constant.SPACE);
+
+        this.safeObjectName(domainTable, sqlBuilder)// child table name.
+                .append(_Constant.SPACE_AS_SPACE)
+                .append(safeChildTableAlias);
+
+        this.singleTableSetClause(((_DomainUpdate) stmt).childItemPairList(), childContext); // child SET clause
+
+        sqlBuilder.append(_Constant.SPACE_FROM_SPACE)
+                .append(safeParentTableName)
+                .append(_Constant.SPACE_AS_SPACE)
+                .append(safeParentAlias);
+
+        // child cte WHERE clause
+        this.childDomainCteWhereClause(stmt.wherePredicateList(), childContext);
+        childContext.appendConditionFields();
+        this.visiblePredicate(parentTable, safeParentAlias, childContext, false);
+
+        // RETURNING clause
+        sqlBuilder.append(_Constant.SPACE_RETURNING)
+                .append(_Constant.SPACE)
+                .append(safeChildTableAlias)
+                .append(_Constant.POINT)
+                .append(_MetaBridge.ID)
+                .append(_Constant.SPACE_AS_SPACE)
+                .append(_Constant.DOUBLE_QUOTE)
+                .append(_MetaBridge.ID)
+                .append(_Constant.DOUBLE_QUOTE)
+                .append(_Constant.SPACE_RIGHT_PAREN);
+
+        // child cte end
+
+        // below primary UPDATE statement part, parent table.
+        sqlBuilder.append(_Constant.SPACE)
+                .append(_Constant.UPDATE)
+                .append(_Constant.SPACE_ONLY)
+                .append(_Constant.SPACE);
+
+
+        sqlBuilder.append(safeParentTableName)// parent table name.
+                .append(_Constant.SPACE_AS_SPACE)
+                .append(safeParentAlias);
+
+
+        this.singleTableSetClause(stmt.itemPairList(), parentContext); // parent SET clause
+        // parent part FROM clause
+        sqlBuilder.append(_Constant.SPACE_FROM_SPACE)
+                .append(childCte);
+
+        sqlBuilder.append(_Constant.SPACE_WHERE)
+                .append(safeParentAlias)
+                .append(_Constant.POINT)
+                .append(_MetaBridge.ID)
+                .append(_Constant.SPACE_EQUAL_SPACE)
+                .append(childCte)
+                .append(_Constant.POINT)
+                .append(_MetaBridge.ID);
+
+
+    }
+
+    @Override
+    protected final void parseDomainChildDelete(final _SingleDelete delete, final _DeleteContext context) {
+        super.parseDomainChildDelete(delete, context);
     }
 
 

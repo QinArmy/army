@@ -41,9 +41,9 @@ abstract class NarrowDmlStmtContext extends StatementContext implements NarrowDm
     private boolean existsNamedValued;
 
 
-    NarrowDmlStmtContext(@Nullable StatementContext outerContext, _DmlStatement stmt
+    NarrowDmlStmtContext(@Nullable StatementContext parentOrOuterContext, _DmlStatement stmt
             , ArmyParser parser, Visible visible) {
-        super(outerContext, parser, visible);
+        super(parentOrOuterContext, parser, visible);
 
         this.versionPredicate = _DialectUtils.hasOptimistic(stmt.wherePredicateList());
 
@@ -51,7 +51,7 @@ abstract class NarrowDmlStmtContext extends StatementContext implements NarrowDm
 
         if (stmt instanceof _BatchDml) {
             this.paramList = ((_BatchDml) stmt).paramList();
-            if (outerContext instanceof _MultiStatementContext) {
+            if (parentOrOuterContext instanceof _MultiStatementContext) {
                 this.accessor = ObjectAccessorFactory.readOnlyFromInstance(this.paramList.get(0));
                 this.paramIndex = 0;
             } else {

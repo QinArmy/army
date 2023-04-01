@@ -5,9 +5,7 @@ import io.army.criteria.DataField;
 import io.army.criteria.QualifiedField;
 import io.army.criteria.TableField;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._Delete;
-import io.army.criteria.impl.inner._SingleDml;
-import io.army.criteria.impl.inner._Update;
+import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.SingleTableMeta;
@@ -40,14 +38,18 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
     final String safeTargetTableName;
 
 
+    /**
+     * <p>
+     * For {@link SingleTableMeta}
+     * </p>
+     */
     SingleTableDmlContext(@Nullable StatementContext outerContext, _SingleDml stmt, ArmyParser parser,
                           Visible visible) {
         super(outerContext, stmt, parser, visible);
 
         this.domainTable = stmt.table();
-
-        if (parser.childUpdateMode != _ChildUpdateMode.CTE
-                && this.domainTable instanceof ChildTableMeta) {
+        if (this.domainTable instanceof ChildTableMeta
+                && (stmt instanceof _DomainUpdate || stmt instanceof _DomainDelete)) {
             this.targetTable = ((ChildTableMeta<?>) this.domainTable).parentMeta();
             this.tableAlias = _DialectUtils.parentAlias(stmt.tableAlias());
         } else {
@@ -65,8 +67,16 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
 
     }
 
+
+    /**
+     * <p>
+     * For {@link  ChildTableMeta}
+     * </p>
+     *
+     * @see #decideParentContext(SingleTableDmlContext)
+     */
     SingleTableDmlContext(_SingleDml stmt, SingleTableDmlContext parentContext) {
-        super(null, stmt, parentContext.parser, parentContext.visible);
+        super(decideParentContext(parentContext), stmt, parentContext.parser, parentContext.visible);
 
         this.domainTable = stmt.table();
         this.targetTable = this.domainTable;
@@ -96,12 +106,12 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
     }
 
     @Override
-    public final String tableAlias() {
+    public final String targetTableAlias() {
         return this.tableAlias;
     }
 
     @Override
-    public final String safeTableAlias() {
+    public final String safeTargetTableAlias() {
         return this.safeTableAlias;
     }
 
@@ -129,19 +139,21 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
 
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
-        if (this.safeTargetTableName == null) {
-            sqlBuilder.append(this.safeTableAlias);
-        } else {
-            sqlBuilder.append(this.safeTargetTableName);
+        if (this.parser.setClauseTableAlias) {
+            if (this.safeTargetTableName == null) {
+                sqlBuilder.append(this.safeTableAlias);
+            } else {
+                sqlBuilder.append(this.safeTargetTableName);
+            }
+            sqlBuilder.append(_Constant.POINT);
         }
-        sqlBuilder.append(_Constant.POINT);
         this.parser.safeObjectName(field, sqlBuilder);
 
         switch (updateMode) {
             case ONLY_NULL:
             case ONLY_DEFAULT: {
-                if (updateMode == UpdateMode.ONLY_DEFAULT && !this.parser.isSupportOnlyDefault()) {
-                    throw _Exceptions.dontSupportOnlyDefault(this.parser.dialect());
+                if (updateMode == UpdateMode.ONLY_DEFAULT && !this.parser.supportOnlyDefault) {
+                    throw _Exceptions.dontSupportOnlyDefault(this.parser.dialect);
                 }
                 this.onAddConditionField(field);
             }
@@ -153,6 +165,18 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
 
     void onAddConditionField(TableField field) {
         throw new UnsupportedOperationException();
+    }
+
+
+    @Nullable
+    private static SingleTableDmlContext decideParentContext(final SingleTableDmlContext parentContext) {
+        final SingleTableDmlContext actual;
+        if (parentContext.parser.childUpdateMode == _ChildUpdateMode.CTE) {
+            actual = parentContext; //same StringBuilder instance
+        } else {
+            actual = null;
+        }
+        return actual;
     }
 
 

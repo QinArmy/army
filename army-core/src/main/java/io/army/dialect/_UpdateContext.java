@@ -1,6 +1,8 @@
 package io.army.dialect;
 
 
+import io.army.lang.Nullable;
+
 /**
  * <p>
  * This interface is base interface of below:
@@ -10,10 +12,10 @@ package io.army.dialect;
  *     </ul>
  * </p>
  */
-public interface _UpdateContext extends _SqlContext, NarrowDmlContext, _DmlContext.ConditionFieldsSpec
-        , _SetClauseContext {
+public interface _UpdateContext extends _SqlContext, NarrowDmlContext, _DmlContext.ConditionFieldsSpec,
+        _SetClauseContext {
 
-
+    @Nullable
     @Override
     _UpdateContext parentContext();
 

@@ -3,6 +3,7 @@ package io.army.dialect;
 
 import io.army.codec.JsonCodec;
 import io.army.dialect.mysql.MySQLDialect;
+import io.army.dialect.postgre.PostgreDialect;
 import io.army.env.ArmyEnvironment;
 import io.army.env.StandardEnvironment;
 import io.army.generator.FieldGenerator;
@@ -91,8 +92,10 @@ public abstract class _MockDialects implements DialectEnv {
             case MySQL:
                 meta = createMySQLServerMeta((MySQLDialect) dialect);
                 break;
-            case Oracle:
             case PostgreSQL:
+                meta = createPostgreServerMeta((PostgreDialect) dialect);
+                break;
+            case Oracle:
             default:
                 throw _Exceptions.unexpectedEnum(dialect.database());
         }
@@ -133,6 +136,47 @@ public abstract class _MockDialects implements DialectEnv {
             default:
                 throw _Exceptions.unexpectedEnum(dialect);
         }
+        return builder.build();
+    }
+
+    private static ServerMeta createPostgreServerMeta(final PostgreDialect dialect) {
+        final ServerMeta.Builder builder;
+        builder = ServerMeta.builder()
+                .name("PostgreSQL")
+                .database(Database.PostgreSQL)
+                .usedDialect(dialect)
+                .supportSavePoint(true);
+
+        switch (dialect) {
+            case POSTGRE11:
+                builder.version("11.1.20")
+                        .major(11)
+                        .minor(1);
+                break;
+            case POSTGRE12:
+                builder.version("12.5.13")
+                        .major(12)
+                        .minor(5);
+                break;
+            case POSTGRE13:
+                builder.version("13.6.36")
+                        .major(13)
+                        .minor(6);
+                break;
+            case POSTGRE14:
+                builder.version("14.7.36")
+                        .major(14)
+                        .minor(7);
+                break;
+            case POSTGRE15:
+                builder.version("15.0.0")
+                        .major(15)
+                        .minor(0);
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(dialect);
+        }
+
         return builder.build();
     }
 

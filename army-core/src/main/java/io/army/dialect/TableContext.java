@@ -55,7 +55,7 @@ final class TableContext {
         return new TableContext(aliasToTable, tableToSafeAlias, null);
     }
 
-    static TableContext forUpdate(final _MultiUpdate stmt, final ArmyParser dialect, final Visible visible) {
+    static TableContext forUpdate(final _JoinableUpdate stmt, final ArmyParser dialect, final Visible visible) {
 
         Map<ChildTableMeta<?>, Boolean> childMap = null;
         for (_ItemPair pair : stmt.itemPairList()) {
@@ -116,7 +116,7 @@ final class TableContext {
 
 
     /**
-     * @see #forUpdate(_MultiUpdate, ArmyParser, Visible)
+     * @see #forUpdate(_JoinableUpdate, ArmyParser, Visible)
      */
     @Nullable
     private static Map<ChildTableMeta<?>, Boolean> handleUpdateField(final DataField dataField

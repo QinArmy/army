@@ -153,7 +153,7 @@ public abstract class _DialectUtils {
         if (conditionFieldList == null || conditionFieldList.size() == 0) {
             return;
         }
-        final String safeTableAlias = context.safeTableAlias();
+        final String safeTableAlias = context.safeTargetTableAlias();
         final ArmyParser dialect = (ArmyParser) context.parser();
         final StringBuilder sqlBuilder = context.sqlBuilder();
 

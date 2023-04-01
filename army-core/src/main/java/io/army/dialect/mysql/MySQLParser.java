@@ -10,6 +10,7 @@ import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.meta.ChildTableMeta;
+import io.army.meta.DatabaseObject;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
@@ -67,23 +68,6 @@ abstract class MySQLParser extends _ArmyDialectParser {
         return stmtList;
     }
 
-    @Override
-    protected final String doSafeObjectName(final String objectName) {
-        return this.doSafeObjectName(objectName, new StringBuilder())
-                .toString();
-    }
-
-    @Override
-    protected final StringBuilder doSafeObjectName(final String objectName, final StringBuilder builder) {
-        if (this.keyWordSet.contains(objectName)) {
-            builder.append(IDENTIFIER_QUOTE)
-                    .append(objectName)
-                    .append(IDENTIFIER_QUOTE);
-        } else {
-            builder.append(objectName);
-        }
-        return builder;
-    }
 
     @Override
     public final String identifier(final String identifier) {
@@ -91,7 +75,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
         if (!this.keyWordSet.contains(identifier) && _DialectUtils.isSafeIdentifier(identifier)) {
             safeIdentifier = identifier;
         } else if (identifier.indexOf(IDENTIFIER_QUOTE) > -1) {
-
+            throw _Exceptions.identifierContainsDelimited(Database.MySQL, identifier, IDENTIFIER_QUOTE);
         } else {
             final StringBuilder builder = new StringBuilder(identifier.length() + 2);
             safeIdentifier = builder.append(IDENTIFIER_QUOTE)
@@ -104,12 +88,49 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     @Override
     public final StringBuilder identifier(final String identifier, final StringBuilder builder) {
-        if (!this.identifierCaseSensitivity || this.keyWordSet.contains(identifier)) {
-            builder.append(this.identifierQuote)
-                    .append(identifier)
-                    .append(this.identifierQuote);
-        } else {
+        if (!this.keyWordSet.contains(identifier) && _DialectUtils.isSafeIdentifier(identifier)) {
             builder.append(identifier);
+        } else if (identifier.indexOf(IDENTIFIER_QUOTE) > -1) {
+            throw _Exceptions.identifierContainsDelimited(Database.MySQL, identifier, IDENTIFIER_QUOTE);
+        } else {
+            builder.append(IDENTIFIER_QUOTE)
+                    .append(identifier)
+                    .append(IDENTIFIER_QUOTE);
+        }
+        return builder;
+    }
+
+
+    @Override
+    protected final String doSafeObjectName(final DatabaseObject object) {
+        final String objectName, safeObjectName;
+        objectName = object.objectName();
+        if (!this.keyWordSet.contains(objectName) && _DialectUtils.isSafeIdentifier(objectName)) {
+            safeObjectName = objectName;
+        } else if (objectName.indexOf(IDENTIFIER_QUOTE) > -1) {
+            throw _Exceptions.objectNameContainsDelimited(Database.MySQL, object, IDENTIFIER_QUOTE);
+        } else {
+            final StringBuilder builder = new StringBuilder(objectName.length() + 2);
+            safeObjectName = builder.append(IDENTIFIER_QUOTE)
+                    .append(objectName)
+                    .append(IDENTIFIER_QUOTE)
+                    .toString();
+        }
+        return safeObjectName;
+    }
+
+    @Override
+    protected final StringBuilder doSafeObjectName(final DatabaseObject object, final StringBuilder builder) {
+        final String objectName;
+        objectName = object.objectName();
+        if (!this.keyWordSet.contains(objectName) && _DialectUtils.isSafeIdentifier(objectName)) {
+            builder.append(objectName);
+        } else if (objectName.indexOf(IDENTIFIER_QUOTE) > -1) {
+            throw _Exceptions.objectNameContainsDelimited(Database.MySQL, object, IDENTIFIER_QUOTE);
+        } else {
+            builder.append(IDENTIFIER_QUOTE)
+                    .append(objectName)
+                    .append(IDENTIFIER_QUOTE);
         }
         return builder;
     }
@@ -123,9 +144,9 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     @Override
     protected final boolean isNeedConvert(final SqlType type, final Object nonNull) {
-        return type == MySQLTypes.DATETIME
+        return !(type == MySQLTypes.DATETIME
                 && this.asOf80
-                && (nonNull instanceof OffsetDateTime || nonNull instanceof ZonedDateTime);
+                && (nonNull instanceof OffsetDateTime || nonNull instanceof ZonedDateTime));
     }
 
 
@@ -306,7 +327,11 @@ abstract class MySQLParser extends _ArmyDialectParser {
         final _MultiUpdateContext context = (_MultiUpdateContext) ctx;
 
         // 1. UPDATE clause
-        context.sqlBuilder().append(_Constant.UPDATE);
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        if (sqlBuilder.length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+        sqlBuilder.append(_Constant.UPDATE);
 
         //2. child join parent
         this.appendChildJoinParent(context, (ChildTableMeta<?>) update.table());
@@ -376,10 +401,6 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     /*################################## blow properties template method ##################################*/
 
-    @Override
-    protected final char identifierQuote() {
-        return IDENTIFIER_QUOTE;
-    }
 
     @Override
     protected final boolean isSupportTableOnly() {
@@ -400,12 +421,6 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
 
     @Override
-    protected final boolean isIdentifierCaseSensitivity() {
-        //MySQL Identifier Case Sensitivity
-        return true;
-    }
-
-    @Override
     protected final Set<String> createKeyWordSet() {
         final Set<String> keyWordSet;
         switch ((MySQLDialect) dialect) {
@@ -421,6 +436,11 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 throw _Exceptions.unexpectedEnum((Enum<?>) dialect);
         }
         return keyWordSet;
+    }
+
+    @Override
+    protected final char identifierDelimitedQuote() {
+        return IDENTIFIER_QUOTE;
     }
 
     @Override
