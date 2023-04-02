@@ -1,20 +1,13 @@
 package io.army.criteria.postgre;
 
-import io.army.annotation.GeneratorType;
-import io.army.criteria.InsertStatement;
-import io.army.criteria.Visible;
+import io.army.criteria.Insert;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.inner._Insert;
-import io.army.dialect.DialectParser;
-import io.army.dialect._MockDialects;
-import io.army.dialect.postgre.PostgreDialect;
+import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.BankPerson;
 import io.army.example.bank.domain.user.BankPerson_;
 import io.army.example.bank.domain.user.BankUser_;
-import io.army.stmt.GeneratedKeyStmt;
-import io.army.stmt.PairStmt;
-import io.army.stmt.Stmt;
+import io.army.example.bank.domain.user.ChinaRegion_;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -26,6 +19,27 @@ import java.util.List;
 public class PostgreInsertUnitTests extends PostgreUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(PostgreInsertUnitTests.class);
+
+
+    @Test
+    public void domainInsertParent() {
+        final Insert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T).as("cr")
+                .overridingSystemValue()
+                .values(this::createReginList)
+                .onConflict()
+                .leftParen(ChinaRegion_.parentId).collation("de_DE").space("int8_bloom_ops")
+                .comma(ChinaRegion_.createTime).space("timestamp_ops")
+                .rightParen()
+                .where(ChinaRegion_.parentId.less(SQLs::literal, 1))
+                .doNothing()
+                .asInsert();
+
+
+        printStmt(LOG, stmt);
+
+    }
 
 
     @Test
@@ -51,7 +65,6 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
     }
 
 
-
     private List<BankPerson> createBankPersonList() {
         final List<BankPerson> list = new ArrayList<>();
         BankPerson u;
@@ -71,30 +84,6 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
 
         }
         return list;
-    }
-
-
-    private static void printStmt(final InsertStatement insert) {
-        DialectParser parser;
-        Stmt stmt;
-        String sql;
-        _Insert parentStmt;
-        for (PostgreDialect dialect : PostgreDialect.values()) {
-            parser = _MockDialects.from(dialect);
-            stmt = parser.insert(insert, Visible.ONLY_VISIBLE);
-            sql = parser.printStmt(stmt, true);
-            LOG.debug("{}:\n{}", dialect.name(), sql);
-
-
-            if (insert instanceof _Insert._ChildInsert && !(insert instanceof _Insert._QueryInsert)) {
-                assert stmt instanceof PairStmt;
-                parentStmt = ((_Insert._ChildInsert) insert).parentStmt();
-                assert parentStmt.table().id().generatorType() != GeneratorType.POST
-                        || ((PairStmt) stmt).firstStmt() instanceof GeneratedKeyStmt;
-            }
-        }
-
-
     }
 
 

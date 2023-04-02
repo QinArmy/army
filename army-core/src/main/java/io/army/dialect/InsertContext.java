@@ -5,6 +5,8 @@ import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._ReturningDml;
+import io.army.criteria.impl.inner._Selection;
 import io.army.lang.Nullable;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
@@ -57,6 +59,10 @@ abstract class InsertContext extends StatementContext implements _InsertContext
      */
     final String idSelectionAlias;
 
+    final List<? extends Selection> returningList;
+
+    private final boolean appendReturningClause;
+
     private boolean columnListClauseEnd;
 
     private boolean valuesClauseEnd;
@@ -96,8 +102,8 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         }
 
 
-        if (targetStmt instanceof _Insert._ConflictActionClauseSpec) {
-            final _Insert._ConflictActionClauseSpec spec = (_Insert._ConflictActionClauseSpec) targetStmt;
+        if (targetStmt instanceof _Insert._SupportConflictClauseSpec) {
+            final _Insert._SupportConflictClauseSpec spec = (_Insert._SupportConflictClauseSpec) targetStmt;
             this.conflictClause = spec.hasConflictAction();
             this.rowAlias = parser.supportRowAlias ? spec.rowAlias() : null;
             this.safeRowAlias = this.rowAlias == null ? null : this.parser.identifier(this.rowAlias);
@@ -126,22 +132,41 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         }
 
         final PrimaryFieldMeta<?> idField = this.insertTable.id();
-        if (this.migration || idField.generatorType() != GeneratorType.POST) {
+        if (targetStmt instanceof _ReturningDml) {
+            this.returningList = ((_ReturningDml) targetStmt).returningList();
+            if (this.migration || idField.generatorType() != GeneratorType.POST) {
+                this.returnId = null;
+                this.idSelectionAlias = null;
+            } else {
+                this.returnId = idField;
+                this.idSelectionAlias = returnIdSelection(parser, idField, (_ReturningDml) targetStmt)
+                        .selectionName();
+            }
+            this.appendReturningClause = false;
+        } else if (this.migration || idField.generatorType() != GeneratorType.POST) {
+            this.returningList = Collections.emptyList();
             this.returnId = null;
             this.idSelectionAlias = null;
+            this.appendReturningClause = false;
         } else if (this.parser.childUpdateMode == _ChildUpdateMode.CTE) {
-            //TODO
-            throw new UnsupportedOperationException();
+            this.returnId = idField;
+            this.idSelectionAlias = idField.fieldName();
+            this.returningList = Collections.singletonList(idField);
+            this.appendReturningClause = true;
         } else if (this.conflictClause) {
             if (targetStmt != domainStmt) {
                 //the implementations of io.army.criteria.Insert no bug,never here
                 throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) domainStmt.table());
             }
+            this.returningList = Collections.emptyList();
             this.returnId = null;
             this.idSelectionAlias = null;
+            this.appendReturningClause = false;
         } else {
+            this.returningList = Collections.emptyList();
             this.returnId = idField;
             this.idSelectionAlias = idField.fieldName();
+            this.appendReturningClause = false;
         }
 
     }
@@ -171,8 +196,8 @@ abstract class InsertContext extends StatementContext implements _InsertContext
                 && this.literalMode == parentContext.literalMode
                 && ((ChildTableMeta<?>) this.insertTable).parentMeta() == parentContext.insertTable;
 
-        if (stmt instanceof _Insert._ConflictActionClauseSpec) {
-            final _Insert._ConflictActionClauseSpec spec = (_Insert._ConflictActionClauseSpec) stmt;
+        if (stmt instanceof _Insert._SupportConflictClauseSpec) {
+            final _Insert._SupportConflictClauseSpec spec = (_Insert._SupportConflictClauseSpec) stmt;
             this.conflictClause = spec.hasConflictAction();
             this.rowAlias = this.parser.supportRowAlias ? spec.rowAlias() : null;
             this.safeRowAlias = this.rowAlias == null ? null : this.parser.identifier(this.rowAlias);
@@ -198,9 +223,14 @@ abstract class InsertContext extends StatementContext implements _InsertContext
             this.fieldList = castFieldList(this.insertTable);
         }
 
+        if (stmt instanceof _ReturningDml) {
+            this.returningList = ((_ReturningDml) stmt).returningList();
+        } else {
+            this.returningList = Collections.emptyList();
+        }
         this.returnId = null;
         this.idSelectionAlias = null;
-
+        this.appendReturningClause = false;
     }
 
     @Override
@@ -397,17 +427,19 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
     @Override
     public final void appendReturnIdIfNeed() {
+        assert this.parser.childUpdateMode == _ChildUpdateMode.CTE;
+
         final PrimaryFieldMeta<?> returnId = this.returnId;
-        if (returnId == null) {
+        if (returnId == null || !this.appendReturningClause) {
             return;
         }
+        assert this.returningList.size() == 1 && this.returningList.get(0) == returnId;
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_RETURNING)
                 .append(_Constant.SPACE);
 
         final ArmyParser dialect = this.parser;
-        //TODO for dialect table alias
         dialect.safeObjectName(returnId, sqlBuilder)
                 .append(_Constant.SPACE_AS_SPACE);
 
@@ -416,9 +448,8 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
 
     @Override
-    public List<? extends Selection> selectionList() {
-        //TODO optimize for postgre
-        return Collections.emptyList();
+    public final List<? extends Selection> selectionList() {
+        return this.returningList;
     }
 
     @Override
@@ -562,6 +593,39 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         }
         return fieldList;
 
+    }
+
+    private static Selection returnIdSelection(final DialectParser parser, final PrimaryFieldMeta<?> idField,
+                                               final _ReturningDml stmt) {
+
+        if (stmt instanceof SubStatement) {
+            // no bug,never here
+            throw new CriteriaException("CTE must have RETURNING clause.");
+        }
+
+        final List<? extends _Selection> selectionList;
+        selectionList = stmt.returningList();
+        final int selectionSize;
+        selectionSize = selectionList.size();
+
+        assert selectionSize > 0;
+
+        Selection selection = null;
+        for (int i = 0; i < selectionSize; i++) {
+            selection = selectionList.get(i);
+            if (selection == idField) {
+                break;
+            } else if (selection instanceof QualifiedField && ((QualifiedField<?>) selection).fieldMeta() == idField) {
+                break;
+            }
+            selection = null;
+        }
+        if (selection == null) {
+            String m = String.format("%s RETURNING clause must contain %s,because it's %s is %s.",
+                    parser.dialect().database(), idField, GeneratorType.class.getName(), GeneratorType.POST);
+            throw new CriteriaException(m);
+        }
+        return selection;
     }
 
 }

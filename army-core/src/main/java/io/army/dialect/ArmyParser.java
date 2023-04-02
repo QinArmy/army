@@ -272,6 +272,10 @@ abstract class ArmyParser implements DialectParser {
         return beautify ? stmt.printSql(this::beautifySql) : stmt.printSql(ArmyParser::nonBeautifySql);
     }
 
+    @Override
+    public final boolean isKeyWords(final String words) {
+        return this.keyWordSet.contains(words.toUpperCase(Locale.ROOT));
+    }
 
     @Override
     public final String toString() {

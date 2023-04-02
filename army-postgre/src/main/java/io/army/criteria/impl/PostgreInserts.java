@@ -10,9 +10,8 @@ import io.army.criteria.impl.inner.postgre._PostgreInsert;
 import io.army.criteria.postgre.PostgreCtes;
 import io.army.criteria.postgre.PostgreInsert;
 import io.army.criteria.postgre.PostgreQuery;
-import io.army.dialect.Dialect;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
+import io.army.criteria.standard.SQLFunction;
+import io.army.dialect.*;
 import io.army.dialect.postgre.PostgreDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -481,32 +480,44 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final OnConflictClause<T, I, Q> clause;
 
-        private final IndexFieldMeta<T> indexColumn;
+        private final ArmyExpression indexExpression;
 
         private String collationName;
 
-        private Boolean opclass;
+        private String operatorClass;
 
-        private ConflictTargetItem(OnConflictClause<T, I, Q> clause, IndexFieldMeta<T> indexColumn) {
+        private ConflictTargetItem(OnConflictClause<T, I, Q> clause, ArmyExpression indexExpression) {
             this.clause = clause;
-            this.indexColumn = indexColumn;
+            this.indexExpression = indexExpression;
         }
 
         @Override
         public void appendSql(final _SqlContext context) {
-            context.appendField(this.indexColumn);
-
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder();
 
+            if (this.indexExpression instanceof FieldMeta || this.indexExpression instanceof SQLFunction) {
+                this.indexExpression.appendSql(context);
+            } else {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+                this.indexExpression.appendSql(context);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+
+            final DialectParser parser = context.parser();
             final String collationName = this.collationName;
             if (collationName != null) {
                 sqlBuilder.append(" COLLATE ");
-                context.parser().identifier(collationName, sqlBuilder);
+                parser.identifier(collationName, sqlBuilder);
             }
-            final Boolean opclass = this.opclass;
-            if (opclass != null && opclass) {
-                sqlBuilder.append(" opclass");
+            final String operatorClass = this.operatorClass;
+            if (operatorClass != null) {
+                if (parser.isKeyWords(operatorClass)
+                        || !_DialectUtils.isSafeIdentifier(operatorClass)) {  // must validate operatorClass
+                    throw nonSafeOperatorClassName(operatorClass);
+                }
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(operatorClass);
             }
         }
 
@@ -514,7 +525,7 @@ abstract class PostgreInserts extends InsertSupports {
         public PostgreInsert._ConflictOpClassSpec<T, I, Q> collation(final @Nullable String collationName) {
             if (collationName == null) {
                 throw ContextStack.nullPointer(this.clause.valuesClause.context);
-            } else if (this.collationName != null || this.opclass != null) {
+            } else if (this.collationName != null || this.operatorClass != null) {
                 throw ContextStack.castCriteriaApi(this.clause.valuesClause.context);
             }
             this.collationName = collationName;
@@ -531,49 +542,60 @@ abstract class PostgreInserts extends InsertSupports {
             final String collation;
             collation = supplier.get();
             if (collation != null) {
-                this.collation(collationName);
+                this.collation(collation);
             }
             return this;
         }
 
         @Override
-        public PostgreInsert._ConflictTargetCommaSpec<T, I, Q> opClass() {
-            if (this.opclass != null) {
+        public PostgreInsert._ConflictTargetCommaSpec<T, I, Q> space(final @Nullable String operatorClass) {
+            if (this.operatorClass != null) {
                 throw ContextStack.castCriteriaApi(this.clause.valuesClause.context);
+            } else if (operatorClass == null) {
+                throw ContextStack.nullPointer(this.clause.valuesClause.context);
+            } else if (!_DialectUtils.isSafeIdentifier(operatorClass)) {
+                throw nonSafeOperatorClassName(operatorClass);
             }
-            this.opclass = Boolean.TRUE;
+            this.operatorClass = operatorClass;
             return this;
         }
 
         @Override
-        public PostgreInsert._ConflictTargetCommaSpec<T, I, Q> ifOpClass(BooleanSupplier supplier) {
-            if (this.opclass != null) {
+        public PostgreInsert._ConflictTargetCommaSpec<T, I, Q> ifSpace(Supplier<String> supplier) {
+            if (this.operatorClass != null) {
                 throw ContextStack.castCriteriaApi(this.clause.valuesClause.context);
             }
-            if (supplier.getAsBoolean()) {
-                this.opclass = Boolean.TRUE;
-            } else {
-                this.opclass = Boolean.FALSE;
+            final String operatorClass;
+            operatorClass = supplier.get();
+            if (operatorClass != null) {
+                if (!_DialectUtils.isSafeIdentifier(operatorClass)) {
+                    throw nonSafeOperatorClassName(operatorClass);
+                }
+                this.operatorClass = operatorClass;
             }
             return this;
         }
+
 
         @Override
         public PostgreInsert._ConflictCollateSpec<T, I, Q> comma(IndexFieldMeta<T> indexColumn) {
-            if (this.opclass == null) {
-                this.opclass = Boolean.FALSE;
-            }
             return this.clause.leftParen(indexColumn); // create and add
         }
 
         @Override
+        public PostgreInsert._ConflictCollateSpec<T, I, Q> comma(Expression indexExpression) {
+            return this.clause.leftParen(indexExpression); // create and add
+        }
+
+        @Override
         public PostgreInsert._ConflictTargetWhereSpec<T, I, Q> rightParen() {
-            if (this.opclass == null) {
-                this.opclass = Boolean.FALSE;
-            }
             return this.clause.targetItemClauseEnd();
         }
 
+        private CriteriaException nonSafeOperatorClassName(String operatorClassName) {
+            String m = String.format("operatorClass[%s] is illegal.", operatorClassName);
+            return ContextStack.criteriaError(this.clause.context, m);
+        }
 
     }//ConflictTargetItem
 
@@ -702,18 +724,15 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public PostgreInsert._ConflictCollateSpec<T, I, Q> leftParen(IndexFieldMeta<T> indexColumn) {
-            List<_ConflictTargetItem> targetItemList = this.targetItemList;
-            if (targetItemList == null) {
-                targetItemList = new ArrayList<>();
-                this.targetItemList = targetItemList;
-            } else if (!(targetItemList instanceof ArrayList)) {
-                throw ContextStack.castCriteriaApi(this.valuesClause.context);
-            }
-            final ConflictTargetItem<T, I, Q> item = new ConflictTargetItem<>(this, indexColumn);
-            targetItemList.add(item);
-            return item;
+        public PostgreInsert._ConflictCollateSpec<T, I, Q> leftParen(final IndexFieldMeta<T> indexColumn) {
+            return this.addIndexExpression(indexColumn);
         }
+
+        @Override
+        public PostgreInsert._ConflictCollateSpec<T, I, Q> leftParen(final Expression indexExpression) {
+            return this.addIndexExpression(indexExpression);
+        }
+
 
         @Override
         public PostgreInsert._ConflictActionClause<T, I, Q> onConstraint(final @Nullable String constraintName) {
@@ -753,6 +772,26 @@ abstract class PostgreInserts extends InsertSupports {
                 , List<_Predicate> predicateList) {
             return this.valuesClause
                     .conflictClauseEnd(new ConflictActionClauseResult(this, itemPairList, predicateList));
+        }
+
+        private PostgreInsert._ConflictCollateSpec<T, I, Q> addIndexExpression(final Expression indexExpression) {
+            if (!(indexExpression instanceof ArmyExpression)) {
+                throw ContextStack.nonArmyExp(this.context);
+            } else if (indexExpression instanceof FieldMeta
+                    && ((FieldMeta<?>) indexExpression).tableMeta() != this.valuesClause.insertTable) {
+                String m = String.format("%s isn't field of %s.", indexExpression, this.valuesClause.insertTable);
+                throw ContextStack.criteriaError(this.context, m);
+            }
+            List<_ConflictTargetItem> targetItemList = this.targetItemList;
+            if (targetItemList == null) {
+                targetItemList = new ArrayList<>();
+                this.targetItemList = targetItemList;
+            } else if (!(targetItemList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.valuesClause.context);
+            }
+            final ConflictTargetItem<T, I, Q> item = new ConflictTargetItem<>(this, (ArmyExpression) indexExpression);
+            targetItemList.add(item);
+            return item;
         }
 
 
@@ -1311,11 +1350,6 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public final String tableAlias() {
-            return this.tableAlias;
-        }
-
-        @Override
         public final List<? extends _Selection> returningList() {
             if (!(this instanceof _ReturningDml)) {
                 throw new UnsupportedOperationException();
@@ -1326,6 +1360,11 @@ abstract class PostgreInserts extends InsertSupports {
         @Override
         public final boolean hasConflictAction() {
             return this.conflictAction != null;
+        }
+
+        @Override
+        public final String rowAlias() {
+            return this.tableAlias;
         }
 
         @Override
@@ -1815,10 +1854,6 @@ abstract class PostgreInserts extends InsertSupports {
             return this.cteList;
         }
 
-        @Override
-        public final String tableAlias() {
-            return this.tableAlias;
-        }
 
         @Override
         public final SQLWords overridingValueWords() {
@@ -1828,6 +1863,11 @@ abstract class PostgreInserts extends InsertSupports {
         @Override
         public final boolean hasConflictAction() {
             return this.conflictAction != null;
+        }
+
+        @Override
+        public final String rowAlias() {
+            return this.tableAlias;
         }
 
         @Override

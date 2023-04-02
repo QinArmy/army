@@ -46,8 +46,6 @@ public interface DialectParser {
     }
 
 
-
-
     List<String> startTransaction(Isolation isolation, boolean readonly);
 
 
@@ -56,9 +54,10 @@ public interface DialectParser {
     }
 
 
+    boolean isKeyWords(String words);
 
     default StringBuilder identifier(String identifier, StringBuilder builder) {
-       throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
 

@@ -25,10 +25,7 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 abstract class MySQLParser extends _ArmyDialectParser {
 
@@ -72,7 +69,8 @@ abstract class MySQLParser extends _ArmyDialectParser {
     @Override
     public final String identifier(final String identifier) {
         final String safeIdentifier;
-        if (!this.keyWordSet.contains(identifier) && _DialectUtils.isSafeIdentifier(identifier)) {
+        if (!this.keyWordSet.contains(identifier.toUpperCase(Locale.ROOT))
+                && _DialectUtils.isSafeIdentifier(identifier)) {
             safeIdentifier = identifier;
         } else if (identifier.indexOf(IDENTIFIER_QUOTE) > -1) {
             throw _Exceptions.identifierContainsDelimited(Database.MySQL, identifier, IDENTIFIER_QUOTE);
@@ -88,7 +86,8 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     @Override
     public final StringBuilder identifier(final String identifier, final StringBuilder builder) {
-        if (!this.keyWordSet.contains(identifier) && _DialectUtils.isSafeIdentifier(identifier)) {
+        if (!this.keyWordSet.contains(identifier.toUpperCase(Locale.ROOT))
+                && _DialectUtils.isSafeIdentifier(identifier)) {
             builder.append(identifier);
         } else if (identifier.indexOf(IDENTIFIER_QUOTE) > -1) {
             throw _Exceptions.identifierContainsDelimited(Database.MySQL, identifier, IDENTIFIER_QUOTE);
@@ -105,7 +104,8 @@ abstract class MySQLParser extends _ArmyDialectParser {
     protected final String doSafeObjectName(final DatabaseObject object) {
         final String objectName, safeObjectName;
         objectName = object.objectName();
-        if (!this.keyWordSet.contains(objectName) && _DialectUtils.isSafeIdentifier(objectName)) {
+        if (!this.keyWordSet.contains(objectName.toUpperCase(Locale.ROOT))
+                && _DialectUtils.isSafeIdentifier(objectName)) {
             safeObjectName = objectName;
         } else if (objectName.indexOf(IDENTIFIER_QUOTE) > -1) {
             throw _Exceptions.objectNameContainsDelimited(Database.MySQL, object, IDENTIFIER_QUOTE);
@@ -123,7 +123,8 @@ abstract class MySQLParser extends _ArmyDialectParser {
     protected final StringBuilder doSafeObjectName(final DatabaseObject object, final StringBuilder builder) {
         final String objectName;
         objectName = object.objectName();
-        if (!this.keyWordSet.contains(objectName) && _DialectUtils.isSafeIdentifier(objectName)) {
+        if (!this.keyWordSet.contains(objectName.toUpperCase(Locale.ROOT))
+                && _DialectUtils.isSafeIdentifier(objectName)) {
             builder.append(objectName);
         } else if (objectName.indexOf(IDENTIFIER_QUOTE) > -1) {
             throw _Exceptions.objectNameContainsDelimited(Database.MySQL, object, IDENTIFIER_QUOTE);
@@ -480,7 +481,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
     @Override
     protected final boolean isSupportSingleDeleteAlias() {
         //as of 8.0 MySQL support single delete alias
-        return dialect.version() >= MySQLDialect.MySQL80.version();
+        return this.asOf80;
     }
 
     @Override

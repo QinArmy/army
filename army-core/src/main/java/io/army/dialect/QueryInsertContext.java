@@ -1,6 +1,5 @@
 package io.army.dialect;
 
-import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Insert;
@@ -35,7 +34,7 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
 
     private final SubQuery subQuery;
 
-    private final int selectionSize;
+    private final int subQuerySelectionSize;
 
     /**
      * <p>
@@ -60,8 +59,8 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
             }
         }
         this.subQuery = targetStmt.subQuery();
-        this.selectionSize = ((_RowSet) this.subQuery).selectionSize();
-        assert this.fieldList.size() == this.selectionSize;
+        this.subQuerySelectionSize = ((_RowSet) this.subQuery).selectionSize();
+        assert this.fieldList.size() == this.subQuerySelectionSize;
 
     }
 
@@ -83,30 +82,30 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
                 && this.fieldList != parentContext.fieldList
                 && this.subQuery != parentContext.subQuery;
 
-        this.selectionSize = ((_RowSet) this.subQuery).selectionSize();
-        assert this.fieldList.size() == this.selectionSize;
+        this.subQuerySelectionSize = ((_RowSet) this.subQuery).selectionSize();
+        assert this.fieldList.size() == this.subQuerySelectionSize;
     }
 
 
     @Override
     int doAppendSubQuery(final int outputColumnSize, final List<FieldMeta<?>> fieldList) {
 
-        assert outputColumnSize == this.selectionSize;
+        assert outputColumnSize == this.subQuerySelectionSize;
         this.parser.handleSubQuery(this.subQuery, this);
-        return this.selectionSize;
+        return this.subQuerySelectionSize;
     }
 
 
-    @Override
-    public List<? extends Selection> selectionList() {
-        //TODO ,postgre
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public SimpleStmt build() {
-        //TODO postgre
-        return Stmts.minSimple(this);
+        final SimpleStmt stmt;
+        if (this.returningList.size() == 0) {
+            stmt = Stmts.minSimple(this);
+        } else {
+            stmt = Stmts.queryStmt(this);
+        }
+        return stmt;
     }
 
 

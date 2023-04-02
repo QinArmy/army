@@ -13,9 +13,6 @@ public interface _PostgreInsert extends _Insert, _Insert._SupportConflictClauseS
 
 
     @Nullable
-    String tableAlias();
-
-    @Nullable
     SQLWords overridingValueWords();
 
 

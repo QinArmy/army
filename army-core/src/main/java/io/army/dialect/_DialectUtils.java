@@ -54,6 +54,7 @@ public abstract class _DialectUtils {
     public static boolean isSafeIdentifier(final String objectName) {
         final int length = objectName.length();
         char ch;
+        // empty string isn't safe identifier
         boolean match = true;
         for (int i = 0; i < length; i++) {
             ch = objectName.charAt(i);

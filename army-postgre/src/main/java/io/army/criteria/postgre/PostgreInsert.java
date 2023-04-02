@@ -79,6 +79,7 @@ public interface PostgreInsert extends PostgreStatement {
 
     }
 
+
     interface _ConflictTargetWhereAndSpec<T, I extends Item, Q extends Item>
             extends Statement._WhereAndClause<_ConflictTargetWhereAndSpec<T, I, Q>>,
             _ConflictActionClause<T, I, Q> {
@@ -97,16 +98,22 @@ public interface PostgreInsert extends PostgreStatement {
 
         _ConflictCollateSpec<T, I, Q> comma(IndexFieldMeta<T> indexColumn);
 
-
+        _ConflictCollateSpec<T, I, Q> comma(Expression indexExpression);
     }
 
 
     interface _ConflictOpClassSpec<T, I extends Item, Q extends Item>
             extends _ConflictTargetCommaSpec<T, I, Q> {
 
-        _ConflictTargetCommaSpec<T, I, Q> opClass();
+        /**
+         * @param operatorClass operator class
+         */
+        _ConflictTargetCommaSpec<T, I, Q> space(String operatorClass);
 
-        _ConflictTargetCommaSpec<T, I, Q> ifOpClass(BooleanSupplier supplier);
+        /**
+         * @param supplier provide operator class
+         */
+        _ConflictTargetCommaSpec<T, I, Q> ifSpace(Supplier<String> supplier);
     }
 
 
@@ -127,6 +134,8 @@ public interface PostgreInsert extends PostgreStatement {
             extends _ConflictActionClause<T, I, Q> {
 
         _ConflictCollateSpec<T, I, Q> leftParen(IndexFieldMeta<T> indexColumn);
+
+        _ConflictCollateSpec<T, I, Q> leftParen(Expression indexExpression);
 
         _ConflictActionClause<T, I, Q> onConstraint(String constraintName);
 

@@ -551,7 +551,10 @@ abstract class PostgreParser extends _ArmyDialectParser {
         this.childDomainCteWhereClause(stmt.wherePredicateList(), childContext);
         this.discriminator(domainTable, safeParentAlias, context);
         childContext.appendConditionFields();
-        this.visiblePredicate(parentTable, safeParentAlias, childContext, false);
+        if (parentTable.containField(_MetaBridge.VISIBLE)) {
+            this.visiblePredicate(parentTable, safeParentAlias, childContext, false);
+        }
+
 
         // RETURNING clause
         sqlBuilder.append(_Constant.SPACE_RETURNING)
@@ -683,7 +686,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
         // child cte WHERE clause
         this.childDomainCteWhereClause(stmt.wherePredicateList(), childContext);
         this.discriminator(domainTable, safeParentAlias, context);
-        this.visiblePredicate(parentTable, safeParentAlias, childContext, false);
+        if (parentTable.containField(_MetaBridge.VISIBLE)) {
+            this.visiblePredicate(parentTable, safeParentAlias, childContext, false);
+        }
 
         // RETURNING clause
         sqlBuilder.append(_Constant.SPACE_RETURNING)

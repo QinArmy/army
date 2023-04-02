@@ -18,14 +18,14 @@ public interface _Insert extends _Statement {
 
     interface _SupportConflictClauseSpec {
 
+        @Nullable
+        String rowAlias();
+
         boolean hasConflictAction();
 
     }
 
     interface _ConflictActionClauseSpec extends _SupportConflictClauseSpec {
-
-        @Nullable
-        String rowAlias();
 
         List<_ItemPair> updateSetClauseList();
 
