@@ -99,7 +99,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     @Override
-    protected void parseValuesInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert insert) {
+    protected void parseValuesInsert(final _ValueSyntaxInsertContext context, final _Insert._ValuesSyntaxInsert insert) {
         assert context.parser() == this;
 
         final _MySQLInsert stmt = (_MySQLInsert) insert;
@@ -623,7 +623,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     /**
-     * @see #parseValuesInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
+     * @see #parseValuesInsert(_ValueSyntaxInsertContext, _Insert._ValuesSyntaxInsert)
      * @see #parseAssignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
      * @see #parseQueryInsert(_QueryInsertContext, _Insert._QueryInsert)
      */
@@ -851,7 +851,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     /**
-     * @see #parseValuesInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
+     * @see #parseValuesInsert(_ValueSyntaxInsertContext, _Insert._ValuesSyntaxInsert)
      * @see #parseAssignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
      * @see #parseQueryInsert(_QueryInsertContext, _Insert._QueryInsert)
      * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
@@ -1228,7 +1228,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     /**
-     * @see #parseValuesInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
+     * @see #parseValuesInsert(_ValueSyntaxInsertContext, _Insert._ValuesSyntaxInsert)
      * @see #parseAssignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
      * @see #parseQueryInsert(_QueryInsertContext, _Insert._QueryInsert)
      */

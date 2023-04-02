@@ -375,7 +375,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleDomainInsert(_SqlContext, _Insert._DomainInsert, Visible)
      * @see #handleValueInsert(_SqlContext, _Insert._ValuesInsert, Visible)
      */
-    protected void parseValuesInsert(_ValueInsertContext context, _Insert._ValuesSyntaxInsert insert) {
+    protected void parseValuesInsert(_ValueSyntaxInsertContext context, _Insert._ValuesSyntaxInsert insert) {
         throw standardParserDontSupportDialect(this.dialect);
     }
 
@@ -1453,10 +1453,10 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #handleInsert(_SqlContext, InsertStatement, Visible)
      */
-    private _ValueInsertContext handleDomainInsert(final @Nullable _SqlContext outerContext
+    private _ValueSyntaxInsertContext handleDomainInsert(final @Nullable _SqlContext outerContext
             , final _Insert._DomainInsert insert, final Visible visible) {
         final boolean standardStmt = insert instanceof StandardInsert;
-        final _ValueInsertContext context;
+        final _ValueSyntaxInsertContext context;
         if (insert instanceof _Insert._ChildDomainInsert) {
 
             final _Insert._ChildDomainInsert childStmt = (_Insert._ChildDomainInsert) insert;
@@ -1492,10 +1492,10 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #handleInsert(_SqlContext, InsertStatement, Visible)
      */
-    private _ValueInsertContext handleValueInsert(final @Nullable _SqlContext outerContext
+    private _ValueSyntaxInsertContext handleValueInsert(final @Nullable _SqlContext outerContext
             , final _Insert._ValuesInsert insert, final Visible visible) {
         final boolean standardStmt = insert instanceof StandardInsert;
-        final _ValueInsertContext context;
+        final _ValueSyntaxInsertContext context;
         if (insert instanceof _Insert._ChildValuesInsert) {
 
             final _Insert._ChildValuesInsert childStmt = (_Insert._ChildValuesInsert) insert;
@@ -2125,7 +2125,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleDomainInsert(_SqlContext, _Insert._DomainInsert, Visible)
      * @see #handleValueInsert(_SqlContext, _Insert._ValuesInsert, Visible)
      */
-    private void parseStandardValuesInsert(final _ValueInsertContext context) {
+    private void parseStandardValuesInsert(final _ValueSyntaxInsertContext context) {
         final StringBuilder sqlBuilder;
         //1. INSERT INTO keywords
         sqlBuilder = context.sqlBuilder()

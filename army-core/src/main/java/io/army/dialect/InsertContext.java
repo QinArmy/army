@@ -279,8 +279,10 @@ abstract class InsertContext extends StatementContext implements _InsertContext
     @Override
     public final void appendField(final @Nullable String tableAlias, final FieldMeta<?> field) {
         final String safeAlias;
-        if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {
-            throw _Exceptions.unknownColumn(tableAlias, field);
+        if (!(this.valuesClauseEnd
+                && (this.conflictClause || this.returningList.size() > 0)
+                && field.tableMeta() == this.insertTable)) {
+            throw _Exceptions.unknownColumn(field);
         } else if (tableAlias == null) {
             throw new NullPointerException();
         } else if (tableAlias.equals(this.rowAlias)) {
@@ -306,7 +308,9 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
     @Override
     public final void appendField(final FieldMeta<?> field) {
-        if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {
+        if (!(this.valuesClauseEnd
+                && (this.conflictClause || this.returningList.size() > 0)
+                && field.tableMeta() == this.insertTable)) {
             throw _Exceptions.unknownColumn(field);
         }
         final StringBuilder sqlBuilder;

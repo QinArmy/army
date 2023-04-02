@@ -134,7 +134,7 @@ final class PostgreDialectParser extends PostgreParser {
     }
 
     @Override
-    protected void parseValuesInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert insert) {
+    protected void parseValuesInsert(final _ValueSyntaxInsertContext context, final _Insert._ValuesSyntaxInsert insert) {
 
         this.parsePostgreInsert(context, (_PostgreInsert) insert);
 
@@ -182,7 +182,7 @@ final class PostgreDialectParser extends PostgreParser {
 
 
     /**
-     * @see #parseValuesInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
+     * @see #parseValuesInsert(_ValueSyntaxInsertContext, _Insert._ValuesSyntaxInsert)
      * @see #parseQueryInsert(_QueryInsertContext, _Insert._QueryInsert)
      */
     private void parsePostgreInsert(final _InsertContext context, final _PostgreInsert stmt) {
@@ -219,8 +219,8 @@ final class PostgreDialectParser extends PostgreParser {
         // due to army manage createTime(updateTime) field,so army don't support DEFAULT VALUES
 
         // 6. VALUES/QUERY clause
-        if (context instanceof _ValueInsertContext) {
-            ((_ValueInsertContext) context).appendValueList();
+        if (context instanceof _ValueSyntaxInsertContext) {
+            ((_ValueSyntaxInsertContext) context).appendValueList();
         } else {
             ((_QueryInsertContext) context).appendSubQuery();
         }
@@ -234,13 +234,14 @@ final class PostgreDialectParser extends PostgreParser {
         // 8. RETURNING clause
         if (stmt instanceof _ReturningDml) {
             this.returningClause(context, stmt);
-        } else if (context instanceof _ValueInsertContext) {
-            ((_ValueInsertContext) context).appendReturnIdIfNeed();
+        } else if (context instanceof _ValueSyntaxInsertContext) {
+            ((_ValueSyntaxInsertContext) context).appendReturnIdIfNeed();
         }
     }
 
     /**
      * @see #parsePostgreInsert(_InsertContext, _PostgreInsert)
+     * @see <a href="https://www.postgresql.org/docs/current/sql-insert.html">Postgre INSERT syntax</a>
      */
     private void insertOnConflictClause(final _InsertContext context,
                                         final _PostgreInsert._ConflictActionClauseResult clause) {
@@ -297,7 +298,7 @@ final class PostgreDialectParser extends PostgreParser {
                 throw _Exceptions.castCriteriaApi();
             }
             sqlBuilder.append(" DO NOTHING");
-        } else if (updateItemSize == 0) {
+        } else if (updateItemSize == 0 || (constraintName == null && targetItemSize == 0)) { // For ON CONFLICT DO UPDATE, a conflict_target must be provided.
             throw _Exceptions.castCriteriaApi();
         } else {
             sqlBuilder.append(" DO UPDATE SET");

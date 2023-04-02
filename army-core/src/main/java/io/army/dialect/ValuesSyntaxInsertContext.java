@@ -6,7 +6,7 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
 import io.army.meta.PrimaryFieldMeta;
 
-abstract class ValuesSyntaxInsertContext extends InsertContext implements _ValueInsertContext {
+abstract class ValuesSyntaxInsertContext extends InsertContext implements _ValueSyntaxInsertContext {
 
 
     final NullMode nullMode;

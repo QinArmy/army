@@ -1184,6 +1184,7 @@ abstract class PostgreInserts extends InsertSupports {
             final List<_Selection> selectionList = this.returningList;
             final List<? extends _Selection> effectiveList;
             if (selectionList == PostgreSupports.EMPTY_SELECTION_LIST) {
+                //TODO add the columns than is updated by ON CONFLICT clause,and validate this.
                 effectiveList = (List<? extends _Selection>) this.effectiveFieldList();
             } else if (selectionList == null || selectionList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);

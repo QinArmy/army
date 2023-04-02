@@ -70,10 +70,14 @@ public interface PostgreInsert extends PostgreStatement {
 
     }
 
-
-    interface _ConflictActionClause<T, I extends Item, Q extends Item> {
+    interface _ConflictDoNothingClause<I extends Item, Q extends Item> {
 
         _ReturningSpec<I, Q> doNothing();
+
+    }
+
+
+    interface _ConflictActionClause<T, I extends Item, Q extends Item> extends _ConflictDoNothingClause<I, Q> {
 
         _DoUpdateSetClause<T, I, Q> doUpdate();
 
@@ -131,7 +135,7 @@ public interface PostgreInsert extends PostgreStatement {
 
 
     interface _ConflictTargetOptionSpec<T, I extends Item, Q extends Item>
-            extends _ConflictActionClause<T, I, Q> {
+            extends _ConflictDoNothingClause<I, Q> {
 
         _ConflictCollateSpec<T, I, Q> leftParen(IndexFieldMeta<T> indexColumn);
 

@@ -136,7 +136,6 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
                 .overridingUserValue()
                 .values(cityList)
                 .onConflict()
-                .onConstraint("id")
                 .doNothing()   // here , couldn't use DO NOTHING clause, because child insert row count will error.
                 .asInsert();
 
@@ -151,7 +150,8 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
                 .insertInto(ChinaRegion_.T).as("cr")
                 .overridingSystemValue()
                 .values(cityList)
-                .asInsert()
+                .returning(ChinaRegion_.id)
+                .asReturningInsert()
 
                 .child()
 

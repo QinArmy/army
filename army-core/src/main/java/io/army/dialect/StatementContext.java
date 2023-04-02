@@ -40,7 +40,7 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
 
     /**
      * <p>
-     * This Constructor is invoked the implementation of {@link  _ValueInsertContext}.
+     * This Constructor is invoked the implementation of {@link  _ValueSyntaxInsertContext}.
      * </p>
      */
     @Deprecated
