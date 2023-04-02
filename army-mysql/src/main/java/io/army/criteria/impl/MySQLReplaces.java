@@ -351,6 +351,14 @@ abstract class MySQLReplaces extends InsertSupports {
             return this.dmlFunction.apply(this);
         }
 
+
+        @Override
+        public String tableAlias() {
+            // MySQL don't support
+            return null;
+        }
+
+
     }//MySQLComplexValuesClause
 
 

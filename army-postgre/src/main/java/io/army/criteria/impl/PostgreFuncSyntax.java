@@ -7,7 +7,7 @@ package io.army.criteria.impl;
  *
  * @since 1.0
  */
-abstract class PostgreFuncSyntax extends PostgreSyntax {
+abstract class PostgreFuncSyntax extends SQLSyntax {
 
     /**
      * Package constructor

@@ -1,9 +1,11 @@
 package io.army.criteria.impl;
 
 
+import io.army.criteria.Expression;
 import io.army.criteria.Query;
 import io.army.criteria.SQLWords;
 import io.army.dialect._Constant;
+import io.army.meta.FieldMeta;
 import io.army.util._StringUtils;
 
 /**
@@ -13,7 +15,7 @@ import io.army.util._StringUtils;
  *
  * @since 1.0
  */
-abstract class PostgreSyntax extends Functions {
+abstract class PostgreSyntax extends PostgreFuncSyntax {
 
     /**
      * Package constructor
@@ -115,6 +117,11 @@ abstract class PostgreSyntax extends Functions {
     public static final WordMaterialized MATERIALIZED = KeyWordMaterialized.MATERIALIZED;
 
     public static final WordMaterialized NOT_MATERIALIZED = KeyWordMaterialized.NOT_MATERIALIZED;
+
+
+    public static Expression excluded(FieldMeta<?> field) {
+        return ContextStack.peek().insertValueField(field, PostgreExcludedField::excludedField);
+    }
 
     /*-------------------below private method -------------------*/
 

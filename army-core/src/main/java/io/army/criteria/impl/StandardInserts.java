@@ -214,6 +214,12 @@ abstract class StandardInserts extends InsertSupports {
             return this.dmlFunction.apply(this);
         }
 
+        @Override
+        public String tableAlias() {
+            //null,standard api don't support table alias
+            return null;
+        }
+
 
     }//StandardComplexValuesClause
 

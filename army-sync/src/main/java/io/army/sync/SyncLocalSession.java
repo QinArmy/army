@@ -536,7 +536,7 @@ final class SyncLocalSession extends _AbstractSyncSession implements LocalSessio
 
     private void assertSessionForChildInsert(final _Insert insert) {
         final TableMeta<?> table;
-        table = insert.table();
+        table = insert.insertTable();
         if (table instanceof ChildTableMeta && this.transaction == null) {
             throw _Exceptions.childDmlNoTransaction(this, (ChildTableMeta<?>) table);
         }

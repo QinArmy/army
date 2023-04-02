@@ -39,6 +39,10 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
     final List<FieldMeta<?>> fieldList;
 
+    private final String tableAlias;
+
+    private final String safeTableAlias;
+
     private final String rowAlias;
 
     private final String safeRowAlias;
@@ -89,7 +93,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
             }
             targetStmt = domainStmt;
         }
-        this.insertTable = targetStmt.table();
+        this.insertTable = targetStmt.insertTable();
         assert this.insertTable instanceof SingleTableMeta;
 
         if (targetStmt instanceof _Insert._InsertOption) {
@@ -101,6 +105,12 @@ abstract class InsertContext extends StatementContext implements _InsertContext
             this.literalMode = LiteralMode.DEFAULT;
         }
 
+        this.tableAlias = targetStmt.tableAlias();
+        if (this.tableAlias == null) {
+            this.safeTableAlias = null;
+        } else {
+            this.safeTableAlias = this.parser.identifier(this.tableAlias);
+        }
 
         if (targetStmt instanceof _Insert._SupportConflictClauseSpec) {
             final _Insert._SupportConflictClauseSpec spec = (_Insert._SupportConflictClauseSpec) targetStmt;
@@ -156,7 +166,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         } else if (this.conflictClause) {
             if (targetStmt != domainStmt) {
                 //the implementations of io.army.criteria.Insert no bug,never here
-                throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) domainStmt.table());
+                throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) domainStmt.insertTable());
             }
             this.returningList = Collections.emptyList();
             this.returnId = null;
@@ -181,7 +191,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
             , final InsertContext parentContext) {
         super(outerContext, parentContext.parser, parentContext.visible);
         this.parentContext = parentContext;
-        this.insertTable = stmt.table();
+        this.insertTable = stmt.insertTable();
 
         if (stmt instanceof _Insert._InsertOption) {
             final _Insert._InsertOption option = (_Insert._InsertOption) stmt;
@@ -195,6 +205,13 @@ abstract class InsertContext extends StatementContext implements _InsertContext
                 && this.migration == parentContext.migration
                 && this.literalMode == parentContext.literalMode
                 && ((ChildTableMeta<?>) this.insertTable).parentMeta() == parentContext.insertTable;
+
+        this.tableAlias = stmt.tableAlias();
+        if (this.tableAlias == null) {
+            this.safeTableAlias = null;
+        } else {
+            this.safeTableAlias = this.parser.identifier(this.tableAlias);
+        }
 
         if (stmt instanceof _Insert._SupportConflictClauseSpec) {
             final _Insert._SupportConflictClauseSpec spec = (_Insert._SupportConflictClauseSpec) stmt;
@@ -260,21 +277,28 @@ abstract class InsertContext extends StatementContext implements _InsertContext
     }
 
     @Override
-    public final void appendField(final String tableAlias, final FieldMeta<?> field) {
-        final String rowAlias = this.rowAlias;
+    public final void appendField(final @Nullable String tableAlias, final FieldMeta<?> field) {
+        final String safeAlias;
         if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {
             throw _Exceptions.unknownColumn(field);
-        } else if (rowAlias != null && !rowAlias.equals(tableAlias)) {
+        } else if (tableAlias == null) {
+            throw new NullPointerException();
+        } else if (tableAlias.equals(this.rowAlias)) {
+            safeAlias = this.safeRowAlias;
+        } else if (tableAlias.equals(this.tableAlias)) {
+            safeAlias = this.safeTableAlias;
+        } else if (this.rowAlias == null && this.parser.supportRowAlias) {
             throw _Exceptions.unknownColumn(field);
-        } else if (rowAlias == null && this.parser.supportRowAlias) {
-            throw _Exceptions.unknownColumn(field);
-        } else if (rowAlias == null) {
+        } else if (this.rowAlias == null) {
             String m = String.format("%s don't support row alias.", this.parser.dialect);
             throw new CriteriaException(m);
+        } else {
+            throw _Exceptions.unknownColumn(field);
         }
+
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE)
-                .append(this.safeRowAlias)
+                .append(safeAlias)
                 .append(_Constant.POINT);
         this.parser.safeObjectName(field, sqlBuilder);
 

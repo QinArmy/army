@@ -583,7 +583,7 @@ abstract class CriteriaUtils {
 
     static CriteriaException childParentRowNotMatch(_Insert._ValuesInsert child, _Insert._ValuesInsert parent) {
         String m = String.format("%s row number[%s] and parent row number[%s] not match."
-                , child.table(), child.rowPairList().size(), parent.rowPairList().size());
+                , child.insertTable(), child.rowPairList().size(), parent.rowPairList().size());
 
         return ContextStack.criteriaError(((CriteriaContextSpec) child).getContext(), m);
     }

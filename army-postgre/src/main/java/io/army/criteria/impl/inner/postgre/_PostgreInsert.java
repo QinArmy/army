@@ -11,7 +11,6 @@ import java.util.List;
 public interface _PostgreInsert extends _Insert, _Insert._SupportConflictClauseSpec, _Insert._SupportWithClauseInsert,
         _Statement._ReturningListSpec {
 
-
     @Nullable
     SQLWords overridingValueWords();
 

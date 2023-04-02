@@ -14,7 +14,10 @@ import java.util.Map;
 
 public interface _Insert extends _Statement {
 
-    TableMeta<?> table();
+    TableMeta<?> insertTable();
+
+    @Nullable
+    String tableAlias();
 
     interface _SupportConflictClauseSpec {
 

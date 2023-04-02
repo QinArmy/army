@@ -697,7 +697,7 @@ abstract class MySQLInserts extends InsertSupports {
 
         @Override
         public MySQLInsert._OnDuplicateKeyUpdateSpec<I, T> as(final String rowAlias) {
-            this.context.singleDmlTable(this.insertTable, rowAlias);
+            this.context.insertRowAlias(this.insertTable, rowAlias);
             this.rowAlias = rowAlias;
             return this;
         }
@@ -743,6 +743,12 @@ abstract class MySQLInserts extends InsertSupports {
                 throw ContextStack.criteriaError(this.context, m);
             }
             return this.dmlFunction.apply(this);
+        }
+
+        @Override
+        public String tableAlias() {
+            //null,MySQL don't support table alias
+            return null;
         }
 
         private Statement._DmlInsertClause<I> onDuplicateKeyClauseEnd(final List<_ItemPair> itemPairList) {

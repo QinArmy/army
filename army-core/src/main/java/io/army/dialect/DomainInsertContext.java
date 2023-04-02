@@ -41,8 +41,8 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
     static DomainInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildDomainInsert domainStmt
             , ArmyParser dialect, Visible visible) {
         assert outerContext == null || outerContext instanceof _MultiStatementContext;
-        if (outerContext != null && domainStmt.parentStmt().table().id().generatorType() == GeneratorType.POST) {
-            throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) domainStmt.table());
+        if (outerContext != null && domainStmt.parentStmt().insertTable().id().generatorType() == GeneratorType.POST) {
+            throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) domainStmt.insertTable());
         }
         return new DomainInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
     }
@@ -302,7 +302,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         private Object domain;
 
         private DomainWrapper(DomainInsertContext context, _Insert._DomainInsert domainStmt) {
-            this.domainTable = domainStmt.table();
+            this.domainTable = domainStmt.insertTable();
 
             if (domainStmt instanceof _Insert._ChildDomainInsert) {
                 assert ((ChildTableMeta<?>) this.domainTable).parentMeta() == context.insertTable;

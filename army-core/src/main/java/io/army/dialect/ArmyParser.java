@@ -1450,7 +1450,7 @@ abstract class ArmyParser implements DialectParser {
 
             final _Insert._ChildDomainInsert childStmt = (_Insert._ChildDomainInsert) insert;
             final _Insert._DomainInsert parentStmt = childStmt.parentStmt();
-            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.table());
+            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.insertTable());
 
             final DomainInsertContext parentContext;
             parentContext = DomainInsertContext.forParent(outerContext, childStmt, this, visible);
@@ -1489,7 +1489,7 @@ abstract class ArmyParser implements DialectParser {
 
             final _Insert._ChildValuesInsert childStmt = (_Insert._ChildValuesInsert) insert;
             final _Insert._ValuesInsert parentStmt = childStmt.parentStmt();
-            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.table());
+            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.insertTable());
 
             final ValuesInsertContext parentContext;
             parentContext = ValuesInsertContext.forParent(outerContext, childStmt, this, visible);
@@ -1526,7 +1526,7 @@ abstract class ArmyParser implements DialectParser {
 
             final _Insert._ChildAssignmentInsert childStmt = (_Insert._ChildAssignmentInsert) insert;
             final _Insert._AssignmentInsert parentStmt = childStmt.parentStmt();
-            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.table());
+            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.insertTable());
 
             final AssignmentInsertContext parentContext;
             parentContext = AssignmentInsertContext.forParent(outerContext, childStmt, this, visible);
@@ -2295,7 +2295,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleAssignmentInsert(_SqlContext, _Insert._AssignmentInsert, Visible)
      */
     private void checkParentStmt(_Insert parentStmt, ChildTableMeta<?> childTable) {
-        if (parentStmt.table().id().generatorType() == GeneratorType.POST
+        if (parentStmt.insertTable().id().generatorType() == GeneratorType.POST
                 && parentStmt instanceof _Insert._SupportConflictClauseSpec
                 && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction()
                 && this.childUpdateMode != _ChildUpdateMode.CTE) { // support RETURNING clause,could returning parent id

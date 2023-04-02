@@ -12,7 +12,7 @@ import io.army.criteria.postgre.*;
  *
  * @since 1.0
  */
-public abstract class Postgres extends PostgreFuncSyntax {
+public abstract class Postgres extends PostgreSyntax {
 
 
     /**

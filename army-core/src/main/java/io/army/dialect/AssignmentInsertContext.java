@@ -35,8 +35,8 @@ final class AssignmentInsertContext extends InsertContext
             , ArmyParser dialect, Visible visible) {
         assert outerContext == null || outerContext instanceof _MultiStatementContext;
 
-        if (outerContext != null && stmt.parentStmt().table().id().generatorType() == GeneratorType.POST) {
-            throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) stmt.table());
+        if (outerContext != null && stmt.parentStmt().insertTable().id().generatorType() == GeneratorType.POST) {
+            throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) stmt.insertTable());
         }
         return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }
@@ -261,7 +261,7 @@ final class AssignmentInsertContext extends InsertContext
         private DelayIdParam delayIdParam;
 
         private AssignmentWrapper(AssignmentInsertContext context, _Insert._AssignmentInsert domainStmt) {
-            super(domainStmt.table(), context.parser.mappingEnv);
+            super(domainStmt.insertTable(), context.parser.mappingEnv);
             this.mockEnv = context.parser.mockEnv;
             if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
                 assert context.insertTable == ((ChildTableMeta<?>) this.domainTable).parentMeta();

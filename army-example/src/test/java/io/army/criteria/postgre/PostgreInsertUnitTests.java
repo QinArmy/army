@@ -33,7 +33,8 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
                 .comma(ChinaRegion_.createTime).space("timestamp_ops")
                 .rightParen()
                 .where(ChinaRegion_.parentId.less(SQLs::literal, 1))
-                .doNothing()
+                .doUpdate()
+                .set(ChinaRegion_.name, Postgres::excluded)
                 .asInsert();
 
 

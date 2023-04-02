@@ -801,7 +801,6 @@ abstract class PostgreInserts extends InsertSupports {
     private static final class ConflictActionClauseResult
             implements _PostgreInsert._ConflictActionClauseResult {
 
-        private final String rowAlias;
         private final List<_ConflictTargetItem> targetItemList;
 
         private final List<_Predicate> indexPredicateList;
@@ -815,7 +814,6 @@ abstract class PostgreInserts extends InsertSupports {
         private final List<_Predicate> updatePredicateList;
 
         private ConflictActionClauseResult(OnConflictClause<?, ?, ?> clause) {
-            this.rowAlias = clause.valuesClause.tableAlias;
             this.targetItemList = _CollectionUtils.safeList(clause.targetItemList);
             if (this.targetItemList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(clause.valuesClause.context);
@@ -830,7 +828,6 @@ abstract class PostgreInserts extends InsertSupports {
 
         private ConflictActionClauseResult(OnConflictClause<?, ?, ?> clause, List<_ItemPair> itemPairList
                 , List<_Predicate> updatePredicateList) {
-            this.rowAlias = clause.valuesClause.tableAlias;
             this.doNothing = clause.doNothing;
             this.targetItemList = _CollectionUtils.safeList(clause.targetItemList);
             if (this.targetItemList instanceof ArrayList) {
@@ -881,7 +878,8 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public String rowAlias() {
-            return this.rowAlias;
+            // null,postgre don't support row alias
+            return null;
         }
 
 
@@ -1168,6 +1166,11 @@ abstract class PostgreInserts extends InsertSupports {
             return this.dqlFunction.apply(this);
         }
 
+        @Override
+        public String tableAlias() {
+            return this.tableAlias;
+        }
+
         private PostgreInsert._ReturningSpec<I, Q> conflictClauseEnd(_PostgreInsert._ConflictActionClauseResult result) {
             if (this.conflictAction != null) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -1315,7 +1318,6 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final List<_Cte> cteList;
 
-        private final String tableAlias;
 
         private final OverridingMode overridingMode;
 
@@ -1328,9 +1330,7 @@ abstract class PostgreInserts extends InsertSupports {
             super(clause);
             this.recursive = clause.recursive;
             this.cteList = clause.cteList;
-            this.tableAlias = clause.tableAlias;
             this.overridingMode = clause.overridingMode;
-
             this.conflictAction = clause.conflictAction;
             if (this instanceof _ReturningDml) {
                 this.returningList = clause.effectiveReturningList();
@@ -1362,9 +1362,11 @@ abstract class PostgreInserts extends InsertSupports {
             return this.conflictAction != null;
         }
 
+
         @Override
         public final String rowAlias() {
-            return this.tableAlias;
+            // null,postgre don't support row alias
+            return null;
         }
 
         @Override

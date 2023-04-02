@@ -17,6 +17,7 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -924,9 +925,21 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void singleDmlTable(TableMeta<?> table, String alias) {
-            String m = "current context don't support singleDmlTable(TableMeta<?> table, String alias)";
+        public void singleDmlTable(TableMeta<?> table, String tableAlias) {
+            String m = "current context don't support singleDmlTable(TableMeta<?> table, String tableAlias)";
             throw ContextStack.criteriaError(this, m);
+        }
+
+
+        @Override
+        public void insertRowAlias(TableMeta<?> table, String rowAlias) {
+            String m = "current context don't support insertRowAlias(TableMeta<?> table, String rowAlias)";
+            throw ContextStack.criteriaError(this, m);
+        }
+
+        @Override
+        public Expression insertValueField(FieldMeta<?> field, Function<FieldMeta<?>, Expression> function) {
+            throw ContextStack.castCriteriaApi(this);
         }
 
         @Override
@@ -1673,16 +1686,18 @@ abstract class CriteriaContexts {
     }//JoinableContext
 
 
-    private static abstract class InsertContext extends StatementContext {
+    static abstract class InsertContext extends StatementContext {
 
         private TableMeta<?> insertTable;
 
+        private String tableAlias;
+
         private String rowAlias;
 
-        /**
-         * can't validate field,because field possibly from outer context,{@link _SqlContext} validate this.
-         */
+
         private Map<FieldMeta<?>, QualifiedField<?>> qualifiedFieldMap;
+
+        private Map<FieldMeta<?>, Expression> insertValueFieldMap;
 
         private List<FieldMeta<?>> columnlist;
 
@@ -1694,14 +1709,38 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final void singleDmlTable(final TableMeta<?> table, final @Nullable String alias) {
-            if (this.insertTable != null) {
+        public final void singleDmlTable(final TableMeta<?> table, final @Nullable String tableAlias) {
+            final TableMeta<?> insertTable = this.insertTable;
+            if (insertTable == null) {
+                this.insertTable = table;
+            } else if (table != insertTable) {
                 throw ContextStack.castCriteriaApi(this);
-            } else if (alias == null) {
-                throw ContextStack.nullPointer(this);
             }
-            this.insertTable = table;
-            this.rowAlias = alias;
+
+            if (tableAlias == null) {
+                throw ContextStack.nullPointer(this);
+            } else if (this.tableAlias != null) {
+                throw ContextStack.castCriteriaApi(this);
+            }
+
+            this.tableAlias = tableAlias;
+        }
+
+
+        @Override
+        public final void insertRowAlias(final TableMeta<?> table, final @Nullable String rowAlias) {
+            final TableMeta<?> insertTable = this.insertTable;
+            if (insertTable == null) {
+                this.insertTable = table;
+            } else if (table != insertTable) {
+                throw ContextStack.castCriteriaApi(this);
+            }
+            if (rowAlias == null) {
+                throw ContextStack.nullPointer(this);
+            } else if (this.rowAlias != null) {
+                throw ContextStack.castCriteriaApi(this);
+            }
+            this.rowAlias = rowAlias;
         }
 
         @Override
@@ -1714,13 +1753,11 @@ abstract class CriteriaContexts {
 
         @SuppressWarnings("unchecked")
         @Override
-        public final <T> QualifiedField<T> field(final String tableAlias, final FieldMeta<T> field) {
-            final String rowAlias = this.rowAlias;
-            if (rowAlias == null) {
-                throw ContextStack.criteriaError(this, "current insert statement have no row alias.");
-            } else if (!rowAlias.equals(tableAlias)) {
-                String m = String.format("row alias[%s] and insert statement row alias[%s] not match.",
-                        tableAlias, rowAlias);
+        public final <T> QualifiedField<T> field(final @Nullable String tableAlias, final FieldMeta<T> field) {
+            if (tableAlias == null) {
+                throw ContextStack.nullPointer(this);
+            } else if (!tableAlias.equals(this.rowAlias) && !tableAlias.equals(this.tableAlias)) {
+                String m = String.format("unknown %s[%s.%s]", QualifiedField.class.getName(), tableAlias, field);
                 throw ContextStack.criteriaError(this, m);
             }
             Map<FieldMeta<?>, QualifiedField<?>> qualifiedFieldMap = this.qualifiedFieldMap;
@@ -1733,15 +1770,25 @@ abstract class CriteriaContexts {
             QualifiedField<?> qualifiedField;
             qualifiedField = qualifiedFieldMap.get(field);
             if (qualifiedField == null) {
-                qualifiedField = QualifiedFieldImpl.create(rowAlias, field);
+                qualifiedField = QualifiedFieldImpl.create(tableAlias, field);
                 qualifiedFieldMap.put(field, qualifiedField);
             }
             return (QualifiedField<T>) qualifiedField;
         }
 
         @Override
+        public final Expression insertValueField(final FieldMeta<?> field, final Function<FieldMeta<?>, Expression> function) {
+            Map<FieldMeta<?>, Expression> insertValueFieldMap = this.insertValueFieldMap;
+            if (insertValueFieldMap == null) {
+                insertValueFieldMap = new HashMap<>();
+                this.insertValueFieldMap = insertValueFieldMap;
+            }
+            return insertValueFieldMap.computeIfAbsent(field, function);
+        }
+
+        @Override
         public final void validateFieldFromSubContext(final QualifiedField<?> field) {
-            final String rowAlias = this.rowAlias;
+            final String rowAlias = this.tableAlias;
             if (rowAlias == null || !rowAlias.equals(field.tableAlias()) || field.tableMeta() != this.insertTable) {
                 throw unknownQualifiedField(this, field);
             } else if (this.getOrCreateColumnMap().get(field.fieldName()) != field.fieldMeta()) {
@@ -1750,12 +1797,17 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        List<_TabularBock> onEndContext() {
+        final List<_TabularBock> onEndContext() {
             // can't validate field,because field possibly from outer context,{@link _SqlContext} validate this.
             final Map<FieldMeta<?>, QualifiedField<?>> aliasFieldMap = this.qualifiedFieldMap;
             if (aliasFieldMap != null) {
                 aliasFieldMap.clear();
                 this.qualifiedFieldMap = null;
+            }
+            final Map<FieldMeta<?>, Expression> insertValueFieldMap = this.insertValueFieldMap;
+            if (insertValueFieldMap != null) {
+                insertValueFieldMap.clear();
+                this.insertValueFieldMap = null;
             }
             return Collections.emptyList();
         }
@@ -1827,16 +1879,16 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void singleDmlTable(final @Nullable TableMeta<?> table, @Nullable final String alias) {
+        public final void singleDmlTable(final @Nullable TableMeta<?> table, @Nullable final String tableAlias) {
             if (this.table != null) {
                 throw ContextStack.castCriteriaApi(this);
             } else if (table == null) {
                 throw ContextStack.nullPointer(this);
-            } else if (alias == null) {
+            } else if (tableAlias == null) {
                 throw ContextStack.nullPointer(this);
             }
             this.table = table;
-            this.tableAlias = alias;
+            this.tableAlias = tableAlias;
         }
 
         @Override
@@ -1898,15 +1950,15 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void singleDmlTable(final @Nullable TableMeta<?> table, @Nullable final String alias) {
+        public final void singleDmlTable(final @Nullable TableMeta<?> table, @Nullable final String tableAlias) {
             if (this.table != null) {
                 throw ContextStack.castCriteriaApi(this);
-            } else if (alias == null) {
+            } else if (tableAlias == null) {
                 throw ContextStack.nullPointer(this);
             } else if (table == null) {
                 throw ContextStack.nullPointer(this);
             }
-            this.tableAlias = alias;
+            this.tableAlias = tableAlias;
             this.table = table;
         }
 

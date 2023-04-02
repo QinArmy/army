@@ -33,8 +33,8 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
             , ArmyParser dialect, Visible visible) {
         assert outerContext == null || outerContext instanceof _MultiStatementContext;
 
-        if (outerContext != null && domainStmt.parentStmt().table().id().generatorType() == GeneratorType.POST) {
-            throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) domainStmt.table());
+        if (outerContext != null && domainStmt.parentStmt().insertTable().id().generatorType() == GeneratorType.POST) {
+            throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) domainStmt.insertTable());
         }
         return new ValuesInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
     }
@@ -332,7 +332,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         private Map<FieldMeta<?>, _Expression> rowValuesMap;
 
         private ValuesRowWrapper(ValuesInsertContext context, _Insert._ValuesInsert domainStmt) {
-            super(domainStmt.table(), context.parser.mappingEnv);
+            super(domainStmt.insertTable(), context.parser.mappingEnv);
             this.nonChildRowList = context.rowList;
             if (domainStmt instanceof _Insert._ChildValuesInsert) {
                 assert context.insertTable == ((ChildTableMeta<?>) this.domainTable).parentMeta();

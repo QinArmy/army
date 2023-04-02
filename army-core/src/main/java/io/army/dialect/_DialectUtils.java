@@ -194,7 +194,7 @@ public abstract class _DialectUtils {
         if (insert.isMigration()) {
             return;
         }
-        final TableMeta<?> table = insert.table();
+        final TableMeta<?> table = insert.insertTable();
 
         FieldMeta<?> field;
         for (Map.Entry<FieldMeta<?>, _Expression> e : insert.defaultValueMap().entrySet()) {

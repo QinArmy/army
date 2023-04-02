@@ -12,6 +12,7 @@ import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 
 import java.util.List;
+import java.util.function.Function;
 
 interface CriteriaContext {
 
@@ -139,7 +140,15 @@ interface CriteriaContext {
     void validateFieldFromSubContext(QualifiedField<?> field);
 
 
-    void singleDmlTable(TableMeta<?> table, String alias);
+    /**
+     * @param tableAlias table alias not insert row alias.
+     */
+    void singleDmlTable(TableMeta<?> table, String tableAlias);
+
+
+    void insertRowAlias(TableMeta<?> table, String rowAlias);
+
+    Expression insertValueField(FieldMeta<?> field, Function<FieldMeta<?>, Expression> function);
 
     void insertColumnList(List<FieldMeta<?>> columnlist);
 

@@ -197,7 +197,7 @@ final class PostgreDialectParser extends PostgreParser {
         // 2. table name
         final TableMeta<?> insertTable;
         insertTable = context.insertTable();
-        assert insertTable == stmt.table();
+        assert insertTable == stmt.insertTable();
 
         this.safeObjectName(insertTable, sqlBuilder);
 
