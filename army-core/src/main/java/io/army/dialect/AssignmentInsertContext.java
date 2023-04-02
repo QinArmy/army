@@ -35,9 +35,6 @@ final class AssignmentInsertContext extends InsertContext
             , ArmyParser dialect, Visible visible) {
         assert outerContext == null || outerContext instanceof _MultiStatementContext;
 
-        if (outerContext != null && stmt.parentStmt().insertTable().id().generatorType() == GeneratorType.POST) {
-            throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) stmt.insertTable());
-        }
         return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }
 

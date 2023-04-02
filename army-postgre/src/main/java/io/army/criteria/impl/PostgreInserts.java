@@ -1362,6 +1362,11 @@ abstract class PostgreInserts extends InsertSupports {
             return this.conflictAction != null;
         }
 
+        @Override
+        public final boolean isDoNothing() {
+            final _ConflictActionClauseResult conflictAction = this.conflictAction;
+            return conflictAction != null && conflictAction.isDoNothing();
+        }
 
         @Override
         public final String rowAlias() {
@@ -1486,13 +1491,13 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         private Insert childInsertEnd(PostgreComplexValuesClause<?, ?, ?> childClause) {
-            assertDomainList(this.originalDomainList, childClause);
+            childClause.domainListForChild(this.originalDomainList);
             return new PrimaryChildDomainInsertStatement(this, childClause)
                     .asInsert();
         }
 
         private ReturningInsert childReturningInsertEnd(PostgreComplexValuesClause<?, ?, ?> childClause) {
-            assertDomainList(this.originalDomainList, childClause);
+            childClause.domainListForChild(this.originalDomainList);
             return new PrimaryChildDomainReturningInsertStatement(this, childClause);
         }
 
@@ -1578,13 +1583,13 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         private Insert childInsertEnd(PostgreComplexValuesClause<?, ?, ?> childClause) {
-            assertDomainList(this.originalDomainList, childClause);
+            childClause.domainListForChild(this.originalDomainList);
             return new PrimaryChildDomainInsertStatement(this, childClause)
                     .asInsert();
         }
 
         private ReturningInsert childReturningInsertEnd(PostgreComplexValuesClause<?, ?, ?> childClause) {
-            assertDomainList(this.originalDomainList, childClause);
+            childClause.domainListForChild(this.originalDomainList);
             return new PrimaryChildDomainReturningInsertStatement(this, childClause)
                     .asReturningInsert();
         }
@@ -1865,6 +1870,12 @@ abstract class PostgreInserts extends InsertSupports {
         @Override
         public final boolean hasConflictAction() {
             return this.conflictAction != null;
+        }
+
+        @Override
+        public final boolean isDoNothing() {
+            final _ConflictActionClauseResult conflictAction = this.conflictAction;
+            return conflictAction != null && conflictAction.isDoNothing();
         }
 
         @Override

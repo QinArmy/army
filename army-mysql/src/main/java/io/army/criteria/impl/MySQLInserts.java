@@ -819,6 +819,12 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
+        public final boolean isDoNothing() {
+            //false ,MySQL don't support do nothing clause
+            return false;
+        }
+
+        @Override
         final Dialect statementDialect() {
             return MySQLDialect.MySQL80;
         }
@@ -1064,6 +1070,12 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
+        public final boolean isDoNothing() {
+            //false ,MySQL don't support do nothing clause
+            return false;
+        }
+
+        @Override
         final Dialect statementDialect() {
             return MySQLDialect.MySQL80;
         }
@@ -1185,6 +1197,12 @@ abstract class MySQLInserts extends InsertSupports {
         @Override
         public final boolean hasConflictAction() {
             return this.conflictPairList.size() > 0;
+        }
+
+        @Override
+        public final boolean isDoNothing() {
+            //false ,MySQL don't support do nothing clause
+            return false;
         }
 
         @Override

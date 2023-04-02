@@ -26,6 +26,8 @@ public interface _Insert extends _Statement {
 
         boolean hasConflictAction();
 
+        boolean isDoNothing();
+
     }
 
     interface _ConflictActionClauseSpec extends _SupportConflictClauseSpec {

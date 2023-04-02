@@ -40,15 +40,13 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
     static DomainInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildDomainInsert domainStmt
             , ArmyParser dialect, Visible visible) {
-        assert outerContext == null || outerContext instanceof _MultiStatementContext;
-        if (outerContext != null && domainStmt.parentStmt().insertTable().id().generatorType() == GeneratorType.POST) {
-            throw _Exceptions.multiStmtDontSupportPostParent((ChildTableMeta<?>) domainStmt.insertTable());
-        }
+
         return new DomainInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
     }
 
     static DomainInsertContext forChild(@Nullable _SqlContext outerContext,_Insert._ChildDomainInsert insert
             , DomainInsertContext parentContext) {
+
         return new DomainInsertContext((StatementContext) outerContext,insert, parentContext);
     }
 

@@ -280,7 +280,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
     public final void appendField(final @Nullable String tableAlias, final FieldMeta<?> field) {
         final String safeAlias;
         if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {
-            throw _Exceptions.unknownColumn(field);
+            throw _Exceptions.unknownColumn(tableAlias, field);
         } else if (tableAlias == null) {
             throw new NullPointerException();
         } else if (tableAlias.equals(this.rowAlias)) {
@@ -288,12 +288,12 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         } else if (tableAlias.equals(this.tableAlias)) {
             safeAlias = this.safeTableAlias;
         } else if (this.rowAlias == null && this.parser.supportRowAlias) {
-            throw _Exceptions.unknownColumn(field);
+            throw _Exceptions.unknownColumn(tableAlias, field);
         } else if (this.rowAlias == null) {
             String m = String.format("%s don't support row alias.", this.parser.dialect);
             throw new CriteriaException(m);
         } else {
-            throw _Exceptions.unknownColumn(field);
+            throw _Exceptions.unknownColumn(tableAlias, field);
         }
 
         final StringBuilder sqlBuilder;
@@ -398,8 +398,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
                 continue;
             }
             assert !(field instanceof PrimaryFieldMeta)
-                    || !(field.generatorType() == GeneratorType.POST
-                    && field.tableMeta() instanceof ChildTableMeta);
+                    || field.generatorType() != GeneratorType.POST;
 
             if (actualIndex > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);

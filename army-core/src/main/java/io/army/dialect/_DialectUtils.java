@@ -1,32 +1,50 @@
 package io.army.dialect;
 
+import io.army.annotation.GeneratorType;
 import io.army.bean.ObjectAccessException;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._SelectionGroup;
+import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public abstract class _DialectUtils {
 
-    static final Collection<String> FORBID_INSERT_FIELDS = _ArrayUtils.asUnmodifiableList(
-            _MetaBridge.CREATE_TIME, _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION
-    );
-
     protected _DialectUtils() {
         throw new UnsupportedOperationException();
+    }
+
+
+    public static boolean isOnConflictDoNothing(final _Insert stmt) {
+        return stmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) stmt).isDoNothing();
+    }
+
+    /**
+     * @return true : representing insert {@link ChildTableMeta} and syntax error
+     * , statement executor couldn't get the auto increment primary key of {@link ParentTableMeta}
+     */
+    public static boolean isForbidChildInsert(final _Insert._ChildInsert child) {
+        final _Insert parentStmt;
+        parentStmt = child.parentStmt();
+
+        final boolean needParentReturnId;
+        needParentReturnId = parentStmt instanceof _Insert._SupportConflictClauseSpec
+                && parentStmt.insertTable().id().generatorType() == GeneratorType.POST
+                && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction()
+                && !(parentStmt instanceof _Insert._QueryInsert || ((_Insert._InsertOption) parentStmt).isMigration());
+        return needParentReturnId && !(parentStmt instanceof _Statement._ReturningListSpec);
     }
 
 
@@ -55,12 +73,12 @@ public abstract class _DialectUtils {
         final int length = objectName.length();
         char ch;
         // empty string isn't safe identifier
-        boolean match = true;
+        boolean match = length > 0;
         for (int i = 0; i < length; i++) {
             ch = objectName.charAt(i);
-            if (ch == '_'
-                    || (ch >= 'a' && ch <= 'z')
-                    || (ch >= 'A' && ch <= 'Z')) {
+            if ((ch >= 'a' && ch <= 'z')
+                    || (ch >= 'A' && ch <= 'Z')
+                    || ch == '_') {
                 continue;
             } else if (i > 0 && (ch >= '0' && ch <= '9')) {
                 continue;
@@ -147,6 +165,10 @@ public abstract class _DialectUtils {
             }
         }
         return match;
+    }
+
+    static boolean isMultiStmtDontSupport(final _Insert._ChildInsert childStmt) {
+        return false;
     }
 
     static void appendConditionFields(final _SingleUpdateContext context

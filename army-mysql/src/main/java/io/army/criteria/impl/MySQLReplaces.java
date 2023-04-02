@@ -412,6 +412,12 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
+        public final boolean isDoNothing() {
+            //false ,MySQL REPLACE don't support do nothing clause
+            return false;
+        }
+
+        @Override
         final Dialect statementDialect() {
             return MySQLDialect.MySQL80;
         }
@@ -640,6 +646,12 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
+        public final boolean isDoNothing() {
+            //false ,MySQL REPLACE don't support do nothing clause
+            return false;
+        }
+
+        @Override
         final Dialect statementDialect() {
             return MySQLDialect.MySQL80;
         }
@@ -751,6 +763,12 @@ abstract class MySQLReplaces extends InsertSupports {
         public final boolean hasConflictAction() {
             //replace always true
             return true;
+        }
+
+        @Override
+        public final boolean isDoNothing() {
+            // REPLACE always false
+            return false;
         }
 
         @Override

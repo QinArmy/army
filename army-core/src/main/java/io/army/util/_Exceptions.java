@@ -10,6 +10,7 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl.inner._DialectStatement;
+import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TabularBock;
 import io.army.dialect.Database;
@@ -227,6 +228,29 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is non-null.", field));
     }
 
+    public static ErrorChildInsertException parentDoNothingError(final _Insert._ChildInsert childStmt) {
+        String m = String.format("parent %s of %s couldn't use DO NOTHING clause,because insert row count will error",
+                childStmt.parentStmt().insertTable(),
+                childStmt.insertTable());
+        return new ErrorChildInsertException(m);
+    }
+
+    public static ErrorChildInsertException childDoNothingError(final _Insert._ChildInsert childStmt) {
+        String m = String.format("child %s couldn't use DO NOTHING clause,because insert row count will error",
+                childStmt.insertTable());
+        return new ErrorChildInsertException(m);
+    }
+
+    public static ErrorChildInsertException forbidChildInsertSyntaxError(final _Insert._ChildInsert childStmt) {
+
+        final ParentTableMeta<?> parentTable;
+        parentTable = ((ChildTableMeta<?>) childStmt.insertTable()).parentMeta();
+
+        String m = String.format("%s id %s is %s ,so you couldn't use ON DUPLICATE KEY clause(or ON CONFLICT clause).",
+                parentTable, GeneratorType.class.getName(), parentTable.id().generatorType());
+        return new ErrorChildInsertException(m);
+    }
+
     public static CriteriaException updateChildFieldWithSingleUpdate(ChildTableMeta<?> table) {
         String m = String.format("%s is %s,you can only update parent table field in single update syntax."
                 , table, ChildTableMeta.class.getName());
@@ -281,6 +305,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         String m = String.format("multi-statement don't support %s with post parent", childTable);
         return new CriteriaException(m);
     }
+
 
     public static CriteriaException multiStmtDontSupportParam() {
         return new CriteriaException("multi-statement don't support parameter placeholder.");

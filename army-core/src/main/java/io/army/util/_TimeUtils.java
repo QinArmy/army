@@ -64,9 +64,6 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
             .toFormatter(Locale.ENGLISH);
     public static final DateTimeFormatter OFFSET_DATETIME_FORMATTER_0 = new DateTimeFormatterBuilder()
             .append(DATETIME_FORMATTER_0)
-            .optionalStart()
-            .appendFraction(MICRO_OF_SECOND, 0, 0, true)
-            .optionalEnd()
             .appendOffset(PATTERN, NO_OFFSET_TEXT)
             .toFormatter(Locale.ENGLISH);
 

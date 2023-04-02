@@ -1,9 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.*;
+import io.army.dialect._DialectUtils;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -1009,7 +1009,9 @@ abstract class InsertSupports {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             if (domainList != originalList
-                    && domainList.get(0) != originalList.get(0)) {
+                    && !(domainList.size() == originalList.size()
+                    && domainList.size() == 1
+                    && domainList.get(0) == originalList.get(0))) {
                 String m = String.format("%s and %s domain list not match.", this.insertTable
                         , ((ChildTableMeta<T>) this.insertTable).parentMeta());
                 throw ContextStack.criteriaError(this.context, m);
@@ -1788,7 +1790,9 @@ abstract class InsertSupports {
             insertStatementGuard(this);
 
             //finally clear context
-            ContextStack.pop(this.context);
+            final CriteriaContext context = this.context;
+            context.endContext();
+            ContextStack.pop(context);
             this.prepared = Boolean.TRUE;
         }
 
@@ -2102,13 +2106,15 @@ abstract class InsertSupports {
             } else if (statement instanceof _Insert._QueryInsert) {
                 validateSimpleQueryInsert((_Insert._QueryInsert) statement);
             }
-        } else if (isForbidChildSyntax((_Insert._ChildInsert) statement)) {
-            final ParentTableMeta<?> parentTable;
-            parentTable = ((ChildTableMeta<?>) statement.insertTable()).parentMeta();
-            String m = String.format("%s id %s is %s ,so you couldn't use duplicate key clause(on conflict)"
-                    , parentTable, GeneratorType.class.getName()
-                    , parentTable.id().generatorType());
-            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), ErrorChildInsertException::new, m);
+        } else if (_DialectUtils.isOnConflictDoNothing(((_Insert._ChildInsert) statement).parentStmt())) {
+            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(),
+                    _Exceptions::parentDoNothingError, (_Insert._ChildInsert) statement);
+        } else if (_DialectUtils.isOnConflictDoNothing(statement)) {
+            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(),
+                    _Exceptions::childDoNothingError, (_Insert._ChildInsert) statement);
+        } else if (_DialectUtils.isForbidChildInsert((_Insert._ChildInsert) statement)) {
+            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(),
+                    _Exceptions::forbidChildInsertSyntaxError, (_Insert._ChildInsert) statement);
         } else if (statement instanceof _Insert._QueryInsert) {
             validateChildQueryInsert((_Insert._ChildQueryInsert) statement);
         } else if (statement instanceof _Insert._ChildDomainInsert) {
@@ -2121,6 +2127,7 @@ abstract class InsertSupports {
         }
 
     }
+
 
     /**
      * @see #insertStatementGuard(_Insert)
@@ -2152,19 +2159,6 @@ abstract class InsertSupports {
         // throw new UnsupportedOperationException();
     }
 
-    /**
-     * @return true : representing insert {@link ChildTableMeta} and syntax error
-     * , statement executor couldn't get the auto increment primary key of {@link ParentTableMeta}
-     * @see #insertStatementGuard(_Insert)
-     */
-    private static boolean isForbidChildSyntax(final _Insert._ChildInsert child) {
-        final _Insert parentStmt;
-        parentStmt = child.parentStmt();
-        return parentStmt instanceof _Insert._SupportConflictClauseSpec
-                && parentStmt.insertTable().id().generatorType() == GeneratorType.POST
-                && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction()
-                && !(parentStmt instanceof _ReturningDml);
-    }
 
 
     private static void validateChildQueryInsert(final _Insert._ChildQueryInsert stmt) {

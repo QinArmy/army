@@ -555,6 +555,16 @@ abstract class ArmyParser implements DialectParser {
         } else {
             this.assertInsert(insert);
         }
+        if (insert instanceof _Insert._ChildInsert) {
+            final _Insert._ChildInsert childStmt = (_Insert._ChildInsert) insert;
+            if (_DialectUtils.isOnConflictDoNothing(childStmt.parentStmt())) {
+                throw _Exceptions.parentDoNothingError(childStmt);
+            } else if (_DialectUtils.isOnConflictDoNothing(childStmt)) {
+                throw _Exceptions.childDoNothingError(childStmt);
+            } else if (_DialectUtils.isForbidChildInsert(childStmt)) {
+                throw _Exceptions.forbidChildInsertSyntaxError(childStmt);
+            }
+        }
         final _InsertContext context;
         if (insert instanceof _Insert._DomainInsert) {
             context = handleDomainInsert(outerContext, (_Insert._DomainInsert) insert, visible);
@@ -569,6 +579,7 @@ abstract class ArmyParser implements DialectParser {
         }
         return context;
     }
+
 
     protected final void handleRowSet(final RowSet rowSet, final _SqlContext original) {
         //3. parse RowSet
