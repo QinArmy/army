@@ -134,7 +134,7 @@ abstract class PostgreInserts extends InsertSupports {
         mode = clause.getInsertMode();
         switch (mode) {
             case DOMAIN:
-                spec = new PrimaryDomainInsertStatement(clause);
+                spec = new PrimarySingleDomainInsertStatement(clause);
                 break;
             case VALUES:
                 spec = new PrimaryValueInsertStatement(clause);
@@ -1268,7 +1268,7 @@ abstract class PostgreInserts extends InsertSupports {
     }//StaticValuesLeftParenClause
 
 
-    private static abstract class PostgreValueSyntaxInsertStatement<I extends Statement, Q extends Statement>
+    static abstract class PostgreValueSyntaxInsertStatement<I extends Statement, Q extends Statement>
             extends AbstractValueSyntaxStatement<I, Q>
             implements PostgreInsert, _PostgreInsert {
 
@@ -1361,12 +1361,12 @@ abstract class PostgreInserts extends InsertSupports {
 
     }//DomainInsertStatement
 
-    private static final class PrimaryDomainInsertStatement extends DomainInsertStatement<Insert, ReturningInsert>
+    private static final class PrimarySingleDomainInsertStatement extends DomainInsertStatement<Insert, ReturningInsert>
             implements Insert {
 
         private final List<?> domainList;
 
-        private PrimaryDomainInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        private PrimarySingleDomainInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
             this.domainList = clause.domainListForSingle();
         }
@@ -1774,7 +1774,7 @@ abstract class PostgreInserts extends InsertSupports {
     }//SubValueReturningInsertStatement
 
 
-    static abstract class QueryInsertStatement<I extends Statement, Q extends Statement>
+    static abstract class PostgreQueryInsertStatement<I extends Statement, Q extends Statement>
             extends InsertSupports.AbstractQuerySyntaxInsertStatement<I, Q>
             implements _PostgreInsert._PostgreQueryInsert, PostgreInsert {
 
@@ -1790,7 +1790,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final List<? extends _Selection> returningList;
 
-        private QueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        private PostgreQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
             this.recursive = clause.recursive;
             this.cteList = clause.cteList;
@@ -1854,7 +1854,7 @@ abstract class PostgreInserts extends InsertSupports {
 
 
     private static abstract class ParentQueryInsertStatement<I extends Statement, Q extends Statement>
-            extends QueryInsertStatement<I, Q>
+            extends PostgreQueryInsertStatement<I, Q>
             implements ParentQueryInsert,
             _PostgreInsert._PostgreParentQueryInsert {
 
@@ -1882,7 +1882,7 @@ abstract class PostgreInserts extends InsertSupports {
 
 
     private static final class PrimaryNonParentQueryInsertStatement
-            extends QueryInsertStatement<Insert, ReturningInsert>
+            extends PostgreQueryInsertStatement<Insert, ReturningInsert>
             implements Insert {
 
         private PrimaryNonParentQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
@@ -1893,7 +1893,7 @@ abstract class PostgreInserts extends InsertSupports {
 
     }//PrimaryNonParentQueryInsertStatement
 
-    private static final class PrimaryChildQueryInsertStatement extends QueryInsertStatement<Insert, ReturningInsert>
+    private static final class PrimaryChildQueryInsertStatement extends PostgreQueryInsertStatement<Insert, ReturningInsert>
             implements _PostgreInsert._PostgreChildQueryInsert {
 
         private final ParentQueryInsertStatement<?, ?> parentStatement;
@@ -1944,7 +1944,7 @@ abstract class PostgreInserts extends InsertSupports {
     }//PrimaryParentQueryInsertStatement
 
     private static final class PrimaryNonParentQueryReturningInsertStatement
-            extends QueryInsertStatement<Insert, ReturningInsert>
+            extends PostgreQueryInsertStatement<Insert, ReturningInsert>
             implements ReturningInsert, _ReturningDml {
 
         private PrimaryNonParentQueryReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
@@ -1956,7 +1956,7 @@ abstract class PostgreInserts extends InsertSupports {
     }//PrimaryNonParentQueryReturningInsertStatement
 
     private static final class PrimaryChildQueryReturningInsertStatement
-            extends QueryInsertStatement<Insert, ReturningInsert>
+            extends PostgreQueryInsertStatement<Insert, ReturningInsert>
             implements ReturningInsert, _ReturningDml, _PostgreInsert._PostgreChildQueryInsert {
 
         private final ParentQueryInsertStatement<?, ?> parentStatement;
@@ -2008,7 +2008,7 @@ abstract class PostgreInserts extends InsertSupports {
     }//PrimaryQueryReturningInsertStatement
 
 
-    private static final class SubNonParentQueryInsertStatement extends QueryInsertStatement<SubStatement, SubStatement>
+    private static final class SubNonParentQueryInsertStatement extends PostgreQueryInsertStatement<SubStatement, SubStatement>
             implements SubStatement {
 
         private SubNonParentQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
@@ -2031,7 +2031,7 @@ abstract class PostgreInserts extends InsertSupports {
     }//SubParentQueryInsertStatement
 
     private static final class SubNonParentQueryReturningInsertStatement
-            extends QueryInsertStatement<SubStatement, SubStatement>
+            extends PostgreQueryInsertStatement<SubStatement, SubStatement>
             implements SubStatement, _ReturningDml {
 
         private SubNonParentQueryReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {

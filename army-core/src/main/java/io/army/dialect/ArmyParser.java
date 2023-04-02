@@ -425,7 +425,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleSelect(_SqlContext, Select, Visible)
      * @see #handleQuery(Query, _SqlContext)
      */
-    protected void parseQuery(_Query query, _SimpleQueryContext context) {
+    protected void parseSimpleQuery(_Query query, _SimpleQueryContext context) {
         throw standardParserDontSupportDialect(this.dialect);
     }
 
@@ -433,7 +433,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleValues(_SqlContext, Values, Visible)
      * @see #handleValuesQuery(ValuesQuery, _SqlContext)
      */
-    protected void parseValues(_ValuesQuery values, _ValuesContext context) {
+    protected void parseSimpleValues(_ValuesQuery values, _ValuesContext context) {
         throw standardParserDontSupportDialect(this.dialect);
     }
 
@@ -477,7 +477,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleValues(_SqlContext, Values, Visible)
      * @see #handleValuesQuery(ValuesQuery, _SqlContext)
      */
-    protected void parseParensRowSet(_ParensRowSet values, _ParenRowSetContext context) {
+    protected void parseClauseAfterRightParen(_ParensRowSet rowSet, _ParenRowSetContext context) {
         throw standardParserDontSupportDialect(this.dialect);
     }
 
@@ -633,7 +633,7 @@ abstract class ArmyParser implements DialectParser {
         if (values instanceof _ValuesQuery) {
             final ValuesContext context;
             context = ValuesContext.create(original, values, this, original.visible());
-            this.parseValues((_ValuesQuery) values, context);
+            this.parseSimpleValues((_ValuesQuery) values, context);
         } else if (values instanceof _UnionRowSet) {
             final _UnionRowSet union = (_UnionRowSet) values;
             this.handleValuesQuery((ValuesQuery) union.leftRowSet(), original);
@@ -652,14 +652,14 @@ abstract class ArmyParser implements DialectParser {
             sqlBuilder = ((StatementContext) original).sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             this.handleRowSet(parensRowSet.innerRowSet(), context);
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-            this.parseParensRowSet(parensRowSet, context);
+            this.parseClauseAfterRightParen(parensRowSet, context);
         }
 
     }
 
 
     /**
-     * @see #parseValues(_ValuesQuery, _ValuesContext)
+     * @see #parseSimpleValues(_ValuesQuery, _ValuesContext)
      */
     protected final void valuesClauseOfValues(final _ValuesContext context, @Nullable String rowKeyword
             , final List<List<_Expression>> rowList) {
@@ -708,7 +708,7 @@ abstract class ArmyParser implements DialectParser {
         if ((orderByList = query.orderByList()).size() > 0) {
             this.orderByClause(orderByList, context);
         }
-        this.standardLimitClause(query.offset(), query.rowCount(), context);
+        this.standardLimitClause(query.offsetExp(), query.rowCountExp(), context);
     }
 
     protected void standardLockClause(SQLWords lockMode, _SqlContext context) {
@@ -806,7 +806,7 @@ abstract class ArmyParser implements DialectParser {
                 this.parseStandardQuery((_StandardQuery) query, context);
             } else {
                 this.assertRowSet(query);
-                this.parseQuery((_Query) query, context);
+                this.parseSimpleQuery((_Query) query, context);
             }
         } else if (query instanceof _UnionRowSet) {
             _SQLConsultant.assertUnionRowSet(query);
@@ -820,7 +820,7 @@ abstract class ArmyParser implements DialectParser {
             } else {
                 this.assertRowSet(query);
             }
-            if (query instanceof _Statement._WithClauseSpec
+            if (!(query instanceof StandardQuery)
                     && ((_Statement._WithClauseSpec) query).cteList().size() > 0) {
                 this.parseWithClause((_Statement._WithClauseSpec) query, original);
             }
@@ -1589,7 +1589,7 @@ abstract class ArmyParser implements DialectParser {
                 this.parseStandardQuery((_StandardQuery) stmt, (_SimpleQueryContext) context);
             } else {
                 this.assertRowSet(stmt);
-                this.parseQuery((_Query) stmt, (_SimpleQueryContext) context);
+                this.parseSimpleQuery((_Query) stmt, (_SimpleQueryContext) context);
             }
         } else if (stmt instanceof _UnionRowSet) {
             _SQLConsultant.assertUnionRowSet(stmt);
@@ -1639,8 +1639,8 @@ abstract class ArmyParser implements DialectParser {
             _SQLConsultant.assertStandardQuery((StandardQuery) parensRowSet);
             this.parseStandardParensQuery(parensRowSet, context);
         } else {
-            this.assertRowSet((RowSet) parensRowSet);
-            this.parseParensRowSet(parensRowSet, context);
+            this.assertRowSet(parensRowSet);
+            this.parseClauseAfterRightParen(parensRowSet, context);
         }
 
     }
@@ -1655,7 +1655,7 @@ abstract class ArmyParser implements DialectParser {
         final _ValuesContext context;
         context = ValuesContext.create(outerContext, stmt, this, visible);
         if (stmt instanceof _ValuesQuery) {
-            this.parseValues((_ValuesQuery) stmt, context);
+            this.parseSimpleValues((_ValuesQuery) stmt, context);
         } else if (stmt instanceof _UnionRowSet) {
             final _UnionRowSet union = (_UnionRowSet) stmt;
             this.handleValuesQuery((Values) union.leftRowSet(), context);
@@ -2275,7 +2275,7 @@ abstract class ArmyParser implements DialectParser {
         this.orderByClause(query.orderByList(), context);
 
         //7. limit clause
-        this.standardLimitClause(query.offset(), query.rowCount(), context);
+        this.standardLimitClause(query.offsetExp(), query.rowCountExp(), context);
 
         //8. lock clause
         final SQLWords lock = query.lockMode();

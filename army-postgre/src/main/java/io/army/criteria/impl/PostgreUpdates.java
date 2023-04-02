@@ -1285,16 +1285,16 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     }//BatchJoinClauseTableBlock
 
 
-    private static abstract class PostgreReturningUpdateWrapper extends CriteriaSupports.StatementMockSupport
-            implements PostgreUpdate, _PostgreUpdate, _ReturningDml {
+     static abstract class PostgreReturningUpdateWrapper extends CriteriaSupports.StatementMockSupport
+             implements PostgreUpdate, _PostgreUpdate, _ReturningDml {
 
-        private final boolean recursive;
+         private final boolean recursive;
 
-        private final List<_Cte> cteList;
+         private final List<_Cte> cteList;
 
-        private final SQLsSyntax.WordOnly only;
+         private final SQLsSyntax.WordOnly only;
 
-        private final TableMeta<?> targetTable;
+         private final TableMeta<?> targetTable;
 
         private final String tableAlias;
 

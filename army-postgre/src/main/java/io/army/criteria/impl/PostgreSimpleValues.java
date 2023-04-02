@@ -188,17 +188,17 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
     }//SimpleSubValues
 
 
-    private static abstract class PostgreBracketValues<I extends Item> extends BracketRowSet<
-            I,
-            PostgreValues._UnionOrderBySpec<I>,
-            PostgreValues._UnionLimitSpec<I>,
-            PostgreValues._UnionOffsetSpec<I>,
-            PostgreValues._UnionFetchSpec<I>,
-            PostgreValues._AsValuesClause<I>,
-            PostgreValues._QueryWithComplexSpec<I>>
-            implements PostgreValues,
-            PostgreValues._UnionOrderBySpec<I>,
-            PostgreValues._UnionOffsetSpec<I>,
+     static abstract class PostgreBracketValues<I extends Item> extends BracketRowSet<
+             I,
+             PostgreValues._UnionOrderBySpec<I>,
+             PostgreValues._UnionLimitSpec<I>,
+             PostgreValues._UnionOffsetSpec<I>,
+             PostgreValues._UnionFetchSpec<I>,
+             PostgreValues._AsValuesClause<I>,
+             PostgreValues._QueryWithComplexSpec<I>>
+             implements PostgreValues,
+             PostgreValues._UnionOrderBySpec<I>,
+             PostgreValues._UnionOffsetSpec<I>,
             PostgreValues._UnionFetchSpec<I> {
 
         private PostgreBracketValues(ArmyStmtSpec spec) {

@@ -249,6 +249,9 @@ abstract class CriteriaUtils {
             rowCount = -1L;
         } else if (value instanceof Long) {
             rowCount = (Long) value;
+            if (rowCount < 0L) {
+                throw limitParamError(criteriaContext, value);
+            }
         } else if (value instanceof Integer
                 || value instanceof Short
                 || value instanceof Byte) {

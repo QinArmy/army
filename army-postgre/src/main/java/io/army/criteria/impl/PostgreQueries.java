@@ -872,17 +872,17 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }//SimpleSubQuery
 
 
-    private static abstract class PostgreBracketQuery<I extends Item>
-            extends BracketRowSet<
-            I,
-            PostgreQuery._UnionOrderBySpec<I>,
-            PostgreQuery._UnionLimitSpec<I>,
-            PostgreQuery._UnionOffsetSpec<I>,
-            PostgreQuery._UnionFetchSpec<I>,
-            Query._AsQueryClause<I>,
-            PostgreQuery._QueryWithComplexSpec<I>>
-            implements PostgreQuery._UnionOrderBySpec<I>,
-            PostgreQuery._UnionOffsetSpec<I>,
+     static abstract class PostgreBracketQuery<I extends Item>
+             extends BracketRowSet<
+             I,
+             PostgreQuery._UnionOrderBySpec<I>,
+             PostgreQuery._UnionLimitSpec<I>,
+             PostgreQuery._UnionOffsetSpec<I>,
+             PostgreQuery._UnionFetchSpec<I>,
+             Query._AsQueryClause<I>,
+             PostgreQuery._QueryWithComplexSpec<I>>
+             implements PostgreQuery._UnionOrderBySpec<I>,
+             PostgreQuery._UnionOffsetSpec<I>,
             PostgreQuery._UnionFetchSpec<I> {
 
         private PostgreBracketQuery(ArmyStmtSpec spec) {

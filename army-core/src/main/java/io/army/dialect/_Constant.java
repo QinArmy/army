@@ -100,7 +100,10 @@ public interface _Constant {
 
     String SPACE_LIMIT_SPACE = " LIMIT ";
 
-    String SPACE_FETCH_SPACE = " FETCH ";
+    String SPACE_FETCH = " FETCH";
+
+
+    String SPACE_OFFSET = " OFFSET";
 
     String SPACE_OFFSET_SPACE = " OFFSET ";
 

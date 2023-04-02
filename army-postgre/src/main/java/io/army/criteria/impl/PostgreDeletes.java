@@ -1128,16 +1128,16 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
     }//BatchJoinClauseTableBlock
 
 
-    private static abstract class PostgreReturningDeleteWrapper extends CriteriaSupports.StatementMockSupport
-            implements PostgreDelete, _PostgreDelete, _ReturningDml {
+     static abstract class PostgreReturningDeleteWrapper extends CriteriaSupports.StatementMockSupport
+             implements PostgreDelete, _PostgreDelete, _ReturningDml {
 
-        private final boolean recursive;
+         private final boolean recursive;
 
-        private final List<_Cte> cteList;
+         private final List<_Cte> cteList;
 
-        private final SQLsSyntax.WordOnly only;
+         private final SQLsSyntax.WordOnly only;
 
-        private final TableMeta<?> targetTable;
+         private final TableMeta<?> targetTable;
 
         private final String tableAlias;
 

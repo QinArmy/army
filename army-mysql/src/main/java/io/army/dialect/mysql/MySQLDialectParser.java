@@ -159,7 +159,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected void parseQuery(final _Query query, final _SimpleQueryContext context) {
+    protected void parseSimpleQuery(final _Query query, final _SimpleQueryContext context) {
         assert context.parser() == this;
         final _MySQLQuery stmt = (_MySQLQuery) query;
 
@@ -220,7 +220,7 @@ final class MySQLDialectParser extends MySQLParser {
         }
 
         //11. LIMIT clause
-        this.standardLimitClause(stmt.offset(), stmt.rowCount(), context);
+        this.standardLimitClause(stmt.offsetExp(), stmt.rowCountExp(), context);
 
         final List<String> intoList;
         intoList = stmt.intoVarList();
@@ -247,7 +247,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     @Override
-    protected void parseValues(final _ValuesQuery values, final _ValuesContext context) {
+    protected void parseSimpleValues(final _ValuesQuery values, final _ValuesContext context) {
         assert context.parser() == this;
         final StringBuilder sqlBuilder;
         if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
@@ -260,13 +260,13 @@ final class MySQLDialectParser extends MySQLParser {
         //3. ORDER BY clause
         this.orderByClause(values.orderByList(), context);
         //4. LIMIT clause
-        this.standardLimitClause(values.offset(), values.rowCount(), context);
+        this.standardLimitClause(values.offsetExp(), values.rowCountExp(), context);
     }
 
     @Override
-    protected void parseParensRowSet(final _ParensRowSet values, final _ParenRowSetContext context) {
-        this.orderByClause(values.orderByList(), context);
-        this.standardLimitClause(values.offset(), values.rowCount(), context);
+    protected void parseClauseAfterRightParen(final _ParensRowSet rowSet, final _ParenRowSetContext context) {
+        this.orderByClause(rowSet.orderByList(), context);
+        this.standardLimitClause(rowSet.offsetExp(), rowSet.rowCountExp(), context);
     }
 
     /**
@@ -330,7 +330,7 @@ final class MySQLDialectParser extends MySQLParser {
         //11. order by clause
         this.orderByClause(stmt.orderByList(), context);
         //12. limit clause
-        this.standardLimitClause(null, stmt.rowCount(), context);
+        this.standardLimitClause(null, stmt.rowCountExp(), context);
 
     }
 
@@ -421,7 +421,7 @@ final class MySQLDialectParser extends MySQLParser {
         //8. order by clause
         this.orderByClause(stmt.orderByList(), context);
         //9. limit clause
-        this.standardLimitClause(null, stmt.rowCount(), context);
+        this.standardLimitClause(null, stmt.rowCountExp(), context);
 
     }
 
@@ -497,7 +497,7 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #parseMultiUpdate(_MultiUpdate, _MultiUpdateContext)
      * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
-     * @see #parseQuery(_Query, _SimpleQueryContext)
+     * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
      */
     private void hintClause(List<Hint> hintList, final StringBuilder sqlBuilder, final _SqlContext context) {
         if (hintList.size() == 0) {
@@ -661,7 +661,7 @@ final class MySQLDialectParser extends MySQLParser {
     /**
      * @see #parseMultiUpdate(_MultiUpdate, _MultiUpdateContext)
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
-     * @see #parseQuery(_Query, _SimpleQueryContext)
+     * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
      */
     private void mysqlTableReferences(final List<_TabularBock> blockList, final _MultiTableStmtContext context
             , final boolean nested) {
@@ -858,7 +858,7 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #parseMultiUpdate(_MultiUpdate, _MultiUpdateContext)
      * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
-     * @see #parseQuery(_Query, _SimpleQueryContext)
+     * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
      */
     private void partitionClause(final List<String> partitionList, final StringBuilder sqlBuilder) {
         final int partitionSize = partitionList.size();
@@ -879,7 +879,7 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
      * @see #parseMultiUpdate(_MultiUpdate, _MultiUpdateContext)
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
-     * @see #parseQuery(_Query, _SimpleQueryContext)
+     * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
      */
     private void indexHintClause(List<? extends _IndexHint> indexHintList, final StringBuilder sqlBuilder) {
         if (indexHintList.size() == 0) {

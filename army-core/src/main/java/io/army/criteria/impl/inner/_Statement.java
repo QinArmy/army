@@ -1,5 +1,6 @@
 package io.army.criteria.impl.inner;
 
+import io.army.criteria.SQLWords;
 import io.army.criteria.SortItem;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -31,14 +32,44 @@ public interface _Statement {
     interface _RowCountSpec {
 
         @Nullable
-        _Expression rowCount();
+        _Expression rowCountExp();
 
     }
 
     interface _LimitClauseSpec extends _RowCountSpec {
 
         @Nullable
-        _Expression offset();
+        _Expression offsetExp();
+
+    }
+
+    /**
+     * SQL:2008 introduced a different syntax
+     */
+    interface _SQL2008LimitClauseSpec extends _LimitClauseSpec {
+
+        @Nullable
+        SQLWords offsetRowModifier();
+
+        @Nullable
+        SQLWords fetchFirstOrNext();
+
+
+        /**
+         * @return row count or percent {@link io.army.criteria.Expression }
+         */
+        @Override
+        _Expression rowCountExp();
+
+        @Nullable
+        SQLWords fetchPercentModifier();
+
+        @Nullable
+        SQLWords fetchRowModifier();
+
+        @Nullable
+        SQLWords fetchOnlyOrWithTies();
+
 
     }
 

@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.mysql.MySQLLoadData;
@@ -87,10 +88,21 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     }
 
     public static void assertQuery(final Query query) {
-        if (!(query instanceof MySQLQueries
-                || query instanceof MySQLQueries.MySQLBracketQuery
-                || query instanceof SimpleQueries.UnionSelect
-                || query instanceof SimpleQueries.UnionSubQuery)) {
+        if (query instanceof Select) {
+            if (!(query instanceof MySQLQueries
+                    || query instanceof MySQLQueries.MySQLBracketQuery
+                    || query instanceof SimpleQueries.UnionSelect)) {
+                throw nonArmyStatement(query);
+            }
+        } else if (query instanceof SubQuery) {
+            if (!(query instanceof MySQLQueries
+                    || query instanceof MySQLQueries.MySQLBracketQuery
+                    || query instanceof SimpleQueries.UnionSubQuery
+                    || query instanceof StandardQueries
+                    || query instanceof StandardQueries.StandardBracketQuery)) {
+                throw nonArmyStatement(query);
+            }
+        } else {
             throw nonArmyStatement(query);
         }
 

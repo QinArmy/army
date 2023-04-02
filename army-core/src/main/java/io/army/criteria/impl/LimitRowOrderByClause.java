@@ -14,25 +14,25 @@ import java.util.function.*;
 
 @SuppressWarnings("unchecked")
 abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
-        implements Statement._LimitClause<LR>
-        , Statement._QueryOffsetClause<LO>
-        , Statement._FetchPercentClause<LF>
-        , Statement._DmlRowCountLimitClause<LR>
-        , Statement._RowCountLimitAllClause<LR>
-        , _Statement._LimitClauseSpec {
+        implements Statement._LimitClause<LR>,
+        Statement._QueryOffsetClause<LO>,
+        Statement._FetchPercentClause<LF>,
+        Statement._DmlRowCountLimitClause<LR>,
+        Statement._RowCountLimitAllClause<LR>,
+        _Statement._SQL2008LimitClauseSpec {
 
     private ArmyExpression offsetExp;
 
     private SQLWords offsetRow;
 
-    private SQLWords rowFirstNext;
+    private SQLWords fethFirstNext;
 
     private ArmyExpression rowCountOrPercent;
 
-    private SQLWords rowPercent;
-    private SQLWords rowRow;
+    private SQLWords fetchRowPercent;
+    private SQLWords fetchRow;
 
-    private SQLWords rowOnlyWithTies;
+    private SQLWords fetchOnlyWithTies;
 
     LimitRowOrderByClause(CriteriaContext context) {
         super(context);
@@ -65,22 +65,22 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
     }
 
     @Override
-    public final <N extends Number> LR limit(BiFunction<MappingType, Number, Expression> operator
-            , Supplier<N> supplier) {
-        return this.limit(operator.apply(LongType.INSTANCE, supplier.get()));
+    public final <N extends Number> LR limit(BiFunction<MappingType, Number, Expression> operator,
+                                             Supplier<N> supplier) {
+        return this.limit(operator.apply(LongType.INSTANCE, CriteriaUtils.asLimitParam(this.context, supplier.get())));
     }
 
     @Override
-    public final LR limit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function
-            , String keyName) {
+    public final LR limit(BiFunction<MappingType, Number, Expression> operator, Function<String, ?> function,
+                          String keyName) {
         final long number;
         number = CriteriaUtils.asLimitParam(this.context, function.apply(keyName));
         return this.limit(operator.apply(LongType.INSTANCE, number));
     }
 
     @Override
-    public final <N extends Number> LR ifLimit(BiFunction<MappingType, Number, Expression> operator
-            , Supplier<N> supplier) {
+    public final <N extends Number> LR ifLimit(BiFunction<MappingType, Number, Expression> operator,
+                                               Supplier<N> supplier) {
         final long number;
         number = CriteriaUtils.asIfLimitParam(this.context, supplier.get());
         if (number >= 0) {
@@ -286,11 +286,11 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
         } else if (onlyWithTies != SQLs.ONLY && onlyWithTies != SQLs.WITH_TIES) {
             throw CriteriaUtils.unknownWords(this.context, onlyWithTies);
         }
-        this.rowFirstNext = (SQLWords) firstOrNext;
+        this.fethFirstNext = (SQLWords) firstOrNext;
         this.rowCountOrPercent = (ArmyExpression) count;
-        this.rowPercent = null;
-        this.rowRow = (SQLWords) row;
-        this.rowOnlyWithTies = (SQLWords) onlyWithTies;
+        this.fetchRowPercent = null;
+        this.fetchRow = (SQLWords) row;
+        this.fetchOnlyWithTies = (SQLWords) onlyWithTies;
         return (LF) this;
     }
 
@@ -344,8 +344,9 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
     }
 
     @Override
-    public final LF fetch(Query.FetchFirstNext firstOrNext, final @Nullable Expression percent
-            , SQLsSyntax.WordPercent wordPercent, Query.FetchRow row, Query.FetchOnlyWithTies onlyWithTies) {
+    public final LF fetch(final Query.FetchFirstNext firstOrNext, final @Nullable Expression percent,
+                          final SQLsSyntax.WordPercent wordPercent, final Query.FetchRow row,
+                          final Query.FetchOnlyWithTies onlyWithTies) {
         if (percent == null) {
             throw ContextStack.nullPointer(this.context);
         } else if (firstOrNext != SQLs.FIRST && firstOrNext != SQLs.NEXT) {
@@ -359,11 +360,11 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
         } else if (this.rowCountOrPercent != null) {
             throw limitAndFetch(this.context);
         }
-        this.rowFirstNext = (SQLWords) firstOrNext;
+        this.fethFirstNext = (SQLWords) firstOrNext;
         this.rowCountOrPercent = (ArmyExpression) percent;
-        this.rowPercent = (SQLWords) wordPercent;
-        this.rowRow = (SQLWords) row;
-        this.rowOnlyWithTies = (SQLWords) onlyWithTies;
+        this.fetchRowPercent = (SQLWords) wordPercent;
+        this.fetchRow = (SQLWords) row;
+        this.fetchOnlyWithTies = (SQLWords) onlyWithTies;
         return (LF) this;
     }
 
@@ -436,15 +437,40 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
     }
 
     @Override
-    public final _Expression offset() {
+    public final _Expression offsetExp() {
         return this.offsetExp;
     }
 
     @Override
-    public final _Expression rowCount() {
+    public final SQLWords offsetRowModifier() {
+        return this.offsetRow;
+    }
+
+    @Override
+    public final _Expression rowCountExp() {
         return this.rowCountOrPercent;
     }
 
+
+    @Override
+    public final SQLWords fetchFirstOrNext() {
+        return this.fethFirstNext;
+    }
+
+    @Override
+    public final SQLWords fetchPercentModifier() {
+        return this.fetchRowPercent;
+    }
+
+    @Override
+    public final SQLWords fetchRowModifier() {
+        return this.fetchRow;
+    }
+
+    @Override
+    public final SQLWords fetchOnlyOrWithTies() {
+        return this.fetchOnlyWithTies;
+    }
 
     private static CriteriaException limitAndFetch(CriteriaContext context) {
         return ContextStack.criteriaError(context, "Can't use LIMIT clause with FETCH clause");

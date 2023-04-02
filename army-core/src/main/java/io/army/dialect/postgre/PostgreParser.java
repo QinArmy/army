@@ -1,6 +1,8 @@
 package io.army.dialect.postgre;
 
 import io.army.criteria.CriteriaException;
+import io.army.criteria.SQLWords;
+import io.army.criteria.Statement;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
@@ -413,21 +415,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
 
     @Override
-    protected final void standardLimitClause(final @Nullable _Expression offset, final @Nullable _Expression rowCount,
-                                             final _SqlContext context) {
-        if (offset != null && rowCount != null) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE);
-            rowCount.appendSql(context);
-            sqlBuilder.append(_Constant.SPACE_OFFSET_SPACE);
-            offset.appendSql(context);
-        } else if (rowCount != null) {
-            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE);
-            rowCount.appendSql(context);
-        }
-    }
-
-    @Override
     protected final Set<String> createKeyWordSet() {
         return PostgreDialectUtils.createKeywordsSet();
     }
@@ -491,6 +478,10 @@ abstract class PostgreParser extends _ArmyDialectParser {
         return false;
     }
 
+    @Override
+    protected final String beautifySql(String sql) {
+        return sql;
+    }
 
     @Override
     protected final void parseAssignmentInsert(_AssignmentInsertContext context, _Insert._AssignmentInsert insert) {
@@ -734,6 +725,41 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 .append(_Constant.DOUBLE_QUOTE)
                 .append(_MetaBridge.ID)
                 .append(_Constant.DOUBLE_QUOTE);
+    }
+
+    @Override
+    protected final void standardLimitClause(final @Nullable _Expression offset, final @Nullable _Expression rowCount,
+                                             final _SqlContext context) {
+
+        if (rowCount != null) {
+            context.sqlBuilder().append(_Constant.SPACE_LIMIT);
+            rowCount.appendSql(context);
+        }
+        if (offset != null) {
+            context.sqlBuilder().append(_Constant.SPACE_OFFSET);
+            offset.appendSql(context);
+        }
+
+    }
+
+    @Override
+    protected final void standardLockClause(SQLWords lockMode, _SqlContext context) {
+        if (!_Constant.SPACE_FOR_UPDATE.equals(lockMode.render())) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        context.sqlBuilder().append(_Constant.SPACE_FOR_UPDATE);
+    }
+
+    @Override
+    protected final void parseMultiUpdate(_MultiUpdate update, _MultiUpdateContext context) {
+        // Postgre don't support multi-table UPDATE syntax
+        throw _Exceptions.unexpectedStatement((Statement) update);
+    }
+
+    @Override
+    protected final void parseMultiDelete(_MultiDelete delete, _MultiDeleteContext context) {
+        // Postgre don't support multi-table DELETE syntax
+        throw _Exceptions.unexpectedStatement((Statement) delete);
     }
 
 
