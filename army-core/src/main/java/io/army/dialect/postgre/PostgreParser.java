@@ -3,6 +3,7 @@ package io.army.dialect.postgre;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLWords;
 import io.army.criteria.Statement;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
@@ -355,6 +356,16 @@ abstract class PostgreParser extends _ArmyDialectParser {
         return PostgreDdl.create(this);
     }
 
+    @Override
+    protected final boolean existsIgnoreOnConflict() {
+        //true,Postgre support DO NOTHING and WHERE in ON CONFLICT clause.
+        return true;
+    }
+
+    @Override
+    protected final CriteriaException supportChildInsert(_Insert._ChildInsert childStmt, Visible visible) {
+        return null;
+    }
 
     @Override
     public final String identifier(final String identifier) {

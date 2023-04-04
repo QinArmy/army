@@ -2,13 +2,14 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.SQLWords;
+import io.army.dialect._Constant;
 
 /**
  * representing Unary SQL Operator
  */
 enum UnaryOperator implements SQLWords {
 
-    EXISTS(" EXISTS"),
+    EXISTS(_Constant.SPACE_EXISTS),
     NOT_EXISTS(" NOT EXISTS"),
     NEGATE(" -"),
     POSITIVE(" +"),

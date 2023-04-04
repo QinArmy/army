@@ -12,10 +12,21 @@ public interface _InsertContext extends _DmlContext, _SetClauseContext {
     LiteralMode literalMode();
 
     @Nullable
+    String tableAlias();
+
+    @Nullable
+    String safeTableAlias();
+
+    @Nullable
     String rowAlias();
 
     @Nullable
     String safeRowAlias();
+
+    boolean hasConditionPredicate();
+
+
+    void appendConditionPredicate(boolean firstPredicate);
 
     @Override
     _InsertContext parentContext();

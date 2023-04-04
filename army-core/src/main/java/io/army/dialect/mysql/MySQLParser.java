@@ -1,9 +1,11 @@
 package io.army.dialect.mysql;
 
+import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLWords;
 import io.army.criteria.UpdateStatement;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect.*;
@@ -140,6 +142,18 @@ abstract class MySQLParser extends _ArmyDialectParser {
     @Override
     protected final MySQLDdl createDdlDialect() {
         return MySQLDdl.create(this);
+    }
+
+    @Override
+    protected final boolean existsIgnoreOnConflict() {
+        //false,MySQL don't support ignore in ON DUPLICATE KEY clause.
+        return false;
+    }
+
+    @Override
+    protected final CriteriaException supportChildInsert(final _Insert._ChildInsert childStmt, final Visible visible) {
+
+        return null;
     }
 
 

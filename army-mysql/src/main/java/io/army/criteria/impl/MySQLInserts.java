@@ -819,8 +819,8 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean isDoNothing() {
-            //false ,MySQL don't support do nothing clause
+        public final boolean existsIgnore() {
+            //false ,MySQL ON DUPLICATE KEY don't support
             return false;
         }
 
@@ -1070,7 +1070,7 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean isDoNothing() {
+        public final boolean existsIgnore() {
             //false ,MySQL don't support do nothing clause
             return false;
         }
@@ -1200,7 +1200,7 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean isDoNothing() {
+        public final boolean existsIgnore() {
             //false ,MySQL don't support do nothing clause
             return false;
         }

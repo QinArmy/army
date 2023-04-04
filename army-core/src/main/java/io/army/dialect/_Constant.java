@@ -59,6 +59,8 @@ public interface _Constant {
 
     String SPACE_AND_SPACE = " AND ";
 
+    String SPACE_EXISTS = " EXISTS";
+
     String SPACE_OR = " OR";
 
     String SPACE_GROUP_BY = " GROUP BY";

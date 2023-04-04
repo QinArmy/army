@@ -933,6 +933,11 @@ abstract class InsertSupports {
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public final int insertRowCount() {
+            //no bug,never here
+            throw new UnsupportedOperationException();
+        }
 
         /**
          * @param rowPairList a unmodified list,empty is allowed.
@@ -1744,6 +1749,26 @@ abstract class InsertSupports {
             return this.tableAlias;
         }
 
+
+        @Override
+        public final int insertRowCount() {
+            final int rowCount;
+            if (this instanceof _Insert._DomainInsert) {
+                rowCount = ((_DomainInsert) this).domainList().size();
+            } else if (this instanceof _Insert._ValuesInsert) {
+                rowCount = ((_ValuesInsert) this).rowPairList().size();
+            } else if (this instanceof _Insert._QueryInsert) {
+                rowCount = -1;
+            } else if (this instanceof _Insert._AssignmentInsert) {
+                rowCount = 1;
+            } else {
+                // no bug,never here
+                throw new IllegalStateException();
+            }
+            assert rowCount != 0;
+            return rowCount;
+        }
+
         @Override
         public final void prepared() {
             _Assert.prepared(this.prepared);
@@ -2158,7 +2183,6 @@ abstract class InsertSupports {
 //        }
         // throw new UnsupportedOperationException();
     }
-
 
 
     private static void validateChildQueryInsert(final _Insert._ChildQueryInsert stmt) {

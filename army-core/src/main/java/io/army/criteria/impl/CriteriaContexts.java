@@ -1739,6 +1739,10 @@ abstract class CriteriaContexts {
                 throw ContextStack.nullPointer(this);
             } else if (this.rowAlias != null) {
                 throw ContextStack.castCriteriaApi(this);
+            } else if (rowAlias.equals(this.tableAlias)) {
+                String m = String.format("INSERT statement row alias[%s] couldn't be equals to table alias[%s]",
+                        rowAlias, this.tableAlias);
+                throw ContextStack.criteriaError(this, m);
             }
             this.rowAlias = rowAlias;
         }

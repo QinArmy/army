@@ -73,6 +73,8 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
     private int outputColumnSize;
 
+    private List<FieldMeta<?>> conditionFieldList;
+
 
     /**
      * <p>
@@ -142,15 +144,32 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         }
 
         final PrimaryFieldMeta<?> idField = this.insertTable.id();
+        final boolean needReturnId, cannotReturnId;
+        needReturnId = !this.migration
+                && idField.generatorType() == GeneratorType.POST
+                && (targetStmt instanceof _Insert._DomainInsert || domainStmt instanceof _Insert._ChildInsert);
+
+
+        cannotReturnId = targetStmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) targetStmt).hasConflictAction()
+                && targetStmt.insertRowCount() > 1
+                && (!(targetStmt instanceof _Insert._ReturningListSpec) || parser.existsIgnoreOnConflict());
+
+        if (needReturnId && cannotReturnId) {
+            //TODO
+            throw new IllegalArgumentException();
+        }
+
+
         if (targetStmt instanceof _ReturningDml) {
             this.returningList = ((_ReturningDml) targetStmt).returningList();
-            if (this.migration || idField.generatorType() != GeneratorType.POST) {
-                this.returnId = null;
-                this.idSelectionAlias = null;
-            } else {
+            if (needReturnId) {
                 this.returnId = idField;
                 this.idSelectionAlias = returnIdSelection(parser, idField, (_ReturningDml) targetStmt)
                         .selectionName();
+            } else {
+                this.returnId = null;
+                this.idSelectionAlias = null;
             }
             this.appendReturningClause = false;
         } else if (this.migration || idField.generatorType() != GeneratorType.POST) {
@@ -260,6 +279,15 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         return this.insertTable;
     }
 
+    @Override
+    public final String tableAlias() {
+        return this.tableAlias;
+    }
+
+    @Override
+    public final String safeTableAlias() {
+        return this.safeTableAlias;
+    }
 
     @Override
     public final String rowAlias() {
@@ -335,13 +363,13 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
     @Override
     public void appendSetLeftItem(final DataField dataField) {
-        final TableField field;
+        final FieldMeta<?> field;
         final String fieldName = dataField.fieldName();
         final UpdateMode mode;
-        if (!(dataField instanceof TableField)) {
+        if (!(dataField instanceof FieldMeta)) {
             String m = String.format("Insert statement conflict clause don't support %s", dataField);
             throw new CriteriaException(m);
-        } else if ((field = (TableField) dataField).tableMeta() != this.insertTable) {
+        } else if ((field = (FieldMeta<?>) dataField).tableMeta() != this.insertTable) {
             throw _Exceptions.unknownColumn(dataField);
         } else if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {
             throw _Exceptions.unknownColumn(field);
@@ -356,7 +384,15 @@ abstract class InsertContext extends StatementContext implements _InsertContext
                     String m = String.format("%s don't support update the field with %s mode.",
                             this.parser.dialect, mode);
                     throw new CriteriaException(m);
+                } else if (mode == UpdateMode.ONLY_DEFAULT && this.parser.supportOnlyDefault) {
+                    throw _Exceptions.dontSupportOnlyDefault(this.parser.dialect);
                 }
+                List<FieldMeta<?>> conditionFieldList = this.conditionFieldList;
+                if (conditionFieldList == null) {
+                    conditionFieldList = new ArrayList<>();
+                    this.conditionFieldList = conditionFieldList;
+                }
+                conditionFieldList.add(field);
             }
             break;
             case UPDATABLE:
@@ -367,17 +403,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
-        if (field instanceof QualifiedField) {
-            final String rowAlias = this.rowAlias;
-            if (rowAlias == null || !rowAlias.equals(((QualifiedField<?>) field).tableAlias())) {
-                throw _Exceptions.unknownColumn(field);
-            }
-            sqlBuilder.append(this.safeRowAlias)
-                    .append(_Constant.POINT);
-            this.parser.safeObjectName((field).fieldMeta(), sqlBuilder);
-        } else {
-            this.parser.safeObjectName(field, sqlBuilder);
-        }
+        this.parser.safeObjectName(field, sqlBuilder);
 
     }
 
@@ -451,6 +477,67 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         this.valuesClauseEnd = true;
 
     }
+
+    @Override
+    public final boolean hasConditionPredicate() {
+        final List<FieldMeta<?>> conditionFieldList = this.conditionFieldList;
+        return conditionFieldList != null && conditionFieldList.size() > 0;
+    }
+
+    @Override
+    public final void appendConditionPredicate(final boolean firstPredicate) {
+        final List<FieldMeta<?>> conditionFieldList = this.conditionFieldList;
+        if (conditionFieldList == null) {
+            return;
+        }
+        final ArmyParser parser = this.parser;
+        final StringBuilder sqlBuilder = this.sqlBuilder;
+        final int fieldSize = conditionFieldList.size();
+        final String safeTableAlias;
+        if (this.safeTableAlias == null) {
+            safeTableAlias = parser.safeObjectName(this.insertTable);
+        } else {
+            safeTableAlias = this.safeTableAlias;
+        }
+        String safeColumnName;
+        FieldMeta<?> field;
+        for (int i = 0; i < fieldSize; i++) {
+            field = conditionFieldList.get(i);
+            if (i == 0 && firstPredicate) {
+                sqlBuilder.append(_Constant.SPACE);
+            } else {
+                sqlBuilder.append(_Constant.SPACE_AND_SPACE);
+            }
+
+            sqlBuilder.append(safeTableAlias)
+                    .append(_Constant.POINT);
+
+            safeColumnName = parser.safeObjectName(field);
+            sqlBuilder.append(safeColumnName);
+            switch (field.updateMode()) {
+                case ONLY_NULL:
+                    sqlBuilder.append(_Constant.SPACE_IS_NULL);
+                    break;
+                case ONLY_DEFAULT: {
+                    sqlBuilder.append(_Constant.SPACE)
+                            .append(parser.defaultFuncName())
+                            .append(_Constant.LEFT_PAREN)
+                            .append(_Constant.SPACE)
+                            .append(safeTableAlias)
+                            .append(_Constant.POINT)
+                            .append(safeColumnName)
+                            .append(_Constant.SPACE_RIGHT_PAREN);
+
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(field.updateMode());
+
+            }
+        }
+
+    }
+
 
     @Override
     public final void appendReturnIdIfNeed() {

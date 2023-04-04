@@ -30,7 +30,7 @@ public interface _PostgreInsert extends _Insert, _Insert._SupportConflictClauseS
 
         List<_Predicate> indexPredicateList();
 
-        boolean isDoNothing();
+        boolean existsIgnore();
 
     }
 

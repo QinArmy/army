@@ -306,6 +306,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException visibleFieldAndConflictClauseNotMatch(Dialect dialect, TableMeta<?> table) {
+        String m = String.format("%s don't support conflict clause for non-%s mode,because %s exists %s field."
+                , dialect, Visible.BOTH, table, _MetaBridge.VISIBLE);
+        return new CriteriaException(m);
+    }
 
     public static CriteriaException multiStmtDontSupportParam() {
         return new CriteriaException("multi-statement don't support parameter placeholder.");

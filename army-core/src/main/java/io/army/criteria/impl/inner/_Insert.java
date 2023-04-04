@@ -19,6 +19,11 @@ public interface _Insert extends _Statement {
     @Nullable
     String tableAlias();
 
+    /**
+     * @return non-zero,negative : query insert.
+     */
+    int insertRowCount();
+
     interface _SupportConflictClauseSpec {
 
         @Nullable
@@ -26,7 +31,11 @@ public interface _Insert extends _Statement {
 
         boolean hasConflictAction();
 
-        boolean isDoNothing();
+        /**
+         * @return true: possibly ignore when conflict
+         */
+        @Deprecated
+        boolean existsIgnore();
 
     }
 

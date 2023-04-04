@@ -872,7 +872,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public boolean isDoNothing() {
+        public boolean existsIgnore() {
             return this.doNothing;
         }
 
@@ -1364,9 +1364,9 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean isDoNothing() {
+        public final boolean existsIgnore() {
             final _ConflictActionClauseResult conflictAction = this.conflictAction;
-            return conflictAction != null && conflictAction.isDoNothing();
+            return conflictAction != null && conflictAction.existsIgnore();
         }
 
         @Override
@@ -1874,9 +1874,9 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean isDoNothing() {
+        public final boolean existsIgnore() {
             final _ConflictActionClauseResult conflictAction = this.conflictAction;
-            return conflictAction != null && conflictAction.isDoNothing();
+            return conflictAction != null && conflictAction.existsIgnore();
         }
 
         @Override

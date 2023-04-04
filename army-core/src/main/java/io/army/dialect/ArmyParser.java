@@ -348,6 +348,20 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract DdlDialect createDdlDialect();
 
+    /**
+     * @return true: exists ignore possibility,for example support DO NOTHING clause in CONFLICT clause.
+     */
+    protected abstract boolean existsIgnoreOnConflict();
+
+    /**
+     * @param childStmt not {@link StandardInsert}
+     * @see #handleInsert(_SqlContext, InsertStatement, Visible)
+     */
+    @Deprecated
+    @Nullable
+    protected abstract CriteriaException supportChildInsert(_Insert._ChildInsert childStmt, Visible visible);
+
+
     protected void assertInsert(InsertStatement insert) {
         throw standardParserDontSupportDialect(this.dialect);
     }
@@ -540,6 +554,7 @@ abstract class ArmyParser implements DialectParser {
         return OtherDmlContext.forChild(outerContext, predicate, (OtherDmlContext) parentContext);
     }
 
+
     /**
      * @param insert possibly be below :
      *               <ul>
@@ -555,9 +570,12 @@ abstract class ArmyParser implements DialectParser {
         } else {
             this.assertInsert(insert);
         }
-        if (insert instanceof _Insert._ChildInsert) {
+        if (insert instanceof _Insert._ChildInsert && !(insert instanceof StandardInsert)) {
             final _Insert._ChildInsert childStmt = (_Insert._ChildInsert) insert;
-            if (_DialectUtils.isOnConflictDoNothing(childStmt.parentStmt())) {
+            final CriteriaException exception;
+            if ((exception = this.supportChildInsert(childStmt, visible)) != null) {
+                throw exception;
+            } else if (_DialectUtils.isOnConflictDoNothing(childStmt.parentStmt())) {
                 throw _Exceptions.parentDoNothingError(childStmt);
             } else if (_DialectUtils.isOnConflictDoNothing(childStmt)) {
                 throw _Exceptions.childDoNothingError(childStmt);
@@ -1102,6 +1120,10 @@ abstract class ArmyParser implements DialectParser {
 
         }
 
+        if (context.visible() == Visible.BOTH) {
+            return;
+        }
+
         if (predicateSize == 0) {
             final int startIndex, endIndex;
 
@@ -1235,10 +1257,11 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
+     * @param context {@link _SqlContext#visible()} must be not {@link Visible#BOTH}.
      * @see #multiTableVisible(List, _MultiTableStmtContext, boolean)
      */
-    protected final void visiblePredicate(final SingleTableMeta<?> table, final @Nullable String safeTableAlias
-            , final _SqlContext context, final boolean firstPredicate) {
+    protected final void visiblePredicate(final SingleTableMeta<?> table, final @Nullable String safeTableAlias,
+                                          final _SqlContext context, final boolean firstPredicate) {
 
         final FieldMeta<?> field = table.getField(_MetaBridge.VISIBLE);
         final Boolean visibleValue;
@@ -1264,6 +1287,89 @@ abstract class ArmyParser implements DialectParser {
         this.safeObjectName(field, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE);
         this.literal(field.mappingType(), visibleValue, sqlBuilder);
+    }
+
+    protected final void parentVisiblePredicate(final _InsertContext childContext, final boolean firstPredicate) {
+        final Boolean visibleValue;
+        visibleValue = childContext.visible().value;
+        if (visibleValue == null) {
+            return;
+        }
+        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childContext.insertTable();
+        final ParentTableMeta<?> parentTable = childTable.parentMeta();
+
+        final String childAlias, safeChildAlias, safeParentAlias;
+        if ((childAlias = childContext.tableAlias()) == null) {
+            safeChildAlias = this.safeObjectName(childTable);
+            safeParentAlias = this.identifier(_DialectUtils.parentAlias(childTable.tableName()));
+        } else {
+            safeChildAlias = childContext.safeTableAlias();
+            assert safeChildAlias != null;
+            safeParentAlias = this.identifier(_DialectUtils.parentAlias(childAlias));
+        }
+
+        final StringBuilder sqlBuilder;
+        sqlBuilder = childContext.sqlBuilder(); //below sub query left bracket
+        if (!firstPredicate) {
+            sqlBuilder.append(_Constant.SPACE_AND);
+        }
+        sqlBuilder.append(_Constant.SPACE_EXISTS)
+                .append(_Constant.SPACE_LEFT_PAREN)
+                .append(_Constant.SPACE_SELECT_SPACE)
+                //below target parent column
+                .append(safeParentAlias)
+                .append(_Constant.POINT)
+                .append(_MetaBridge.ID)
+                .append(_Constant.SPACE_FROM_SPACE);
+
+        this.safeObjectName(parentTable, sqlBuilder);
+
+        if (this.aliasAfterAs) {
+            sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+        } else {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+        sqlBuilder.append(safeParentAlias)
+                .append(_Constant.SPACE_WHERE) //below where clause
+                .append(_Constant.SPACE)
+
+                .append(safeParentAlias)
+                .append(_Constant.POINT)
+                .append(_MetaBridge.ID)
+
+                .append(_Constant.SPACE_EQUAL_SPACE)
+
+                .append(safeChildAlias)
+                .append(_Constant.POINT)
+                .append(_MetaBridge.ID)
+
+                .append(_Constant.SPACE_AND_SPACE)
+                .append(safeParentAlias)
+                .append(_Constant.POINT);
+
+        // below discriminator predicate
+        final FieldMeta<?> discriminator = parentTable.discriminator();
+        this.safeObjectName(discriminator, sqlBuilder)
+                .append(_Constant.SPACE_EQUAL_SPACE);
+
+        this.literal(discriminator.typeMeta(), childTable.discriminatorValue(), sqlBuilder);
+
+        // below visible predicate
+        final FieldMeta<?> visibleField;
+        visibleField = parentTable.getField(_MetaBridge.VISIBLE);
+
+        sqlBuilder.append(_Constant.SPACE_AND_SPACE)
+                .append(safeParentAlias)
+                .append(_Constant.POINT);
+
+        this.safeObjectName(visibleField, sqlBuilder)
+                .append(_Constant.SPACE_EQUAL_SPACE);
+
+        this.literal(visibleField, visibleValue, sqlBuilder);
+
+        //below sub query right paren
+        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
     }
 
 

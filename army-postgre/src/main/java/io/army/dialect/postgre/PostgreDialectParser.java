@@ -8,7 +8,9 @@ import io.army.criteria.impl.inner.postgre._ConflictTargetItem;
 import io.army.criteria.impl.inner.postgre._PostgreInsert;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
+import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
+import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -27,7 +29,6 @@ import java.util.List;
  */
 final class PostgreDialectParser extends PostgreParser {
 
-    private int updateItemSize;
 
     static PostgreDialectParser create(DialectEnv environment, PostgreDialect dialect) {
         return new PostgreDialectParser(environment, dialect);
@@ -184,8 +185,10 @@ final class PostgreDialectParser extends PostgreParser {
     /**
      * @see #parseValuesInsert(_ValueSyntaxInsertContext, _Insert._ValuesSyntaxInsert)
      * @see #parseQueryInsert(_QueryInsertContext, _Insert._QueryInsert)
+     * @see <a href="https://www.postgresql.org/docs/current/sql-insert.html">Postgre INSERT syntax</a>
      */
     private void parsePostgreInsert(final _InsertContext context, final _PostgreInsert stmt) {
+
         final StringBuilder sqlBuilder;
         if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
             sqlBuilder.append(_Constant.SPACE);
@@ -233,11 +236,13 @@ final class PostgreDialectParser extends PostgreParser {
 
         // 8. RETURNING clause
         if (stmt instanceof _ReturningDml) {
-            this.returningClause(context, stmt);
+            this.returningClause(context, (_ReturningDml) stmt);
         } else if (context instanceof _ValueSyntaxInsertContext) {
             ((_ValueSyntaxInsertContext) context).appendReturnIdIfNeed();
         }
+
     }
+
 
     /**
      * @see #parsePostgreInsert(_InsertContext, _PostgreInsert)
@@ -289,31 +294,71 @@ final class PostgreDialectParser extends PostgreParser {
         }
 
         //3. below conflict_action clause
+        if (clause.existsIgnore()) {
+            if (clause.updateSetClauseList().size() > 0 || clause.updateSetPredicateList().size() > 0) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            sqlBuilder.append(" DO NOTHING");
+        } else if (clause.updateSetClauseList().size() == 0
+                || (constraintName == null && targetItemSize == 0)) { // For ON CONFLICT DO UPDATE, a conflict_target must be provided.
+            throw _Exceptions.castCriteriaApi();
+        } else {
+            this.insertDoUpdateSetClause(context, clause);
+        }
+
+    }
+
+    /**
+     * @see #insertOnConflictClause(_InsertContext, _PostgreInsert._ConflictActionClauseResult)
+     * @see <a href="https://www.postgresql.org/docs/current/sql-insert.html">Postgre INSERT syntax</a>
+     */
+    private void insertDoUpdateSetClause(final _InsertContext context,
+                                         final _PostgreInsert._ConflictActionClauseResult clause) {
+
+
         final List<_ItemPair> updateItemList;
         updateItemList = clause.updateSetClauseList();
         final int updateItemSize;
         updateItemSize = updateItemList.size();
-        if (clause.isDoNothing()) {
-            if (updateItemSize > 0 || clause.updateSetPredicateList().size() > 0) {
-                throw _Exceptions.castCriteriaApi();
+        assert updateItemSize > 0;
+
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+        sqlBuilder.append(" DO UPDATE SET");
+
+        for (int i = 0; i < updateItemSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            sqlBuilder.append(" DO NOTHING");
-        } else if (updateItemSize == 0 || (constraintName == null && targetItemSize == 0)) { // For ON CONFLICT DO UPDATE, a conflict_target must be provided.
-            throw _Exceptions.castCriteriaApi();
+            updateItemList.get(i).appendItemPair(context);
+        }
+        final TableMeta<?> insertTable = context.insertTable();
+
+        final List<_Predicate> updatePredicateList;
+        updatePredicateList = clause.updateSetPredicateList();
+        final boolean visibleIsFirstPredicate;
+        if (updatePredicateList.size() > 0) {
+            this.dmlWhereClause(updatePredicateList, context);
+            context.appendConditionPredicate(false);
+            visibleIsFirstPredicate = false;
+        } else if (context.hasConditionPredicate()) {
+            sqlBuilder.append(_Constant.SPACE_WHERE);
+            context.appendConditionPredicate(true);
+            visibleIsFirstPredicate = false;
         } else {
-            sqlBuilder.append(" DO UPDATE SET");
-            for (int i = 0; i < updateItemSize; i++) {
-                if (i > 0) {
-                    sqlBuilder.append(_Constant.SPACE_COMMA);
-                }
-                updateItemList.get(i).appendItemPair(context);
+            visibleIsFirstPredicate = true;
+        }
+
+        if (context.visible() != Visible.BOTH && insertTable.containComplexField(_MetaBridge.VISIBLE)) {
+            if (visibleIsFirstPredicate) {
+                sqlBuilder.append(_Constant.SPACE_WHERE);
+            }
+            if (insertTable instanceof SingleTableMeta) {
+                this.visiblePredicate((SingleTableMeta<?>) insertTable, null, context, visibleIsFirstPredicate);
+            } else {
+                this.parentVisiblePredicate(context, visibleIsFirstPredicate);
             }
 
-            final List<_Predicate> updatePredicateList;
-            updatePredicateList = clause.updateSetPredicateList();
-            if (updatePredicateList.size() > 0) {
-                this.dmlWhereClause(updatePredicateList, context);
-            }
         }
 
     }
@@ -321,10 +366,7 @@ final class PostgreDialectParser extends PostgreParser {
     /**
      * @see #parsePostgreInsert(_InsertContext, _PostgreInsert)
      */
-    private void returningClause(final _SqlContext context, final _Statement._ReturningListSpec stmt) {
-        if (!(stmt instanceof _ReturningDml)) {
-            return;
-        }
+    private void returningClause(final _SqlContext context, final _ReturningDml stmt) {
         final List<? extends _Selection> selectionList;
         selectionList = stmt.returningList();
         final int selectionSize;

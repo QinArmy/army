@@ -28,7 +28,7 @@ public abstract class _DialectUtils {
 
     public static boolean isOnConflictDoNothing(final _Insert stmt) {
         return stmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) stmt).isDoNothing();
+                && ((_Insert._SupportConflictClauseSpec) stmt).existsIgnore();
     }
 
     /**
@@ -167,10 +167,6 @@ public abstract class _DialectUtils {
         return match;
     }
 
-    static boolean isMultiStmtDontSupport(final _Insert._ChildInsert childStmt) {
-        return false;
-    }
-
     static void appendConditionFields(final _SingleUpdateContext context
             , final @Nullable List<? extends TableField> conditionFieldList) {
         if (conditionFieldList == null || conditionFieldList.size() == 0) {
@@ -195,7 +191,7 @@ public abstract class _DialectUtils {
                 case ONLY_DEFAULT: {
                     sqlBuilder.append(_Constant.SPACE)
                             .append(dialect.defaultFuncName())
-                            .append(_Constant.SPACE_LEFT_PAREN)
+                            .append(_Constant.LEFT_PAREN)
                             .append(_Constant.SPACE)
                             .append(safeTableAlias)
                             .append(_Constant.POINT)
