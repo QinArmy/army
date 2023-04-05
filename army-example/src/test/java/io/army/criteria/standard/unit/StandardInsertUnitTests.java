@@ -136,7 +136,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
     public void queryInsertParent() {
         final Insert stmt;
         stmt = SQLs.singleInsert()
-                .migration(true)
+                .migration()
                 .insertInto(ChinaRegion_.T)
                 .leftParen(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
                 .comma(ChinaRegion_.visible, ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.regionType)
@@ -158,7 +158,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
     public void childTableSubQueryInsert() {
         final Insert stmt;
         stmt = SQLs.singleInsert()
-                .migration(true)
+                .migration()
                 .insertInto(ChinaRegion_.T)
                 .leftParen(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
                 .comma(ChinaRegion_.visible, ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.regionType)

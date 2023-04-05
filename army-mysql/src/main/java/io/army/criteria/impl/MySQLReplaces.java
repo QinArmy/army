@@ -116,9 +116,7 @@ abstract class MySQLReplaces extends InsertSupports {
 
 
     private static final class PrimaryReplaceIntoClause extends InsertSupports.NonQueryInsertOptionsImpl<
-            MySQLReplace._PrimaryNullOptionSpec,
-            MySQLReplace._PrimaryPreferLiteralSpec,
-            MySQLReplace._PrimaryReplaceIntoSpec>
+            MySQLReplace._PrimaryNullOptionSpec>
             implements MySQLReplace._PrimaryOptionSpec,
             MySQLReplace._PrimaryIntoClause {
 
@@ -203,9 +201,7 @@ abstract class MySQLReplaces extends InsertSupports {
 
     private static final class PrimarySingleReplaceIntoClause<I extends Item>
             extends InsertSupports.NonQueryInsertOptionsImpl<
-            MySQLReplace._PrimarySingleNullOptionSpec<I>,
-            MySQLReplace._PrimarySinglePreferLiteralSpec<I>,
-            MySQLReplace._PrimarySingleReplaceIntoSpec<I>>
+            MySQLReplace._PrimarySingleNullOptionSpec<I>>
             implements MySQLReplace._PrimarySingleOptionSpec<I>,
             MySQLReplace._PrimarySingleIntoClause<I> {
 
@@ -412,7 +408,7 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
-        public final boolean existsIgnore() {
+        public final boolean supportIgnorableConflict() {
             //false ,MySQL REPLACE don't support do nothing clause
             return false;
         }
@@ -646,7 +642,7 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
-        public final boolean existsIgnore() {
+        public final boolean supportIgnorableConflict() {
             //false ,MySQL REPLACE always replace when conflict
             return false;
         }
@@ -766,7 +762,7 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
-        public final boolean existsIgnore() {
+        public final boolean supportIgnorableConflict() {
             //false ,MySQL REPLACE always replace when conflict
             return false;
         }

@@ -276,6 +276,7 @@ public interface PostgreInsert extends PostgreStatement {
     }
 
     interface _PrimaryOptionSpec extends InsertStatement._MigrationOptionClause<_PrimaryNullOptionSpec>,
+            InsertStatement._IgnoreReturnIdsOptionClause<_PrimaryNullOptionSpec>,
             _PrimaryNullOptionSpec {
 
     }
@@ -317,6 +318,7 @@ public interface PostgreInsert extends PostgreStatement {
 
     interface _ComplexOptionSpec<I extends Item>
             extends InsertStatement._MigrationOptionClause<_ComplexNullOptionSpec<I>>,
+            InsertStatement._IgnoreReturnIdsOptionClause<_ComplexNullOptionSpec<I>>,
             _ComplexNullOptionSpec<I> {
 
     }

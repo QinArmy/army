@@ -90,10 +90,7 @@ abstract class StandardInserts extends InsertSupports {
 
     /*-------------------below standard domain insert syntax class-------------------*/
     private static final class PrimaryInsertIntoClause
-            extends NonQueryInsertOptionsImpl<
-            StandardInsert._PrimaryNullOptionSpec,
-            StandardInsert._PrimaryPreferLiteralSpec,
-            StandardInsert._PrimaryInsertIntoClause>
+            extends NonQueryInsertOptionsImpl<StandardInsert._PrimaryNullOptionSpec>
             implements StandardInsert._PrimaryOptionSpec {
 
         private PrimaryInsertIntoClause() {

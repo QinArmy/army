@@ -9,10 +9,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
-import io.army.criteria.impl.inner._DialectStatement;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TabularBock;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect._SqlContext;
@@ -32,6 +29,7 @@ import io.qinarmy.util.UnexpectedEnumException;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 
 public abstract class _Exceptions extends ExceptionUtils {
@@ -310,6 +308,43 @@ public abstract class _Exceptions extends ExceptionUtils {
         String m = String.format("%s don't support conflict clause for non-%s mode,because %s exists %s field."
                 , dialect, Visible.BOTH, table, _MetaBridge.VISIBLE);
         return new CriteriaException(m);
+    }
+
+    public static CriteriaException cannotReturnPostId(final _Insert domainStmt) {
+        final String tip;
+        final _Insert nonChildStmt;
+        final Function<String, CriteriaException> function;
+        if (domainStmt instanceof _Insert._ChildInsert) {
+            nonChildStmt = ((_Insert._ChildInsert) domainStmt).parentStmt();
+            tip = "";
+            function = ErrorChildInsertException::new;
+        } else {
+            nonChildStmt = domainStmt;
+            tip = "if domain insert mode and single table,you should use ignoreReturnIds insert option";
+            function = CriteriaException::new;
+        }
+        final TableMeta<?> insertTable = nonChildStmt.insertTable();
+        final PrimaryFieldMeta<?> idField = insertTable.id();
+        final String f;
+        f = "%s %s is %s and insert multi row nad exists ignorable conflict clause,so couldn't return multi ids. %s";
+        String m = String.format(f, idField, GeneratorType.class.getName(), GeneratorType.POST, tip);
+
+        return function.apply(m);
+    }
+
+    public static ErrorChildInsertException childParentRowCountNotMatch(final _Insert._ChildInsert childStmt) {
+        final StringBuilder builder = new StringBuilder();
+        builder.append("couldn't insert ")
+                .append(childStmt.insertTable())
+                .append(",because insert multi-row and ");
+
+        if (childStmt instanceof _Statement._ReturningListSpec) {
+            builder.append("exists ignorable conflict clause");
+        } else {
+            builder.append("exists conflict clause");
+        }
+        builder.append(",child insert row count and parent insert row count possibly not match");
+        return new ErrorChildInsertException(builder.toString());
     }
 
     public static CriteriaException multiStmtDontSupportParam() {

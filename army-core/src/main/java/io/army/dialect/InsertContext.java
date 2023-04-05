@@ -6,7 +6,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._ReturningDml;
-import io.army.criteria.impl.inner._Selection;
+import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
@@ -49,7 +49,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
     private final String safeTableName;
 
-    final boolean conflictClause;
+    final boolean hasConflictClause;
 
     final boolean conflictPredicateClause;
 
@@ -116,13 +116,13 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
         if (targetStmt instanceof _Insert._SupportConflictClauseSpec) {
             final _Insert._SupportConflictClauseSpec spec = (_Insert._SupportConflictClauseSpec) targetStmt;
-            this.conflictClause = spec.hasConflictAction();
+            this.hasConflictClause = spec.hasConflictAction();
             this.rowAlias = parser.supportRowAlias ? spec.rowAlias() : null;
             this.safeRowAlias = this.rowAlias == null ? null : this.parser.identifier(this.rowAlias);
-            this.safeTableName = this.conflictClause ? this.parser.safeObjectName(this.insertTable) : null;
+            this.safeTableName = this.hasConflictClause ? this.parser.safeObjectName(this.insertTable) : null;
             this.conflictPredicateClause = targetStmt instanceof _Insert._ConflictActionPredicateClauseSpec;
         } else {
-            this.conflictClause = false;
+            this.hasConflictClause = false;
             this.safeTableName = this.safeRowAlias = this.rowAlias = null;
             this.conflictPredicateClause = false;
         }
@@ -146,57 +146,47 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         final PrimaryFieldMeta<?> idField = this.insertTable.id();
         final boolean needReturnId, cannotReturnId;
         needReturnId = !this.migration
+                && targetStmt instanceof PrimaryStatement
                 && idField.generatorType() == GeneratorType.POST
-                && (targetStmt instanceof _Insert._DomainInsert || domainStmt instanceof _Insert._ChildInsert);
+                && ((targetStmt instanceof _Insert._DomainInsert && !((_Insert._DomainInsert) targetStmt).isIgnoreReturnIds()) || domainStmt instanceof _Insert._ChildInsert);
 
 
-        cannotReturnId = targetStmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) targetStmt).hasConflictAction()
+        cannotReturnId = this.hasConflictClause
                 && targetStmt.insertRowCount() > 1
-                && (!(targetStmt instanceof _Insert._ReturningListSpec) || parser.existsIgnoreOnConflict());
+                && (!(targetStmt instanceof _Statement._ReturningListSpec) || ((_Insert._SupportConflictClauseSpec) targetStmt).supportIgnorableConflict());
 
         if (needReturnId && cannotReturnId) {
-            //TODO
-            throw new IllegalArgumentException();
+            throw _Exceptions.cannotReturnPostId(domainStmt);
         }
-
 
         if (targetStmt instanceof _ReturningDml) {
             this.returningList = ((_ReturningDml) targetStmt).returningList();
             if (needReturnId) {
                 this.returnId = idField;
-                this.idSelectionAlias = returnIdSelection(parser, idField, (_ReturningDml) targetStmt)
+                this.idSelectionAlias = returnIdSelection(parser, idField, this.returningList)
                         .selectionName();
             } else {
                 this.returnId = null;
                 this.idSelectionAlias = null;
             }
             this.appendReturningClause = false;
-        } else if (this.migration || idField.generatorType() != GeneratorType.POST) {
-            this.returningList = Collections.emptyList();
-            this.returnId = null;
-            this.idSelectionAlias = null;
-            this.appendReturningClause = false;
-        } else if (this.parser.childUpdateMode == _ChildUpdateMode.CTE) {
-            this.returnId = idField;
-            this.idSelectionAlias = idField.fieldName();
-            this.returningList = Collections.singletonList(idField);
-            this.appendReturningClause = true;
-        } else if (this.conflictClause) {
-            if (targetStmt != domainStmt) {
-                //the implementations of io.army.criteria.Insert no bug,never here
-                throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) domainStmt.insertTable());
+        } else if (needReturnId) {
+            if (targetStmt instanceof _Statement._ReturningListSpec) {
+                this.returningList = Collections.singletonList(idField);
+                this.appendReturningClause = true;
+            } else {
+                this.appendReturningClause = false;
+                this.returningList = Collections.emptyList();
             }
-            this.returningList = Collections.emptyList();
-            this.returnId = null;
-            this.idSelectionAlias = null;
-            this.appendReturningClause = false;
+            this.returnId = idField;
+            this.idSelectionAlias = idField.selectionName();
         } else {
             this.returningList = Collections.emptyList();
-            this.returnId = idField;
-            this.idSelectionAlias = idField.fieldName();
+            this.returnId = null;
+            this.idSelectionAlias = null;
             this.appendReturningClause = false;
         }
+
 
     }
 
@@ -234,13 +224,13 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
         if (stmt instanceof _Insert._SupportConflictClauseSpec) {
             final _Insert._SupportConflictClauseSpec spec = (_Insert._SupportConflictClauseSpec) stmt;
-            this.conflictClause = spec.hasConflictAction();
+            this.hasConflictClause = spec.hasConflictAction();
             this.rowAlias = this.parser.supportRowAlias ? spec.rowAlias() : null;
             this.safeRowAlias = this.rowAlias == null ? null : this.parser.identifier(this.rowAlias);
-            this.safeTableName = this.conflictClause ? this.parser.safeObjectName(this.insertTable) : null;
+            this.safeTableName = this.hasConflictClause ? this.parser.safeObjectName(this.insertTable) : null;
             this.conflictPredicateClause = stmt instanceof _Insert._ConflictActionPredicateClauseSpec;
         } else {
-            this.conflictClause = false;
+            this.hasConflictClause = false;
             this.safeTableName = this.safeRowAlias = this.rowAlias = null;
             this.conflictPredicateClause = false;
         }
@@ -308,7 +298,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
     public final void appendField(final @Nullable String tableAlias, final FieldMeta<?> field) {
         final String safeAlias;
         if (!(this.valuesClauseEnd
-                && (this.conflictClause || this.returningList.size() > 0)
+                && (this.hasConflictClause || this.returningList.size() > 0)
                 && field.tableMeta() == this.insertTable)) {
             throw _Exceptions.unknownColumn(field);
         } else if (tableAlias == null) {
@@ -337,7 +327,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
     @Override
     public final void appendField(final FieldMeta<?> field) {
         if (!(this.valuesClauseEnd
-                && (this.conflictClause || this.returningList.size() > 0)
+                && (this.hasConflictClause || this.returningList.size() > 0)
                 && field.tableMeta() == this.insertTable)) {
             throw _Exceptions.unknownColumn(field);
         }
@@ -348,7 +338,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
     @Override
     public final void appendFieldFromSub(FieldMeta<?> field) {
-        if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {
+        if (!(this.valuesClauseEnd && this.hasConflictClause && field.tableMeta() == this.insertTable)) {
             throw _Exceptions.unknownColumn(field);
         }
 
@@ -371,7 +361,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
             throw new CriteriaException(m);
         } else if ((field = (FieldMeta<?>) dataField).tableMeta() != this.insertTable) {
             throw _Exceptions.unknownColumn(dataField);
-        } else if (!(this.valuesClauseEnd && this.conflictClause && field.tableMeta() == this.insertTable)) {
+        } else if (!(this.valuesClauseEnd && this.hasConflictClause && field.tableMeta() == this.insertTable)) {
             throw _Exceptions.unknownColumn(field);
         } else if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
             throw _Exceptions.armyManageField(field);
@@ -710,15 +700,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
     }
 
     private static Selection returnIdSelection(final DialectParser parser, final PrimaryFieldMeta<?> idField,
-                                               final _ReturningDml stmt) {
-
-        if (stmt instanceof SubStatement) {
-            // no bug,never here
-            throw new CriteriaException("CTE must have RETURNING clause.");
-        }
-
-        final List<? extends _Selection> selectionList;
-        selectionList = stmt.returningList();
+                                               final List<? extends Selection> selectionList) {
         final int selectionSize;
         selectionSize = selectionList.size();
 

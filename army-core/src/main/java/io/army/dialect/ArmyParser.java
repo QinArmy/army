@@ -1642,12 +1642,10 @@ abstract class ArmyParser implements DialectParser {
         if (insert instanceof _Insert._ChildAssignmentInsert) {
 
             final _Insert._ChildAssignmentInsert childStmt = (_Insert._ChildAssignmentInsert) insert;
-            final _Insert._AssignmentInsert parentStmt = childStmt.parentStmt();
-            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.insertTable());
 
             final AssignmentInsertContext parentContext;
             parentContext = AssignmentInsertContext.forParent(outerContext, childStmt, this, visible);
-            this.parseAssignmentInsert(parentContext, parentStmt);
+            this.parseAssignmentInsert(parentContext, childStmt.parentStmt());
 
             context = AssignmentInsertContext.forChild(outerContext, childStmt, parentContext);
             this.parseAssignmentInsert(context, childStmt);

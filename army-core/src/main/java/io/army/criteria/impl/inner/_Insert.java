@@ -34,8 +34,7 @@ public interface _Insert extends _Statement {
         /**
          * @return true: possibly ignore when conflict
          */
-        @Deprecated
-        boolean existsIgnore();
+        boolean supportIgnorableConflict();
 
     }
 
@@ -72,6 +71,7 @@ public interface _Insert extends _Statement {
 
 
         LiteralMode literalMode();
+
     }
 
 
@@ -92,6 +92,8 @@ public interface _Insert extends _Statement {
 
 
     interface _ValuesSyntaxInsert extends _ColumnListInsert, _InsertOption {
+
+        boolean isIgnoreReturnIds();
 
 
         NullMode nullHandle();

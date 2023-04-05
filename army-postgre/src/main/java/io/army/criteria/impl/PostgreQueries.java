@@ -1379,11 +1379,11 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        public PostgreInsert._StaticSubNullOptionSpec<_CteComma<I>> migration(boolean migration) {
+        public PostgreInsert._StaticSubNullOptionSpec<_CteComma<I>> migration() {
             this.endDispatcher();
 
             return PostgreInserts.staticSubInsert(this, this.function)
-                    .migration(migration);
+                    .migration();
         }
 
         @Override

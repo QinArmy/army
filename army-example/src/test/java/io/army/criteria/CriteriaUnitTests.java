@@ -191,6 +191,25 @@ public abstract class CriteriaUnitTests {
         return list;
     }
 
+    protected final ChinaProvince createRandomProvince() {
+        final Random random = ThreadLocalRandom.current();
+        final LocalDateTime now = LocalDateTime.now();
+        return new ChinaProvince()
+                .setId(Math.abs(random.nextLong()))
+                .setCreateTime(now)
+                .setUpdateTime(now)
+
+                .setName(randomProvince(random))
+                .setRegionType(RegionType.CITY)
+                .setRegionGdp(randomDecimal(random))
+
+                .setVersion(0)
+                .setVisible(Boolean.TRUE)
+
+                .setGovernor(randomPerson(random))
+                .setProvincialCapital(randomPerson(random));
+    }
+
 
     protected final List<PillPerson> createPersonList() {
         final List<PillPerson> list = new ArrayList<>();

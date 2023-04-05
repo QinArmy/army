@@ -118,10 +118,7 @@ abstract class MySQLInserts extends InsertSupports {
      * </p>
      */
     private static final class PrimaryInsertIntoClause
-            extends InsertSupports.NonQueryInsertOptionsImpl<
-            MySQLInsert._PrimaryNullOptionSpec,
-            MySQLInsert._PrimaryPreferLiteralSpec,
-            MySQLInsert._PrimaryInsertIntoSpec>
+            extends InsertSupports.NonQueryInsertOptionsImpl<MySQLInsert._PrimaryNullOptionSpec>
             implements MySQLInsert._PrimaryOptionSpec,
             MySQLInsert._PrimaryIntoClause {
 
@@ -215,10 +212,7 @@ abstract class MySQLInserts extends InsertSupports {
      * </p>
      */
     private static final class PrimarySingleInsertIntoClause<I extends Item>
-            extends InsertSupports.NonQueryInsertOptionsImpl<
-            MySQLInsert._PrimarySingleNullOptionSpec<I>,
-            MySQLInsert._PrimarySinglePreferLiteralSpec<I>,
-            MySQLInsert._PrimarySingleInsertIntoSpec<I>>
+            extends InsertSupports.NonQueryInsertOptionsImpl<MySQLInsert._PrimarySingleNullOptionSpec<I>>
             implements MySQLInsert._PrimarySingleOptionSpec<I>,
             MySQLInsert._PrimarySingleIntoClause<I> {
 
@@ -819,7 +813,7 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean existsIgnore() {
+        public final boolean supportIgnorableConflict() {
             //false ,MySQL ON DUPLICATE KEY don't support
             return false;
         }
@@ -1070,7 +1064,7 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean existsIgnore() {
+        public final boolean supportIgnorableConflict() {
             //false ,MySQL don't support do nothing clause
             return false;
         }
@@ -1200,7 +1194,7 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean existsIgnore() {
+        public final boolean supportIgnorableConflict() {
             //false ,MySQL don't support do nothing clause
             return false;
         }

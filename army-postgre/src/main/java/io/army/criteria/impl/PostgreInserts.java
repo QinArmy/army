@@ -233,8 +233,6 @@ abstract class PostgreInserts extends InsertSupports {
 
     private static final class PrimaryInsertIntoClause extends NonQueryWithCteOption<
             PostgreInsert._PrimaryNullOptionSpec,
-            PostgreInsert._PrimaryPreferLiteralSpec,
-            PostgreInsert._PrimaryWithCteSpec,
             PostgreCtes,
             PostgreInsert._PrimaryInsertIntoClause>
             implements PostgreInsert._PrimaryOptionSpec {
@@ -326,8 +324,6 @@ abstract class PostgreInserts extends InsertSupports {
 
     private static final class ComplexInsertIntoClause<I extends Item> extends NonQueryWithCteOption<
             PostgreInsert._ComplexNullOptionSpec<I>,
-            PostgreInsert._ComplexPreferLiteralSpec<I>,
-            PostgreInsert._ComplexWithCteSpec<I>,
             PostgreCtes,
             PostgreInsert._ComplexInsertIntoClause<I>>
             implements PostgreInsert._ComplexOptionSpec<I> {
@@ -370,8 +366,6 @@ abstract class PostgreInserts extends InsertSupports {
     private static final class DynamicSubInsertIntoClause<I extends Item>
             extends NonQueryWithCteOption<
             PostgreInsert._DynamicSubNullOptionSpec<I>,
-            PostgreInsert._DynamicSubPreferLiteralSpec<I>,
-            PostgreInsert._DynamicSubWithSpec<I>,
             PostgreCtes,
             PostgreInsert._CteInsertIntoClause<I>>
             implements PostgreInsert._DynamicSubOptionSpec<I> {
@@ -414,8 +408,6 @@ abstract class PostgreInserts extends InsertSupports {
 
     private static final class StaticSubInsertIntoClause<I extends Item> extends NonQueryWithCteOption<
             PostgreInsert._StaticSubNullOptionSpec<I>,
-            PostgreInsert._StaticSubPreferLiteralSpec<I>,
-            PostgreInsert._CteInsertIntoClause<I>,
             PostgreCtes,
             PostgreInsert._CteInsertIntoClause<I>>
             implements PostgreInsert._StaticSubOptionSpec<I> {
@@ -512,7 +504,7 @@ abstract class PostgreInserts extends InsertSupports {
             }
             final String operatorClass = this.operatorClass;
             if (operatorClass != null) {
-                if (parser.isKeyWords(operatorClass)
+                if (parser.isKeyWords(operatorClass) //TODO validation
                         || !_DialectUtils.isSafeIdentifier(operatorClass)) {  // must validate operatorClass
                     throw nonSafeOperatorClassName(operatorClass);
                 }
@@ -872,7 +864,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public boolean existsIgnore() {
+        public boolean supportIgnorableConflict() {
             return this.doNothing;
         }
 
@@ -1364,9 +1356,9 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean existsIgnore() {
+        public final boolean supportIgnorableConflict() {
             final _ConflictActionClauseResult conflictAction = this.conflictAction;
-            return conflictAction != null && conflictAction.existsIgnore();
+            return conflictAction != null && conflictAction.supportIgnorableConflict();
         }
 
         @Override
@@ -1874,9 +1866,9 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean existsIgnore() {
+        public final boolean supportIgnorableConflict() {
             final _ConflictActionClauseResult conflictAction = this.conflictAction;
-            return conflictAction != null && conflictAction.existsIgnore();
+            return conflictAction != null && conflictAction.supportIgnorableConflict();
         }
 
         @Override

@@ -1,10 +1,7 @@
 package io.army.criteria.mysql.unit;
 
 import io.army.annotation.GeneratorType;
-import io.army.criteria.ErrorChildInsertException;
-import io.army.criteria.Expression;
-import io.army.criteria.InsertStatement;
-import io.army.criteria.LiteralMode;
+import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
@@ -31,6 +28,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
+                .ignoreReturnIds() // due to exists ON DUPLICATE KEY, so have to ignore return ids,because database couldn't return correct ids when conflict.
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
@@ -62,6 +60,28 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
     }
 
+    @Test(expectedExceptions = CriteriaException.class)
+    public void domainInsertParentPostAndNoIgnoreReturnIdError() {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        try {
+            MySQLs.singleInsert()
+                    .literalMode(LiteralMode.PREFERENCE)
+                    .insertInto(ChinaRegion_.T)
+                    .partition("p1")
+                    .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                    .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                    .values(this::createReginList)
+                    .onDuplicateKey()       // here ,exists ON DUPLICATE KEY and insert multi row,so database couldn't return ids.
+                    .update(ChinaRegion_.name, MySQLs::values)
+                    .asInsert();
+        } catch (CriteriaException e) {
+            LOG.debug("{}", e.getMessage());
+            throw e;
+        }
+
+    }
+
     @Test
     public void domainInsert80ParentPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
@@ -75,6 +95,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
+                .ignoreReturnIds() // due to exists ON DUPLICATE KEY, so have to ignore return ids,because database couldn't return correct ids when conflict.
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
                 .into(ChinaRegion_.T)
@@ -110,11 +131,11 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     }
 
     @Test
-    public void domainInsertChildPost() {
+    public void domainInsertSingleRowChildPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
-        final List<ChinaProvince> provinceList;
-        provinceList = this.createProvinceList();
+        final ChinaProvince province;
+        province = this.createRandomProvince();
         final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
@@ -122,12 +143,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .partition("p1")
                 .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
-                .values(provinceList)
+                .value(province)
                 .asInsert()// parent table insert statement end
                 .child()
                 .insertInto(ChinaProvince_.T)
                 .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
-                .values(provinceList)
+                .value(province)
                 .onDuplicateKey()
                 .update(ChinaProvince_.governor, MySQLs::values)
                 .comma(ChinaProvince_.provincialCapital, () -> SQLs.scalarSubQuery()
@@ -151,7 +172,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     }
 
     @Test
-    public void domainInsert80ChildPost() {
+    public void domainInsertSingleRow80ChildPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
@@ -161,8 +182,8 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         };
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final List<ChinaProvince> provinceList;
-        provinceList = this.createProvinceList();
+        final ChinaProvince province;
+        province = this.createRandomProvince();
         final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
@@ -171,14 +192,16 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .partition("p1")
                 .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
-                .values(provinceList)
+                .value(province)
                 .asInsert()// parent table insert statement end
+
                 .child()
+
                 .insertInto(ChinaProvince_.T)
                 .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
-                .values(provinceList)
+                .value(province)
                 .as("cp")
-                .onDuplicateKey()
+                .onDuplicateKey()  // here,due to insert single row,allow ON DUPLICATE KEY clause
                 .update(ChinaProvince_.governor, SQLs.field("cp", ChinaProvince_.governor))
                 .comma(ChinaProvince_.provincialCapital, () -> SQLs.scalarSubQuery()
                         .select(HistoryChinaProvince_.provincialCapital)
@@ -205,25 +228,31 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         final List<ChinaProvince> provinceList;
         provinceList = this.createProvinceList();
 
-        MySQLs.singleInsert()
-                .literalMode(LiteralMode.PREFERENCE)
-                .insertInto(ChinaRegion_.T)
-                .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
-                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
-                .values(provinceList)
-                .onDuplicateKey() // ChinaRegion_.id.generatorType() == GeneratorType.POST, so forbid onDuplicateKey clause,must throw CriteriaException
-                .update(ChinaRegion_.name, MySQLs::values)
-                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
-                .asInsert()// parent table insert statement end
-                .child()
-                .insertInto(ChinaProvince_.T)
-                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
-                .values(provinceList)
-                .onDuplicateKey()
-                .update(ChinaProvince_.governor, MySQLs::values)
-                .comma(ChinaProvince_.provincialCapital, MySQLs::values)
-                .asInsert();
+        try {
+            MySQLs.singleInsert()
+                    .ignoreReturnIds()
+                    .literalMode(LiteralMode.PREFERENCE)
+                    .insertInto(ChinaRegion_.T)
+                    .partition("p1")
+                    .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                    .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                    .values(provinceList)
+                    .onDuplicateKey() // ChinaRegion_.id.generatorType() == GeneratorType.POST, so forbid onDuplicateKey clause,must throw CriteriaException
+                    .update(ChinaRegion_.name, MySQLs::values)
+                    .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
+                    .asInsert()// parent table insert statement end
+                    .child()
+                    .insertInto(ChinaProvince_.T)
+                    .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                    .values(provinceList)
+                    .onDuplicateKey()
+                    .update(ChinaProvince_.governor, MySQLs::values)
+                    .comma(ChinaProvince_.provincialCapital, MySQLs::values)
+                    .asInsert();
+        } catch (ErrorChildInsertException e) {
+            LOG.debug("{}", e.getMessage());
+            throw e;
+        }
 
     }
 
@@ -890,12 +919,13 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
     }
 
-    @Test(expectedExceptions = ErrorChildInsertException.class)
-    public void assignmentInsertChildPostWithParentConflictError() {
+    @Test
+    public void assignmentInsertChildPostWithParentConflictNoError() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
-
-        MySQLs.singleInsert()
+        final Insert stmt;
+        // due to assignment mode insert one row only,so no error.
+        stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
@@ -914,6 +944,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaProvince_.provincialCapital, MySQLs::values)
                 .asInsert();
 
+        printStmt(LOG, stmt);
 
     }
 
@@ -1078,7 +1109,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
-                .migration(true)
+                .migration()
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
                 .leftParen(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
@@ -1109,7 +1140,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final InsertStatement stmt;
         stmt = MySQLs.singleInsert()
-                .migration(true)
+                .migration()
                 .insert(hintSupplier, Collections.emptyList())
                 .into(ChinaRegion_.T)
                 .partition("p1")

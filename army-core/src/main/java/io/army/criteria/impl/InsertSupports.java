@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.*;
@@ -50,7 +51,9 @@ abstract class InsertSupports {
 
     interface ValueSyntaxOptions extends InsertOptions {
 
-        @Nullable
+        boolean isIgnoreReturnIds();
+
+
         NullMode nullHandle();
 
     }
@@ -91,9 +94,7 @@ abstract class InsertSupports {
 
     }
 
-    static abstract class InsertOptionsImpl<MR, PR> implements InsertOptions,
-            InsertStatement._MigrationOptionClause<MR>,
-            InsertStatement._PreferLiteralClause<PR> {
+    static abstract class InsertOptionsImpl<R> implements InsertOptions {
 
         final CriteriaContext context;
 
@@ -106,20 +107,18 @@ abstract class InsertSupports {
         }
 
         @SuppressWarnings("unchecked")
-        @Override
-        public final MR migration(boolean migration) {
-            this.migration = migration;
-            return (MR) this;
+        public final R migration() {
+            this.migration = true;
+            return (R) this;
         }
 
         @SuppressWarnings("unchecked")
-        @Override
-        public final PR literalMode(final @Nullable LiteralMode mode) {
+        public final R literalMode(final @Nullable LiteralMode mode) {
             if (mode == null) {
                 throw ContextStack.nullPointer(this.context);
             }
             this.literalMode = mode;
-            return (PR) this;
+            return (R) this;
         }
 
         @Override
@@ -132,6 +131,7 @@ abstract class InsertSupports {
             return this.migration;
         }
 
+
         @Override
         public final LiteralMode literalMode() {
             final LiteralMode mode = this.literalMode;
@@ -142,24 +142,31 @@ abstract class InsertSupports {
 
     }//InsertOptionsImpl
 
-    static abstract class NonQueryInsertOptionsImpl<MR, NR, PR> extends InsertOptionsImpl<MR, PR>
-            implements ValueSyntaxOptions, InsertStatement._NullOptionClause<NR> {
+    static abstract class NonQueryInsertOptionsImpl<R> extends InsertOptionsImpl<R>
+            implements ValueSyntaxOptions {
 
 
         private NullMode nullMode = NullMode.INSERT_DEFAULT;
+
+        private boolean ignoreReturnIds;
 
         NonQueryInsertOptionsImpl(CriteriaContext context) {
             super(context);
         }
 
         @SuppressWarnings("unchecked")
-        @Override
-        public final NR nullMode(final @Nullable NullMode mode) {
+        public final R nullMode(final @Nullable NullMode mode) {
             if (mode == null) {
                 throw ContextStack.nullPointer(this.context);
             }
             this.nullMode = mode;
-            return (NR) this;
+            return (R) this;
+        }
+
+        @SuppressWarnings("unchecked")
+        public final R ignoreReturnIds() {
+            this.ignoreReturnIds = true;
+            return (R) this;
         }
 
         @Override
@@ -169,14 +176,20 @@ abstract class InsertSupports {
             return mode;
         }
 
+        @Override
+        public final boolean isIgnoreReturnIds() {
+            return this.ignoreReturnIds;
+        }
+
+
     }//NonQueryInsertOptionsImpl
 
 
     @SuppressWarnings("unchecked")
-    static abstract class NonQueryWithCteOption<MR, NR, PR, B extends CteBuilderSpec, WE>
-            extends NonQueryInsertOptionsImpl<MR, NR, PR>
-            implements DialectStatement._DynamicWithClause<B, WE>
-            , WithValueSyntaxOptions {
+    static abstract class NonQueryWithCteOption<R, B extends CteBuilderSpec, WE>
+            extends NonQueryInsertOptionsImpl<R>
+            implements DialectStatement._DynamicWithClause<B, WE>,
+            WithValueSyntaxOptions {
 
         private boolean recursive;
 
@@ -284,12 +297,15 @@ abstract class InsertSupports {
 
         private final LiteralMode literalMode;
 
+        private final boolean ignoreReturnIds;
 
         ChildOptionClause(ValueSyntaxOptions options, CriteriaContext context) {
             this.context = context;
             this.migration = options.isMigration();
             this.nullHandleMode = options.nullHandle();
             this.literalMode = options.literalMode();
+
+            this.ignoreReturnIds = options.isIgnoreReturnIds();
         }
 
 
@@ -311,6 +327,11 @@ abstract class InsertSupports {
         @Override
         public final LiteralMode literalMode() {
             return this.literalMode;
+        }
+
+        @Override
+        public final boolean isIgnoreReturnIds() {
+            return this.ignoreReturnIds;
         }
 
 
@@ -413,11 +434,14 @@ abstract class InsertSupports {
 
         private final LiteralMode literalMode;
 
+        private final boolean ignoreReturnIds;
+
         SimpleValuesSyntaxOptions(ValueSyntaxOptions options, CriteriaContext context) {
             this.context = context;
             this.nullHandleMode = options.nullHandle();
             this.literalMode = options.literalMode();
             this.migration = options.isMigration();
+            this.ignoreReturnIds = options.isIgnoreReturnIds();
         }
 
         @Override
@@ -438,6 +462,11 @@ abstract class InsertSupports {
         @Override
         public final LiteralMode literalMode() {
             return this.literalMode;
+        }
+
+        @Override
+        public final boolean isIgnoreReturnIds() {
+            return this.ignoreReturnIds;
         }
 
 
@@ -702,14 +731,18 @@ abstract class InsertSupports {
 
         final NullMode nullHandleMode;
 
+        final boolean ignoreReturnIds;
+
         private Map<FieldMeta<?>, _Expression> commonExpMap;
 
         private ColumnDefaultClause(InsertOptions options, TableMeta<T> table) {
             super(options.getContext(), options.isMigration(), table);
             if (options instanceof ValueSyntaxOptions) {
                 this.nullHandleMode = ((ValueSyntaxOptions) options).nullHandle();
+                this.ignoreReturnIds = ((ValueSyntaxOptions) options).isIgnoreReturnIds();
             } else {
-                this.nullHandleMode = null;
+                this.ignoreReturnIds = true;
+                this.nullHandleMode = NullMode.INSERT_DEFAULT;
             }
             this.literalMode = options.literalMode();
         }
@@ -813,6 +846,11 @@ abstract class InsertSupports {
             return this.literalMode;
         }
 
+        @Override
+        public final boolean isIgnoreReturnIds() {
+            return this.ignoreReturnIds;
+        }
+
         final void endColumnDefaultClause() {
             final Map<FieldMeta<?>, _Expression> map = this.commonExpMap;
             if (map == null) {
@@ -832,10 +870,10 @@ abstract class InsertSupports {
 
     @SuppressWarnings("unchecked")
     static abstract class ComplexInsertValuesClause<T, CR, DR, VR> extends ColumnDefaultClause<T, CR, DR>
-            implements InsertStatement._DomainValueClause<T, VR>
-            , InsertStatement._DynamicValuesClause<T, VR>
-            , _Insert._ValuesInsert
-            , _Insert._QueryInsert {
+            implements InsertStatement._DomainValueClause<T, VR>,
+            InsertStatement._DynamicValuesClause<T, VR>,
+            _Insert._ValuesInsert,
+            _Insert._QueryInsert {
 
         private InsertMode insertMode;
 
@@ -859,6 +897,7 @@ abstract class InsertSupports {
             }
             this.endColumnDefaultClause();
             this.domainList = Collections.singletonList(domain);
+            assert this.insertMode == null;
             this.insertMode = InsertMode.DOMAIN;
             return (VR) this;
         }
@@ -881,6 +920,7 @@ abstract class InsertSupports {
             }
             this.endColumnDefaultClause();
             this.domainList = domainList;//just store
+            assert this.insertMode == null;
             this.insertMode = InsertMode.DOMAIN;
             return (VR) this;
         }
@@ -897,12 +937,13 @@ abstract class InsertSupports {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.endColumnDefaultClause();
-            this.insertMode = InsertMode.VALUES;
 
             final PairsConstructorImpl<T> constructor;
             constructor = new PairsConstructorImpl<>(this.context, this::validateField);
             consumer.accept(constructor);
             this.rowPairList = constructor.endPairConstructor();
+            assert this.insertMode == null;
+            this.insertMode = InsertMode.VALUES;
             return (VR) this;
         }
 
@@ -949,6 +990,7 @@ abstract class InsertSupports {
             this.endColumnDefaultClause();
 
             this.rowPairList = rowPairList;
+            assert this.insertMode == null;
             this.insertMode = InsertMode.VALUES;
             return (VR) this;
         }
@@ -962,6 +1004,7 @@ abstract class InsertSupports {
             this.endColumnDefaultClause();
 
             this.subQuery = subQuery;
+            assert this.insertMode == null;
             this.insertMode = InsertMode.QUERY;
             return (VR) this;
         }
@@ -1274,7 +1317,7 @@ abstract class InsertSupports {
                 if (((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode != null) {
                     throw ContextStack.castCriteriaApi(this.context);
                 }
-                ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode = InsertMode.ASSIGNMENT;
+                assert ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode == null;
                 pairList = new ArrayList<>();
                 this.assignmentPairList = pairList;
                 assignmentMap = new HashMap<>();
@@ -1418,15 +1461,20 @@ abstract class InsertSupports {
         }
 
         final void endStaticAssignmentClauseIfNeed() {
+
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.assignmentPairList;
             final Map<FieldMeta<?>, _Expression> fieldMap = this.assignmentMap;
             if (pairList == null) {
                 this.assignmentPairList = Collections.emptyList();
                 this.assignmentMap = Collections.emptyMap();
-                ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode = InsertMode.ASSIGNMENT;
+                if (((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode == null) {
+                    ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode = InsertMode.ASSIGNMENT;
+                }
             } else if (pairList instanceof ArrayList) {
                 this.assignmentPairList = _CollectionUtils.unmodifiableList(pairList);
                 this.assignmentMap = Collections.unmodifiableMap(fieldMap);
+                assert ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode == null;
+                ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode = InsertMode.ASSIGNMENT;
             }
 
         }
@@ -1769,6 +1817,7 @@ abstract class InsertSupports {
             return rowCount;
         }
 
+
         @Override
         public final void prepared() {
             _Assert.prepared(this.prepared);
@@ -1834,6 +1883,8 @@ abstract class InsertSupports {
 
         private final LiteralMode literalMode;
 
+        private final boolean ignoreReturnIds;
+
         private final List<FieldMeta<?>> fieldList;
 
         private final Map<FieldMeta<?>, Boolean> fieldMap;
@@ -1846,8 +1897,9 @@ abstract class InsertSupports {
             this.migration = clause.isMigration();
             this.nullHandleMode = clause.nullHandle();
             this.literalMode = clause.literalMode();
-            this.fieldList = clause.fieldList();
+            this.ignoreReturnIds = clause.isIgnoreReturnIds();
 
+            this.fieldList = clause.fieldList();
             this.fieldMap = clause.fieldMap();
             this.defaultExpMap = clause.defaultValueMap();
         }
@@ -1866,6 +1918,12 @@ abstract class InsertSupports {
         @Override
         public final LiteralMode literalMode() {
             return this.literalMode;
+        }
+
+
+        @Override
+        public final boolean isIgnoreReturnIds() {
+            return this.ignoreReturnIds;
         }
 
         @Override
@@ -1929,6 +1987,12 @@ abstract class InsertSupports {
         public final NullMode nullHandle() {
             //assignment don't support this
             return NullMode.INSERT_DEFAULT;
+        }
+
+        @Override
+        public final boolean isIgnoreReturnIds() {
+            //always true,assignment don't need this.
+            return true;
         }
 
         @Override
@@ -2016,6 +2080,12 @@ abstract class InsertSupports {
         public final LiteralMode literalMode() {
             //always DEFAULT,query insert don't support this
             return LiteralMode.DEFAULT;
+        }
+
+        @Override
+        public final boolean isIgnoreReturnIds() {
+            // always true,query insert don't need return id.
+            return true;
         }
 
 
@@ -2122,26 +2192,23 @@ abstract class InsertSupports {
      */
     private static void insertStatementGuard(final _Insert statement) {
         if (!(statement instanceof _Insert._ChildInsert)) {
-            if (statement instanceof _Insert._SupportWithClauseInsert) {
+            if (statement instanceof _Insert._SupportWithClauseInsert) { // for example,postgre insert
                 if (statement instanceof PrimaryStatement) {
                     validateSupportWithClauseInsert((_Insert._SupportWithClauseInsert) statement);
                 }
+            } else if (statement instanceof _Insert._DomainInsert) {
+                validateSingleDomainInsert((_Insert._DomainInsert) statement);
             } else if (statement instanceof _Insert._ParentQueryInsert) {
                 validateParentQueryInsert((_Insert._ParentQueryInsert) statement);
             } else if (statement instanceof _Insert._QueryInsert) {
                 validateSimpleQueryInsert((_Insert._QueryInsert) statement);
             }
-        } else if (_DialectUtils.isOnConflictDoNothing(((_Insert._ChildInsert) statement).parentStmt())) {
-            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(),
-                    _Exceptions::parentDoNothingError, (_Insert._ChildInsert) statement);
-        } else if (_DialectUtils.isOnConflictDoNothing(statement)) {
-            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(),
-                    _Exceptions::childDoNothingError, (_Insert._ChildInsert) statement);
-        } else if (_DialectUtils.isForbidChildInsert((_Insert._ChildInsert) statement)) {
-            throw ContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(),
-                    _Exceptions::forbidChildInsertSyntaxError, (_Insert._ChildInsert) statement);
+        } else if (_DialectUtils.isChildParentRowCountNotMatch((_Insert._ChildInsert) statement)) {
+            throw _Exceptions.childParentRowCountNotMatch((_Insert._ChildInsert) statement);
         } else if (statement instanceof _Insert._QueryInsert) {
             validateChildQueryInsert((_Insert._ChildQueryInsert) statement);
+        } else if (_DialectUtils.isForbidChildInsert((_Insert._ChildInsert) statement)) {
+            throw _Exceptions.cannotReturnPostId(statement);
         } else if (statement instanceof _Insert._ChildDomainInsert) {
             validateChildDomainInsert((_Insert._ChildDomainInsert) statement);
         } else if (statement instanceof _Insert._ChildValuesInsert) {
@@ -2149,6 +2216,28 @@ abstract class InsertSupports {
         } else if (!(statement instanceof _Insert._ChildAssignmentInsert)) {
             //no bug,never here
             throw new IllegalStateException();
+        }
+
+    }
+
+    private static void validateSingleDomainInsert(final _Insert._DomainInsert stmt) {
+        final TableMeta<?> table = stmt.insertTable();
+        if (table instanceof ChildTableMeta) {
+            return;
+        }
+        final boolean needReturnId, cannotReturnId;
+        needReturnId = stmt instanceof PrimaryStatement
+                && !stmt.isMigration()
+                && table.id().generatorType() == GeneratorType.POST
+                && !stmt.isIgnoreReturnIds();
+
+        cannotReturnId = stmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) stmt).hasConflictAction()
+                && stmt.insertRowCount() > 1
+                && (!(stmt instanceof _Statement._ReturningListSpec) || ((_Insert._SupportConflictClauseSpec) stmt).supportIgnorableConflict());
+
+        if (needReturnId && cannotReturnId) {
+            throw _Exceptions.cannotReturnPostId(stmt);
         }
 
     }

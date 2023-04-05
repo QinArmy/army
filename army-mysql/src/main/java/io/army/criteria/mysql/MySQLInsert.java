@@ -254,6 +254,7 @@ public interface MySQLInsert extends MySQLStatement {
 
     interface _PrimaryOptionSpec
             extends InsertStatement._MigrationOptionClause<_PrimaryNullOptionSpec>,
+            InsertStatement._IgnoreReturnIdsOptionClause<_PrimaryNullOptionSpec>,
             _PrimaryNullOptionSpec {
 
     }
@@ -281,6 +282,7 @@ public interface MySQLInsert extends MySQLStatement {
         <T> _PartitionSpec<I, T> insertInto(SingleTableMeta<T> table);
 
     }
+
 
     /**
      * <p>
@@ -312,6 +314,7 @@ public interface MySQLInsert extends MySQLStatement {
      */
     interface _PrimarySingleOptionSpec<I extends Item>
             extends InsertStatement._MigrationOptionClause<_PrimarySingleNullOptionSpec<I>>,
+            InsertStatement._IgnoreReturnIdsOptionClause<_PrimarySingleNullOptionSpec<I>>,
             _PrimarySingleNullOptionSpec<I> {
 
     }

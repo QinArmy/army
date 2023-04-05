@@ -28,23 +28,40 @@ public abstract class _DialectUtils {
 
     public static boolean isOnConflictDoNothing(final _Insert stmt) {
         return stmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) stmt).existsIgnore();
+                && ((_Insert._SupportConflictClauseSpec) stmt).supportIgnorableConflict();
     }
 
     /**
      * @return true : representing insert {@link ChildTableMeta} and syntax error
      * , statement executor couldn't get the auto increment primary key of {@link ParentTableMeta}
      */
-    public static boolean isForbidChildInsert(final _Insert._ChildInsert child) {
+    public static boolean isForbidChildInsert(final _Insert._ChildInsert stmt) {
         final _Insert parentStmt;
-        parentStmt = child.parentStmt();
+        parentStmt = stmt.parentStmt();
 
-        final boolean needParentReturnId;
-        needParentReturnId = parentStmt instanceof _Insert._SupportConflictClauseSpec
-                && parentStmt.insertTable().id().generatorType() == GeneratorType.POST
-                && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction()
-                && !(parentStmt instanceof _Insert._QueryInsert || ((_Insert._InsertOption) parentStmt).isMigration());
-        return needParentReturnId && !(parentStmt instanceof _Statement._ReturningListSpec);
+        final boolean needReturnId, cannotReturnId;
+        needReturnId = !(parentStmt instanceof _Insert._QueryInsert || ((_Insert._InsertOption) parentStmt).isMigration())
+                && parentStmt.insertTable().id().generatorType() == GeneratorType.POST;
+
+        cannotReturnId = needReturnId
+                && stmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) stmt).hasConflictAction()
+                && stmt.insertRowCount() > 1
+                && (!(stmt instanceof _Statement._ReturningListSpec) || ((_Insert._SupportConflictClauseSpec) stmt).supportIgnorableConflict());
+        return needReturnId && cannotReturnId;
+    }
+
+    public static boolean isChildParentRowCountNotMatch(final _Insert._ChildInsert childStmt) {
+        final _Insert parentStmt = childStmt.parentStmt();
+        final boolean parentExistsConflict, childExistsConflict;
+        parentExistsConflict = parentStmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction();
+
+        childExistsConflict = childStmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) childStmt).hasConflictAction();
+
+        return (parentExistsConflict || childExistsConflict)
+                && ((_Insert._SupportConflictClauseSpec) childStmt).supportIgnorableConflict();
     }
 
 

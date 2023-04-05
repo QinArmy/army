@@ -1792,10 +1792,12 @@ abstract class CriteriaContexts {
 
         @Override
         public final void validateFieldFromSubContext(final QualifiedField<?> field) {
-            final String rowAlias = this.tableAlias;
-            if (rowAlias == null || !rowAlias.equals(field.tableAlias()) || field.tableMeta() != this.insertTable) {
+            final String fieldTableAlias = field.tableAlias();
+            if (field.tableMeta() != this.insertTable
+                    || !(fieldTableAlias.equals(this.rowAlias) || fieldTableAlias.equals(this.tableAlias))) {
                 throw unknownQualifiedField(this, field);
-            } else if (this.getOrCreateColumnMap().get(field.fieldName()) != field.fieldMeta()) {
+            } else if (this.columnlist != null &&
+                    this.getOrCreateColumnMap().get(field.fieldName()) != field.fieldMeta()) {
                 throw unknownQualifiedField(this, field);
             }
         }
