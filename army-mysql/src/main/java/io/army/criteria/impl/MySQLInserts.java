@@ -813,8 +813,14 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean supportIgnorableConflict() {
+        public final boolean isIgnorableConflict() {
             //false ,MySQL ON DUPLICATE KEY don't support
+            return false;
+        }
+
+        @Override
+        public final boolean isDoNothing() {
+            //false,MySQL don't support
             return false;
         }
 
@@ -1064,8 +1070,14 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean supportIgnorableConflict() {
+        public final boolean isIgnorableConflict() {
             //false ,MySQL don't support do nothing clause
+            return false;
+        }
+
+        @Override
+        public final boolean isDoNothing() {
+            //false,MySQL don't support
             return false;
         }
 
@@ -1194,8 +1206,14 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean supportIgnorableConflict() {
+        public final boolean isIgnorableConflict() {
             //false ,MySQL don't support do nothing clause
+            return false;
+        }
+
+        @Override
+        public final boolean isDoNothing() {
+            //false,MySQL don't support
             return false;
         }
 

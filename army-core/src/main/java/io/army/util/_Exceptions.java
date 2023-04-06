@@ -9,9 +9,13 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._DialectStatement;
+import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._NestedItems;
+import io.army.criteria.impl.inner._TabularBock;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.env.ArmyKey;
 import io.army.lang.Nullable;
@@ -332,18 +336,43 @@ public abstract class _Exceptions extends ExceptionUtils {
         return function.apply(m);
     }
 
-    public static ErrorChildInsertException childParentRowCountNotMatch(final _Insert._ChildInsert childStmt) {
+    public static CriteriaException conflictClauseAndVisibleNotMatch(Dialect dialect, _Insert stmt, final Visible visible) {
         final StringBuilder builder = new StringBuilder();
+        if (stmt instanceof _Insert._ChildInsert) {
+            builder.append(((_Insert._ChildInsert) stmt).parentStmt().insertTable());
+        } else {
+            builder.append(stmt.insertTable());
+        }
+        builder.append(" contain ")
+                .append(_MetaBridge.VISIBLE)
+                .append(" field")
+                .append(_Constant.COMMA)
+                .append(dialect.name())
+                .append(" conflict clause possibly update ");
+
+        switch (visible) {
+            case ONLY_VISIBLE:
+                builder.append(Visible.ONLY_NON_VISIBLE.name());
+                break;
+            case ONLY_NON_VISIBLE:
+                builder.append(Visible.ONLY_VISIBLE.name());
+                break;
+            default:
+                //no bug,never here
+                throw _Exceptions.unexpectedEnum(visible);
+        }
+        builder.append(" row,because current visible mode is ")
+                .append(visible);
+        return new CriteriaException(builder.toString());
+    }
+
+    public static ErrorChildInsertException doNothingConflict(final _Insert._ChildInsert childStmt) {
+        final StringBuilder builder = _StringUtils.builder();
         builder.append("couldn't insert ")
                 .append(childStmt.insertTable())
-                .append(",because insert multi-row and ");
-
-        if (childStmt instanceof _Statement._ReturningListSpec) {
-            builder.append("exists ignorable conflict clause");
-        } else {
-            builder.append("exists conflict clause");
-        }
-        builder.append(",child insert row count and parent insert row count possibly not match");
+                .append(",because insert multi-row and ")
+                .append("exists conflict clause with DO NOTHING")
+                .append(",child insert row count and parent insert row count possibly not match");
         return new ErrorChildInsertException(builder.toString());
     }
 

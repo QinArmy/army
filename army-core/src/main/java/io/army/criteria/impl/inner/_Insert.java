@@ -34,7 +34,9 @@ public interface _Insert extends _Statement {
         /**
          * @return true: possibly ignore when conflict
          */
-        boolean supportIgnorableConflict();
+        boolean isIgnorableConflict();
+
+        boolean isDoNothing();
 
     }
 

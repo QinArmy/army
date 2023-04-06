@@ -294,7 +294,7 @@ final class PostgreDialectParser extends PostgreParser {
         }
 
         //3. below conflict_action clause
-        if (clause.supportIgnorableConflict()) {
+        if (clause.isIgnorableConflict()) {
             if (clause.updateSetClauseList().size() > 0 || clause.updateSetPredicateList().size() > 0) {
                 throw _Exceptions.castCriteriaApi();
             }

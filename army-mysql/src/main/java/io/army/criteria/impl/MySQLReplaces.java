@@ -408,8 +408,14 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
-        public final boolean supportIgnorableConflict() {
+        public final boolean isIgnorableConflict() {
             //false ,MySQL REPLACE don't support do nothing clause
+            return false;
+        }
+
+        @Override
+        public final boolean isDoNothing() {
+            //false,MySQL don't support
             return false;
         }
 
@@ -642,8 +648,14 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
-        public final boolean supportIgnorableConflict() {
+        public final boolean isIgnorableConflict() {
             //false ,MySQL REPLACE always replace when conflict
+            return false;
+        }
+
+        @Override
+        public final boolean isDoNothing() {
+            //false,MySQL don't support
             return false;
         }
 
@@ -762,8 +774,14 @@ abstract class MySQLReplaces extends InsertSupports {
         }
 
         @Override
-        public final boolean supportIgnorableConflict() {
+        public final boolean isIgnorableConflict() {
             //false ,MySQL REPLACE always replace when conflict
+            return false;
+        }
+
+        @Override
+        public final boolean isDoNothing() {
+            //false,MySQL don't support
             return false;
         }
 

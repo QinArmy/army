@@ -864,7 +864,13 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public boolean supportIgnorableConflict() {
+        public boolean isIgnorableConflict() {
+            //true,Postgre support DO NOTHING and conflict_target and WHERE
+            return true;
+        }
+
+        @Override
+        public boolean isDoNothing() {
             return this.doNothing;
         }
 
@@ -1356,9 +1362,15 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean supportIgnorableConflict() {
+        public final boolean isIgnorableConflict() {
             final _ConflictActionClauseResult conflictAction = this.conflictAction;
-            return conflictAction != null && conflictAction.supportIgnorableConflict();
+            return conflictAction != null && conflictAction.isIgnorableConflict();
+        }
+
+        @Override
+        public final boolean isDoNothing() {
+            final _ConflictActionClauseResult conflictAction = this.conflictAction;
+            return conflictAction != null && conflictAction.isDoNothing();
         }
 
         @Override
@@ -1866,9 +1878,15 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public final boolean supportIgnorableConflict() {
+        public final boolean isIgnorableConflict() {
             final _ConflictActionClauseResult conflictAction = this.conflictAction;
-            return conflictAction != null && conflictAction.supportIgnorableConflict();
+            return conflictAction != null && conflictAction.isIgnorableConflict();
+        }
+
+        @Override
+        public final boolean isDoNothing() {
+            final _ConflictActionClauseResult conflictAction = this.conflictAction;
+            return conflictAction != null && conflictAction.isDoNothing();
         }
 
         @Override

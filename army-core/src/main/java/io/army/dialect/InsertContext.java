@@ -153,7 +153,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
 
         cannotReturnId = this.hasConflictClause
                 && targetStmt.insertRowCount() > 1
-                && (!(targetStmt instanceof _Statement._ReturningListSpec) || ((_Insert._SupportConflictClauseSpec) targetStmt).supportIgnorableConflict());
+                && (!(targetStmt instanceof _Statement._ReturningListSpec) || ((_Insert._SupportConflictClauseSpec) targetStmt).isIgnorableConflict());
 
         if (needReturnId && cannotReturnId) {
             throw _Exceptions.cannotReturnPostId(domainStmt);
@@ -417,7 +417,9 @@ abstract class InsertContext extends StatementContext implements _InsertContext
                 // fieldList have be checked,fieldList possibly is io.army.meta.TableMeta.fieldList()
                 continue;
             }
-            assert !(field instanceof PrimaryFieldMeta)
+
+            assert migration
+                    || !(field instanceof PrimaryFieldMeta)
                     || field.generatorType() != GeneratorType.POST;
 
             if (actualIndex > 0) {

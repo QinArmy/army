@@ -9,6 +9,7 @@ import io.army.example.bank.domain.user.*;
 import io.army.meta.FieldMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.*;
@@ -26,7 +27,26 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     public void domainInsertParentPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
-        final InsertStatement stmt;
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .ignoreReturnIds() // due to exists ON DUPLICATE KEY, so have to ignore return ids,because database couldn't return correct ids when conflict.
+                .literalMode(LiteralMode.PREFERENCE)
+                .insertInto(ChinaRegion_.T)
+                .partition("p1")
+                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .values(this::createReginList)
+                .asInsert();
+
+        printStmt(LOG, stmt);
+
+    }
+
+    @Test
+    public void domainInsertParentPostWithConflict() {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .ignoreReturnIds() // due to exists ON DUPLICATE KEY, so have to ignore return ids,because database couldn't return correct ids when conflict.
                 .literalMode(LiteralMode.PREFERENCE)
@@ -56,7 +76,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .asInsert();
 
-        printStmt(LOG, stmt);
+        printStmt(LOG, stmt, Visible.BOTH);
 
     }
 
@@ -93,7 +113,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         };
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .ignoreReturnIds() // due to exists ON DUPLICATE KEY, so have to ignore return ids,because database couldn't return correct ids when conflict.
                 .literalMode(LiteralMode.PREFERENCE)
@@ -131,12 +151,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     }
 
     @Test
-    public void domainInsertSingleRowChildPost() {
+    public void domainInsertSingleRowChildPostWithConflict() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final ChinaProvince province;
         province = this.createRandomProvince();
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -168,11 +188,11 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .asInsert();
 
-        printStmt(LOG, stmt);
+        printStmt(LOG, stmt, Visible.BOTH);
     }
 
     @Test
-    public void domainInsertSingleRow80ChildPost() {
+    public void domainInsertSingleRow80ChildPostWithConflict() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
@@ -184,7 +204,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final ChinaProvince province;
         province = this.createRandomProvince();
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
@@ -218,7 +238,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .asInsert();
 
-        print80Stmt(LOG, stmt);
+        print80Stmt(LOG, stmt, Visible.BOTH);
     }
 
     @Test(expectedExceptions = ErrorChildInsertException.class)
@@ -241,7 +261,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                     .update(ChinaRegion_.name, MySQLs::values)
                     .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                     .asInsert()// parent table insert statement end
+
                     .child()
+
                     .insertInto(ChinaProvince_.T)
                     .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
                     .values(provinceList)
@@ -264,7 +286,35 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     public void staticValuesInsertParentPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
-        final InsertStatement stmt;
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .literalMode(LiteralMode.PREFERENCE)
+                .insertInto(ChinaRegion_.T)
+                .partition("p1")
+                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .values()
+                .leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
+                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                .rightParen()
+
+                .leftParen(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                .rightParen()
+
+                .asInsert();
+
+        printStmt(LOG, stmt);
+    }
+
+
+    @Test
+    public void staticValuesInsertParentPostWithConflict() {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+        final Random random = ThreadLocalRandom.current();
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -301,9 +351,10 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .asInsert();
 
-        printStmt(LOG, stmt);
+        printStmt(LOG, stmt, Visible.BOTH);
 
     }
+
 
     @Test
     public void staticValuesInsert80ParentPost() {
@@ -318,15 +369,53 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         };
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
-                .into(ChinaRegion_.T)
-                .partition("p1")
+                .into(ChinaRegion_.T).partition("p1")
                 .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
+
+                .leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
+                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                .rightParen()
+
+                .leftParen(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                .rightParen()
+
+                .asInsert();
+
+        print80Stmt(LOG, stmt);
+
+    }
+
+    @Test
+    public void staticValuesInsert80ParentPostWithConflict() {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+        final Random random = ThreadLocalRandom.current();
+
+        final Supplier<List<Hint>> hintSupplier;
+        hintSupplier = () -> {
+            List<Hint> hintList = new ArrayList<>();
+            hintList.add(MySQLs.qbName("regionBlock"));
+            return hintList;
+        };
+        final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
+
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .literalMode(LiteralMode.PREFERENCE)
+                .insert(hintSupplier, modifierList)
+                .into(ChinaRegion_.T).partition("p1")
+                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .values()
+
                 .leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
                 .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
                 .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
@@ -358,7 +447,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .asInsert();
 
-        print80Stmt(LOG, stmt);
+        print80Stmt(LOG, stmt, Visible.BOTH);
 
     }
 
@@ -367,7 +456,50 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
 
-        final InsertStatement stmt;
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .literalMode(LiteralMode.PREFERENCE)
+                .insertInto(ChinaRegion_.T).partition("p1")
+                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .values()
+                .leftParen(ChinaRegion_.name, SQLs::literal, randomProvince(random))
+                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                .rightParen()
+
+                .leftParen(ChinaRegion_.name, SQLs::param, randomProvince(random))
+                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                .rightParen()
+
+                .asInsert()// parent table insert statement end
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                .values()
+
+                .leftParen(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
+                .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                .rightParen()
+
+                .leftParen(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                .comma(ChinaProvince_.provincialCapital, SQLs::param, randomPerson(random))
+                .rightParen()
+
+                .asInsert();
+
+        printStmt(LOG, stmt);
+    }
+
+    @Test
+    public void staticValuesInsertChildPostWithConflict() {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+        final Random random = ThreadLocalRandom.current();
+
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -416,7 +548,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .asInsert();
 
-        printStmt(LOG, stmt);
+        printStmt(LOG, stmt, Visible.BOTH);
     }
 
     @Test
@@ -432,7 +564,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         };
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
@@ -467,22 +599,6 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaProvince_.provincialCapital, SQLs::param, randomPerson(random))
                 .rightParen()
 
-                .as("cp")
-                .onDuplicateKey()
-                .update(ChinaProvince_.governor, SQLs.field("cp", ChinaProvince_.governor))
-                .comma(ChinaProvince_.provincialCapital, () -> SQLs.scalarSubQuery()
-                        .select(HistoryChinaProvince_.provincialCapital)
-                        .from(HistoryChinaProvince_.T, AS, "cp")
-                        .join(HistoryChinaRegion_.T, AS, "cr").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
-                        .where(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
-                        .union()
-                        .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, AS, "t")
-                        .where(HistoryChinaRegion_.name::equal, SQLs::literal, randomPerson(random))
-                        .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
-                        .limit(SQLs::literal, 10)
-                        .asQuery()
-                )
                 .asInsert();
 
         print80Stmt(LOG, stmt);
@@ -494,12 +610,20 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         final Random random = ThreadLocalRandom.current();
 
         MySQLs.singleInsert()
+                .ignoreReturnIds()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
                 .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
-                .values().leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
+                .values()
+
+                .leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
+                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                .rightParen()
+
+                .leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
                 .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
                 .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
                 .rightParen()
@@ -513,7 +637,13 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
                 .insertInto(ChinaProvince_.T)
                 .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
-                .values().leftParen(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
+                .values()
+
+                .leftParen(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
+                .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                .rightParen()
+
+                .leftParen(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
                 .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
                 .rightParen()
 
@@ -533,7 +663,38 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
 
-        final InsertStatement stmt;
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .literalMode(LiteralMode.PREFERENCE)
+                .insertInto(ChinaRegion_.T)
+                .partition("p1")
+                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.population, ChinaRegion_.parentId).rightParen()
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .values(c -> {
+                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
+                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> literal = SQLs::literal;
+                    BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> function;
+                    for (int i = 0; i < 2; i++) {
+                        function = (i & 1) == 0 ? literal : param;
+                        c.row()
+                                .set(ChinaRegion_.name, function, randomRegion(random))
+                                .set(ChinaRegion_.regionGdp, function, randomDecimal(random))
+                                .set(ChinaRegion_.parentId, function, random.nextInt(Integer.MAX_VALUE));
+                    }
+
+                })
+                .asInsert();
+
+        printStmt(LOG, stmt);
+
+    }
+
+    @Test
+    public void dynamicValuesInsertParentPostWithConflict() {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+        final Random random = ThreadLocalRandom.current();
+
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -572,8 +733,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .asInsert();
 
-        printStmt(LOG, stmt);
-
+        printStmt(LOG, stmt, Visible.BOTH);
     }
 
     @Test
@@ -589,7 +749,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         };
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
@@ -610,24 +770,6 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                     }
 
                 })
-                .as("cr")
-                .onDuplicateKey() // TODO validate version = version + persist to database result
-                .update(ChinaRegion_.name, SQLs.field("cr", ChinaRegion_.name))
-                .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs.field("cr", ChinaRegion_.regionGdp))
-                .comma(ChinaRegion_.name, () -> SQLs.scalarSubQuery()// here test qualified field({rowAlias}.name) feature
-                        .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, AS, "t")
-                        .where(HistoryChinaRegion_.name::equal, SQLs.field("cr", ChinaRegion_.regionGdp)) // qualified field({rowAlias}.name) feature
-                        .and(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
-                        .union()
-                        .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, AS, "t")
-                        .where(HistoryChinaRegion_.name::equal, SQLs.field("cr", ChinaRegion_.regionGdp)) // qualified field({rowAlias}.name) feature
-                        .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
-                        .limit(SQLs::literal, 1)
-                        .asQuery()
-
-                )
                 .asInsert();
 
         print80Stmt(LOG, stmt);
@@ -639,7 +781,55 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
         final int rowCount = 2;
-        final InsertStatement stmt;
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .literalMode(LiteralMode.PREFERENCE)
+                .insertInto(ChinaRegion_.T)
+                .partition("p1")
+                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .values(c -> {
+                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
+                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> literal = SQLs::literal;
+                    BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> function;
+                    for (int i = 0; i < rowCount; i++) {
+                        function = (i & 1) == 0 ? literal : param;
+                        c.row()
+                                .set(ChinaRegion_.name, function, randomProvince(random))
+                                .set(ChinaRegion_.regionGdp, function, randomDecimal(random))
+                                .set(ChinaRegion_.parentId, function, random.nextInt(Integer.MAX_VALUE));
+                    }
+
+                })
+                .asInsert()// parent table insert statement end
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                .values(c -> {
+                    final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> param = SQLs::param;
+                    final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> literal = SQLs::literal;
+                    BiFunction<FieldMeta<ChinaProvince>, Object, Expression> function;
+                    for (int i = 0; i < rowCount; i++) {
+                        function = (i & 1) == 0 ? literal : param;
+                        c.row()
+                                .set(ChinaProvince_.governor, function, randomPerson(random))
+                                .set(ChinaProvince_.provincialCapital, function, randomPerson(random));
+                    }
+
+                })
+                .asInsert();
+
+        printStmt(LOG, stmt);
+    }
+
+    @Test
+    public void dynamicValuesInsertChildPostWithConflict() {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+        final Random random = ThreadLocalRandom.current();
+        final int rowCount = 2;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -692,7 +882,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .asInsert();
 
-        printStmt(LOG, stmt);
+        printStmt(LOG, stmt, Visible.BOTH);
     }
 
     @Test//(invocationCount = 300,threadPoolSize = 2)
@@ -709,7 +899,62 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         };
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final InsertStatement stmt;
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .literalMode(LiteralMode.PREFERENCE)
+                .insert(hintSupplier, modifierList)
+                .into(ChinaRegion_.T)
+                .partition("p1")
+                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
+                .values(c -> {
+                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
+                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> literal = SQLs::literal;
+                    BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> function;
+                    for (int i = 0; i < rowCount; i++) {
+                        function = (i & 1) == 0 ? literal : param;
+                        c.row().set(ChinaRegion_.name, function, randomCity(random))
+                                .set(ChinaRegion_.regionGdp, function, randomDecimal(random))
+                                .set(ChinaRegion_.parentId, function, random.nextInt(Integer.MAX_VALUE));
+                    }
+
+                })
+                .asInsert()// parent table insert statement end
+
+                .child()
+
+                .insertInto(ChinaCity_.T)
+                .leftParen(ChinaCity_.mayorName).rightParen()
+                .values(c -> {
+                    final BiFunction<FieldMeta<ChinaCity>, Object, Expression> param = SQLs::param;
+                    final BiFunction<FieldMeta<ChinaCity>, Object, Expression> literal = SQLs::literal;
+                    BiFunction<FieldMeta<ChinaCity>, Object, Expression> function;
+                    for (int i = 0; i < rowCount; i++) {
+                        function = (i & 1) == 0 ? literal : param;
+                        c.row().set(ChinaCity_.mayorName, function, randomPerson(random));
+                    }
+
+                })
+                .asInsert();
+
+        print80Stmt(LOG, stmt);
+    }
+
+    @Test
+    public void dynamicValuesInsert80ChildPostWithConflict() {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+        final Random random = ThreadLocalRandom.current();
+        final int rowCount = 4;
+
+        final Supplier<List<Hint>> hintSupplier;
+        hintSupplier = () -> {
+            List<Hint> hintList = new ArrayList<>();
+            hintList.add(MySQLs.qbName("regionBlock"));
+            return hintList;
+        };
+        final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
+
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
@@ -748,7 +993,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .update(ChinaCity_.mayorName, SQLs.field("cp", ChinaCity_.mayorName))
                 .asInsert();
 
-        print80Stmt(LOG, stmt);
+        print80Stmt(LOG, stmt, Visible.BOTH);
     }
 
     @Test(expectedExceptions = ErrorChildInsertException.class)
@@ -807,7 +1052,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     public void assignmentInsertParentPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -820,7 +1065,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .asInsert();
 
-        printStmt(LOG, stmt);
+        printStmt(LOG, stmt, Visible.BOTH);
 
     }
 
@@ -838,7 +1083,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        InsertStatement stmt;
+        Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList).into(ChinaRegion_.T)
@@ -852,7 +1097,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs.field("cr", ChinaRegion_.regionGdp))
                 .asInsert();
 
-        print80Stmt(LOG, stmt);
+        print80Stmt(LOG, stmt, Visible.BOTH);
 
     }
 
@@ -860,7 +1105,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     public void assignmentInsertChildPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -869,7 +1114,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .set(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
                 .set(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
                 .asInsert() // parent table insert statement end
+
                 .child()
+
                 .insertInto(ChinaProvince_.T)
                 .set(ChinaProvince_.governor, SQLs::param, randomPerson(random))
                 .set(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
@@ -878,7 +1125,48 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaProvince_.provincialCapital, MySQLs::values)
                 .asInsert();
 
-        printStmt(LOG, stmt);
+        printStmt(LOG, stmt, Visible.BOTH);
+
+    }
+
+    @Test(expectedExceptions = CriteriaException.class)
+    public void assignmentInsertChildPostVisibleError() {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+        final Random random = ThreadLocalRandom.current();
+        final Insert stmt;
+
+        try {
+            stmt = MySQLs.singleInsert()
+                    .literalMode(LiteralMode.PREFERENCE)
+                    .insertInto(ChinaRegion_.T)
+                    .partition("p1")
+                    .set(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                    .set(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                    .set(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                    .asInsert() // parent table insert statement end
+
+                    .child()
+
+                    .insertInto(ChinaProvince_.T)
+                    .set(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                    .set(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                    .onDuplicateKey()
+                    .update(ChinaProvince_.governor, MySQLs::values)
+                    .comma(ChinaProvince_.provincialCapital, MySQLs::values)
+                    .asInsert();
+        } catch (CriteriaException e) {
+            Assert.fail(e.getMessage());
+            throw e;
+        }
+
+
+        try {
+            printStmt(LOG, stmt, Visible.ONLY_VISIBLE); //here table contain visible field and Visible mode is ONLY_VISIBLE not both,so error
+        } catch (CriteriaException e) {
+            //test success
+            LOG.debug("{}", e.getMessage());
+            throw e;
+        }
 
     }
 
@@ -896,7 +1184,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList).into(ChinaRegion_.T)
@@ -905,7 +1193,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .set(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
                 .set(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
                 .asInsert() // parent table insert statement end
+
                 .child()
+
                 .insertInto(ChinaProvince_.T)
                 .set(ChinaProvince_.governor, SQLs::param, randomPerson(random))
                 .set(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
@@ -915,7 +1205,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaProvince_.provincialCapital, SQLs.field("cp", ChinaProvince_.provincialCapital))
                 .asInsert();
 
-        print80Stmt(LOG, stmt);
+        print80Stmt(LOG, stmt, Visible.BOTH);
 
     }
 
@@ -935,7 +1225,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .onDuplicateKey()// ChinaRegion_.id.generatorType() == GeneratorType.POST, so forbid onDuplicateKey clause,must throw CriteriaException
                 .update(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .asInsert() // parent table insert statement end
+
                 .child()
+
                 .insertInto(ChinaProvince_.T)
                 .set(ChinaProvince_.governor, SQLs::param, randomPerson(random))
                 .set(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
@@ -944,7 +1236,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaProvince_.provincialCapital, MySQLs::values)
                 .asInsert();
 
-        printStmt(LOG, stmt);
+        printStmt(LOG, stmt, Visible.BOTH);
 
     }
 
@@ -955,7 +1247,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     public void dynamicAssignmentInsertParentPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -969,7 +1261,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .asInsert();
 
-        printStmt(LOG, stmt);
+        printStmt(LOG, stmt, Visible.BOTH);
 
     }
 
@@ -987,7 +1279,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        InsertStatement stmt;
+        Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList).into(ChinaRegion_.T)
@@ -1002,7 +1294,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs.field("cr", ChinaRegion_.regionGdp))
                 .asInsert();
 
-        print80Stmt(LOG, stmt);
+        print80Stmt(LOG, stmt, Visible.BOTH);
 
     }
 
@@ -1010,7 +1302,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     public void dynamicAssignmentInsertChildPost() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -1029,7 +1321,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .asInsert();
 
-        printStmt(LOG, stmt);
+        printStmt(LOG, stmt, Visible.BOTH);
 
     }
 
@@ -1047,7 +1339,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final List<MySQLs.Modifier> modifierList = Arrays.asList(MySQLs.HIGH_PRIORITY, MySQLs.IGNORE);
 
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList).into(ChinaRegion_.T)
@@ -1068,15 +1360,15 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaProvince_.provincialCapital, SQLs.field("cp", ChinaProvince_.provincialCapital))
                 .asInsert();
 
-        print80Stmt(LOG, stmt);
+        print80Stmt(LOG, stmt, Visible.BOTH);
 
     }
 
-    @Test(expectedExceptions = ErrorChildInsertException.class)
-    public void dynamicAssignmentInsertChildPostWithParentConflictError() {
+    @Test
+    public void dynamicAssignmentInsertChildPostWitConflictNoError() {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
-
+        // here ,due to assignment insert mode always insert one row,so database always could return correct id.
         MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
@@ -1090,9 +1382,11 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )// ChinaRegion_.id.generatorType() == GeneratorType.POST, so forbid onDuplicateKey clause,must throw CriteriaException
                 .asInsert() // parent table insert statement end
                 .child()
+
                 .insertInto(ChinaProvince_.T)
                 .set(ChinaProvince_.governor, SQLs::param, randomPerson(random))
                 .set(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+
                 .onDuplicateKey()
                 .update(ChinaProvince_.governor, MySQLs::values)
                 .comma(ChinaProvince_.provincialCapital, MySQLs::values)
@@ -1104,18 +1398,18 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
     /*-------------------below query insert tests -------------------*/
 
-    @Test(enabled = false)//TODO
+    @Test
     public void queryInsertParent() {
 
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .migration()
-                .insertInto(ChinaRegion_.T)
-                .partition("p1")
+                .insertInto(ChinaRegion_.T).partition("p1")
                 .leftParen(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
                 .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
                 .comma(ChinaRegion_.regionType)
                 .rightParen()
+
                 .space()
                 .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
                 .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
@@ -1123,13 +1417,14 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .from(ChinaRegion_.T, AS, "c")
                 .limit(SQLs::param, 10)
                 .asQuery()
+
                 .asInsert();
 
         printStmt(LOG, stmt);
 
     }
 
-    @Test(enabled = false) //TODO
+    @Test
     public void queryInsert80Parent() {
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
@@ -1138,7 +1433,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
             return hintList;
         };
 
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = MySQLs.singleInsert()
                 .migration()
                 .insert(hintSupplier, Collections.emptyList())
@@ -1158,6 +1453,49 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .asInsert();
 
         print80Stmt(LOG, stmt);
+
+    }
+
+    @Test
+    public void queryInsertChild() {
+
+        final Insert stmt;
+        stmt = MySQLs.singleInsert()
+                .migration()
+                .insertInto(ChinaRegion_.T).partition("p1")
+                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
+                .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
+                .comma(ChinaRegion_.regionType)
+                .rightParen()
+
+                .space()
+
+                .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
+                .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
+                .comma(SQLs.literalFrom(RegionType.PROVINCE)::as, ChinaRegion_.REGION_TYPE)
+                .from(ChinaRegion_.T, AS, "c")
+                .limit(SQLs::param, 10)
+                .asQuery()
+
+                .asInsert()
+
+                .child()
+
+                .insertInto(ChinaProvince_.T).partition("p3")
+                .leftParen(ChinaProvince_.id, ChinaProvince_.provincialCapital, ChinaProvince_.governor)
+                .rightParen()
+
+                .space()
+
+                .select(ChinaProvince_.id, ChinaProvince_.provincialCapital, ChinaProvince_.governor)
+                .from(ChinaProvince_.T, AS, "c")
+                .join(ChinaRegion_.T, AS, "p").on(ChinaProvince_.id::equal, ChinaRegion_.id)
+                .limit(SQLs::param, 10)
+                .asQuery()
+
+                .asInsert();
+
+        printStmt(LOG, stmt);
 
     }
 

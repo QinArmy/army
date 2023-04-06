@@ -9,22 +9,31 @@ import org.slf4j.Logger;
 abstract class MySQLUnitTests extends CriteriaUnitTests {
 
     static void printStmt(Logger logger, PrimaryStatement statement) {
+        printStmt(logger, statement, Visible.ONLY_VISIBLE);
+
+    }
+
+    static void printStmt(Logger logger, PrimaryStatement statement, Visible visible) {
 
         for (MySQLDialect dialect : MySQLDialect.values()) {
-           // statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
-            logger.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+            // statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
+            logger.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, visible, true));
             // break;
         }
 
     }
 
     static void print80Stmt(Logger logger, PrimaryStatement statement) {
+        print80Stmt(logger, statement, Visible.ONLY_VISIBLE);
+    }
+
+    static void print80Stmt(Logger logger, PrimaryStatement statement, Visible visible) {
 
         for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.version() < MySQLDialect.MySQL80.version()) {
                 continue;
             }
-            logger.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+            logger.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, visible, true));
         }
 
     }

@@ -28,7 +28,7 @@ public abstract class _DialectUtils {
 
     public static boolean isOnConflictDoNothing(final _Insert stmt) {
         return stmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) stmt).supportIgnorableConflict();
+                && ((_Insert._SupportConflictClauseSpec) stmt).isIgnorableConflict();
     }
 
     /**
@@ -44,24 +44,46 @@ public abstract class _DialectUtils {
                 && parentStmt.insertTable().id().generatorType() == GeneratorType.POST;
 
         cannotReturnId = needReturnId
-                && stmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) stmt).hasConflictAction()
-                && stmt.insertRowCount() > 1
-                && (!(stmt instanceof _Statement._ReturningListSpec) || ((_Insert._SupportConflictClauseSpec) stmt).supportIgnorableConflict());
+                && parentStmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction()
+                && parentStmt.insertRowCount() > 1
+                && (!(parentStmt instanceof _Statement._ReturningListSpec) || ((_Insert._SupportConflictClauseSpec) parentStmt).isIgnorableConflict());
         return needReturnId && cannotReturnId;
     }
 
-    public static boolean isChildParentRowCountNotMatch(final _Insert._ChildInsert childStmt) {
+    public static boolean isDoNothing(final _Insert._ChildInsert childStmt) {
         final _Insert parentStmt = childStmt.parentStmt();
-        final boolean parentExistsConflict, childExistsConflict;
-        parentExistsConflict = parentStmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction();
+        final boolean parentDoNothing, childDoNothing;
+        parentDoNothing = parentStmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) parentStmt).isDoNothing();
 
-        childExistsConflict = childStmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) childStmt).hasConflictAction();
+        childDoNothing = childStmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) childStmt).isDoNothing();
+        //here, validate do nothing only,rest is validate by statement executor.
+        return parentDoNothing || childDoNothing;
+    }
 
-        return (parentExistsConflict || childExistsConflict)
-                && ((_Insert._SupportConflictClauseSpec) childStmt).supportIgnorableConflict();
+    /**
+     * @param stmt non {@link io.army.criteria.impl.inner._Insert._ChildInsert}
+     */
+    public static boolean isCannotReturnId(final _Insert._DomainInsert stmt) {
+        final TableMeta<?> table = stmt.insertTable();
+        if (table instanceof ChildTableMeta) {
+            //here,stmt not tow statement mode,for example postgre insert with cte.
+            return false;
+        }
+        final boolean needReturnId, cannotReturnId;
+        needReturnId = stmt instanceof PrimaryStatement
+                && !stmt.isMigration()
+                && table.id().generatorType() == GeneratorType.POST
+                && !stmt.isIgnoreReturnIds();
+
+        cannotReturnId = stmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) stmt).hasConflictAction()
+                && stmt.insertRowCount() > 1
+                && (!(stmt instanceof _Statement._ReturningListSpec) || ((_Insert._SupportConflictClauseSpec) stmt).isIgnorableConflict());
+        return needReturnId && cannotReturnId;
+
     }
 
 
@@ -225,6 +247,33 @@ public abstract class _DialectUtils {
         }
     }
 
+    static boolean isIllegalConflict(final _Insert stmt, final Visible visible) {
+        if (visible == Visible.BOTH || !stmt.insertTable().containComplexField(_MetaBridge.VISIBLE)) {
+            return false;
+        }
+
+        final _Insert nonChildStmt;
+        if (stmt instanceof _Insert._ChildInsert) {
+            nonChildStmt = ((_Insert._ChildInsert) stmt).parentStmt();
+        } else {
+            nonChildStmt = stmt;
+        }
+        final boolean nonChildIllegal, childIllegal;
+        nonChildIllegal = nonChildStmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) nonChildStmt).hasConflictAction()
+                && !((_Insert._SupportConflictClauseSpec) nonChildStmt).isIgnorableConflict();
+
+        if (nonChildStmt == stmt) {
+            childIllegal = false;
+        } else {
+            childIllegal = stmt instanceof _Insert._SupportConflictClauseSpec
+                    && ((_Insert._SupportConflictClauseSpec) stmt).hasConflictAction()
+                    && !((_Insert._SupportConflictClauseSpec) stmt).isIgnorableConflict();
+        }
+
+        return nonChildIllegal || childIllegal;
+    }
+
     static void checkDefaultValueMap(final _Insert._ValuesSyntaxInsert insert) {
         if (insert.isMigration()) {
             return;
@@ -295,6 +344,8 @@ public abstract class _DialectUtils {
         return value;
 
     }
+
+
 
 
 

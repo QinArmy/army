@@ -570,19 +570,25 @@ abstract class ArmyParser implements DialectParser {
         } else {
             this.assertInsert(insert);
         }
-        if (insert instanceof _Insert._ChildInsert && !(insert instanceof StandardInsert)) {
-            final _Insert._ChildInsert childStmt = (_Insert._ChildInsert) insert;
-            final CriteriaException exception;
-            if ((exception = this.supportChildInsert(childStmt, visible)) != null) {
-                throw exception;
-            } else if (_DialectUtils.isOnConflictDoNothing(childStmt.parentStmt())) {
-                throw _Exceptions.parentDoNothingError(childStmt);
-            } else if (_DialectUtils.isOnConflictDoNothing(childStmt)) {
-                throw _Exceptions.childDoNothingError(childStmt);
-            } else if (_DialectUtils.isForbidChildInsert(childStmt)) {
-                throw _Exceptions.forbidChildInsertSyntaxError(childStmt);
+
+        //below validate insert statement
+        if (!(insert instanceof StandardInsert)) {
+            if (_DialectUtils.isIllegalConflict((_Insert) insert, visible)) {
+                throw _Exceptions.conflictClauseAndVisibleNotMatch(this.dialect, (_Insert) insert, visible);
+            } else if (insert instanceof _Insert._ChildInsert) {
+                final _Insert._ChildInsert childStmt = (_Insert._ChildInsert) insert;
+                if (_DialectUtils.isDoNothing(childStmt)) {
+                    throw _Exceptions.doNothingConflict(childStmt);
+                } else if (_DialectUtils.isForbidChildInsert(childStmt)) {
+                    throw _Exceptions.forbidChildInsertSyntaxError(childStmt);
+                }
+            } else if (insert instanceof _Insert._DomainInsert
+                    && _DialectUtils.isCannotReturnId((_Insert._DomainInsert) insert)) {
+                throw _Exceptions.cannotReturnPostId((_Insert._DomainInsert) insert);
             }
         }
+
+
         final _InsertContext context;
         if (insert instanceof _Insert._DomainInsert) {
             context = handleDomainInsert(outerContext, (_Insert._DomainInsert) insert, visible);
@@ -821,6 +827,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleSelect(_SqlContext, Select, Visible)
      * @see #handleRowSet(RowSet, _SqlContext)
      * @see #subQuery(SubQuery, _SqlContext)
+     * @see #handleSubQuery(SubQuery, _SqlContext)
      * @see #withSubQuery(boolean, List, _SqlContext, Consumer)
      */
     protected final void handleQuery(final Query query, final _SqlContext original) {

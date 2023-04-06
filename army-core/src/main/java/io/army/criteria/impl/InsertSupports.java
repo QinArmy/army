@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.*;
@@ -2196,15 +2195,15 @@ abstract class InsertSupports {
                 if (statement instanceof PrimaryStatement) {
                     validateSupportWithClauseInsert((_Insert._SupportWithClauseInsert) statement);
                 }
-            } else if (statement instanceof _Insert._DomainInsert) {
-                validateSingleDomainInsert((_Insert._DomainInsert) statement);
+            } else if (statement instanceof _Insert._DomainInsert && _DialectUtils.isCannotReturnId((_Insert._DomainInsert) statement)) {
+                throw _Exceptions.cannotReturnPostId(statement);
             } else if (statement instanceof _Insert._ParentQueryInsert) {
                 validateParentQueryInsert((_Insert._ParentQueryInsert) statement);
             } else if (statement instanceof _Insert._QueryInsert) {
                 validateSimpleQueryInsert((_Insert._QueryInsert) statement);
             }
-        } else if (_DialectUtils.isChildParentRowCountNotMatch((_Insert._ChildInsert) statement)) {
-            throw _Exceptions.childParentRowCountNotMatch((_Insert._ChildInsert) statement);
+        } else if (_DialectUtils.isDoNothing((_Insert._ChildInsert) statement)) {
+            throw _Exceptions.doNothingConflict((_Insert._ChildInsert) statement);
         } else if (statement instanceof _Insert._QueryInsert) {
             validateChildQueryInsert((_Insert._ChildQueryInsert) statement);
         } else if (_DialectUtils.isForbidChildInsert((_Insert._ChildInsert) statement)) {
@@ -2216,28 +2215,6 @@ abstract class InsertSupports {
         } else if (!(statement instanceof _Insert._ChildAssignmentInsert)) {
             //no bug,never here
             throw new IllegalStateException();
-        }
-
-    }
-
-    private static void validateSingleDomainInsert(final _Insert._DomainInsert stmt) {
-        final TableMeta<?> table = stmt.insertTable();
-        if (table instanceof ChildTableMeta) {
-            return;
-        }
-        final boolean needReturnId, cannotReturnId;
-        needReturnId = stmt instanceof PrimaryStatement
-                && !stmt.isMigration()
-                && table.id().generatorType() == GeneratorType.POST
-                && !stmt.isIgnoreReturnIds();
-
-        cannotReturnId = stmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) stmt).hasConflictAction()
-                && stmt.insertRowCount() > 1
-                && (!(stmt instanceof _Statement._ReturningListSpec) || ((_Insert._SupportConflictClauseSpec) stmt).supportIgnorableConflict());
-
-        if (needReturnId && cannotReturnId) {
-            throw _Exceptions.cannotReturnPostId(stmt);
         }
 
     }
