@@ -1,17 +1,23 @@
 package io.army.dialect.postgre;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
+import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._PostgreConsultant;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._ConflictTargetItem;
 import io.army.criteria.impl.inner.postgre._PostgreInsert;
+import io.army.criteria.impl.inner.postgre._PostgreQuery;
+import io.army.criteria.impl.inner.postgre._PostgreTableBlock;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.List;
 
@@ -67,71 +73,13 @@ final class PostgreDialectParser extends PostgreParser {
     @Override
     protected void parseClauseAfterRightParen(final _ParensRowSet rowSet, final _ParenRowSetContext context) {
         this.orderByClause(rowSet.orderByList(), context);
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-
-        final _Expression rowCountExp, offsetExp;
-        rowCountExp = rowSet.rowCountExp();
-        offsetExp = rowSet.offsetExp();
-
-        final _Statement._SQL2008LimitClauseSpec clause = (_Statement._SQL2008LimitClauseSpec) rowSet;
-        final SQLWords fetchFirstNext;
-        fetchFirstNext = clause.fetchFirstOrNext();
-
-        // LIMIT clause
-        if (fetchFirstNext == null && rowCountExp != null) {
-            sqlBuilder.append(_Constant.SPACE_LIMIT);
-            rowCountExp.appendSql(context);
-        }
-
-
-        // OFFSET clause
-        if (offsetExp != null) {
-            sqlBuilder.append(_Constant.SPACE_OFFSET);
-            offsetExp.appendSql(context);
-            final SQLWords offsetRow;
-            if ((offsetRow = clause.offsetRowModifier()) != null) {
-                if (offsetRow != SQLs.ROW && offsetRow != SQLs.ROWS) {
-                    throw _Exceptions.castCriteriaApi();
-                }
-                sqlBuilder.append(offsetRow.render());
-            }
-        }
-
-        // FETCH clause
-        if (fetchFirstNext != null) {
-            if (rowCountExp == null) {
-                throw _Exceptions.castCriteriaApi();
-            }
-
-            final SQLWords fetchRowRows, fetchOnlyWithTies;
-            fetchRowRows = clause.fetchRowModifier();
-            fetchOnlyWithTies = clause.fetchOnlyOrWithTies();
-
-            if (fetchRowRows != SQLs.ROW && fetchRowRows != SQLs.ROWS) {
-                throw _Exceptions.castCriteriaApi();
-            } else if (fetchOnlyWithTies == null || clause.fetchPercentModifier() != null) {
-                throw _Exceptions.castCriteriaApi();
-            } else if (fetchOnlyWithTies != SQLs.ONLY && fetchOnlyWithTies != SQLs.WITH_TIES) {
-                throw errorFetchOnlyOrWithTies(fetchOnlyWithTies);
-            }
-
-            sqlBuilder.append(_Constant.SPACE_FETCH)
-                    .append(fetchFirstNext.render());
-
-            rowCountExp.appendSql(context);
-
-            sqlBuilder.append(fetchRowRows.render())
-                    .append(fetchOnlyWithTies.render());
-
-        }
-
-
+        postgreLimitClause((_Statement._SQL2008LimitClauseSpec) rowSet, context);
     }
 
 
     @Override
     protected void parseWithClause(final _Statement._WithClauseSpec spec, final _SqlContext context) {
-        super.parseWithClause(spec, context);
+
     }
 
     @Override
@@ -143,16 +91,67 @@ final class PostgreDialectParser extends PostgreParser {
 
 
     @Override
-    protected void parseQueryInsert(_QueryInsertContext context, _Insert._QueryInsert insert) {
+    protected void parseQueryInsert(final _QueryInsertContext context, final _Insert._QueryInsert insert) {
 
         this.parsePostgreInsert(context, (_PostgreInsert) insert);
 
     }
 
     @Override
-    protected void parseSimpleQuery(_Query query, _SimpleQueryContext context) {
-        super.parseSimpleQuery(query, context);
+    protected void parseSimpleQuery(final _Query query, final _SimpleQueryContext context) {
+        final _PostgreQuery stmt = (_PostgreQuery) query;
+        // 1. WITH clause
+        this.parseWithClause(stmt, context);
+
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+        if (sqlBuilder.length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+        // 2. SELECT key word
+        sqlBuilder.append(_Constant.SELECT);
+        // 3. modifiers
+        this.selectModifierClause(stmt.modifierList(), context, _PostgreConsultant::queryModifier);
+        // 4. DISTINCT ON expression clause
+        distinctOnExpressionsClause(stmt, context);
+        // 5. selection list clause
+        this.selectionListClause(context);
+
+        // 6. FROM clause
+        final List<_TabularBock> tableBlockList;
+        tableBlockList = stmt.tableBlockList();
+        if (tableBlockList.size() > 0) {
+            sqlBuilder.append(_Constant.SPACE_FROM);
+            this.postgreFromItemsClause(stmt.tableBlockList(), context, false);
+        }
+
+        // 7. WHERE clause
+        this.queryWhereClause(tableBlockList, stmt.wherePredicateList(), context);
+
+        // 8. GROUP BY clause
+        final List<? extends SortItem> groupByList;
+        groupByList = stmt.groupByList();
+        if (groupByList.size() > 0) {
+            this.groupByClause(groupByList, context);
+            //8.1 HAVING clause
+            this.havingClause(stmt.havingList(), context);
+        }
+
+        // 9. WINDOW clause
+        final List<_Window> windowList;
+        windowList = stmt.windowList();
+        if (windowList.size() > 0) {
+            this.windowClause(windowList, context, _PostgreConsultant::assertWindow);
+        }
+
+        // 10. ORDER BY clause
+        this.orderByClause(stmt.orderByList(), context);
+        // 11. LIMIT OFFSET FETCH clause
+        postgreLimitClause(stmt, context);
+        // 12 LOCK clause
+        postgreLockClause(stmt.lockBlockList(), context);
     }
+
 
     @Override
     protected void parseSimpleValues(_ValuesQuery values, _ValuesContext context) {
@@ -179,6 +178,129 @@ final class PostgreDialectParser extends PostgreParser {
     protected _PrimaryContext handleDialectDql(@Nullable _SqlContext outerContext, DqlStatement statement,
                                                Visible visible) {
         return super.handleDialectDql(outerContext, statement, visible);
+    }
+
+
+    /**
+     * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
+     * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
+     */
+    private void postgreFromItemsClause(final List<_TabularBock> blockList, final _MultiTableStmtContext context,
+                                        final boolean nested) {
+        final int blockSize = blockList.size();
+        assert blockSize > 0;
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+
+        _TabularBock block;
+        TabularItem tabularItem;
+        TableMeta<?> table;
+        String alias;
+        _JoinType joinType;
+        List<_Predicate> predicateList;
+        SQLWords modifier;
+        for (int i = 0; i < blockSize; i++) {
+            block = blockList.get(i);
+            joinType = block.jointType();
+            if (i > 0) {
+                assert joinType != _JoinType.NONE;
+                sqlBuilder.append(joinType.render());
+            } else {
+                assert joinType == _JoinType.NONE;
+            }
+            tabularItem = block.tableItem();
+            alias = block.alias();
+
+            if (tabularItem instanceof TableMeta) {
+                table = (TableMeta<?>) tabularItem;
+
+                if (block instanceof _ModifierTabularBlock
+                        && (modifier = ((_ModifierTabularBlock) block).modifier()) != null) {
+                    assert modifier == SQLs.ONLY;
+                    sqlBuilder.append(modifier.render());
+                }
+                sqlBuilder.append(_Constant.SPACE);
+                this.safeObjectName(table, sqlBuilder);
+
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE)
+                        .append(context.safeTableAlias(table, alias));
+                if (block instanceof _PostgreTableBlock) {
+                    this.postgreTableSampleClause((_PostgreTableBlock) block, context);
+                }
+            } else if (tabularItem instanceof DerivedTable) {
+                if (block instanceof _ModifierTabularBlock
+                        && (modifier = ((_ModifierTabularBlock) block).modifier()) != null) {
+                    assert modifier == SQLs.LATERAL;
+                    sqlBuilder.append(modifier.render());
+                }
+                if (tabularItem instanceof SubQuery) {
+                    this.handleSubQuery((SubQuery) tabularItem, context);
+                } else if (tabularItem instanceof SubValues) {
+                    this.handleSubValues((SubValues) tabularItem, context);
+                } else {
+                    // function
+                    ((_SelfDescribed) tabularItem).appendSql(context);
+                }
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+                this.identifier(alias, sqlBuilder);
+
+                if (block instanceof _AliasDerivedBlock) {
+                    this.derivedColumnAliasClause((_AliasDerivedBlock) block, context);
+                }
+            } else if (tabularItem instanceof _NestedItems) {
+                _PostgreConsultant.assertNestedItems((_NestedItems) tabularItem);
+                if (_StringUtils.hasText(alias)) {
+                    throw _Exceptions.nestedItemsAliasHasText(alias);
+                }
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+                this.postgreFromItemsClause(((_NestedItems) tabularItem).tableBlockList(), context, true);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            } else if (tabularItem instanceof _Cte) {
+                _PostgreConsultant.assertPostgreCte((_Cte) tabularItem);
+                sqlBuilder.append(_Constant.SPACE);
+                this.identifier(((_Cte) tabularItem).name(), sqlBuilder);
+                if (_StringUtils.hasText(alias)) {
+                    sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+                    this.identifier(alias, sqlBuilder);
+                } else if (!"".equals(alias)) {
+                    throw _Exceptions.tableItemAliasNoText(tabularItem);
+                }
+            } else {
+                throw _Exceptions.dontSupportTableItem(tabularItem, alias, this.dialect);
+            }
+
+            switch (joinType) {
+                case LEFT_JOIN:
+                case JOIN:
+                case RIGHT_JOIN:
+                case FULL_JOIN:
+                case STRAIGHT_JOIN: {
+                    predicateList = block.onClauseList();
+                    if (!nested) {
+                        this.onClause(predicateList, context);
+                    }
+                }
+                break;
+                case NONE:
+                case CROSS_JOIN:
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(joinType);
+            }
+
+
+        }//for
+
+
+    }
+
+
+    /**
+     * @see #postgreFromItemsClause(List, _MultiTableStmtContext, boolean)
+     */
+    private void postgreTableSampleClause(final _PostgreTableBlock block, final _SqlContext context) {
+
     }
 
 
@@ -236,7 +358,7 @@ final class PostgreDialectParser extends PostgreParser {
 
         // 8. RETURNING clause
         if (stmt instanceof _ReturningDml) {
-            this.returningClause(context, (_ReturningDml) stmt);
+            returningClause(context, (_ReturningDml) stmt);
         } else if (context instanceof _ValueSyntaxInsertContext) {
             ((_ValueSyntaxInsertContext) context).appendReturnIdIfNeed();
         }
@@ -366,7 +488,7 @@ final class PostgreDialectParser extends PostgreParser {
     /**
      * @see #parsePostgreInsert(_InsertContext, _PostgreInsert)
      */
-    private void returningClause(final _SqlContext context, final _ReturningDml stmt) {
+    private static void returningClause(final _SqlContext context, final _ReturningDml stmt) {
         final List<? extends _Selection> selectionList;
         selectionList = stmt.returningList();
         final int selectionSize;
@@ -386,6 +508,138 @@ final class PostgreDialectParser extends PostgreParser {
             selectionList.get(i).appendSelectItem(context);
         }
 
+
+    }
+
+    /**
+     * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
+     */
+    private static void distinctOnExpressionsClause(final _PostgreQuery stmt, final _SimpleQueryContext context) {
+        final List<_Expression> expList = stmt.distinctOnExpressionList();
+        final int distinctOnExpSize = expList.size();
+        if (distinctOnExpSize == 0) {
+            return;
+        }
+        final List<? extends SQLWords> modifierList = stmt.modifierList();
+        if (modifierList.size() != 1 || modifierList.get(0) != Postgres.DISTINCT) {
+            throw _Exceptions.castCriteriaApi();
+        }
+
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder()
+                .append(_Constant.SPACE_ON)
+                .append(_Constant.LEFT_PAREN);
+        for (int i = 0; i < distinctOnExpSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+            expList.get(i).appendSql(context);
+        }
+        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+    }
+
+    /**
+     * @see #parseClauseAfterRightParen(_ParensRowSet, _ParenRowSetContext)
+     * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
+     * @see #parseSimpleValues(_ValuesQuery, _ValuesContext)
+     */
+    private static void postgreLimitClause(final _Statement._SQL2008LimitClauseSpec stmt, final _SqlContext context) {
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+
+        final _Expression rowCountExp, offsetExp;
+        rowCountExp = stmt.rowCountExp();
+        offsetExp = stmt.offsetExp();
+
+        final SQLWords fetchFirstNext;
+        fetchFirstNext = stmt.fetchFirstOrNext();
+
+        // LIMIT clause
+        if (fetchFirstNext == null && rowCountExp != null) {
+            sqlBuilder.append(_Constant.SPACE_LIMIT);
+            rowCountExp.appendSql(context);
+        }
+
+
+        // OFFSET clause
+        if (offsetExp != null) {
+            sqlBuilder.append(_Constant.SPACE_OFFSET);
+            offsetExp.appendSql(context);
+            final SQLWords offsetRow;
+            if ((offsetRow = stmt.offsetRowModifier()) != null) {
+                if (offsetRow != SQLs.ROW && offsetRow != SQLs.ROWS) {
+                    throw _Exceptions.castCriteriaApi();
+                }
+                sqlBuilder.append(offsetRow.render());
+            }
+        }
+
+        // FETCH clause
+        if (fetchFirstNext != null) {
+            if (rowCountExp == null) {
+                throw _Exceptions.castCriteriaApi();
+            }
+
+            final SQLWords fetchRowRows, fetchOnlyWithTies;
+            fetchRowRows = stmt.fetchRowModifier();
+            fetchOnlyWithTies = stmt.fetchOnlyOrWithTies();
+
+            if (fetchRowRows != SQLs.ROW && fetchRowRows != SQLs.ROWS) {
+                throw _Exceptions.castCriteriaApi();
+            } else if (fetchOnlyWithTies == null || stmt.fetchPercentModifier() != null) {
+                throw _Exceptions.castCriteriaApi();
+            } else if (fetchOnlyWithTies != SQLs.ONLY && fetchOnlyWithTies != SQLs.WITH_TIES) {
+                throw errorFetchOnlyOrWithTies(fetchOnlyWithTies);
+            }
+
+            sqlBuilder.append(_Constant.SPACE_FETCH)
+                    .append(fetchFirstNext.render());
+
+            rowCountExp.appendSql(context);
+
+            sqlBuilder.append(fetchRowRows.render())
+                    .append(fetchOnlyWithTies.render());
+
+        }
+
+
+    }
+
+    /**
+     * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
+     */
+    private static void postgreLockClause(final List<_Query._LockBlock> blockList, final _SimpleQueryContext context) {
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+        List<String> tableAliasList;
+        int tableAliasSize;
+        SQLWords waitOption;
+        for (_Query._LockBlock block : blockList) {
+
+            sqlBuilder.append(block.lockStrength().render());
+
+            tableAliasList = block.lockTableAliasList();
+            tableAliasSize = tableAliasList.size();
+
+            if (tableAliasSize > 0) {
+                sqlBuilder.append(_Constant.SPACE_OF_SPACE);
+                for (int i = 0; i < tableAliasSize; i++) {
+                    if (i > 0) {
+                        sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+                    }
+                    sqlBuilder.append(context.safeTableAlias(tableAliasList.get(i)));
+                }
+
+            }// if(tableAliasSize >0)
+
+            waitOption = block.lockWaitOption();
+            if (waitOption != null) {
+                sqlBuilder.append(waitOption.render());
+            }
+
+
+        }
 
     }
 

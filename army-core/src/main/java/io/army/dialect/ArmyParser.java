@@ -1006,8 +1006,24 @@ abstract class ArmyParser implements DialectParser {
 
     }
 
+    protected final void selectModifierClause(final List<? extends SQLWords> modifierList, final _SqlContext context,
+                                              final Function<SQLWords, Integer> validator) {
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        int level, lastLevel = -1;
+        for (SQLWords modifier : modifierList) {
+            level = validator.apply(modifier);
+            if (level < 0 || level < lastLevel) {
+                String m = String.format("SELECT modifier[%s] syntax error.", modifier);
+                throw new CriteriaException(m);
+            }
+            lastLevel = level;
+            sqlBuilder.append(modifier.render());
+        }
 
-    protected final void selectListClause(final SelectItemListContext context) {
+    }
+
+
+    protected final void selectionListClause(final SelectItemListContext context) {
         final List<? extends _SelectItem> selectItemList;
         selectItemList = context.selectItemList();
         final int size = selectItemList.size();
@@ -1149,6 +1165,34 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
+    protected final void derivedColumnAliasClause(final _AliasDerivedBlock block, final _MultiTableStmtContext context) {
+        final List<String> columnAliasList;
+        columnAliasList = block.columnAliasList();
+        final int columnAliasSize = columnAliasList.size();
+        if (columnAliasSize == 0) {
+            return;
+        }
+        if (((_DerivedTable) block.tableItem()).refAllSelection().size() != columnAliasSize) {
+            throw _Exceptions.derivedColumnAliasSizeNotMatch(
+                    ((_DerivedTable) block.tableItem()).refAllSelection().size(), columnAliasSize
+            );
+        }
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder()
+                .append(_Constant.SPACE_LEFT_PAREN);
+        for (int i = 0; i < columnAliasSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+            } else {
+                sqlBuilder.append(_Constant.SPACE);
+            }
+            this.identifier(columnAliasList.get(i), sqlBuilder);
+        }
+
+        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+    }
+
+
     protected final void appendChildJoinParent(final _MultiTableStmtContext context, final ChildTableMeta<?> child) {
         final ParentTableMeta<?> parent = child.parentMeta();
 
@@ -1212,6 +1256,27 @@ abstract class ArmyParser implements DialectParser {
 
     }
 
+
+    protected final void windowClause(final List<_Window> windowList, final _SimpleQueryContext context,
+                                      final Consumer<_Window> validator) {
+        final int windowSize = windowList.size();
+        if (windowSize == 0) {
+            return;
+        }
+        final StringBuilder sqlBuilder = context.sqlBuilder()
+                .append(_Constant.SPACE_WINDOW);
+        _Window window;
+        for (int i = 0; i < windowSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+            window = windowList.get(i);
+            validator.accept(window);
+            window.appendSql(context);
+        }
+
+    }
+
     protected final void orderByClause(final List<? extends SortItem> orderByList, final _SqlContext context) {
         final int size = orderByList.size();
         if (size == 0) {
@@ -1224,6 +1289,7 @@ abstract class ArmyParser implements DialectParser {
             if (i > 0) {
                 builder.append(_Constant.SPACE_COMMA);
             }
+            //TODO 考虑是否 增加  append SortItem method以避免 visible field
             ((_SelfDescribed) orderByList.get(i)).appendSql(context);
         }
 
@@ -2379,7 +2445,7 @@ abstract class ArmyParser implements DialectParser {
         //1. select clause
         this.standardSelectClause(query.modifierList(), builder);
         //2. select list clause
-        this.selectListClause(context);
+        this.selectionListClause(context);
         //3. from clause
         final List<_TabularBock> blockList;
         blockList = query.tableBlockList();
@@ -2404,7 +2470,7 @@ abstract class ArmyParser implements DialectParser {
         this.standardLimitClause(query.offsetExp(), query.rowCountExp(), context);
 
         //8. lock clause
-        final SQLWords lock = query.lockMode();
+        final SQLWords lock = query.lockStrength();
         if (lock != null) {
             this.standardLockClause(lock, context);
         }

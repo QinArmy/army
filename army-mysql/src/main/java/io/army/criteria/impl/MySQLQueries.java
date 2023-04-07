@@ -53,7 +53,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         MySQLQuery._GroupByWithRollupSpec<I>,
         MySQLQuery._WindowSpec<I>,
         MySQLQuery._OrderByWithRollupSpec<I>,
-        MySQLQuery._LockOptionSpec<I>,
+        MySQLQuery._LockSpec<I>,
         Object,
         Object,
         MySQLQuery._QueryWithComplexSpec<I>>
@@ -67,7 +67,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         MySQLQuery._HavingSpec<I>,
         MySQLQuery._WindowCommaSpec<I>,
         MySQLQuery._OrderByWithRollupSpec<I>,
-        MySQLQuery._LockOfTableSpec<I>,
         OrderByClause.OrderByEventListener {
 
     static _WithSpec<Select> simpleQuery() {
@@ -112,11 +111,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     private boolean orderByWithRollup;
 
-    private MySQLLockMode lockMode;
-
-    private List<String> ofTableList;
-
-    private LockWaitOption lockWaitOption;
+    private _LockBlock lockBlock;
 
     private List<String> intoVarList;
 
@@ -362,132 +357,40 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final _LockOfTableSpec<I> forUpdate() {
-        this.lockMode = MySQLLockMode.FOR_UPDATE;
-        return this;
+        return new StaticLockBlock<>(MySQLLockStrength.FOR_UPDATE, this);
     }
 
     @Override
     public final _LockOfTableSpec<I> forShare() {
-        this.lockMode = MySQLLockMode.FOR_SHARE;
-        return this;
+        return new StaticLockBlock<>(MySQLLockStrength.FOR_SHARE, this);
     }
 
-    @Override
-    public final _LockOfTableSpec<I> ifForUpdate(BooleanSupplier predicate) {
-        if (predicate.getAsBoolean()) {
-            this.lockMode = MySQLLockMode.FOR_UPDATE;
-        } else {
-            this.lockMode = null;
-        }
-        return this;
-    }
 
     @Override
-    public final _LockOfTableSpec<I> ifForShare(BooleanSupplier predicate) {
-        if (predicate.getAsBoolean()) {
-            this.lockMode = MySQLLockMode.FOR_SHARE;
-        } else {
-            this.lockMode = null;
+    public final _LockSpec<I> ifFor(Consumer<_DynamicLockStrengthClause> consumer) {
+        final DynamicLockBlock block = new DynamicLockBlock(this);
+        consumer.accept(block);
+        if (block.lockStrength != null) {
+            this.onLockClauseEnd(block);
         }
         return this;
     }
 
     @Override
     public final _IntoOptionSpec<I> lockInShareMode() {
-        this.lockMode = MySQLLockMode.LOCK_IN_SHARE_MODE;
-        return this;
+        return this.onLockClauseEnd(LockInShareMode.LOCK_IN_SHARE_MODE);
     }
 
     @Override
     public final _IntoOptionSpec<I> ifLockInShareMode(BooleanSupplier predicate) {
         if (predicate.getAsBoolean()) {
-            this.lockMode = MySQLLockMode.LOCK_IN_SHARE_MODE;
-        } else {
-            this.lockMode = null;
+            this.onLockClauseEnd(LockInShareMode.LOCK_IN_SHARE_MODE);
+        } else if (this.lockBlock != null) {
+            throw ContextStack.castCriteriaApi(this.context);
         }
         return this;
     }
 
-
-    @Override
-    public final _LockWaitOptionSpec<I> of(String tableAlias) {
-        if (this.lockMode == null) {
-            this.ofTableList = Collections.emptyList();
-        } else {
-            this.ofTableList = Collections.singletonList(tableAlias);
-        }
-        return this;
-    }
-
-    @Override
-    public final _LockWaitOptionSpec<I> of(String firstTableAlias, String... restTableAlias) {
-        if (this.lockMode == null) {
-            this.ofTableList = Collections.emptyList();
-        } else {
-            this.ofTableList = _ArrayUtils.unmodifiableListOf(firstTableAlias, restTableAlias);
-        }
-        return this;
-    }
-
-    @Override
-    public final _LockWaitOptionSpec<I> of(Consumer<Consumer<String>> consumer) {
-        if (this.lockMode == null) {
-            this.ofTableList = Collections.emptyList();
-        } else {
-            this.ofTableList = CriteriaUtils.stringList(this.context, true, consumer);
-        }
-        return this;
-    }
-
-    @Override
-    public final _LockWaitOptionSpec<I> ifOf(Consumer<Consumer<String>> consumer) {
-        if (this.lockMode == null) {
-            this.ofTableList = Collections.emptyList();
-        } else {
-            this.ofTableList = CriteriaUtils.stringList(this.context, false, consumer);
-        }
-        return this;
-    }
-
-    @Override
-    public final _IntoOptionSpec<I> noWait() {
-        if (this.lockMode != null) {
-            this.lockWaitOption = LockWaitOption.NOWAIT;
-        }
-        return this;
-    }
-
-    @Override
-    public final _IntoOptionSpec<I> skipLocked() {
-        if (this.lockMode != null) {
-            this.lockWaitOption = LockWaitOption.SKIP_LOCKED;
-        }
-        return this;
-    }
-
-    @Override
-    public final _IntoOptionSpec<I> ifNoWait(BooleanSupplier predicate) {
-        if (this.lockMode != null) {
-            if (predicate.getAsBoolean()) {
-                this.lockWaitOption = LockWaitOption.NOWAIT;
-            } else {
-                this.lockWaitOption = null;
-            }
-        }
-        return this;
-    }
-
-    @Override
-    public final _IntoOptionSpec<I> ifSkipLocked(BooleanSupplier predicate) {
-        if (this.lockMode != null) {
-            if (predicate.getAsBoolean()) {
-                this.lockWaitOption = LockWaitOption.SKIP_LOCKED;
-            } else {
-                this.lockWaitOption = null;
-            }
-        }
-        return this;
-    }
 
     @Override
     public final _AsQueryClause<I> into(String firstVarName, String... rest) {
@@ -528,23 +431,10 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     @Override
-    public final List<String> lockOfTableList() {
-        final List<String> list = this.ofTableList;
-        if (list == null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return list;
+    public final _LockBlock lockBlock() {
+        return this.lockBlock;
     }
 
-    @Override
-    public final SQLWords lockMode() {
-        return this.lockMode;
-    }
-
-    @Override
-    public final SQLWords lockWaitOption() {
-        return this.lockWaitOption;
-    }
 
     @Override
     public final List<String> intoVarList() {
@@ -562,16 +452,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     final void onEndQuery() {
-        final List<_Window> windowList = this.windowList;
-        if (windowList == null) {
-            this.windowList = Collections.emptyList();
-        } else {
-            this.windowList = _CollectionUtils.unmodifiableList(windowList);
-        }
-
-        if (this.ofTableList == null) {
-            this.ofTableList = Collections.emptyList();
-        }
+        this.windowList = _CollectionUtils.safeUnmodifiableList(this.windowList);
         if (this.intoVarList == null) {
             this.intoVarList = Collections.emptyList();
         }
@@ -581,7 +462,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     @Override
     final void onClear() {
         this.windowList = null;
-        this.ofTableList = null;
+        this.lockBlock = null;
         this.intoVarList = null;
     }
 
@@ -768,6 +649,184 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
 
+    private MySQLQueries<I> onLockClauseEnd(final _LockBlock block) {
+        if (this.lockBlock != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        if (block instanceof LockClauseBlock<?, ?>) {
+            ((LockClauseBlock<?, ?>) block).endLockClause();
+        }
+        this.lockBlock = block;
+        return this;
+    }
+
+    private enum MySQLLockStrength implements SQLWords {
+
+        FOR_UPDATE(_Constant.SPACE_FOR_UPDATE),
+        FOR_SHARE(_Constant.SPACE_FOR_SHARE);
+
+        private final String spaceWords;
+
+        MySQLLockStrength(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
+        }
+
+
+        @Override
+        public final String toString() {
+            return CriteriaUtils.sqlWordsToString(this);
+        }
+
+    }//MySQLLockStrength
+
+
+    private enum LockInShareMode implements _LockBlock, SQLWords {
+
+        LOCK_IN_SHARE_MODE(_Constant.SPACE_LOCK_IN_SHARE_MODE);
+
+        private final String spaceWords;
+
+        LockInShareMode(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final SQLWords lockStrength() {
+            return this;
+        }
+
+        @Override
+        public final List<String> lockTableAliasList() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public final SQLWords lockWaitOption() {
+            //always null
+            return null;
+        }
+
+
+        @Override
+        public final String toString() {
+            return CriteriaUtils.sqlWordsToString(this);
+        }
+
+
+    }//LockInShareMode
+
+    private static final class StaticLockBlock<I extends Item> extends LockClauseBlock<
+            MySQLQuery._LockWaitOptionSpec<I>,
+            MySQLQuery._IntoOptionSpec<I>>
+            implements MySQLQuery._LockOfTableSpec<I> {
+
+        private final MySQLLockStrength lockStrength;
+
+        private final MySQLQueries<I> stmt;
+
+        private StaticLockBlock(MySQLLockStrength lockStrength, MySQLQueries<I> stmt) {
+            this.lockStrength = lockStrength;
+            this.stmt = stmt;
+        }
+
+        @Override
+        public _AsQueryClause<I> into(String firstVarName, String... rest) {
+            return this.stmt.onLockClauseEnd(this)
+                    .into(firstVarName, rest);
+        }
+
+        @Override
+        public _AsQueryClause<I> into(Consumer<Consumer<String>> consumer) {
+            return this.stmt.onLockClauseEnd(this)
+                    .into(consumer);
+        }
+
+        @Override
+        public _AsQueryClause<I> ifInto(Consumer<Consumer<String>> consumer) {
+            return this.stmt.onLockClauseEnd(this)
+                    .ifInto(consumer);
+        }
+
+        @Override
+        public I asQuery() {
+            return this.stmt.onLockClauseEnd(this)
+                    .asQuery();
+        }
+
+        @Override
+        public CriteriaContext getContext() {
+            return this.stmt.context;
+        }
+
+        @Override
+        public SQLWords lockStrength() {
+            return this.lockStrength;
+        }
+
+
+    }//StaticLockBlock
+
+
+    private static final class DynamicLockBlock extends LockClauseBlock<
+            Query._MinLockWaitOptionClause<Item>,
+            Item> implements MySQLQuery._DynamicLockStrengthClause,
+            MySQLQuery._DynamicLockOfTableSpec {
+
+        private final MySQLQueries<?> stmt;
+
+        private MySQLLockStrength lockStrength;
+
+        private DynamicLockBlock(MySQLQueries<?> stmt) {
+            this.stmt = stmt;
+        }
+
+        @Override
+        public _DynamicLockOfTableSpec update() {
+            if (this.lockStrength != null) {
+                throw CriteriaUtils.duplicateDynamicMethod(this.stmt.context);
+            }
+            this.lockStrength = MySQLLockStrength.FOR_UPDATE;
+            return this;
+        }
+
+        @Override
+        public _DynamicLockOfTableSpec share() {
+            if (this.lockStrength != null) {
+                throw CriteriaUtils.duplicateDynamicMethod(this.stmt.context);
+            }
+            this.lockStrength = MySQLLockStrength.FOR_SHARE;
+            return this;
+        }
+
+        @Override
+        public CriteriaContext getContext() {
+            return this.stmt.context;
+        }
+
+        @Override
+        public SQLWords lockStrength() {
+            final MySQLLockStrength strength = this.lockStrength;
+            if (strength == null) {
+                throw ContextStack.castCriteriaApi(this.stmt.context);
+            }
+            return strength;
+        }
+
+
+    }//DynamicLockBlock
+
+
     private static final class SimpleSelect<I extends Item> extends MySQLQueries<I> implements ArmySelect {
 
         private final Function<? super Select, I> function;
@@ -837,32 +896,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
 
     }//SimpleSubQuery
-
-
-    enum MySQLLockMode implements SQLWords {
-
-        FOR_UPDATE(_Constant.SPACE_FOR_UPDATE),
-        LOCK_IN_SHARE_MODE(_Constant.SPACE_LOCK_IN_SHARE_MODE),
-        FOR_SHARE(_Constant.SPACE_FOR_SHARE);
-
-        private final String spaceWords;
-
-        MySQLLockMode(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
-
-        @Override
-        public final String render() {
-            return this.spaceWords;
-        }
-
-
-        @Override
-        public final String toString() {
-            return CriteriaUtils.sqlWordsToString(this);
-        }
-
-    }//MySQLLock
 
 
     private static final class NamedWindowAsClause<I extends Item> implements MySQLQuery._WindowAsClause<I> {

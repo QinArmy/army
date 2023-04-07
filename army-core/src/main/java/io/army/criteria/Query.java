@@ -285,7 +285,13 @@ public interface Query extends RowSet {
 
         R of(String tableAlias);
 
-        R of(String firstTableAlias, String... restTableAlias);
+        R of(String tableAlias1, String tableAlias2);
+
+        R of(String tableAlias1, String tableAlias2, String tableAlias3);
+
+        R of(String tableAlias1, String tableAlias2, String tableAlias3, String tableAlias4);
+
+        R of(String tableAlias1, String tableAlias2, String tableAlias3, String tableAlias4, String tableAlias5, String... restTableAlias);
 
         R of(Consumer<Consumer<String>> consumer);
 
@@ -306,32 +312,38 @@ public interface Query extends RowSet {
 
     }
 
-    interface _LockForUpdateClause<R> {
+    interface _StaticForUpdateClause<R> extends Item {
 
         R forUpdate();
 
-        R ifForUpdate(BooleanSupplier predicate);
     }
 
 
-    interface _MinLockOptionClause<R> extends _LockForUpdateClause<R> {
-
+    interface _MinLockStrengthClause<R> extends _StaticForUpdateClause<R> {
 
         R forShare();
 
-        R ifForShare(BooleanSupplier predicate);
+    }
+
+    interface _SimpleForUpdateClause<R> extends _StaticForUpdateClause<R> {
+
+        R ifForUpdate(BooleanSupplier predicate);
 
     }
+
+
+    interface _DynamicLockClause<T extends Item, R extends Item> {
+
+        R ifFor(Consumer<T> consumer);
+
+    }
+
 
     interface _SelectDispatcher<W extends SelectModifier, SR extends Item, SD>
             extends _HintsModifiersListSelectClause<W, SR>, _DynamicHintModifierSelectClause<W, SD> {
 
     }
 
-    interface _SelectAndCommaDispatcher<SR extends Item> extends _StaticSelectClause<SR>,
-            _StaticSelectCommaClause<SR> {
-
-    }
 
 
     interface _WithSelectDispatcher<B extends CteBuilderSpec, WE, W extends SelectModifier, SR extends Item, SD>

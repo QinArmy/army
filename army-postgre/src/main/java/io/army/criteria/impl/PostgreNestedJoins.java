@@ -498,7 +498,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
     @SuppressWarnings("unchecked")
     private static abstract class NestedDerivedBlock<I extends Item, R> extends PostgreNestedBlock<I>
             implements Statement._OptionalParensStringClause<R>,
-            _ModifierTableBlock,
+            _ModifierTabularBlock,
             _AliasDerivedBlock {
 
         private List<String> columnAliasList;

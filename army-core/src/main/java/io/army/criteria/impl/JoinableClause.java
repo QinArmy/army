@@ -819,7 +819,7 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
 
         final void checkStart() {
             if (this.started) {
-                throw CriteriaUtils.duplicateTabularMethod(this.context);
+                throw CriteriaUtils.duplicateDynamicMethod(this.context);
             }
             this.started = true;
         }

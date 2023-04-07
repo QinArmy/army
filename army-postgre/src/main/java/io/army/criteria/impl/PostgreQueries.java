@@ -4,10 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TabularBock;
-import io.army.criteria.impl.inner._Window;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._PostgreCte;
 import io.army.criteria.impl.inner.postgre._PostgreQuery;
 import io.army.criteria.postgre.*;
@@ -18,12 +15,16 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpleQueries<
         I,
@@ -56,8 +57,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         PostgreQuery._ParensJoinSpec<I>,
         PostgreQuery._WindowCommaSpec<I>,
         PostgreQuery._HavingSpec<I>,
-        PostgreQuery._FetchSpec<I>,
-        PostgreQuery._LockOfTableSpec<I> {
+        PostgreQuery._FetchSpec<I> {
 
 
     static PostgreQuery._WithSpec<Select> simpleQuery() {
@@ -86,16 +86,14 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         return new StaticCteComma<>(context, recursive, function);
     }
 
+
+    private List<_Expression> distinctOnExpList;
+
     private List<_Window> windowList;
 
-    private PostgreLockMode lockMode;
-
-    private List<String> ofTaleList;
-
-    private LockWaitOption lockWaitOption;
+    private List<_LockBlock> lockBlockList;
 
     private _TabularBock fromCrossBlock;
-
 
     private PostgreQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
         super(withSpec, context);
@@ -112,6 +110,66 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     public final _StaticCteParensSpec<_SelectSpec<I>> withRecursive(String name) {
         return PostgreQueries.complexCte(this.context, true, this::endStaticWithClause)
                 .comma(name);
+    }
+
+    @Override
+    public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp) {
+        this.distinctOnExpList = Collections.singletonList((ArmyExpression) exp);
+        return this.select(PostgreSyntax.DISTINCT);
+    }
+
+    @Override
+    public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp1, Expression exp2) {
+        this.distinctOnExpList = _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2);
+        return this.select(PostgreSyntax.DISTINCT);
+    }
+
+    @Override
+    public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3) {
+        this.distinctOnExpList = _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2, (ArmyExpression) exp3);
+        return this.select(PostgreSyntax.DISTINCT);
+    }
+
+    @Override
+    public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Consumer<Consumer<Expression>> consumer) {
+        this.distinctOnExpList = CriteriaUtils.expressionList(this.context, true, consumer);
+        return this.select(PostgreSyntax.DISTINCT);
+    }
+
+    @Override
+    public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctIfOn(Consumer<Consumer<Expression>> consumer) {
+        this.distinctOnExpList = CriteriaUtils.expressionList(this.context, false, consumer);
+        return this.select(PostgreSyntax.DISTINCT);
+    }
+
+    @Override
+    public final _FromSpec<I> selectDistinctOn(Expression exp, Consumer<Selections> consumer) {
+        this.distinctOnExpList = Collections.singletonList((ArmyExpression) exp);
+        return this.selects(PostgreSyntax.DISTINCT, consumer);
+    }
+
+    @Override
+    public final _FromSpec<I> selectDistinctOn(Expression exp1, Expression exp2, Consumer<Selections> consumer) {
+        this.distinctOnExpList = _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2);
+        return this.selects(PostgreSyntax.DISTINCT, consumer);
+    }
+
+    @Override
+    public final _FromSpec<I> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<Selections> consumer) {
+        this.distinctOnExpList = _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2, (ArmyExpression) exp3);
+        return this.selects(PostgreSyntax.DISTINCT, consumer);
+    }
+
+    @Override
+    public final _FromSpec<I> selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
+        this.distinctOnExpList = CriteriaUtils.expressionList(this.context, true, expConsumer);
+        return this.selects(PostgreSyntax.DISTINCT, consumer);
+    }
+
+    @Override
+    public final _FromSpec<I> selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
+        this.distinctOnExpList = CriteriaUtils.expressionList(this.context, false, expConsumer);
+        return this.selects(PostgreSyntax.DISTINCT, consumer);
     }
 
     @Override
@@ -359,155 +417,75 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
     @Override
     public final _LockOfTableSpec<I> forUpdate() {
-        this.lockMode = PostgreLockMode.FOR_UPDATE;
-        return this;
-    }
-
-    @Override
-    public final _LockOfTableSpec<I> ifForUpdate(BooleanSupplier predicate) {
-        if (predicate.getAsBoolean()) {
-            this.lockMode = PostgreLockMode.FOR_UPDATE;
-        } else {
-            this.lockMode = null;
-        }
-        return this;
+        return new StaticLockBlock<>(PostgreLockStrength.FOR_UPDATE, this);
     }
 
     @Override
     public final _LockOfTableSpec<I> forShare() {
-        this.lockMode = PostgreLockMode.FOR_SHARE;
-        return this;
+        return new StaticLockBlock<>(PostgreLockStrength.FOR_SHARE, this);
     }
 
-    @Override
-    public final _LockOfTableSpec<I> ifForShare(BooleanSupplier predicate) {
-        if (predicate.getAsBoolean()) {
-            this.lockMode = PostgreLockMode.FOR_SHARE;
-        } else {
-            this.lockMode = null;
-        }
-        return this;
-    }
 
     @Override
     public final _LockOfTableSpec<I> forNoKeyUpdate() {
-        this.lockMode = PostgreLockMode.FOR_NO_KEY_UPDATE;
-        return this;
+        return new StaticLockBlock<>(PostgreLockStrength.FOR_NO_KEY_UPDATE, this);
     }
 
     @Override
     public final _LockOfTableSpec<I> forKeyShare() {
-        this.lockMode = PostgreLockMode.FOR_KEY_SHARE;
-        return this;
+        return new StaticLockBlock<>(PostgreLockStrength.FOR_KEY_SHARE, this);
     }
 
     @Override
-    public final _LockOfTableSpec<I> ifForNoKeyUpdate(BooleanSupplier predicate) {
-        if (predicate.getAsBoolean()) {
-            this.lockMode = PostgreLockMode.FOR_NO_KEY_UPDATE;
-        } else {
-            this.lockMode = null;
+    public final _LockSpec<I> ifFor(Consumer<_PostgreDynamicLockStrengthClause> consumer) {
+        final DynamicLockBlock block = new DynamicLockBlock(this);
+        consumer.accept(block);
+        if (block.lockStrength != null) {
+            this.onAddLockBlock(block);
         }
         return this;
     }
 
     @Override
-    public final _LockOfTableSpec<I> ifForKeyShare(BooleanSupplier predicate) {
-        if (predicate.getAsBoolean()) {
-            this.lockMode = PostgreLockMode.FOR_KEY_SHARE;
-        } else {
-            this.lockMode = null;
+    public final List<_Expression> distinctOnExpressionList() {
+        final List<_Expression> list = this.distinctOnExpList;
+        if (list == null || list instanceof ArrayList) {
+            throw ContextStack.castCriteriaApi(this.context);
         }
-        return this;
+        return list;
     }
 
     @Override
-    public final _LockWaitOptionSpec<I> of(String tableAlias) {
-        if (this.lockMode == null) {
-            this.ofTaleList = Collections.emptyList();
-        } else {
-            this.ofTaleList = Collections.singletonList(tableAlias);
+    public final List<_Window> windowList() {
+        final List<_Window> list = this.windowList;
+        if (list == null || list instanceof ArrayList) {
+            throw ContextStack.castCriteriaApi(this.context);
         }
-        return this;
+        return list;
     }
 
     @Override
-    public final _LockWaitOptionSpec<I> of(String firstTableAlias, String... restTableAlias) {
-        if (this.lockMode == null) {
-            this.ofTaleList = Collections.emptyList();
-        } else {
-            this.ofTaleList = _ArrayUtils.unmodifiableListOf(firstTableAlias, restTableAlias);
+    public final List<_LockBlock> lockBlockList() {
+        final List<_LockBlock> list = this.lockBlockList;
+        if (list == null || list instanceof ArrayList) {
+            throw ContextStack.castCriteriaApi(this.context);
         }
-        return this;
-    }
-
-    @Override
-    public final _LockWaitOptionSpec<I> of(Consumer<Consumer<String>> consumer) {
-        if (this.lockMode == null) {
-            this.ofTaleList = Collections.emptyList();
-        } else {
-            this.ofTaleList = CriteriaUtils.stringList(this.context, true, consumer);
-        }
-        return this;
-    }
-
-    @Override
-    public final _LockWaitOptionSpec<I> ifOf(Consumer<Consumer<String>> consumer) {
-        if (this.lockMode == null) {
-            this.ofTaleList = Collections.emptyList();
-        } else {
-            this.ofTaleList = CriteriaUtils.stringList(this.context, false, consumer);
-        }
-        return this;
-    }
-
-    @Override
-    public final _LockSpec<I> noWait() {
-        this.lockWaitOption = this.lockMode == null ? null : LockWaitOption.NOWAIT;
-        return this;
-    }
-
-    @Override
-    public final _LockSpec<I> skipLocked() {
-        this.lockWaitOption = this.lockMode == null ? null : LockWaitOption.SKIP_LOCKED;
-        return this;
-    }
-
-    @Override
-    public final _LockSpec<I> ifNoWait(BooleanSupplier predicate) {
-        if (this.lockMode != null && predicate.getAsBoolean()) {
-            this.lockWaitOption = LockWaitOption.NOWAIT;
-        } else {
-            this.lockWaitOption = null;
-        }
-        return this;
-    }
-
-    @Override
-    public final _LockSpec<I> ifSkipLocked(BooleanSupplier predicate) {
-        if (this.lockMode != null && predicate.getAsBoolean()) {
-            this.lockWaitOption = LockWaitOption.SKIP_LOCKED;
-        } else {
-            this.lockWaitOption = null;
-        }
-        return this;
+        return list;
     }
 
     @Override
     final void onEndQuery() {
-        if (this.windowList == null) {
-            this.windowList = Collections.emptyList();
-        }
-        if (this.ofTaleList == null) {
-            this.ofTaleList = Collections.emptyList();
-        }
+        this.distinctOnExpList = _CollectionUtils.safeUnmodifiableList(this.distinctOnExpList);
+        this.windowList = _CollectionUtils.safeUnmodifiableList(this.windowList);
+        this.lockBlockList = _CollectionUtils.safeUnmodifiableList(this.lockBlockList);
     }
 
 
     @Override
     final void onClear() {
+        this.distinctOnExpList = null;
         this.windowList = null;
-        this.ofTaleList = null;
+        this.lockBlockList = null;
     }
 
     @Override
@@ -517,12 +495,12 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
     @Override
     final List<Postgres.Modifier> asModifierList(@Nullable List<Postgres.Modifier> modifiers) {
-        return CriteriaUtils.asModifierList(this.context, modifiers, PostgreUtils::selectModifier);
+        return CriteriaUtils.asModifierList(this.context, modifiers, _PostgreConsultant::queryModifier);
     }
 
     @Override
     final boolean isErrorModifier(Postgres.Modifier modifier) {
-        return PostgreUtils.selectModifier(modifier) < 0;
+        return _PostgreConsultant.queryModifier(modifier) < 0;
     }
 
     @Override
@@ -672,6 +650,18 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         return this;
     }
 
+    private PostgreQueries<I> onAddLockBlock(final _LockBlock block) {
+        List<_LockBlock> lockBlockList = this.lockBlockList;
+        if (lockBlockList == null) {
+            lockBlockList = new ArrayList<>(2);
+            this.lockBlockList = lockBlockList;
+        } else if (!(lockBlockList instanceof ArrayList)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        lockBlockList.add(block);
+        return this;
+    }
+
 
     private static final class StaticWindowAsClause<I extends Item> implements PostgreQuery._WindowAsClause<I> {
 
@@ -770,7 +760,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }//JonClauseTableBlock
 
 
-    private enum PostgreLockMode implements SQLWords {
+    private enum PostgreLockStrength implements SQLWords {
 
         FOR_UPDATE(_Constant.SPACE_FOR_UPDATE),
         FOR_SHARE(_Constant.SPACE_FOR_SHARE),
@@ -779,7 +769,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
         final String spaceWords;
 
-        PostgreLockMode(String spaceWords) {
+        PostgreLockStrength(String spaceWords) {
             this.spaceWords = spaceWords;
         }
 
@@ -795,6 +785,141 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
     }//PostgreLockMode
+
+    private static final class StaticLockBlock<I extends Item> extends LockClauseBlock<
+            PostgreQuery._LockWaitOptionSpec<I>,
+            PostgreQuery._LockSpec<I>>
+            implements PostgreQuery._LockSpec<I>,
+            PostgreQuery._LockOfTableSpec<I> {
+
+        private final PostgreLockStrength lockStrength;
+
+        private final PostgreQueries<I> stmt;
+
+
+        private StaticLockBlock(PostgreLockStrength lockStrength, PostgreQueries<I> stmt) {
+            this.lockStrength = lockStrength;
+            this.stmt = stmt;
+        }
+
+        @Override
+        public _LockOfTableSpec<I> forUpdate() {
+            return this.stmt.onAddLockBlock(this)
+                    .forUpdate();
+        }
+
+
+        @Override
+        public _LockOfTableSpec<I> forShare() {
+            return this.stmt.onAddLockBlock(this)
+                    .forShare();
+        }
+
+
+        @Override
+        public _LockOfTableSpec<I> forNoKeyUpdate() {
+            return this.stmt.onAddLockBlock(this)
+                    .forNoKeyUpdate();
+        }
+
+        @Override
+        public _LockOfTableSpec<I> forKeyShare() {
+            return this.stmt.onAddLockBlock(this)
+                    .forKeyShare();
+        }
+
+        @Override
+        public _LockSpec<I> ifFor(Consumer<_PostgreDynamicLockStrengthClause> consumer) {
+            return this.stmt.onAddLockBlock(this)
+                    .ifFor(consumer);
+        }
+
+        @Override
+        public I asQuery() {
+            return this.stmt.onAddLockBlock(this)
+                    .asQuery();
+        }
+
+
+        @Override
+        public SQLWords lockStrength() {
+            return this.lockStrength;
+        }
+
+        @Override
+        public CriteriaContext getContext() {
+            return this.stmt.context;
+        }
+
+
+    }//StaticLockBlock
+
+    private static final class DynamicLockBlock extends LockClauseBlock<
+            Query._MinLockWaitOptionClause<Item>,
+            Item> implements PostgreQuery._PostgreDynamicLockStrengthClause,
+            PostgreQuery._DynamicLockOfTableSpec {
+
+        private final PostgreQueries<?> stmt;
+
+        private PostgreLockStrength lockStrength;
+
+        private DynamicLockBlock(PostgreQueries<?> stmt) {
+            this.stmt = stmt;
+        }
+
+
+        @Override
+        public _DynamicLockOfTableSpec update() {
+            if (this.lockStrength != null) {
+                throw CriteriaUtils.duplicateDynamicMethod(this.stmt.context);
+            }
+            this.lockStrength = PostgreLockStrength.FOR_UPDATE;
+            return this;
+        }
+
+        @Override
+        public _DynamicLockOfTableSpec share() {
+            if (this.lockStrength != null) {
+                throw CriteriaUtils.duplicateDynamicMethod(this.stmt.context);
+            }
+            this.lockStrength = PostgreLockStrength.FOR_SHARE;
+            return this;
+        }
+
+        @Override
+        public _DynamicLockOfTableSpec noKeyUpdate() {
+            if (this.lockStrength != null) {
+                throw CriteriaUtils.duplicateDynamicMethod(this.stmt.context);
+            }
+            this.lockStrength = PostgreLockStrength.FOR_NO_KEY_UPDATE;
+            return this;
+        }
+
+        @Override
+        public _DynamicLockOfTableSpec keyShare() {
+            if (this.lockStrength != null) {
+                throw CriteriaUtils.duplicateDynamicMethod(this.stmt.context);
+            }
+            this.lockStrength = PostgreLockStrength.FOR_KEY_SHARE;
+            return this;
+        }
+
+        @Override
+        public CriteriaContext getContext() {
+            return this.stmt.context;
+        }
+
+        @Override
+        public SQLWords lockStrength() {
+            final PostgreLockStrength strength = this.lockStrength;
+            if (strength == null) {
+                throw ContextStack.castCriteriaApi(this.stmt.context);
+            }
+            return strength;
+        }
+
+
+    }//DynamicLockBlock
 
 
     private static final class SimpleSelect<I extends Item> extends PostgreQueries<I>
@@ -872,17 +997,86 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }//SimpleSubQuery
 
 
-     static abstract class PostgreBracketQuery<I extends Item>
-             extends BracketRowSet<
-             I,
-             PostgreQuery._UnionOrderBySpec<I>,
-             PostgreQuery._UnionLimitSpec<I>,
-             PostgreQuery._UnionOffsetSpec<I>,
-             PostgreQuery._UnionFetchSpec<I>,
-             Query._AsQueryClause<I>,
-             PostgreQuery._QueryWithComplexSpec<I>>
-             implements PostgreQuery._UnionOrderBySpec<I>,
-             PostgreQuery._UnionOffsetSpec<I>,
+    static abstract class PostgreSelectClauseDispatcher<I extends Item, WE> extends WithBuilderSelectClauseDispatcher<
+            PostgreCtes,
+            WE,
+            PostgreSyntax.Modifier,
+            PostgreQuery._PostgreSelectCommaSpec<I>,
+            PostgreQuery._FromSpec<I>> implements PostgreQuery._PostgreSelectClause<I> {
+
+        PostgreSelectClauseDispatcher(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
+            super(outerContext, leftContext);
+        }
+
+
+        @Override
+        public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp) {
+            return this.createSelectClause().selectDistinctOn(exp);
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp1, Expression exp2) {
+            return this.createSelectClause().selectDistinctOn(exp1, exp2);
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3) {
+            return this.createSelectClause().selectDistinctOn(exp1, exp2, exp3);
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Consumer<Consumer<Expression>> consumer) {
+            return this.createSelectClause().selectDistinctOn(consumer);
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctIfOn(Consumer<Consumer<Expression>> consumer) {
+            return this.createSelectClause().selectDistinctIfOn(consumer);
+        }
+
+        @Override
+        public final _FromSpec<I> selectDistinctOn(Expression exp, Consumer<Selections> consumer) {
+            return this.createSelectClause().selectDistinctOn(exp, consumer);
+        }
+
+        @Override
+        public final _FromSpec<I> selectDistinctOn(Expression exp1, Expression exp2, Consumer<Selections> consumer) {
+            return this.createSelectClause().selectDistinctOn(exp1, exp2, consumer);
+        }
+
+        @Override
+        public final _FromSpec<I> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<Selections> consumer) {
+            return this.createSelectClause().selectDistinctOn(exp1, exp2, exp3, consumer);
+        }
+
+        @Override
+        public final _FromSpec<I> selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
+            return this.createSelectClause().selectDistinctOn(expConsumer, consumer);
+        }
+
+        @Override
+        public final _FromSpec<I> selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
+            return this.createSelectClause().selectDistinctIfOn(expConsumer, consumer);
+        }
+
+        @Override
+        abstract PostgreQueries<I> createSelectClause();
+
+
+    }//PostgreSelectClauseDispatcher
+
+
+    static abstract class PostgreBracketQuery<I extends Item>
+            extends BracketRowSet<
+            I,
+            PostgreQuery._UnionOrderBySpec<I>,
+            PostgreQuery._UnionLimitSpec<I>,
+            PostgreQuery._UnionOffsetSpec<I>,
+            PostgreQuery._UnionFetchSpec<I>,
+            Query._AsQueryClause<I>,
+            PostgreQuery._QueryWithComplexSpec<I>>
+            implements PostgreQuery._UnionOrderBySpec<I>,
+            PostgreQuery._UnionOffsetSpec<I>,
             PostgreQuery._UnionFetchSpec<I> {
 
         private PostgreBracketQuery(ArmyStmtSpec spec) {
@@ -956,12 +1150,9 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
 
     private static abstract class PostgreQueryDispatcher<I extends Item>
-            extends WithBuilderSelectClauseDispatcher<
-            PostgreCtes,
-            PostgreQuery._QueryComplexSpec<I>,
-            PostgreSyntax.Modifier,
-            PostgreQuery._PostgreSelectCommaSpec<I>,
-            PostgreQuery._FromSpec<I>>
+            extends PostgreSelectClauseDispatcher<
+            I,
+            PostgreQuery._QueryComplexSpec<I>>
             implements PostgreQuery._QueryWithComplexSpec<I> {
 
         final Function<RowSet, I> function;
@@ -1309,10 +1500,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
 
     private static class StaticCteSubQuery<I extends Item>
-            extends SelectClauseDispatcher<
-            PostgreSyntax.Modifier,
-            PostgreQuery._PostgreSelectCommaSpec<I>,
-            PostgreQuery._FromSpec<I>>
+            extends PostgreSelectClauseDispatcher<I, Void>
             implements PostgreQuery._StaticCteSelectSpec<I>,
             ArmyStmtSpec {
 
@@ -1325,7 +1513,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
 
         @Override
-        public _UnionOrderBySpec<I> parens(Function<_StaticCteSelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
+        public final _UnionOrderBySpec<I> parens(Function<_StaticCteSelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> function) {
             this.endDispatcher();
 
             final BracketSubQuery<I> bracket;
@@ -1334,14 +1522,9 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         }
 
         @Override
-        public final boolean isRecursive() {
-            return false;
-        }
-
-        @Override
-        public final List<_Cte> cteList() {
-            // static cte never support WITH clause
-            return Collections.emptyList();
+        final PostgreCtes createCteBuilder(boolean recursive, CriteriaContext context) {
+            // static WITH clause don't support this
+            throw ContextStack.castCriteriaApi(this.context);
         }
 
         @Override

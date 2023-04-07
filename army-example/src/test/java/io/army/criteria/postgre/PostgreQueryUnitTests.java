@@ -15,9 +15,9 @@ public class PostgreQueryUnitTests extends PostgreUnitTests {
     private static final Logger LOG = LoggerFactory.getLogger(PostgreQueryUnitTests.class);
 
     @Test
-    public void window() {
+    public void dynamicWindow() {
         final Select stmt;
-        Postgres.query()
+        stmt = Postgres.query()
                 .select(SQLs.literalFrom(1)::as, "r")
                 .from(PillUser_.T, AS, "u")
                 .windows(s -> {
@@ -27,6 +27,8 @@ public class PostgreQueryUnitTests extends PostgreUnitTests {
                     s.window("w2").as().orderBy(PillUser_.id);
                 })
                 .asQuery();
+
+        printStmt(LOG, stmt);
     }
 
 

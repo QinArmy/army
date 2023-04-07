@@ -94,7 +94,7 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _LockSpec<I extends Item> extends _LockForUpdateClause<_AsQueryClause<I>>,
+    interface _LockSpec<I extends Item> extends _SimpleForUpdateClause<_AsQueryClause<I>>,
             _AsQueryClause<I> {
 
 

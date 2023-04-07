@@ -3,6 +3,7 @@ package io.army.criteria.postgre;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.criteria.Query;
+import io.army.criteria.Selections;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
@@ -21,19 +22,6 @@ import java.util.function.*;
  */
 public interface PostgreQuery extends Query, PostgreStatement {
 
-
-
-    interface _PostgreLockClause<R> extends _MinLockOptionClause<R> {
-
-        R forNoKeyUpdate();
-
-        R forKeyShare();
-
-        R ifForNoKeyUpdate(BooleanSupplier predicate);
-
-        R ifForKeyShare(BooleanSupplier predicate);
-
-    }
 
 
     interface _FrameExclusionSpec extends Item {
@@ -78,8 +66,8 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
     interface _PostgreFrameBetweenAndClause
-            extends Window._FrameBetweenAndExpClause<_PostgreFrameEndExpBoundClause>
-            , _StaticAndClause<_PostgreFrameEndNonExpBoundClause> {
+            extends Window._FrameBetweenAndExpClause<_PostgreFrameEndExpBoundClause>,
+            _StaticAndClause<_PostgreFrameEndNonExpBoundClause> {
 
     }
 
@@ -178,6 +166,33 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
+    interface _PostgreStaticLockStrengthClause<R> extends _MinLockStrengthClause<R> {
+
+        R forNoKeyUpdate();
+
+        R forKeyShare();
+
+    }
+
+
+    interface _DynamicLockOfTableSpec extends _LockOfTableAliasClause<_MinLockWaitOptionClause<Item>>,
+            _MinLockWaitOptionClause<Item> {
+
+    }
+
+    interface _PostgreDynamicLockStrengthClause extends Item {
+
+        _DynamicLockOfTableSpec update();
+
+        _DynamicLockOfTableSpec share();
+
+        _DynamicLockOfTableSpec noKeyUpdate();
+
+        _DynamicLockOfTableSpec keyShare();
+
+    }
+
+
     interface _LockWaitOptionSpec<I extends Item> extends _MinLockWaitOptionClause<_LockSpec<I>>, _LockSpec<I> {//TODO validate multi-lock clause
 
 
@@ -190,8 +205,9 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _LockSpec<I extends Item> extends _PostgreLockClause<_LockOfTableSpec<I>>, _AsQueryClause<I> {
-
+    interface _LockSpec<I extends Item> extends _PostgreStaticLockStrengthClause<_LockOfTableSpec<I>>,
+            _DynamicLockClause<_PostgreDynamicLockStrengthClause, _LockSpec<I>>,
+            _AsQueryClause<I> {
 
     }
 
@@ -314,6 +330,26 @@ public interface PostgreQuery extends Query, PostgreStatement {
     interface _PostgreSelectClause<I extends Item>
             extends _ModifierSelectClause<Postgres.Modifier, _PostgreSelectCommaSpec<I>>,
             _DynamicModifierSelectClause<Postgres.Modifier, _FromSpec<I>> {
+
+        _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp);
+
+        _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp1, Expression exp2);
+
+        _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3);
+
+        _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Consumer<Consumer<Expression>> consumer);
+
+        _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctIfOn(Consumer<Consumer<Expression>> consumer);
+
+        _FromSpec<I> selectDistinctOn(Expression exp, Consumer<Selections> consumer);
+
+        _FromSpec<I> selectDistinctOn(Expression exp1, Expression exp2, Consumer<Selections> consumer);
+
+        _FromSpec<I> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<Selections> consumer);
+
+        _FromSpec<I> selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer);
+
+        _FromSpec<I> selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer);
 
     }
 

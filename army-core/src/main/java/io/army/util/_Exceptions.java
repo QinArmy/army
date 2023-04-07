@@ -385,6 +385,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException derivedColumnAliasSizeNotMatch(int selectionSize, int aliasSize) {
+        String m = String.format("derived column alias list size[%s] and selection list size[%s] not match.",
+                aliasSize, selectionSize);
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException dontSupportDialectStatement(DialectStatement statement, Dialect dialect) {
         String m = String.format("%s don't dialect statement[%s]", dialect, _ClassUtils.safeClassName(statement));
         return new CriteriaException(m);

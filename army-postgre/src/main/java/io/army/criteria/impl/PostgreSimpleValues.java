@@ -273,12 +273,9 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
 
 
     private static abstract class PostgreValuesDispatcher<I extends Item>
-            extends SimpleQueries.WithBuilderSelectClauseDispatcher<
-            PostgreCtes,
-            PostgreValues._QueryComplexSpec<I>,
-            PostgreSyntax.Modifier,
-            PostgreQuery._PostgreSelectCommaSpec<I>,
-            PostgreQuery._FromSpec<I>>
+            extends PostgreQueries.PostgreSelectClauseDispatcher<
+            I,
+            PostgreValues._QueryComplexSpec<I>>
             implements PostgreValues._QueryWithComplexSpec<I> {
 
         final Function<RowSet, I> function;

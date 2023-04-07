@@ -146,7 +146,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .asInsert();
 
-        print80Stmt(LOG, stmt);
+        print80Stmt(LOG, stmt, Visible.BOTH);
 
     }
 

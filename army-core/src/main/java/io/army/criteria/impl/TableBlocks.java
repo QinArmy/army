@@ -150,7 +150,7 @@ abstract class TableBlocks {
     }//FromClauseTableBlock
 
 
-    static class FromClauseModifierTableBlock extends FromClauseTableBlock implements _ModifierTableBlock {
+    static class FromClauseModifierTableBlock extends FromClauseTableBlock implements _ModifierTabularBlock {
 
         private final SQLWords modifier;
 
@@ -389,7 +389,7 @@ abstract class TableBlocks {
     }//JoinClauseTableBlock
 
     static abstract class JoinClauseModifierTableBlock<R extends Item> extends JoinClauseTableBlock<R>
-            implements _ModifierTableBlock {
+            implements _ModifierTabularBlock {
 
         private final SQLWords modifier;
 
@@ -434,7 +434,7 @@ abstract class TableBlocks {
     }//JoinClauseDerivedBlock
 
     static abstract class JoinClauseModifierDerivedBlock<R extends Item> extends JoinClauseDerivedBlock<R>
-            implements _ModifierTableBlock {
+            implements _ModifierTabularBlock {
 
         private final SQLWords modifier;
 
@@ -604,7 +604,7 @@ abstract class TableBlocks {
 
     }//FromClauseSimpleDerivedBlock
 
-    static class FromClauseModifierDerivedBlock extends FromClauseDerivedBlock implements _ModifierTableBlock {
+    static class FromClauseModifierDerivedBlock extends FromClauseDerivedBlock implements _ModifierTabularBlock {
 
         private final SQLWords modifier;
 
@@ -692,7 +692,7 @@ abstract class TableBlocks {
 
 
     private static final class FromClauseModifierAliasDerivedBlock extends FromClauseAliasDerivedBlock
-            implements _ModifierTableBlock {
+            implements _ModifierTabularBlock {
 
         private final SQLWords modifier;
 

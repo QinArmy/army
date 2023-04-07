@@ -530,7 +530,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
     @SuppressWarnings("unchecked")
     private static abstract class NestedDerivedBlock<I extends Item, R> extends MySQLNestedBlock<I>
             implements Statement._OptionalParensStringClause<R>,
-            _ModifierTableBlock, _AliasDerivedBlock {
+            _ModifierTabularBlock, _AliasDerivedBlock {
 
         private List<String> columnAliasList;
 

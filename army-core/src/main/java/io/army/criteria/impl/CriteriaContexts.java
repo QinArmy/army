@@ -1505,8 +1505,8 @@ abstract class CriteriaContexts {
                     String m = String.format("%s[%s] context not match.", DerivedTable.class.getSimpleName(), alias);
                     throw ContextStack.criteriaError(this, CriteriaException::new, m);
                 } else if (((JoinableContext) context).refOuter
-                        && (!(block instanceof _ModifierTableBlock)
-                        || ((_ModifierTableBlock) block).modifier() != SQLs.LATERAL)) {
+                        && (!(block instanceof _ModifierTabularBlock)
+                        || ((_ModifierTabularBlock) block).modifier() != SQLs.LATERAL)) {
                     String m = String.format("DerivedTable[%s] isn't LATERAL,couldn't reference outer field.", alias);
                     throw ContextStack.criteriaError(this, NonLateralException::new, m);
                 }

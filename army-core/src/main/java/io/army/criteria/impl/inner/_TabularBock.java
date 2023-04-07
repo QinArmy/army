@@ -11,7 +11,7 @@ import java.util.List;
  * <p>
  * This interface is base interface of below:
  *     <ul>
- *         <li>{@link _ModifierTableBlock}</li>
+ *         <li>{@link _ModifierTabularBlock}</li>
  *         <li>{@link _AliasDerivedBlock}</li>
  *     </ul>
  * </p>

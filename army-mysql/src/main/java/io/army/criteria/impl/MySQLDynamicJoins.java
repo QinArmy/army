@@ -247,7 +247,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }//DynamicCteBlock
 
 
-    private static final class DynamicDerivedBlock extends MySQLDynamicJoins implements _ModifierTableBlock,
+    private static final class DynamicDerivedBlock extends MySQLDynamicJoins implements _ModifierTabularBlock,
             Statement._ParensOnSpec<MySQLStatement._DynamicJoinSpec>,
             _AliasDerivedBlock {
 

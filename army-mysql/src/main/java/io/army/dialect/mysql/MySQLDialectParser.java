@@ -178,7 +178,7 @@ final class MySQLDialectParser extends MySQLParser {
         this.selectModifiers(stmt.modifierList(), sqlBuilder);
 
         //5. select item list clause
-        this.selectListClause(context);
+        this.selectionListClause(context);
         final List<_TabularBock> tableBlockList;
         tableBlockList = stmt.tableBlockList();
 
@@ -204,7 +204,15 @@ final class MySQLDialectParser extends MySQLParser {
 
 
         //9. WINDOW clause
-        this.windowClause(stmt.windowList(), context);
+        final List<_Window> windowList;
+        windowList = stmt.windowList();
+        if (windowList.size() > 0) {
+            if (!this.asOf80) {
+                throw new CriteriaException(String.format("%s don't support WINDOW clause.", this.dialect));
+            }
+            this.windowClause(windowList, context, _MySQLConsultant::assertWindow);
+        }
+
         //10. ORDER BY clause
         final List<? extends SortItem> orderByList;
         orderByList = stmt.orderByList();
@@ -231,11 +239,11 @@ final class MySQLDialectParser extends MySQLParser {
             this.intoClause(intoList, sqlBuilder);
         }
 
-        final SQLWords lockMode;
-        lockMode = stmt.lockMode();
-        if (lockMode != null) {
+        final _Query._LockBlock lockBlock;
+        lockBlock = stmt.lockBlock();
+        if (lockBlock != null) {
             //13. LOCK clause
-            this.lockClause(lockMode, stmt.lockOfTableList(), stmt.lockWaitOption(), sqlBuilder);
+            this.lockClause(lockBlock, sqlBuilder);
         }
 
         if (this.asOf80 && intoSize > 0) {
@@ -707,8 +715,8 @@ final class MySQLDialectParser extends MySQLParser {
                     this.indexHintClause(((_MySQLTableBlock) block).indexHintList(), sqlBuilder);
                 }
             } else if (tableItem instanceof SubQuery) {
-                if (block instanceof _ModifierTableBlock
-                        && (modifier = ((_ModifierTableBlock) block).modifier()) != null) {
+                if (block instanceof _ModifierTabularBlock
+                        && (modifier = ((_ModifierTabularBlock) block).modifier()) != null) {
                     if (!asOf80) {
                         throw _Exceptions.dontSupportModifier(modifier, this.dialect);
                     }
@@ -928,35 +936,17 @@ final class MySQLDialectParser extends MySQLParser {
 
     }
 
-    private void windowClause(final List<_Window> windowList, final _SqlContext context) {
-        final int windowSize = windowList.size();
-        if (windowSize == 0) {
-            return;
-        }
-        if (!this.asOf80) {
-            throw new CriteriaException(String.format("%s don't support WINDOW clause.", this.dialect));
-        }
-        final StringBuilder sqlBuilder = context.sqlBuilder()
-                .append(_Constant.SPACE_WINDOW);
-        _Window window;
-        for (int i = 0; i < windowSize; i++) {
-            if (i > 0) {
-                sqlBuilder.append(_Constant.SPACE_COMMA);
-            }
-            window = windowList.get(i);
-            _MySQLConsultant.assertWindow(window);
-            window.appendSql(context);
-        }
 
-    }
-
-    private void lockClause(final SQLWords lockMode, final List<String> ofList
-            , final @Nullable SQLWords lockOption, final StringBuilder sqlBuilder) {
+    private void lockClause(final _Query._LockBlock block, final StringBuilder sqlBuilder) {
         final String lockModeText;
-        lockModeText = lockMode.render();
+        lockModeText = block.lockStrength().render();
         if (!this.asOf80 && lockModeText.equals(_Constant.SPACE_FOR_SHARE)) {
-            throw dontSupportLockWord(lockMode);
+            throw dontSupportLockWord(block.lockStrength());
         }
+        final List<String> ofList;
+        ofList = block.lockTableAliasList();
+        final SQLWords lockOption;
+        lockOption = block.lockWaitOption();
         sqlBuilder.append(lockModeText); //append lock mode
 
         switch (lockModeText) {

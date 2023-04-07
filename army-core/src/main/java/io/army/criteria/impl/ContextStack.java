@@ -151,6 +151,15 @@ abstract class ContextStack {
         return function.apply(input);
     }
 
+    static <T, U, E extends CriteriaException> E clearStackAnd(BiFunction<T, U, E> function, @Nullable T input1,
+                                                               @Nullable U input2) {
+        final Stack stack = HOLDER.get();
+        if (stack != null) {
+            HOLDER.remove();
+        }
+        return function.apply(input1, input2);
+    }
+
     static NullPointerException clearStackAndNullPointer() {
         final Stack stack = HOLDER.get();
         if (stack != null) {

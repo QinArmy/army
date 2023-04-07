@@ -86,6 +86,20 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
+
+    interface _DynamicLockOfTableSpec extends _LockOfTableAliasClause<_MinLockWaitOptionClause<Item>>,
+            _MinLockWaitOptionClause<Item> {
+
+    }
+
+    interface _DynamicLockStrengthClause extends Item {
+
+        _DynamicLockOfTableSpec update();
+
+        _DynamicLockOfTableSpec share();
+
+    }
+
     /**
      * <p>
      * This interface representing LOCK clause Prior to MySQL 8.0.
@@ -98,7 +112,9 @@ public interface MySQLQuery extends Query, MySQLStatement {
      *
      * @since 1.0
      */
-    interface _LockOptionSpec<I extends Item> extends _MinLockOptionClause<_LockOfTableSpec<I>>, _IntoOptionSpec<I> {
+    interface _LockSpec<I extends Item> extends _MinLockStrengthClause<_LockOfTableSpec<I>>,
+            _DynamicLockClause<_DynamicLockStrengthClause, _LockSpec<I>>,
+            _IntoOptionSpec<I> {
 
         _IntoOptionSpec<I> lockInShareMode();
 
@@ -106,7 +122,7 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _LimitSpec<I extends Item> extends _LimitClause<_LockOptionSpec<I>>, _LockOptionSpec<I> {
+    interface _LimitSpec<I extends Item> extends _LimitClause<_LockSpec<I>>, _LockSpec<I> {
 
     }
 

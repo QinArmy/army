@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ComplexTableMeta;
@@ -13,15 +12,11 @@ import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
-import io.army.util._StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 
 /**
@@ -922,14 +917,160 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         @Override
         public final String toString() {
-            return _StringUtils.builder()
-                    .append(LockWaitOption.class.getSimpleName())
-                    .append(_Constant.POINT)
-                    .append(this.name())
-                    .toString();
+            return CriteriaUtils.sqlWordsToString(this);
         }
 
     }//LockWaitOption
+
+    static abstract class LockClauseBlock<LT, LW> implements Query._LockOfTableAliasClause<LT>,
+            Query._MinLockWaitOptionClause<LW>,
+            CriteriaContextSpec,
+            _Query._LockBlock,
+            Item {
+
+
+        private List<String> tableAliasList;
+
+        private SQLWords lockWaitOption;
+
+        private boolean clauseEnd;
+
+        LockClauseBlock() {
+        }
+
+        @Override
+        public final LT of(String tableAlias) {
+            if (this.clauseEnd) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            }
+            this.tableAliasList = Collections.singletonList(tableAlias);
+            return (LT) this;
+        }
+
+        @Override
+        public final LT of(String tableAlias1, String tableAlias2) {
+            if (this.clauseEnd) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            }
+            this.tableAliasList = _ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2);
+            return (LT) this;
+        }
+
+        @Override
+        public final LT of(String tableAlias1, String tableAlias2, String tableAlias3) {
+            if (this.clauseEnd) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            }
+            this.tableAliasList = _ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2, tableAlias3);
+            return (LT) this;
+        }
+
+        @Override
+        public final LT of(String tableAlias1, String tableAlias2, String tableAlias3, String tableAlias4) {
+            if (this.clauseEnd) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            }
+            this.tableAliasList = _ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2, tableAlias3, tableAlias4);
+            return (LT) this;
+        }
+
+        @Override
+        public final LT of(String tableAlias1, String tableAlias2, String tableAlias3, String tableAlias4,
+                           String tableAlias5, String... restTableAlias) {
+            if (this.clauseEnd) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            }
+            this.tableAliasList = _ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2, tableAlias3, tableAlias4,
+                    tableAlias5, restTableAlias);
+            return (LT) this;
+        }
+
+        @Override
+        public final LT of(Consumer<Consumer<String>> consumer) {
+            if (this.clauseEnd) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            }
+            this.tableAliasList = CriteriaUtils.stringList(this.getContext(), true, consumer);
+            return (LT) this;
+        }
+
+        @Override
+        public final LT ifOf(Consumer<Consumer<String>> consumer) {
+            if (this.clauseEnd) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            }
+            this.tableAliasList = CriteriaUtils.stringList(this.getContext(), false, consumer);
+            return (LT) this;
+        }
+
+
+        @Override
+        public final LW noWait() {
+            if (this.clauseEnd) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            }
+            this.lockWaitOption = LockWaitOption.NOWAIT;
+            return (LW) this;
+        }
+
+        @Override
+        public final LW skipLocked() {
+            if (this.clauseEnd) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            }
+            this.lockWaitOption = LockWaitOption.SKIP_LOCKED;
+            return (LW) this;
+        }
+
+        @Override
+        public final LW ifNoWait(BooleanSupplier predicate) {
+            if (this.clauseEnd) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            } else if (predicate.getAsBoolean()) {
+                this.lockWaitOption = LockWaitOption.NOWAIT;
+            } else {
+                this.lockWaitOption = null;
+            }
+            return (LW) this;
+        }
+
+        @Override
+        public final LW ifSkipLocked(BooleanSupplier predicate) {
+            if (this.clauseEnd) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            } else if (predicate.getAsBoolean()) {
+                this.lockWaitOption = LockWaitOption.SKIP_LOCKED;
+            } else {
+                this.lockWaitOption = null;
+            }
+            return (LW) this;
+        }
+
+        @Override
+        public final List<String> lockTableAliasList() {
+            List<String> list = this.tableAliasList;
+            if (list == null) {
+                list = Collections.emptyList();
+                this.tableAliasList = list;
+            }
+            return list;
+        }
+
+        @Override
+        public final SQLWords lockWaitOption() {
+            return this.lockWaitOption;
+        }
+
+        final _LockBlock endLockClause() {
+            if (this.clauseEnd) {
+                throw ContextStack.castCriteriaApi(this.getContext());
+            }
+            this.clauseEnd = true;
+            return this;
+        }
+
+
+    }//LockClauseBlock
 
 
     static abstract class SelectClauseDispatcher<W extends Query.SelectModifier, SR extends Item, SD>

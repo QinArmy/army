@@ -57,12 +57,28 @@ abstract class CriteriaUtils {
         if (list.size() > 0) {
             list = _CollectionUtils.unmodifiableList(list);
         } else if (required) {
-            throw ContextStack.criteriaError(ctx, "you don't add string");
+            throw ContextStack.criteriaError(ctx, "you don't add any string");
         } else {
             list = Collections.emptyList();
         }
         return list;
     }
+
+
+    static List<_Expression> expressionList(CriteriaContext ctx, final boolean required, Consumer<Consumer<Expression>> consumer) {
+        final List<_Expression> list = new ArrayList<>();
+        consumer.accept(e -> list.add((ArmyExpression) e));
+        final List<_Expression> expressionList;
+        if (list.size() > 0) {
+            expressionList = _CollectionUtils.unmodifiableList(list);
+        } else if (required) {
+            throw ContextStack.criteriaError(ctx, "you don't add any expression");
+        } else {
+            expressionList = Collections.emptyList();
+        }
+        return list;
+    }
+
 
     static List<_Selection> selectionList(CriteriaContext context, Consumer<Returnings> consumer) {
         final List<_Selection> list = new ArrayList<>();
@@ -442,7 +458,7 @@ abstract class CriteriaUtils {
         final int selectionSize;
         selectionSize = refSelectionList.size();
         if (columnAliasList.size() != selectionSize) {
-            throw CriteriaUtils.cteColumnAliasNotMatch(selectionSize, columnAliasList.size());
+            throw CriteriaUtils.derivedColumnAliasSizeNotMatch(selectionSize, columnAliasList.size());
         }
         if (selectionSize == 1) {
             final Selection selection;
@@ -481,7 +497,7 @@ abstract class CriteriaUtils {
         final int selectionSize;
         selectionSize = refSelectionList.size();
         if (columnAliasList.size() != selectionSize) {
-            throw CriteriaUtils.cteColumnAliasNotMatch(selectionSize, columnAliasList.size());
+            throw CriteriaUtils.derivedColumnAliasSizeNotMatch(selectionSize, columnAliasList.size());
         }
         if (selectionSize == 1) {
             final Selection selection;
@@ -559,10 +575,8 @@ abstract class CriteriaUtils {
     }
 
 
-    static CriteriaException cteColumnAliasNotMatch(int selectionSize, int aliasSize) {
-        String m = String.format("cte column alias list size[%s] and selection list size[%s]",
-                aliasSize, selectionSize);
-        return ContextStack.clearStackAndCriteriaError(m);
+    static CriteriaException derivedColumnAliasSizeNotMatch(int selectionSize, int aliasSize) {
+        return ContextStack.clearStackAnd(_Exceptions::derivedColumnAliasSizeNotMatch, selectionSize, aliasSize);
     }
 
 
@@ -588,8 +602,8 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(((CriteriaContextSpec) child).getContext(), m);
     }
 
-    static CriteriaException duplicateTabularMethod(CriteriaContext context) {
-        return ContextStack.criteriaError(context, "duplicate tabular method");
+    static CriteriaException duplicateDynamicMethod(CriteriaContext context) {
+        return ContextStack.criteriaError(context, "duplicate invoking dynamic method");
     }
 
 

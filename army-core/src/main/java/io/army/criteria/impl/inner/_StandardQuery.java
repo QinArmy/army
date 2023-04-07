@@ -6,6 +6,7 @@ import io.army.lang.Nullable;
 public interface _StandardQuery extends _Query {
 
     @Nullable
-    SQLWords lockMode();
+    SQLWords lockStrength();
+
 
 }

@@ -80,8 +80,13 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
     }
 
 
-    static boolean isStandardWindow(Window window) {
-        return window instanceof WindowClause.SimpleWindow;
+    static boolean isStandardWindow(final @Nullable Window window) {
+        return window instanceof WindowClause.SimpleWindow
+                || window instanceof WindowClause.SimpleWindowSpec;
+    }
+
+    static boolean isSimpleWindow(final @Nullable Window window) {
+        return window instanceof WindowClause.SimpleWindowSpec;
     }
 
     final String windowName;

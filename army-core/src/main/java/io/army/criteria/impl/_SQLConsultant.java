@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._NestedItems;
@@ -85,12 +86,17 @@ public abstract class _SQLConsultant {
         throw new CriteriaException(m);
     }
 
-    static CriteriaException illegalCteImpl(_Cte cte) {
+    static CriteriaException illegalCteImpl(@Nullable _Cte cte) {
         return new CriteriaException(String.format("Illegal Cte %s", cte));
     }
 
     static CriteriaException nonArmyStatement(Statement statement) {
         String m = String.format("%s isn't army implementation", _ClassUtils.safeClassName(statement));
+        return new CriteriaException(m);
+    }
+
+    static CriteriaException illegalWindow(@Nullable Window window) {
+        String m = String.format("Illegal window[%s]", _ClassUtils.safeClassName(window));
         return new CriteriaException(m);
     }
 

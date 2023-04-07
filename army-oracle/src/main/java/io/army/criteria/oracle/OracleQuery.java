@@ -24,7 +24,7 @@ public interface OracleQuery extends Query, OracleStatement {
     /**
      * @see <a href="https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/SELECT.html#GUID-CFA006CA-6FF1-4972-821E-6996142A51C6">Lock wait syntax</a>
      */
-    interface _OracleLockWaitOptionClause<LR> extends _MinLockOptionClause<LR> {
+    interface _OracleLockWaitOptionClause<LR> extends _MinLockStrengthClause<LR> {
 
         LR wait(int seconds);
 
@@ -100,7 +100,7 @@ public interface OracleQuery extends Query, OracleStatement {
 
 
     interface _UnionLockSpec<I extends Item>
-            extends _LockForUpdateClause<_UnionLockOfColumnSpec<I>>
+            extends _StaticForUpdateClause<_UnionLockOfColumnSpec<I>>
             , _AsQueryClause<I> {
 
 
@@ -153,7 +153,7 @@ public interface OracleQuery extends Query, OracleStatement {
 
 
     interface _LockSpec<I extends Item>
-            extends _LockForUpdateClause<_LockOfColumnSpec<I>>
+            extends _StaticForUpdateClause<_LockOfColumnSpec<I>>
             , _AsQueryClause<I> {
 
 

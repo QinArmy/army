@@ -41,9 +41,6 @@ abstract class PostgreSupports extends CriteriaSupports {
         return new PostgreWindow(name, context, existingWindowName);
     }
 
-    static PostgreWindow anonymousWindow(CriteriaContext context, @Nullable String existingWindowName) {
-        return new PostgreWindow(context, existingWindowName);
-    }
 
     static <I extends Item> PostgreQuery._StaticCteSearchSpec<I> noOperationStaticCteSearchSpec(
             Function<String, PostgreQuery._StaticCteParensSpec<I>> cteFunction, Supplier<I> endSupplier) {

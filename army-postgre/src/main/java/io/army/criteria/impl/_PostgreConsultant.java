@@ -2,8 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._ReturningDml;
+import io.army.criteria.impl.inner.*;
+import io.army.dialect.Database;
+import io.army.lang.Nullable;
 
 public abstract class _PostgreConsultant extends _SQLConsultant {
 
@@ -72,6 +73,35 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
             }
         } else {
             throw nonArmyStatement(rowSet);
+        }
+    }
+
+    public static int queryModifier(final SQLWords modifier) {
+        final int level;
+        if (modifier == Postgres.DISTINCT || modifier == Postgres.ALL) {
+            level = 0;
+        } else {
+            level = -1;
+        }
+        return level;
+    }
+
+    public static void assertWindow(final @Nullable _Window window) {
+        if (!(window instanceof PostgreSupports.PostgreWindow
+                || WindowClause.isSimpleWindow(window))) {
+            throw illegalWindow(window);
+        }
+    }
+
+    public static void assertNestedItems(final @Nullable _NestedItems nestedItems) {
+        if (!(nestedItems instanceof PostgreNestedJoins)) {
+            throw illegalNestedItems(nestedItems, Database.PostgreSQL);
+        }
+    }
+
+    public static void assertPostgreCte(final @Nullable _Cte cte) {
+        if (!(cte instanceof PostgreSupports.PostgreCte || cte instanceof CriteriaContexts.RecursiveCte)) {
+            throw illegalCteImpl(cte);
         }
     }
 

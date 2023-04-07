@@ -55,8 +55,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._JoinSpec<I>,
         StandardQuery._WhereAndSpec<I>,
         StandardQuery._HavingSpec<I>,
-        ArmyStmtSpec,
-        _StandardQuery {
+        _StandardQuery,
+        ArmyStmtSpec {
 
 
     static _SelectSpec<Select> simpleQuery() {
@@ -69,7 +69,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     }
 
 
-    private StandardLockMode lockMode;
+    private StandardLockMode lockStrength;
 
 
     private StandardQueries(CriteriaContext context) {
@@ -139,24 +139,25 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
     @Override
     public final _AsQueryClause<I> forUpdate() {
-        this.lockMode = StandardLockMode.FOR_UPDATE;
+        if (this.lockStrength != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        this.lockStrength = StandardLockMode.FOR_UPDATE;
         return this;
     }
 
     @Override
     public final _AsQueryClause<I> ifForUpdate(BooleanSupplier predicate) {
-        if (predicate.getAsBoolean()) {
-            this.lockMode = StandardLockMode.FOR_UPDATE;
+        if (this.lockStrength != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        } else if (predicate.getAsBoolean()) {
+            this.lockStrength = StandardLockMode.FOR_UPDATE;
         } else {
-            this.lockMode = null;
+            this.lockStrength = null;
         }
         return this;
     }
 
-    @Override
-    public final SQLWords lockMode() {
-        return this.lockMode;
-    }
 
     @Override
     public final boolean isRecursive() {
@@ -166,6 +167,12 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     @Override
     public final List<_Cte> cteList() {
         return Collections.emptyList();
+    }
+
+
+    @Override
+    public final SQLWords lockStrength() {
+        return this.lockStrength;
     }
 
     @Override
@@ -245,7 +252,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
     @Override
     final void onClear() {
-        this.lockMode = null;
+
     }
 
 
@@ -300,6 +307,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         public final String toString() {
             return CriteriaUtils.sqlWordsToString(this);
         }
+
 
     }//StandardLockMode
 

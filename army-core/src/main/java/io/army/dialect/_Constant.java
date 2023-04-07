@@ -143,6 +143,8 @@ public interface _Constant {
 
     String SPACE_FOR_SHARE = " FOR SHARE";
 
+    String SPACE_OF_SPACE = " OF ";
+
     String SPACE_LOCK_IN_SHARE_MODE = " LOCK IN SHARE MODE";
 
     String SPACE_ASC = " ASC";
