@@ -234,24 +234,17 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _WindowAsClause<I extends Item> extends Window._WindowAsClause<_WindowCommaSpec<I>> {
-
-        _WindowCommaSpec<I> as(@Nullable String existingWindowName, Consumer<_WindowPartitionBySpec> consumer);
-
-        _WindowCommaSpec<I> as(Consumer<_WindowPartitionBySpec> consumer);
-
-    }
 
     interface _WindowCommaSpec<I extends Item> extends _OrderBySpec<I> {
 
-        _WindowAsClause<I> comma(String name);
+        Window._WindowAsClause<_WindowPartitionBySpec, _WindowCommaSpec<I>> comma(String name);
 
     }
 
-    interface _WindowSpec<I extends Item> extends Window._DynamicWindowClause<PostgreWindows, _OrderBySpec<I>>,
+    interface _WindowSpec<I extends Item> extends Window._DynamicWindowClause<_WindowPartitionBySpec, _OrderBySpec<I>>,
             _OrderBySpec<I> {
 
-        _WindowAsClause<I> window(String name);
+        Window._WindowAsClause<_WindowPartitionBySpec, _WindowCommaSpec<I>> window(String name);
 
     }
 

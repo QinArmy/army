@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -1071,6 +1072,50 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
 
     }//LockClauseBlock
+
+
+    static abstract class SimpleWindowAsClause<T extends Item, R extends Item>
+            implements Window._WindowAsClause<T, R> {
+
+        final CriteriaContext context;
+
+        final String name;
+
+        final Function<ArmyWindow, R> function;
+
+        SimpleWindowAsClause(CriteriaContext context, String name, Function<ArmyWindow, R> function) {
+            this.context = context;
+            this.name = name;
+            this.function = function;
+        }
+
+        @Override
+        public final R as() {
+            return this.function.apply(WindowClause.namedGlobalWindow(this.context, this.name));
+        }
+
+        @Override
+        public final R as(@Nullable String existingWindowName) {
+            return this.function.apply(WindowClause.namedRefWindow(this.context, this.name, existingWindowName));
+        }
+
+        @Override
+        public final R as(Consumer<T> consumer) {
+            return this.as(null, consumer);
+        }
+
+        @Override
+        public final R as(@Nullable String existingWindowName, Consumer<T> consumer) {
+            final T window;
+            window = this.createNameWindow(existingWindowName);
+            consumer.accept(window);
+            return this.function.apply((ArmyWindow) window);
+        }
+
+        abstract T createNameWindow(@Nullable String existingWindowName);
+
+
+    }//WindowAsClause
 
 
     static abstract class SelectClauseDispatcher<W extends Query.SelectModifier, SR extends Item, SD>

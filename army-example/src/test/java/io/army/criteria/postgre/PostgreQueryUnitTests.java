@@ -20,11 +20,9 @@ public class PostgreQueryUnitTests extends PostgreUnitTests {
         stmt = Postgres.query()
                 .select(SQLs.literalFrom(1)::as, "r")
                 .from(PillUser_.T, AS, "u")
-                .windows(s -> {
-                    s.window("w1").as().partitionBy(PillUser_.userType)
-                            .orderBy(PillUser_.id);
-
-                    s.window("w2").as().orderBy(PillUser_.id);
+                .windows(w -> {
+                    w.window("w1").as(s -> s.partitionBy(PillUser_.userType).orderBy(PillUser_.id));
+                    w.window("w2").as(s -> s.orderBy(PillUser_.id));
                 })
                 .asQuery();
 

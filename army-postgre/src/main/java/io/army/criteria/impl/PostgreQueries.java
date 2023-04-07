@@ -378,10 +378,19 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         return this;
     }
 
+    @Override
+    public final Window._WindowAsClause<_WindowPartitionBySpec, _WindowCommaSpec<I>> window(String name) {
+        return new NamedWindowAsClause<>(this.context, name, this::onAddWindow);
+    }
 
     @Override
-    public final _OrderBySpec<I> windows(Consumer<PostgreWindows> consumer) {
-        this.ifWindows(consumer);
+    public final Window._WindowAsClause<_WindowPartitionBySpec, _WindowCommaSpec<I>> comma(String name) {
+        return new NamedWindowAsClause<>(this.context, name, this::onAddWindow);
+    }
+
+    @Override
+    public final _OrderBySpec<I> windows(Consumer<Window.Builder<_WindowPartitionBySpec>> consumer) {
+        consumer.accept(this::createDynamicWindow);
         if (this.windowList == null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::windowListIsEmpty);
         }
@@ -389,31 +398,10 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
     @Override
-    public final _OrderBySpec<I> ifWindows(Consumer<PostgreWindows> consumer) {
-        final PostgreWindowBuilder builder;
-        builder = new PostgreWindowBuilder(this);
-        consumer.accept(builder);
-
-        final PostgreSupports.PostgreWindow window;
-        window = builder.lastWindow;
-        if (window != null) {
-            builder.lastWindow = null;
-            this.onAddWindow(window);
-        }
+    public final _OrderBySpec<I> ifWindows(Consumer<Window.Builder<_WindowPartitionBySpec>> consumer) {
+        consumer.accept(this::createDynamicWindow);
         return this;
     }
-
-
-    @Override
-    public final _WindowAsClause<I> window(String name) {
-        return new StaticWindowAsClause<>(name, this);
-    }
-
-    @Override
-    public final _WindowAsClause<I> comma(String name) {
-        return new StaticWindowAsClause<>(name, this);
-    }
-
 
     @Override
     public final _LockOfTableSpec<I> forUpdate() {
@@ -650,6 +638,22 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         return this;
     }
 
+    /**
+     * @see #windows(Consumer)
+     * @see #ifWindows(Consumer)
+     */
+    private Window._WindowAsClause<_WindowPartitionBySpec, Item> createDynamicWindow(String name) {
+        return new NamedWindowAsClause<>(this.context, name, this::onAddDynamicWindow);
+    }
+
+    /**
+     * @see #createDynamicWindow(String)
+     */
+    private Item onAddDynamicWindow(ArmyWindow window) {
+        this.onAddWindow(window);
+        return CriteriaUtils.NONE_ITEM;
+    }
+
     private PostgreQueries<I> onAddLockBlock(final _LockBlock block) {
         List<_LockBlock> lockBlockList = this.lockBlockList;
         if (lockBlockList == null) {
@@ -663,83 +667,24 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }
 
 
-    private static final class StaticWindowAsClause<I extends Item> implements PostgreQuery._WindowAsClause<I> {
-
-        private final String windowName;
-
-        private final PostgreQueries<I> stmt;
+    private static final class NamedWindowAsClause<R extends Item>
+            extends SimpleWindowAsClause<_WindowPartitionBySpec, R> {
 
         /**
          * @see #window(String)
-         * @see #comma(String)
          */
-        private StaticWindowAsClause(String windowName, PostgreQueries<I> stmt) {
-            this.windowName = windowName;
-            this.stmt = stmt;
+        private NamedWindowAsClause(CriteriaContext context, String name, Function<ArmyWindow, R> function) {
+            super(context, name, function);
         }
 
         @Override
-        public _WindowCommaSpec<I> as() {
-            return this.stmt.onAddWindow(WindowClause.namedGlobalWindow(this.stmt.context, this.windowName));
-        }
-
-        @Override
-        public _WindowCommaSpec<I> as(@Nullable String existingWindowName) {
-            return this.stmt.onAddWindow(
-                    WindowClause.namedRefWindow(this.stmt.context, this.windowName, existingWindowName)
-            );
-        }
-
-        @Override
-        public _WindowCommaSpec<I> as(Consumer<_WindowPartitionBySpec> consumer) {
-            return this.as(null, consumer);
-        }
-
-        @Override
-        public _WindowCommaSpec<I> as(@Nullable String existingWindowName, Consumer<_WindowPartitionBySpec> consumer) {
-            final PostgreSupports.PostgreWindow window;
-            window = PostgreSupports.namedWindow(this.windowName, this.stmt.context, existingWindowName);
-            consumer.accept(window);
-            return this.stmt.onAddWindow(window);
-        }
-
-    }//StaticWindowAsClause
-
-    private static final class PostgreWindowBuilder implements PostgreWindows {
-
-        private final PostgreQueries<?> stmt;
-
-        private PostgreSupports.PostgreWindow lastWindow;
-
-        /**
-         * @see #windows(Consumer)
-         * @see #ifWindows(Consumer)
-         */
-        private PostgreWindowBuilder(PostgreQueries<?> stmt) {
-            this.stmt = stmt;
-        }
-
-        @Override
-        public Window._WindowAsClause<_WindowPartitionBySpec> window(final String windowName) {
-            final PostgreSupports.PostgreWindow lastWindow = this.lastWindow;
-            if (lastWindow != null) {
-                this.lastWindow = null;
-                this.stmt.onAddWindow(lastWindow);
-            }
-            return existingWindowName -> {
-                final PostgreSupports.PostgreWindow oldWindow, window;
-                window = PostgreSupports.namedWindow(windowName, this.stmt.context, existingWindowName);
-                oldWindow = this.lastWindow;
-                if (oldWindow != null) {
-                    throw CriteriaUtils.windowNotEnd(this.stmt.context, oldWindow, window);
-                }
-                this.lastWindow = window;
-                return window;
-            };
+        _WindowPartitionBySpec createNameWindow(@Nullable String existingWindowName) {
+            return PostgreSupports.namedWindow(this.name, this.context, existingWindowName);
         }
 
 
-    }//PostgreWindowBuilder
+    }//NamedWindowAsClause
+
 
     private static final class JonClauseTableBlock<I extends Item> extends PostgreSupports.PostgreTableOnBlock<
             PostgreQuery._RepeatableOnClause<I>,

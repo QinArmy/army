@@ -33,9 +33,8 @@ abstract class CriteriaUtils {
      */
     static final List<String> EMPTY_STRING_LIST = Collections.unmodifiableList(new ArrayList<>(0));
 
-    static List<String> optionalStringList(final List<String> list) {
-        return list.size() == 0 ? EMPTY_STRING_LIST : list;
-    }
+    static final Item NONE_ITEM = new Item() {
+    };
 
     @Deprecated
     static List<String> columnAliasList(final boolean required, Consumer<Consumer<String>> consumer) {

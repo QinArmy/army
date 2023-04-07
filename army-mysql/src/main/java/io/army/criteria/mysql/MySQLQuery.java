@@ -4,7 +4,6 @@ import io.army.criteria.Item;
 import io.army.criteria.Query;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.MySQLs;
-import io.army.lang.Nullable;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -144,26 +143,19 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _WindowAsClause<I extends Item> extends Window._WindowAsClause<_WindowCommaSpec<I>> {
-
-        _WindowCommaSpec<I> as(@Nullable String existingWindowName, Consumer<Window._SimplePartitionBySpec> consumer);
-
-        _WindowCommaSpec<I> as(Consumer<Window._SimplePartitionBySpec> consumer);
-    }
-
 
     interface _WindowCommaSpec<I extends Item> extends _OrderBySpec<I> {
 
-        _WindowAsClause<I> comma(String windowName);
+        Window._WindowAsClause<Window._SimplePartitionBySpec, _WindowCommaSpec<I>> comma(String windowName);
 
 
     }
 
 
-    interface _WindowSpec<I extends Item> extends _OrderBySpec<I>
-            , Window._DynamicWindowClause<MySQLWindows, _OrderBySpec<I>> {
+    interface _WindowSpec<I extends Item> extends _OrderBySpec<I>,
+            Window._DynamicWindowClause<Window._SimplePartitionBySpec, _OrderBySpec<I>> {
 
-        _WindowAsClause<I> window(String windowName);
+        Window._WindowAsClause<Window._SimplePartitionBySpec, _WindowCommaSpec<I>> window(String windowName);
 
     }
 

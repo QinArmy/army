@@ -20,8 +20,23 @@ import java.util.function.Supplier;
 public interface Window extends Item {
 
 
-    interface Builder extends Item {
+    interface _WindowAsClause<T extends Item, R extends Item> extends Item {
 
+        R as();
+
+        R as(@Nullable String existingWindowName);
+
+        R as(Consumer<T> consumer);
+
+        R as(@Nullable String existingWindowName, Consumer<T> consumer);
+
+    }
+
+
+    @FunctionalInterface
+    interface Builder<T extends Item> extends Item {
+
+        _WindowAsClause<T, Item> window(String windowName);
 
     }
 
@@ -63,14 +78,6 @@ public interface Window extends Item {
         CR comma(String windowName);
     }
 
-    interface _WindowAsClause<R> {
-
-        default R as() {
-            return this.as(null);
-        }
-
-        R as(@Nullable String existingWindowName);
-    }
 
     /**
      * <p>
@@ -82,19 +89,18 @@ public interface Window extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <WB> sub interface of {@link Builder}
-     * @param <WR> next clause java type
+     * @param <T> sub interface of {@link Builder}
+     * @param <R> next clause java type
      * @since 1.0
      */
-    interface _DynamicWindowClause<WB extends Builder, WR> {
+    interface _DynamicWindowClause<T extends Item, R extends Item> {
 
 
-        WR windows(Consumer<WB> consumer);
+        R windows(Consumer<Builder<T>> consumer);
 
-        WR ifWindows(Consumer<WB> consumer);
+        R ifWindows(Consumer<Builder<T>> consumer);
 
     }
-
 
 
     /**
@@ -467,9 +473,6 @@ public interface Window extends Item {
             , _SimpleOrderBySpec {
 
     }
-
-
-
 
 
 }
