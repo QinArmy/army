@@ -199,7 +199,7 @@ public interface Statement extends Item {
      * @param <FS> next clause java type
      * @since 1.0
      */
-    interface _FromClause<FT, FS> {
+    interface _FromClause<FT, FS> extends Item {
 
         FT from(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 

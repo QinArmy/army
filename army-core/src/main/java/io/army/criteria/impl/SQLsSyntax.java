@@ -1074,6 +1074,17 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     /**
      * <p>
+     * Reference a {@link  Selection} of current statement after selection list end,eg: ORDER BY clause.
+     * </p>
+     *
+     * @param selectionOrdinal based 1 .
+     */
+    public static Expression ref(int selectionOrdinal) {
+        return ContextStack.peek().refSelection(selectionOrdinal);
+    }
+
+    /**
+     * <p>
      * Reference session variable.
      * </p>
      *

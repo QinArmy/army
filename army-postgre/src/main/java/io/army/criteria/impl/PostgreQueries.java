@@ -4,7 +4,10 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._NestedItems;
+import io.army.criteria.impl.inner._TabularBock;
+import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.postgre._PostgreCte;
 import io.army.criteria.impl.inner.postgre._PostgreQuery;
 import io.army.criteria.postgre.*;
@@ -19,14 +22,13 @@ import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpleQueries<
+abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDistinctOnSimpleQueries<
         I,
         PostgreCtes,
         PostgreQuery._SelectSpec<I>,
@@ -86,9 +88,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         return new StaticCteComma<>(context, recursive, function);
     }
 
-
-    private List<_Expression> distinctOnExpList;
-
     private List<_Window> windowList;
 
     private List<_LockBlock> lockBlockList;
@@ -110,66 +109,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     public final _StaticCteParensSpec<_SelectSpec<I>> withRecursive(String name) {
         return PostgreQueries.complexCte(this.context, true, this::endStaticWithClause)
                 .comma(name);
-    }
-
-    @Override
-    public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp) {
-        this.distinctOnExpList = Collections.singletonList((ArmyExpression) exp);
-        return this.select(PostgreSyntax.DISTINCT);
-    }
-
-    @Override
-    public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp1, Expression exp2) {
-        this.distinctOnExpList = _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2);
-        return this.select(PostgreSyntax.DISTINCT);
-    }
-
-    @Override
-    public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3) {
-        this.distinctOnExpList = _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2, (ArmyExpression) exp3);
-        return this.select(PostgreSyntax.DISTINCT);
-    }
-
-    @Override
-    public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Consumer<Consumer<Expression>> consumer) {
-        this.distinctOnExpList = CriteriaUtils.expressionList(this.context, true, consumer);
-        return this.select(PostgreSyntax.DISTINCT);
-    }
-
-    @Override
-    public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctIfOn(Consumer<Consumer<Expression>> consumer) {
-        this.distinctOnExpList = CriteriaUtils.expressionList(this.context, false, consumer);
-        return this.select(PostgreSyntax.DISTINCT);
-    }
-
-    @Override
-    public final _FromSpec<I> selectDistinctOn(Expression exp, Consumer<Selections> consumer) {
-        this.distinctOnExpList = Collections.singletonList((ArmyExpression) exp);
-        return this.selects(PostgreSyntax.DISTINCT, consumer);
-    }
-
-    @Override
-    public final _FromSpec<I> selectDistinctOn(Expression exp1, Expression exp2, Consumer<Selections> consumer) {
-        this.distinctOnExpList = _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2);
-        return this.selects(PostgreSyntax.DISTINCT, consumer);
-    }
-
-    @Override
-    public final _FromSpec<I> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<Selections> consumer) {
-        this.distinctOnExpList = _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2, (ArmyExpression) exp3);
-        return this.selects(PostgreSyntax.DISTINCT, consumer);
-    }
-
-    @Override
-    public final _FromSpec<I> selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
-        this.distinctOnExpList = CriteriaUtils.expressionList(this.context, true, expConsumer);
-        return this.selects(PostgreSyntax.DISTINCT, consumer);
-    }
-
-    @Override
-    public final _FromSpec<I> selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
-        this.distinctOnExpList = CriteriaUtils.expressionList(this.context, false, expConsumer);
-        return this.selects(PostgreSyntax.DISTINCT, consumer);
     }
 
     @Override
@@ -434,14 +373,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         return this;
     }
 
-    @Override
-    public final List<_Expression> distinctOnExpressionList() {
-        final List<_Expression> list = this.distinctOnExpList;
-        if (list == null || list instanceof ArrayList) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        return list;
-    }
 
     @Override
     public final List<_Window> windowList() {
@@ -463,7 +394,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
     @Override
     final void onEndQuery() {
-        this.distinctOnExpList = _CollectionUtils.safeUnmodifiableList(this.distinctOnExpList);
         this.windowList = _CollectionUtils.safeUnmodifiableList(this.windowList);
         this.lockBlockList = _CollectionUtils.safeUnmodifiableList(this.lockBlockList);
     }
@@ -471,7 +401,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
 
     @Override
     final void onClear() {
-        this.distinctOnExpList = null;
         this.windowList = null;
         this.lockBlockList = null;
     }
@@ -479,6 +408,11 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     @Override
     final Dialect statementDialect() {
         return PostgreDialect.POSTGRE15;
+    }
+
+    @Override
+    final Postgres.Modifier distinctModifier() {
+        return Postgres.DISTINCT;
     }
 
     @Override
@@ -942,7 +876,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
     }//SimpleSubQuery
 
 
-    static abstract class PostgreSelectClauseDispatcher<I extends Item, WE> extends WithBuilderSelectClauseDispatcher<
+    static abstract class PostgreSelectClauseDispatcher<I extends Item, WE> extends WithDistinctOnSelectClauseDispatcher<
             PostgreCtes,
             WE,
             PostgreSyntax.Modifier,
@@ -952,60 +886,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteSimpl
         PostgreSelectClauseDispatcher(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
             super(outerContext, leftContext);
         }
-
-
-        @Override
-        public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp) {
-            return this.createSelectClause().selectDistinctOn(exp);
-        }
-
-        @Override
-        public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp1, Expression exp2) {
-            return this.createSelectClause().selectDistinctOn(exp1, exp2);
-        }
-
-        @Override
-        public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3) {
-            return this.createSelectClause().selectDistinctOn(exp1, exp2, exp3);
-        }
-
-        @Override
-        public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Consumer<Consumer<Expression>> consumer) {
-            return this.createSelectClause().selectDistinctOn(consumer);
-        }
-
-        @Override
-        public final _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctIfOn(Consumer<Consumer<Expression>> consumer) {
-            return this.createSelectClause().selectDistinctIfOn(consumer);
-        }
-
-        @Override
-        public final _FromSpec<I> selectDistinctOn(Expression exp, Consumer<Selections> consumer) {
-            return this.createSelectClause().selectDistinctOn(exp, consumer);
-        }
-
-        @Override
-        public final _FromSpec<I> selectDistinctOn(Expression exp1, Expression exp2, Consumer<Selections> consumer) {
-            return this.createSelectClause().selectDistinctOn(exp1, exp2, consumer);
-        }
-
-        @Override
-        public final _FromSpec<I> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<Selections> consumer) {
-            return this.createSelectClause().selectDistinctOn(exp1, exp2, exp3, consumer);
-        }
-
-        @Override
-        public final _FromSpec<I> selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
-            return this.createSelectClause().selectDistinctOn(expConsumer, consumer);
-        }
-
-        @Override
-        public final _FromSpec<I> selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
-            return this.createSelectClause().selectDistinctIfOn(expConsumer, consumer);
-        }
-
-        @Override
-        abstract PostgreQueries<I> createSelectClause();
 
 
     }//PostgreSelectClauseDispatcher

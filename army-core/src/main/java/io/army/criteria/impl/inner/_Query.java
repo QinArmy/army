@@ -40,6 +40,12 @@ public interface _Query extends Query, _PartRowSet, _RowSet._SelectItemListSpec 
     List<_Predicate> havingList();
 
 
+    interface _DistinctOnClauseSpec {
+
+        List<_Expression> distinctOnExpressions();
+    }
+
+
     interface _WindowClauseSpec {
 
         List<_Window> windowList();

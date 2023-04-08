@@ -88,6 +88,11 @@ interface CriteriaContext {
 
     Expression refSelection(String selectionAlias);
 
+    /**
+     * @param selectionOrdinal based 1 .
+     */
+    Expression refSelection(int selectionOrdinal);
+
     void onSetInnerContext(CriteriaContext innerContext);
 
     /**

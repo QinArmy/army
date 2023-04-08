@@ -85,12 +85,8 @@ public interface Query extends RowSet {
 
     /*################################## blow select clause  interfaces ##################################*/
 
-    interface _SelectClauseOfQuery extends Item {
-        //NO method
-    }
 
-
-    interface _StaticSelectClause<SR extends Item> extends _SelectClauseOfQuery {
+    interface _StaticSelectClause<SR extends Item> extends Item {
 
         SR select(Selection selection);
 
@@ -142,6 +138,34 @@ public interface Query extends RowSet {
                      String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
 
         SR space(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+    }
+
+
+    interface _DynamicDistinctOnExpClause<SR extends Item> {
+
+        _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp);
+
+        _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp1, Expression exp2);
+
+        _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3);
+
+        _StaticSelectSpaceClause<SR> selectDistinctOn(Consumer<Consumer<Expression>> consumer);
+
+        _StaticSelectSpaceClause<SR> selectDistinctIfOn(Consumer<Consumer<Expression>> consumer);
+
+    }
+
+    interface _DynamicDistinctOnAndSelectsClause<SD extends Item> {
+
+        SD selectDistinctOn(Expression exp, Consumer<Selections> consumer);
+
+        SD selectDistinctOn(Expression exp1, Expression exp2, Consumer<Selections> consumer);
+
+        SD selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<Selections> consumer);
+
+        SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer);
+
+        SD selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer);
     }
 
 
@@ -344,12 +368,20 @@ public interface Query extends RowSet {
 
     }
 
+    interface _SelectDistinctOnDispatcher<W extends SelectModifier, SR extends Item, SD extends Item>
+            extends _SelectDispatcher<W, SR, SD>,
+            _DynamicDistinctOnExpClause<SR>,
+            _DynamicDistinctOnAndSelectsClause<SD> {
+
+    }
 
 
     interface _WithSelectDispatcher<B extends CteBuilderSpec, WE, W extends SelectModifier, SR extends Item, SD>
             extends DialectStatement._DynamicWithClause<B, WE>, _SelectDispatcher<W, SR, SD> {
 
     }
+
+
 
 
 }

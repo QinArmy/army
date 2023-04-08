@@ -14,6 +14,20 @@ public class PostgreQueryUnitTests extends PostgreUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(PostgreQueryUnitTests.class);
 
+
+    @Test
+    public void distinctOnClause() {
+        final Select stmt;
+        stmt = Postgres.query()
+                .selectDistinctOn(SQLs.ref("one"), SQLs.ref(2))
+                .space(SQLs.literalFrom(1)::as, "one", PillUser_.id)
+                .from(PillUser_.T, AS, "u")
+                .orderBy(PillUser_.id)
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
     @Test
     public void dynamicWindow() {
         final Select stmt;

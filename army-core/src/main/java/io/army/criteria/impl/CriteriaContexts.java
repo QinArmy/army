@@ -296,6 +296,7 @@ abstract class CriteriaContexts {
         ((JoinableContext) queryContext).fieldsFromSubContext = migrated.fieldsFromSubContext;
 
         queryContext.refWindowNameMap = migrated.refWindowNameMap;
+        queryContext.refSelectionMap = migrated.refSelectionMap;
 
 
         migrated.aliasFieldMap = null;
@@ -303,6 +304,7 @@ abstract class CriteriaContexts {
         migrated.refWindowNameMap = null;
         migrated.fieldsFromSubContext = null;
 
+        migrated.refSelectionMap = null;
         migrated.migrated = true;
 
     }
@@ -876,10 +878,15 @@ abstract class CriteriaContexts {
 
         @Override
         public Expression refSelection(String selectionAlias) {
-            String m = "current context don't support ref(selectionAlias)";
+            String m = "current context don't support refSelection(selectionAlias)";
             throw ContextStack.criteriaError(this, m);
         }
 
+        @Override
+        public Expression refSelection(int selectionOrdinal) {
+            String m = "current context don't support refSelection(int selectionOrdinal)";
+            throw ContextStack.criteriaError(this, m);
+        }
 
         @Override
         public void onSetInnerContext(CriteriaContext innerContext) {
@@ -939,7 +946,8 @@ abstract class CriteriaContexts {
 
         @Override
         public Expression insertValueField(FieldMeta<?> field, Function<FieldMeta<?>, Expression> function) {
-            throw ContextStack.castCriteriaApi(this);
+            String m = "current context don't support insertValueField(FieldMeta<?> field, Function<FieldMeta<?>, Expression> function)";
+            throw ContextStack.criteriaError(this, m);
         }
 
         @Override
@@ -2014,7 +2022,7 @@ abstract class CriteriaContexts {
         /**
          * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketContext#refSelection(String)}
          */
-        private Map<String, RefSelection> refSelectionMap;
+        private Map<Object, Expression> refSelectionMap;
 
         private Map<String, Boolean> windowNameMap;
 
@@ -2096,21 +2104,70 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final Expression refSelection(final String selectionAlias) {
-            final CriteriaContext leftContext = this.leftContext;
-            final Expression selection;
-            if (leftContext == null) {
-                Map<String, RefSelection> refSelectionMap = this.refSelectionMap;
-                if (refSelectionMap == null) {
-                    this.endSelectClauseIfNeed(); //TODO 考试是否合理, reference SELECTION , so SELECT clause end
-                    refSelectionMap = new HashMap<>();
-                    this.refSelectionMap = refSelectionMap;
-                }
-                selection = refSelectionMap.computeIfAbsent(selectionAlias, this::createRefSelection);
-            } else {
-                selection = leftContext.refSelection(selectionAlias);
+        public final Expression refSelection(final @Nullable String selectionAlias) {
+            if (selectionAlias == null) {
+                throw ContextStack.nullPointer(this);
             }
-            return selection;
+            final CriteriaContext leftContext = this.leftContext;
+            if (leftContext != null) {
+                return leftContext.refSelection(selectionAlias);
+            }
+            Expression refSelection;
+            Map<Object, Expression> refSelectionMap = this.refSelectionMap;
+            if (refSelectionMap == null) {
+                refSelectionMap = new HashMap<>();
+                this.refSelectionMap = refSelectionMap;
+            }
+            refSelection = refSelectionMap.get(selectionAlias);
+            if (refSelection != null) {
+                return refSelection;
+            }
+            if (this.isSelectClauseNotEnd()) {
+                refSelection = new DelayNameRefSelection(selectionAlias);
+            } else {
+                final Selection selection;
+                selection = this.getSelectionMap().get(selectionAlias);
+                if (selection == null) {
+                    throw CriteriaUtils.unknownSelection(this, selectionAlias);
+                }
+                refSelection = new NameRefSelection(selection);
+            }
+            refSelectionMap.put(selectionAlias, refSelection);
+            return refSelection;
+        }
+
+        @Override
+        public final Expression refSelection(final int selectionOrdinal) {
+            if (selectionOrdinal < 1) {
+                throw CriteriaUtils.unknownSelection(this, selectionOrdinal);
+            }
+            final CriteriaContext leftContext = this.leftContext;
+            if (leftContext != null) {
+                return leftContext.refSelection(selectionOrdinal);
+            }
+            Expression refSelection;
+            Map<Object, Expression> refSelectionMap = this.refSelectionMap;
+            if (refSelectionMap == null) {
+                refSelectionMap = new HashMap<>();
+                this.refSelectionMap = refSelectionMap;
+            }
+            refSelection = refSelectionMap.get(selectionOrdinal);
+            if (refSelection != null) {
+                return refSelection;
+            }
+            final int selectionIndex = selectionOrdinal - 1;
+            if (this.isSelectClauseNotEnd()) {
+                refSelection = new DelayIndexRefSelection(selectionIndex);
+            } else {
+                final List<Selection> selectionList = this.flatSelectionList;
+                assert selectionList != null;
+                if (selectionOrdinal > selectionList.size()) {
+                    throw CriteriaUtils.unknownSelection(this, selectionOrdinal);
+                }
+                refSelection = new IndexRefSelection(selectionIndex, selectionList.get(selectionIndex));
+            }
+            refSelectionMap.put(selectionIndex, refSelection);
+            return refSelection;
         }
 
         @Override
@@ -2264,24 +2321,58 @@ abstract class CriteriaContexts {
             } else {
                 this.selectItemList = Collections.singletonList(selectItem);
             }
-        }
 
+            if (this.refSelectionMap != null) {
+                this.validateDelayRefSelection();
+            }
+        }
 
         /**
-         * @see #refSelection(String)
+         * @see #endSelectClauseIfNeed()
          */
-        private RefSelection createRefSelection(final String selectionAlias) {
-            if (this.isSelectClauseNotEnd()) {
-                String m = String.format("You couldn't reference %s before SELECT clause.", Selection.class.getName());
-                throw ContextStack.criteriaError(this, m);
-            }
-            final Selection selection;
-            selection = this.getSelectionMap().get(selectionAlias);
-            if (selection == null) {
-                throw CriteriaUtils.unknownSelection(this, selectionAlias);
-            }
-            return new RefSelection(selection);
+        private void validateDelayRefSelection() {
+            final Map<Object, Expression> refSelectionMap = this.refSelectionMap;
+            assert refSelectionMap != null;
+            Map<String, Selection> selectionMap = null;
+            List<Selection> selectionList = null;
+
+            Selection selection;
+            int selectionIndex;
+            for (Expression refSelection : refSelectionMap.values()) {
+                if (!(refSelection instanceof DelayRefSelection)) {
+                    continue;
+                }
+                if (refSelection instanceof DelayNameRefSelection) {
+                    if (selectionMap == null) {
+                        selectionMap = this.getSelectionMap();
+                    }
+                    selection = selectionMap.get(((DelayNameRefSelection) refSelection).selectionName);
+                } else {
+                    if (selectionList == null) {
+                        selectionList = this.flatSelectItems();
+                    }
+                    selectionIndex = ((DelayIndexRefSelection) refSelection).selectionIndex;
+                    if (selectionIndex >= 0 && selectionIndex < selectionList.size()) {
+                        selection = selectionList.get(selectionIndex);
+                    } else {
+                        selection = null;
+                    }
+                }
+
+                if (selection != null) {
+                    assert ((DelayRefSelection) refSelection).delaySelection.selection == null;
+                    ((DelayRefSelection) refSelection).delaySelection.selection = selection;
+                } else if (refSelection instanceof DelayNameRefSelection) {
+                    throw CriteriaUtils.unknownSelection(this, ((DelayNameRefSelection) refSelection).selectionName);
+                } else {
+                    throw CriteriaUtils.unknownSelection(this, ((DelayIndexRefSelection) refSelection).selectionIndex + 1);
+                }
+
+
+            }// for
+
         }
+
 
         private boolean isSelectClauseNotEnd() {
             final List<_SelectItem> selectItemList = this.selectItemList;
@@ -2477,7 +2568,7 @@ abstract class CriteriaContexts {
         /**
          * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketContext#refSelection(String)}
          */
-        private Map<String, RefSelection> refSelectionMap;
+        private Map<String, NameRefSelection> refSelectionMap;
 
         private ValuesContext(@Nullable CriteriaContext outerContext) {
             super(outerContext);
@@ -2486,14 +2577,14 @@ abstract class CriteriaContexts {
 
         @Override
         public Expression refSelection(final String selectionAlias) {
-            Map<String, RefSelection> refSelectionMap = this.refSelectionMap;
+            Map<String, NameRefSelection> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
                 this.refSelectionMap = refSelectionMap = new HashMap<>();
             }
             return refSelectionMap.computeIfAbsent(selectionAlias, this::createRefSelection);
         }
 
-        private RefSelection createRefSelection(final String selectionAlias) {
+        private NameRefSelection createRefSelection(final String selectionAlias) {
             Map<String, Selection> selectionMap = this.selectionMap;
             if (selectionMap == null) {
                 final List<? extends SelectItem> selectItemList = this.selectItemList;
@@ -2507,7 +2598,7 @@ abstract class CriteriaContexts {
             if (selection == null) {
                 throw CriteriaUtils.unknownSelection(this, selectionAlias);
             }
-            return new RefSelection(selection);
+            return new NameRefSelection(selection);
         }
 
 
@@ -2547,6 +2638,11 @@ abstract class CriteriaContexts {
          * @see #migrateToQueryContext(SimpleQueryContext, DispatcherContext)
          */
         private List<QualifiedField<?>> fieldsFromSubContext;
+
+        /**
+         * @see #migrateToQueryContext(SimpleQueryContext, DispatcherContext)
+         */
+        private Map<Object, Expression> refSelectionMap;
 
         private boolean refOuter;
 
@@ -2634,16 +2730,65 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final Expression refSelection(final String selectionAlias) {
-            String m = String.format("You couldn't reference %s[%s] before command.",
-                    Selection.class.getName(), selectionAlias);
-            throw ContextStack.criteriaError(this, m);
+        public final void onAddWindow(final String windowName) {
+            if (this.migrated) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            throw ContextStack.castCriteriaApi(this);
+        }
+
+        @Override
+        public final Expression refSelection(final @Nullable String selectionAlias) {
+            if (this.migrated) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (selectionAlias == null) {
+                throw ContextStack.nullPointer(this);
+            }
+            Map<Object, Expression> refSelectionMap = this.refSelectionMap;
+            if (refSelectionMap == null) {
+                refSelectionMap = new HashMap<>();
+                this.refSelectionMap = refSelectionMap;
+            }
+            Expression refSelection;
+            refSelection = refSelectionMap.get(selectionAlias);
+            if (refSelection == null) {
+                refSelection = new DelayNameRefSelection(selectionAlias);
+                refSelectionMap.put(selectionAlias, refSelection);
+            }
+            return refSelection;
+        }
+
+        /**
+         * @param selectionOrdinal based 1 .
+         */
+        @Override
+        public final Expression refSelection(final int selectionOrdinal) {
+            if (this.migrated) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (selectionOrdinal < 1) {
+                throw CriteriaUtils.unknownSelection(this, selectionOrdinal);
+            }
+            Map<Object, Expression> refSelectionMap = this.refSelectionMap;
+            if (refSelectionMap == null) {
+                refSelectionMap = new HashMap<>();
+                this.refSelectionMap = refSelectionMap;
+            }
+            final int selectionIndex = selectionOrdinal - 1;
+            Expression refSelection;
+            refSelection = refSelectionMap.get(selectionIndex);
+            if (refSelection == null) {
+                refSelection = new DelayIndexRefSelection(selectionIndex);
+                refSelectionMap.put(selectionIndex, refSelection);
+            }
+            return refSelection;
         }
 
         @Override
         public final void validateFieldFromSubContext(final QualifiedField<?> field) {
-            if (this.isInWithClause()) {
-                throw unknownQualifiedFields(null, Collections.singletonList(field));
+            if (this.migrated) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (this.isInWithClause()) {
+                throw unknownQualifiedField(this, field);
             }
             List<QualifiedField<?>> list = this.fieldsFromSubContext;
             if (list == null) {
@@ -2889,7 +3034,7 @@ abstract class CriteriaContexts {
     }//DelaySelection
 
 
-    static final class RefSelection extends OperationExpression {
+    private static abstract class RefSelection extends OperationExpression {
 
         private final Selection selection;
 
@@ -2898,14 +3043,94 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public TypeMeta typeMeta() {
+        public final TypeMeta typeMeta() {
             return this.selection.typeMeta();
         }
 
         @Override
-        public RefSelection bracket() {
+        public final Expression bracket() {
             //return this ,don't create new instance
             return this;
+        }
+
+    }//RefSelection
+
+    static final class NameRefSelection extends RefSelection {
+
+        private NameRefSelection(Selection selection) {
+            super(selection);
+        }
+
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder builder;
+            builder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+
+            context.parser()
+                    .identifier(((RefSelection) this).selection.selectionName(), builder);
+        }
+
+    }// NameRefSelection
+
+    private static final class IndexRefSelection extends RefSelection {
+
+        private final int selectionIndex;
+
+        /**
+         * @param selectionIndex based 0
+         * @see SimpleQueryContext#refSelection(int)
+         * @see DispatcherContext#refSelection(int)
+         */
+        private IndexRefSelection(int selectionIndex, Selection selection) {
+            super(selection);
+            this.selectionIndex = selectionIndex;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.selectionIndex); //TODO consider support ?
+        }
+
+
+    }//IndexRefSelection
+
+
+    private static abstract class DelayRefSelection extends OperationExpression {
+
+        private final DelaySelection delaySelection;
+
+        private DelayRefSelection() {
+            this.delaySelection = new DelaySelection();
+        }
+
+        @Override
+        public final TypeMeta typeMeta() {
+            return this.delaySelection;
+        }
+
+        @Override
+        public final Expression bracket() {
+            //return this ,don't create new instance
+            return this;
+        }
+
+
+    }//DelayRefSelection
+
+    static final class DelayNameRefSelection extends DelayRefSelection {
+
+        private final String selectionName;
+
+        /**
+         * @see SimpleQueryContext#refSelection(String)
+         * @see DispatcherContext#refSelection(String)
+         */
+        private DelayNameRefSelection(String selectionName) {
+            this.selectionName = selectionName;
         }
 
         @Override
@@ -2915,10 +3140,35 @@ abstract class CriteriaContexts {
                     .append(_Constant.SPACE);
 
             context.parser()
-                    .identifier(this.selection.selectionName(), builder);
+                    .identifier(this.selectionName, builder);
         }
 
-    }// SelectionExpression
+
+    }//DelayNameRefSelection
+
+    static final class DelayIndexRefSelection extends DelayRefSelection {
+
+        private final int selectionIndex;
+
+        /**
+         * @param selectionIndex based 0
+         * @see SimpleQueryContext#refSelection(int)
+         * @see DispatcherContext#refSelection(int)
+         */
+        private DelayIndexRefSelection(int selectionIndex) {
+            this.selectionIndex = selectionIndex;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.selectionIndex); //TODO consider support ?
+
+        }
+
+
+    }//DelayIndexRefSelection
 
 
     /**

@@ -515,7 +515,7 @@ final class PostgreDialectParser extends PostgreParser {
      * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
      */
     private static void distinctOnExpressionsClause(final _PostgreQuery stmt, final _SimpleQueryContext context) {
-        final List<_Expression> expList = stmt.distinctOnExpressionList();
+        final List<_Expression> expList = stmt.distinctOnExpressions();
         final int distinctOnExpSize = expList.size();
         if (distinctOnExpSize == 0) {
             return;

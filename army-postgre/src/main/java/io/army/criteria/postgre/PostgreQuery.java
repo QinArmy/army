@@ -3,7 +3,6 @@ package io.army.criteria.postgre;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.criteria.Query;
-import io.army.criteria.Selections;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
@@ -21,7 +20,6 @@ import java.util.function.*;
  * @since 1.0
  */
 public interface PostgreQuery extends Query, PostgreStatement {
-
 
 
     interface _FrameExclusionSpec extends Item {
@@ -234,7 +232,6 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-
     interface _WindowCommaSpec<I extends Item> extends _OrderBySpec<I> {
 
         Window._WindowAsClause<_WindowPartitionBySpec, _WindowCommaSpec<I>> comma(String name);
@@ -322,27 +319,10 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     interface _PostgreSelectClause<I extends Item>
             extends _ModifierSelectClause<Postgres.Modifier, _PostgreSelectCommaSpec<I>>,
-            _DynamicModifierSelectClause<Postgres.Modifier, _FromSpec<I>> {
+            _DynamicModifierSelectClause<Postgres.Modifier, _FromSpec<I>>,
+            _DynamicDistinctOnExpClause<_PostgreSelectCommaSpec<I>>,
+            _DynamicDistinctOnAndSelectsClause<_FromSpec<I>> {
 
-        _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp);
-
-        _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp1, Expression exp2);
-
-        _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3);
-
-        _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctOn(Consumer<Consumer<Expression>> consumer);
-
-        _StaticSelectSpaceClause<_PostgreSelectCommaSpec<I>> selectDistinctIfOn(Consumer<Consumer<Expression>> consumer);
-
-        _FromSpec<I> selectDistinctOn(Expression exp, Consumer<Selections> consumer);
-
-        _FromSpec<I> selectDistinctOn(Expression exp1, Expression exp2, Consumer<Selections> consumer);
-
-        _FromSpec<I> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<Selections> consumer);
-
-        _FromSpec<I> selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer);
-
-        _FromSpec<I> selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer);
 
     }
 

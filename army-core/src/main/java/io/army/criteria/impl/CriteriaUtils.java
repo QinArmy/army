@@ -541,6 +541,14 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, m);
     }
 
+    /**
+     * @param selectionOrdinal based 1
+     */
+    static CriteriaException unknownSelection(CriteriaContext context, int selectionOrdinal) {
+        String m = String.format("unknown %s[ordinal:%s]", Selection.class.getName(), selectionOrdinal);
+        return ContextStack.criteriaError(context, m);
+    }
+
     static CriteriaException unknownRowSet(CriteriaContext context, RowSet rowSet, @Nullable Database database) {
         String m = String.format("%s isn't the %s that is supported by %s criteria api.",
                 _ClassUtils.safeClassName(rowSet), RowSet.class.getName(),

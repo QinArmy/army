@@ -42,6 +42,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     MySQLParser(DialectEnv environment, MySQLDialect dialect) {
         super(environment, dialect);
+        // Prior to / as of
         this.asOf80 = this.dialect().version() >= MySQLDialect.MySQL80.version();
     }
 

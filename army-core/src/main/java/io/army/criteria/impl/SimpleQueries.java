@@ -899,6 +899,121 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     }//WithCteSimpleQueries
 
+    static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+            extends WithCteSimpleQueries<Q, B, WE, W, SR, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+            implements _SelectDistinctOnDispatcher<W, SR, SD>,
+            _Query._DistinctOnClauseSpec {
+
+        private List<_Expression> distinctOnExpList;
+
+        WithCteDistinctOnSimpleQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
+            super(withSpec, context);
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp) {
+            this.onDistinctOnExpList(Collections.singletonList((ArmyExpression) exp));
+            return this;
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp1, Expression exp2) {
+            this.onDistinctOnExpList(
+                    _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2)
+            );
+            return this;
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3) {
+            this.onDistinctOnExpList(
+                    _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2, (ArmyExpression) exp3)
+            );
+            return this;
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectDistinctOn(Consumer<Consumer<Expression>> consumer) {
+            this.onDistinctOnExpList(
+                    CriteriaUtils.expressionList(this.context, true, consumer)
+            );
+            return this;
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectDistinctIfOn(Consumer<Consumer<Expression>> consumer) {
+            this.onDistinctOnExpList(
+                    CriteriaUtils.expressionList(this.context, false, consumer)
+            );
+            return this;
+        }
+
+        @Override
+        public final SD selectDistinctOn(Expression exp, Consumer<Selections> consumer) {
+            this.onDistinctOnExpList(Collections.singletonList((ArmyExpression) exp));
+            return this.selects(consumer);
+        }
+
+        @Override
+        public final SD selectDistinctOn(Expression exp1, Expression exp2, Consumer<Selections> consumer) {
+            this.onDistinctOnExpList(
+                    _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2)
+            );
+            return this.selects(consumer);
+        }
+
+        @Override
+        public final SD selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<Selections> consumer) {
+            this.onDistinctOnExpList(
+                    _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2, (ArmyExpression) exp3)
+            );
+            return this.selects(consumer);
+        }
+
+        @Override
+        public final SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
+            this.onDistinctOnExpList(
+                    CriteriaUtils.expressionList(this.context, true, expConsumer)
+            );
+            return this.selects(consumer);
+        }
+
+        @Override
+        public final SD selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
+            this.onDistinctOnExpList(
+                    CriteriaUtils.expressionList(this.context, false, expConsumer)
+            );
+            return this.selects(consumer);
+        }
+
+        @Override
+        public final List<_Expression> distinctOnExpressions() {
+            List<_Expression> list = this.distinctOnExpList;
+            if (list == null) {
+                list = Collections.emptyList();
+                this.distinctOnExpList = list;
+            }
+            return list;
+        }
+
+
+        abstract W distinctModifier();
+
+
+        /**
+         * @param list a unmodified list
+         */
+        private void onDistinctOnExpList(final List<_Expression> list) {
+            if (this.distinctOnExpList != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.select(this.distinctModifier());
+            this.distinctOnExpList = list;
+        }
+
+
+    }//WithCteDistinctOnSimpleQueries
+
 
     enum LockWaitOption implements SQLWords {
 
@@ -1347,6 +1462,81 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
 
     }//WithBuilderSelectClauseDispatcher
+
+    static abstract class WithDistinctOnSelectClauseDispatcher<B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR extends Item, SD extends Item>
+            extends WithBuilderSelectClauseDispatcher<B, WE, W, SR, SD>
+            implements Query._DynamicDistinctOnExpClause<SR>,
+            Query._DynamicDistinctOnAndSelectsClause<SD> {
+
+        WithDistinctOnSelectClauseDispatcher(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
+            super(outerContext, leftContext);
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp) {
+            return this.createSelectClause()
+                    .selectDistinctOn(exp);
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp1, Expression exp2) {
+            return this.createSelectClause()
+                    .selectDistinctOn(exp1, exp2);
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3) {
+            return this.createSelectClause()
+                    .selectDistinctOn(exp1, exp2, exp3);
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectDistinctOn(Consumer<Consumer<Expression>> consumer) {
+            return this.createSelectClause()
+                    .selectDistinctOn(consumer);
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectDistinctIfOn(Consumer<Consumer<Expression>> consumer) {
+            return this.createSelectClause()
+                    .selectDistinctIfOn(consumer);
+        }
+
+        @Override
+        public final SD selectDistinctOn(Expression exp, Consumer<Selections> consumer) {
+            return this.createSelectClause()
+                    .selectDistinctOn(exp, consumer);
+        }
+
+        @Override
+        public final SD selectDistinctOn(Expression exp1, Expression exp2, Consumer<Selections> consumer) {
+            return this.createSelectClause()
+                    .selectDistinctOn(exp1, exp2, consumer);
+        }
+
+        @Override
+        public final SD selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<Selections> consumer) {
+            return this.createSelectClause()
+                    .selectDistinctOn(exp1, exp2, exp3, consumer);
+        }
+
+        @Override
+        public final SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
+            return this.createSelectClause()
+                    .selectDistinctOn(expConsumer, consumer);
+        }
+
+        @Override
+        public final SD selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
+            return this.createSelectClause()
+                    .selectDistinctIfOn(expConsumer, consumer);
+        }
+
+        @Override
+        abstract _SelectDistinctOnDispatcher<W, SR, SD> createSelectClause();
+
+
+    }//WithDistinctOnSelectClauseDispatcher
 
 
     static final class UnionSubQuery extends UnionSubRowSet implements ArmySubQuery {
