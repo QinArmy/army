@@ -3,8 +3,8 @@ package io.army.proxy;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.IPredicate;
-import io.army.criteria.ItemPairs;
 import io.army.criteria.Update;
+import io.army.criteria.UpdateStatement;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -180,7 +180,7 @@ final class SessionCache implements _SessionCache {
             throw _Exceptions.immutableField(table.id());
         }
 
-        final Consumer<ItemPairs<FieldMeta<?>>> pairConsumer = itemPairs -> {
+        final Consumer<UpdateStatement._ItemPairs<FieldMeta<?>>> pairConsumer = itemPairs -> {
             FieldMeta<?> field;
             for (String fieldName : changedFieldMap.keySet()) {
                 field = table.tryGetComplexFiled(fieldName);

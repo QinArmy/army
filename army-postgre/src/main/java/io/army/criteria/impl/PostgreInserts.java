@@ -609,7 +609,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public PostgreInsert._DoUpdateWhereClause<I, Q> sets(Consumer<RowPairs<FieldMeta<T>>> consumer) {
+        public PostgreInsert._DoUpdateWhereClause<I, Q> sets(Consumer<UpdateStatement._RowPairs<FieldMeta<T>>> consumer) {
             consumer.accept(CriteriaSupports.rowPairs(this::onAddItemPair));
             return this;
         }
@@ -652,6 +652,12 @@ abstract class PostgreInserts extends InsertSupports {
                 Selection selection, Function<String, Selection> function, String alias) {
             return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
                     .returning(selection, function, alias);
+        }
+
+        @Override
+        public PostgreInsert._StaticReturningCommaSpec<Q> returning(TableMeta<?> insertTable) {
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+                    .returning(insertTable);
         }
 
         @Override
@@ -1039,6 +1045,15 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
+        public PostgreInsert._StaticReturningCommaSpec<Q> returning(final TableMeta<?> insertTable) {
+            if (insertTable != this.insertTable) {
+                throw CriteriaUtils.errorInsertTableGroup(this.context, this.insertTable, insertTable);
+            }
+            this.onAddSelection(SelectionGroups.insertTableGroup(insertTable));
+            return this;
+        }
+
+        @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2,
                                                                     TableField field3) {
             this.onAddSelection(field1)
@@ -1121,6 +1136,11 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
+        public PostgreInsert._StaticReturningCommaSpec<Q> comma(final TableMeta<?> insertTable) {
+            return this.returning(insertTable);
+        }
+
+        @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2,
                                                                 TableField field3) {
             this.onAddSelection(field1)
@@ -1188,8 +1208,8 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
 
-        private PostgreComplexValuesClause<T, I, Q> onAddSelection(final @Nullable Selection selection) {
-            if (selection == null) {
+        private PostgreComplexValuesClause<T, I, Q> onAddSelection(final @Nullable SelectItem selectItem) {
+            if (selectItem == null) {
                 throw ContextStack.nullPointer(this.context);
             }
             List<_SelectItem> list = this.returningList;
@@ -1199,7 +1219,7 @@ abstract class PostgreInserts extends InsertSupports {
             } else if (!(list instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            list.add((_Selection) selection);
+            list.add((_Selection) selectItem);
             return this;
         }
 
@@ -1265,6 +1285,12 @@ abstract class PostgreInserts extends InsertSupports {
                 Selection selection, Function<String, Selection> function, String alias) {
             return this.clause.staticValuesClauseEnd(this.endValuesClause())
                     .returning(selection, function, alias);
+        }
+
+        @Override
+        public PostgreInsert._StaticReturningCommaSpec<Q> returning(TableMeta<?> insertTable) {
+            return this.clause.staticValuesClauseEnd(this.endValuesClause())
+                    .returning(insertTable);
         }
 
         @Override

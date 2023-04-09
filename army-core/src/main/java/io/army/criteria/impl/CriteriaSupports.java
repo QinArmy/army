@@ -68,23 +68,23 @@ abstract class CriteriaSupports {
         return new SimpleDelayParamMeta(supplier);
     }
 
-    static <F extends DataField> ItemPairs<F> itemPairs(Consumer<ItemPair> consumer) {
+    static <F extends DataField> UpdateStatement._ItemPairs<F> itemPairs(Consumer<ItemPair> consumer) {
         return new ItemPairsImpl<>(consumer);
     }
 
-    static <F extends DataField> BatchItemPairs<F> batchItemPairs(Consumer<ItemPair> consumer) {
+    static <F extends DataField> UpdateStatement._BatchItemPairs<F> batchItemPairs(Consumer<ItemPair> consumer) {
         return new BatchItemPairsImpl<>(consumer);
     }
 
-    static <F extends DataField> RowPairs<F> rowPairs(Consumer<ItemPair> consumer) {
+    static <F extends DataField> UpdateStatement._RowPairs<F> rowPairs(Consumer<ItemPair> consumer) {
         return new RowItemPairsImpl<>(consumer);
     }
 
-    static <F extends DataField> BatchRowPairs<F> batchRowPairs(Consumer<ItemPair> consumer) {
+    static <F extends DataField> UpdateStatement._BatchRowPairs<F> batchRowPairs(Consumer<ItemPair> consumer) {
         return new BatchRowItemPairsImpl<>(consumer);
     }
 
-    static <F extends DataField> ItemPairs<F> simpleFieldItemPairs(CriteriaContext context
+    static <F extends DataField> UpdateStatement._ItemPairs<F> simpleFieldItemPairs(CriteriaContext context
             , @Nullable TableMeta<?> updateTable, Consumer<_ItemPair> consumer) {
         assert updateTable != null;
         return new SimpleFieldItemPairs<>(context, updateTable, consumer);
@@ -763,8 +763,8 @@ abstract class CriteriaSupports {
     }//UpdateSetClause
 
 
-    private static final class SimpleFieldItemPairs<F extends DataField> extends UpdateSetClause<F, ItemPairs<F>>
-            implements ItemPairs<F> {
+    private static final class SimpleFieldItemPairs<F extends DataField> extends UpdateSetClause<F, UpdateStatement._ItemPairs<F>>
+            implements UpdateStatement._ItemPairs<F> {
 
         private final CriteriaContext context;
 
@@ -804,8 +804,8 @@ abstract class CriteriaSupports {
 
     }//SimpleFieldItemPairs
 
-    private static final class ItemPairsImpl<F extends DataField> extends UpdateSetClause<F, ItemPairs<F>>
-            implements ItemPairs<F> {
+    private static final class ItemPairsImpl<F extends DataField> extends UpdateSetClause<F, UpdateStatement._ItemPairs<F>>
+            implements UpdateStatement._ItemPairs<F> {
 
         private ItemPairsImpl(Consumer<ItemPair> consumer) {
             super(consumer);
@@ -814,8 +814,8 @@ abstract class CriteriaSupports {
 
     }//ItemPairsImpl
 
-    private static final class BatchItemPairsImpl<F extends DataField> extends UpdateSetClause<F, BatchItemPairs<F>>
-            implements BatchItemPairs<F> {
+    private static final class BatchItemPairsImpl<F extends DataField> extends UpdateSetClause<F, UpdateStatement._BatchItemPairs<F>>
+            implements UpdateStatement._BatchItemPairs<F> {
 
         private BatchItemPairsImpl(Consumer<ItemPair> consumer) {
             super(consumer);
@@ -824,8 +824,8 @@ abstract class CriteriaSupports {
 
     }//BatchItemPairsImpl
 
-    private static final class RowItemPairsImpl<F extends DataField> extends UpdateSetClause<F, RowPairs<F>>
-            implements RowPairs<F> {
+    private static final class RowItemPairsImpl<F extends DataField> extends UpdateSetClause<F, UpdateStatement._RowPairs<F>>
+            implements UpdateStatement._RowPairs<F> {
 
         private RowItemPairsImpl(Consumer<ItemPair> consumer) {
             super(consumer);
@@ -833,8 +833,8 @@ abstract class CriteriaSupports {
 
     } //RowItemPairsImpl
 
-    private static final class BatchRowItemPairsImpl<F extends DataField> extends UpdateSetClause<F, BatchRowPairs<F>>
-            implements BatchRowPairs<F> {
+    private static final class BatchRowItemPairsImpl<F extends DataField> extends UpdateSetClause<F, UpdateStatement._BatchRowPairs<F>>
+            implements UpdateStatement._BatchRowPairs<F> {
 
         private BatchRowItemPairsImpl(Consumer<ItemPair> consumer) {
             super(consumer);

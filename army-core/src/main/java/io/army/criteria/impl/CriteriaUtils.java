@@ -10,6 +10,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.sqltype.SqlType;
 import io.army.util._ClassUtils;
@@ -751,6 +752,46 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext()
                 , _Exceptions::unknownSelectItem, item);
     }
+
+    static CriteriaException childParentNotMatch(CriteriaContext context, ParentTableMeta<?> parent,
+                                                 ChildTableMeta<?> child) {
+        String m = String.format("%s isn't child of %s", child, parent);
+        return ContextStack.criteriaError(context, m);
+    }
+
+    static UnknownFieldGroupException unknownFieldDerivedGroup(final @Nullable CriteriaContext currentContext,
+                                                               String groupAlias) {
+        final String m = String.format("unknown derived field group[%s].", groupAlias);
+        final UnknownFieldGroupException e;
+        if (currentContext == null) {
+            e = ContextStack.clearStackAnd(UnknownFieldGroupException::new, m);
+        } else {
+            e = ContextStack.criteriaError(currentContext, UnknownFieldGroupException::new, m);
+        }
+        return e;
+    }
+
+    static UnknownFieldGroupException unknownTableFieldGroup(final @Nullable CriteriaContext currentContext,
+                                                             final _SelectionGroup._TableFieldGroup group) {
+
+        final TableMeta<?> table;
+        table = ((TableField) group.selectionList().get(0)).tableMeta();
+        final String m = String.format("unknown table field group[%s.%s].", group.tableAlias(), table);
+        final UnknownFieldGroupException e;
+        if (currentContext == null) {
+            e = ContextStack.clearStackAnd(UnknownFieldGroupException::new, m);
+        } else {
+            e = ContextStack.criteriaError(currentContext, UnknownFieldGroupException::new, m);
+        }
+        return e;
+    }
+
+    static UnknownFieldGroupException errorInsertTableGroup(CriteriaContext context, TableMeta<?> insertTable,
+                                                            TableMeta<?> groupTable) {
+        String m = String.format("%s isn't insert table %s", groupTable, insertTable);
+        return ContextStack.criteriaError(context, UnknownFieldGroupException::new, m);
+    }
+
 
     private static final class SelectionMap implements _SelectionMap {
 

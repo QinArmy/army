@@ -4,6 +4,8 @@ import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.SQLs;
 import io.army.function.ParensStringFunction;
 import io.army.lang.Nullable;
+import io.army.meta.ComplexTableMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -14,7 +16,7 @@ import java.util.function.Supplier;
 public interface DialectStatement extends Statement {
 
 
-    interface _StaticReturningCommaClause<R> {
+    interface _StaticReturningCommaClause<R extends Item> extends Item {
 
         R comma(Selection selection);
 
@@ -34,8 +36,23 @@ public interface DialectStatement extends Statement {
         R comma(TableField field1, TableField field2, TableField field3, TableField field4);
     }
 
+    interface _StaticDmlReturningCommaClause<R extends Item> extends _StaticReturningCommaClause<R> {
 
-    interface _StaticReturningClause<R> {
+        R comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+
+        R comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+        <P> R comma(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                    String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
+    }
+
+
+    interface _StaticInsertReturningCommaClause<R extends Item> extends _StaticReturningCommaClause<R> {
+
+        R comma(TableMeta<?> insertTable);
+    }
+
+    interface _StaticReturningClause<R extends Item> {
 
         R returning(Selection selection);
 
@@ -53,6 +70,23 @@ public interface DialectStatement extends Statement {
         R returning(TableField field1, TableField field2, TableField field3);
 
         R returning(TableField field1, TableField field2, TableField field3, TableField field4);
+    }
+
+
+    interface _StaticDmlReturningClause<R extends Item> extends _StaticReturningClause<R> {
+
+        R returning(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+
+        R returning(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+        <P> R returning(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                        String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
+    }
+
+
+    interface _StaticInsertReturningClause<R extends Item> extends _StaticReturningClause<R> {
+
+        R returning(TableMeta<?> insertTable);
     }
 
 

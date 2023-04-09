@@ -6,7 +6,6 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
-import io.army.meta.ChildTableMeta;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
@@ -134,7 +133,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     public final <P> SR select(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
                                String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
         if (child.parentMeta() != parent) {
-            throw childParentNotMatch(this.context, parent, child);
+            throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
         }
         this.context.onAddSelectItem(SelectionGroups.singleGroup(parent, parenAlias))
                 .onAddSelectItem(SelectionGroups.groupWithoutId(child, childAlias));
@@ -347,7 +346,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     public final <P> SR comma(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
                               String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
         if (child.parentMeta() != parent) {
-            throw childParentNotMatch(this.context, parent, child);
+            throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
         }
         this.context.onAddSelectItem(SelectionGroups.singleGroup(parent, parenAlias))
                 .onAddSelectItem(SelectionGroups.groupWithoutId(child, childAlias));
@@ -797,13 +796,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             throw ContextStack.castCriteriaApi(this.context);
         }
 
-    }
-
-
-    private static CriteriaException childParentNotMatch(CriteriaContext context, ParentTableMeta<?> parent,
-                                                         ChildTableMeta<?> child) {
-        String m = String.format("%s isn't child of %s", child, parent);
-        return ContextStack.criteriaError(context, m);
     }
 
 
@@ -1645,7 +1637,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
                                         String childAlias, SQLsSyntax.SymbolPeriod period2,
                                         ComplexTableMeta<P, ?> child) {
             if (child.parentMeta() != parent) {
-                throw childParentNotMatch(this.context, parent, child);
+                throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
             }
             this.context.onAddSelectItem(SelectionGroups.singleGroup(parent, parenAlias))
                     .onAddSelectItem(SelectionGroups.groupWithoutId(child, childAlias));

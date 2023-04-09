@@ -29,12 +29,13 @@ public interface PostgreDelete extends PostgreStatement {
 
 
     interface _StaticReturningCommaSpec<Q extends Item>
-            extends _StaticReturningCommaClause<_StaticReturningCommaSpec<Q>>, _DqlDeleteSpec<Q> {
+            extends _StaticDmlReturningCommaClause<_StaticReturningCommaSpec<Q>>,
+            _DqlDeleteSpec<Q> {
 
     }
 
     interface _ReturningSpec<I extends Item, Q extends Item>
-            extends _StaticReturningClause<_StaticReturningCommaSpec<Q>>,
+            extends _StaticDmlReturningClause<_StaticReturningCommaSpec<Q>>,
             _DynamicReturningClause<_DqlDeleteSpec<Q>>,
             _DmlDeleteSpec<I> {
 
@@ -135,13 +136,13 @@ public interface PostgreDelete extends PostgreStatement {
 
 
     interface _BatchStaticReturningCommaSpec<Q extends Item>
-            extends _StaticReturningCommaClause<_BatchStaticReturningCommaSpec<Q>>,
+            extends _StaticDmlReturningCommaClause<_BatchStaticReturningCommaSpec<Q>>,
             _BatchParamClause<_DqlDeleteSpec<Q>> {
 
     }
 
     interface _BatchReturningSpec<I extends Item, Q extends Item>
-            extends _StaticReturningClause<_BatchStaticReturningCommaSpec<Q>>,
+            extends _StaticDmlReturningClause<_BatchStaticReturningCommaSpec<Q>>,
             _DynamicReturningClause<_BatchParamClause<_DqlDeleteSpec<Q>>>,
             _BatchParamClause<_DmlDeleteSpec<I>> {
 

@@ -427,7 +427,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
         }
 
         @Override
-        public _MultiWhereSpec<I> sets(Consumer<ItemPairs<TableField>> consumer) {
+        public _MultiWhereSpec<I> sets(Consumer<_ItemPairs<TableField>> consumer) {
             consumer.accept(CriteriaSupports.itemPairs(this::onAddItemPair));
             return this;
         }
@@ -572,7 +572,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
         }
 
         @Override
-        public _BatchMultiWhereSpec<BatchUpdate> sets(Consumer<BatchItemPairs<TableField>> consumer) {
+        public _BatchMultiWhereSpec<BatchUpdate> sets(Consumer<_BatchItemPairs<TableField>> consumer) {
             consumer.accept(CriteriaSupports.batchItemPairs(this::onAddItemPair));
             return this;
         }

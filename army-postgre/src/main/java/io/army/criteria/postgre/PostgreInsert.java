@@ -32,13 +32,13 @@ public interface PostgreInsert extends PostgreStatement {
     }
 
     interface _StaticReturningCommaSpec<Q extends Item>
-            extends _StaticReturningCommaClause<_StaticReturningCommaSpec<Q>>,
+            extends _StaticInsertReturningCommaClause<_StaticReturningCommaSpec<Q>>,
             _DqlInsertClause<Q> {
 
     }
 
     interface _ReturningSpec<I extends Item, Q extends Item>
-            extends _StaticReturningClause<_StaticReturningCommaSpec<Q>>,
+            extends _StaticInsertReturningClause<_StaticReturningCommaSpec<Q>>,
             _DynamicReturningClause<_DqlInsertClause<Q>>,
             _DmlInsertClause<I> {
 
@@ -60,7 +60,7 @@ public interface PostgreInsert extends PostgreStatement {
 
     interface _DoUpdateSetClause<T, I extends Item, Q extends Item>
             extends UpdateStatement._StaticRowSetClause<FieldMeta<T>, _DoUpdateWhereSpec<T, I, Q>>,
-            UpdateStatement._DynamicSetClause<RowPairs<FieldMeta<T>>, _DoUpdateWhereClause<I, Q>> {
+            UpdateStatement._DynamicSetClause<UpdateStatement._RowPairs<FieldMeta<T>>, _DoUpdateWhereClause<I, Q>> {
 
     }
 

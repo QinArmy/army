@@ -582,13 +582,13 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public Statement._DmlInsertClause<I> onDuplicateKeyUpdate(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+        public Statement._DmlInsertClause<I> onDuplicateKeyUpdate(Consumer<UpdateStatement._ItemPairs<FieldMeta<T>>> consumer) {
             return this.valuesClause.staticValuesClauseEnd(this.endValuesClause())
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Statement._DmlInsertClause<I> ifOnDuplicateKeyUpdate(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+        public Statement._DmlInsertClause<I> ifOnDuplicateKeyUpdate(Consumer<UpdateStatement._ItemPairs<FieldMeta<T>>> consumer) {
             return this.valuesClause.staticValuesClauseEnd(this.endValuesClause())
                     .ifOnDuplicateKeyUpdate(consumer);
         }
@@ -702,7 +702,7 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public Statement._DmlInsertClause<I> onDuplicateKeyUpdate(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+        public Statement._DmlInsertClause<I> onDuplicateKeyUpdate(Consumer<UpdateStatement._ItemPairs<FieldMeta<T>>> consumer) {
             if (this.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -716,7 +716,7 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public Statement._DmlInsertClause<I> ifOnDuplicateKeyUpdate(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+        public Statement._DmlInsertClause<I> ifOnDuplicateKeyUpdate(Consumer<UpdateStatement._ItemPairs<FieldMeta<T>>> consumer) {
             if (this.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }

@@ -1,6 +1,8 @@
 package io.army.criteria.postgre;
 
-import io.army.criteria.*;
+import io.army.criteria.DialectStatement;
+import io.army.criteria.Item;
+import io.army.criteria.UpdateStatement;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
@@ -21,13 +23,13 @@ public interface PostgreUpdate extends PostgreStatement {
 
 
     interface _StaticReturningCommaSpec<Q extends Item>
-            extends _StaticReturningCommaClause<_StaticReturningCommaSpec<Q>>,
+            extends _StaticDmlReturningCommaClause<_StaticReturningCommaSpec<Q>>,
             _DqlUpdateSpec<Q> {
 
     }
 
     interface _ReturningSpec<I extends Item, Q extends Item>
-            extends _StaticReturningClause<_StaticReturningCommaSpec<Q>>,
+            extends _StaticDmlReturningClause<_StaticReturningCommaSpec<Q>>,
             _DynamicReturningClause<_DqlUpdateSpec<Q>>,
             _DmlUpdateSpec<I> {
 
@@ -85,7 +87,7 @@ public interface PostgreUpdate extends PostgreStatement {
 
     interface _SingleSetClause<I extends Item, Q extends Item, T>
             extends UpdateStatement._StaticRowSetClause<FieldMeta<T>, _SingleSetFromSpec<I, Q, T>>,
-            UpdateStatement._DynamicSetClause<RowPairs<FieldMeta<T>>, _SingleFromSpec<I, Q>> {
+            UpdateStatement._DynamicSetClause<UpdateStatement._RowPairs<FieldMeta<T>>, _SingleFromSpec<I, Q>> {
 
     }
 
@@ -144,13 +146,13 @@ public interface PostgreUpdate extends PostgreStatement {
 
 
     interface _BatchStaticReturningCommaSpec<Q extends Item>
-            extends _StaticReturningCommaClause<_BatchStaticReturningCommaSpec<Q>>,
+            extends _StaticDmlReturningCommaClause<_BatchStaticReturningCommaSpec<Q>>,
             _BatchParamClause<_DqlUpdateSpec<Q>> {
 
     }
 
     interface _BatchReturningSpec<I extends Item, Q extends Item>
-            extends _StaticReturningClause<_BatchStaticReturningCommaSpec<Q>>,
+            extends _StaticDmlReturningClause<_BatchStaticReturningCommaSpec<Q>>,
             _DynamicReturningClause<_BatchParamClause<_DqlUpdateSpec<Q>>>,
             _BatchParamClause<_DmlUpdateSpec<I>> {
 
@@ -223,7 +225,8 @@ public interface PostgreUpdate extends PostgreStatement {
 
     interface _BatchSingleSetClause<I extends Item, Q extends Item, T>
             extends UpdateStatement._StaticRowSetClause<FieldMeta<T>, _BatchSingleSetFromSpec<I, Q, T>>,
-            UpdateStatement._DynamicSetClause<BatchRowPairs<FieldMeta<T>>, _BatchSingleFromClause<I, Q>> {
+            UpdateStatement._StaticBatchSetClause<FieldMeta<T>, _BatchSingleSetFromSpec<I, Q, T>>,
+            UpdateStatement._DynamicSetClause<UpdateStatement._BatchRowPairs<FieldMeta<T>>, _BatchSingleFromClause<I, Q>> {
 
     }
 

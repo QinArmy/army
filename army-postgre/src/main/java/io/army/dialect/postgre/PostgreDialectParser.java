@@ -204,6 +204,8 @@ final class PostgreDialectParser extends PostgreParser {
         // 8. WHERE clause
         this.dmlWhereClause(stmt.wherePredicateList(), context);
         context.appendConditionFields();
+
+        //TODO discriminator
         if (existsFromClause) {
             this.multiTableVisible(tableBlockList, (_MultiTableStmtContext) context, false);
         } else if (updateTable instanceof SingleTableMeta) {
@@ -592,6 +594,8 @@ final class PostgreDialectParser extends PostgreParser {
 
     /**
      * @see #parsePostgreInsert(_InsertContext, _PostgreInsert)
+     * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
+     * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
      */
     private static void returningClause(final _SqlContext context, final _ReturningDml stmt) {
         final List<? extends _SelectItem> selectionList;

@@ -121,6 +121,7 @@ interface CriteriaContext {
     @Nullable
     TableMeta<?> getTable(String tableAlias);
 
+    boolean isSelectionMap(String derivedAlias);
 
     /**
      * <p>

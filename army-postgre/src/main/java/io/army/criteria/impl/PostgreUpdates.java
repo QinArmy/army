@@ -11,7 +11,9 @@ import io.army.dialect.Dialect;
 import io.army.dialect.postgre.PostgreDialect;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
+import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
@@ -455,7 +457,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public final _SingleFromSpec<I, Q> sets(Consumer<RowPairs<FieldMeta<T>>> consumer) {
+        public final _SingleFromSpec<I, Q> sets(Consumer<UpdateStatement._RowPairs<FieldMeta<T>>> consumer) {
             consumer.accept(CriteriaSupports.rowPairs(this::onAddItemPair));
             return this;
         }
@@ -513,6 +515,31 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                                                             String alias) {
             this.onAddSelection(selection)
                     .onAddSelection(function.apply(alias));
+            return this;
+        }
+
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> returning(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
+            this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
+            return this;
+        }
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> returning(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+            this.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
+            return this;
+        }
+
+        @Override
+        public final <P> _StaticReturningCommaSpec<Q> returning(
+                String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+            if (child.parentMeta() != parent) {
+                throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
+            }
+            this.onAddSelection(SelectionGroups.singleGroup(parent, parenAlias))
+                    .onAddSelection(SelectionGroups.groupWithoutId(child, childAlias));
             return this;
         }
 
@@ -574,6 +601,33 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                                                         String alias) {
             this.onAddSelection(selection)
                     .onAddSelection(function.apply(alias));
+            return this;
+        }
+
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> comma(String derivedAlias, SQLsSyntax.SymbolPeriod period,
+                                                        SQLsSyntax.SymbolStar star) {
+            this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
+            return this;
+        }
+
+        @Override
+        public final _StaticReturningCommaSpec<Q> comma(String tableAlias, SQLsSyntax.SymbolPeriod period,
+                                                        TableMeta<?> table) {
+            this.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
+            return this;
+        }
+
+        @Override
+        public final <P> _StaticReturningCommaSpec<Q> comma(
+                String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
+                String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+            if (child.parentMeta() != parent) {
+                throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
+            }
+            this.onAddSelection(SelectionGroups.singleGroup(parent, parenAlias))
+                    .onAddSelection(SelectionGroups.groupWithoutId(child, childAlias));
             return this;
         }
 
@@ -683,8 +737,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             return list;
         }
 
-        private SimpleUpdate<I, Q, T> onAddSelection(final @Nullable Selection selection) {
-            if (selection == null) {
+        private SimpleUpdate<I, Q, T> onAddSelection(final @Nullable SelectItem selectItem) {
+            if (selectItem == null) {
                 throw ContextStack.nullPointer(this.context);
             }
             List<_SelectItem> list = this.returningList;
@@ -693,8 +747,25 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                 this.returningList = list;
             } else if (!(list instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
+            } else if (selectItem instanceof _SelectionGroup._TableFieldGroup) {
+                final String tableAlias;
+                tableAlias = ((_SelectionGroup._TableFieldGroup) selectItem).tableAlias();
+                final TableMeta<?> groupTable;
+                if (this.tableAlias.equals(tableAlias)) {
+                    groupTable = this.updateTable;
+                } else {
+                    groupTable = this.context.getTable(tableAlias);
+                }
+                if (!((_SelectionGroup._TableFieldGroup) selectItem).isLegalGroup(groupTable)) {
+                    throw CriteriaUtils.unknownTableFieldGroup(this.context, (_SelectionGroup._TableFieldGroup) selectItem);
+                }
+
+            } else if (selectItem instanceof DerivedFieldGroup) {
+                if (!this.context.isSelectionMap(((DerivedFieldGroup) selectItem).tableAlias())) {
+                    throw CriteriaUtils.unknownFieldDerivedGroup(this.context, ((DerivedFieldGroup) selectItem).tableAlias());
+                }
             }
-            list.add((_Selection) selection);
+            list.add((_SelectItem) selectItem);
             return this;
         }
 
@@ -804,7 +875,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public _BatchSingleFromClause<BatchUpdate, BatchReturningUpdate> sets(Consumer<BatchRowPairs<FieldMeta<T>>> consumer) {
+        public _BatchSingleFromClause<BatchUpdate, BatchReturningUpdate> sets(Consumer<_BatchRowPairs<FieldMeta<T>>> consumer) {
             consumer.accept(CriteriaSupports.batchRowPairs(this::onAddItemPair));
             return this;
         }
@@ -861,6 +932,32 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                                                                               String alias) {
             this.onAddSelection(selection)
                     .onAddSelection(function.apply(alias));
+            return new BatchParamClause(this);
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(
+                String derivedAlias, SQLsSyntax.SymbolPeriod period, SQLsSyntax.SymbolStar star) {
+            this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
+            return new BatchParamClause(this);
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(
+                String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
+            this.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
+            return new BatchParamClause(this);
+        }
+
+        @Override
+        public <P> _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(
+                String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
+                String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+            if (child.parentMeta() != parent) {
+                throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
+            }
+            this.onAddSelection(SelectionGroups.singleGroup(parent, parenAlias))
+                    .onAddSelection(SelectionGroups.groupWithoutId(child, childAlias));
             return new BatchParamClause(this);
         }
 
@@ -994,15 +1091,35 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
 
-        private PrimaryBatchUpdate<T> onAddSelection(final Selection selection) {
+        private PrimaryBatchUpdate<T> onAddSelection(final @Nullable SelectItem selectItem) {
+            if (selectItem == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
             List<_SelectItem> list = this.returningList;
             if (list == null) {
                 list = new ArrayList<>();
                 this.returningList = list;
             } else if (!(list instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
+            } else if (selectItem instanceof _SelectionGroup._TableFieldGroup) {
+                final String tableAlias;
+                tableAlias = ((_SelectionGroup._TableFieldGroup) selectItem).tableAlias();
+                final TableMeta<?> groupTable;
+                if (this.tableAlias.equals(tableAlias)) {
+                    groupTable = this.updateTable;
+                } else {
+                    groupTable = this.context.getTable(tableAlias);
+                }
+                if (!((_SelectionGroup._TableFieldGroup) selectItem).isLegalGroup(groupTable)) {
+                    throw CriteriaUtils.unknownTableFieldGroup(this.context, (_SelectionGroup._TableFieldGroup) selectItem);
+                }
+
+            } else if (selectItem instanceof DerivedFieldGroup) {
+                if (!this.context.isSelectionMap(((DerivedFieldGroup) selectItem).tableAlias())) {
+                    throw CriteriaUtils.unknownFieldDerivedGroup(this.context, ((DerivedFieldGroup) selectItem).tableAlias());
+                }
             }
-            list.add((_Selection) selection);
+            list.add((_SelectItem) selectItem);
             return this;
         }
 
@@ -1058,6 +1175,28 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                                                                           String alias) {
             this.statement.onAddSelection(selection)
                     .onAddSelection(function.apply(alias));
+            return this;
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(String derivedAlias, SQLsSyntax.SymbolPeriod period, SQLsSyntax.SymbolStar star) {
+            this.statement.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
+            return this;
+        }
+
+        @Override
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
+            this.statement.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
+            return this;
+        }
+
+        @Override
+        public <P> _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+            if (child.parentMeta() != parent) {
+                throw CriteriaUtils.childParentNotMatch(this.statement.context, parent, child);
+            }
+            this.statement.onAddSelection(SelectionGroups.singleGroup(parent, parenAlias))
+                    .onAddSelection(SelectionGroups.groupWithoutId(child, childAlias));
             return this;
         }
 

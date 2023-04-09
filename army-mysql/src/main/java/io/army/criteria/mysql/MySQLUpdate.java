@@ -110,7 +110,7 @@ public interface MySQLUpdate extends MySQLStatement {
      */
     interface _SingleSetClause<I extends Item, T>
             extends UpdateStatement._StaticSetClause<FieldMeta<T>, _SingleWhereSpec<I, T>>,
-            UpdateStatement._DynamicSetClause<ItemPairs<FieldMeta<T>>, _SingleWhereClause<I>> {
+            UpdateStatement._DynamicSetClause<UpdateStatement._ItemPairs<FieldMeta<T>>, _SingleWhereClause<I>> {
     }
 
 
@@ -303,7 +303,7 @@ public interface MySQLUpdate extends MySQLStatement {
      */
     interface _BatchSingleSetClause<I extends Item, T>
             extends UpdateStatement._StaticBatchSetClause<FieldMeta<T>, _BatchSingleWhereSpec<I, T>>,
-            UpdateStatement._DynamicSetClause<BatchItemPairs<FieldMeta<T>>, _BatchSingleWhereClause<I>> {
+            UpdateStatement._DynamicSetClause<UpdateStatement._BatchItemPairs<FieldMeta<T>>, _BatchSingleWhereClause<I>> {
 
     }
 
@@ -490,7 +490,7 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _MultiSetClause<I extends Item> extends UpdateStatement._StaticSetClause<TableField, _MultiWhereSpec<I>>,
-            UpdateStatement._DynamicSetClause<ItemPairs<TableField>, _MultiWhereSpec<I>> {
+            UpdateStatement._DynamicSetClause<UpdateStatement._ItemPairs<TableField>, _MultiWhereSpec<I>> {
 
     }
 
@@ -713,7 +713,7 @@ public interface MySQLUpdate extends MySQLStatement {
      */
     interface _BatchMultiSetClause<I extends Item>
             extends UpdateStatement._StaticBatchSetClause<TableField, _BatchMultiWhereSpec<I>>,
-            UpdateStatement._DynamicSetClause<BatchItemPairs<TableField>, _BatchMultiWhereSpec<I>> {
+            UpdateStatement._DynamicSetClause<UpdateStatement._BatchItemPairs<TableField>, _BatchMultiWhereSpec<I>> {
 
     }
 

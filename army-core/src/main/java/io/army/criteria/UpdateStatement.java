@@ -125,6 +125,31 @@ public interface UpdateStatement extends NarrowDmlStatement {
 
     }
 
+    interface _BatchRowPairs<F extends DataField> extends _ItemPairBuilder,
+            _StaticRowSetClause<F, _BatchRowPairs<F>>,
+            _StaticBatchSetClause<F, _BatchRowPairs<F>> {
+
+
+    }
+
+    interface _ItemPairs<F extends DataField> extends _ItemPairBuilder,
+            _StaticSetClause<F, _ItemPairs<F>> {
+
+
+    }
+
+    interface _BatchItemPairs<F extends DataField> extends _ItemPairBuilder,
+            _StaticBatchSetClause<F, _BatchItemPairs<F>> {
+
+
+    }
+
+    interface _RowPairs<F extends DataField> extends _ItemPairBuilder,
+            _StaticRowSetClause<F, _RowPairs<F>> {
+
+
+    }
+
     interface _UpdateWhereAndClause<WA> extends Statement._WhereAndClause<WA> {
 
         <T> WA and(ExpressionOperator<Expression, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand);

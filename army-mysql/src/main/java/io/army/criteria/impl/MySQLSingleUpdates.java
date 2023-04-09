@@ -1,6 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.BatchUpdate;
+import io.army.criteria.Item;
+import io.army.criteria.Update;
+import io.army.criteria.UpdateStatement;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Cte;
@@ -227,7 +230,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
 
 
         @Override
-        public _SingleWhereClause<I> sets(Consumer<ItemPairs<FieldMeta<T>>> consumer) {
+        public _SingleWhereClause<I> sets(Consumer<_ItemPairs<FieldMeta<T>>> consumer) {
             consumer.accept(CriteriaSupports.itemPairs(this::onAddItemPair));
             return this;
         }
@@ -408,7 +411,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
         }
 
         @Override
-        public _BatchSingleWhereClause<BatchUpdate> sets(Consumer<BatchItemPairs<FieldMeta<T>>> consumer) {
+        public _BatchSingleWhereClause<BatchUpdate> sets(Consumer<_BatchItemPairs<FieldMeta<T>>> consumer) {
             consumer.accept(CriteriaSupports.batchItemPairs(this::onAddItemPair));
             return this;
         }

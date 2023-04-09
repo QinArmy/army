@@ -470,18 +470,6 @@ abstract class CriteriaContexts {
         return ContextStack.criteriaError(currentContext, UnknownFieldGroupException::new, builder.toString());
     }
 
-    static UnknownFieldGroupException unknownFieldDerivedGroup(final @Nullable CriteriaContext currentContext,
-                                                               String groupAlias) {
-        final String m = String.format("unknown derived field group[%s].", groupAlias);
-        final UnknownFieldGroupException e;
-        if (currentContext == null) {
-            e = ContextStack.clearStackAnd(UnknownFieldGroupException::new, m);
-        } else {
-            e = ContextStack.criteriaError(currentContext, UnknownFieldGroupException::new, m);
-        }
-        return e;
-    }
-
     private static String createNotFoundAllDerivedFieldMessage(Map<String, Map<String, RefDerivedField>> aliasToRefSelection) {
         final StringBuilder builder = new StringBuilder()
                 .append("Not found derived field[");
@@ -862,6 +850,11 @@ abstract class CriteriaContexts {
             throw ContextStack.criteriaError(this, m);
         }
 
+        @Override
+        public boolean isSelectionMap(String derivedAlias) {
+            String m = "current context don't support isDerivedTable(derivedAlias)";
+            throw ContextStack.criteriaError(this, m);
+        }
 
         @Override
         public DerivedField refThis(String derivedAlias, String selectionAlias) {
@@ -1081,8 +1074,12 @@ abstract class CriteriaContexts {
 
         @Override
         public final TableMeta<?> getTable(final String tableAlias) {
+            final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
+            if (aliasToBlock == null) {
+                return null;
+            }
             final _TabularBlock block;
-            block = this.aliasToBlock.get(tableAlias);
+            block = aliasToBlock.get(tableAlias);
             final TabularItem tableItem;
             final TableMeta<?> table;
             if (block != null && ((tableItem = block.tableItem()) instanceof TableMeta)) {
@@ -1091,6 +1088,17 @@ abstract class CriteriaContexts {
                 table = null;
             }
             return table;
+        }
+
+        @Override
+        public final boolean isSelectionMap(final String derivedAlias) {
+            final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
+            if (aliasToBlock == null) {
+                return false;
+            }
+            final _TabularBlock block;
+            block = aliasToBlock.get(derivedAlias);
+            return block != null && block.tableItem() instanceof _SelectionGroup;
         }
 
         @SuppressWarnings("unchecked")
@@ -2265,20 +2273,20 @@ abstract class CriteriaContexts {
                 return;
             }
 
-            if (group instanceof _SelectionGroup.TableFieldGroup) {
+            if (group instanceof _SelectionGroup._TableFieldGroup) {
                 if (!(table instanceof TableMeta)) {
-                    throw unknownFieldDerivedGroup(this, alias);
-                } else if (!((_SelectionGroup.TableFieldGroup) group).isLegalGroup((TableMeta<?>) table)) {
-                    throw unknownFieldDerivedGroup(this, alias);
+                    throw CriteriaUtils.unknownFieldDerivedGroup(this, alias);
+                } else if (!((_SelectionGroup._TableFieldGroup) group).isLegalGroup((TableMeta<?>) table)) {
+                    throw CriteriaUtils.unknownTableFieldGroup(this, (_SelectionGroup._TableFieldGroup) group);
                 }
             } else if (!(group instanceof DerivedFieldGroup)) {
-                throw unknownFieldDerivedGroup(this, alias);
+                throw CriteriaUtils.unknownFieldDerivedGroup(this, alias);
             } else if (table instanceof RecursiveCte) {
                 ((RecursiveCte) table).addFieldGroup((DerivedFieldGroup) group);
             } else if (table instanceof DerivedTable || table instanceof _Cte) {
                 ((DerivedFieldGroup) group).finish((_SelectionMap) table, alias);
             } else {
-                throw unknownFieldDerivedGroup(this, alias);
+                throw CriteriaUtils.unknownFieldDerivedGroup(this, alias);
             }
 
         }

@@ -1,6 +1,9 @@
 package io.army.criteria.postgre;
 
-import io.army.criteria.*;
+import io.army.criteria.DmlStatement;
+import io.army.criteria.InsertStatement;
+import io.army.criteria.Item;
+import io.army.criteria.UpdateStatement;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.meta.FieldMeta;
@@ -60,7 +63,7 @@ public interface PostgreMerge extends PostgreStatement, DmlStatement {
 
     interface _MergerUpdateSetClause<T, I extends Item>
             extends UpdateStatement._StaticRowSetClause<FieldMeta<T>, _MergerUpdateSetSpec<T, I>>
-            , UpdateStatement._DynamicSetClause<RowPairs<FieldMeta<T>>, _DmlUpdateSpec<I>> {
+            , UpdateStatement._DynamicSetClause<UpdateStatement._RowPairs<FieldMeta<T>>, _DmlUpdateSpec<I>> {
 
     }
 

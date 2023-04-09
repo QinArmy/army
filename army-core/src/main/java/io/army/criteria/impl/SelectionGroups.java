@@ -9,6 +9,7 @@ import io.army.criteria.impl.inner._SelectionMap;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;
@@ -30,6 +31,13 @@ abstract class SelectionGroups {
 
     static <T> _SelectionGroup groupWithoutId(ChildTableMeta<T> table, String tableAlias) {
         return new TableFieldGroupImpl<>(tableAlias, table);
+    }
+
+    /**
+     * for RETURNING clause
+     */
+    static <T> _SelectionGroup insertTableGroup(TableMeta<T> insertTable) {
+        return new InsertTableGroup<>(insertTable);
     }
 
     static DerivedFieldGroup derivedGroup(String alias) {
@@ -73,7 +81,66 @@ abstract class SelectionGroups {
     /*################################## blow static inner class  ##################################*/
 
 
-    static final class TableFieldGroupImpl<T> implements _SelectionGroup.TableFieldGroup {
+    /**
+     * for RETURNING clause
+     */
+    private static final class InsertTableGroup<T> implements _SelectionGroup._TableFieldGroup {
+
+        private final TableMeta<T> insertTable;
+
+        private InsertTableGroup(TableMeta<T> insertTable) {
+            this.insertTable = insertTable;
+        }
+
+        @Override
+        public String tableAlias() {
+            //no bug,never here
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void appendSelectItem(final _SqlContext context) {
+
+            final List<FieldMeta<T>> fieldList;
+            fieldList = this.insertTable.fieldList();
+
+            final int fieldSize;
+            fieldSize = fieldList.size();
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            final DialectParser parser;
+            parser = context.parser();
+            FieldMeta<?> field;
+            for (int i = 0; i < fieldSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                field = fieldList.get(i);
+                context.appendField(field);
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+                parser.identifier(field.fieldName(), sqlBuilder);
+
+            }
+
+        }
+
+        @Override
+        public List<? extends Selection> selectionList() {
+            return this.insertTable.fieldList();
+        }
+
+        @Override
+        public boolean isLegalGroup(final @Nullable TableMeta<?> table) {
+            return table == this.insertTable;
+        }
+
+
+    }//InsertTableGroup
+
+
+    static final class TableFieldGroupImpl<T> implements _SelectionGroup._TableFieldGroup {
 
         private final String tableAlias;
 
@@ -109,8 +176,8 @@ abstract class SelectionGroups {
         }
 
         @Override
-        public boolean isLegalGroup(TableMeta<?> table) {
-            return table == this.fieldList.get(0).tableMeta();
+        public boolean isLegalGroup(final @Nullable TableMeta<?> table) {
+            return table != null && table == this.fieldList.get(0).tableMeta();
         }
 
         @Override

@@ -730,9 +730,9 @@ abstract class InsertContext extends StatementContext
         for (int i = 0; i < selectItemSize; i++) {
             selectItem = selectItemList.get(i);
 
-            if (selectItem instanceof _SelectionGroup.TableFieldGroup) {
-                if (((_SelectionGroup.TableFieldGroup) selectItem).isLegalGroup(insertTable)
-                        && ((_SelectionGroup.TableFieldGroup) selectItem).selectionList().contains(idField)) {
+            if (selectItem instanceof _SelectionGroup._TableFieldGroup) {
+                if (((_SelectionGroup._TableFieldGroup) selectItem).isLegalGroup(insertTable)
+                        && ((_SelectionGroup._TableFieldGroup) selectItem).selectionList().contains(idField)) {
                     selection = idField;
                     break;
                 }
