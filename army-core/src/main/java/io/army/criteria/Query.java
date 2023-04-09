@@ -376,7 +376,7 @@ public interface Query extends RowSet {
     }
 
 
-    interface _WithSelectDispatcher<B extends CteBuilderSpec, WE, W extends SelectModifier, SR extends Item, SD>
+    interface _WithSelectDispatcher<B extends CteBuilderSpec, WE extends Item, W extends SelectModifier, SR extends Item, SD>
             extends DialectStatement._DynamicWithClause<B, WE>, _SelectDispatcher<W, SR, SD> {
 
     }

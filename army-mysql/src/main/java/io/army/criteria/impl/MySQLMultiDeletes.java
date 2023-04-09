@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT extends Item, FS extends Item, FC extends Item, JT, JS, JC, WR, WA>
+abstract class MySQLMultiDeletes<I extends Item, WE extends Item, DT, FU extends Item, FT extends Item, FS extends Item, FC extends Item, JT, JS, JC, WR, WA>
         extends JoinableDelete.WithJoinableDelete<I, MySQLCtes, WE, FT, FS, FC, JT, JS, JC, WR, WA>
         implements MySQLDelete,
         _MySQLMultiDelete,
@@ -628,19 +628,19 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT ext
         }
 
         @Override
-        public <P> _DmlDeleteSpec<BatchDelete> paramList(List<P> paramList) {
+        public <P> _DmlDeleteSpec<BatchDelete> namedParamList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
         }
 
         @Override
-        public <P> _DmlDeleteSpec<BatchDelete> paramList(Supplier<List<P>> supplier) {
+        public <P> _DmlDeleteSpec<BatchDelete> namedParamList(Supplier<List<P>> supplier) {
             this.paramList = CriteriaUtils.paramList(this.context, supplier.get());
             return this;
         }
 
         @Override
-        public _DmlDeleteSpec<BatchDelete> paramList(Function<String, ?> function, String keyName) {
+        public _DmlDeleteSpec<BatchDelete> namedParamList(Function<String, ?> function, String keyName) {
             this.paramList = CriteriaUtils.paramList(this.context, (List<?>) function.apply(keyName));
             return this;
         }

@@ -1,19 +1,12 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
-import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.CriteriaException;
 import io.army.criteria.mysql.MySQLCastType;
-import io.army.criteria.mysql.MySQLQuery;
-import io.army.criteria.mysql.MySQLValues;
-import io.army.criteria.standard.StandardQuery;
-import io.army.dialect.Database;
 import io.army.lang.Nullable;
-import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 abstract class MySQLUtils extends CriteriaUtils {
@@ -154,51 +147,6 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-
-    static <S extends RowSet> RowSet primaryRowSetFromParens(CriteriaContext context, Supplier<S> supplier) {
-        final RowSet rowSet;
-        rowSet = ContextStack.unionQuerySupplier(supplier);
-        if (!(rowSet instanceof Select || rowSet instanceof Values)) {
-            throw CriteriaUtils.unknownRowSet(context, rowSet, Database.MySQL);
-        } else if (!(rowSet instanceof MySQLQuery
-                || rowSet instanceof StandardQuery
-                || rowSet instanceof SimpleQueries.UnionSelect
-                || rowSet instanceof MySQLValues
-                || rowSet instanceof SimpleValues.UnionValues)) {
-            throw CriteriaUtils.unknownRowSet(context, rowSet, Database.MySQL);
-        }
-        return rowSet;
-    }
-
-    static <S extends RowSet> RowSet subRowSetFromParens(CriteriaContext context, Supplier<S> supplier) {
-        final RowSet rowSet;
-        rowSet = ContextStack.unionQuerySupplier(supplier);
-        if (!(rowSet instanceof SubQuery || rowSet instanceof SubValues)) {
-            throw CriteriaUtils.unknownRowSet(context, rowSet, Database.MySQL);
-        } else if (!(rowSet instanceof MySQLQuery
-                || rowSet instanceof StandardQuery
-                || rowSet instanceof SimpleQueries.UnionSubQuery
-                || rowSet instanceof MySQLValues
-                || rowSet instanceof SimpleValues.UnionSubValues)) {
-            throw CriteriaUtils.unknownRowSet(context, rowSet, Database.MySQL);
-        }
-        return rowSet;
-    }
-
-
-    static List<String> partitionList(CriteriaContext context, final boolean required,
-                                      Consumer<Consumer<String>> consumer) {
-        List<String> list = new ArrayList<>();
-        consumer.accept(list::add);
-        if (list.size() > 0) {
-            list = _CollectionUtils.unmodifiableList(list);
-        } else if (required) {
-            throw partitionListIsEmpty(context);
-        } else {
-            list = Collections.emptyList();
-        }
-        return list;
-    }
 
 
     static CriteriaException indexListIsEmpty() {

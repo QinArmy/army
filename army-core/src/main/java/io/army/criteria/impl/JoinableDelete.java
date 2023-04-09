@@ -97,7 +97,7 @@ abstract class JoinableDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
     }
 
 
-    static abstract class WithJoinableDelete<I extends Item, B extends CteBuilderSpec, WE, FT, FS, FC, JT, JS, JC, WR, WA>
+    static abstract class WithJoinableDelete<I extends Item, B extends CteBuilderSpec, WE extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
             extends JoinableDelete<I, FT, FS, FC, JT, JS, JC, WR, WA>
             implements DialectStatement._DynamicWithClause<B, WE>,
             _Statement._WithClauseSpec {

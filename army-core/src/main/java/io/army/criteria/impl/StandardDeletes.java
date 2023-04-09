@@ -183,19 +183,19 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
 
 
         @Override
-        public final <P> _DmlDeleteSpec<BatchDelete> paramList(List<P> paramList) {
+        public final <P> _DmlDeleteSpec<BatchDelete> namedParamList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
         }
 
         @Override
-        public final <P> _DmlDeleteSpec<BatchDelete> paramList(Supplier<List<P>> supplier) {
-            return this.paramList(supplier.get());
+        public final <P> _DmlDeleteSpec<BatchDelete> namedParamList(Supplier<List<P>> supplier) {
+            return this.namedParamList(supplier.get());
         }
 
         @Override
-        public final _DmlDeleteSpec<BatchDelete> paramList(Function<String, ?> function, String keyName) {
-            return this.paramList((List<?>) function.apply(keyName));
+        public final _DmlDeleteSpec<BatchDelete> namedParamList(Function<String, ?> function, String keyName) {
+            return this.namedParamList((List<?>) function.apply(keyName));
         }
 
         @Override

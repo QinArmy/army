@@ -362,7 +362,7 @@ public interface DialectStatement extends Statement {
     }
 
 
-    interface _DynamicWithClause<B extends CteBuilderSpec, WE> extends Item {
+    interface _DynamicWithClause<B extends CteBuilderSpec, WE extends Item> extends Item {
         WE with(Consumer<B> consumer);
 
         WE withRecursive(Consumer<B> consumer);

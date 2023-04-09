@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS extends Item, FC extends Item, JT, JS, JC, WR, WA>
+abstract class MySQLMultiUpdates<I extends Item, WE extends Item, FT extends Item, SR, FS extends Item, FC extends Item, JT, JS, JC, WR, WA>
         extends JoinableUpdate.WithMultiUpdate<I, MySQLCtes, WE, TableField, SR, FT, FS, FC, JT, JS, JC, WR, WA, Object, Object, Object, Object>
         implements UpdateStatement,
         _MySQLMultiUpdate,
@@ -621,19 +621,19 @@ abstract class MySQLMultiUpdates<I extends Item, WE, FT extends Item, SR, FS ext
         }
 
         @Override
-        public <P> _DmlUpdateSpec<BatchUpdate> paramList(List<P> paramList) {
+        public <P> _DmlUpdateSpec<BatchUpdate> namedParamList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
         }
 
         @Override
-        public <P> _DmlUpdateSpec<BatchUpdate> paramList(Supplier<List<P>> supplier) {
+        public <P> _DmlUpdateSpec<BatchUpdate> namedParamList(Supplier<List<P>> supplier) {
             this.paramList = CriteriaUtils.paramList(this.context, supplier.get());
             return this;
         }
 
         @Override
-        public _DmlUpdateSpec<BatchUpdate> paramList(Function<String, ?> function, String keyName) {
+        public _DmlUpdateSpec<BatchUpdate> namedParamList(Function<String, ?> function, String keyName) {
             this.paramList = CriteriaUtils.paramList(this.context, (List<?>) function.apply(keyName));
             return this;
         }

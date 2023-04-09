@@ -799,7 +799,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
 
-    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
             extends SimpleQueries<Q, W, SR, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
             implements DialectStatement._DynamicWithClause<B, WE>,
             ArmyStmtSpec,
@@ -891,7 +891,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     }//WithCteSimpleQueries
 
-    static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+    static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
             extends WithCteSimpleQueries<Q, B, WE, W, SR, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
             implements _SelectDistinctOnDispatcher<W, SR, SD>,
             _Query._DistinctOnClauseSpec {
@@ -1363,7 +1363,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }//SelectClauseDispatcher
 
 
-    static abstract class WithBuilderSelectClauseDispatcher<B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR extends Item, SD>
+    static abstract class WithBuilderSelectClauseDispatcher<B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD>
             extends SelectClauseDispatcher<W, SR, SD>
             implements DialectStatement._DynamicWithClause<B, WE>,
             ArmyStmtSpec {
@@ -1455,7 +1455,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     }//WithBuilderSelectClauseDispatcher
 
-    static abstract class WithDistinctOnSelectClauseDispatcher<B extends CteBuilderSpec, WE, W extends Query.SelectModifier, SR extends Item, SD extends Item>
+    static abstract class WithDistinctOnSelectClauseDispatcher<B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item>
             extends WithBuilderSelectClauseDispatcher<B, WE, W, SR, SD>
             implements Query._DynamicDistinctOnExpClause<SR>,
             Query._DynamicDistinctOnAndSelectsClause<SD> {

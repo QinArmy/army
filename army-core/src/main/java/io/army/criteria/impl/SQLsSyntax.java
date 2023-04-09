@@ -691,7 +691,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     public static final WordsWithTies WITH_TIES = KeyWordWithTies.WITH_TIES;
 
-    public static final SymbolStar START = SQLSymbolStar.STAR;
+    public static final SymbolStar STAR = SQLSymbolStar.STAR;
 
     public static final WordBooleans TRUE = new BooleanWord(true);
 

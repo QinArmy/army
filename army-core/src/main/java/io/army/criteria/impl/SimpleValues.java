@@ -421,7 +421,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
     }
 
     @SuppressWarnings("unchecked")
-    static abstract class WithSimpleValues<I extends Item, B extends CteBuilderSpec, WE, RR, OR, LR, LO, LF, SP>
+    static abstract class WithSimpleValues<I extends Item, B extends CteBuilderSpec, WE extends Item, RR, OR, LR, LO, LF, SP>
             extends SimpleValues<I, RR, OR, LR, LO, LF, SP>
             implements DialectStatement._DynamicWithClause<B, WE>
             , ArmyStmtSpec {

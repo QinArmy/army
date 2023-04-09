@@ -176,7 +176,7 @@ public interface _Constant {
 
     char AT_CHAR = '@';
 
-    char START_CHAR = '*';
+    char STAR_CHAR = '*';
 
     char SLASH = '/';
 

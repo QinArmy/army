@@ -220,8 +220,70 @@ final class PostgreDialectParser extends PostgreParser {
     }
 
     @Override
-    protected void parseSingleDelete(_SingleDelete delete, _SingleDeleteContext context) {
-        super.parseSingleDelete(delete, context);
+    protected void parseSingleDelete(final _SingleDelete delete, final _SingleDeleteContext context) {
+        final _PostgreDelete stmt = (_PostgreDelete) delete;
+
+        // 1. WITH clause
+        this.parseWithClause(stmt, context);
+
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+        if (sqlBuilder.length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+        // 2. DELETE key word
+        sqlBuilder.append(_Constant.DELETE_FROM);
+        // 3. ONLY modifier
+        final SQLs.WordOnly onlyModifier;
+        onlyModifier = stmt.modifier();
+        if (onlyModifier != null) {
+            assert onlyModifier == SQLs.ONLY;
+            sqlBuilder.append(onlyModifier.render());
+        }
+        // 4. table name
+        final TableMeta<?> deleteTable = context.targetTable();
+        assert deleteTable == stmt.table();
+        sqlBuilder.append(_Constant.SPACE);
+        this.safeObjectName(deleteTable, sqlBuilder);
+
+        // 5. symbol star
+        final SQLs.SymbolStar symbolStar;
+        if ((symbolStar = stmt.symbolStar()) != null) {
+            assert symbolStar == SQLs.STAR;
+            sqlBuilder.append(_Constant.SPACE)
+                    .append(_Constant.STAR_CHAR);
+        }
+
+        // 6. table alias
+        final String safeTableAlias;
+        safeTableAlias = context.safeTargetTableAlias();
+        sqlBuilder.append(_Constant.SPACE_AS_SPACE)
+                .append(safeTableAlias);
+
+        // 7. USING clause
+        final List<_TabularBlock> tableBlockList;
+        tableBlockList = stmt.tableBlockList();
+        final boolean existsFromClause;
+        existsFromClause = tableBlockList.size() > 0;
+        if (existsFromClause) {
+            sqlBuilder.append(_Constant.SPACE_USING);
+            this.postgreFromItemsClause(stmt.tableBlockList(), (_MultiTableStmtContext) context, false);
+        }
+
+        // 8. WHERE clause
+        this.dmlWhereClause(stmt.wherePredicateList(), context);
+
+        //TODO discriminator
+        if (existsFromClause) {
+            this.multiTableVisible(tableBlockList, (_MultiTableStmtContext) context, false);
+        } else if (deleteTable instanceof SingleTableMeta) {
+            this.visiblePredicate((SingleTableMeta<?>) deleteTable, safeTableAlias, context, false);
+        }
+
+        // 9. RETURNING clause
+        if (stmt instanceof _ReturningDml) {
+            returningClause(context, (_ReturningDml) stmt);
+        }
     }
 
     @Override

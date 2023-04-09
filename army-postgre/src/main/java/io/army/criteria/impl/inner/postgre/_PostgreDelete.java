@@ -1,21 +1,23 @@
 package io.army.criteria.impl.inner.postgre;
 
-import io.army.criteria.SQLWords;
+import io.army.criteria.impl.SQLs;
+import io.army.criteria.impl._JoinableDelete;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._Statement;
-import io.army.criteria.impl.inner._TabularBlock;
 import io.army.lang.Nullable;
 
-import java.util.List;
-
-public interface _PostgreDelete extends _SingleDelete, _DialectStatement, _Statement._WithClauseSpec,
+public interface _PostgreDelete extends _SingleDelete,
+        _JoinableDelete,
+        _DialectStatement,
+        _Statement._WithClauseSpec,
         _Statement._ReturningListSpec {
 
     @Nullable
-    SQLWords modifier();
+    SQLs.WordOnly modifier();
 
-    List<_TabularBlock> tableBlockList();
+    @Nullable
+    SQLs.SymbolStar symbolStar();
 
 
 }

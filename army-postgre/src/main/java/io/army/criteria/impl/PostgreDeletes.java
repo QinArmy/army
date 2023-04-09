@@ -34,7 +34,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, JT, JS, JC extends Item, TR, WR, WA>
+abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC extends Item, JT, JS, JC extends Item, TR, WR, WA>
         extends JoinableDelete.WithJoinableDelete<I, PostgreCtes, WE, FT, FS, FC, JT, JS, JC, WR, WA>
         implements PostgreDelete,
         _PostgreDelete,
@@ -69,11 +69,13 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
     }
 
 
-    private SQLsSyntax.WordOnly modifier;
+    private SQLsSyntax.WordOnly onlyModifier;
 
-    private TableMeta<?> updateTable;
+    private TableMeta<?> targetTable;
 
-    private String tableAlias;
+    private SQLsSyntax.SymbolStar starModifier;
+
+    private String targetTableAlias;
 
     _TabularBlock fromCrossBlock;
 
@@ -83,25 +85,38 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
     @Override
     public final DR delete(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-        if (this.updateTable != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        }
-        this.modifier = null;
-        this.updateTable = table;
-        this.tableAlias = tableAlias;
-        return (DR) this;
+        return this.delete(null, table, null, as, tableAlias);
     }
 
     @Override
     public final DR delete(@Nullable SQLs.WordOnly only, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-        if (this.updateTable != null) {
+        return this.delete(only, table, null, as, tableAlias);
+    }
+
+    @Override
+    public final DR delete(TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as, String tableAlias) {
+        return this.delete(null, table, star, as, tableAlias);
+    }
+
+    @Override
+    public final DR delete(final @Nullable SQLsSyntax.WordOnly only, final @Nullable TableMeta<?> table,
+                           final @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as,
+                           final @Nullable String tableAlias) {
+        if (this.targetTable != null) {
             throw ContextStack.castCriteriaApi(this.context);
-        } else if (only != SQLs.ONLY) {
+        } else if (only != null && only != SQLs.ONLY) {
             throw CriteriaUtils.errorModifier(this.context, only);
+        } else if (star != null && star != SQLs.STAR) {
+            throw CriteriaUtils.errorModifier(this.context, only);
+        } else if (table == null) {
+            throw ContextStack.nullPointer(this.context);
+        } else if (tableAlias == null) {
+            throw ContextStack.nullPointer(this.context);
         }
-        this.modifier = only;
-        this.updateTable = table;
-        this.tableAlias = tableAlias;
+        this.onlyModifier = only;
+        this.targetTable = table;
+        this.starModifier = star;
+        this.targetTableAlias = tableAlias;
         return (DR) this;
     }
 
@@ -300,18 +315,31 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
     }
 
     @Override
-    public final SQLWords modifier() {
-        return this.modifier;
+    public final SQLsSyntax.WordOnly modifier() {
+        return this.onlyModifier;
     }
 
     @Override
     public final TableMeta<?> table() {
-        return this.updateTable;
+        final TableMeta<?> targetTable = this.targetTable;
+        if (targetTable == null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return targetTable;
+    }
+
+    @Override
+    public final SQLs.SymbolStar symbolStar() {
+        return this.starModifier;
     }
 
     @Override
     public final String tableAlias() {
-        return this.tableAlias;
+        final String targetTableAlias = this.targetTableAlias;
+        if (targetTableAlias == null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        return targetTableAlias;
     }
 
 
@@ -995,7 +1023,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         }
 
         @Override
-        public <P> _DmlDeleteSpec<BatchDelete> paramList(List<P> paramList) {
+        public <P> _DmlDeleteSpec<BatchDelete> namedParamList(List<P> paramList) {
             if (this.paramList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -1004,13 +1032,13 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         }
 
         @Override
-        public <P> _DmlDeleteSpec<BatchDelete> paramList(Supplier<List<P>> supplier) {
+        public <P> _DmlDeleteSpec<BatchDelete> namedParamList(Supplier<List<P>> supplier) {
             this.paramList = CriteriaUtils.paramList(this.context, supplier.get());
             return this;
         }
 
         @Override
-        public _DmlDeleteSpec<BatchDelete> paramList(Function<String, ?> function, String keyName) {
+        public _DmlDeleteSpec<BatchDelete> namedParamList(Function<String, ?> function, String keyName) {
             this.paramList = CriteriaUtils.paramList(this.context, (List<?>) function.apply(keyName));
             return this;
         }
@@ -1235,20 +1263,20 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         }
 
         @Override
-        public <P> _DqlDeleteSpec<BatchReturningDelete> paramList(List<P> paramList) {
-            this.statement.paramList(paramList);
+        public <P> _DqlDeleteSpec<BatchReturningDelete> namedParamList(List<P> paramList) {
+            this.statement.namedParamList(paramList);
             return this.statement;
         }
 
         @Override
-        public <P> _DqlDeleteSpec<BatchReturningDelete> paramList(Supplier<List<P>> supplier) {
-            this.statement.paramList(supplier.get());
+        public <P> _DqlDeleteSpec<BatchReturningDelete> namedParamList(Supplier<List<P>> supplier) {
+            this.statement.namedParamList(supplier.get());
             return this.statement;
         }
 
         @Override
-        public _DqlDeleteSpec<BatchReturningDelete> paramList(Function<String, ?> function, String keyName) {
-            this.statement.paramList((List<?>) function.apply(keyName));
+        public _DqlDeleteSpec<BatchReturningDelete> namedParamList(Function<String, ?> function, String keyName) {
+            this.statement.namedParamList((List<?>) function.apply(keyName));
             return this.statement;
         }
 
@@ -1284,6 +1312,8 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
         private final TableMeta<?> targetTable;
 
+        private final SQLs.SymbolStar starModifier;
+
         private final String tableAlias;
 
         private final List<_TabularBlock> tableBlockList;
@@ -1298,12 +1328,14 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
             super(stmt.context);
             this.recursive = stmt.isRecursive();
             this.cteList = stmt.cteList();
-            this.only = stmt.modifier;
-            this.targetTable = stmt.updateTable;
+            this.only = stmt.onlyModifier;
+            this.targetTable = stmt.targetTable;
 
-            this.tableAlias = stmt.tableAlias;
+            this.starModifier = stmt.starModifier;
+            this.tableAlias = stmt.targetTableAlias;
             this.tableBlockList = stmt.tableBlockList();
             this.wherePredicateList = stmt.wherePredicateList();
+
             this.returningList = stmt.innerReturningList();
         }
 
@@ -1330,10 +1362,20 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         }
 
         @Override
+        public final SQLsSyntax.WordOnly modifier() {
+            return this.only;
+        }
+
+        @Override
         public final TableMeta<?> table() {
             return this.targetTable;
         }
 
+
+        @Override
+        public final SQLs.SymbolStar symbolStar() {
+            return this.starModifier;
+        }
 
         @Override
         public final String tableAlias() {
@@ -1355,11 +1397,6 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         @Override
         public final List<_Cte> cteList() {
             return this.cteList;
-        }
-
-        @Override
-        public final SQLWords modifier() {
-            return this.only;
         }
 
         @Override

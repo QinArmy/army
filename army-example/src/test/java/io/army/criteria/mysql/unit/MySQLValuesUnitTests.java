@@ -48,7 +48,7 @@ public class MySQLValuesUnitTests {
     public void simpleSubValues() {
         Select stmt;
         stmt = MySQLs.query()
-                .select("s", PERIOD, START)
+                .select("s", PERIOD, STAR)
                 .from(() -> this.createSimpleValues(MySQLs::subValues)
                         .asValues())
                 .as("c")
@@ -64,7 +64,7 @@ public class MySQLValuesUnitTests {
     public void unionSubValues() {
         Select stmt;
         stmt = MySQLs.query()
-                .select("s", PERIOD, START)
+                .select("s", PERIOD, STAR)
                 .from(() -> this.createSimpleValues(MySQLs::subValues)
                         .asValues())
                 .as("s")

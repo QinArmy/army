@@ -240,7 +240,7 @@ public interface PostgreStatement extends DialectStatement {
     }
 
 
-    interface _PostgreDynamicWithClause<SR> extends _DynamicWithClause<PostgreCtes, SR> {
+    interface _PostgreDynamicWithClause<WE extends Item> extends _DynamicWithClause<PostgreCtes, WE> {
 
     }
 

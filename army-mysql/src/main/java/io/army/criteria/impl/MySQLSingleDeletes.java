@@ -33,7 +33,7 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLSingleDeletes<I extends Item, WE, DT, PR, WR, WA, OR, LR>
+abstract class MySQLSingleDeletes<I extends Item, WE extends Item, DT, PR, WR, WA, OR, LR>
         extends SingleDeleteStatement.WithSingleDelete<I, MySQLCtes, WE, WR, WA, OR, LR, Object, Object>
         implements MySQLDelete,
         _MySQLSingleDelete,
@@ -272,19 +272,19 @@ abstract class MySQLSingleDeletes<I extends Item, WE, DT, PR, WR, WA, OR, LR>
         }
 
         @Override
-        public <P> _DmlDeleteSpec<BatchDelete> paramList(List<P> paramList) {
+        public <P> _DmlDeleteSpec<BatchDelete> namedParamList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
         }
 
         @Override
-        public <P> _DmlDeleteSpec<BatchDelete> paramList(Supplier<List<P>> supplier) {
+        public <P> _DmlDeleteSpec<BatchDelete> namedParamList(Supplier<List<P>> supplier) {
             this.paramList = CriteriaUtils.paramList(this.context, supplier.get());
             return this;
         }
 
         @Override
-        public _DmlDeleteSpec<BatchDelete> paramList(Function<String, ?> function, String keyName) {
+        public _DmlDeleteSpec<BatchDelete> namedParamList(Function<String, ?> function, String keyName) {
             this.paramList = CriteriaUtils.paramList(this.context, (List<?>) function.apply(keyName));
             return this;
         }

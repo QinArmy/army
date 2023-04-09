@@ -235,7 +235,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         final Select stmt;
         stmt = SQLs.query()
                 .select(SQLs.refThis("us", "one"))
-                .comma("us", PERIOD, START)
+                .comma("us", PERIOD, STAR)
                 .from(() -> SQLs.subQuery()
                         .select(SQLs.literalFrom(1)::as, "one")
                         .comma("u", PERIOD, PillUser_.T)

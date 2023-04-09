@@ -22,6 +22,7 @@ import java.util.function.Function;
 public interface PostgreUpdate extends PostgreStatement {
 
 
+
     interface _StaticReturningCommaSpec<Q extends Item>
             extends _StaticDmlReturningCommaClause<_StaticReturningCommaSpec<Q>>,
             _DqlUpdateSpec<Q> {
@@ -110,12 +111,17 @@ public interface PostgreUpdate extends PostgreStatement {
 
     }
 
+
     interface _SingleUpdateClause<I extends Item, Q extends Item> extends Item {
 
         <T> _SingleSetClause<I, Q, T> update(TableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
-        <T> _SingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly wordOnly, TableMeta<T> table, SQLs.WordAs as,
+        <T> _SingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table, SQLs.WordAs as,
                                              String tableAlias);
+
+        <T> _SingleSetClause<I, Q, T> update(TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
+
+        <T> _SingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
 
     }
 
@@ -240,8 +246,12 @@ public interface PostgreUpdate extends PostgreStatement {
 
         <T> _BatchSingleSetClause<I, Q, T> update(TableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
-        <T> _BatchSingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly wordOnly, TableMeta<T> table, SQLs.WordAs as,
+        <T> _BatchSingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table, SQLs.WordAs as,
                                                   String tableAlias);
+
+        <T> _BatchSingleSetClause<I, Q, T> update(TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
+
+        <T> _BatchSingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
 
     }
 

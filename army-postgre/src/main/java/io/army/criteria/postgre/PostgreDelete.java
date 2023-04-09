@@ -25,6 +25,11 @@ public interface PostgreDelete extends PostgreStatement {
         R delete(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
 
         R delete(@Nullable SQLs.WordOnly only, TableMeta<?> table, SQLs.WordAs as, String tableAlias);
+
+        R delete(TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
+
+        R delete(@Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
+
     }
 
 

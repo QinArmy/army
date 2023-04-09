@@ -71,7 +71,7 @@ abstract class SingleDeleteStatement<I extends Item, WR, WA, OR, LR, LO, LF>
     }
 
 
-    static abstract class WithSingleDelete<I extends Item, B extends CteBuilderSpec, WE, WR, WA, OR, LR, LO, LF>
+    static abstract class WithSingleDelete<I extends Item, B extends CteBuilderSpec, WE extends Item, WR, WA, OR, LR, LO, LF>
             extends SingleDeleteStatement<I, WR, WA, OR, LR, LO, LF>
             implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {

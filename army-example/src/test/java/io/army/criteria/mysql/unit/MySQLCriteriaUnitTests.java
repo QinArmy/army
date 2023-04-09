@@ -107,7 +107,7 @@ public class MySQLCriteriaUnitTests {
                 .set(ChinaRegion_.name, SQLs::namedParam)
                 .where(ChinaRegion_.id::equal, SQLs::literal, paramMap::get, ChinaRegion_.ID)
                 .limit(SQLs::param, 10)
-                .paramList(paramList)
+                .namedParamList(paramList)
                 .asUpdate();
 
         printStmt(stmt);
@@ -195,7 +195,7 @@ public class MySQLCriteriaUnitTests {
                     .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")// common parameter
                     .orderBy(ChinaRegion_.name::desc)
                     .ifLimit(SQLs::param, map::get, "rowCount")
-                    .paramList(paramList)
+                    .namedParamList(paramList)
                     .asDelete();
 
             printStmt(stmt);
@@ -296,7 +296,7 @@ public class MySQLCriteriaUnitTests {
                     .and(ChinaRegion_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTIme")
                     .and(ChinaRegion_.updateTime::between, SQLs::literal, map::get, "startTime", AND, "endTIme")
                     .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")
-                    .paramList(paramList)
+                    .namedParamList(paramList)
                     .asDelete();
 
             printStmt(stmt);
@@ -493,7 +493,7 @@ public class MySQLCriteriaUnitTests {
                     .and(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTime")
                     .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTime")
                     .ifAnd(BankAccount_.version::equal, SQLs::literal, map::get, "version")
-                    .paramList(paramList)
+                    .namedParamList(paramList)
                     .asUpdate();
 
             printStmt(stmt);

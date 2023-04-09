@@ -635,7 +635,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
     private static void assertNoCommentBoundary(final String str) {
         final int index, last;
         last = str.length() - 1;
-        index = str.indexOf(_Constant.START_CHAR);
+        index = str.indexOf(_Constant.STAR_CHAR);
         if (index > -1) {
             if (index < last && str.charAt(index + 1) == _Constant.SLASH) {
                 throw ContextStack.clearStackAndCriteriaError(MySQLHints::varValuePairError, str);

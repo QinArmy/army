@@ -314,7 +314,7 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
     }
 
 
-    static abstract class WithMultiUpdate<I extends Item, B extends CteBuilderSpec, WE, F extends DataField, SR, FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
+    static abstract class WithMultiUpdate<I extends Item, B extends CteBuilderSpec, WE extends Item, F extends DataField, SR, FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
             extends JoinableUpdate<I, F, SR, FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
             implements DialectStatement._DynamicWithClause<B, WE>
             , _Statement._WithClauseSpec {

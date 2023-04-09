@@ -82,7 +82,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
                 .where(ChinaProvince_.id::equal, SQLs::namedParam)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greatEqual, BigDecimal.ZERO)
                 .and(ChinaRegion_.version::equal, SQLs::param, "0")
-                .paramList(this::createProvinceList)
+                .namedParamList(this::createProvinceList)
                 .asUpdate();
 
         printStmt(LOG, stmt);
@@ -109,7 +109,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
                             consumer.accept(ChinaProvince_.governor.equal(SQLs::param, "方腊"));
                         })
                 )
-                .paramList(this::createProvinceList)
+                .namedParamList(this::createProvinceList)
                 .asUpdate();
 
         printStmt(LOG, stmt);

@@ -877,7 +877,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     }//SimpleSubQuery
 
 
-    static abstract class PostgreSelectClauseDispatcher<I extends Item, WE> extends WithDistinctOnSelectClauseDispatcher<
+    static abstract class PostgreSelectClauseDispatcher<I extends Item, WE extends Item>
+            extends WithDistinctOnSelectClauseDispatcher<
             PostgreCtes,
             WE,
             PostgreSyntax.Modifier,
@@ -1326,7 +1327,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
 
     private static class StaticCteSubQuery<I extends Item>
-            extends PostgreSelectClauseDispatcher<I, Void>
+            extends PostgreSelectClauseDispatcher<I, Item>
             implements PostgreQuery._StaticCteSelectSpec<I>,
             ArmyStmtSpec {
 
@@ -1430,6 +1431,25 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
+        public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(
+                TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as, String tableAlias) {
+            this.endDispatcher();
+
+            return PostgreUpdates.subSimpleUpdate(this.context.getNonNullOuterContext(), this.function)
+                    .update(table, star, as, tableAlias);
+        }
+
+        @Override
+        public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(
+                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star,
+                SQLsSyntax.WordAs as, String tableAlias) {
+            this.endDispatcher();
+
+            return PostgreUpdates.subSimpleUpdate(this.context.getNonNullOuterContext(), this.function)
+                    .update(only, table, star, as, tableAlias);
+        }
+
+        @Override
         public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> delete(
                 TableMeta<?> table, SQLsSyntax.WordAs as, String tableAlias) {
             this.endDispatcher();
@@ -1445,6 +1465,25 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
             return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)
                     .delete(only, table, as, tableAlias);
+        }
+
+        @Override
+        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> delete(
+                TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as, String tableAlias) {
+            this.endDispatcher();
+
+            return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)
+                    .delete(null, table, star, as, tableAlias);
+        }
+
+        @Override
+        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> delete(
+                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star,
+                SQLsSyntax.WordAs as, String tableAlias) {
+            this.endDispatcher();
+
+            return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)
+                    .delete(only, table, star, as, tableAlias);
         }
 
         @Override

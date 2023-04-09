@@ -213,18 +213,18 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        public final <P> _DmlUpdateSpec<BatchUpdate> paramList(List<P> paramList) {
+        public final <P> _DmlUpdateSpec<BatchUpdate> namedParamList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
         }
 
         @Override
-        public final <P> _DmlUpdateSpec<BatchUpdate> paramList(Supplier<List<P>> supplier) {
-            return this.paramList(supplier.get());
+        public final <P> _DmlUpdateSpec<BatchUpdate> namedParamList(Supplier<List<P>> supplier) {
+            return this.namedParamList(supplier.get());
         }
 
         @Override
-        public final _DmlUpdateSpec<BatchUpdate> paramList(Function<String, ?> function, String keyName) {
+        public final _DmlUpdateSpec<BatchUpdate> namedParamList(Function<String, ?> function, String keyName) {
             this.paramList = CriteriaUtils.paramList(this.context, (List<?>) function.apply(keyName));
             return this;
         }

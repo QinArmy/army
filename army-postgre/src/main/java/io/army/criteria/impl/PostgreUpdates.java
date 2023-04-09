@@ -92,11 +92,13 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
     private final List<_Cte> cteList;
 
-    private final SQLs.WordOnly modifier;
+    private final SQLs.WordOnly onlyModifier;
 
-    final TableMeta<?> updateTable;
+    final TableMeta<?> targetTable;
 
-    final String tableAlias;
+    private final SQLsSyntax.SymbolStar starModifier;
+
+    final String targetTableAlias;
 
     _TabularBlock fromCrossBlock;
 
@@ -104,14 +106,12 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         super(clause.context);
         this.recursive = clause.isRecursive();
         this.cteList = clause.cteList();
-        this.modifier = clause.modifier;
-        if (this.modifier != null && this.modifier != SQLs.ONLY) {
-            throw CriteriaUtils.errorModifier(this.context, this.modifier);
-        }
-        this.updateTable = clause.updateTable;
+        this.onlyModifier = clause.onlyModifier;
+        this.targetTable = clause.targetTable;
 
-        this.tableAlias = clause.tableAlias;
-        assert this.updateTable != null && this.tableAlias != null;
+        this.starModifier = clause.starModifier;
+        this.targetTableAlias = clause.targetTableAlias;
+        assert this.targetTable != null && this.targetTableAlias != null;
     }
 
 
@@ -328,17 +328,17 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
     @Override
     public final SQLWords modifier() {
-        return this.modifier;
+        return this.onlyModifier;
     }
 
     @Override
     public final TableMeta<?> table() {
-        return this.updateTable;
+        return this.targetTable;
     }
 
     @Override
     public final String tableAlias() {
-        return this.tableAlias;
+        return this.targetTableAlias;
     }
 
 
@@ -666,7 +666,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             if (returningList instanceof ArrayList) {
                 this.returningList = _CollectionUtils.unmodifiableList(returningList);
             } else {
-                this.returningList = CriteriaUtils.returningAll(this.updateTable, this.tableAlias, this.tableBlockList());
+                this.returningList = CriteriaUtils.returningAll(this.targetTable, this.targetTableAlias, this.tableBlockList());
             }
             return this.onAsReturningUpdate();
         }
@@ -751,8 +751,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                 final String tableAlias;
                 tableAlias = ((_SelectionGroup._TableFieldGroup) selectItem).tableAlias();
                 final TableMeta<?> groupTable;
-                if (this.tableAlias.equals(tableAlias)) {
-                    groupTable = this.updateTable;
+                if (this.targetTableAlias.equals(tableAlias)) {
+                    groupTable = this.targetTable;
                 } else {
                     groupTable = this.context.getTable(tableAlias);
                 }
@@ -986,19 +986,19 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public <P> _DmlUpdateSpec<BatchUpdate> paramList(List<P> paramList) {
+        public <P> _DmlUpdateSpec<BatchUpdate> namedParamList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
         }
 
         @Override
-        public <P> _DmlUpdateSpec<BatchUpdate> paramList(Supplier<List<P>> supplier) {
+        public <P> _DmlUpdateSpec<BatchUpdate> namedParamList(Supplier<List<P>> supplier) {
             this.paramList = CriteriaUtils.paramList(this.context, supplier.get());
             return this;
         }
 
         @Override
-        public _DmlUpdateSpec<BatchUpdate> paramList(Function<String, ?> function, String keyName) {
+        public _DmlUpdateSpec<BatchUpdate> namedParamList(Function<String, ?> function, String keyName) {
             this.paramList = CriteriaUtils.paramList(this.context, (List<?>) function.apply(keyName));
             return this;
         }
@@ -1023,7 +1023,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             if (returningList instanceof ArrayList) {
                 this.returningList = _CollectionUtils.unmodifiableList(returningList);
             } else {
-                this.returningList = CriteriaUtils.returningAll(this.updateTable, this.tableAlias, this.tableBlockList());
+                this.returningList = CriteriaUtils.returningAll(this.targetTable, this.targetTableAlias, this.tableBlockList());
             }
             return new BatchReturningUpdateWrapper(this);
         }
@@ -1105,8 +1105,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                 final String tableAlias;
                 tableAlias = ((_SelectionGroup._TableFieldGroup) selectItem).tableAlias();
                 final TableMeta<?> groupTable;
-                if (this.tableAlias.equals(tableAlias)) {
-                    groupTable = this.updateTable;
+                if (this.targetTableAlias.equals(tableAlias)) {
+                    groupTable = this.targetTable;
                 } else {
                     groupTable = this.context.getTable(tableAlias);
                 }
@@ -1219,39 +1219,62 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public <P> _DqlUpdateSpec<BatchReturningUpdate> paramList(List<P> paramList) {
-            this.statement.paramList(paramList);
+        public <P> _DqlUpdateSpec<BatchReturningUpdate> namedParamList(List<P> paramList) {
+            this.statement.namedParamList(paramList);
             return this.statement;
         }
 
         @Override
-        public <P> _DqlUpdateSpec<BatchReturningUpdate> paramList(Supplier<List<P>> supplier) {
-            this.statement.paramList(supplier.get());
+        public <P> _DqlUpdateSpec<BatchReturningUpdate> namedParamList(Supplier<List<P>> supplier) {
+            this.statement.namedParamList(supplier.get());
             return this.statement;
         }
 
         @Override
-        public _DqlUpdateSpec<BatchReturningUpdate> paramList(Function<String, ?> function, String keyName) {
-            this.statement.paramList((List<?>) function.apply(keyName));
+        public _DqlUpdateSpec<BatchReturningUpdate> namedParamList(Function<String, ?> function, String keyName) {
+            this.statement.namedParamList((List<?>) function.apply(keyName));
             return this.statement;
         }
 
     }//BatchParamClause
 
 
-    private static abstract class PostgreUpdateClause<WE>
+    private static abstract class PostgreUpdateClause<WE extends Item>
             extends CriteriaSupports.WithClause<PostgreCtes, WE> {
 
-        SQLsSyntax.WordOnly modifier;
+        private SQLsSyntax.WordOnly onlyModifier;
 
-        TableMeta<?> updateTable;
+        private TableMeta<?> targetTable;
 
-        String tableAlias;
+        private SQLsSyntax.SymbolStar starModifier;
+
+        private String targetTableAlias;
 
 
         private PostgreUpdateClause(@Nullable _Statement._WithClauseSpec spec, CriteriaContext context) {
             super(spec, context);
             ContextStack.push(this.context);
+        }
+
+
+        final void doUpdate(@Nullable SQLsSyntax.WordOnly only, final @Nullable TableMeta<?> table,
+                            @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as,
+                            final @Nullable String tableAlias) {
+            if (this.targetTable != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            } else if (only != null && only != SQLs.ONLY) {
+                throw CriteriaUtils.errorModifier(this.context, only);
+            } else if (star != null && star != SQLs.STAR) {
+                throw CriteriaUtils.errorModifier(this.context, only);
+            } else if (table == null) {
+                throw ContextStack.nullPointer(this.context);
+            } else if (tableAlias == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            this.onlyModifier = only;
+            this.targetTable = table;
+            this.starModifier = star;
+            this.targetTableAlias = tableAlias;
         }
 
         @Override
@@ -1283,6 +1306,23 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                     .comma(name);
         }
 
+        @Override
+        public final <T> _SingleSetClause<I, Q, T> update(TableMeta<T> table, SQLsSyntax.WordAs as, String tableAlias) {
+            return this.update(null, table, null, as, tableAlias);
+        }
+
+        @Override
+        public final <T> _SingleSetClause<I, Q, T> update(@Nullable SQLsSyntax.WordOnly only, TableMeta<T> table,
+                                                          SQLsSyntax.WordAs as, String tableAlias) {
+            return this.update(only, table, null, as, tableAlias);
+        }
+
+        @Override
+        public final <T> _SingleSetClause<I, Q, T> update(TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star,
+                                                          SQLsSyntax.WordAs as, String tableAlias) {
+            return this.update(null, table, star, as, tableAlias);
+        }
+
 
     }//SimpleUpdateClause
 
@@ -1295,23 +1335,15 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
         }
 
+
         @Override
-        public <T> _SingleSetClause<Update, ReturningUpdate, T> update(TableMeta<T> table, SQLs.WordAs as,
-                                                                       String tableAlias) {
-            this.modifier = null;
-            this.updateTable = table;
-            this.tableAlias = tableAlias;
+        public <T> _SingleSetClause<Update, ReturningUpdate, T> update(
+                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star,
+                SQLsSyntax.WordAs as, String tableAlias) {
+            this.doUpdate(only, table, star, as, tableAlias);
             return new PrimarySimpleUpdate<>(this);
         }
 
-        @Override
-        public <T> _SingleSetClause<Update, ReturningUpdate, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table,
-                                                                       SQLs.WordAs as, String tableAlias) {
-            this.modifier = only;
-            this.updateTable = table;
-            this.tableAlias = tableAlias;
-            return new PrimarySimpleUpdate<>(this);
-        }
 
     }//PrimarySimpleUpdateClause
 
@@ -1326,22 +1358,12 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public <T> _SingleSetClause<I, I, T> update(TableMeta<T> table, SQLsSyntax.WordAs as, String tableAlias) {
-            this.modifier = null;
-            this.updateTable = table;
-            this.tableAlias = tableAlias;
+        public <T> _SingleSetClause<I, I, T> update(
+                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star,
+                SQLsSyntax.WordAs as, String tableAlias) {
+            this.doUpdate(only, table, star, as, tableAlias);
             return new PrimarySimpleUpdateForMultiStmt<>(this);
         }
-
-        @Override
-        public <T> _SingleSetClause<I, I, T> update(@Nullable SQLsSyntax.WordOnly wordOnly, TableMeta<T> table,
-                                                    SQLs.WordAs as, String tableAlias) {
-            this.modifier = wordOnly;
-            this.updateTable = table;
-            this.tableAlias = tableAlias;
-            return new PrimarySimpleUpdateForMultiStmt<>(this);
-        }
-
 
     }//PrimarySimpleUpdateClauseForMultiStmt
 
@@ -1356,23 +1378,13 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public <T> _SingleSetClause<I, I, T> update(TableMeta<T> table, SQLsSyntax.WordAs as, String tableAlias) {
-            this.updateTable = table;
-            this.tableAlias = tableAlias;
+        public <T> _SingleSetClause<I, I, T> update(
+                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star,
+                SQLsSyntax.WordAs as, String tableAlias) {
+            this.doUpdate(only, table, star, as, tableAlias);
             return new SubSimpleUpdate<>(this);
         }
 
-        @Override
-        public <T> _SingleSetClause<I, I, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table, SQLs.WordAs as,
-                                                    String tableAlias) {
-            if (only != null && only != SQLs.ONLY) {
-                throw CriteriaUtils.errorModifier(this.context, only);
-            }
-            this.modifier = only;
-            this.updateTable = table;
-            this.tableAlias = tableAlias;
-            return new SubSimpleUpdate<>(this);
-        }
 
     } //SubSimpleUpdateClause
 
@@ -1398,18 +1410,28 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public <T> _BatchSingleSetClause<BatchUpdate, BatchReturningUpdate, T> update(TableMeta<T> table, SQLs.WordAs as, String tableAlias) {
-            this.updateTable = table;
-            this.tableAlias = tableAlias;
-            return new PrimaryBatchUpdate<>(this);
+        public <T> _BatchSingleSetClause<BatchUpdate, BatchReturningUpdate, T> update(
+                TableMeta<T> table, SQLsSyntax.WordAs as, String tableAlias) {
+            return this.update(null, table, null, as, tableAlias);
         }
 
         @Override
-        public <T> _BatchSingleSetClause<BatchUpdate, BatchReturningUpdate, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table,
-                                                                                      SQLs.WordAs as, String tableAlias) {
-            this.modifier = only;
-            this.updateTable = table;
-            this.tableAlias = tableAlias;
+        public <T> _BatchSingleSetClause<BatchUpdate, BatchReturningUpdate, T> update(
+                @Nullable SQLsSyntax.WordOnly only, TableMeta<T> table, SQLsSyntax.WordAs as, String tableAlias) {
+            return this.update(only, table, null, as, tableAlias);
+        }
+
+        @Override
+        public <T> _BatchSingleSetClause<BatchUpdate, BatchReturningUpdate, T> update(
+                TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as, String tableAlias) {
+            return this.update(null, table, star, as, tableAlias);
+        }
+
+        @Override
+        public <T> _BatchSingleSetClause<BatchUpdate, BatchReturningUpdate, T> update(
+                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star,
+                SQLsSyntax.WordAs as, String tableAlias) {
+            this.doUpdate(only, table, star, as, tableAlias);
             return new PrimaryBatchUpdate<>(this);
         }
 
@@ -1475,10 +1497,10 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             super(stmt.context);
             this.recursive = stmt.recursive;
             this.cteList = stmt.cteList;
-            this.only = stmt.modifier;
-            this.targetTable = stmt.updateTable;
+            this.only = stmt.onlyModifier;
+            this.targetTable = stmt.targetTable;
 
-            this.tableAlias = stmt.tableAlias;
+            this.tableAlias = stmt.targetTableAlias;
             this.itemPairList = stmt.itemPairList();
             this.tableBlockList = stmt.tableBlockList();
             this.wherePredicateList = stmt.wherePredicateList();

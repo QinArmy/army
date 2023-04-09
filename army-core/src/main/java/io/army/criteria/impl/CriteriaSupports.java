@@ -100,8 +100,9 @@ abstract class CriteriaSupports {
     }
 
 
-    static abstract class WithClause<B extends CteBuilderSpec, WE> implements DialectStatement._DynamicWithClause<B, WE>
-            , _Statement._WithClauseSpec {
+    static abstract class WithClause<B extends CteBuilderSpec, WE extends Item>
+            implements DialectStatement._DynamicWithClause<B, WE>,
+            _Statement._WithClauseSpec {
 
         final CriteriaContext context;
 

@@ -117,16 +117,16 @@ public interface Statement extends Item {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <BR> next clause java type
+     * @param <R> next clause java type
      * @since 1.0
      */
-    interface _BatchParamClause<BR> {
+    interface _BatchParamClause<R extends Item> {
 
-        <P> BR paramList(List<P> paramList);
+        <P> R namedParamList(List<P> paramList);
 
-        <P> BR paramList(Supplier<List<P>> supplier);
+        <P> R namedParamList(Supplier<List<P>> supplier);
 
-        BR paramList(Function<String, ?> function, String keyName);
+        R namedParamList(Function<String, ?> function, String keyName);
     }
 
 
@@ -1309,22 +1309,22 @@ public interface Statement extends Item {
     }
 
 
-    interface _DmlUpdateSpec<I extends Item> {
+    interface _DmlUpdateSpec<I extends Item> extends Item {
 
         I asUpdate();
     }
 
-    interface _DqlUpdateSpec<I extends Item> {
+    interface _DqlUpdateSpec<I extends Item> extends Item {
 
         I asReturningUpdate();
     }
 
-    interface _DmlDeleteSpec<I extends Item> {
+    interface _DmlDeleteSpec<I extends Item> extends Item {
 
         I asDelete();
     }
 
-    interface _DqlDeleteSpec<Q extends Item> {
+    interface _DqlDeleteSpec<Q extends Item> extends Item {
 
         Q asReturningDelete();
     }

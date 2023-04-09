@@ -99,7 +99,7 @@ public class PostgreUpdateUnitTests extends PostgreUnitTests {
                 .from(HistoryChinaRegion_.T, AS, "hc")
                 .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
                 .and(ChinaRegion_.id::equal, SQLs::namedParam)
-                .paramList(paramList)
+                .namedParamList(paramList)
                 .asUpdate();
 
         printStmt(LOG, stmt);
@@ -136,7 +136,7 @@ public class PostgreUpdateUnitTests extends PostgreUnitTests {
                 .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
                 .and(ChinaRegion_.id::equal, SQLs::namedParam)
                 .returning("c", PERIOD, ChinaRegion_.T)
-                .paramList(paramList)
+                .namedParamList(paramList)
                 .asReturningUpdate();
 
 

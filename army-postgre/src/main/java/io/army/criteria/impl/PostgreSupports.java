@@ -233,45 +233,6 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//PostgreNoOnTableBlock
 
 
-    private static abstract class PostgreDynamicDmlCteLeftParenClause<I extends Item>
-            extends ParenStringConsumerClause<Statement._StaticAsClaus<I>>
-            implements DialectStatement._SimpleCteLeftParenSpec<I>
-            , Statement._StaticAsClaus<I>
-            , Statement._AsCteClause<PostgreCtes> {
-
-        private final String name;
-
-        final PostgreCteBuilder cteBuilder;
-
-        private List<String> columnAliasList;
-
-        private PostgreDynamicDmlCteLeftParenClause(String name, PostgreCteBuilder cteBuilder) {
-            super(cteBuilder.context);
-            this.name = name;
-            this.cteBuilder = cteBuilder;
-        }
-
-
-        @Override
-        public final PostgreCtes asCte() {
-            return this.cteBuilder;
-        }
-
-        @Override
-        final Statement._StaticAsClaus<I> stringConsumerEnd(final List<String> stringList) {
-            if (this.columnAliasList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.columnAliasList = stringList;
-            return this;
-        }
-
-        final Statement._AsCteClause<PostgreCtes> subStmtEnd(final SubStatement stmt) {
-            CriteriaUtils.createAndAddCte(this.cteBuilder.context, this.name, this.columnAliasList, stmt);
-            return this;
-        }
-
-    }//PostgreDynamicDmlCteLeftParenClause
 
 
     private enum CteSearchOption implements SQLWords {

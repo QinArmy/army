@@ -244,7 +244,8 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
     }//SimpleUpdate
 
 
-    private static abstract class UpdateClause<I extends Item, WE> extends CriteriaSupports.WithClause<MySQLCtes, WE> {
+    private static abstract class UpdateClause<I extends Item, WE extends Item>
+            extends CriteriaSupports.WithClause<MySQLCtes, WE> {
 
         List<Hint> hintList;
 
@@ -417,19 +418,19 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
         }
 
         @Override
-        public <P> _DmlUpdateSpec<BatchUpdate> paramList(List<P> paramList) {
+        public <P> _DmlUpdateSpec<BatchUpdate> namedParamList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
         }
 
         @Override
-        public <P> _DmlUpdateSpec<BatchUpdate> paramList(Supplier<List<P>> supplier) {
+        public <P> _DmlUpdateSpec<BatchUpdate> namedParamList(Supplier<List<P>> supplier) {
             this.paramList = CriteriaUtils.paramList(this.context, supplier.get());
             return this;
         }
 
         @Override
-        public _DmlUpdateSpec<BatchUpdate> paramList(Function<String, ?> function, String keyName) {
+        public _DmlUpdateSpec<BatchUpdate> namedParamList(Function<String, ?> function, String keyName) {
             this.paramList = CriteriaUtils.paramList(this.context, (List<?>) function.apply(keyName));
             return this;
         }
