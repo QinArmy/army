@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.impl._JoinType;
+import io.army.criteria.impl._JoinableDelete;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
@@ -70,21 +71,36 @@ final class TableContext {
                 throw new IllegalStateException();
             }
         }
-        final List<? extends _TabularBock> blockList;
+        final List<? extends _TabularBlock> blockList;
         blockList = stmt.tableBlockList();
 
         final Context context;
         context = new Context(dialect, childMap, visible, blockList.size());
         iterateTableReferences(blockList, context);
+
+        if (stmt instanceof _SingleUpdate) {
+            final TableMeta<?> targetTable;
+            targetTable = ((_SingleUpdate) stmt).table();
+            final String tableAlias;
+            tableAlias = ((_SingleUpdate) stmt).tableAlias();
+            if (context.aliasToTable.putIfAbsent(tableAlias, targetTable) != null) {
+                throw _Exceptions.tableAliasDuplication(tableAlias);
+            }
+
+            context.tableToSafeAlias.putIfAbsent(targetTable, dialect.identifier(tableAlias));
+        }
         return new TableContext(context.aliasToTable, context.tableToSafeAlias, context.childAliasToParentAlias);
     }
 
 
-    static TableContext forDelete(final _MultiDelete stmt, final ArmyParser dialect, final Visible visible) {
+    static TableContext forDelete(final _JoinableDelete stmt, final ArmyParser dialect, final Visible visible) {
         final List<_Pair<String, TableMeta<?>>> pairList;
-        pairList = stmt.deleteTableList();
-        final int pairSize = pairList.size();
-        assert pairSize > 0;
+        if (stmt instanceof _MultiDelete) {
+            pairList = ((_MultiDelete) stmt).deleteTableList();
+            assert pairList.size() > 0;
+        } else {
+            pairList = Collections.emptyList();
+        }
 
         Map<ChildTableMeta<?>, Boolean> childMap = null;
         TableMeta<?> table;
@@ -99,15 +115,27 @@ final class TableContext {
             childMap.putIfAbsent((ChildTableMeta<?>) table, Boolean.TRUE);
         }
 
-        final List<? extends _TabularBock> blockList = stmt.tableBlockList();
+        final List<? extends _TabularBlock> blockList = stmt.tableBlockList();
         final Context context;
         context = new Context(dialect, childMap, visible, blockList.size());
         iterateTableReferences(blockList, context);
+
+        if (stmt instanceof _SingleDelete) {
+            final TableMeta<?> targetTable;
+            targetTable = ((_SingleDelete) stmt).table();
+            final String tableAlias;
+            tableAlias = ((_SingleDelete) stmt).tableAlias();
+            if (context.aliasToTable.putIfAbsent(tableAlias, targetTable) != null) {
+                throw _Exceptions.tableAliasDuplication(tableAlias);
+            }
+
+            context.tableToSafeAlias.putIfAbsent(targetTable, dialect.identifier(tableAlias));
+        }
         return new TableContext(context.aliasToTable, context.tableToSafeAlias, context.childAliasToParentAlias);
     }
 
 
-    static TableContext forQuery(List<? extends _TabularBock> blockList, ArmyParser dialect, final Visible visible) {
+    static TableContext forQuery(List<? extends _TabularBlock> blockList, ArmyParser dialect, final Visible visible) {
         final Context context;
         context = new Context(dialect, null, visible, blockList.size());
         iterateTableReferences(blockList, context);
@@ -138,7 +166,7 @@ final class TableContext {
     }
 
 
-    private static void iterateTableReferences(final List<? extends _TabularBock> blockList, final Context context) {
+    private static void iterateTableReferences(final List<? extends _TabularBlock> blockList, final Context context) {
 
         final Map<String, TabularItem> aliasToTable = context.aliasToTable;
         final Map<TableMeta<?>, String> tableToSafeAlias = context.tableToSafeAlias;
@@ -150,7 +178,7 @@ final class TableContext {
         final ArmyParser dialect = context.dialect;
         final Visible visible = context.visible;
 
-        _TabularBock block, parentBlock;
+        _TabularBlock block, parentBlock;
         String safeAlias, alias, parentAlias;
         TabularItem tableItem;
         ParentTableMeta<?> parent;
@@ -232,7 +260,7 @@ final class TableContext {
 
     @Nullable
     private static boolean nextIsParent(final ChildTableMeta<?> child, final String childAlias
-            , final _TabularBock block) {
+            , final _TabularBlock block) {
         final boolean match;
         switch (block.jointType()) {
             case JOIN:
@@ -253,11 +281,11 @@ final class TableContext {
      * @return null : finding failure
      */
     @Nullable
-    private static _TabularBock findParentFromLeft(final ChildTableMeta<?> child, final @Nullable String parentAlias
-            , final List<? extends _TabularBock> blockList, final int fromIndex) {
+    private static _TabularBlock findParentFromLeft(final ChildTableMeta<?> child, final @Nullable String parentAlias
+            , final List<? extends _TabularBlock> blockList, final int fromIndex) {
 
         final ParentTableMeta<?> parent = child.parentMeta();
-        _TabularBock block, parentBlock = null;
+        _TabularBlock block, parentBlock = null;
         TabularItem tableItem;
         _JoinType joinType;
         TableField parentId;

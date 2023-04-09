@@ -6,7 +6,7 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TabularBock;
+import io.army.criteria.impl.inner._TabularBlock;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.postgre._PostgreCte;
 import io.army.criteria.impl.inner.postgre._PostgreQuery;
@@ -57,6 +57,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         PostgreQuery._TableSampleJoinSpec<I>,
         PostgreQuery._RepeatableJoinClause<I>,
         PostgreQuery._ParensJoinSpec<I>,
+        PostgreQuery._WhereAndSpec<I>,
         PostgreQuery._WindowCommaSpec<I>,
         PostgreQuery._HavingSpec<I>,
         PostgreQuery._FetchSpec<I> {
@@ -92,7 +93,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
     private List<_LockBlock> lockBlockList;
 
-    private _TabularBock fromCrossBlock;
+    private _TabularBlock fromCrossBlock;
 
     private PostgreQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
         super(withSpec, context);
@@ -472,7 +473,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     @Override
     final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem,
                                  String alias) {
-        final _TabularBock block;
+        final _TabularBlock block;
         block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
@@ -537,7 +538,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
      * @return get the table block of last FROM or CROSS JOIN clause
      */
     private PostgreSupports.FromClauseTableBlock getFromClauseBlock() {
-        final _TabularBock block = this.fromCrossBlock;
+        final _TabularBlock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof PostgreSupports.FromClauseTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -548,7 +549,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
      * @return get the derived block of last FROM or CROSS JOIN clause
      */
     private TableBlocks.FromClauseAliasDerivedBlock getFromDerivedBlock() {
-        final _TabularBock block = this.fromCrossBlock;
+        final _TabularBlock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }

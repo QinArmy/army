@@ -12,7 +12,7 @@ import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TabularBock;
+import io.army.criteria.impl.inner._TabularBlock;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
@@ -83,8 +83,8 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException nonStandardTableBlock(_TabularBock block) {
-        String m = String.format("%s is non-standard %s", _ClassUtils.safeClassName(block), _TabularBock.class.getName());
+    public static CriteriaException nonStandardTableBlock(_TabularBlock block) {
+        String m = String.format("%s is non-standard %s", _ClassUtils.safeClassName(block), _TabularBlock.class.getName());
         return new CriteriaException(m);
     }
 

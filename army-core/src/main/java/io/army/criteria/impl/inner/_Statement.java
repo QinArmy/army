@@ -26,7 +26,7 @@ public interface _Statement {
         /**
          * @throws UnsupportedOperationException throw when this isn't instance of {@link _ReturningDml}
          */
-        List<? extends _Selection> returningList();
+        List<? extends _SelectItem> returningList();
     }
 
     interface _RowCountSpec {
@@ -102,7 +102,7 @@ public interface _Statement {
         /**
          * @return a unmodifiable list
          */
-        List<_TabularBock> tableBlockList();
+        List<_TabularBlock> tableBlockList();
 
     }
 

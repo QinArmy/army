@@ -7,10 +7,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._PostgreConsultant;
 import io.army.criteria.impl.inner.*;
-import io.army.criteria.impl.inner.postgre._ConflictTargetItem;
-import io.army.criteria.impl.inner.postgre._PostgreInsert;
-import io.army.criteria.impl.inner.postgre._PostgreQuery;
-import io.army.criteria.impl.inner.postgre._PostgreTableBlock;
+import io.army.criteria.impl.inner.postgre.*;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
@@ -118,7 +115,7 @@ final class PostgreDialectParser extends PostgreParser {
         this.selectionListClause(context);
 
         // 6. FROM clause
-        final List<_TabularBock> tableBlockList;
+        final List<_TabularBlock> tableBlockList;
         tableBlockList = stmt.tableBlockList();
         if (tableBlockList.size() > 0) {
             sqlBuilder.append(_Constant.SPACE_FROM);
@@ -149,7 +146,8 @@ final class PostgreDialectParser extends PostgreParser {
         // 11. LIMIT OFFSET FETCH clause
         postgreLimitClause(stmt, context);
         // 12 LOCK clause
-        postgreLockClause(stmt.lockBlockList(), context);
+        postgreLockClause(stmt, context);
+
     }
 
 
@@ -159,8 +157,64 @@ final class PostgreDialectParser extends PostgreParser {
     }
 
     @Override
-    protected void parseSingleUpdate(_SingleUpdate update, _SingleUpdateContext context) {
-        super.parseSingleUpdate(update, context);
+    protected void parseSingleUpdate(final _SingleUpdate update, final _SingleUpdateContext context) {
+        final _PostgreUpdate stmt = (_PostgreUpdate) update;
+
+        // 1. WITH clause
+        this.parseWithClause(stmt, context);
+
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+        if (sqlBuilder.length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+        // 2. UPDATE key word
+        sqlBuilder.append(_Constant.UPDATE);
+        // 3. ONLY modifier
+        final SQLWords onlyModifier;
+        onlyModifier = stmt.modifier();
+        if (onlyModifier != null) {
+            assert onlyModifier == SQLs.ONLY;
+            sqlBuilder.append(onlyModifier.render());
+        }
+        // 4. table name
+        sqlBuilder.append(_Constant.SPACE);
+        final TableMeta<?> updateTable = context.targetTable();
+        assert updateTable == stmt.table();
+        this.safeObjectName(updateTable, sqlBuilder);
+
+        // 5. table alias
+        final String safeTableAlias;
+        safeTableAlias = context.safeTargetTableAlias();
+        sqlBuilder.append(_Constant.SPACE_AS_SPACE)
+                .append(safeTableAlias);
+        // 6. SET clause
+        this.singleTableSetClause(stmt.itemPairList(), context);
+
+        // 7. FROM clause
+        final List<_TabularBlock> tableBlockList;
+        tableBlockList = stmt.tableBlockList();
+        final boolean existsFromClause;
+        existsFromClause = tableBlockList.size() > 0;
+        if (existsFromClause) {
+            sqlBuilder.append(_Constant.SPACE_FROM);
+            this.postgreFromItemsClause(stmt.tableBlockList(), (_MultiTableStmtContext) context, false);
+        }
+
+        // 8. WHERE clause
+        this.dmlWhereClause(stmt.wherePredicateList(), context);
+        context.appendConditionFields();
+        if (existsFromClause) {
+            this.multiTableVisible(tableBlockList, (_MultiTableStmtContext) context, false);
+        } else if (updateTable instanceof SingleTableMeta) {
+            this.visiblePredicate((SingleTableMeta<?>) updateTable, safeTableAlias, context, false);
+        }
+
+        // 9. RETURNING clause
+        if (stmt instanceof _ReturningDml) {
+            returningClause(context, (_ReturningDml) stmt);
+        }
+
     }
 
     @Override
@@ -186,14 +240,14 @@ final class PostgreDialectParser extends PostgreParser {
      * @see #parseSingleUpdate(_SingleUpdate, _SingleUpdateContext)
      * @see #parseSingleDelete(_SingleDelete, _SingleDeleteContext)
      */
-    private void postgreFromItemsClause(final List<_TabularBock> blockList, final _MultiTableStmtContext context,
+    private void postgreFromItemsClause(final List<_TabularBlock> blockList, final _MultiTableStmtContext context,
                                         final boolean nested) {
         final int blockSize = blockList.size();
         assert blockSize > 0;
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
 
-        _TabularBock block;
+        _TabularBlock block;
         TabularItem tabularItem;
         TableMeta<?> table;
         String alias;
@@ -485,11 +539,62 @@ final class PostgreDialectParser extends PostgreParser {
 
     }
 
+
+    /**
+     * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
+     */
+    private void postgreLockClause(final _PostgreQuery stmt, final _SimpleQueryContext context) {
+        final List<_Query._LockBlock> blockList = stmt.lockBlockList();
+        if (blockList.size() == 0) {
+            return;
+        }
+
+        final List<? extends SQLWords> modifierList = stmt.modifierList();
+        if (modifierList.contains(Postgres.DISTINCT)) {
+            String m = String.format("%s Currently, lock clause cannot be specified with DISTINCT", this.dialect);
+            throw new CriteriaException(m);
+        }
+
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+        List<String> tableAliasList;
+        int tableAliasSize;
+        SQLWords waitOption;
+        for (_Query._LockBlock block : blockList) {
+
+            sqlBuilder.append(block.lockStrength().render());
+
+            tableAliasList = block.lockTableAliasList();
+            tableAliasSize = tableAliasList.size();
+
+            if (tableAliasSize > 0) {
+                sqlBuilder.append(_Constant.SPACE_OF_SPACE);
+                for (int i = 0; i < tableAliasSize; i++) {
+                    if (i > 0) {
+                        sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+                    }
+                    sqlBuilder.append(context.safeTableAlias(tableAliasList.get(i)));
+                }
+
+            }// if(tableAliasSize >0)
+
+            waitOption = block.lockWaitOption();
+            if (waitOption != null) {
+                sqlBuilder.append(waitOption.render());
+            }
+
+
+        }
+
+    }
+
+    /*-------------------below static method -------------------*/
+
     /**
      * @see #parsePostgreInsert(_InsertContext, _PostgreInsert)
      */
     private static void returningClause(final _SqlContext context, final _ReturningDml stmt) {
-        final List<? extends _Selection> selectionList;
+        final List<? extends _SelectItem> selectionList;
         selectionList = stmt.returningList();
         final int selectionSize;
         selectionSize = selectionList.size();
@@ -603,43 +708,6 @@ final class PostgreDialectParser extends PostgreParser {
 
         }
 
-
-    }
-
-    /**
-     * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
-     */
-    private static void postgreLockClause(final List<_Query._LockBlock> blockList, final _SimpleQueryContext context) {
-        final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder();
-        List<String> tableAliasList;
-        int tableAliasSize;
-        SQLWords waitOption;
-        for (_Query._LockBlock block : blockList) {
-
-            sqlBuilder.append(block.lockStrength().render());
-
-            tableAliasList = block.lockTableAliasList();
-            tableAliasSize = tableAliasList.size();
-
-            if (tableAliasSize > 0) {
-                sqlBuilder.append(_Constant.SPACE_OF_SPACE);
-                for (int i = 0; i < tableAliasSize; i++) {
-                    if (i > 0) {
-                        sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-                    }
-                    sqlBuilder.append(context.safeTableAlias(tableAliasList.get(i)));
-                }
-
-            }// if(tableAliasSize >0)
-
-            waitOption = block.lockWaitOption();
-            if (waitOption != null) {
-                sqlBuilder.append(waitOption.render());
-            }
-
-
-        }
 
     }
 

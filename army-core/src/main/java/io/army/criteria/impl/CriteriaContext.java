@@ -5,7 +5,7 @@ import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.impl.inner._AliasDerivedBlock;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._SelectItem;
-import io.army.criteria.impl.inner._TabularBock;
+import io.army.criteria.impl.inner._TabularBlock;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -108,10 +108,10 @@ interface CriteriaContext {
     void bufferNestedDerived(_AliasDerivedBlock block);
 
 
-    void onAddBlock(_TabularBock block);
+    void onAddBlock(_TabularBlock block);
 
 
-    _TabularBock lastBlock();
+    _TabularBlock lastBlock();
 
 
     void onAddWindow(String windowName);
@@ -127,7 +127,7 @@ interface CriteriaContext {
      * should be invoked before {@link ContextStack#pop(CriteriaContext)}
      * </p>
      */
-    List<_TabularBock> endContext();
+    List<_TabularBlock> endContext();
 
     void endContextBeforeCommand();
 

@@ -1045,13 +1045,13 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #parseStandardQuery(_StandardQuery, _SimpleQueryContext)
      */
-    protected final void standardTableReferences(final List<_TabularBock> tableBlockList,
+    protected final void standardTableReferences(final List<_TabularBlock> tableBlockList,
                                                  final _MultiTableStmtContext context, final boolean nested) {
         final int blockSize = tableBlockList.size();
         assert blockSize > 0;
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
-        _TabularBock block;
+        _TabularBlock block;
         TabularItem tableItem;
         _JoinType joinType;
         List<_Predicate> predicateList;
@@ -1125,7 +1125,7 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #parseStandardQuery(_StandardQuery, _SimpleQueryContext)
      */
-    protected final void queryWhereClause(final List<_TabularBock> tableBlockList, final List<_Predicate> predicateList
+    protected final void queryWhereClause(final List<_TabularBlock> tableBlockList, final List<_Predicate> predicateList
             , final _MultiTableStmtContext context) {
         final int predicateSize = predicateList.size();
 
@@ -1497,13 +1497,13 @@ abstract class ArmyParser implements DialectParser {
      * @see #parseStandardQuery(_StandardQuery, _SimpleQueryContext)
      * @see #queryWhereClause(List, List, _MultiTableStmtContext)
      */
-    protected final int multiTableVisible(final List<_TabularBock> blockList, final _MultiTableStmtContext context
+    protected final int multiTableVisible(final List<_TabularBlock> blockList, final _MultiTableStmtContext context
             , final boolean firstPredicate) {
         TabularItem tableItem;
         String safeTableAlias;
         SingleTableMeta<?> table;
         int count = 0;
-        for (_TabularBock block : blockList) {
+        for (_TabularBlock block : blockList) {
             tableItem = block.tableItem();
             if (tableItem instanceof _NestedItems) {
                 count += multiTableVisible(((_NestedItems) tableItem).tableBlockList(), context,
@@ -2447,7 +2447,7 @@ abstract class ArmyParser implements DialectParser {
         //2. select list clause
         this.selectionListClause(context);
         //3. from clause
-        final List<_TabularBock> blockList;
+        final List<_TabularBlock> blockList;
         blockList = query.tableBlockList();
         if (blockList.size() > 0) {
             context.sqlBuilder()

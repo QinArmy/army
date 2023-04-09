@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.*;
@@ -623,14 +624,24 @@ abstract class InsertSupports {
             return fieldList;
         }
 
+        /**
+         * FOR RETURNING clause
+         */
         final List<? extends TableField> effectiveFieldList() {
             final List<FieldMeta<?>> fieldList = this.fieldList;
-
+            final PrimaryFieldMeta<?> idField;
             final List<? extends TableField> effectiveList;
             if (fieldList == null) {
                 effectiveList = this.insertTable.fieldList();
             } else if (fieldList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);
+            } else if (this.insertTable instanceof SingleTableMeta
+                    && (idField = this.insertTable.id()).generatorType() == GeneratorType.POST) {
+                assert !fieldList.contains(idField);
+                final List<FieldMeta<?>> list = new ArrayList<>(fieldList.size() + 1);
+                list.add(idField);
+                list.addAll(fieldList);
+                effectiveList = Collections.unmodifiableList(list);
             } else {
                 effectiveList = fieldList;
             }

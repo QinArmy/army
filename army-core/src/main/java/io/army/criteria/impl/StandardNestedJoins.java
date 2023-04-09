@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TabularBock;
+import io.army.criteria.impl.inner._TabularBlock;
 import io.army.criteria.standard.StandardCrosses;
 import io.army.criteria.standard.StandardJoins;
 import io.army.criteria.standard.StandardStatement;
@@ -96,7 +96,7 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
 
         private final Supplier<I> ender;
 
-        private StandardNestedBlock(CriteriaContext context, Consumer<_TabularBock> blockConsumer
+        private StandardNestedBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer
                 , _JoinType joinType, TabularItem tabularItem
                 , String alias, Supplier<I> ender) {
             super(context, blockConsumer, joinType, null, tabularItem, alias);

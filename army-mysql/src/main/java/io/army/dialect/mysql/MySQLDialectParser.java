@@ -179,7 +179,7 @@ final class MySQLDialectParser extends MySQLParser {
 
         //5. select item list clause
         this.selectionListClause(context);
-        final List<_TabularBock> tableBlockList;
+        final List<_TabularBlock> tableBlockList;
         tableBlockList = stmt.tableBlockList();
 
         if (tableBlockList.size() > 0) {
@@ -671,7 +671,7 @@ final class MySQLDialectParser extends MySQLParser {
      * @see #parseMultiDelete(_MultiDelete, _MultiDeleteContext)
      * @see #parseSimpleQuery(_Query, _SimpleQueryContext)
      */
-    private void mysqlTableReferences(final List<_TabularBock> blockList, final _MultiTableStmtContext context
+    private void mysqlTableReferences(final List<_TabularBlock> blockList, final _MultiTableStmtContext context
             , final boolean nested) {
         final int blockSize = blockList.size();
         assert blockSize > 0;
@@ -683,7 +683,7 @@ final class MySQLDialectParser extends MySQLParser {
         }
         final boolean asOf80 = this.asOf80;
 
-        _TabularBock block;
+        _TabularBlock block;
         TabularItem tableItem;
         TableMeta<?> table;
         String alias;

@@ -6,7 +6,7 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TabularBock;
+import io.army.criteria.impl.inner._TabularBlock;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.*;
@@ -99,7 +99,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      * @see #getIndexHintClause()
      * @see #getFromClauseDerived()
      */
-    private _TabularBock fromCrossBlock;
+    private _TabularBlock fromCrossBlock;
 
     /**
      * @see #onOrderByEvent()
@@ -517,7 +517,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     @Override
     final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem,
                                  String alias) {
-        final _TabularBock block;
+        final _TabularBlock block;
         block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
@@ -566,7 +566,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      * @see #crossJoin(Function)
      */
     private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
-        final _TabularBock block;
+        final _TabularBlock block;
         block = TableBlocks.fromNestedBlock(joinType, nestedItems);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
@@ -595,7 +595,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      */
     @SuppressWarnings("unchecked")
     private MySQLSupports.FromClausePurposeTableBlock<_IndexHintJoinSpec<I>> getIndexHintClause() {
-        final _TabularBock block = this.fromCrossBlock;
+        final _TabularBlock block = this.fromCrossBlock;
         if (this.context.lastBlock() != block || !(block instanceof MySQLSupports.FromClausePurposeTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -610,7 +610,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      * @see #ifParens(Consumer)
      */
     private TableBlocks.FromClauseAliasDerivedBlock getFromClauseDerived() {
-        final _TabularBock block = this.fromCrossBlock;
+        final _TabularBlock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }

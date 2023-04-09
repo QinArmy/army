@@ -4,7 +4,7 @@ import io.army.criteria.SQLWords;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._Statement;
-import io.army.criteria.impl.inner._TabularBock;
+import io.army.criteria.impl.inner._TabularBlock;
 import io.army.lang.Nullable;
 
 import java.util.List;
@@ -15,7 +15,7 @@ public interface _PostgreDelete extends _SingleDelete, _DialectStatement, _State
     @Nullable
     SQLWords modifier();
 
-    List<_TabularBock> tableBlockList();
+    List<_TabularBlock> tableBlockList();
 
 
 }

@@ -911,7 +911,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         private _PostgreInsert._ConflictActionClauseResult conflictAction;
 
-        private List<_Selection> returningList;
+        private List<_SelectItem> returningList;
 
 
         /**
@@ -1003,7 +1003,7 @@ abstract class PostgreInserts extends InsertSupports {
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(Selection selection1, Selection selection2) {
             this.onAddSelection(selection1)
-                    .add((_Selection) selection2);
+                    .onAddSelection(selection2);
             return this;
         }
 
@@ -1018,7 +1018,7 @@ abstract class PostgreInserts extends InsertSupports {
                 Function<String, Selection> function1, String alias1,
                 Function<String, Selection> function2, String alias2) {
             this.onAddSelection(function1.apply(alias1))
-                    .add((_Selection) function2.apply(alias2));
+                    .onAddSelection(function2.apply(alias2));
             return this;
         }
 
@@ -1026,7 +1026,7 @@ abstract class PostgreInserts extends InsertSupports {
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias,
                                                                     Selection selection) {
             this.onAddSelection(function.apply(alias))
-                    .add((_Selection) selection);
+                    .onAddSelection(selection);
             return this;
         }
 
@@ -1034,28 +1034,26 @@ abstract class PostgreInserts extends InsertSupports {
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(
                 Selection selection, Function<String, Selection> function, String alias) {
             this.onAddSelection(selection)
-                    .add((_Selection) function.apply(alias));
+                    .onAddSelection(function.apply(alias));
             return this;
         }
 
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2,
                                                                     TableField field3) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3);
             return this;
         }
 
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2,
                                                                     TableField field3, TableField field4) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
-            list.add((_Selection) field4);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3)
+                    .onAddSelection(field4);
             return this;
         }
 
@@ -1065,7 +1063,7 @@ abstract class PostgreInserts extends InsertSupports {
             if (this.returningList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            this.returningList = PostgreSupports.EMPTY_SELECTION_LIST;
+            this.returningList = PostgreSupports.EMPTY_SELECT_ITEM_LIST;
             return this;
         }
 
@@ -1074,7 +1072,7 @@ abstract class PostgreInserts extends InsertSupports {
             if (this.returningList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            consumer.accept(CriteriaSupports.returningBuilder(this::onAddSelection));
+            this.returningList = CriteriaUtils.selectionList(this.context, consumer);
             return this;
         }
 
@@ -1088,7 +1086,7 @@ abstract class PostgreInserts extends InsertSupports {
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> comma(Selection selection1, Selection selection2) {
             this.onAddSelection(selection1)
-                    .add((_Selection) selection2);
+                    .onAddSelection(selection2);
             return this;
         }
 
@@ -1102,7 +1100,7 @@ abstract class PostgreInserts extends InsertSupports {
         public PostgreInsert._StaticReturningCommaSpec<Q> comma(Function<String, Selection> function1, String alias1,
                                                                 Function<String, Selection> function2, String alias2) {
             this.onAddSelection(function1.apply(alias1))
-                    .add((_Selection) function2.apply(alias2));
+                    .onAddSelection(function2.apply(alias2));
             return this;
         }
 
@@ -1110,7 +1108,7 @@ abstract class PostgreInserts extends InsertSupports {
         public PostgreInsert._StaticReturningCommaSpec<Q> comma(Function<String, Selection> function, String alias,
                                                                 Selection selection) {
             this.onAddSelection(function.apply(alias))
-                    .add((_Selection) selection);
+                    .onAddSelection(selection);
             return this;
         }
 
@@ -1118,28 +1116,26 @@ abstract class PostgreInserts extends InsertSupports {
         public PostgreInsert._StaticReturningCommaSpec<Q> comma(Selection selection,
                                                                 Function<String, Selection> function, String alias) {
             this.onAddSelection(selection)
-                    .add((_Selection) function.apply(alias));
+                    .onAddSelection(function.apply(alias));
             return this;
         }
 
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2,
                                                                 TableField field3) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3);
             return this;
         }
 
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3,
                                                                 TableField field4) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
-            list.add((_Selection) field4);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3)
+                    .onAddSelection(field4);
             return this;
         }
 
@@ -1154,8 +1150,8 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public Q asReturningInsert() {
-            final List<_Selection> selectionList = this.returningList;
-            if (selectionList != PostgreSupports.EMPTY_SELECTION_LIST) {
+            final List<_SelectItem> selectionList = this.returningList;
+            if (selectionList != PostgreSupports.EMPTY_SELECT_ITEM_LIST) {
                 if (!(selectionList instanceof ArrayList && selectionList.size() > 0)) {
                     throw ContextStack.castCriteriaApi(this.context);
                 }
@@ -1178,11 +1174,10 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @SuppressWarnings("unchecked")
-        private List<? extends _Selection> effectiveReturningList() {
-            final List<_Selection> selectionList = this.returningList;
-            final List<? extends _Selection> effectiveList;
-            if (selectionList == PostgreSupports.EMPTY_SELECTION_LIST) {
-                //TODO add the columns than is updated by ON CONFLICT clause,and validate this.
+        private List<? extends _SelectItem> effectiveReturningList() {
+            final List<_SelectItem> selectionList = this.returningList;
+            final List<? extends _SelectItem> effectiveList;
+            if (selectionList == PostgreSupports.EMPTY_SELECT_ITEM_LIST) {
                 effectiveList = (List<? extends _Selection>) this.effectiveFieldList();
             } else if (selectionList == null || selectionList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -1193,11 +1188,11 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
 
-        private List<_Selection> onAddSelection(final @Nullable Selection selection) {
+        private PostgreComplexValuesClause<T, I, Q> onAddSelection(final @Nullable Selection selection) {
             if (selection == null) {
                 throw ContextStack.nullPointer(this.context);
             }
-            List<_Selection> list = this.returningList;
+            List<_SelectItem> list = this.returningList;
             if (list == null) {
                 list = new ArrayList<>();
                 this.returningList = list;
@@ -1205,7 +1200,7 @@ abstract class PostgreInserts extends InsertSupports {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             list.add((_Selection) selection);
-            return list;
+            return this;
         }
 
 
@@ -1322,7 +1317,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final _ConflictActionClauseResult conflictAction;
 
-        private final List<? extends _Selection> returningList;
+        private final List<? extends _SelectItem> returningList;
 
 
         private PostgreValueSyntaxInsertStatement(final PostgreComplexValuesClause<?, ?, ?> clause) {
@@ -1334,7 +1329,7 @@ abstract class PostgreInserts extends InsertSupports {
             if (this instanceof _ReturningDml) {
                 this.returningList = clause.effectiveReturningList();
             } else {
-                this.returningList = PostgreSupports.EMPTY_SELECTION_LIST;
+                this.returningList = PostgreSupports.EMPTY_SELECT_ITEM_LIST;
             }
         }
 
@@ -1349,7 +1344,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public final List<? extends _Selection> returningList() {
+        public final List<? extends _SelectItem> returningList() {
             if (!(this instanceof _ReturningDml)) {
                 throw new UnsupportedOperationException();
             }
@@ -1839,7 +1834,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final _ConflictActionClauseResult conflictAction;
 
-        private final List<? extends _Selection> returningList;
+        private final List<? extends _SelectItem> returningList;
 
         private PostgreQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
@@ -1849,7 +1844,7 @@ abstract class PostgreInserts extends InsertSupports {
             this.overridingMode = clause.overridingMode;
 
             this.conflictAction = clause.conflictAction;
-            if (this instanceof DqlStatement) {
+            if (this instanceof _ReturningDml) {
                 this.returningList = clause.effectiveReturningList();
             } else {
                 this.returningList = Collections.emptyList();
@@ -1900,7 +1895,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public final List<? extends _Selection> returningList() {
+        public final List<? extends _SelectItem> returningList() {
             if (!(this instanceof _ReturningDml)) {
                 throw new UnsupportedOperationException();
             }

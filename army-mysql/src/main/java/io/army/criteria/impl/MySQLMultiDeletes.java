@@ -5,7 +5,7 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TabularBock;
+import io.army.criteria.impl.inner._TabularBlock;
 import io.army.criteria.impl.inner.mysql._MySQLMultiDelete;
 import io.army.criteria.mysql.*;
 import io.army.dialect.Dialect;
@@ -66,7 +66,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT ext
     private List<_Pair<String, TableMeta<?>>> deleteTablePairList;
 
 
-    _TabularBock fromCrossBlock;
+    _TabularBlock fromCrossBlock;
 
     private MySQLMultiDeletes(@Nullable ArmyStmtSpec spec) {
         super(spec, CriteriaContexts.primaryMultiDmlContext(spec));
@@ -355,7 +355,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT ext
 
     @Override
     final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
-        final _TabularBock block;
+        final _TabularBlock block;
         block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
@@ -369,7 +369,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT ext
 
 
     private TableBlocks.FromClauseAliasDerivedBlock getFromClauseDerived() {
-        final _TabularBock block = this.fromCrossBlock;
+        final _TabularBlock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -377,7 +377,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT ext
     }
 
     private FC fromNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
-        final _TabularBock block;
+        final _TabularBlock block;
         block = TableBlocks.fromNestedBlock(joinType, nestedItems);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
@@ -405,7 +405,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE, DT, FU extends Item, FT ext
      * @see #forceIndex()
      */
     private MySQLSupports.FromClauseForJoinTableBlock<FT> getHintClause() {
-        final _TabularBock block = this.fromCrossBlock;
+        final _TabularBlock block = this.fromCrossBlock;
         if (block != this.context.lastBlock() || !(block instanceof MySQLSupports.FromClauseForJoinTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }

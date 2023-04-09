@@ -33,14 +33,47 @@ abstract class SelectionGroups {
     }
 
     static DerivedFieldGroup derivedGroup(String alias) {
-        return new DerivedSelectionGroupImpl(alias);
+        return new DelayDerivedSelectionGroup(alias);
+    }
+
+    static _SelectionGroup derivedGroup(_SelectionMap table, String alias) {
+        return new DerivedSelectionGroup(table, alias);
+    }
+
+    /*-------------------below private method -------------------*/
+
+    private static void appendDerivedFieldGroup(final String derivedAlias, final List<? extends Selection> selectionList,
+                                                final _SqlContext context) {
+
+        final StringBuilder builder = context.sqlBuilder();
+
+        final DialectParser dialect = context.parser();
+        final String safeAlias = dialect.identifier(derivedAlias);
+        final int size = selectionList.size();
+        assert size > 0;
+
+        Selection selection;
+        String safeFieldAlias;
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(_Constant.SPACE_COMMA);
+            }
+            selection = selectionList.get(i);
+            safeFieldAlias = dialect.identifier(selection.selectionName());
+            builder.append(_Constant.SPACE)
+                    .append(safeAlias)
+                    .append(_Constant.POINT)
+                    .append(safeFieldAlias)
+                    .append(_Constant.SPACE_AS_SPACE)
+                    .append(safeFieldAlias);
+        }
     }
 
 
     /*################################## blow static inner class  ##################################*/
 
 
-    static final class TableFieldGroupImpl<T> implements TableFieldGroup {
+    static final class TableFieldGroupImpl<T> implements _SelectionGroup.TableFieldGroup {
 
         private final String tableAlias;
 
@@ -76,8 +109,8 @@ abstract class SelectionGroups {
         }
 
         @Override
-        public boolean isIllegalGroup(TableMeta<?> table) {
-            return table != this.fieldList.get(0).tableMeta();
+        public boolean isLegalGroup(TableMeta<?> table) {
+            return table == this.fieldList.get(0).tableMeta();
         }
 
         @Override
@@ -126,13 +159,42 @@ abstract class SelectionGroups {
     }//TableFieldGroup
 
 
-    private static final class DerivedSelectionGroupImpl implements DerivedFieldGroup {
+    private static final class DerivedSelectionGroup implements _SelectionGroup {
 
-        final String derivedAlias;
+        private final String derivedAlias;
+
+        private final List<? extends Selection> selectionList;
+
+        DerivedSelectionGroup(_SelectionMap table, String alias) {
+            this.derivedAlias = alias;
+            this.selectionList = table.refAllSelection();
+        }
+
+        @Override
+        public void appendSelectItem(final _SqlContext context) {
+            appendDerivedFieldGroup(this.derivedAlias, this.selectionList, context);
+        }
+
+        @Override
+        public String tableAlias() {
+            return this.derivedAlias;
+        }
+
+        @Override
+        public List<? extends Selection> selectionList() {
+            return this.selectionList;
+        }
+
+    }//DerivedSelectionGroup
+
+
+    private static final class DelayDerivedSelectionGroup implements DerivedFieldGroup {
+
+        private final String derivedAlias;
 
         private List<? extends Selection> selectionList;
 
-        private DerivedSelectionGroupImpl(String derivedAlias) {
+        private DelayDerivedSelectionGroup(String derivedAlias) {
             this.derivedAlias = derivedAlias;
         }
 
@@ -172,33 +234,11 @@ abstract class SelectionGroups {
             if (selectionList == null || selectionList.size() == 0) {
                 throw new CriteriaException("DerivedSelectionGroup no selection.");
             }
-            final StringBuilder builder = context.sqlBuilder();
-
-            final DialectParser dialect = context.parser();
-            final String safeAlias = dialect.identifier(this.derivedAlias);
-            final int size = selectionList.size();
-            Selection selection;
-            String safeFieldAlias;
-            for (int i = 0; i < size; i++) {
-                if (i > 0) {
-                    builder.append(_Constant.SPACE_COMMA);
-                }
-                selection = selectionList.get(i);
-                safeFieldAlias = dialect.identifier(selection.selectionName());
-                builder.append(_Constant.SPACE)
-                        .append(safeAlias)
-                        .append(_Constant.POINT)
-                        .append(safeFieldAlias)
-                        .append(_Constant.SPACE_AS_SPACE)
-                        .append(safeFieldAlias);
-            }
-
+            appendDerivedFieldGroup(this.derivedAlias, selectionList, context);
 
         }
 
     }// SubQuerySelectionGroupImpl
-
-
 
 
 }

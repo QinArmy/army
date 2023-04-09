@@ -181,8 +181,16 @@ abstract class CriteriaContexts {
      * For Example , Postgre update/delete criteria context
      * </p>
      */
-    static CriteriaContext primaryJoinableSingleDmlContext(@Nullable ArmyStmtSpec spec) {
-        throw new UnsupportedOperationException();
+    static CriteriaContext primaryJoinableSingleDmlContext(final @Nullable ArmyStmtSpec spec) {
+        final PrimaryJoinableSingleDmlContext context;
+        context = new PrimaryJoinableSingleDmlContext();
+        if (spec != null) {
+            final DispatcherContext dispatcherContext;
+            dispatcherContext = (DispatcherContext) spec.getContext();
+            migrateContext(context, dispatcherContext);
+            assertNonQueryContext(dispatcherContext);
+        }
+        return context;
     }
 
     /**
@@ -190,8 +198,10 @@ abstract class CriteriaContexts {
      * For Example ,Postgre update/delete criteria context
      * </p>
      */
-    static CriteriaContext subJoinableSingleDmlContext(final @Nullable CriteriaContext outerContext) {
-        throw new UnsupportedOperationException();
+    static CriteriaContext subJoinableSingleDmlContext(final CriteriaContext outerContext) {
+        final SubJoinableSingleDmlContext context;
+        context = new SubJoinableSingleDmlContext(outerContext);
+        return context;
     }
 
 
@@ -800,7 +810,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public List<_TabularBock> endContext() {
+        public List<_TabularBlock> endContext() {
             final Map<String, RecursiveCte> refCteMap = this.refCteMap;
             if (refCteMap != null) {
                 refCteMap.clear();
@@ -902,13 +912,13 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public void onAddBlock(_TabularBock block) {
+        public void onAddBlock(_TabularBlock block) {
             String m = "current context don't support onAddBlock(block)";
             throw ContextStack.criteriaError(this, m);
         }
 
         @Override
-        public _TabularBock lastBlock() {
+        public _TabularBlock lastBlock() {
             String m = "current context don't support lastBlock()";
             throw ContextStack.criteriaError(this, m);
         }
@@ -984,7 +994,7 @@ abstract class CriteriaContexts {
                     .toString();
         }
 
-        List<_TabularBock> onEndContext() {
+        List<_TabularBlock> onEndContext() {
             return Collections.emptyList();
         }
 
@@ -1009,9 +1019,9 @@ abstract class CriteriaContexts {
          */
         private _AliasDerivedBlock bufferDerivedBlock;
 
-        private List<_TabularBock> tableBlockList;
+        private List<_TabularBlock> tableBlockList;
 
-        private Map<String, _TabularBock> aliasToBlock;
+        private Map<String, _TabularBlock> aliasToBlock;
 
         private Map<String, Map<String, RefDerivedField>> aliasToRefDerivedField;
 
@@ -1048,7 +1058,7 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final void onAddBlock(final _TabularBock block) {
+        public final void onAddBlock(final _TabularBlock block) {
             //1. flush bufferDerivedBlock
             this.flushBufferDerivedBlock();
 
@@ -1071,7 +1081,7 @@ abstract class CriteriaContexts {
 
         @Override
         public final TableMeta<?> getTable(final String tableAlias) {
-            final _TabularBock block;
+            final _TabularBlock block;
             block = this.aliasToBlock.get(tableAlias);
             final TabularItem tableItem;
             final TableMeta<?> table;
@@ -1110,11 +1120,11 @@ abstract class CriteriaContexts {
             this.flushBufferDerivedBlock();
 
             final Map<String, _AliasDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
-            final Map<String, _TabularBock> aliasToBlock;
+            final Map<String, _TabularBlock> aliasToBlock;
             //2. get SelectionMap of last block
             final _SelectionMap selectionMap;
             final TabularItem tabularItem;
-            _TabularBock block;
+            _TabularBlock block;
             if (nestedDerivedBufferMap != null
                     && (block = nestedDerivedBufferMap.get(derivedAlias)) != null) {
                 selectionMap = (_AliasDerivedBlock) block;
@@ -1161,12 +1171,12 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final _TabularBock lastBlock() {
-            _TabularBock block = this.bufferDerivedBlock;
+        public final _TabularBlock lastBlock() {
+            _TabularBlock block = this.bufferDerivedBlock;
             if (block != null) {
                 return block;
             }
-            final List<_TabularBock> blockList = this.tableBlockList;
+            final List<_TabularBlock> blockList = this.tableBlockList;
             final int size;
             if (blockList == null || (size = blockList.size()) == 0) {
                 throw ContextStack.castCriteriaApi(this);
@@ -1199,8 +1209,8 @@ abstract class CriteriaContexts {
             if (this.isInWithClause()) {
                 throw unknownQualifiedField(null, field);
             }
-            final Map<String, _TabularBock> aliasToBlock = this.aliasToBlock;
-            final _TabularBock block;
+            final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
+            final _TabularBlock block;
             final boolean notExists;
 
             final String tableAlias;
@@ -1230,18 +1240,18 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        final List<_TabularBock> onEndContext() {
+        final List<_TabularBlock> onEndContext() {
 
             //1. assert not duplication
             if (this.isEndContext()) {
                 //no bug,never here
                 throw ContextStack.castCriteriaApi(this);
             }
-            final Map<String, _TabularBock> aliasToBlock;
+            final Map<String, _TabularBlock> aliasToBlock;
             aliasToBlock = _CollectionUtils.safeUnmodifiableMap(this.aliasToBlock);
             this.aliasToBlock = aliasToBlock;
 
-            final List<_TabularBock> blockList;
+            final List<_TabularBlock> blockList;
             blockList = _CollectionUtils.safeUnmodifiableList(this.tableBlockList);
             this.tableBlockList = blockList;//store for recursive checking
 
@@ -1299,14 +1309,14 @@ abstract class CriteriaContexts {
          * @see #onEndContext()
          */
         private void validateDerivedFieldMap() {
-            final Map<String, _TabularBock> aliasToBlock = this.aliasToBlock;
+            final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
             final Map<String, Map<String, RefDerivedField>> aliasToRefDerivedField = this.aliasToRefDerivedField;
             assert aliasToRefDerivedField != null;
             if (aliasToBlock == null) {
                 throw unknownRestDerivedField(this, aliasToRefDerivedField);
             }
 
-            _TabularBock block;
+            _TabularBlock block;
             TabularItem tabularItem;
             Map<String, RefDerivedField> refFieldMap;
             for (String itemAlias : aliasToRefDerivedField.keySet()) {
@@ -1336,14 +1346,14 @@ abstract class CriteriaContexts {
          */
         private void validateQualifiedFieldMap() {
             final Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasFieldMap = this.aliasFieldMap;
-            final Map<String, _TabularBock> aliasToBlock = this.aliasToBlock;
+            final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
             assert aliasFieldMap != null;
 
             final CriteriaContext outerContext = this.outerContext;
 
             String tableAlias;
             TableMeta<?> firstFieldTable;
-            _TabularBock block;
+            _TabularBlock block;
             for (Map.Entry<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasEntry : aliasFieldMap.entrySet()) {
 
                 firstFieldTable = null;
@@ -1383,11 +1393,11 @@ abstract class CriteriaContexts {
         private void validateQualifiedFieldFromSub() {
             final List<QualifiedField<?>> fieldList = this.fieldsFromSubContext;
             assert fieldList != null;
-            final Map<String, _TabularBock> aliasToBlock = this.aliasToBlock;
+            final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
             if (aliasToBlock == null) {
                 throw unknownQualifiedFields(this, fieldList);
             }
-            _TabularBock block;
+            _TabularBlock block;
             for (QualifiedField<?> field : fieldList) {
                 block = aliasToBlock.get(field.tableAlias());
                 if (block == null || block.tableItem() != field.tableMeta()) {
@@ -1402,17 +1412,17 @@ abstract class CriteriaContexts {
 
 
         final boolean isEndContext() {
-            final Map<String, _TabularBock> aliasToBlock = this.aliasToBlock;
+            final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
             return !(aliasToBlock == null || aliasToBlock instanceof HashMap);
         }
 
 
         /**
-         * @see #onAddBlock(_TabularBock)
+         * @see #onAddBlock(_TabularBlock)
          */
-        private void addTableBlock(final _TabularBock block) {
-            Map<String, _TabularBock> aliasToBlock = this.aliasToBlock;
-            List<_TabularBock> tableBlockList = this.tableBlockList;
+        private void addTableBlock(final _TabularBlock block) {
+            Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
+            List<_TabularBlock> tableBlockList = this.tableBlockList;
             if (aliasToBlock == null) {
                 assert tableBlockList == null;
                 aliasToBlock = new HashMap<>();
@@ -1463,12 +1473,12 @@ abstract class CriteriaContexts {
 
 
         /**
-         * @see #onAddBlock(_TabularBock)
+         * @see #onAddBlock(_TabularBlock)
          */
         private void removeNestedDerivedBuffer(final _NestedItems nestedItems) {
             final Map<String, _AliasDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
             TabularItem tabularItem;
-            for (_TabularBock block : nestedItems.tableBlockList()) {
+            for (_TabularBlock block : nestedItems.tableBlockList()) {
 
                 if (block instanceof _AliasDerivedBlock) {
                     if (nestedDerivedBufferMap == null
@@ -1490,7 +1500,7 @@ abstract class CriteriaContexts {
         }
 
         /**
-         * @see #onAddBlock(_TabularBock)
+         * @see #onAddBlock(_TabularBlock)
          * @see #refThis(String, String)
          * @see #onEndContext()
          */
@@ -1503,10 +1513,10 @@ abstract class CriteriaContexts {
         }
 
         /**
-         * @see #addTableBlock(_TabularBock)
+         * @see #addTableBlock(_TabularBlock)
          * @see #addNestedItems(_NestedItems)
          */
-        private void onAddDerived(final _TabularBock block, final _SelectionMap derivedTable, final String alias) {
+        private void onAddDerived(final _TabularBlock block, final _SelectionMap derivedTable, final String alias) {
             if (derivedTable instanceof DerivedTable && derivedTable instanceof CriteriaContextSpec) {
                 final CriteriaContext context = ((CriteriaContextSpec) derivedTable).getContext();
                 if (context.getOuterContext() != this) {
@@ -1539,7 +1549,7 @@ abstract class CriteriaContexts {
         }
 
         /**
-         * @see #addTableBlock(_TabularBock)
+         * @see #addTableBlock(_TabularBlock)
          * @see #addNestedItems(_NestedItems)
          */
         private void onAddRecursiveCte(final RecursiveCte cte, final String cteAlias) {
@@ -1558,7 +1568,7 @@ abstract class CriteriaContexts {
 
         /**
          * @param derivedTable {@link _DerivedTable} or {@link _Cte},but not {@link RecursiveCte}
-         * @see #onAddDerived(_TabularBock, _SelectionMap, String)
+         * @see #onAddDerived(_TabularBlock, _SelectionMap, String)
          */
         private void finishRefSelections(final _SelectionMap derivedTable, final String tableAlias,
                                          final Map<String, RefDerivedField> fieldMap) {
@@ -1639,16 +1649,16 @@ abstract class CriteriaContexts {
          * add nested {@link TabularItem} to {@link #aliasToBlock}
          * </p>
          *
-         * @see #onAddBlock(_TabularBock)
-         * @see #addTableBlock(_TabularBock)
+         * @see #onAddBlock(_TabularBlock)
+         * @see #addTableBlock(_TabularBlock)
          */
         private void addNestedItems(final _NestedItems nestedItems) {
-            final Map<String, _TabularBock> aliasToBlock = this.aliasToBlock;
+            final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
             assert aliasToBlock != null;
 
             TabularItem tableItem;
             String alias;
-            for (_TabularBock block : nestedItems.tableBlockList()) {
+            for (_TabularBlock block : nestedItems.tableBlockList()) {
                 tableItem = block.tableItem();
                 alias = block.alias();
                 if (tableItem instanceof _Cte) {
@@ -1811,7 +1821,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        final List<_TabularBock> onEndContext() {
+        final List<_TabularBlock> onEndContext() {
             // can't validate field,because field possibly from outer context,{@link _SqlContext} validate this.
             final Map<FieldMeta<?>, QualifiedField<?>> aliasFieldMap = this.qualifiedFieldMap;
             if (aliasFieldMap != null) {
@@ -2255,10 +2265,10 @@ abstract class CriteriaContexts {
                 return;
             }
 
-            if (group instanceof TableFieldGroup) {
+            if (group instanceof _SelectionGroup.TableFieldGroup) {
                 if (!(table instanceof TableMeta)) {
                     throw unknownFieldDerivedGroup(this, alias);
-                } else if (((TableFieldGroup) group).isIllegalGroup((TableMeta<?>) table)) {
+                } else if (!((_SelectionGroup.TableFieldGroup) group).isLegalGroup((TableMeta<?>) table)) {
                     throw unknownFieldDerivedGroup(this, alias);
                 }
             } else if (!(group instanceof DerivedFieldGroup)) {
@@ -2297,8 +2307,8 @@ abstract class CriteriaContexts {
         /**
          * @see #endQueryContext()
          * @see #refSelection(String)
-         * @see #onAddBlock(_TabularBock)
-         * @see #addTableBlock(_TabularBock)
+         * @see #onAddBlock(_TabularBlock)
+         * @see #addTableBlock(_TabularBlock)
          */
         @SuppressWarnings("unchecked")
         private void endSelectClauseIfNeed() {
@@ -2518,7 +2528,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        final List<_TabularBock> onEndContext() {
+        final List<_TabularBlock> onEndContext() {
             if (innerContext == null) {
                 throw ContextStack.castCriteriaApi(this);
             }

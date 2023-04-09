@@ -3,6 +3,7 @@ package io.army.criteria.impl.inner;
 
 import io.army.criteria.Selection;
 import io.army.dialect._SqlContext;
+import io.army.meta.TableMeta;
 
 import java.util.List;
 
@@ -30,6 +31,14 @@ public interface _SelectionGroup extends _SelectItem {
      * @return element list of this group.
      */
     List<? extends Selection> selectionList();
+
+
+    interface TableFieldGroup extends _SelectionGroup {
+
+
+        boolean isLegalGroup(TableMeta<?> table);
+
+    }
 
 
 }

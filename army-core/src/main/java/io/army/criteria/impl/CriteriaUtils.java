@@ -10,6 +10,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
+import io.army.meta.TableMeta;
 import io.army.sqltype.SqlType;
 import io.army.util._ClassUtils;
 import io.army.util._CollectionUtils;
@@ -68,24 +69,48 @@ abstract class CriteriaUtils {
         final List<_Expression> list = new ArrayList<>();
         consumer.accept(e -> list.add((ArmyExpression) e));
         final List<_Expression> expressionList;
-        if (list.size() > 0) {
-            expressionList = _CollectionUtils.unmodifiableList(list);
-        } else if (required) {
-            throw ContextStack.criteriaError(ctx, "you don't add any expression");
-        } else {
-            expressionList = Collections.emptyList();
+        switch (list.size()) {
+            case 0: {
+                if (required) {
+                    throw ContextStack.criteriaError(ctx, "you don't add any expression");
+                }
+                expressionList = Collections.emptyList();
+            }
+            break;
+            case 1:
+                expressionList = Collections.singletonList(list.get(0));
+                break;
+            default:
+                expressionList = Collections.unmodifiableList(list);
         }
-        return list;
+        return expressionList;
     }
 
 
-    static List<_Selection> selectionList(CriteriaContext context, Consumer<Returnings> consumer) {
-        final List<_Selection> list = new ArrayList<>();
+    static List<_SelectItem> selectionList(CriteriaContext context, Consumer<Returnings> consumer) {
+        final List<_SelectItem> list = new ArrayList<>();
         consumer.accept(CriteriaSupports.returningBuilder(list::add));
         if (list.size() == 0) {
             throw CriteriaUtils.returningListIsEmpty(context);
         }
         return list;
+    }
+
+    static List<_SelectItem> returningAll(final TableMeta<?> targetTable, final String tableAlias,
+                                          final List<_TabularBlock> blockList) {
+
+        List<_SelectItem> groupList;
+        final int blockSize;
+        blockSize = blockList.size();
+        if (blockSize == 0) {
+            groupList = Collections.singletonList(SelectionGroups.singleGroup(targetTable, tableAlias));
+        } else {
+            groupList = new ArrayList<>(1 + blockSize);
+            groupList.add(SelectionGroups.singleGroup(targetTable, tableAlias));
+            appendSelectionGroup(blockList, groupList);
+            groupList = Collections.unmodifiableList(groupList);
+        }
+        return groupList;
     }
 
 
@@ -440,7 +465,6 @@ abstract class CriteriaUtils {
     }
 
 
-
     static String sqlWordsToString(Enum<?> type) {
         return _StringUtils.builder()
                 .append(type.getClass().getSimpleName())
@@ -697,6 +721,29 @@ abstract class CriteriaUtils {
         String m = String.format("last window[%s] not end,couldn't start new window[%s]",
                 oldWindow.windowName(), window.windowName());
         throw ContextStack.criteriaError(context, m);
+    }
+
+
+    /**
+     * @see #returningAll(TableMeta, String, List)
+     */
+    private static void appendSelectionGroup(final List<_TabularBlock> blockList, final List<_SelectItem> groupList) {
+        TabularItem tabularItem;
+        for (_TabularBlock block : blockList) {
+            tabularItem = block.tableItem();
+            if (tabularItem instanceof TableMeta) {
+                groupList.add(SelectionGroups.singleGroup((TableMeta<?>) tabularItem, block.alias()));
+            } else if (tabularItem instanceof _SelectionMap) {
+                groupList.add(SelectionGroups.derivedGroup((_SelectionMap) tabularItem, block.alias()));
+            } else if (tabularItem instanceof _NestedItems) {
+                appendSelectionGroup(((_NestedItems) tabularItem).tableBlockList(), groupList);
+            } else {
+                String m;
+                m = String.format("unknown %s[%s]", TabularItem.class.getName(), _ClassUtils.safeClassName(tabularItem));
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+
+        }
     }
 
 

@@ -35,7 +35,7 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
         Statement._DmlUpdateSpec<I>,
         Statement {
 
-    private List<_TabularBock> tableBlockList;
+    private List<_TabularBlock> tableBlockList;
 
     private List<_ItemPair> itemPairList;
 
@@ -220,8 +220,8 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
     }
 
     @Override
-    public final List<_TabularBock> tableBlockList() {
-        final List<_TabularBock> list = this.tableBlockList;
+    public final List<_TabularBlock> tableBlockList() {
+        final List<_TabularBlock> list = this.tableBlockList;
         if (list == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -272,7 +272,7 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
         //no-op
     }
 
-    void onStatementEnd() {
+    void onBeforeContextEnd() {
         //no-op
     }
 
@@ -306,7 +306,7 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
             throw ContextStack.criteriaError(this.context, _Exceptions::dmlNoWhereClause);
         }
 
-        this.onStatementEnd();
+        this.onBeforeContextEnd();
         this.tableBlockList = context.endContext();
 
         ContextStack.pop(context);

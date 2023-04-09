@@ -31,7 +31,7 @@ abstract class PostgreSupports extends CriteriaSupports {
     }
 
 
-    static final List<_Selection> EMPTY_SELECTION_LIST = Collections.emptyList();
+    static final List<_SelectItem> EMPTY_SELECT_ITEM_LIST = Collections.emptyList();
 
     static PostgreCtes postgreCteBuilder(final boolean recursive, final CriteriaContext context) {
         return new PostgreCteBuilder(recursive, context);

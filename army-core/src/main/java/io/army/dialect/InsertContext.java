@@ -3,10 +3,7 @@ package io.army.dialect;
 import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._ReturningDml;
-import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
@@ -21,13 +18,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-abstract class InsertContext extends StatementContext implements _InsertContext
-        , _DmlContext._SetClauseContextSpec
-        , _InsertContext._ValueSyntaxSpec
-        , _InsertContext._AssignmentsSpec
-        , _InsertContext._QuerySyntaxSpec
-        , _DmlContext._SingleTableContextSpec
-        , _InsertStmtParams {
+abstract class InsertContext extends StatementContext
+        implements _InsertContext,
+        _DmlContext._SetClauseContextSpec,
+        _InsertContext._ValueSyntaxSpec,
+        _InsertContext._AssignmentsSpec,
+        _InsertContext._QuerySyntaxSpec,
+        _DmlContext._SingleTableContextSpec,
+        _InsertStmtParams,
+        SelectItemListContext {
 
     private final InsertContext parentContext;
 
@@ -63,7 +62,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
      */
     final String idSelectionAlias;
 
-    final List<? extends Selection> returningList;
+    final List<? extends _SelectItem> returningList;
 
     private final boolean appendReturningClause;
 
@@ -172,7 +171,7 @@ abstract class InsertContext extends StatementContext implements _InsertContext
             this.appendReturningClause = false;
         } else if (needReturnId) {
             if (targetStmt instanceof _Statement._ReturningListSpec) {
-                this.returningList = Collections.singletonList(idField);
+                this.returningList = Collections.singletonList((_Selection) idField);
                 this.appendReturningClause = true;
             } else {
                 this.appendReturningClause = false;
@@ -552,10 +551,25 @@ abstract class InsertContext extends StatementContext implements _InsertContext
         dialect.identifier(this.idSelectionAlias, sqlBuilder);
     }
 
+    @Override
+    public final List<? extends _SelectItem> selectItemList() {
+        final List<? extends _SelectItem> selectItemList = this.returningList;
+        if (selectItemList.size() == 0) {
+            throw new IllegalStateException("no RETURNING clause");
+        }
+        return selectItemList;
+    }
 
     @Override
     public final List<? extends Selection> selectionList() {
-        return this.returningList;
+        final List<? extends _SelectItem> selectItemList = this.returningList;
+        final List<? extends Selection> selectionList;
+        if (selectItemList.size() == 0) {
+            selectionList = Collections.emptyList();
+        } else {
+            selectionList = _DialectUtils.flatSelectItem(selectItemList);
+        }
+        return selectionList;
     }
 
     @Override
@@ -702,22 +716,37 @@ abstract class InsertContext extends StatementContext implements _InsertContext
     }
 
     private static Selection returnIdSelection(final DialectParser parser, final PrimaryFieldMeta<?> idField,
-                                               final List<? extends Selection> selectionList) {
-        final int selectionSize;
-        selectionSize = selectionList.size();
+                                               final List<? extends _SelectItem> selectItemList) {
+        final int selectItemSize;
+        selectItemSize = selectItemList.size();
 
-        assert selectionSize > 0;
+        assert selectItemSize > 0;
 
+        final TableMeta<?> insertTable;
+        insertTable = idField.tableMeta();
+
+        _SelectItem selectItem;
         Selection selection = null;
-        for (int i = 0; i < selectionSize; i++) {
-            selection = selectionList.get(i);
-            if (selection == idField) {
-                break;
-            } else if (selection instanceof QualifiedField && ((QualifiedField<?>) selection).fieldMeta() == idField) {
-                break;
+        for (int i = 0; i < selectItemSize; i++) {
+            selectItem = selectItemList.get(i);
+
+            if (selectItem instanceof _SelectionGroup.TableFieldGroup) {
+                if (((_SelectionGroup.TableFieldGroup) selectItem).isLegalGroup(insertTable)
+                        && ((_SelectionGroup.TableFieldGroup) selectItem).selectionList().contains(idField)) {
+                    selection = idField;
+                    break;
+                }
+            } else if (selectItem instanceof TableField) {
+                if (selectItem == idField
+                        || (selectItem instanceof QualifiedField
+                        && ((QualifiedField<?>) selectItem).fieldMeta() == idField)) {
+                    selection = (Selection) selectItem;
+                    break;
+                }
             }
-            selection = null;
-        }
+
+        }// for
+
         if (selection == null) {
             String m = String.format("%s RETURNING clause must contain %s,because it's %s is %s.",
                     parser.dialect().database(), idField, GeneratorType.class.getName(), GeneratorType.POST);

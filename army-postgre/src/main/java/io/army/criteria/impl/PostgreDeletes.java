@@ -73,7 +73,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
     private String tableAlias;
 
-    _TabularBock fromCrossBlock;
+    _TabularBlock fromCrossBlock;
 
     private PostgreDeletes(@Nullable _Statement._WithClauseSpec withSpec, CriteriaContext context) {
         super(withSpec, context);
@@ -336,7 +336,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
     @Override
     final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
-        final _TabularBock block;
+        final _TabularBlock block;
         block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
@@ -378,8 +378,10 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
     }
 
+    abstract List<? extends _SelectItem> innerReturningList();
+
     private PostgreSupports.FromClauseTableBlock getFromCrossBlock() {
-        final _TabularBock block = this.fromCrossBlock;
+        final _TabularBlock block = this.fromCrossBlock;
         if (!(this.context.lastBlock() == block && block instanceof PostgreSupports.FromClauseTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -388,7 +390,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
 
     final TableBlocks.FromClauseAliasDerivedBlock getFromDerived() {
-        final _TabularBock block = this.fromCrossBlock;
+        final _TabularBlock block = this.fromCrossBlock;
         if (!(this.context.lastBlock() == block && block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -418,7 +420,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
             PostgreDelete._SingleWhereAndSpec<I, Q>,
             PostgreDelete._StaticReturningCommaSpec<Q> {
 
-        private List<_Selection> returningList;
+        private List<_SelectItem> returningList;
 
         private PostgreSimpleDelete(@Nullable _Statement._WithClauseSpec withSpec, CriteriaContext context) {
             super(withSpec, context);
@@ -444,16 +446,13 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
         @Override
         public final _DqlDeleteSpec<Q> returningAll() {
-            this.returningList = PostgreSupports.EMPTY_SELECTION_LIST;
+            this.returningList = PostgreSupports.EMPTY_SELECT_ITEM_LIST;
             return this;
         }
 
         @Override
         public final _DqlDeleteSpec<Q> returning(Consumer<Returnings> consumer) {
-            consumer.accept(CriteriaSupports.returningBuilder(this::onAddSelection));
-            if (this.returningList == null) {
-                throw CriteriaUtils.returningListIsEmpty(this.context);
-            }
+            this.returningList = CriteriaUtils.selectionList(this.context, consumer);
             return this;
         }
 
@@ -466,7 +465,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         @Override
         public final _StaticReturningCommaSpec<Q> returning(Selection selection1, Selection selection2) {
             this.onAddSelection(selection1)
-                    .add((_Selection) selection2);
+                    .onAddSelection(selection2);
             return this;
         }
 
@@ -480,7 +479,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function1, String alias1,
                                                             Function<String, Selection> function2, String alias2) {
             this.onAddSelection(function1.apply(alias1))
-                    .add((_Selection) function2.apply(alias2));
+                    .onAddSelection(function2.apply(alias2));
             return this;
         }
 
@@ -488,7 +487,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias,
                                                             Selection selection) {
             this.onAddSelection(function.apply(alias))
-                    .add((_Selection) selection);
+                    .onAddSelection(selection);
             return this;
         }
 
@@ -496,27 +495,25 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         public final _StaticReturningCommaSpec<Q> returning(Selection selection, Function<String, Selection> function,
                                                             String alias) {
             this.onAddSelection(selection)
-                    .add((_Selection) function.apply(alias));
+                    .onAddSelection(function.apply(alias));
             return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3);
             return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3,
                                                             TableField field4) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
-            list.add((_Selection) field4);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3)
+                    .onAddSelection(field4);
             return this;
         }
 
@@ -529,7 +526,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         @Override
         public final _StaticReturningCommaSpec<Q> comma(Selection selection1, Selection selection2) {
             this.onAddSelection(selection1)
-                    .add((_Selection) selection2);
+                    .onAddSelection(selection2);
             return this;
         }
 
@@ -543,7 +540,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function1, String alias1,
                                                         Function<String, Selection> function2, String alias2) {
             this.onAddSelection(function1.apply(alias1))
-                    .add((_Selection) function2.apply(alias2));
+                    .onAddSelection(function2.apply(alias2));
             return this;
         }
 
@@ -551,7 +548,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function, String alias,
                                                         Selection selection) {
             this.onAddSelection(function.apply(alias))
-                    .add((_Selection) selection);
+                    .onAddSelection(selection);
             return this;
         }
 
@@ -559,51 +556,46 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         public final _StaticReturningCommaSpec<Q> comma(Selection selection, Function<String, Selection> function,
                                                         String alias) {
             this.onAddSelection(selection)
-                    .add((_Selection) function.apply(alias));
+                    .onAddSelection(function.apply(alias));
             return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3);
             return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3,
                                                         TableField field4) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
-            list.add((_Selection) field4);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3)
+                    .onAddSelection(field4);
             return this;
         }
 
         @Override
-        public final List<? extends _Selection> returningList() {
-            final List<? extends _Selection> list = this.returningList;
-            if (list == null || list instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            if (!(this instanceof SubStatement && this instanceof _ReturningDml)) {
-                //no bug,never here
-                throw new UnsupportedOperationException();
-            }
-            return list;
+        public final List<? extends _SelectItem> returningList() {
+            //no bug,never here
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public final Q asReturningDelete() {
-            final List<_Selection> returningList = this.returningList;
-            if (!(returningList instanceof ArrayList)) {
+            final List<_SelectItem> returningList = this.returningList;
+            if (!(returningList instanceof ArrayList || returningList == PostgreSupports.EMPTY_SELECT_ITEM_LIST)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.endDeleteStatement();
-            this.returningList = _CollectionUtils.unmodifiableList(returningList);
+            if (returningList instanceof ArrayList) {
+                this.returningList = _CollectionUtils.unmodifiableList(returningList);
+            } else {
+                this.returningList = CriteriaUtils.returningAll(this.table(), this.tableAlias(), this.tableBlockList());
+            }
             return this.onAsReturningDelete();
         }
 
@@ -664,19 +656,32 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
             return block;
         }
 
-        private List<_Selection> onAddSelection(Selection selection) {
-            List<_Selection> list = this.returningList;
+        @Override
+        final List<? extends _SelectItem> innerReturningList() {
+            List<? extends _SelectItem> list = this.returningList;
             if (list == null) {
-                this.returningList = list = new ArrayList<>();
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+        private PostgreSimpleDelete<I, Q> onAddSelection(final @Nullable Selection selection) {
+            if (selection == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            List<_SelectItem> list = this.returningList;
+            if (list == null) {
+                list = new ArrayList<>();
+                this.returningList = list;
             } else if (!(list instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             list.add((_Selection) selection);
-            return list;
+            return this;
         }
 
 
-    }//SimpleDelete
+    }//PostgreSimpleDelete
 
     private static final class SimpleJoinClauseTableBlock<I extends Item, Q extends Item>
             extends PostgreSupports.PostgreTableOnBlock<
@@ -797,7 +802,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
             BatchDelete,
             _BatchDml {
 
-        private List<_Selection> returningList;
+        private List<_SelectItem> returningList;
 
         private List<?> paramList;
 
@@ -825,16 +830,13 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
         @Override
         public _BatchParamClause<_DqlDeleteSpec<BatchReturningDelete>> returningAll() {
-            this.returningList = PostgreSupports.EMPTY_SELECTION_LIST;
+            this.returningList = PostgreSupports.EMPTY_SELECT_ITEM_LIST;
             return new BatchParamClause(this);
         }
 
         @Override
         public _BatchParamClause<_DqlDeleteSpec<BatchReturningDelete>> returning(Consumer<Returnings> consumer) {
-            consumer.accept(CriteriaSupports.returningBuilder(this::onAddSelection));
-            if (this.returningList == null) {
-                throw CriteriaUtils.returningListIsEmpty(this.context);
-            }
+            this.returningList = CriteriaUtils.selectionList(this.context, consumer);
             return new BatchParamClause(this);
         }
 
@@ -847,7 +849,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(Selection selection1, Selection selection2) {
             this.onAddSelection(selection1)
-                    .add((_Selection) selection2);
+                    .onAddSelection(selection2);
             return new BatchParamClause(this);
         }
 
@@ -861,7 +863,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(Function<String, Selection> function1, String alias1,
                                                                               Function<String, Selection> function2, String alias2) {
             this.onAddSelection(function1.apply(alias1))
-                    .add((_Selection) function2.apply(alias2));
+                    .onAddSelection(function2.apply(alias2));
             return new BatchParamClause(this);
         }
 
@@ -869,7 +871,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(Function<String, Selection> function, String alias,
                                                                               Selection selection) {
             this.onAddSelection(function.apply(alias))
-                    .add((_Selection) selection);
+                    .onAddSelection(selection);
             return new BatchParamClause(this);
         }
 
@@ -877,27 +879,25 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(Selection selection, Function<String, Selection> function,
                                                                               String alias) {
             this.onAddSelection(selection)
-                    .add((_Selection) function.apply(alias));
+                    .onAddSelection(function.apply(alias));
             return new BatchParamClause(this);
         }
 
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(TableField field1, TableField field2, TableField field3) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3);
             return new BatchParamClause(this);
         }
 
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(TableField field1, TableField field2, TableField field3,
                                                                               TableField field4) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
-            list.add((_Selection) field4);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3)
+                    .onAddSelection(field4);
             return new BatchParamClause(this);
         }
 
@@ -924,12 +924,9 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
 
         @Override
-        public List<_Selection> returningList() {
-            final List<_Selection> list = this.returningList;
-            if (list == null || list instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return list;
+        public List<? extends _SelectItem> returningList() {
+            //no bug,never here
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -943,12 +940,17 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
 
         @Override
         public BatchReturningDelete asReturningDelete() {
-            final List<_Selection> returningList = this.returningList;
-            if (!(returningList instanceof ArrayList)) {
+            final List<_SelectItem> returningList = this.returningList;
+            if (!(returningList instanceof ArrayList || returningList == PostgreSupports.EMPTY_SELECT_ITEM_LIST)
+                    || this.paramList == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.endDeleteStatement();
-            this.returningList = _CollectionUtils.unmodifiableList(returningList);
+            if (returningList instanceof ArrayList) {
+                this.returningList = _CollectionUtils.unmodifiableList(returningList);
+            } else {
+                this.returningList = CriteriaUtils.returningAll(this.table(), this.tableAlias(), this.tableBlockList());
+            }
             return new BatchReturningDeleteWrapper(this);
         }
 
@@ -1003,8 +1005,20 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
             return block;
         }
 
-        private List<_Selection> onAddSelection(final Selection selection) {
-            List<_Selection> list = this.returningList;
+        @Override
+        List<? extends _SelectItem> innerReturningList() {
+            List<? extends _SelectItem> list = this.returningList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+        private PostgreBatchDelete onAddSelection(final @Nullable Selection selection) {
+            if (selection == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            List<_SelectItem> list = this.returningList;
             if (list == null) {
                 list = new ArrayList<>();
                 this.returningList = list;
@@ -1012,7 +1026,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
                 throw ContextStack.castCriteriaApi(this.context);
             }
             list.add((_Selection) selection);
-            return list;
+            return this;
         }
 
 
@@ -1035,7 +1049,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(Selection selection1, Selection selection2) {
             this.statement.onAddSelection(selection1)
-                    .add((_Selection) selection2);
+                    .onAddSelection(selection2);
             return this;
         }
 
@@ -1049,7 +1063,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(Function<String, Selection> function1, String alias1,
                                                                           Function<String, Selection> function2, String alias2) {
             this.statement.onAddSelection(function1.apply(alias1))
-                    .add((_Selection) function2.apply(alias2));
+                    .onAddSelection(function2.apply(alias2));
             return this;
         }
 
@@ -1057,7 +1071,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(Function<String, Selection> function, String alias,
                                                                           Selection selection) {
             this.statement.onAddSelection(function.apply(alias))
-                    .add((_Selection) selection);
+                    .onAddSelection(selection);
             return this;
         }
 
@@ -1065,27 +1079,25 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(Selection selection, Function<String, Selection> function,
                                                                           String alias) {
             this.statement.onAddSelection(selection)
-                    .add((_Selection) function.apply(alias));
+                    .onAddSelection(function.apply(alias));
             return this;
         }
 
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(TableField field1, TableField field2, TableField field3) {
-            final List<_Selection> list;
-            list = this.statement.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
+            this.statement.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3);
             return this;
         }
 
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(TableField field1, TableField field2, TableField field3,
                                                                           TableField field4) {
-            final List<_Selection> list;
-            list = this.statement.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
-            list.add((_Selection) field4);
+            this.statement.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3)
+                    .onAddSelection(field4);
             return this;
         }
 
@@ -1128,24 +1140,24 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
     }//BatchJoinClauseTableBlock
 
 
-     static abstract class PostgreReturningDeleteWrapper extends CriteriaSupports.StatementMockSupport
-             implements PostgreDelete, _PostgreDelete, _ReturningDml {
+    static abstract class PostgreReturningDeleteWrapper extends CriteriaSupports.StatementMockSupport
+            implements PostgreDelete, _PostgreDelete, _ReturningDml {
 
-         private final boolean recursive;
+        private final boolean recursive;
 
-         private final List<_Cte> cteList;
+        private final List<_Cte> cteList;
 
-         private final SQLsSyntax.WordOnly only;
+        private final SQLsSyntax.WordOnly only;
 
-         private final TableMeta<?> targetTable;
+        private final TableMeta<?> targetTable;
 
         private final String tableAlias;
 
-        private final List<_TabularBock> tableBlockList;
+        private final List<_TabularBlock> tableBlockList;
 
         private final List<_Predicate> wherePredicateList;
 
-        private final List<? extends _Selection> returningList;
+        private final List<? extends _SelectItem> returningList;
 
         private Boolean prepared = Boolean.TRUE;
 
@@ -1159,7 +1171,7 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
             this.tableAlias = stmt.tableAlias;
             this.tableBlockList = stmt.tableBlockList();
             this.wherePredicateList = stmt.wherePredicateList();
-            this.returningList = stmt.returningList();
+            this.returningList = stmt.innerReturningList();
         }
 
         @Override
@@ -1218,12 +1230,12 @@ abstract class PostgreDeletes<I extends Item, WE, DR, FT, FS, FC extends Item, J
         }
 
         @Override
-        public final List<_TabularBock> tableBlockList() {
+        public final List<_TabularBlock> tableBlockList() {
             return this.tableBlockList;
         }
 
         @Override
-        public final List<? extends _Selection> returningList() {
+        public final List<? extends _SelectItem> returningList() {
             return this.returningList;
         }
 

@@ -54,7 +54,7 @@ abstract class TableBlocks {
     }
 
 
-    static _TabularBock fromNestedBlock(_JoinType joinType, _NestedItems tableItems) {
+    static _TabularBlock fromNestedBlock(_JoinType joinType, _NestedItems tableItems) {
         return new FromClauseNestedBlock(joinType, tableItems);
     }
 
@@ -101,7 +101,7 @@ abstract class TableBlocks {
     }
 
 
-    static abstract class FromClauseBlock implements _TabularBock {
+    static abstract class FromClauseBlock implements _TabularBlock {
 
         private final _JoinType joinType;
 
@@ -275,7 +275,7 @@ abstract class TableBlocks {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class JoinClauseBlock<R extends Item> implements _TabularBock, Statement._OnClause<R> {
+    static abstract class JoinClauseBlock<R extends Item> implements _TabularBlock, Statement._OnClause<R> {
 
         private final _JoinType joinType;
 

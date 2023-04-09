@@ -92,11 +92,11 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
     private final SQLs.WordOnly modifier;
 
-    private final TableMeta<?> updateTable;
+    final TableMeta<?> updateTable;
 
-    private final String tableAlias;
+    final String tableAlias;
 
-    _TabularBock fromCrossBlock;
+    _TabularBlock fromCrossBlock;
 
     private PostgreUpdates(PostgreUpdateClause<?> clause) {
         super(clause.context);
@@ -347,7 +347,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
 
     @Override
-    final void onStatementEnd() {
+    final void onBeforeContextEnd() {
         final Object thisStmt = this;
         if (thisStmt instanceof PostgreUpdates.PrimaryBatchUpdate && ((PrimaryBatchUpdate<?>) thisStmt).paramList == null) {
             throw ContextStack.castCriteriaApi(this.context);
@@ -384,7 +384,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
     @Override
     final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
-        final _TabularBock block;
+        final _TabularBlock block;
         block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
@@ -405,9 +405,11 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         return block;
     }
 
+    abstract List<? extends _SelectItem> innerReturningList();
+
 
     private PostgreSupports.FromClauseTableBlock getFromCrossBlock() {
-        final _TabularBock block = this.fromCrossBlock;
+        final _TabularBlock block = this.fromCrossBlock;
         if (!(this.context.lastBlock() == block && block instanceof PostgreSupports.FromClauseTableBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -416,7 +418,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
 
     final TableBlocks.FromClauseAliasDerivedBlock getFromDerived() {
-        final _TabularBock block = this.fromCrossBlock;
+        final _TabularBlock block = this.fromCrossBlock;
         if (!(this.context.lastBlock() == block && block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -445,7 +447,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             PostgreUpdate._SingleWhereAndSpec<I, Q>,
             PostgreUpdate._StaticReturningCommaSpec<Q> {
 
-        private List<_Selection> returningList;
+        private List<_SelectItem> returningList;
 
         private SimpleUpdate(PostgreUpdateClause<?> clause) {
             super(clause);
@@ -461,7 +463,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
         @Override
         public final _DqlUpdateSpec<Q> returningAll() {
-            this.returningList = PostgreSupports.EMPTY_SELECTION_LIST;
+            this.returningList = PostgreSupports.EMPTY_SELECT_ITEM_LIST;
             return this;
         }
 
@@ -480,7 +482,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         @Override
         public final _StaticReturningCommaSpec<Q> returning(Selection selection1, Selection selection2) {
             this.onAddSelection(selection1)
-                    .add((_Selection) selection2);
+                    .onAddSelection(selection2);
             return this;
         }
 
@@ -494,7 +496,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function1, String alias1,
                                                             Function<String, Selection> function2, String alias2) {
             this.onAddSelection(function1.apply(alias1))
-                    .add((_Selection) function2.apply(alias2));
+                    .onAddSelection(function2.apply(alias2));
             return this;
         }
 
@@ -502,7 +504,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias,
                                                             Selection selection) {
             this.onAddSelection(function.apply(alias))
-                    .add((_Selection) selection);
+                    .onAddSelection(selection);
             return this;
         }
 
@@ -510,27 +512,25 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         public final _StaticReturningCommaSpec<Q> returning(Selection selection, Function<String, Selection> function,
                                                             String alias) {
             this.onAddSelection(selection)
-                    .add((_Selection) function.apply(alias));
+                    .onAddSelection(function.apply(alias));
             return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3);
             return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3,
                                                             TableField field4) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
-            list.add((_Selection) field4);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3)
+                    .onAddSelection(field4);
             return this;
         }
 
@@ -543,7 +543,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         @Override
         public final _StaticReturningCommaSpec<Q> comma(Selection selection1, Selection selection2) {
             this.onAddSelection(selection1)
-                    .add((_Selection) selection2);
+                    .onAddSelection(selection2);
             return this;
         }
 
@@ -557,7 +557,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function1, String alias1,
                                                         Function<String, Selection> function2, String alias2) {
             this.onAddSelection(function1.apply(alias1))
-                    .add((_Selection) function2.apply(alias2));
+                    .onAddSelection(function2.apply(alias2));
             return this;
         }
 
@@ -565,7 +565,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function, String alias,
                                                         Selection selection) {
             this.onAddSelection(function.apply(alias))
-                    .add((_Selection) selection);
+                    .onAddSelection(selection);
             return this;
         }
 
@@ -573,45 +573,47 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         public final _StaticReturningCommaSpec<Q> comma(Selection selection, Function<String, Selection> function,
                                                         String alias) {
             this.onAddSelection(selection)
-                    .add((_Selection) function.apply(alias));
+                    .onAddSelection(function.apply(alias));
             return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3);
             return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3,
                                                         TableField field4) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
-            list.add((_Selection) field4);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3)
+                    .onAddSelection(field4);
             return this;
         }
 
 
         @Override
-        public final List<? extends _Selection> returningList() {
+        public final List<? extends _SelectItem> returningList() {
             // use wrapper,never here
             throw new UnsupportedOperationException();
         }
 
         @Override
         public final Q asReturningUpdate() {
-            final List<_Selection> returningList = this.returningList;
-            if (!(returningList instanceof ArrayList)) {
+            final List<_SelectItem> returningList = this.returningList;
+            if (!(returningList instanceof ArrayList || returningList == PostgreSupports.EMPTY_SELECT_ITEM_LIST)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.endUpdateStatement();
-            this.returningList = _CollectionUtils.unmodifiableList(returningList);
+            if (returningList instanceof ArrayList) {
+                this.returningList = _CollectionUtils.unmodifiableList(returningList);
+            } else {
+                this.returningList = CriteriaUtils.returningAll(this.updateTable, this.tableAlias, this.tableBlockList());
+            }
             return this.onAsReturningUpdate();
         }
 
@@ -672,8 +674,20 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             return block;
         }
 
-        private List<_Selection> onAddSelection(final Selection selection) {
-            List<_Selection> list = this.returningList;
+        @Override
+        final List<? extends _SelectItem> innerReturningList() {
+            List<? extends _SelectItem> list = this.returningList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+        private SimpleUpdate<I, Q, T> onAddSelection(final @Nullable Selection selection) {
+            if (selection == null) {
+                throw ContextStack.nullPointer(this.context);
+            }
+            List<_SelectItem> list = this.returningList;
             if (list == null) {
                 list = new ArrayList<>();
                 this.returningList = list;
@@ -681,7 +695,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                 throw ContextStack.castCriteriaApi(this.context);
             }
             list.add((_Selection) selection);
-            return list;
+            return this;
         }
 
     }//SimpleUpdate
@@ -781,7 +795,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             _BatchDml {
 
 
-        private List<_Selection> returningList;
+        private List<_SelectItem> returningList;
         private List<?> paramList;
 
         private PrimaryBatchUpdate(BatchUpdateClause clause) {
@@ -797,7 +811,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
         @Override
         public _BatchParamClause<_DqlUpdateSpec<BatchReturningUpdate>> returningAll() {
-            this.returningList = PostgreSupports.EMPTY_SELECTION_LIST;
+            this.returningList = PostgreSupports.EMPTY_SELECT_ITEM_LIST;
             return new BatchParamClause(this);
         }
 
@@ -816,7 +830,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(Selection selection1, Selection selection2) {
             this.onAddSelection(selection1)
-                    .add((_Selection) selection2);
+                    .onAddSelection(selection2);
             return new BatchParamClause(this);
         }
 
@@ -830,7 +844,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(Function<String, Selection> function1, String alias1,
                                                                               Function<String, Selection> function2, String alias2) {
             this.onAddSelection(function1.apply(alias1))
-                    .add((_Selection) function2.apply(alias2));
+                    .onAddSelection(function2.apply(alias2));
             return new BatchParamClause(this);
         }
 
@@ -838,7 +852,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(Function<String, Selection> function, String alias,
                                                                               Selection selection) {
             this.onAddSelection(function.apply(alias))
-                    .add((_Selection) selection);
+                    .onAddSelection(selection);
             return new BatchParamClause(this);
         }
 
@@ -846,27 +860,25 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(Selection selection, Function<String, Selection> function,
                                                                               String alias) {
             this.onAddSelection(selection)
-                    .add((_Selection) function.apply(alias));
+                    .onAddSelection(function.apply(alias));
             return new BatchParamClause(this);
         }
 
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(TableField field1, TableField field2, TableField field3) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3);
             return new BatchParamClause(this);
         }
 
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(TableField field1, TableField field2, TableField field3,
                                                                               TableField field4) {
-            final List<_Selection> list;
-            list = this.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
-            list.add((_Selection) field4);
+            this.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3)
+                    .onAddSelection(field4);
             return new BatchParamClause(this);
         }
 
@@ -905,12 +917,17 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
         @Override
         public BatchReturningUpdate asReturningUpdate() {
-            final List<_Selection> returningList = this.returningList;
-            if (!(returningList instanceof ArrayList) || this.paramList == null) {
+            final List<_SelectItem> returningList = this.returningList;
+            if (!(returningList instanceof ArrayList || returningList == PostgreSupports.EMPTY_SELECT_ITEM_LIST)
+                    || this.paramList == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.endUpdateStatement();
-            this.returningList = _CollectionUtils.unmodifiableList(returningList);
+            if (returningList instanceof ArrayList) {
+                this.returningList = _CollectionUtils.unmodifiableList(returningList);
+            } else {
+                this.returningList = CriteriaUtils.returningAll(this.updateTable, this.tableAlias, this.tableBlockList());
+            }
             return new BatchReturningUpdateWrapper(this);
         }
 
@@ -967,9 +984,18 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             return block;
         }
 
+        @Override
+        List<? extends _SelectItem> innerReturningList() {
+            List<? extends _SelectItem> list = this.returningList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
 
-        private List<_Selection> onAddSelection(final Selection selection) {
-            List<_Selection> list = this.returningList;
+
+        private PrimaryBatchUpdate<T> onAddSelection(final Selection selection) {
+            List<_SelectItem> list = this.returningList;
             if (list == null) {
                 list = new ArrayList<>();
                 this.returningList = list;
@@ -977,7 +1003,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                 throw ContextStack.castCriteriaApi(this.context);
             }
             list.add((_Selection) selection);
-            return list;
+            return this;
         }
 
     }//PrimaryBatchUpdate
@@ -1001,7 +1027,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(Selection selection1, Selection selection2) {
             this.statement.onAddSelection(selection1)
-                    .add((_Selection) selection2);
+                    .onAddSelection(selection2);
             return this;
         }
 
@@ -1015,7 +1041,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(Function<String, Selection> function1, String alias1,
                                                                           Function<String, Selection> function2, String alias2) {
             this.statement.onAddSelection(function1.apply(alias1))
-                    .add((_Selection) function2.apply(alias2));
+                    .onAddSelection(function2.apply(alias2));
             return this;
         }
 
@@ -1023,7 +1049,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(Function<String, Selection> function, String alias,
                                                                           Selection selection) {
             this.statement.onAddSelection(function.apply(alias))
-                    .add((_Selection) selection);
+                    .onAddSelection(selection);
             return this;
         }
 
@@ -1031,27 +1057,25 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(Selection selection, Function<String, Selection> function,
                                                                           String alias) {
             this.statement.onAddSelection(selection)
-                    .add((_Selection) function.apply(alias));
+                    .onAddSelection(function.apply(alias));
             return this;
         }
 
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(TableField field1, TableField field2, TableField field3) {
-            final List<_Selection> list;
-            list = this.statement.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
+            this.statement.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3);
             return this;
         }
 
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(TableField field1, TableField field2, TableField field3,
                                                                           TableField field4) {
-            final List<_Selection> list;
-            list = this.statement.onAddSelection(field1);
-            list.add((_Selection) field2);
-            list.add((_Selection) field3);
-            list.add((_Selection) field4);
+            this.statement.onAddSelection(field1)
+                    .onAddSelection(field2)
+                    .onAddSelection(field3)
+                    .onAddSelection(field4);
             return this;
         }
 
@@ -1219,7 +1243,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             implements PostgreUpdate._BatchSingleWithSpec<BatchUpdate, BatchReturningUpdate> {
 
         private BatchUpdateClause() {
-            super(null, CriteriaContexts.subJoinableSingleDmlContext(null));
+            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(null));
         }
 
         @Override
@@ -1285,26 +1309,26 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     }//BatchJoinClauseTableBlock
 
 
-     static abstract class PostgreReturningUpdateWrapper extends CriteriaSupports.StatementMockSupport
-             implements PostgreUpdate, _PostgreUpdate, _ReturningDml {
+    static abstract class PostgreReturningUpdateWrapper extends CriteriaSupports.StatementMockSupport
+            implements PostgreUpdate, _PostgreUpdate, _ReturningDml {
 
-         private final boolean recursive;
+        private final boolean recursive;
 
-         private final List<_Cte> cteList;
+        private final List<_Cte> cteList;
 
-         private final SQLsSyntax.WordOnly only;
+        private final SQLsSyntax.WordOnly only;
 
-         private final TableMeta<?> targetTable;
+        private final TableMeta<?> targetTable;
 
         private final String tableAlias;
 
         private final List<_ItemPair> itemPairList;
 
-        private final List<_TabularBock> tableBlockList;
+        private final List<_TabularBlock> tableBlockList;
 
         private final List<_Predicate> wherePredicateList;
 
-        private final List<? extends _Selection> returningList;
+        private final List<? extends _SelectItem> returningList;
 
         private Boolean prepared = Boolean.TRUE;
 
@@ -1320,7 +1344,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             this.tableBlockList = stmt.tableBlockList();
             this.wherePredicateList = stmt.wherePredicateList();
 
-            this.returningList = stmt.returningList();
+            this.returningList = stmt.innerReturningList();
         }
 
         @Override
@@ -1362,7 +1386,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public final List<_TabularBock> tableBlockList() {
+        public final List<_TabularBlock> tableBlockList() {
             return this.tableBlockList;
         }
 
@@ -1388,7 +1412,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         }
 
         @Override
-        public final List<? extends _Selection> returningList() {
+        public final List<? extends _SelectItem> returningList() {
             return this.returningList;
         }
 

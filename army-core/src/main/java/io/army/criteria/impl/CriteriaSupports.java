@@ -4,10 +4,7 @@ import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.dialect.SubQuery;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._ItemPair;
-import io.army.criteria.impl.inner._Selection;
-import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
@@ -53,7 +50,7 @@ abstract class CriteriaSupports {
         throw new UnsupportedOperationException();
     }
 
-    static Returnings returningBuilder(Consumer<_Selection> consumer) {
+    static Returnings returningBuilder(Consumer<_SelectItem> consumer) {
         return new ReturningBuilderImpl(consumer);
     }
 
@@ -848,9 +845,9 @@ abstract class CriteriaSupports {
 
     private static final class ReturningBuilderImpl implements Returnings {
 
-        private final Consumer<_Selection> consumer;
+        private final Consumer<_SelectItem> consumer;
 
-        private ReturningBuilderImpl(Consumer<_Selection> consumer) {
+        private ReturningBuilderImpl(Consumer<_SelectItem> consumer) {
             this.consumer = consumer;
         }
 
@@ -862,7 +859,7 @@ abstract class CriteriaSupports {
 
         @Override
         public Returnings selection(Selection selection1, Selection selection2) {
-            final Consumer<_Selection> consumer = this.consumer;
+            final Consumer<_SelectItem> consumer = this.consumer;
             consumer.accept((_Selection) selection1);
             consumer.accept((_Selection) selection2);
             return this;
@@ -877,7 +874,7 @@ abstract class CriteriaSupports {
         @Override
         public Returnings selection(Function<String, Selection> function1, String alias1,
                                     Function<String, Selection> function2, String alias2) {
-            final Consumer<_Selection> consumer = this.consumer;
+            final Consumer<_SelectItem> consumer = this.consumer;
             consumer.accept((_Selection) function1.apply(alias1));
             consumer.accept((_Selection) function2.apply(alias2));
             return this;
@@ -885,7 +882,7 @@ abstract class CriteriaSupports {
 
         @Override
         public Returnings selection(Function<String, Selection> function, String alias, Selection selection) {
-            final Consumer<_Selection> consumer = this.consumer;
+            final Consumer<_SelectItem> consumer = this.consumer;
             consumer.accept((_Selection) function.apply(alias));
             consumer.accept((_Selection) selection);
             return this;
@@ -893,7 +890,7 @@ abstract class CriteriaSupports {
 
         @Override
         public Returnings selection(Selection selection, Function<String, Selection> function, String alias) {
-            final Consumer<_Selection> consumer = this.consumer;
+            final Consumer<_SelectItem> consumer = this.consumer;
             consumer.accept((_Selection) selection);
             consumer.accept((_Selection) function.apply(alias));
             return this;
@@ -901,7 +898,7 @@ abstract class CriteriaSupports {
 
         @Override
         public Returnings selection(TableField field1, TableField field2, TableField field3) {
-            final Consumer<_Selection> consumer = this.consumer;
+            final Consumer<_SelectItem> consumer = this.consumer;
             consumer.accept((_Selection) field1);
             consumer.accept((_Selection) field2);
             consumer.accept((_Selection) field3);
@@ -910,7 +907,7 @@ abstract class CriteriaSupports {
 
         @Override
         public Returnings selection(TableField field1, TableField field2, TableField field3, TableField field4) {
-            final Consumer<_Selection> consumer = this.consumer;
+            final Consumer<_SelectItem> consumer = this.consumer;
             consumer.accept((_Selection) field1);
             consumer.accept((_Selection) field2);
             consumer.accept((_Selection) field3);
