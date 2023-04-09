@@ -1450,40 +1450,40 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> delete(
+        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> deleteFrom(
                 TableMeta<?> table, SQLsSyntax.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)
-                    .delete(table, as, tableAlias);
+                    .deleteFrom(table, as, tableAlias);
         }
 
         @Override
-        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> delete(
+        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> deleteFrom(
                 @Nullable SQLs.WordOnly only, TableMeta<?> table, SQLsSyntax.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)
-                    .delete(only, table, as, tableAlias);
+                    .deleteFrom(only, table, as, tableAlias);
         }
 
         @Override
-        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> delete(
+        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> deleteFrom(
                 TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)
-                    .delete(null, table, star, as, tableAlias);
+                    .deleteFrom(null, table, star, as, tableAlias);
         }
 
         @Override
-        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> delete(
+        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> deleteFrom(
                 @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star,
                 SQLsSyntax.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)
-                    .delete(only, table, star, as, tableAlias);
+                    .deleteFrom(only, table, star, as, tableAlias);
         }
 
         @Override

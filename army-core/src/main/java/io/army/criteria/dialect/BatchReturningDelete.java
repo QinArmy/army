@@ -1,6 +1,7 @@
 package io.army.criteria.dialect;
 
 import io.army.criteria.DeleteStatement;
+import io.army.criteria.DialectStatement;
 
 
 /**
@@ -12,7 +13,9 @@ import io.army.criteria.DeleteStatement;
  * @see BatchReturningDelete
  * @since 1.0
  */
-public interface BatchReturningDelete extends BatchDqlStatement, DeleteStatement {
+public interface BatchReturningDelete extends BatchDqlStatement,
+        DeleteStatement,
+        DialectStatement {
 
 
 }

@@ -84,24 +84,24 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
     }
 
     @Override
-    public final DR delete(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-        return this.delete(null, table, null, as, tableAlias);
+    public final DR deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
+        return this.deleteFrom(null, table, null, as, tableAlias);
     }
 
     @Override
-    public final DR delete(@Nullable SQLs.WordOnly only, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-        return this.delete(only, table, null, as, tableAlias);
+    public final DR deleteFrom(@Nullable SQLs.WordOnly only, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
+        return this.deleteFrom(only, table, null, as, tableAlias);
     }
 
     @Override
-    public final DR delete(TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as, String tableAlias) {
-        return this.delete(null, table, star, as, tableAlias);
+    public final DR deleteFrom(TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as, String tableAlias) {
+        return this.deleteFrom(null, table, star, as, tableAlias);
     }
 
     @Override
-    public final DR delete(final @Nullable SQLsSyntax.WordOnly only, final @Nullable TableMeta<?> table,
-                           final @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as,
-                           final @Nullable String tableAlias) {
+    public final DR deleteFrom(final @Nullable SQLsSyntax.WordOnly only, final @Nullable TableMeta<?> table,
+                               final @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as,
+                               final @Nullable String tableAlias) {
         if (this.targetTable != null) {
             throw ContextStack.castCriteriaApi(this.context);
         } else if (only != null && only != SQLs.ONLY) {

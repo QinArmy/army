@@ -174,9 +174,6 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
                 .insertInto(BankUser_.T).as("u")
                 .overridingSystemValue()
                 .values(bankPersonList)
-                .onConflict()
-                .onConstraint("de_DE")
-                .doNothing()
                 .asInsert()
 
                 .child()

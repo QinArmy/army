@@ -2157,7 +2157,7 @@ abstract class ArmyParser implements DialectParser {
                 multiStmtBatch(stmt, context, this::parseDomainChildDelete);
             }
         } else if (mode == _ChildUpdateMode.CTE) {
-            final DomainDeleteContext primaryContext;
+            final DomainDeleteContext primaryContext;//TODO modify
             primaryContext = DomainDeleteContext.forSingle(outerContext, stmt, this, visible);
             context = DomainDeleteContext.forChild(stmt, primaryContext);
             this.parseDomainChildDelete(stmt, context);

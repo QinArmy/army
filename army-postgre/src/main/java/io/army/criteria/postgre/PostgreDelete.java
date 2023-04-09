@@ -22,13 +22,13 @@ public interface PostgreDelete extends PostgreStatement {
 
     interface _PostgreDeleteClause<R> extends Item {
 
-        R delete(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
+        R deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
 
-        R delete(@Nullable SQLs.WordOnly only, TableMeta<?> table, SQLs.WordAs as, String tableAlias);
+        R deleteFrom(@Nullable SQLs.WordOnly only, TableMeta<?> table, SQLs.WordAs as, String tableAlias);
 
-        R delete(TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
+        R deleteFrom(TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
 
-        R delete(@Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
+        R deleteFrom(@Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
 
     }
 

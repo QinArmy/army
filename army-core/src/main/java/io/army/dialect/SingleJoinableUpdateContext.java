@@ -12,8 +12,8 @@ import io.army.meta.ChildTableMeta;
 final class SingleJoinableUpdateContext extends SingleJoinableDmlContext implements _SingleUpdateContext {
 
 
-    static SingleJoinableUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate stmt
-            , ArmyParser parser, Visible visible) {
+    static SingleJoinableUpdateContext create(@Nullable _SqlContext outerContext, _SingleUpdate stmt,
+                                              ArmyParser parser, Visible visible) {
         final TableContext tableContext;
         if (stmt instanceof _JoinableUpdate) {
             tableContext = TableContext.forUpdate((_JoinableUpdate) stmt, parser, visible);

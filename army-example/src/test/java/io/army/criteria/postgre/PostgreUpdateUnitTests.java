@@ -105,7 +105,7 @@ public class PostgreUpdateUnitTests extends PostgreUnitTests {
         printStmt(LOG, stmt);
     }
 
-    @Test
+    @Test//(invocationCount = 100)
     public void batchReturningUpdateParent() {
         Map<String, Object> paramMap;
         final List<Map<String, Object>> paramList = new ArrayList<>();
@@ -141,6 +141,7 @@ public class PostgreUpdateUnitTests extends PostgreUnitTests {
 
 
         printStmt(LOG, stmt);
+
     }
 
 
