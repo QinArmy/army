@@ -88,6 +88,7 @@ abstract class Functions extends SQLSyntax {
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_acos">ACOS(X)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">acos ( double precision ) → double precision</a>
      */
     public static Expression acos(final Expression expr) {
         return FunctionUtils.oneArgFunc("ACOS", expr, DoubleType.INSTANCE);
@@ -100,6 +101,7 @@ abstract class Functions extends SQLSyntax {
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_asin">ASIN(X)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">asin ( double precision ) → double precision</a>
      */
     public static Expression asin(final Expression expr) {
         return FunctionUtils.oneArgFunc("ASIN", expr, DoubleType.INSTANCE);
@@ -111,6 +113,7 @@ abstract class Functions extends SQLSyntax {
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_atan">ATAN(X)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">atan ( double precision ) → double precision</a>
      */
     public static Expression atan(final Expression expr) {
         return FunctionUtils.oneArgFunc("ATAN", expr, DoubleType.INSTANCE);
@@ -129,13 +132,18 @@ abstract class Functions extends SQLSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  LongType}
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>if {@link MappingType} of exp is number type,then {@link MappingType} of exp </li>
+     *     <li>else {@link BigDecimalType} </li>
+     * </ul>
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_ceil">CEIL(X)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">ceil ( numeric ) → numeric,ceil ( double precision ) → double precision</a>
      */
-    public static Expression ceil(final Expression expr) {
-        return FunctionUtils.oneArgFunc("CEIL", expr, LongType.INSTANCE);
+    public static Expression ceil(final Expression exp) {
+        return FunctionUtils.oneArgFunc("CEIL", exp, _returnType(exp, Functions::_numberOrDecimal));
     }
 
 
@@ -156,6 +164,7 @@ abstract class Functions extends SQLSyntax {
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_cos">COS(X)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">cos ( double precision ) → double precision</a>
      */
     public static Expression cos(final Expression expr) {
         return FunctionUtils.oneArgFunc("COS", expr, DoubleType.INSTANCE);
@@ -167,6 +176,7 @@ abstract class Functions extends SQLSyntax {
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_cot">COT(X)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">cot ( double precision ) → double precision</a>
      */
     public static Expression cot(final Expression expr) {
         return FunctionUtils.oneArgFunc("COT", expr, DoubleType.INSTANCE);
@@ -197,14 +207,18 @@ abstract class Functions extends SQLSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
+     *     <li>Else {@link BigDecimalType}</li>
+     * </ul>
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_exp">EXP(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">exp ( numeric )</a>
      */
-    public static Expression exp(final Expression expr) {
-        return FunctionUtils.oneArgFunc("EXP", expr, DoubleType.INSTANCE);
+    public static Expression exp(final Expression exp) {
+        return FunctionUtils.oneArgFunc("EXP", exp, _returnType(exp, Functions::_doubleOrDecimal));
     }
 
     /**
@@ -242,57 +256,63 @@ abstract class Functions extends SQLSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
+     *     <li>Else {@link BigDecimalType}</li>
+     * </ul>
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_ln">LN(x)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">ln ( numeric ) → numeric,ln ( double precision ) → double precision</a>
      */
     public static Expression ln(final Expression x) {
-        return FunctionUtils.oneArgFunc("LN", x, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("LN", x, _returnType(x, Functions::_doubleOrDecimal));
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
+     *     <li>Else {@link BigDecimalType}</li>
+     * </ul>
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log">LOG(x)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">log ( numeric ) → numeric,log ( double precision ) → double precision</a>
      */
     public static Expression log(final Expression x) {
-        return FunctionUtils.oneArgFunc("LOG", x, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("LOG", x, _returnType(x, Functions::_doubleOrDecimal));
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * The {@link MappingType} of function return type: {@link  BigDecimalType}
      * </p>
      *
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log">LOG(x)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log">LOG(B,X)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">log ( b numeric, x numeric ) → numeric</a>
      */
     public static Expression log(final Expression b, final Expression x) {
-        return FunctionUtils.twoArgFunc("LOG", b, x, DoubleType.INSTANCE);
+        return FunctionUtils.twoArgFunc("LOG", b, x, BigDecimalType.INSTANCE);
     }
+
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
-     * </p>
-     *
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log2">LOG2(x)</a>
-     */
-    public static Expression log2(final Expression x) {
-        return FunctionUtils.oneArgFunc("LOG2", x, DoubleType.INSTANCE);
-    }
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
+     *     <li>Else {@link BigDecimalType}</li>
+     * </ul>
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log10">LOG10(x)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">log10 ( numeric ) → numeric,log10 ( double precision ) → double precision</a>
      */
     public static Expression log10(final Expression x) {
-        return FunctionUtils.oneArgFunc("LOG10", x, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("LOG10", x, _returnType(x, Functions::_doubleOrDecimal));
     }
 
     /**
@@ -366,24 +386,30 @@ abstract class Functions extends SQLSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>If the {@link MappingType} of exp is number type,then {@link MappingType} of exp</li>
+     *     <li>Else {@link BigDecimalType}</li>
+     * </ul>
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_round">ROUND(x)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">round ( numeric ) → numeric</a>
      */
     public static Expression round(final Expression x) {
-        return FunctionUtils.oneArgFunc("ROUND", x, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ROUND", x, _returnType(x, Functions::_numberOrDecimal));
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * The {@link MappingType} of function return type: {@link BigDecimalType} .
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_round">ROUND(x,d)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">round ( v numeric, s integer ) → numeric</a>
      */
     public static Expression round(final Expression x, final Expression d) {
-        return FunctionUtils.twoArgFunc("ROUND", x, d, DoubleType.INSTANCE);
+        return FunctionUtils.twoArgFunc("ROUND", x, d, BigDecimalType.INSTANCE);
     }
 
     /**
@@ -392,6 +418,7 @@ abstract class Functions extends SQLSyntax {
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sign">SIGN(x)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">sign ( numeric ) → numeric</a>
      */
     public static Expression sign(final Expression x) {
         return FunctionUtils.oneArgFunc("SIGN", x, IntegerType.INSTANCE);
@@ -403,6 +430,7 @@ abstract class Functions extends SQLSyntax {
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sin">SIN(x)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">sin ( numeric ) → numeric</a>
      */
     public static Expression sin(final Expression x) {
         return FunctionUtils.oneArgFunc("SIN", x, DoubleType.INSTANCE);
@@ -410,13 +438,17 @@ abstract class Functions extends SQLSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link DoubleType} .
-     * </p>
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>If the {@link MappingType} of exp is float number type,then {@link DoubleType}</li>
+     *     <li>Else {@link BigDecimalType}</li>
+     * </ul>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sqrt">SQRT(x)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">sqrt ( numeric ) → numeric,sqrt ( double precision ) → double precision</a>
      */
     public static Expression sqrt(final Expression x) {
-        return FunctionUtils.oneArgFunc("SQRT", x, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("SQRT", x, _returnType(x, Functions::_doubleOrDecimal));
     }
 
     /**
@@ -425,6 +457,7 @@ abstract class Functions extends SQLSyntax {
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_tan">TAN(x)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">tan ( numeric ) → numeric</a>
      */
     public static Expression tan(final Expression x) {
         return FunctionUtils.oneArgFunc("TAN", x, DoubleType.INSTANCE);
@@ -576,7 +609,7 @@ abstract class Functions extends SQLSyntax {
         final TypeMeta exprType, returnType;
         exprType = expression.typeMeta();
         if (exprType instanceof TypeMeta.Delay && !((TypeMeta.Delay) exprType).isPrepared()) {
-            returnType = CriteriaSupports.delayParamMeta((TypeMeta.Delay) exprType, function);
+            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) exprType, function);
         } else if (exprType instanceof MappingType) {
             returnType = function.apply((MappingType) exprType);
         } else {
@@ -726,11 +759,88 @@ abstract class Functions extends SQLSyntax {
     }
 
 
+    @Deprecated
+    static TypeMeta _doubleOrNumeric(final Expression exp) {
+        final TypeMeta typeMeta;
+        typeMeta = exp.typeMeta();
+
+        final TypeMeta returnType;
+        if (typeMeta instanceof TypeMeta.Delay && !((TypeMeta.Delay) typeMeta).isPrepared()) {
+            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) typeMeta, Functions::_doubleOrNumberType);
+        } else {
+            returnType = _doubleOrNumberType(typeMeta.mappingType());
+        }
+        return returnType;
+    }
+
+    @Deprecated
+    static TypeMeta _numericOrDecimal(final Expression exp) {
+        final TypeMeta typeMeta;
+        typeMeta = exp.typeMeta();
+
+        final TypeMeta returnType;
+        if (typeMeta instanceof TypeMeta.Delay && !((TypeMeta.Delay) typeMeta).isPrepared()) {
+            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) typeMeta, Functions::_numberOrDecimal);
+        } else {
+            returnType = _numberOrDecimal(typeMeta.mappingType());
+        }
+        return returnType;
+    }
+
+    static TypeMeta _returnType(final Expression exp, Function<MappingType, MappingType> function) {
+        final TypeMeta typeMeta;
+        typeMeta = exp.typeMeta();
+
+        final TypeMeta returnType;
+        if (typeMeta instanceof TypeMeta.Delay && !((TypeMeta.Delay) typeMeta).isPrepared()) {
+            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) typeMeta, function);
+        } else {
+            returnType = function.apply(typeMeta.mappingType());
+        }
+        return returnType;
+    }
 
 
+    /**
+     * @see #_doubleOrNumeric(Expression)
+     */
+    static MappingType _doubleOrNumberType(final MappingType type) {
+        final MappingType returnType;
+        if (type instanceof _NumericType._FloatNumeric) {
+            returnType = DoubleType.INSTANCE;
+        } else if (type instanceof _NumericType) {
+            returnType = type;
+        } else {
+            returnType = BigDecimalType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * @see #round(Expression)
+     */
+    static MappingType _numberOrDecimal(final MappingType type) {
+        final MappingType returnType;
+        if (type instanceof _NumericType) {
+            returnType = type;
+        } else {
+            returnType = BigDecimalType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    static MappingType _doubleOrDecimal(final MappingType type) {
+        final MappingType returnType;
+        if (type instanceof _NumericType._FloatNumeric) {
+            returnType = DoubleType.INSTANCE;
+        } else {
+            returnType = BigDecimalType.INSTANCE;
+        }
+        return returnType;
+    }
 
 
-    /*-------------------below private method -------------------*/
+    /*-------------------below private method-------------------*/
 
 
     /**

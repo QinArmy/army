@@ -603,7 +603,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
                 final TypeMeta type;
                 type = datetimeExpr.typeMeta();
                 if (type instanceof TypeMeta.Delay) {
-                    returnType = CriteriaSupports.delayParamMeta((TypeMeta.Delay) type, MySQLTimeFunctions::_timestampAdd);
+                    returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) type, MySQLTimeFunctions::_timestampAdd);
                 } else {
                     returnType = _timestampAdd(type.mappingType());
                 }
@@ -1053,7 +1053,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
         final TypeMeta returnType;
         if (formatType instanceof TypeMeta.Delay) {//TODO modify delay implementation
             final Function<MappingType, MappingType> function = t -> _strToDateReturnType((ArmyExpression) format, t);
-            returnType = CriteriaSupports.delayParamMeta((TypeMeta.Delay) formatType, function);
+            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) formatType, function);
         } else {
             returnType = _strToDateReturnType((ArmyExpression) format, formatType.mappingType());
         }
@@ -1114,7 +1114,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
         final TypeMeta type, returnType;
         type = date.typeMeta();
         if (type instanceof TypeMeta.Delay) {
-            returnType = CriteriaSupports.delayParamMeta((TypeMeta.Delay) type, t -> _dateAddSubReturnType(t, unit));
+            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) type, t -> _dateAddSubReturnType(t, unit));
         } else {
             returnType = _dateAddSubReturnType(type.mappingType(), unit);
         }

@@ -55,8 +55,8 @@ abstract class CriteriaSupports {
     }
 
 
-    static TypeMeta delayParamMeta(TypeMeta.Delay paramMeta, Function<MappingType, MappingType> function) {
-        return new DelayParamMetaWrapper(paramMeta, function);
+    static TypeMeta delayWrapper(TypeMeta.Delay delayType, Function<MappingType, MappingType> function) {
+        return new DelayParamMetaWrapper(delayType, function);
     }
 
     static TypeMeta delayParamMeta(TypeMeta paramMeta1, TypeMeta paramMeta2
@@ -446,33 +446,32 @@ abstract class CriteriaSupports {
             return this.supplier.get();
         }
 
+
     }//SimpleDelayParamMeta
 
 
     private static final class DelayParamMetaWrapper implements TypeMeta.Delay {
 
-        private final Delay paramMeta;
+        private final Delay delayType;
 
         private final Function<MappingType, MappingType> function;
 
-        private CriteriaContext criteriaContext;
-
         private MappingType actualType;
 
-        private DelayParamMetaWrapper(Delay paramMeta, Function<MappingType, MappingType> function) {
-            this.paramMeta = paramMeta;
+        /**
+         * @see #delayWrapper(Delay, Function)
+         */
+        private DelayParamMetaWrapper(Delay delayType, Function<MappingType, MappingType> function) {
+            this.delayType = delayType;
             this.function = function;
-            final CriteriaContext criteriaContext;
-            criteriaContext = ContextStack.peek();
-            this.criteriaContext = criteriaContext;
-            criteriaContext.addEndEventListener(this::contextEnd);
+            ContextStack.peek().addEndEventListener(this::contextEnd);
         }
 
         @Override
         public MappingType mappingType() {
             final MappingType actualType = this.actualType;
             if (actualType == null) {
-                String m = String.format("%s isn't prepared.", TypeMeta.Delay.class.getName());
+                String m = String.format("%s %s isn't prepared.", TypeMeta.Delay.class.getName(), this.delayType);
                 throw new IllegalStateException(m);
             }
             return actualType;
@@ -480,15 +479,12 @@ abstract class CriteriaSupports {
 
         @Override
         public boolean isPrepared() {
-            return this.paramMeta.isPrepared();
+            return this.delayType.isPrepared();
         }
 
         private void contextEnd() {
-            if (this.criteriaContext == null) {
-                throw _Exceptions.castCriteriaApi();
-            }
-            this.actualType = this.function.apply(this.paramMeta.mappingType());
-            this.criteriaContext = null;
+            assert this.actualType == null;
+            this.actualType = this.function.apply(this.delayType.mappingType());
         }
 
 

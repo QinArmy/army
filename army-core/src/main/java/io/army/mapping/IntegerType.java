@@ -99,13 +99,19 @@ public final class IntegerType extends _NumericType._IntegerType {
                 throw errorHandler.apply(type, nonNull);
             }
         } else if (nonNull instanceof String) {
-            try {
-                value = Integer.parseInt((String) nonNull);
-            } catch (NumberFormatException e) {
-                throw errorHandler.apply(type, nonNull);
-            }
-        } else if (nonNull instanceof Boolean) {
-            value = ((Boolean) nonNull) ? 1 : 0;
+             try {
+                 value = Integer.parseInt((String) nonNull);
+             } catch (NumberFormatException e) {
+                 throw errorHandler.apply(type, nonNull);
+             }
+         } else if (nonNull instanceof Double || nonNull instanceof Float) {
+             try {
+                 value = new BigDecimal(nonNull.toString()).intValueExact();
+             } catch (ArithmeticException e) {
+                 throw errorHandler.apply(type, nonNull);
+             }
+         } else if (nonNull instanceof Boolean) {
+             value = ((Boolean) nonNull) ? 1 : 0;
          } else {
              throw errorHandler.apply(type, nonNull);
          }

@@ -111,6 +111,12 @@ public final class LongType extends _NumericType._IntegerType {
             } catch (ArithmeticException e) {
                 throw errorHandler.apply(type, nonNull);
             }
+        } else if (nonNull instanceof Double || nonNull instanceof Float) {
+            try {
+                value = new BigDecimal(nonNull.toString()).longValueExact();
+            } catch (ArithmeticException e) {
+                throw errorHandler.apply(type, nonNull);
+            }
         } else if (nonNull instanceof Boolean) {
             value = ((Boolean) nonNull) ? 1L : 0L;
         } else {

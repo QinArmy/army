@@ -40,21 +40,43 @@ abstract class FunctionUtils {
         if (expr instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, expr);
         }
-        return new OneArgFuncExpression(name, (ArmyExpression) expr, returnType);
+        return new OneArgFunction(name, (ArmyExpression) expr, returnType);
     }
 
 
     static Expression twoArgFunc(final String name, final Expression one, final Expression two, TypeMeta returnType) {
-        final List<ArmyExpression> argList;
-        argList = twoExpList(name, one, two);
-        return new MultiArgFunctionExpression(name, null, argList, returnType);
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        }
+        return new TwoArgFunction(name, one, two, returnType);
     }
 
     static Expression threeArgFunc(final String name, final Expression one, final Expression two,
                                    final Expression three, TypeMeta returnType) {
-        final List<ArmyExpression> argList;
-        argList = threeExpList(name, one, two, three);
-        return new MultiArgFunctionExpression(name, null, argList, returnType);
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (three instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, three);
+        }
+        return new ThreeArgFunction(name, one, two, three, returnType);
+    }
+
+    static Expression fourArgFunc(final String name, final Expression one, final Expression two,
+                                  final Expression three, final Expression four, TypeMeta returnType) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (three instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, three);
+        } else if (four instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, four);
+        }
+        return new FourArgFunction(name, one, two, three, four, returnType);
     }
 
 
@@ -73,7 +95,7 @@ abstract class FunctionUtils {
     }
 
     static Expression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
-        return new OneArgFuncExpression(name, (ArmyExpression) exp, returnType);
+        return new OneArgFunction(name, (ArmyExpression) exp, returnType);
     }
 
     static Expression twoOrMultiArgFunc(final String name, final Expression one, final Expression two,
@@ -118,7 +140,7 @@ abstract class FunctionUtils {
         }
         final Expression func;
         if (rest.length == 0) {
-            func = new OneArgFuncExpression(name, (ArmyExpression) first, returnType);
+            func = new OneArgFunction(name, (ArmyExpression) first, returnType);
         } else {
             final List<ArmyExpression> argList = new ArrayList<>(1 + rest.length);
             argList.add((ArmyExpression) first);
@@ -779,7 +801,7 @@ abstract class FunctionUtils {
 
         final String name;
 
-        private final TypeMeta returnType;
+        final TypeMeta returnType;
 
         FunctionExpression(String name, TypeMeta returnType) {
             this.name = name;
@@ -799,8 +821,37 @@ abstract class FunctionUtils {
                     .append(this.name) // function name
                     .append(_Constant.LEFT_PAREN);
 
-            if (this instanceof OneArgFuncExpression) {
-                ((OneArgFuncExpression) this).argument.appendSql(context);
+            if (this instanceof OneArgFunction) {
+                ((OneArgFunction) this).argument.appendSql(context);
+            } else if (this instanceof TwoArgFunction) {
+                final TwoArgFunction func = (TwoArgFunction) this;
+
+                func.one.appendSql(context);
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+                func.two.appendSql(context);
+            } else if (this instanceof ThreeArgFunction) {
+                final ThreeArgFunction func = (ThreeArgFunction) this;
+
+                func.one.appendSql(context);
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+
+                func.two.appendSql(context);
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+
+                func.three.appendSql(context);
+            } else if (this instanceof FourArgFunction) {
+                final FourArgFunction func = (FourArgFunction) this;
+
+                func.one.appendSql(context);
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+
+                func.two.appendSql(context);
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+
+                func.three.appendSql(context);
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+
+                func.four.appendSql(context);
             } else if (this instanceof MultiArgFunctionExpression) {
                 final MultiArgFunctionExpression e = (MultiArgFunctionExpression) this;
                 FunctionUtils.appendArguments(e.option, e.argList, context);
@@ -811,6 +862,7 @@ abstract class FunctionUtils {
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
+
         @Override
         public final String toString() {
             final StringBuilder builder = new StringBuilder();
@@ -818,8 +870,31 @@ abstract class FunctionUtils {
             builder.append(_Constant.SPACE)
                     .append(this.name) // function name
                     .append(_Constant.LEFT_PAREN);
-            if (this instanceof OneArgFuncExpression) {
-                builder.append(((OneArgFuncExpression) this).argument);
+            if (this instanceof OneArgFunction) {
+                builder.append(((OneArgFunction) this).argument);
+            } else if (this instanceof TwoArgFunction) {
+                final TwoArgFunction func = (TwoArgFunction) this;
+
+                builder.append(func.one)
+                        .append(_Constant.SPACE_COMMA)
+                        .append(func.two);
+            } else if (this instanceof ThreeArgFunction) {
+                final ThreeArgFunction func = (ThreeArgFunction) this;
+
+                builder.append(func.one)
+                        .append(_Constant.SPACE_COMMA)
+                        .append(func.two)
+                        .append(_Constant.SPACE_COMMA)
+                        .append(func.three);
+            } else if (this instanceof FourArgFunction) {
+                final FourArgFunction func = (FourArgFunction) this;
+                builder.append(func.one)
+                        .append(_Constant.SPACE_COMMA)
+                        .append(func.two)
+                        .append(_Constant.SPACE_COMMA)
+                        .append(func.three)
+                        .append(_Constant.SPACE_COMMA)
+                        .append(func.four);
             } else if (this instanceof MultiArgFunctionExpression) {
                 final MultiArgFunctionExpression e = (MultiArgFunctionExpression) this;
                 FunctionUtils.argumentsToString(e.option, e.argList, builder);
@@ -834,17 +909,174 @@ abstract class FunctionUtils {
 
     }//FunctionExpression
 
-    private static class OneArgFuncExpression extends FunctionExpression {
+    private static final class OneArgFunction extends FunctionExpression {
 
         private final ArmyExpression argument;
 
-        private OneArgFuncExpression(String name, ArmyExpression argument, TypeMeta returnType) {
+        private OneArgFunction(String name, ArmyExpression argument, TypeMeta returnType) {
             super(name, returnType);
             this.argument = argument;
         }
 
 
-    }//OneArgFuncExpression
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.argument, this.returnType);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof OneArgFunction) {
+                final OneArgFunction o = (OneArgFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.argument.equals(this.argument)
+                        && o.returnType.equals(this.returnType);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+
+    }//OneArgFunction
+
+    private static final class TwoArgFunction extends FunctionExpression {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        /**
+         * @see #twoArgFunc(String, Expression, Expression, TypeMeta)
+         */
+        private TwoArgFunction(String name, Expression one, Expression two, TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.one, this, two, this.returnType);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof TwoArgFunction) {
+                final TwoArgFunction o = (TwoArgFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.one.equals(this.one)
+                        && o.two.equals(this.two)
+                        && o.returnType.equals(this.returnType);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+    }//TwoArgFunction
+
+
+    private static final class ThreeArgFunction extends FunctionExpression {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        private final ArmyExpression three;
+
+        /**
+         * @see #threeArgFunc(String, Expression, Expression, Expression, TypeMeta)
+         */
+        private ThreeArgFunction(String name, Expression one, Expression two, Expression three,
+                                 TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+            this.three = (ArmyExpression) three;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.one, this, two, this.three, this.returnType);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof ThreeArgFunction) {
+                final ThreeArgFunction o = (ThreeArgFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.one.equals(this.one)
+                        && o.two.equals(this.two)
+                        && o.three.equals(this.three)
+                        && o.returnType.equals(this.returnType);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+
+    }//ThreeArgFunction
+
+
+    private static final class FourArgFunction extends FunctionExpression {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        private final ArmyExpression three;
+
+        private final ArmyExpression four;
+
+        /**
+         * @see #fourArgFunc(String, Expression, Expression, Expression, Expression, TypeMeta)
+         */
+        private FourArgFunction(String name, Expression one, Expression two, Expression three, Expression four,
+                                TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+            this.three = (ArmyExpression) three;
+            this.four = (ArmyExpression) four;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.one, this, two, this.three, this.four, this.returnType);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof FourArgFunction) {
+                final FourArgFunction o = (FourArgFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.one.equals(this.one)
+                        && o.two.equals(this.two)
+                        && o.three.equals(this.three)
+                        && o.four.equals(this.four)
+                        && o.returnType.equals(this.returnType);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+
+    }//FourArgFunction
 
 
     private static final class MultiArgFunctionExpression extends FunctionExpression {
