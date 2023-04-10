@@ -18,7 +18,10 @@ import java.util.function.BiFunction;
  *     </ul>
  * </p>
  */
-abstract class OperationDataField extends OperationExpression implements DataField, _Selection {
+abstract class OperationDataField extends OperationExpression
+        implements DataField,
+        _Selection,
+        NoParensExpression {
 
     @Override
     public final OperationPredicate equal(BiFunction<DataField, String, Expression> namedOperator) {

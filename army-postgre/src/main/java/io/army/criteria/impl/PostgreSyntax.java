@@ -5,6 +5,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.Query;
 import io.army.criteria.SQLWords;
 import io.army.dialect._Constant;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.util._StringUtils;
 
@@ -122,6 +123,21 @@ abstract class PostgreSyntax extends PostgreFuncSyntax {
     public static Expression excluded(FieldMeta<?> field) {
         return ContextStack.peek().insertValueField(field, PostgreExcludedField::excludedField);
     }
+
+
+    /*-------------------below operator method -------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link  MappingType} of exp
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">Absolute value operator</a>
+     */
+    public static Expression at(Expression exp) {
+        return Expressions.unaryExp(exp, UnaryOperator.AT);
+    }
+
 
     /*-------------------below private method -------------------*/
 

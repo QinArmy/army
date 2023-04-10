@@ -16,6 +16,7 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
     @Override
     TypeMeta typeMeta();
 
+
     @Override
     IPredicate bracket();
 

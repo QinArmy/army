@@ -42,7 +42,7 @@ enum DualOperator {
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", DualOperator.class.getName(), this.name());
+        return CriteriaUtils.sqlWordsToString(this);
     }
 
 

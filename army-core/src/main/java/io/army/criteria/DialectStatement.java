@@ -2,13 +2,11 @@ package io.army.criteria;
 
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.SQLs;
-import io.army.function.ParensStringFunction;
 import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -99,10 +97,6 @@ public interface DialectStatement extends Statement {
     }
 
 
-    interface _DerivedAsClause<R> extends _AsClause<R> {
-
-        R as(String alias, Function<ParensStringFunction, List<String>> function);
-    }
 
 
     interface _WhereCurrentOfClause<R> {
@@ -190,13 +184,6 @@ public interface DialectStatement extends Statement {
 
     }
 
-    interface _IfStraightJoinClause<C, FJ> {
-
-        <B> FJ ifStraightJoin(Supplier<B> supplier);
-
-        <B> FJ ifStraightJoin(Function<C, B> function);
-
-    }
 
 
     /**
@@ -356,10 +343,6 @@ public interface DialectStatement extends Statement {
         R leftParen(String cteName, SQLs.WordAs wordAs, String alias);
     }
 
-
-    interface _SimpleCteLeftParenSpec<I extends Item> extends _LeftParenStringQuadraOptionalSpec<_StaticAsClaus<I>> {
-
-    }
 
 
     interface _DynamicWithClause<B extends CteBuilderSpec, WE extends Item> extends Item {

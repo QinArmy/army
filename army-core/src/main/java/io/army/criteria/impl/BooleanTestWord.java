@@ -7,13 +7,13 @@ package io.army.criteria.impl;
  *
  * @since 1.0
  */
-enum BooleanTestOperand implements SQLs.BooleanTestOperand, SQLsSyntax.ArmyKeyWord {
+enum BooleanTestWord implements SQLsSyntax.BooleanTestWord, SQLsSyntax.ArmyKeyWord {
 
     JSON(" JSON");
 
     final String spaceOperator;
 
-    BooleanTestOperand(String spaceOperator) {
+    BooleanTestWord(String spaceOperator) {
         this.spaceOperator = spaceOperator;
     }
 

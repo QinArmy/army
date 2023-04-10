@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.Expression;
-import io.army.criteria.Selection;
-import io.army.criteria.SortItem;
-import io.army.criteria.SqlValueParam;
+import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
@@ -192,33 +189,58 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final OperationPredicate between(Expression first, SQLs.WordAnd and, Expression second) {
-        return Expressions.betweenPredicate(false, this, first, second);
+        return Expressions.betweenPredicate(false, null, this, first, second);
     }
 
     @Override
     public final <T> OperationPredicate between(BiFunction<Expression, T, Expression> operator, T first,
                                                 SQLs.WordAnd and, T second) {
-        return Expressions.betweenPredicate(false, this, operator.apply(this, first), operator.apply(this, second));
+        return Expressions.betweenPredicate(false, null, this, operator.apply(this, first), operator.apply(this, second));
     }
 
     @Override
     public final OperationPredicate notBetween(Expression first, SQLs.WordAnd and, Expression second) {
-        return Expressions.betweenPredicate(true, this, first, second);
+        return Expressions.betweenPredicate(true, null, this, first, second);
     }
 
     @Override
     public final <T> OperationPredicate notBetween(BiFunction<Expression, T, Expression> operator, T first,
                                                    SQLs.WordAnd and, T second) {
-        return Expressions.betweenPredicate(true, this, operator.apply(this, first), operator.apply(this, second));
+        return Expressions.betweenPredicate(true, null, this, operator.apply(this, first), operator.apply(this, second));
+    }
+
+
+    @Override
+    public final IPredicate between(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second) {
+        return Expressions.betweenPredicate(false, modifier, this, first, second);
     }
 
     @Override
-    public final OperationPredicate is(SQLs.BooleanTestOperand operand) {
+    public final <T> IPredicate between(@Nullable SQLsSyntax.BetweenModifier modifier,
+                                        BiFunction<Expression, T, Expression> operator, T first,
+                                        SQLsSyntax.WordAnd and, T second) {
+        return Expressions.betweenPredicate(false, modifier, this, operator.apply(this, first), operator.apply(this, second));
+    }
+
+    @Override
+    public final IPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second) {
+        return Expressions.betweenPredicate(true, modifier, this, first, second);
+    }
+
+    @Override
+    public final <T> IPredicate notBetween(@Nullable SQLsSyntax.BetweenModifier modifier,
+                                           BiFunction<Expression, T, Expression> operator, T first,
+                                           SQLsSyntax.WordAnd and, T second) {
+        return Expressions.betweenPredicate(true, modifier, this, operator.apply(this, first), operator.apply(this, second));
+    }
+
+    @Override
+    public final OperationPredicate is(SQLsSyntax.BooleanTestWord operand) {
         return Expressions.booleanTestPredicate(this, false, operand);
     }
 
     @Override
-    public final OperationPredicate isNot(SQLs.BooleanTestOperand operand) {
+    public final OperationPredicate isNot(SQLsSyntax.BooleanTestWord operand) {
         return Expressions.booleanTestPredicate(this, true, operand);
     }
 
@@ -232,6 +254,27 @@ abstract class OperationExpression implements ArmyExpression {
         return Expressions.booleanTestPredicate(this, true, SQLs.NULL);
     }
 
+    @Override
+    public final IPredicate is(SQLsSyntax.IsComparisonWord operator, Expression operand) {
+        return Expressions.isComparisonPredicate(this, false, operator, operand);
+    }
+
+    @Override
+    public final IPredicate isNot(SQLsSyntax.IsComparisonWord operator, Expression operand) {
+        return Expressions.isComparisonPredicate(this, true, operator, operand);
+    }
+
+    @Override
+    public final <T> IPredicate is(SQLsSyntax.IsComparisonWord operator,
+                                   BiFunction<Expression, T, Expression> valueOperator, @Nullable T value) {
+        return Expressions.isComparisonPredicate(this, false, operator, valueOperator.apply(this, value));
+    }
+
+    @Override
+    public final <T> IPredicate isNot(SQLsSyntax.IsComparisonWord operator,
+                                      BiFunction<Expression, T, Expression> valueOperator, @Nullable T value) {
+        return Expressions.isComparisonPredicate(this, true, operator, valueOperator.apply(this, value));
+    }
 
     @Override
     public final OperationPredicate in(Expression operand) {
@@ -442,12 +485,22 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final SortItem asc() {
-        return ArmySortItems.create(this, SQLs.ASC);
+        return ArmySortItems.create(this, SQLs.ASC, null);
     }
 
     @Override
     public final SortItem desc() {
-        return ArmySortItems.create(this, SQLs.DESC);
+        return ArmySortItems.create(this, SQLs.DESC, null);
+    }
+
+    @Override
+    public final SortItem ascSpace(@Nullable Statement.NullsFirstLast firstLast) {
+        return ArmySortItems.create(this, SQLs.ASC, firstLast);
+    }
+
+    @Override
+    public final SortItem descSpace(@Nullable Statement.NullsFirstLast firstLast) {
+        return ArmySortItems.create(this, SQLs.DESC, firstLast);
     }
 
 

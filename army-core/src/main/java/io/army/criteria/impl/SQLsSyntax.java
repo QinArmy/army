@@ -44,11 +44,19 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     }
 
-    public interface BooleanTestOperand extends SQLWords, RightOperand {
+    public interface BooleanTestWord extends SQLWords {
 
     }
 
-    public interface WordNull extends BooleanTestOperand, Expression {
+    public interface IsComparisonWord extends SQLWords {
+
+    }
+
+    public interface BetweenModifier extends SQLWords {
+
+    }
+
+    public interface WordNull extends BooleanTestWord, Expression {
 
     }
 
@@ -114,7 +122,7 @@ abstract class SQLsSyntax extends SQLSyntax {
     }
 
 
-    public interface WordBooleans extends BooleanTestOperand, IPredicate {
+    public interface WordBooleans extends BooleanTestWord, IPredicate {
 
     }
 
@@ -255,7 +263,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     }//KeyWordAnd
 
-    private enum KeyWordUnknown implements BooleanTestOperand, ArmyKeyWord {
+    private enum KeyWordUnknown implements BooleanTestWord, ArmyKeyWord {
 
         UNKNOWN(" UNKNOWN");
 
@@ -277,7 +285,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     } //KeyWordUnknown
 
-    enum KeyWordAscDesc implements Statement.AscDesc, SQLWords {
+    private enum KeyWordAscDesc implements Statement.AscDesc, SQLWords {
 
         ASC(" ASC"),
         DESC(" DESC");
@@ -367,7 +375,7 @@ abstract class SQLsSyntax extends SQLSyntax {
     }//KeyWordNext
 
 
-    enum KeyWordsNullsFirstLast implements Statement.NullsFirstLast, SQLWords {
+    private enum KeyWordsNullsFirstLast implements Statement.NullsFirstLast, SQLWords {
 
         NULLS_FIRST(" NULLS FIRST"),
         NULLS_LAST(" NULLS LAST");
@@ -514,9 +522,20 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     }//SQLSymbolPoint
 
-    private enum SQLSymbolStar implements SymbolStar, SelectItem {
+    private enum SQLSymbolStar implements SymbolStar, SQLWords {
 
-        STAR;
+        STAR(" *");
+
+        private final String spaceStar;
+
+        SQLSymbolStar(String spaceStar) {
+            this.spaceStar = spaceStar;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceStar;
+        }
 
         @Override
         public final String toString() {
@@ -685,10 +704,6 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     public static final WordInterval INTERVAL = KeyWordInterval.INTERVAL;
 
-    public static final Statement.AscDesc ASC = KeyWordAscDesc.ASC;
-
-    public static final Statement.AscDesc DESC = KeyWordAscDesc.DESC;
-
     public static final WordsWithTies WITH_TIES = KeyWordWithTies.WITH_TIES;
 
     public static final SymbolStar STAR = SQLSymbolStar.STAR;
@@ -697,11 +712,21 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     public static final WordBooleans FALSE = new BooleanWord(false);
 
-    public static final BooleanTestOperand UNKNOWN = KeyWordUnknown.UNKNOWN;
+    public static final BooleanTestWord UNKNOWN = KeyWordUnknown.UNKNOWN;
 
     public static final WordDefault DEFAULT = new DefaultWord();
 
     public static final WordNull NULL = new NullWord();
+
+    /**
+     * package field
+     */
+    static final Statement.AscDesc ASC = KeyWordAscDesc.ASC;
+
+    /**
+     * package field
+     */
+    static final Statement.AscDesc DESC = KeyWordAscDesc.DESC;
 
     /**
      * package field
@@ -1107,13 +1132,12 @@ abstract class SQLsSyntax extends SQLSyntax {
         return ContextStack.root().createVar(varName, paramMeta);
     }
 
-    /**
-     * @see Expression#bracket()
-     * @see IPredicate#bracket()
-     */
-    @SuppressWarnings("unchecked")
-    public static <T extends Expression> T parens(T expression) {
-        return (T) expression.bracket();
+    public static Expression parens(Expression expression) {
+        return Expressions.bracketExp(expression);
+    }
+
+    public static IPredicate parens(IPredicate predicate) {
+        return Expressions.bracketPredicate(predicate);
     }
 
 

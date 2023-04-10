@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.function.TeNamedOperator;
+import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
 
 import java.util.Collection;
@@ -203,23 +204,66 @@ abstract class NonOperationExpression implements ArmyExpression {
         throw unsupportedOperation();
     }
 
+
     @Override
-    public final OperationPredicate is(SQLsSyntax.BooleanTestOperand operand) {
+    public final IPredicate between(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final OperationPredicate isNot(SQLsSyntax.BooleanTestOperand operand) {
+    public final <T> IPredicate between(@Nullable SQLsSyntax.BetweenModifier modifier, BiFunction<Expression, T, Expression> operator, T first, SQLsSyntax.WordAnd and, T second) {
         throw unsupportedOperation();
     }
 
     @Override
-    public OperationPredicate isNull() {
+    public final IPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second) {
         throw unsupportedOperation();
     }
 
     @Override
-    public OperationPredicate isNotNull() {
+    public final <T> IPredicate notBetween(@Nullable SQLsSyntax.BetweenModifier modifier, BiFunction<Expression, T, Expression> operator, T first, SQLsSyntax.WordAnd and, T second) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final OperationPredicate is(SQLsSyntax.BooleanTestWord operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final OperationPredicate isNot(SQLsSyntax.BooleanTestWord operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate is(SQLsSyntax.IsComparisonWord operator, Expression operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate isNot(SQLsSyntax.IsComparisonWord operator, Expression operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <T> IPredicate is(SQLsSyntax.IsComparisonWord operator,
+                                   BiFunction<Expression, T, Expression> valueOperator, @Nullable T value) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <T> IPredicate isNot(SQLsSyntax.IsComparisonWord operator,
+                                      BiFunction<Expression, T, Expression> valueOperator, @Nullable T value) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final OperationPredicate isNull() {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final OperationPredicate isNotNull() {
         throw unsupportedOperation();
     }
 
@@ -420,12 +464,22 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final SortItem asc() {
-        return ArmySortItems.create(this, SQLs.ASC);
+        return ArmySortItems.create(this, SQLs.ASC, null);
     }
 
     @Override
     public final SortItem desc() {
-        return ArmySortItems.create(this, SQLs.DESC);
+        return ArmySortItems.create(this, SQLs.DESC, null);
+    }
+
+    @Override
+    public final SortItem ascSpace(@Nullable Statement.NullsFirstLast firstLast) {
+        return ArmySortItems.create(this, SQLs.ASC, firstLast);
+    }
+
+    @Override
+    public final SortItem descSpace(@Nullable Statement.NullsFirstLast firstLast) {
+        return ArmySortItems.create(this, SQLs.DESC, firstLast);
     }
 
     static abstract class NonSelectionExpression extends NonOperationExpression {

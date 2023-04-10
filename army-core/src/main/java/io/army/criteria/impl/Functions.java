@@ -72,13 +72,14 @@ abstract class Functions extends SQLSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * The {@link MappingType} of function return type: {@link  MappingType} of expr
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_abs">ABS(X)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">ABS(numeric_type)</a>
      */
     public static Expression abs(final Expression expr) {
-        return FunctionUtils.oneArgFunc("ABS", expr, DoubleType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ABS", expr, expr.typeMeta());
     }
 
     /**
@@ -133,7 +134,7 @@ abstract class Functions extends SQLSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_ceil">CEIL(X)</a>
      */
-    public static Expression cell(final Expression expr) {
+    public static Expression ceil(final Expression expr) {
         return FunctionUtils.oneArgFunc("CEIL", expr, LongType.INSTANCE);
     }
 
@@ -188,6 +189,7 @@ abstract class Functions extends SQLSyntax {
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_degrees">DEGREES(x)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">degrees ( double precision )</a>
      */
     public static Expression degrees(final Expression expr) {
         return FunctionUtils.oneArgFunc("DEGREES", expr, DoubleType.INSTANCE);
@@ -199,6 +201,7 @@ abstract class Functions extends SQLSyntax {
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_exp">EXP(x)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">exp ( numeric )</a>
      */
     public static Expression exp(final Expression expr) {
         return FunctionUtils.oneArgFunc("EXP", expr, DoubleType.INSTANCE);
@@ -294,13 +297,14 @@ abstract class Functions extends SQLSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} or n.
+     * The {@link MappingType} of function return type: the {@link MappingType} of n.
      * </p>
      *
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log10">LOG10(x)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_mod">MOD(N,M), N % M, N MOD M</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">mod ( y numeric_type, x numeric_type ) → numeric_type</a>
      */
     public static Expression mod(final Expression n, final Expression m) {
-        return FunctionUtils.twoArgFunc("LOG10", n, m, n.typeMeta());
+        return FunctionUtils.twoArgFunc("MOD", n, m, n.typeMeta());
     }
 
     /**
@@ -309,6 +313,7 @@ abstract class Functions extends SQLSyntax {
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_pi">PI()</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">pi ( ) → double precision</a>
      */
     public static Expression pi() {
         return FunctionUtils.noArgFunc("PI", DoubleType.INSTANCE);
@@ -316,7 +321,7 @@ abstract class Functions extends SQLSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * The {@link MappingType} of function return type: {@link MappingType} of x
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_pow">POW(x,y)</a>
@@ -331,6 +336,7 @@ abstract class Functions extends SQLSyntax {
      * </p>
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_radians">RADIANS(x)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">radians ( double precision ) → double precision</a>
      */
     public static Expression radians(final Expression x) {
         return FunctionUtils.oneArgFunc("RADIANS", x, DoubleType.INSTANCE);

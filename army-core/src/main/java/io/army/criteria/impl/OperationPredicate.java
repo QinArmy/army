@@ -480,9 +480,9 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     @Override
     public final boolean isOptimistic() {
         final boolean match;
-        final Expressions.DualPredicate<?> predicate;
+        final Expressions.DualPredicate predicate;
         if (!(this instanceof Expressions.DualPredicate)
-                || (predicate = (Expressions.DualPredicate<?>) this).operator != DualOperator.EQUAL) {
+                || (predicate = (Expressions.DualPredicate) this).operator != DualOperator.EQUAL) {
             match = false;
         } else if (predicate.left instanceof TableField
                 && _MetaBridge.VERSION.equals(((TableField) predicate.left).fieldName())) {
@@ -503,14 +503,14 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     public final OperationPredicate getIdPredicate() {
         OperationPredicate predicate = this;
         while (predicate instanceof Expressions.AndPredicate) {
-            predicate = ((Expressions.AndPredicate<?>) predicate).left;
+            predicate = ((Expressions.AndPredicate) predicate).left;
         }
 
-        final Expressions.DualPredicate<?> dualPredicate;
+        final Expressions.DualPredicate dualPredicate;
         final boolean match;
         if (!(predicate instanceof Expressions.DualPredicate)) {
             match = false;
-        } else if (!((dualPredicate = (Expressions.DualPredicate<?>) predicate).left instanceof PrimaryFieldMeta)) {
+        } else if (!((dualPredicate = (Expressions.DualPredicate) predicate).left instanceof PrimaryFieldMeta)) {
             match = false;
         } else if (dualPredicate.operator == DualOperator.EQUAL) {
             match = dualPredicate.right instanceof SqlValueParam.SingleValue
@@ -530,12 +530,12 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     @Override
     public final TableField findParentId(final ChildTableMeta<?> child, final String alias) {
         final TableField parentId;
-        final Expressions.DualPredicate<?> predicate;
+        final Expressions.DualPredicate predicate;
         final TableMeta<?> leftTable, rightTable;
         final TableField leftField, rightField;
 
 
-        if (!(this instanceof Expressions.DualPredicate) || (predicate = (Expressions.DualPredicate<?>) this).operator != DualOperator.EQUAL) {
+        if (!(this instanceof Expressions.DualPredicate) || (predicate = (Expressions.DualPredicate) this).operator != DualOperator.EQUAL) {
             parentId = null;
         } else if (!(predicate.left instanceof TableField && predicate.right instanceof TableField)) {
             parentId = null;

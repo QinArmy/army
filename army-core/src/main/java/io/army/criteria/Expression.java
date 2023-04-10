@@ -3,6 +3,7 @@ package io.army.criteria;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.function.TeNamedOperator;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 
@@ -139,15 +140,24 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
     <T> IPredicate notBetween(BiFunction<Expression, T, Expression> operator, T first, SQLs.WordAnd and, T second);
 
     /**
-     * @param operand <ul>
-     *                <li>{@link SQLs#TRUE}</li>
-     *                <li>{@link SQLs#FALSE}</li>
-     *                <li>{@link SQLs#UNKNOWN}</li>
-     *                <li>{@link SQLs#NULL}</li>
-     *                <li>other</li>
-     *                </ul>
+     * @param and {@link SQLs#AND}
      */
-    IPredicate is(SQLs.BooleanTestOperand operand);
+    IPredicate between(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second);
+
+    /**
+     * @param and {@link SQLs#AND}
+     */
+    <T> IPredicate between(@Nullable SQLs.BetweenModifier modifier, BiFunction<Expression, T, Expression> operator, T first, SQLs.WordAnd and, T second);
+
+    /**
+     * @param and {@link SQLs#AND}
+     */
+    IPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second);
+
+    /**
+     * @param and {@link SQLs#AND}
+     */
+    <T> IPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, BiFunction<Expression, T, Expression> operator, T first, SQLs.WordAnd and, T second);
 
     /**
      * @param operand <ul>
@@ -158,12 +168,30 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
      *                <li>other</li>
      *                </ul>
      */
-    IPredicate isNot(SQLs.BooleanTestOperand operand);
+    IPredicate is(SQLs.BooleanTestWord operand);
+
+    /**
+     * @param operand <ul>
+     *                <li>{@link SQLs#TRUE}</li>
+     *                <li>{@link SQLs#FALSE}</li>
+     *                <li>{@link SQLs#UNKNOWN}</li>
+     *                <li>{@link SQLs#NULL}</li>
+     *                <li>other</li>
+     *                </ul>
+     */
+    IPredicate isNot(SQLs.BooleanTestWord operand);
 
     IPredicate isNull();
 
     IPredicate isNotNull();
 
+    IPredicate is(SQLs.IsComparisonWord operator, Expression operand);
+
+    IPredicate isNot(SQLs.IsComparisonWord operator, Expression operand);
+
+    <T> IPredicate is(SQLs.IsComparisonWord operator, BiFunction<Expression, T, Expression> valueOperator, @Nullable T value);
+
+    <T> IPredicate isNot(SQLs.IsComparisonWord operator, BiFunction<Expression, T, Expression> valueOperator, @Nullable T value);
 
     IPredicate in(Expression operand);
 
@@ -268,6 +296,7 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
     @Override
     Expression mapTo(TypeMeta typeMeta);
 
+    @Deprecated
     Expression bracket();
 
 
@@ -283,6 +312,11 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
     SortItem asc();
 
     SortItem desc();
+
+    SortItem ascSpace(@Nullable Statement.NullsFirstLast firstLast);
+
+
+    SortItem descSpace(@Nullable Statement.NullsFirstLast firstLast);
 
 
 }

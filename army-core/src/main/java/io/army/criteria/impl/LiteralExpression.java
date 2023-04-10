@@ -120,7 +120,8 @@ abstract class LiteralExpression extends OperationExpression {
 
 
     static final class SingleLiteral extends LiteralExpression
-            implements SqlValueParam.SingleNonNamedValue {
+            implements SqlValueParam.SingleNonNamedValue,
+            NoParensExpression {
 
         private final Object value;
 
@@ -250,7 +251,9 @@ abstract class LiteralExpression extends OperationExpression {
 
 
     static class NamedSingleLiteral extends LiteralExpression
-            implements NamedLiteral, SqlValueParam.SingleValue {
+            implements NamedLiteral,
+            SqlValueParam.SingleValue,
+            NoParensExpression {
 
         private final String name;
 

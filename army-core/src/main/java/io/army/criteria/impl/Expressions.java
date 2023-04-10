@@ -5,8 +5,8 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._RowSet;
 import io.army.criteria.standard.SQLFunction;
+import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -18,17 +18,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 abstract class Expressions extends OperationExpression {
 
 
     @Override
-    public final OperationExpression bracket() {
+    public final Expression bracket() {
         return bracketExp(this);
     }
 
-    static <I extends Item> OperationExpression dualExp(final OperationExpression left
+    static OperationExpression dualExp(final OperationExpression left
             , final DualOperator operator, final Expression right) {
         final ArmyExpression rightExp = (ArmyExpression) right;
         switch (operator) {
@@ -50,37 +49,41 @@ abstract class Expressions extends OperationExpression {
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new DualExpression<>(left, operator, rightExp);
+        return new DualExpression(left, operator, rightExp);
     }
 
-    static <I extends Item> OperationExpression unaryExp(final OperationExpression expression
-            , final UnaryOperator operator) {
+    static OperationExpression unaryExp(final @Nullable Expression expression, final UnaryOperator operator) {
+        if (expression == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
         switch (operator) {
             case INVERT:
-            case NEGATE: {
-                if (expression.isNullValue()) {
-                    throw _Exceptions.operatorRightIsNullable(operator);
-                }
-            }
-            break;
+            case NEGATE:
+            case AT:
+                break;
             default:
                 throw _Exceptions.unexpectedEnum(operator);
 
         }
-        return new UnaryExpression<>(expression, operator);
+        return new UnaryExpression((OperationExpression) expression, operator);
     }
 
-    static <I extends Item> OperationExpression castExp(OperationExpression expression, TypeMeta typeMeta) {
+    static OperationExpression castExp(OperationExpression expression, TypeMeta typeMeta) {
         return new CastExpression(expression, typeMeta);
     }
 
-    static <I extends Item> OperationExpression bracketExp(final OperationExpression expression) {
-        final OperationExpression bracket;
-        if (expression instanceof BracketsExpression
+    static Expression bracketExp(final @Nullable Expression expression) {
+        final Expression bracket;
+        if (expression == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (expression instanceof BracketsExpression
+                || expression instanceof BracketPredicate
                 || expression instanceof SQLFunction) {
             bracket = expression;
+        } else if (expression instanceof IPredicate) {
+            bracket = new BracketPredicate((OperationPredicate) expression);
         } else {
-            bracket = new BracketsExpression<>(expression);
+            bracket = new BracketsExpression((ArmyExpression) expression);
         }
         return bracket;
     }
@@ -91,20 +94,7 @@ abstract class Expressions extends OperationExpression {
         if (selectionList.size() != 1) {
             throw ContextStack.criteriaError(ContextStack.peek(), _Exceptions::nonScalarSubQuery, subQuery);
         }
-        return new ScalarExpression<>(selectionList.get(0).typeMeta(), subQuery);
-    }
-
-    static <I extends Item> OperationExpression wrapExpression(final OperationExpression expression,
-                                                               final Function<TypeInfer, I> function) {
-        throw new UnsupportedOperationException();
-    }
-
-
-    @Deprecated
-
-    static <I extends Item> OperationPredicate wrapPredicate(final OperationPredicate predicate,
-                                                             final Function<TypeInfer, I> function) {
-        throw new UnsupportedOperationException();
+        return new ScalarExpression(selectionList.get(0).typeMeta(), subQuery);
     }
 
 
@@ -119,26 +109,35 @@ abstract class Expressions extends OperationExpression {
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new UnaryPredicate<>(subQuery, operator);
+        return new UnaryPredicate(subQuery, operator);
     }
 
 
-    static <I extends Item> OperationPredicate booleanTestPredicate(final OperationExpression expression,
-                                                                    boolean not, SQLs.BooleanTestOperand operand) {
+    static OperationPredicate booleanTestPredicate(final OperationExpression expression,
+                                                   boolean not, SQLsSyntax.BooleanTestWord operand) {
         if (!(operand == SQLs.NULL
                 || operand == SQLs.TRUE
                 || operand == SQLs.FALSE
                 || operand == SQLs.UNKNOWN
-                || operand instanceof BooleanTestOperand)) {
+                || operand instanceof BooleanTestWord)) {
             String m = String.format("unknown operand[%s]", operand);
             throw ContextStack.criteriaError(ContextStack.peek(), m);
         }
-        return new BooleanTestPredicate<>(expression, not, operand);
+        return new BooleanTestPredicate(expression, not, operand);
+    }
+
+    static OperationPredicate isComparisonPredicate(final OperationExpression left, boolean not,
+                                                    SQLsSyntax.IsComparisonWord operator, @Nullable Expression right) {
+        if (right == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        //TODO validate operator
+        return new IsComparisonPredicate(left, not, operator, (ArmyExpression) right);
     }
 
 
-    static <I extends Item> OperationPredicate dualPredicate(final OperationExpression left
-            , final DualOperator operator, final Expression right) {
+    static OperationPredicate dualPredicate(final OperationExpression left, final DualOperator operator,
+                                            final Expression right) {
         switch (operator) {
             case EQUAL:
             case NOT_EQUAL:
@@ -156,7 +155,7 @@ abstract class Expressions extends OperationExpression {
                     String m = String.format("operator[%s] don't support multi  parameter(literal)", operator);
                     throw ContextStack.criteriaError(ContextStack.peek(), m);
                 }
-                if (((ArmyExpression) right).isNullValue()) {
+                if (((ArmyExpression) right).isNullValue()) { //TODO consider correct?
                     throw _Exceptions.operatorRightIsNullable(operator);
                 }
             }
@@ -165,25 +164,25 @@ abstract class Expressions extends OperationExpression {
                 throw _Exceptions.unexpectedEnum(operator);
 
         }
-        return new DualPredicate<>(left, operator, right);
+        return new DualPredicate(left, operator, right);
     }
 
 
-    static <I extends Item> OperationPredicate bracketPredicate(final OperationPredicate predicate) {
+    static OperationPredicate bracketPredicate(final IPredicate predicate) {
         final OperationPredicate result;
         if (predicate instanceof BracketPredicate) {
-            result = predicate;
+            result = (BracketPredicate) predicate;
         } else {
-            result = new BracketPredicate<>(predicate);
+            result = new BracketPredicate((OperationPredicate) predicate);
         }
         return result;
     }
 
-    static <I extends Item> OperationPredicate orPredicate(OperationPredicate left, IPredicate right) {
+    static OperationPredicate orPredicate(OperationPredicate left, IPredicate right) {
         return new OrPredicate(left, Collections.singletonList((OperationPredicate) right));
     }
 
-    static <I extends Item> OperationPredicate orPredicate(OperationPredicate left, List<IPredicate> rightList) {
+    static OperationPredicate orPredicate(OperationPredicate left, List<IPredicate> rightList) {
         final int size = rightList.size();
         assert size > 0;
         final List<OperationPredicate> list = new ArrayList<>(size);
@@ -193,17 +192,19 @@ abstract class Expressions extends OperationExpression {
         return new OrPredicate(left, Collections.unmodifiableList(list));
     }
 
-    static <I extends Item> AndPredicate<I> andPredicate(OperationPredicate left, @Nullable IPredicate right) {
+    static AndPredicate andPredicate(OperationPredicate left, @Nullable IPredicate right) {
         assert right != null;
-        return new AndPredicate<>(left, (OperationPredicate) right);
+        return new AndPredicate(left, (OperationPredicate) right);
     }
 
-    static <I extends Item> OperationPredicate betweenPredicate(boolean not, OperationExpression left,
-                                                                Expression center, Expression right) {
-        return new BetweenPredicate<>(not, left, center, right);
+    static OperationPredicate betweenPredicate(
+            boolean not, @Nullable SQLsSyntax.BetweenModifier modifier, OperationExpression left,
+            Expression center, Expression right) {
+        //TODO validate modifier
+        return new BetweenPredicate(not, modifier, left, center, right);
     }
 
-    static <I extends Item> OperationPredicate notPredicate(final OperationPredicate predicate) {
+    static OperationPredicate notPredicate(final OperationPredicate predicate) {
         final OperationPredicate notPredicate;
         if (predicate instanceof NotPredicate) {
             notPredicate = ((NotPredicate) predicate).predicate;
@@ -213,7 +214,7 @@ abstract class Expressions extends OperationExpression {
         return notPredicate;
     }
 
-    static <I extends Item> OperationPredicate compareQueryPredicate(OperationExpression left
+    static OperationPredicate compareQueryPredicate(OperationExpression left
             , DualOperator operator, QueryOperator queryOperator, SubQuery subQuery) {
         switch (operator) {
             case LESS:
@@ -236,10 +237,10 @@ abstract class Expressions extends OperationExpression {
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new SubQueryPredicate<>(left, operator, queryOperator, subQuery);
+        return new SubQueryPredicate(left, operator, queryOperator, subQuery);
     }
 
-    static <I extends Item> OperationPredicate inOperator(final OperationExpression left
+    static OperationPredicate inOperator(final OperationExpression left
             , final DualOperator operator, final SubQuery subQuery) {
         switch (operator) {
             case IN:
@@ -249,7 +250,7 @@ abstract class Expressions extends OperationExpression {
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new SubQueryPredicate<>(left, operator, null, subQuery);
+        return new SubQueryPredicate(left, operator, null, subQuery);
 
     }
 
@@ -280,7 +281,7 @@ abstract class Expressions extends OperationExpression {
      *
      * @since 1.0
      */
-    private static final class DualExpression<I extends Item> extends Expressions {
+    private static final class DualExpression extends Expressions {
 
 
         private final ArmyExpression left;
@@ -307,7 +308,8 @@ abstract class Expressions extends OperationExpression {
 
             final _Expression left = this.left, right = this.right;
             final boolean outerBracket, leftInnerBracket, rightInnerBracket;
-            switch (this.operator) {
+            final DualOperator operator = this.operator;
+            switch (operator) {
                 case PLUS:
                 case MINUS:
                 case TIMES:
@@ -321,13 +323,8 @@ abstract class Expressions extends OperationExpression {
                 case BITWISE_OR:
                 case XOR: {
                     outerBracket = true;
-                    leftInnerBracket = !(left instanceof SqlValueParam.SingleValue
-                            || left instanceof TableField
-                            || left instanceof BracketsExpression);
-
-                    rightInnerBracket = !(right instanceof SqlValueParam.SingleValue
-                            || right instanceof TableField
-                            || right instanceof BracketsExpression);
+                    leftInnerBracket = !(left instanceof NoParensExpression);
+                    rightInnerBracket = !(right instanceof NoParensExpression);
                 }
                 break;
                 default:
@@ -351,8 +348,12 @@ abstract class Expressions extends OperationExpression {
             }
 
             //2. append operator
-            builder.append(this.operator.spaceOperator);
-
+            if (operator == DualOperator.XOR
+                    && context.parser().dialect().database() == Database.PostgreSQL) {
+                builder.append(" #");
+            } else {
+                builder.append(operator.spaceOperator);
+            }
             if (rightInnerBracket) {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
             }
@@ -382,7 +383,7 @@ abstract class Expressions extends OperationExpression {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof DualExpression) {
-                final DualExpression<?> o = (DualExpression<?>) obj;
+                final DualExpression o = (DualExpression) obj;
                 match = o.left.equals(this.left)
                         && o.operator == this.operator
                         && o.right.equals(this.right);
@@ -411,12 +412,15 @@ abstract class Expressions extends OperationExpression {
      * This class is a implementation of {@link Expression}.
      * The expression consist of a  {@link Expression} and a {@link UnaryOperator}.
      */
-    private static final class UnaryExpression<I extends Item> extends Expressions {
+    private static final class UnaryExpression extends Expressions {
 
         final ArmyExpression expression;
 
         private final UnaryOperator operator;
 
+        /**
+         * @see #unaryExp(OperationExpression, UnaryOperator)
+         */
         private UnaryExpression(OperationExpression expression, UnaryOperator operator) {
             this.expression = expression;
             this.operator = operator;
@@ -430,12 +434,22 @@ abstract class Expressions extends OperationExpression {
 
         @Override
         public void appendSql(final _SqlContext context) {
+
+            final UnaryOperator operator = this.operator;
+
+            if (operator == UnaryOperator.AT
+                    && context.parser().dialect().database() != Database.PostgreSQL) {
+                String m;
+                m = String.format("%s don't support %s", context.parser().dialect().database(), this.operator);
+                throw new CriteriaException(m);
+            }
             final boolean outerBracket;
-            switch (this.operator) {
+            switch (operator) {
                 case NEGATE:
                     outerBracket = false;
                     break;
                 case INVERT:
+                case AT:
                     outerBracket = true;
                     break;
                 default:
@@ -447,12 +461,10 @@ abstract class Expressions extends OperationExpression {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
             }
 
-            builder.append(this.operator.render());
+            builder.append(operator.spaceOperator);
 
             final _Expression expression = this.expression;
-            final boolean innerBracket = !(expression instanceof SqlValueParam.SingleValue
-                    || expression instanceof DataField
-                    || expression instanceof BracketsExpression);
+            final boolean innerBracket = !(expression instanceof NoParensExpression);
 
             if (innerBracket) {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
@@ -517,12 +529,12 @@ abstract class Expressions extends OperationExpression {
     }//UnaryExpression
 
 
-    private static final class BracketsExpression<I extends Item> extends Expressions {
+    private static final class BracketsExpression extends Expressions {
 
-        private final OperationExpression expression;
+        private final ArmyExpression expression;
 
 
-        private BracketsExpression(OperationExpression expression) {
+        private BracketsExpression(ArmyExpression expression) {
             this.expression = expression;
         }
 
@@ -554,7 +566,7 @@ abstract class Expressions extends OperationExpression {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof BracketsExpression) {
-                match = ((BracketsExpression<?>) obj).expression.equals(this.expression);
+                match = ((BracketsExpression) obj).expression.equals(this.expression);
             } else {
                 match = false;
             }
@@ -573,7 +585,7 @@ abstract class Expressions extends OperationExpression {
 
     }//BracketsExpression
 
-    private static final class ScalarExpression<I extends Item> extends Expressions {
+    private static final class ScalarExpression extends Expressions {
 
         private final SubQuery subQuery;
 
@@ -610,7 +622,7 @@ abstract class Expressions extends OperationExpression {
 
     /*-------------------below predicate class-------------------*/
 
-    static final class UnaryPredicate<I extends Item> extends OperationPredicate {
+    static final class UnaryPredicate extends OperationPredicate {
 
         private final UnaryOperator operator;
 
@@ -668,7 +680,7 @@ abstract class Expressions extends OperationExpression {
     }//UnaryPredicate
 
 
-    static final class DualPredicate<I extends Item> extends OperationPredicate {
+    static final class DualPredicate extends OperationPredicate {
 
 
         final ArmyExpression left;
@@ -719,7 +731,7 @@ abstract class Expressions extends OperationExpression {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof DualPredicate) {
-                final DualPredicate<?> p = (DualPredicate<?>) obj;
+                final DualPredicate p = (DualPredicate) obj;
                 match = p.operator == this.operator
                         && p.left.equals(this.left)
                         && p.right.equals(this.right);
@@ -743,7 +755,7 @@ abstract class Expressions extends OperationExpression {
     }//DualPredicate
 
 
-    private static final class BracketPredicate<I extends Item> extends OperationPredicate {
+    private static final class BracketPredicate extends OperationPredicate {
 
         private final OperationPredicate predicate;
 
@@ -857,7 +869,7 @@ abstract class Expressions extends OperationExpression {
     }//OrPredicate
 
 
-    static final class AndPredicate<I extends Item> extends OperationPredicate {
+    static final class AndPredicate extends OperationPredicate {
 
         final OperationPredicate left;
 
@@ -893,21 +905,25 @@ abstract class Expressions extends OperationExpression {
     }//AndPredicate
 
 
-    private static class BetweenPredicate<I extends Item> extends OperationPredicate {
+    private static class BetweenPredicate extends OperationPredicate {
 
-        final boolean not;
+        private final boolean not;
 
-        final ArmyExpression left;
+        private final SQLsSyntax.BetweenModifier modifier;
 
-        final ArmyExpression center;
+        private final ArmyExpression left;
 
-        final ArmyExpression right;
+        private final ArmyExpression center;
+
+        private final ArmyExpression right;
 
         /**
-         * @see #betweenPredicate(boolean, OperationExpression, Expression, Expression)
+         * @see #betweenPredicate(boolean, SQLsSyntax.BetweenModifier, OperationExpression, Expression, Expression)
          */
-        private BetweenPredicate(boolean not, OperationExpression left, Expression center, Expression right) {
+        private BetweenPredicate(boolean not, @Nullable SQLsSyntax.BetweenModifier modifier, OperationExpression left,
+                                 Expression center, Expression right) {
             this.not = not;
+            this.modifier = modifier;
             this.left = left;
             this.center = (ArmyExpression) center;
             this.right = (ArmyExpression) right;
@@ -922,15 +938,19 @@ abstract class Expressions extends OperationExpression {
                 builder.append(" NOT");
             }
             builder.append(" BETWEEN");
+            if (this.modifier != null) {
+                //TODO validate database support
+                builder.append(this.modifier.render());
+            }
             this.center.appendSql(context);
-            builder.append(" AND");
+            builder.append(_Constant.SPACE_AND);
             this.right.appendSql(context);
         }
 
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.left, this.center, this.right);
+            return Objects.hash(this.not, this.modifier, this.left, this.center, this.right);
         }
 
         @Override
@@ -939,8 +959,10 @@ abstract class Expressions extends OperationExpression {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof BetweenPredicate) {
-                final BetweenPredicate<?> o = (BetweenPredicate<?>) obj;
-                match = o.left.equals(this.left)
+                final BetweenPredicate o = (BetweenPredicate) obj;
+                match = o.not == this.not
+                        && o.modifier == this.modifier
+                        && o.left.equals(this.left)
                         && o.center.equals(this.center)
                         && o.right.equals(this.right);
             } else {
@@ -951,11 +973,17 @@ abstract class Expressions extends OperationExpression {
 
         @Override
         public String toString() {
-            return _StringUtils.builder()
-                    .append(this.left)
-                    .append(" BETWEEN")
-                    .append(this.center)
-                    .append(" AND")
+            final StringBuilder builder = new StringBuilder();
+            builder.append(this.left);
+            if (this.not) {
+                builder.append(" NOT");
+            }
+            builder.append(" BETWEEN");
+            if (this.modifier != null) {
+                builder.append(this.modifier.render());
+            }
+            return builder.append(this.center)
+                    .append(_Constant.SPACE_AND)
                     .append(this.right)
                     .toString();
         }
@@ -1066,7 +1094,7 @@ abstract class Expressions extends OperationExpression {
     }//NotPredicate
 
 
-    private static final class SubQueryPredicate<I extends Item> extends OperationPredicate {
+    private static final class SubQueryPredicate extends OperationPredicate {
         private final ArmyExpression left;
 
         private final DualOperator operator;
@@ -1119,19 +1147,19 @@ abstract class Expressions extends OperationExpression {
     }//SubQueryPredicate
 
 
-    private static final class BooleanTestPredicate<I extends Item> extends OperationPredicate {
+    private static final class BooleanTestPredicate extends OperationPredicate {
 
         private final OperationExpression expression;
 
         private final boolean not;
 
 
-        private final SQLs.BooleanTestOperand operand;
+        private final SQLsSyntax.BooleanTestWord operand;
 
         /**
-         * @see #booleanTestPredicate(OperationExpression, boolean, SQLs.BooleanTestOperand)
+         * @see #booleanTestPredicate(OperationExpression, boolean, SQLsSyntax.BooleanTestWord)
          */
-        private BooleanTestPredicate(OperationExpression expression, boolean not, SQLs.BooleanTestOperand operand) {
+        private BooleanTestPredicate(OperationExpression expression, boolean not, SQLsSyntax.BooleanTestWord operand) {
             this.expression = expression;
             this.not = not;
             this.operand = operand;
@@ -1163,7 +1191,7 @@ abstract class Expressions extends OperationExpression {
             if (obj == this) {
                 match = true;
             } else if (obj instanceof BooleanTestPredicate) {
-                final BooleanTestPredicate<?> o = (BooleanTestPredicate<?>) obj;
+                final BooleanTestPredicate o = (BooleanTestPredicate) obj;
                 match = o.expression.equals(this.expression)
                         && o.not == this.not
                         && o.operand == this.operand;
@@ -1191,24 +1219,80 @@ abstract class Expressions extends OperationExpression {
 
     }//BooleanTestPredicate
 
-    private static final class OperationPredicateWrapper<I extends Item> extends OperationPredicate {
+    private static final class IsComparisonPredicate extends OperationPredicate {
 
-        private final OperationPredicate predicate;
+        private final ArmyExpression left;
+
+        private final boolean not;
+
+        private final SQLsSyntax.IsComparisonWord operator;
+
+        private final ArmyExpression right;
+
 
         /**
-         * @see #wrapPredicate(OperationPredicate, Function)
+         * @see #isComparisonPredicate(OperationExpression, boolean, SQLsSyntax.IsComparisonWord, Expression)
          */
-        private OperationPredicateWrapper(OperationPredicate predicate) {
-            this.predicate = predicate;
+        private IsComparisonPredicate(OperationExpression left, boolean not, SQLsSyntax.IsComparisonWord operator,
+                                      ArmyExpression right) {
+            this.left = left;
+            this.not = not;
+            this.operator = operator;
+            this.right = right;
         }
 
         @Override
         public void appendSql(final _SqlContext context) {
-            this.predicate.appendSql(context);
+            //TODO validate database
+            this.left.appendSql(context);
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(" IS");
+
+            if (this.not) {
+                sqlBuilder.append(" NOT");
+            }
+            sqlBuilder.append(this.operator.render());
+            this.right.appendSql(context);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.left, this.not, this.operator, this.right);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof IsComparisonPredicate) {
+                final IsComparisonPredicate o = (IsComparisonPredicate) obj;
+                match = o.left.equals(this.left)
+                        && o.not == this.not
+                        && o.operator == this.operator
+                        && o.right.equals(this.right);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+            builder.append(this.left)
+                    .append(" IS");
+            if (this.not) {
+                builder.append(" NOT");
+            }
+            return builder.append(this.operator.render())
+                    .append(this.right)
+                    .toString();
         }
 
 
-    }//OperationPredicateWrapper
+    }//IsComparisonPredicates
 
 
 }

@@ -57,11 +57,11 @@ public interface Statement extends Item {
 
     }
 
-    interface AscDesc {
+    interface AscDesc extends SQLWords {
 
     }
 
-    interface NullsFirstLast {
+    interface NullsFirstLast extends SQLWords {
 
     }
 

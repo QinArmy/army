@@ -76,8 +76,8 @@ abstract class FunctionUtils {
         return new OneArgFuncExpression(name, (ArmyExpression) exp, returnType);
     }
 
-    static Expression twoOrMultiArgFunc(final String name, final Expression one, final Expression two
-            , TypeMeta returnType) {
+    static Expression twoOrMultiArgFunc(final String name, final Expression one, final Expression two,
+                                        TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         }
@@ -153,7 +153,7 @@ abstract class FunctionUtils {
         final List<ArmyExpression> argList = new ArrayList<>(1 + exps.length);
         argList.add((ArmyExpression) firstArg);
         for (Expression exp : exps) {
-            if (exp instanceof SqlValueParam) {
+            if (exp instanceof SqlValueParam.MultiValue) {
                 throw CriteriaUtils.funcArgError(name, exp);
             }
             argList.add((ArmyExpression) exp);
@@ -265,8 +265,7 @@ abstract class FunctionUtils {
         sqlBuilder = context.sqlBuilder();
 
         if (option != null) {
-            sqlBuilder.append(_Constant.SPACE)
-                    .append(option.render());
+            sqlBuilder.append(option.render());
         }
 
         final int argSize = argList.size();
@@ -774,7 +773,9 @@ abstract class FunctionUtils {
     }//NoArgFuncExpression
 
 
-    private static abstract class FunctionExpression extends Expressions implements SQLFunction {
+    private static abstract class FunctionExpression extends Expressions
+            implements SQLFunction,
+            NoParensExpression {
 
         final String name;
 

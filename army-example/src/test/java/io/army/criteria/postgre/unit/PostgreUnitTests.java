@@ -1,4 +1,4 @@
-package io.army.criteria.postgre;
+package io.army.criteria.postgre.unit;
 
 import io.army.criteria.CriteriaUnitTests;
 import io.army.criteria.PrimaryStatement;

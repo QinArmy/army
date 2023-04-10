@@ -13,7 +13,8 @@ enum UnaryOperator implements SQLWords {
     NOT_EXISTS(" NOT EXISTS"),
     NEGATE(" -"),
     POSITIVE(" +"),
-    INVERT(" ~");
+    INVERT(" ~"),
+    AT(" @");
 
     final String spaceOperator;
 

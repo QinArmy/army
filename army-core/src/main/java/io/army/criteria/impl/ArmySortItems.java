@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
 import io.army.criteria.SortItem;
 import io.army.criteria.Statement;
 import io.army.dialect._SqlContext;
@@ -8,42 +7,30 @@ import io.army.lang.Nullable;
 
 class ArmySortItems implements ArmySortItem {
 
-    static ArmySortItem create(final Expression exp, final Statement.AscDesc ascDesc) {
-        if (!(ascDesc instanceof SQLs.KeyWordAscDesc)) {
+    static ArmySortItem create(final ArmyExpression exp, final Statement.AscDesc ascDesc,
+                               final @Nullable Statement.NullsFirstLast firstLast) {
+        if (ascDesc != SQLs.DESC && ascDesc != SQLs.ASC) {
             throw CriteriaUtils.unknownWords(ascDesc);
+        } else if (firstLast != null && firstLast != SQLs.NULLS_LAST && firstLast != SQLs.NULLS_FIRST) {
+            throw CriteriaUtils.unknownWords(firstLast);
         }
-        return new ArmySortItems((ArmyExpression) exp, (SQLs.KeyWordAscDesc) ascDesc);
-    }
-
-    static ArmySortItem create(final Expression exp, final Statement.NullsFirstLast nullOption) {
-        if (!(nullOption instanceof SQLs.KeyWordsNullsFirstLast)) {
-            throw CriteriaUtils.unknownWords(nullOption);
+        final ArmySortItem sortItem;
+        if (firstLast == null) {
+            sortItem = new ArmySortItems(exp, ascDesc);
+        } else {
+            sortItem = new SortItemWithNullsOption(exp, ascDesc, firstLast);
         }
-        return new SortItemWithNullsOption((ArmyExpression) exp
-                , null
-                , (SQLs.KeyWordsNullsFirstLast) nullOption);
-    }
-
-    static ArmySortItem create(final Expression exp, final Statement.AscDesc ascDesc
-            , final Statement.NullsFirstLast nullOption) {
-        if (!(ascDesc instanceof SQLs.KeyWordAscDesc)) {
-            throw CriteriaUtils.unknownWords(ascDesc);
-        } else if (!(nullOption instanceof SQLs.KeyWordsNullsFirstLast)) {
-            throw CriteriaUtils.unknownWords(nullOption);
-        }
-        return new SortItemWithNullsOption((ArmyExpression) exp
-                , (SQLs.KeyWordAscDesc) ascDesc
-                , (SQLs.KeyWordsNullsFirstLast) nullOption);
+        return sortItem;
     }
 
 
     private final ArmyExpression sortItem;
 
-    private final SQLsSyntax.KeyWordAscDesc aseWord;
+    private final Statement.AscDesc ascDesc;
 
-    private ArmySortItems(ArmyExpression sortItem, @Nullable SQLsSyntax.KeyWordAscDesc aseWord) {
+    private ArmySortItems(ArmyExpression sortItem, Statement.AscDesc ascDesc) {
         this.sortItem = sortItem;
-        this.aseWord = aseWord;
+        this.ascDesc = ascDesc;
     }
 
     @Override
@@ -57,30 +44,23 @@ class ArmySortItems implements ArmySortItem {
         this.sortItem.appendSql(context);
 
         final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder();
-
-        final SQLsSyntax.KeyWordAscDesc aseWord = this.aseWord;
-        if (aseWord != null) {
-            sqlBuilder.append(aseWord.spaceWord);
-        }
+        sqlBuilder = context.sqlBuilder()
+                .append(this.ascDesc.render());
 
         if (this instanceof SortItemWithNullsOption) {
-            sqlBuilder.append(((SortItemWithNullsOption) this).nullOption.spaceWords);
+            sqlBuilder.append(((SortItemWithNullsOption) this).nullOption);
         }
     }
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder()
-                .append(this.sortItem);
-
-        final SQLsSyntax.KeyWordAscDesc aseWord = this.aseWord;
-        if (aseWord != null) {
-            builder.append(aseWord.spaceWord);
-        }
+        final StringBuilder builder;
+        builder = new StringBuilder()
+                .append(this.sortItem)
+                .append(this.ascDesc.render());
 
         if (this instanceof SortItemWithNullsOption) {
-            builder.append(((SortItemWithNullsOption) this).nullOption.spaceWords);
+            builder.append(((SortItemWithNullsOption) this).nullOption.render());
         }
         return builder.toString();
     }
@@ -88,10 +68,10 @@ class ArmySortItems implements ArmySortItem {
 
     private static final class SortItemWithNullsOption extends ArmySortItems {
 
-        private final SQLs.KeyWordsNullsFirstLast nullOption;
+        private final Statement.NullsFirstLast nullOption;
 
-        private SortItemWithNullsOption(ArmyExpression sortItem, @Nullable SQLs.KeyWordAscDesc aesWord
-                , SQLs.KeyWordsNullsFirstLast nullOption) {
+        private SortItemWithNullsOption(ArmyExpression sortItem, Statement.AscDesc aesWord,
+                                        Statement.NullsFirstLast nullOption) {
             super(sortItem, aesWord);
             this.nullOption = nullOption;
         }

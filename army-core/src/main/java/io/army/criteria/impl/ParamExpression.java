@@ -82,7 +82,9 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
     }
 
     static final class SingleParamExpression extends ParamExpression
-            implements SingleParam, SqlValueParam.SingleNonNamedValue {
+            implements SingleParam,
+            SqlValueParam.SingleNonNamedValue,
+            NoParensExpression {
 
         private final Object value;
 
@@ -201,7 +203,8 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
 
 
     static class NamedSingleParam extends ParamExpression
-            implements NamedParam.NamedSingle {
+            implements NamedParam.NamedSingle,
+            NoParensExpression {
 
         private final String name;
 
