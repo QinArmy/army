@@ -16,7 +16,7 @@ import io.army.util._StringUtils;
  *
  * @since 1.0
  */
-abstract class PostgreSyntax extends PostgreFuncSyntax {
+abstract class PostgreSyntax extends PostgreStringFunctions {
 
     /**
      * Package constructor
@@ -36,6 +36,7 @@ abstract class PostgreSyntax extends PostgreFuncSyntax {
     public interface WordMaterialized extends SQLWords {
 
     }
+
 
     private enum SelectModifier implements Modifier {
 
@@ -171,7 +172,7 @@ abstract class PostgreSyntax extends PostgreFuncSyntax {
     /*-------------------below private method -------------------*/
 
 
-    private static String keyWordToString(Enum<?> keyWordEnum) {
+    static String keyWordToString(Enum<?> keyWordEnum) {
         return _StringUtils.builder()
                 .append(Postgres.class.getSimpleName())
                 .append(_Constant.POINT)

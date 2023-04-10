@@ -28,11 +28,13 @@ import java.util.function.Supplier;
  */
 abstract class SQLsSyntax extends SQLSyntax {
 
+
     /**
      * package constructor
      */
     SQLsSyntax() {
     }
+
 
 
     public interface SymbolStar {
@@ -57,6 +59,10 @@ abstract class SQLsSyntax extends SQLSyntax {
     }
 
     public interface WordNull extends BooleanTestWord, Expression {
+
+    }
+
+    public interface WordIn {
 
     }
 
@@ -100,6 +106,19 @@ abstract class SQLsSyntax extends SQLSyntax {
     public interface WordFrom extends SQLWords {
 
     }
+
+    public interface WordFor {
+
+    }
+
+    public interface WordSimilar {
+
+    }
+
+    public interface WordEscape {
+
+    }
+
 
     public interface WordNext extends Query.FetchFirstNext {
 
@@ -162,6 +181,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     }//KeyWordAll
 
+
     private enum KeyWordDistinct implements SQLWords, WordDistinct {
 
         DISTINCT(" DISTINCT");
@@ -184,6 +204,77 @@ abstract class SQLsSyntax extends SQLSyntax {
 
 
     }//KeyWordDistinct
+
+
+    private enum KeyWordIn implements WordIn, ArmyKeyWord, SQLWords {
+
+        IN(" IN");
+
+        private final String spaceWord;
+
+        KeyWordIn(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+
+    }//KeyWordIn
+
+
+    private enum KeyWordSimilar implements WordSimilar, ArmyKeyWord, SQLWords {
+
+        SIMILAR(" SIMILAR");
+
+        private final String spaceWord;
+
+        KeyWordSimilar(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+    }//KeyWordSimilar
+
+    private enum KeyWordEscape implements WordEscape, ArmyKeyWord, SQLWords {
+
+        ESCAPE(" ESCAPE");
+
+        private final String spaceWord;
+
+        KeyWordEscape(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+    }//KeyWordEscape
 
 
     private enum KeyWordAs implements WordAs {
@@ -510,6 +601,29 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     }//KeyWordFrom
 
+    private enum KeyWordFor implements WordFor, SQLWords, ArmyKeyWord {
+
+        FOR(" FOR");
+
+        private final String spaceWords;
+
+        KeyWordFor(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return keyWordsToString(this);
+        }
+
+
+    }//KeyWordFor
+
 
     private enum SQLSymbolPeriod implements SymbolPeriod {
 
@@ -680,6 +794,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     public static final WordAnd AND = KeyWordAnd.AND;
 
+    public static final WordIn IN = KeyWordIn.IN;
     public static final WordLateral LATERAL = KeyWordLateral.LATERAL;
 
     public static final WordFirst FIRST = KeyWordFirst.FIRST;
@@ -694,6 +809,8 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     public static final Statement.NullsFirstLast NULLS_LAST = KeyWordsNullsFirstLast.NULLS_LAST;
 
+    public static final WordFor FOR = KeyWordFor.FOR;
+
     public static final WordOnly ONLY = KeyWordOny.ONLY;
 
     public static final WordRow ROW = KeyWordRow.ROW;
@@ -701,6 +818,10 @@ abstract class SQLsSyntax extends SQLSyntax {
     public static final WordRows ROWS = KeyWordRows.ROWS;
 
     public static final WordFrom FROM = KeyWordFrom.FROM;
+
+    public static final WordEscape ESCAPE = KeyWordEscape.ESCAPE;
+
+    public static final WordSimilar SIMILAR = KeyWordSimilar.SIMILAR;
 
     public static final WordInterval INTERVAL = KeyWordInterval.INTERVAL;
 

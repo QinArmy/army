@@ -16,6 +16,4 @@ abstract class PostgreFuncSyntax extends Functions {
     }
 
 
-
-
 }

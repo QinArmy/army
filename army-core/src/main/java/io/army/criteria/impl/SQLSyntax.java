@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.SQLWords;
+import io.army.dialect._Constant;
 
 /**
  * package class,this class is base class of below
@@ -21,36 +22,25 @@ abstract class SQLSyntax {
 
     enum FuncWord implements SQLWords {
 
-        INTERVAL,
-        COMMA,
-        FROM,
-        USING,
-        IN,
-        AS,
-        AT_TIME_ZONE,
-        LEFT_PAREN,
-        RIGHT_PAREN;
+        INTERVAL(" INTERVAL"),
+        COMMA(_Constant.SPACE_COMMA),
+        FROM(_Constant.SPACE_FROM),
+        USING(_Constant.SPACE_USING),
+        IN(" IN"),
+        AS(_Constant.SPACE_AS),
+        AT_TIME_ZONE(" AT TIME ZONE"),
+        LEFT_PAREN(_Constant.SPACE_LEFT_PAREN),
+        RIGHT_PAREN(_Constant.SPACE_RIGHT_PAREN);
+
+        private final String spaceWords;
+
+        FuncWord(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
 
         @Override
         public final String render() {
-            final String words;
-            switch (this) {
-                case COMMA:
-                    words = ",";
-                    break;
-                case LEFT_PAREN:
-                    words = "(";
-                    break;
-                case RIGHT_PAREN:
-                    words = ")";
-                    break;
-                case AT_TIME_ZONE:
-                    words = "AT TIME ZONE";
-                    break;
-                default:
-                    words = this.name();
-            }
-            return words;
+            return this.spaceWords;
         }
 
         @Override

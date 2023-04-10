@@ -114,7 +114,10 @@ abstract class ContextStack {
 
     static void assertNonNull(@Nullable Object obj) {
         if (obj == null) {
-            clearStackOnError(io.army.criteria.impl.ContextStack.peek());
+            final Stack stack = HOLDER.get();
+            if (stack != null) {
+                HOLDER.remove();
+            }
             throw new NullPointerException();
         }
     }

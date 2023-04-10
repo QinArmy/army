@@ -267,7 +267,7 @@ abstract class FunctionUtils {
 
     static Expression complexArgFunc(String name, TypeMeta returnType, Object... args) {
         final List<Object> argList = new ArrayList<>(args.length);
-        argList.addAll(Arrays.asList(args));
+         Collections.addAll(argList, args);
         return new ComplexArgFuncExpression(name, argList, returnType);
     }
 
