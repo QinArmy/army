@@ -56,12 +56,12 @@ abstract class CriteriaSupports {
 
 
     static TypeMeta delayWrapper(TypeMeta.Delay delayType, Function<MappingType, MappingType> function) {
-        return new DelayParamMetaWrapper(delayType, function);
+        return new DelayTypeWrapper(delayType, function);
     }
 
-    static TypeMeta delayParamMeta(TypeMeta paramMeta1, TypeMeta paramMeta2
-            , BiFunction<MappingType, MappingType, MappingType> function) {
-        return new BiDelayParamMetaWrapper(paramMeta1, paramMeta2, function);
+    static TypeMeta biDelayWrapper(TypeMeta type1, TypeMeta type2,
+                                   BiFunction<MappingType, MappingType, MappingType> function) {
+        return new BiDelayTypeWrapper(type1, type2, function);
     }
 
     static TypeMeta delayParamMeta(Supplier<MappingType> supplier) {
@@ -450,7 +450,7 @@ abstract class CriteriaSupports {
     }//SimpleDelayParamMeta
 
 
-    private static final class DelayParamMetaWrapper implements TypeMeta.Delay {
+    private static final class DelayTypeWrapper implements TypeMeta.Delay {
 
         private final Delay delayType;
 
@@ -461,7 +461,7 @@ abstract class CriteriaSupports {
         /**
          * @see #delayWrapper(Delay, Function)
          */
-        private DelayParamMetaWrapper(Delay delayType, Function<MappingType, MappingType> function) {
+        private DelayTypeWrapper(Delay delayType, Function<MappingType, MappingType> function) {
             this.delayType = delayType;
             this.function = function;
             ContextStack.peek().addEndEventListener(this::contextEnd);
@@ -488,30 +488,27 @@ abstract class CriteriaSupports {
         }
 
 
-    }//DelayParamMetaWrapper
+    }//DelayTypeWrapper
 
-    private static final class BiDelayParamMetaWrapper implements TypeMeta.Delay {
+    private static final class BiDelayTypeWrapper implements TypeMeta.Delay {
 
-        private final TypeMeta paramMeta1;
+        private final TypeMeta type1;
 
-        private final TypeMeta paramMeta2;
+        private final TypeMeta type2;
 
         private final BiFunction<MappingType, MappingType, MappingType> function;
 
-        private CriteriaContext criteriaContext;
-
         private MappingType actualType;
 
-        private BiDelayParamMetaWrapper(TypeMeta paramMeta1, TypeMeta paramMeta2
-                , BiFunction<MappingType, MappingType, MappingType> function) {
-            this.paramMeta1 = paramMeta1;
-            this.paramMeta2 = paramMeta2;
+        /**
+         * @see #biDelayWrapper(TypeMeta, TypeMeta, BiFunction)
+         */
+        private BiDelayTypeWrapper(TypeMeta type1, TypeMeta type2,
+                                   BiFunction<MappingType, MappingType, MappingType> function) {
+            this.type1 = type1;
+            this.type2 = type2;
             this.function = function;
-
-            final CriteriaContext criteriaContext;
-            criteriaContext = ContextStack.peek();
-            this.criteriaContext = criteriaContext;
-            criteriaContext.addEndEventListener(this::contextEnd);
+            ContextStack.peek().addEndEventListener(this::contextEnd);
         }
 
         @Override
@@ -527,24 +524,21 @@ abstract class CriteriaSupports {
         @Override
         public boolean isPrepared() {
             boolean prepared1 = true, prepared2 = true;
-            if (this.paramMeta1 instanceof TypeMeta.Delay) {
-                prepared1 = ((Delay) this.paramMeta1).isPrepared();
-            } else if (this.paramMeta2 instanceof TypeMeta.Delay) {
-                prepared2 = ((Delay) this.paramMeta2).isPrepared();
+            if (this.type1 instanceof TypeMeta.Delay) {
+                prepared1 = ((Delay) this.type1).isPrepared();
+            } else if (this.type2 instanceof TypeMeta.Delay) {
+                prepared2 = ((Delay) this.type2).isPrepared();
             }
             return prepared1 && prepared2;
         }
 
         private void contextEnd() {
-            if (this.criteriaContext == null) {
-                throw _Exceptions.castCriteriaApi();
-            }
-            this.actualType = this.function.apply(this.paramMeta1.mappingType(), this.paramMeta2.mappingType());
-            this.criteriaContext = null;
+            assert this.actualType == null;
+            this.actualType = this.function.apply(this.type1.mappingType(), this.type2.mappingType());
         }
 
 
-    }//BiDelayParamMetaWrapper
+    }//BiDelayTypeWrapper
 
 
     @SuppressWarnings("unchecked")

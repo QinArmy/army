@@ -63,6 +63,11 @@ public final class MediumTextType extends _SQLStringType {
     }
 
     @Override
+    public int _length() {
+        return 3;
+    }
+
+    @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
         final SqlType type;
         switch (meta.database()) {

@@ -440,6 +440,17 @@ abstract class NonOperationExpression implements ArmyExpression {
         throw unsupportedOperation();
     }
 
+
+    @Override
+    public final Expression concat(Expression rightString) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <T> Expression concat(BiFunction<Expression, T, Expression> operator, T operand) {
+        throw unsupportedOperation();
+    }
+
     @Override
     public final OperationExpression mapTo(TypeMeta typeMeta) {
         throw unsupportedOperation();

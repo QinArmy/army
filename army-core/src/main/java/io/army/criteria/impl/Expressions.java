@@ -10,6 +10,9 @@ import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
+import io.army.mapping.StringType;
+import io.army.mapping._SQLStringType;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -50,6 +53,13 @@ abstract class Expressions extends OperationExpression {
                 throw _Exceptions.unexpectedEnum(operator);
         }
         return new DualExpression(left, operator, rightExp);
+    }
+
+    static OperationExpression concatStringExp(final OperationExpression left, final @Nullable Expression right) {
+        if (right == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return new ConcatStringExpression(left, (ArmyExpression) right);
     }
 
     static OperationExpression unaryExp(final @Nullable Expression expression, final UnaryOperator operator) {
@@ -419,7 +429,7 @@ abstract class Expressions extends OperationExpression {
         private final UnaryOperator operator;
 
         /**
-         * @see #unaryExp(OperationExpression, UnaryOperator)
+         * @see #unaryExp(Expression, UnaryOperator)
          */
         private UnaryExpression(OperationExpression expression, UnaryOperator operator) {
             this.expression = expression;
@@ -1293,6 +1303,121 @@ abstract class Expressions extends OperationExpression {
 
 
     }//IsComparisonPredicates
+
+
+    private static final class ConcatStringExpression extends Expressions {
+
+        private final ArmyExpression left;
+
+        private final ArmyExpression right;
+
+        private final TypeMeta returnType;
+
+        /**
+         * @see #concatStringExp(OperationExpression, Expression)
+         */
+        private ConcatStringExpression(final OperationExpression left, final ArmyExpression right) {
+            this.left = left;
+            this.right = right;
+
+            final TypeMeta leftType, rightType;
+            leftType = left.typeMeta();
+            rightType = right.typeMeta();
+            if (leftType instanceof TypeMeta.Delay || rightType instanceof TypeMeta.Delay) {
+                this.returnType = CriteriaSupports.biDelayWrapper(leftType, rightType, ConcatStringExpression::resultType);
+            } else {
+                this.returnType = resultType(leftType.mappingType(), rightType.mappingType());
+            }
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.returnType;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+            final Database database;
+            database = context.parser().dialect().database();
+            switch (database) {
+                case MySQL: {
+                    sqlBuilder.append(" CONCAT(");
+                    this.left.appendSql(context);
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                    this.right.appendSql(context);
+                    sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+                }
+                break;
+                case PostgreSQL: {
+                    this.left.appendSql(context);
+                    sqlBuilder.append(" ||");
+                    this.right.appendSql(context);
+                }
+                break;
+                default://TODO add database
+                    throw _Exceptions.unexpectedEnum(database);
+            }
+
+
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.left, this.right);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof ConcatStringExpression) {
+                final ConcatStringExpression o = (ConcatStringExpression) obj;
+                match = o.left.equals(this.left)
+                        && o.right.equals(this.right);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(" CONCAT(")
+                    .append(this.left)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.right)
+                    .append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
+        }
+
+
+        private static MappingType resultType(final MappingType leftType, final MappingType rightType) {
+            final MappingType type;
+            final boolean leftIsString, rightIsString;
+            leftIsString = leftType instanceof _SQLStringType;
+            rightIsString = rightType instanceof _SQLStringType;
+
+            if (!leftIsString && !rightIsString) {
+                // here,maybe user custom string type
+                type = StringType.INSTANCE;
+            } else if (leftIsString && !rightIsString) {
+                type = leftType;
+            } else if (!leftIsString) {
+                type = rightType;
+            } else if (((_SQLStringType) leftType)._length() >= ((_SQLStringType) rightType)._length()) {
+                type = leftType;
+            } else {
+                type = rightType;
+            }
+            return type;
+        }
+
+
+    }//ConcatStringExpression
 
 
 }

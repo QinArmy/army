@@ -83,7 +83,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
             }
             final TypeMeta returnType;
             if (valueType instanceof TypeMeta.Delay && !((TypeMeta.Delay) valueType).isPrepared()) {
-                returnType = CriteriaSupports.delayParamMeta(StringType.INSTANCE, valueType, JsonMapType::from);
+                returnType = CriteriaSupports.biDelayWrapper(StringType.INSTANCE, valueType, JsonMapType::from);
             } else {
                 returnType = JsonMapType.from(StringType.INSTANCE, valueType.mappingType());
             }

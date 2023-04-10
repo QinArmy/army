@@ -598,7 +598,7 @@ abstract class Functions extends SQLSyntax {
         valueType = valueExpr.typeMeta();
         final TypeMeta returnType;
         if (keyType instanceof TypeMeta.Delay || valueType instanceof TypeMeta.Delay) {
-            returnType = CriteriaSupports.delayParamMeta(keyType, valueType, function);
+            returnType = CriteriaSupports.biDelayWrapper(keyType, valueType, function);
         } else {
             returnType = function.apply(keyType.mappingType(), valueType.mappingType());
         }

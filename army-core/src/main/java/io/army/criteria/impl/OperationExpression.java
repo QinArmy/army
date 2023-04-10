@@ -457,6 +457,15 @@ abstract class OperationExpression implements ArmyExpression {
         return Expressions.dualExp(this, DualOperator.LEFT_SHIFT, operator.apply(this, operand));
     }
 
+    @Override
+    public final Expression concat(Expression rightString) {
+        return Expressions.concatStringExp(this, rightString);
+    }
+
+    @Override
+    public final <T> Expression concat(BiFunction<Expression, T, Expression> operator, T operand) {
+        return Expressions.concatStringExp(this, operator.apply(this, operand));
+    }
 
     @Override
     public final OperationExpression mapTo(final @Nullable TypeMeta typeMeta) {
