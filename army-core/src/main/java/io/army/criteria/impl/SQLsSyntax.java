@@ -5,10 +5,8 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping._MappingFactory;
-import io.army.mapping._NullType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
@@ -26,19 +24,13 @@ import java.util.function.Supplier;
  * @see SQLs
  * @since 1.0
  */
-abstract class SQLsSyntax extends SQLSyntax {
+abstract class SQLsSyntax extends Functions {
 
 
     /**
      * package constructor
      */
     SQLsSyntax() {
-    }
-
-
-
-    public interface SymbolStar {
-
     }
 
 
@@ -58,24 +50,12 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     }
 
-    public interface WordNull extends BooleanTestWord, Expression {
-
-    }
-
-    public interface WordIn {
-
-    }
-
 
     public interface WordAll extends Modifier {
 
     }
 
-    public interface WordDistinct extends Modifier, SQLSyntax.ArgDistinct {
-
-    }
-
-    public interface WordAs extends SQLWords {
+    public interface WordDistinct extends Modifier, SqlSyntax.ArgDistinct {
 
     }
 
@@ -83,15 +63,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     }
 
-    public interface WordAnd {
-
-    }
-
     public interface WordPercent {
-
-    }
-
-    public interface WordDefault extends Expression {
 
     }
 
@@ -100,22 +72,6 @@ abstract class SQLsSyntax extends SQLSyntax {
     }
 
     public interface WordFirst extends Query.FetchFirstNext {
-
-    }
-
-    public interface WordFrom extends SQLWords {
-
-    }
-
-    public interface WordFor {
-
-    }
-
-    public interface WordSimilar {
-
-    }
-
-    public interface WordEscape {
 
     }
 
@@ -141,23 +97,6 @@ abstract class SQLsSyntax extends SQLSyntax {
     }
 
 
-    public interface WordBooleans extends BooleanTestWord, IPredicate {
-
-    }
-
-
-    public interface SymbolPeriod {
-
-    }
-
-    /**
-     * package interface,this interface only is implemented by class or enum,couldn't is extended by interface.
-     */
-    interface ArmyKeyWord {
-
-    }
-
-
     private enum KeyWordAll implements SQLWords, WordAll {
 
         ALL(" ALL");
@@ -175,7 +114,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
 
@@ -199,105 +138,12 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
 
     }//KeyWordDistinct
 
-
-    private enum KeyWordIn implements WordIn, ArmyKeyWord, SQLWords {
-
-        IN(" IN");
-
-        private final String spaceWord;
-
-        KeyWordIn(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String render() {
-            return this.spaceWord;
-        }
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-
-    }//KeyWordIn
-
-
-    private enum KeyWordSimilar implements WordSimilar, ArmyKeyWord, SQLWords {
-
-        SIMILAR(" SIMILAR");
-
-        private final String spaceWord;
-
-        KeyWordSimilar(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String render() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-    }//KeyWordSimilar
-
-    private enum KeyWordEscape implements WordEscape, ArmyKeyWord, SQLWords {
-
-        ESCAPE(" ESCAPE");
-
-        private final String spaceWord;
-
-        KeyWordEscape(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String render() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-    }//KeyWordEscape
-
-
-    private enum KeyWordAs implements WordAs {
-
-        AS(" AS");
-
-        private final String spaceWord;
-
-        KeyWordAs(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String render() {
-            return this.spaceWord;
-        }
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-    }//KeyWordAs
 
     private enum KeyWordInterval implements WordInterval {
 
@@ -316,7 +162,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
     }//KeyWordInterval
@@ -338,23 +184,12 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
     }//KeyWordPercent
 
-    private enum KeyWordAnd implements WordAnd {
-
-        AND;
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-    }//KeyWordAnd
-
-    private enum KeyWordUnknown implements BooleanTestWord, ArmyKeyWord {
+    private enum KeyWordUnknown implements BooleanTestWord, Functions.ArmyKeyWord {
 
         UNKNOWN(" UNKNOWN");
 
@@ -371,7 +206,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
     } //KeyWordUnknown
@@ -394,7 +229,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
     }//KeyWordAscDesc
@@ -416,7 +251,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
     }//KeyWordLateral
@@ -438,7 +273,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
     }//KeyWordFirst
@@ -460,7 +295,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
     }//KeyWordNext
@@ -484,7 +319,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
     }//KeyWordsNullsFirstLast
@@ -507,7 +342,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
     }//KeyWordRow
@@ -529,7 +364,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
     }//KeyWordRows
@@ -551,7 +386,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
     }//KeyWordNext
@@ -573,228 +408,16 @@ abstract class SQLsSyntax extends SQLSyntax {
 
         @Override
         public final String toString() {
-            return keyWordsToString(this);
+            return sqlKeyWordsToString(this);
         }
 
     }//KeyWordOny
 
-    private enum KeyWordFrom implements WordFrom {
-
-        FROM(" FROM");
-
-        private final String spaceWords;
-
-        KeyWordFrom(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
-
-        @Override
-        public final String render() {
-            return this.spaceWords;
-        }
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-
-    }//KeyWordFrom
-
-    private enum KeyWordFor implements WordFor, SQLWords, ArmyKeyWord {
-
-        FOR(" FOR");
-
-        private final String spaceWords;
-
-        KeyWordFor(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
-
-        @Override
-        public final String render() {
-            return this.spaceWords;
-        }
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-
-    }//KeyWordFor
-
-
-    private enum SQLSymbolPeriod implements SymbolPeriod {
-
-        PERIOD;
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-    }//SQLSymbolPoint
-
-    private enum SQLSymbolStar implements SymbolStar, SQLWords {
-
-        STAR(" *");
-
-        private final String spaceStar;
-
-        SQLSymbolStar(String spaceStar) {
-            this.spaceStar = spaceStar;
-        }
-
-        @Override
-        public final String render() {
-            return this.spaceStar;
-        }
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-    }//SQLSymbolStar
-
-
-    /**
-     * <p>
-     * This class representing sql {@code DEFAULT} key word.
-     * </p>
-     */
-    private static final class DefaultWord extends NonOperationExpression.NonSelectionExpression
-            implements WordDefault {
-
-        private DefaultWord() {
-        }
-
-
-        @Override
-        public TypeMeta typeMeta() {
-            throw unsupportedOperation();
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(_Constant.SPACE_DEFAULT);
-        }
-
-        @Override
-        public String toString() {
-            return _Constant.SPACE_DEFAULT;
-        }
-
-    }// DefaultWord
-
-
-    /**
-     * <p>
-     * This class representing sql {@code NULL} key word.
-     * </p>
-     *
-     * @see #NULL
-     */
-    private static final class NullWord extends NonOperationExpression
-            implements SqlValueParam.SingleNonNamedValue, WordNull {
-
-
-        private NullWord() {
-        }
-
-        @Override
-        public String render() {
-            return _Constant.SPACE_NULL;
-        }
-
-        @Override
-        public void appendSql(_SqlContext context) {
-            context.sqlBuilder().append(_Constant.SPACE_NULL);
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return _NullType.INSTANCE;
-        }
-
-        @Override
-        public Object value() {
-            //always null
-            return null;
-        }
-
-        @Override
-        public String toString() {
-            return _Constant.SPACE_NULL;
-        }
-
-
-    }// NullWord
-
-
-    static final class LiteralSymbolStar extends NonOperationExpression.NonSelectionExpression {
-
-        private LiteralSymbolStar() {
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            throw unsupportedOperation();
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(" *");
-        }
-
-        @Override
-        public String toString() {
-            return " *";
-        }
-
-
-    }//LiteralSymbolStar
-
-    /**
-     * @see #TRUE
-     * @see #FALSE
-     */
-    private static final class BooleanWord extends OperationPredicate implements WordBooleans, ArmyKeyWord {
-
-        private final String spaceWord;
-
-        private BooleanWord(boolean value) {
-            this.spaceWord = value ? " TRUE" : " FALSE";
-        }
-
-        @Override
-        public String render() {
-            return this.spaceWord;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(this.spaceWord);
-        }
-
-        @Override
-        public String toString() {
-            return this.spaceWord;
-        }
-
-
-    }//BooleanWord
 
     public static final WordAll ALL = KeyWordAll.ALL;
 
     public static final WordDistinct DISTINCT = KeyWordDistinct.DISTINCT;
 
-    public static final WordAs AS = KeyWordAs.AS;
-
-    public static final WordAnd AND = KeyWordAnd.AND;
-
-    public static final WordIn IN = KeyWordIn.IN;
     public static final WordLateral LATERAL = KeyWordLateral.LATERAL;
 
     public static final WordFirst FIRST = KeyWordFirst.FIRST;
@@ -803,13 +426,11 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     public static final WordPercent PERCENT = KeyWordPercent.PERCENT;
 
-    public static final SymbolPeriod PERIOD = SQLSymbolPeriod.PERIOD;
+
 
     public static final Statement.NullsFirstLast NULLS_FIRST = KeyWordsNullsFirstLast.NULLS_FIRST;
 
     public static final Statement.NullsFirstLast NULLS_LAST = KeyWordsNullsFirstLast.NULLS_LAST;
-
-    public static final WordFor FOR = KeyWordFor.FOR;
 
     public static final WordOnly ONLY = KeyWordOny.ONLY;
 
@@ -817,27 +438,11 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     public static final WordRows ROWS = KeyWordRows.ROWS;
 
-    public static final WordFrom FROM = KeyWordFrom.FROM;
-
-    public static final WordEscape ESCAPE = KeyWordEscape.ESCAPE;
-
-    public static final WordSimilar SIMILAR = KeyWordSimilar.SIMILAR;
-
     public static final WordInterval INTERVAL = KeyWordInterval.INTERVAL;
 
     public static final WordsWithTies WITH_TIES = KeyWordWithTies.WITH_TIES;
 
-    public static final SymbolStar STAR = SQLSymbolStar.STAR;
-
-    public static final WordBooleans TRUE = new BooleanWord(true);
-
-    public static final WordBooleans FALSE = new BooleanWord(false);
-
     public static final BooleanTestWord UNKNOWN = KeyWordUnknown.UNKNOWN;
-
-    public static final WordDefault DEFAULT = new DefaultWord();
-
-    public static final WordNull NULL = new NullWord();
 
     /**
      * package field
@@ -848,11 +453,6 @@ abstract class SQLsSyntax extends SQLSyntax {
      * package field
      */
     static final Statement.AscDesc DESC = KeyWordAscDesc.DESC;
-
-    /**
-     * package field
-     */
-    static final Expression _START_EXP = new LiteralSymbolStar();
 
 
     /**
@@ -1306,7 +906,7 @@ abstract class SQLsSyntax extends SQLSyntax {
 
     /*-------------------below private method-------------------*/
 
-    private static String keyWordsToString(Enum<?> wordEnum) {
+    static String sqlKeyWordsToString(Enum<?> wordEnum) {
         return _StringUtils.builder()
                 .append(SQLs.class.getSimpleName())
                 .append(_Constant.POINT)

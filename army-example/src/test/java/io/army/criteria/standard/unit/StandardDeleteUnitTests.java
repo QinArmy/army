@@ -14,8 +14,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static io.army.criteria.impl.SQLs.AS;
-
 public class StandardDeleteUnitTests extends StandardUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(StandardDeleteUnitTests.class);
@@ -25,7 +23,7 @@ public class StandardDeleteUnitTests extends StandardUnitTests {
     public void deleteSingle() {
         final Delete stmt;
         stmt = SQLs.singleDelete()
-                .deleteFrom(ChinaRegion_.T, AS, "r")
+                .deleteFrom(ChinaRegion_.T, SQLs.AS, "r")
                 .where(ChinaRegion_.id::equal, SQLs::param, () -> 1)
                 .and(ChinaRegion_.name.equal(SQLs::param, "马鱼腮角"))
                 .and(ChinaRegion_.version.equal(SQLs::param, 2))
@@ -45,7 +43,7 @@ public class StandardDeleteUnitTests extends StandardUnitTests {
 
         final BatchDelete stmt;
         stmt = SQLs.batchSingleDelete()
-                .deleteFrom(ChinaRegion_.T, AS, "c")
+                .deleteFrom(ChinaRegion_.T, SQLs.AS, "c")
                 .where(ChinaRegion_.createTime::less, SQLs::literal, LocalDateTime::now)
                 .and(ChinaRegion_.name.equal(SQLs::namedParam))
                 .and(ChinaRegion_.version.equal(SQLs::param, 2))

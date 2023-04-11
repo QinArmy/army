@@ -1,10 +1,11 @@
 package io.army.mapping;
 
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
 
-public final class _NullType extends AbstractMappingType {
+public final class _NullType extends _ArmyInnerMapping {
 
     public static final _NullType INSTANCE = new _NullType();
 
@@ -28,9 +29,14 @@ public final class _NullType extends AbstractMappingType {
             case Oracle:
             case H2:
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return sqlType;
+    }
+
+    @Override
+    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return null;
     }
 
     @Override

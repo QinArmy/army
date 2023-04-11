@@ -22,6 +22,7 @@ import java.util.Map;
 import static io.army.criteria.impl.SQLs.AND;
 import static io.army.criteria.impl.SQLs.AS;
 
+
 public class DomainUpdateUnitTests extends StandardUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(DomainUpdateUnitTests.class);

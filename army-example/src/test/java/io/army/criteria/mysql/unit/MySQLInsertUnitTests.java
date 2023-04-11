@@ -17,8 +17,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-import static io.army.criteria.impl.SQLs.AS;
-
 public class MySQLInsertUnitTests extends MySQLUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLInsertUnitTests.class);
@@ -60,12 +58,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .comma(ChinaRegion_.name, () -> SQLs.scalarSubQuery()// here test qualified field({tableName}.name) feature
                         .parens(s -> s.select(HistoryChinaRegion_.name)
-                                .from(HistoryChinaRegion_.T, AS, "t")
+                                .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                                 .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                                 .and(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
                                 .union()
                                 .select(HistoryChinaRegion_.name)
-                                .from(HistoryChinaRegion_.T, AS, "t")
+                                .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                                 .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                                 .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
                                 .limit(SQLs::literal, 1)
@@ -129,12 +127,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs.field("cr", ChinaRegion_.regionGdp))
                 .comma(ChinaRegion_.name, () -> SQLs.scalarSubQuery()// here test qualified field({rowAlias}.name) feature
                         .parens(s -> s.select(HistoryChinaRegion_.name)
-                                .from(HistoryChinaRegion_.T, AS, "t")
+                                .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                                 .where(HistoryChinaRegion_.name::equal, SQLs.field("cr", ChinaRegion_.regionGdp)) // qualified field({rowAlias}.name) feature
                                 .and(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
                                 .union()
                                 .select(HistoryChinaRegion_.name)
-                                .from(HistoryChinaRegion_.T, AS, "t")
+                                .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                                 .where(HistoryChinaRegion_.name::equal, SQLs.field("cr", ChinaRegion_.regionGdp)) // qualified field({rowAlias}.name) feature
                                 .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
                                 .limit(SQLs::literal, 1)
@@ -173,12 +171,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .update(ChinaProvince_.governor, MySQLs::values)
                 .comma(ChinaProvince_.provincialCapital, () -> SQLs.scalarSubQuery()
                         .parens(s -> s.select(HistoryChinaProvince_.provincialCapital)
-                                .from(HistoryChinaProvince_.T, AS, "cp")
-                                .join(HistoryChinaRegion_.T, AS, "cr").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
+                                .from(HistoryChinaProvince_.T, SQLs.AS, "cp")
+                                .join(HistoryChinaRegion_.T, SQLs.AS, "cr").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
                                 .where(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
                                 .union()
                                 .select(HistoryChinaRegion_.name)
-                                .from(HistoryChinaRegion_.T, AS, "t")
+                                .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                                 .where(HistoryChinaRegion_.name::equal, SQLs::literal, "曲境")
                                 .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
                                 .limit(SQLs::literal, 1)
@@ -225,12 +223,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .update(ChinaProvince_.governor, SQLs.field("cp", ChinaProvince_.governor))
                 .comma(ChinaProvince_.provincialCapital, () -> SQLs.scalarSubQuery()
                         .select(HistoryChinaProvince_.provincialCapital)
-                        .from(HistoryChinaProvince_.T, AS, "hcp")
-                        .join(HistoryChinaRegion_.T, AS, "hcr").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
+                        .from(HistoryChinaProvince_.T, SQLs.AS, "hcp")
+                        .join(HistoryChinaRegion_.T, SQLs.AS, "hcr").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
                         .where(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
                         .union()
                         .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, AS, "t")
+                        .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                         .where(HistoryChinaRegion_.name::equal, SQLs::literal, "曲境")
                         .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
                         .limit(SQLs::literal, 1)
@@ -337,12 +335,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .comma(ChinaRegion_.name, () -> SQLs.scalarSubQuery()// here test qualified field({tableName}.name) feature
                         .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, AS, "t")
+                        .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                         .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                         .and(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
                         .union()
                         .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, AS, "t")
+                        .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                         .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                         .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
                         .limit(SQLs::literal, 1)
@@ -431,12 +429,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs.field("cr", ChinaRegion_.regionGdp))
                 .comma(ChinaRegion_.name, () -> SQLs.scalarSubQuery()// here test qualified field({rowAlias}.name) feature
                         .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, AS, "t")
+                        .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                         .where(HistoryChinaRegion_.name::equal, SQLs.field("cr", ChinaRegion_.regionGdp)) // qualified field({rowAlias}.name) feature
                         .and(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
                         .union()
                         .parens(s -> s.select(HistoryChinaRegion_.name)
-                                .from(HistoryChinaRegion_.T, AS, "t")
+                                .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                                 .where(HistoryChinaRegion_.name::equal, SQLs.field("cr", ChinaRegion_.regionGdp)) // qualified field({rowAlias}.name) feature
                                 .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
                                 .limit(SQLs::literal, 1)
@@ -535,12 +533,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .update(ChinaProvince_.governor, MySQLs::values)
                 .comma(ChinaProvince_.provincialCapital, () -> SQLs.scalarSubQuery()
                         .select(HistoryChinaProvince_.provincialCapital)
-                        .from(HistoryChinaProvince_.T, AS, "cp")
-                        .join(HistoryChinaRegion_.T, AS, "cr").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
+                        .from(HistoryChinaProvince_.T, SQLs.AS, "cp")
+                        .join(HistoryChinaRegion_.T, SQLs.AS, "cr").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
                         .where(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
                         .union()
                         .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, AS, "t")
+                        .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                         .where(HistoryChinaRegion_.name::equal, SQLs::literal, randomPerson(random))
                         .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
                         .limit(SQLs::literal, 4)
@@ -719,12 +717,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
                 .comma(ChinaRegion_.name, () -> SQLs.scalarSubQuery()// here test qualified field({tableName}.name) feature
                         .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, AS, "t")
+                        .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                         .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                         .and(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
                         .union()
                         .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, AS, "t")
+                        .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                         .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                         .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
                         .limit(SQLs::literal, 6)
@@ -869,12 +867,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .update(ChinaProvince_.governor, MySQLs::values)
                 .comma(ChinaProvince_.provincialCapital, () -> SQLs.scalarSubQuery()
                         .select(HistoryChinaProvince_.provincialCapital)
-                        .from(HistoryChinaProvince_.T, AS, "cp")
-                        .join(HistoryChinaRegion_.T, AS, "cr").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
+                        .from(HistoryChinaProvince_.T, SQLs.AS, "cp")
+                        .join(HistoryChinaRegion_.T, SQLs.AS, "cr").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
                         .where(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
                         .union()
                         .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, AS, "t")
+                        .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                         .where(HistoryChinaRegion_.name::equal, SQLs::literal, "曲境")
                         .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
                         .limit(SQLs::literal, 1)
@@ -1414,7 +1412,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
                 .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
                 .comma(SQLs.literalFrom(RegionType.NONE)::as, ChinaRegion_.REGION_TYPE)
-                .from(ChinaRegion_.T, AS, "c")
+                .from(ChinaRegion_.T, SQLs.AS, "c")
                 .limit(SQLs::param, 10)
                 .asQuery()
 
@@ -1447,7 +1445,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
                 .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
                 .comma(SQLs.literalFrom(RegionType.NONE)::as, ChinaRegion_.REGION_TYPE)
-                .from(ChinaRegion_.T, AS, "c")
+                .from(ChinaRegion_.T, SQLs.AS, "c")
                 .limit(SQLs::param, 10)
                 .asQuery()
                 .asInsert();
@@ -1473,7 +1471,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
                 .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
                 .comma(SQLs.literalFrom(RegionType.PROVINCE)::as, ChinaRegion_.REGION_TYPE)
-                .from(ChinaRegion_.T, AS, "c")
+                .from(ChinaRegion_.T, SQLs.AS, "c")
                 .limit(SQLs::param, 10)
                 .asQuery()
 
@@ -1488,8 +1486,8 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .space()
 
                 .select(ChinaProvince_.id, ChinaProvince_.provincialCapital, ChinaProvince_.governor)
-                .from(ChinaProvince_.T, AS, "c")
-                .join(ChinaRegion_.T, AS, "p").on(ChinaProvince_.id::equal, ChinaRegion_.id)
+                .from(ChinaProvince_.T, SQLs.AS, "c")
+                .join(ChinaRegion_.T, SQLs.AS, "p").on(ChinaProvince_.id::equal, ChinaRegion_.id)
                 .limit(SQLs::param, 10)
                 .asQuery()
 

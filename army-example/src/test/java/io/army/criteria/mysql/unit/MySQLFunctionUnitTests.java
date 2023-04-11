@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import static io.army.criteria.impl.SQLs.AS;
-
 public class MySQLFunctionUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLFunctionUnitTests.class);
@@ -41,7 +39,7 @@ public class MySQLFunctionUnitTests {
 
                         .end()
                         .plus(SQLs::literal, 1).as("userType"))
-                .from(PillUser_.T, AS, "u")
+                .from(PillUser_.T, SQLs.AS, "u")
                 .asQuery();
         printStmt(stmt);
     }

@@ -1,13 +1,12 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
-import io.army.criteria.Expression;
-import io.army.criteria.IPredicate;
-import io.army.criteria.SqlValueParam;
+import io.army.criteria.*;
 import io.army.criteria.standard.SQLFunction;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
+import io.army.util._StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +28,8 @@ import java.util.regex.Pattern;
  * @see SQLs
  */
 @SuppressWarnings("unused")
-abstract class Functions extends SQLSyntax {
+abstract class Functions extends SqlSyntax {
+
 
     /**
      * package constructor,forbid application developer directly extend this util class.
@@ -63,7 +63,213 @@ abstract class Functions extends SQLSyntax {
     }
 
 
+    public interface WordIn {
 
+    }
+
+    public interface WordFrom {
+
+    }
+
+    public interface WordFor {
+
+    }
+
+    public interface WordSimilar {
+
+    }
+
+    public interface WordEscape {
+
+    }
+
+    public interface TrimPosition {
+
+    }
+
+
+    enum FuncWord implements SQLWords {
+
+        INTERVAL(" INTERVAL"),
+        COMMA(_Constant.SPACE_COMMA),
+        USING(_Constant.SPACE_USING),
+        AT_TIME_ZONE(" AT TIME ZONE"),
+        LEFT_PAREN(_Constant.SPACE_LEFT_PAREN),
+        RIGHT_PAREN(_Constant.SPACE_RIGHT_PAREN);
+
+        private final String spaceWords;
+
+        FuncWord(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return String.format("%s.%s", FuncWord.class.getSimpleName(), this.name());
+        }
+
+
+    }//Word
+
+
+    private enum KeyWordIn implements WordIn, ArmyKeyWord {
+
+        IN(" IN");
+
+        private final String spaceWord;
+
+        KeyWordIn(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return functionsKeyWordToString(this);
+        }
+
+
+    }//KeyWordIn
+
+    private enum KeyWordSimilar implements WordSimilar, ArmyKeyWord, SQLWords {
+
+        SIMILAR(" SIMILAR");
+
+        private final String spaceWord;
+
+        KeyWordSimilar(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return functionsKeyWordToString(this);
+        }
+
+    }//KeyWordSimilar
+
+    private enum KeyWordEscape implements WordEscape, ArmyKeyWord {
+
+        ESCAPE(" ESCAPE");
+
+        private final String spaceWord;
+
+        KeyWordEscape(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return functionsKeyWordToString(this);
+        }
+
+    }//KeyWordEscape
+
+    private enum KeyWordFrom implements WordFrom, ArmyKeyWord {
+
+        FROM(" FROM");
+
+        private final String spaceWords;
+
+        KeyWordFrom(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return functionsKeyWordToString(this);
+        }
+
+
+    }//KeyWordFrom
+
+    private enum KeyWordFor implements WordFor, SQLWords, ArmyKeyWord {
+
+        FOR(" FOR");
+
+        private final String spaceWords;
+
+        KeyWordFor(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return functionsKeyWordToString(this);
+        }
+
+
+    }//KeyWordFor
+
+
+    enum WordTrimPosition implements TrimPosition, ArmyKeyWord, SQLWords {
+
+        BOTH(" BOTH"),
+        LEADING(" LEADING"),
+        TRAILING(" TRAILING");
+
+        private final String spaceWords;
+
+        WordTrimPosition(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWords;
+        }
+
+        @Override
+        public final String toString() {
+            return functionsKeyWordToString(this);
+        }
+
+
+    }//WordTrimPosition
+
+
+    public static final TrimPosition BOTH = WordTrimPosition.BOTH;
+    public static final TrimPosition LEADING = WordTrimPosition.LEADING;
+    public static final TrimPosition TRAILING = WordTrimPosition.TRAILING;
+
+    public static final WordIn IN = KeyWordIn.IN;
+
+    public static final WordFor FOR = KeyWordFor.FOR;
+
+    public static final WordFrom FROM = KeyWordFrom.FROM;
+    public static final WordEscape ESCAPE = KeyWordEscape.ESCAPE;
+    public static final WordSimilar SIMILAR = KeyWordSimilar.SIMILAR;
 
 
 
@@ -489,6 +695,18 @@ abstract class Functions extends SQLSyntax {
         return FunctionUtils.twoArgFunc("NULLIF", expr1, expr2, expr1.typeMeta());
     }
 
+    /**
+     * <p>
+     * standard sql92 functions,The {@link MappingType} of function return type: {@link IntegerType} .
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_length">LENGTH(str)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">length ( text ) → integer</a>
+     */
+    public static Expression length(Expression exp) {
+        return FunctionUtils.oneArgFunc("LENGTH", exp, IntegerType.INSTANCE);
+    }
+
 
     public static SQLFunction._CaseFuncWhenClause cases() {
         return FunctionUtils.caseFunction(null);
@@ -591,6 +809,7 @@ abstract class Functions extends SQLSyntax {
 
     /*-------------------below package method -------------------*/
 
+
     static TypeMeta _returnType(final ArmyExpression keyExpr, final ArmyExpression valueExpr
             , BiFunction<MappingType, MappingType, MappingType> function) {
         final TypeMeta keyType, valueType;
@@ -625,7 +844,7 @@ abstract class Functions extends SQLSyntax {
         Expression expression;
         for (int i = 0; i < expSize; i++) {
             if (i > 0) {
-                argList.add(SQLSyntax.FuncWord.COMMA);
+                argList.add(FuncWord.COMMA);
             }
             expression = expList.get(i);
             if (expression instanceof SqlValueParam.MultiValue) {
@@ -648,7 +867,7 @@ abstract class Functions extends SQLSyntax {
         }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(g1);
-        argList.add(SQLSyntax.FuncWord.COMMA);
+        argList.add(FuncWord.COMMA);
         argList.add(g2);
         return FunctionUtils.complexArgFunc(name, argList, returnType);
     }
@@ -667,9 +886,9 @@ abstract class Functions extends SQLSyntax {
         final List<Object> argList = new ArrayList<>(5);
 
         argList.add(e1);
-        argList.add(SQLSyntax.FuncWord.COMMA);
+        argList.add(FuncWord.COMMA);
         argList.add(e2);
-        argList.add(SQLSyntax.FuncWord.COMMA);
+        argList.add(FuncWord.COMMA);
 
         argList.add(e3);
         return FunctionUtils.complexArgFunc(name, argList, returnType);
@@ -717,7 +936,7 @@ abstract class Functions extends SQLSyntax {
         }
         final List<Object> argLit = new ArrayList<>(3);
         argLit.add(single);
-        argLit.add(SQLSyntax.FuncWord.COMMA);
+        argLit.add(FuncWord.COMMA);
         argLit.add(multi);
         return FunctionUtils.complexArgFunc(name, argLit, returnType);
     }
@@ -738,7 +957,7 @@ abstract class Functions extends SQLSyntax {
             }
             argList = new ArrayList<>(((1 + exprSize) << 1) - 1);
             for (Object o : actualExprList) {
-                argList.add(SQLSyntax.FuncWord.COMMA);
+                argList.add(FuncWord.COMMA);
                 if (o instanceof Expression) {
                     argList.add(o);
                 } else {
@@ -748,7 +967,7 @@ abstract class Functions extends SQLSyntax {
         } else {
             argList = new ArrayList<>(3);
             argList.add(expr);
-            argList.add(SQLSyntax.FuncWord.COMMA);
+            argList.add(FuncWord.COMMA);
             if (exprList instanceof Expression) {
                 argList.add(exprList);
             } else {
@@ -840,7 +1059,16 @@ abstract class Functions extends SQLSyntax {
     }
 
 
+
     /*-------------------below private method-------------------*/
+
+    private static String functionsKeyWordToString(final Enum<?> e) {
+        return _StringUtils.builder()
+                .append(Functions.class.getName())
+                .append(_Constant.POINT)
+                .append(e.name())
+                .toString();
+    }
 
 
     /**

@@ -19,7 +19,7 @@ abstract class MySQLNumberFunctions extends Functions {
     /*-------------------below package method-------------------*/
 
 
-    static void assertDistinct(@Nullable SQLSyntax.ArgDistinct distinct) {
+    static void assertDistinct(@Nullable SqlSyntax.ArgDistinct distinct) {
         assert distinct == null || distinct == SQLs.DISTINCT || distinct == MySQLs.DISTINCT;
     }
 

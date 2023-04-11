@@ -71,7 +71,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
 
         stmt = MySQLs.query()
                 .parens(s -> s.select(PillUser_.id)
-                        .from(PillUser_.T, SQLs.AS, "p")
+                        .from(PillUser_.T, AS, "p")
                         .where(PillUser_.id::equal, SQLs::literal, criteria::getId)
                         .and(PillUser_.nickName::equal, SQLs::literal, criteria::getNickName)
                         //.and(User_.visible.equal(false))
@@ -82,7 +82,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                 )
                 .union()
                 .parens(s -> s.select(PillUser_.id)
-                        .from(PillUser_.T, SQLs.AS, "p")
+                        .from(PillUser_.T, AS, "p")
                         .where(PillUser_.id.equal(SQLs::param, 2))
                         .and(PillUser_.nickName::equal, SQLs::literal, this::randomPerson)
                         //.and(User_.visible.equal(false))
@@ -92,7 +92,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                         .union()
 
                         .select(PillUser_.id)
-                        .from(PillUser_.T, SQLs.AS, "p")
+                        .from(PillUser_.T, AS, "p")
                         .where(PillUser_.id::equal, SQLs::literal, () -> 2)
                         .and(PillUser_.nickName::equal, SQLs::param, this::randomPerson)
                         .and(PillUser_.version.equal(SQLs::literal, 2))
@@ -105,7 +105,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                 .unionAll()
 
                 .select(PillUser_.id)
-                .from(PillUser_.T, SQLs.AS, "p")
+                .from(PillUser_.T, AS, "p")
                 .where(PillUser_.id::equal, SQLs::literal, () -> 2)
                 .and(PillUser_.nickName::equal, SQLs::param, this::randomPerson)
                 .and(PillUser_.version.equal(SQLs::literal, 2))
@@ -115,7 +115,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
 
                 .unionDistinct()
                 .parens(s -> s.select(PillUser_.id)
-                        .from(PillUser_.T, SQLs.AS, "p")
+                        .from(PillUser_.T, AS, "p")
                         .where(PillUser_.id::equal, SQLs::literal, () -> 2)
                         .and(PillUser_.nickName::equal, SQLs::param, this::randomPerson)
                         .and(PillUser_.version.equal(SQLs::literal, 2))

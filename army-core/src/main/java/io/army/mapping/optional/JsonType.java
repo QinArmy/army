@@ -1,5 +1,6 @@
 package io.army.mapping.optional;
 
+import io.army.criteria.CriteriaException;
 import io.army.mapping.AbstractMappingType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.StringType;
@@ -47,6 +48,12 @@ public final class JsonType extends AbstractMappingType {
 
         }
         return sqlDataType;
+    }
+
+    @Override
+    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        //TODO
+        throw new UnsupportedOperationException();
     }
 
     @Override

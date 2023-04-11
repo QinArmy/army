@@ -30,6 +30,7 @@ abstract class Expressions extends OperationExpression {
         return bracketExp(this);
     }
 
+
     static OperationExpression dualExp(final OperationExpression left
             , final DualOperator operator, final Expression right) {
         final ArmyExpression rightExp = (ArmyExpression) right;
@@ -39,6 +40,7 @@ abstract class Expressions extends OperationExpression {
             case TIMES:
             case DIVIDE:
             case MOD:
+            case CARET_AT: // postgre only
             case BITWISE_AND:
             case BITWISE_OR:
             case XOR:
@@ -300,7 +302,9 @@ abstract class Expressions extends OperationExpression {
 
         private final ArmyExpression right;
 
-
+        /**
+         * @see #dualExp(OperationExpression, DualOperator, Expression)
+         */
         private DualExpression(OperationExpression left, DualOperator operator, ArmyExpression right) {
             this.left = left;
             this.operator = operator;
@@ -325,6 +329,7 @@ abstract class Expressions extends OperationExpression {
                 case TIMES:
                 case DIVIDE:
                 case MOD:
+                case CARET_AT: // postgre only
                     outerBracket = leftInnerBracket = rightInnerBracket = false;
                     break;
                 case LEFT_SHIFT:
@@ -358,14 +363,25 @@ abstract class Expressions extends OperationExpression {
             }
 
             //2. append operator
-            if (operator == DualOperator.XOR
-                    && context.parser().dialect().database() == Database.PostgreSQL) {
-                builder.append(" #");
-            } else {
-                builder.append(operator.spaceOperator);
-            }
-            if (rightInnerBracket) {
-                builder.append(_Constant.SPACE_LEFT_PAREN);
+            switch (operator) {
+                case XOR: {
+                    if (context.parser().dialect().database() == Database.PostgreSQL) {
+                        builder.append(" #");
+                    } else {
+                        builder.append(operator.spaceOperator);
+                    }
+                }
+                break;
+                case CARET_AT: {
+                    if (context.parser().dialect().database() != Database.PostgreSQL) {
+                        String m = String.format("%s is supported only by %s", operator, Database.PostgreSQL);
+                        throw new CriteriaException(m);
+                    }
+                    builder.append(operator.spaceOperator);
+                }
+                break;
+                default:
+                    builder.append(operator.spaceOperator);
             }
 
             //3. append right expression

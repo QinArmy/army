@@ -32,11 +32,33 @@ import java.util.function.Function;
 @SuppressWarnings({"unused"})
 public abstract class SQLs extends SQLsSyntax {
 
+
     /**
      * private constructor
      */
     private SQLs() {
     }
+
+
+    public static final WordAs AS = KeyWordAs.AS;
+
+    public static final WordAnd AND = KeyWordAnd.AND;
+
+    public static final SymbolStar STAR = SQLSymbolStar.STAR;
+
+    public static final SymbolPeriod PERIOD = SQLSymbolPeriod.PERIOD;
+
+    public static final WordBooleans TRUE = new BooleanWord(true);
+
+    public static final WordBooleans FALSE = new BooleanWord(false);
+
+    public static final WordDefault DEFAULT = new DefaultWord();
+
+    public static final WordNull NULL = new NullWord();
+    /**
+     * package field
+     */
+    static final Expression _START_EXP = new LiteralSymbolStar();
 
     private static final Function<? extends Item, ? extends Item> _IDENTITY = SQLs::_identity;
 
@@ -219,6 +241,7 @@ public abstract class SQLs extends SQLsSyntax {
     static <T extends Item> Function<T, T> _getIdentity() {
         return (Function<T, T>) _IDENTITY;
     }
+
 
 
     /*-------------------below package method-------------------*/
@@ -518,6 +541,199 @@ public abstract class SQLs extends SQLsSyntax {
 
 
     }//SQLIdentifierImpl
+
+
+    /**
+     * <p>
+     * This class representing sql {@code DEFAULT} key word.
+     * </p>
+     */
+    private static final class DefaultWord extends NonOperationExpression.NonSelectionExpression
+            implements WordDefault {
+
+        private DefaultWord() {
+        }
+
+
+        @Override
+        public TypeMeta typeMeta() {
+            throw unsupportedOperation();
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder().append(_Constant.SPACE_DEFAULT);
+        }
+
+        @Override
+        public String toString() {
+            return _Constant.SPACE_DEFAULT;
+        }
+
+    }// DefaultWord
+
+    /**
+     * <p>
+     * This class representing sql {@code NULL} key word.
+     * </p>
+     *
+     * @see #NULL
+     */
+    private static final class NullWord extends NonOperationExpression
+            implements SqlValueParam.SingleNonNamedValue, WordNull {
+
+
+        private NullWord() {
+        }
+
+        @Override
+        public String render() {
+            return _Constant.SPACE_NULL;
+        }
+
+        @Override
+        public void appendSql(_SqlContext context) {
+            context.sqlBuilder().append(_Constant.SPACE_NULL);
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return _NullType.INSTANCE;
+        }
+
+        @Override
+        public Object value() {
+            //always null
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return _Constant.SPACE_NULL;
+        }
+
+
+    }// NullWord
+
+    static final class LiteralSymbolStar extends NonOperationExpression.NonSelectionExpression {
+
+        private LiteralSymbolStar() {
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            throw unsupportedOperation();
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder().append(" *");
+        }
+
+        @Override
+        public String toString() {
+            return " *";
+        }
+
+
+    }//LiteralSymbolStar
+
+    /**
+     * @see #TRUE
+     * @see #FALSE
+     */
+    private static final class BooleanWord extends OperationPredicate implements WordBooleans, ArmyKeyWord {
+
+        private final String spaceWord;
+
+        private BooleanWord(boolean value) {
+            this.spaceWord = value ? " TRUE" : " FALSE";
+        }
+
+        @Override
+        public String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder().append(this.spaceWord);
+        }
+
+        @Override
+        public String toString() {
+            return this.spaceWord;
+        }
+
+
+    }//BooleanWord
+
+
+    private enum KeyWordAs implements WordAs {
+
+        AS(" AS");
+
+        private final String spaceWord;
+
+        KeyWordAs(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return sqlKeyWordsToString(this);
+        }
+
+    }//KeyWordAs
+
+    private enum KeyWordAnd implements WordAnd {
+
+        AND;
+
+        @Override
+        public final String toString() {
+            return sqlKeyWordsToString(this);
+        }
+
+    }//KeyWordAnd
+
+    private enum SQLSymbolPeriod implements SymbolPeriod {
+
+        PERIOD;
+
+        @Override
+        public final String toString() {
+            return sqlKeyWordsToString(this);
+        }
+
+    }//SQLSymbolPoint
+
+    private enum SQLSymbolStar implements SymbolStar, SQLWords {
+
+        STAR(" *");
+
+        private final String spaceStar;
+
+        SQLSymbolStar(String spaceStar) {
+            this.spaceStar = spaceStar;
+        }
+
+        @Override
+        public final String render() {
+            return this.spaceStar;
+        }
+
+        @Override
+        public final String toString() {
+            return sqlKeyWordsToString(this);
+        }
+
+    }//SQLSymbolStar
 
 
 }

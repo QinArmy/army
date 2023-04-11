@@ -82,7 +82,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @param distinct nullable,{@link SQLs#DISTINCT} or {@link MySQLs#DISTINCT}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateWindowFunc avg(@Nullable SQLSyntax.ArgDistinct distinct, Expression exp) {
+    public static _AggregateWindowFunc avg(@Nullable SqlSyntax.ArgDistinct distinct, Expression exp) {
         return MySQLFunctionUtils.oneArgAggregate("AVG", distinct, exp, DoubleType.INSTANCE);
     }
 
@@ -138,7 +138,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(DISTINCT expr,[expr...])</a>
      */
-    public static Expression count(final @Nullable SQLSyntax.ArgDistinct distinct, final List<?> expList) {//TODO
+    public static Expression count(final @Nullable SqlSyntax.ArgDistinct distinct, final List<?> expList) {//TODO
         assertDistinct(distinct);
         final String name = "COUNT";
         final int size = expList.size();
@@ -151,7 +151,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
         }
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                argList.add(FuncWord.COMMA);
+                argList.add(Functions.FuncWord.COMMA);
             }
             argList.add(expList.get(i));
         }
@@ -227,7 +227,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * [ASC | DESC] [,col_name ...]]
      * [SEPARATOR str_val])</a>
      */
-    public static Expression groupConcat(@Nullable SQLSyntax.ArgDistinct distinct
+    public static Expression groupConcat(@Nullable SqlSyntax.ArgDistinct distinct
             , List<Expression> argList, Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {
 
         assertDistinct(distinct);
@@ -291,7 +291,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_max">MAX([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateWindowFunc max(@Nullable SQLSyntax.ArgDistinct distinct, Expression exp) {
+    public static _AggregateWindowFunc max(@Nullable SqlSyntax.ArgDistinct distinct, Expression exp) {
         return MySQLFunctionUtils.oneArgAggregate("MAX", distinct, exp, exp.typeMeta());
     }
 
@@ -317,7 +317,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @param exp non-null parameter or {@link Expression},but couldn't be {@link SQLs#NULL}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_min">MIN([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateWindowFunc min(@Nullable SQLSyntax.ArgDistinct distinct, Expression exp) {
+    public static _AggregateWindowFunc min(@Nullable SqlSyntax.ArgDistinct distinct, Expression exp) {
         return MySQLFunctionUtils.oneArgAggregate("MIN", distinct, exp, exp.typeMeta());
     }
 
@@ -389,7 +389,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @param exp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">SUM([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateWindowFunc sum(@Nullable SQLSyntax.ArgDistinct distinct, Expression exp) {
+    public static _AggregateWindowFunc sum(@Nullable SqlSyntax.ArgDistinct distinct, Expression exp) {
         return MySQLFunctionUtils.oneArgAggregate("SUM", distinct, exp, exp.typeMeta());
     }
 

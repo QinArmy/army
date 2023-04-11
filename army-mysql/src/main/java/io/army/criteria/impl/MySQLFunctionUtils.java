@@ -436,13 +436,13 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
      */
     private static final class GroupConcatFunction extends OperationExpression {
 
-        private final SQLSyntax.ArgDistinct distinct;
+        private final SqlSyntax.ArgDistinct distinct;
 
         private final List<ArmyExpression> expList;
 
         private final GroupConcatInnerClause clause;
 
-        private GroupConcatFunction(@Nullable SQLSyntax.ArgDistinct distinct, List<ArmyExpression> expList
+        private GroupConcatFunction(@Nullable SqlSyntax.ArgDistinct distinct, List<ArmyExpression> expList
                 , @Nullable GroupConcatInnerClause clause) {
             assert expList.size() > 0;
             this.distinct = distinct;
@@ -827,9 +827,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             final List<Object> list = new ArrayList<>(4);
 
             list.add(type);
-            list.add(SQLSyntax.FuncWord.LEFT_PAREN);
+            list.add(Functions.FuncWord.LEFT_PAREN);
             list.add(n);
-            list.add(SQLSyntax.FuncWord.RIGHT_PAREN);
+            list.add(Functions.FuncWord.RIGHT_PAREN);
 
             this.returningList = list;
             return this;
@@ -847,9 +847,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             final List<Object> list = new ArrayList<>(5);
 
             list.add(type);
-            list.add(SQLSyntax.FuncWord.LEFT_PAREN);
+            list.add(Functions.FuncWord.LEFT_PAREN);
             list.add(n);
-            list.add(SQLSyntax.FuncWord.RIGHT_PAREN);
+            list.add(Functions.FuncWord.RIGHT_PAREN);
 
             list.add(charset);
             this.returningList = list;
@@ -866,12 +866,12 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             final List<Object> list = new ArrayList<>(6);
 
             list.add(type);
-            list.add(SQLSyntax.FuncWord.LEFT_PAREN);
+            list.add(Functions.FuncWord.LEFT_PAREN);
             list.add(m);
-            list.add(SQLSyntax.FuncWord.COMMA);
+            list.add(Functions.FuncWord.COMMA);
 
             list.add(d);
-            list.add(SQLSyntax.FuncWord.RIGHT_PAREN);
+            list.add(Functions.FuncWord.RIGHT_PAREN);
             this.returningList = list;
             return this;
         }
@@ -937,7 +937,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                     if (o instanceof MySQLCastType) {
                         sqlBuilder.append(_Constant.SPACE_RETURNING)
                                 .append(((MySQLCastType) o).render());
-                    } else if (o == SQLSyntax.FuncWord.LEFT_PAREN) {
+                    } else if (o == Functions.FuncWord.LEFT_PAREN) {
                         sqlBuilder.append(_Constant.LEFT_PAREN);
                     } else if (o instanceof SQLWords) {
                         sqlBuilder.append(((SQLWords) o).render());
@@ -980,7 +980,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                     if (o instanceof MySQLCastType) {
                         sqlBuilder.append(_Constant.SPACE_RETURNING)
                                 .append(((MySQLCastType) o).render());
-                    } else if (o == SQLSyntax.FuncWord.LEFT_PAREN) {
+                    } else if (o == Functions.FuncWord.LEFT_PAREN) {
                         sqlBuilder.append(_Constant.LEFT_PAREN);
                     } else if (o instanceof SQLWords) {
                         sqlBuilder.append(((SQLWords) o).render());

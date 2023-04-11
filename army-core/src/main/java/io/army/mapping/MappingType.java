@@ -31,9 +31,7 @@ public interface MappingType extends TypeMeta, TypeInfer {
     /**
      * @return the instance of {@link #javaType()}.
      */
-    default Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        throw new UnsupportedOperationException();
-    }
+    Object convert(MappingEnv env, Object nonNull) throws CriteriaException;
 
 
     /**

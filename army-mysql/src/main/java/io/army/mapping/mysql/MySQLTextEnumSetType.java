@@ -1,5 +1,6 @@
 package io.army.mapping.mysql;
 
+import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.mapping.AbstractMappingType;
@@ -57,6 +58,11 @@ public final class MySQLTextEnumSetType extends AbstractMappingType implements E
             throw noMappingError(meta);
         }
         return MySQLTypes.SET;
+    }
+
+    @Override
+    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return null;
     }
 
     @Override

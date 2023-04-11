@@ -7,7 +7,7 @@ package io.army.criteria.impl;
  *
  * @since 1.0
  */
-enum BooleanTestWord implements SQLsSyntax.BooleanTestWord, SQLsSyntax.ArmyKeyWord {
+enum BooleanTestWord implements SQLsSyntax.BooleanTestWord, Functions.ArmyKeyWord {
 
     JSON(" JSON");
 

@@ -152,10 +152,10 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         argList.add(exp);
         argList.add(as);
         argList.add(type);
-        argList.add(SQLSyntax.FuncWord.LEFT_PAREN);
+        argList.add(Functions.FuncWord.LEFT_PAREN);
 
         argList.add(n);
-        argList.add(SQLSyntax.FuncWord.RIGHT_PAREN);
+        argList.add(Functions.FuncWord.RIGHT_PAREN);
         return FunctionUtils.complexArgFunc(funcName, argList, _castReturnType(type));
     }
 
@@ -211,12 +211,12 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         argList.add(exp);
         argList.add(as);
         argList.add(type);
-        argList.add(SQLSyntax.FuncWord.LEFT_PAREN);
+        argList.add(Functions.FuncWord.LEFT_PAREN);
 
         argList.add(m);
-        argList.add(SQLSyntax.FuncWord.COMMA);
+        argList.add(Functions.FuncWord.COMMA);
         argList.add(d);
-        argList.add(SQLSyntax.FuncWord.RIGHT_PAREN);
+        argList.add(Functions.FuncWord.RIGHT_PAREN);
         return FunctionUtils.complexArgFunc(funcName, argList, BigDecimalType.INSTANCE);
     }
 
@@ -574,9 +574,9 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         argList.add(charType);
 
         if (n != null) {
-            argList.add(SQLSyntax.FuncWord.LEFT_PAREN);
+            argList.add(Functions.FuncWord.LEFT_PAREN);
             argList.add(n);
-            argList.add(SQLSyntax.FuncWord.RIGHT_PAREN);
+            argList.add(Functions.FuncWord.RIGHT_PAREN);
         }
         argList.add(characterSet);
         argList.add(charset);

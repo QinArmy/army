@@ -298,6 +298,11 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
 
     <T> Expression concat(BiFunction<Expression, T, Expression> operator, T operand);
 
+    <E extends Expression> E apply(BiFunction<Expression, Expression, E> operator, Expression operand);
+
+    <E extends Expression, T> E apply(BiFunction<Expression, Expression, E> operator, BiFunction<Expression, T, Expression> valueOperator, T operand);
+
+
     @Override
     Expression mapTo(TypeMeta typeMeta);
 

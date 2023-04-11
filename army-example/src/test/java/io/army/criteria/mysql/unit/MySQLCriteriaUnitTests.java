@@ -566,7 +566,7 @@ public class MySQLCriteriaUnitTests {
                     .and(BankUser_.updateTime::greatEqual, SQLs::literal, LocalDateTime::now)
                     .and(SQLs::exists, () -> MySQLs.subQuery()
                             .select(RegisterRecord_.id)
-                            .from(RegisterRecord_.T,AS, "r")
+                            .from(RegisterRecord_.T, AS, "r")
                             .where(RegisterRecord_.userId::equal, BankUser_.id)
                             .asQuery())
                     .asQuery();

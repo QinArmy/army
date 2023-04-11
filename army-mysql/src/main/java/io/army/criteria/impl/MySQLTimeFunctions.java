@@ -336,9 +336,9 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_extract">EXTRACT(date)</a>
      */
-    public static Expression extract(final MySQLTimeUnit unit, final SQLs.WordFrom from, final Expression date) {
+    public static Expression extract(final MySQLTimeUnit unit, final WordFrom from, final Expression date) {
         final String name = "EXTRACT";
-        if (from != SQLs.FROM) {
+        if (from != Functions.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
         } else if (!(date instanceof ArmyExpression)) {
             throw CriteriaUtils.funcArgError(name, date);
@@ -448,7 +448,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
                 throw CriteriaUtils.funcArgError(name, type);
         }
         Objects.requireNonNull(format);
-        return FunctionUtils.complexArgFunc(name, StringType.INSTANCE, type, FuncWord.COMMA, format);
+        return FunctionUtils.complexArgFunc(name, StringType.INSTANCE, type, Functions.FuncWord.COMMA, format);
     }
 
     /**
@@ -612,8 +612,8 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
             default:
                 throw CriteriaUtils.funcArgError(name, unit);
         }
-        return FunctionUtils.complexArgFunc(name, returnType, unit, FuncWord.COMMA, interval
-                , FuncWord.COMMA, datetimeExpr);
+        return FunctionUtils.complexArgFunc(name, returnType, unit, Functions.FuncWord.COMMA, interval
+                , Functions.FuncWord.COMMA, datetimeExpr);
     }
 
     /**
@@ -669,8 +669,8 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
                 throw _Exceptions.unexpectedEnum(unit);
         }
 
-        return FunctionUtils.complexArgFunc(name, returnType, unit, FuncWord.COMMA, datetimeExpr1
-                , FuncWord.COMMA, datetimeExpr2);
+        return FunctionUtils.complexArgFunc(name, returnType, unit, Functions.FuncWord.COMMA, datetimeExpr1
+                , Functions.FuncWord.COMMA, datetimeExpr2);
     }
 
     /**
@@ -1085,7 +1085,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
         if (!(expr instanceof ArmyExpression)) {
             throw CriteriaUtils.funcArgError(name, date);
         }
-        return FunctionUtils.complexArgFunc(name, returnType, date, FuncWord.COMMA, interval, expr, unit);
+        return FunctionUtils.complexArgFunc(name, returnType, date, Functions.FuncWord.COMMA, interval, expr, unit);
     }
 
 
@@ -1118,7 +1118,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
         } else {
             returnType = _dateAddSubReturnType(type.mappingType(), unit);
         }
-        return FunctionUtils.complexArgFunc(name, returnType, date, FuncWord.COMMA, interval, expr, unit);
+        return FunctionUtils.complexArgFunc(name, returnType, date, Functions.FuncWord.COMMA, interval, expr, unit);
     }
 
 

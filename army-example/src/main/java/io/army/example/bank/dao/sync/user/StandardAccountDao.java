@@ -14,6 +14,7 @@ import java.util.Map;
 
 import static io.army.criteria.impl.SQLs.AS;
 
+
 @Repository("bankSyncStandardAccountDao")
 @Profile({BaseService.SYNC, BeanUtils.STANDARD})
 public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDao {

@@ -1,5 +1,6 @@
 package io.army.mapping;
 
+import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 
@@ -19,7 +20,12 @@ public final class JsonBeanType extends AbstractMappingType {
 
     @Override
     public SqlType map(ServerMeta meta) {
-         throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return null;
     }
 
     @Override

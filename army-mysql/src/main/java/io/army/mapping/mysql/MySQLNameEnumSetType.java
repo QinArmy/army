@@ -1,5 +1,6 @@
 package io.army.mapping.mysql;
 
+import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.mapping.ElementMappingType;
@@ -53,6 +54,11 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
             throw noMappingError(meta);
         }
         return MySQLTypes.SET;
+    }
+
+    @Override
+    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return null;
     }
 
     @Override

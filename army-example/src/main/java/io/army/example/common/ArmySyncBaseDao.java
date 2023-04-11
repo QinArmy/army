@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.impl.SQLs.PERIOD;
+
 
 public abstract class ArmySyncBaseDao implements SyncBaseDao {
 
@@ -86,13 +88,13 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
             final ComplexTableMeta<P, T> child = (ComplexTableMeta<P, T>) table;
             final ParentTableMeta<P> parent = child.parentMeta();
             clause = SQLs.query()
-                    .select("p", SQLs.PERIOD, parent, "c", SQLs.PERIOD, child)
+                    .select("p", PERIOD, parent, "c", SQLs.PERIOD, child)
                     .from(child, AS, "c")
                     .join(parent, AS, "p").on(table.id().equal(parent.id()))
                     .where(child.id().equal(valueOperator, id));
         } else {
             clause = SQLs.query()
-                    .select("t", SQLs.PERIOD, table)
+                    .select("t", PERIOD, table)
                     .from(table, AS, "t")
                     .where(table.id().equal(valueOperator, id));
         }

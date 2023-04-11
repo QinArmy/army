@@ -28,8 +28,8 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
         final Select stmt;
         stmt = MySQLs.query()
                 .select(SQLs.field("p_of_city", ChinaRegion_.name), ChinaCity_.mayorName, SQLs.field("province", ChinaRegion_.name))
-                .from(ChinaCity_.T, AS,"city")
-                .join(ChinaRegion_.T,AS, "p_of_city")
+                .from(ChinaCity_.T, AS, "city")
+                .join(ChinaRegion_.T, AS, "p_of_city")
                 .on(ChinaCity_.id.equal(SQLs.field("p_of_city", ChinaRegion_.id)))
                 .join(ChinaRegion_.T, AS,"province")
                 .on(SQLs.field("p_of_city", ChinaRegion_.parentId)::equal,SQLs.field("province", ChinaRegion_.id))

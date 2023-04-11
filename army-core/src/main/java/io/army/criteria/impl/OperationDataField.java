@@ -18,7 +18,7 @@ import java.util.function.BiFunction;
  *     </ul>
  * </p>
  */
-abstract class OperationDataField extends OperationExpression
+abstract class OperationDataField extends Expressions
         implements DataField,
         _Selection,
         NoParensExpression {
@@ -123,11 +123,6 @@ abstract class OperationDataField extends OperationExpression
         return Expressions.dualExp(this, DualOperator.LEFT_SHIFT, namedOperator.apply(this, this.fieldName()));
     }
 
-    @Override
-    public final OperationDataField bracket() {
-        //return this ,don't create new instance
-        return this;
-    }
 
 
 }

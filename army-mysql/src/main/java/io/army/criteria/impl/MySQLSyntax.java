@@ -38,7 +38,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
 
     }
 
-    public interface WordDistinct extends Modifier, SQLSyntax.ArgDistinct {
+    public interface WordDistinct extends Modifier, SqlSyntax.ArgDistinct {
 
     }
 
@@ -71,11 +71,6 @@ abstract class MySQLSyntax extends MySQLFunctions {
     }
 
     public interface WordsCollate extends SQLWords {
-
-    }
-
-
-    public interface TrimPosition extends SQLWords {
 
     }
 
@@ -269,31 +264,6 @@ abstract class MySQLSyntax extends MySQLFunctions {
 
     }//KeyWordsForOrdinality
 
-    enum WordTrimPosition implements TrimPosition {
-
-        BOTH(" BOTH"),
-        LEADING(" LEADING"),
-        TRAILING(" TRAILING");
-
-        private final String spaceWords;
-
-        WordTrimPosition(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
-
-        @Override
-        public final String render() {
-            return this.spaceWords;
-        }
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-
-    }//WordTrimPosition
-
 
     private enum KeyWordsAtTimeZone implements WordsAtTimeZone {
 
@@ -392,12 +362,6 @@ abstract class MySQLSyntax extends MySQLFunctions {
 
 
     public static final WordUsing USING = KeyWordUsing.USING;
-
-    public static final TrimPosition BOTH = WordTrimPosition.BOTH;
-
-    public static final TrimPosition LEADING = WordTrimPosition.LEADING;
-
-    public static final TrimPosition TRAILING = WordTrimPosition.TRAILING;
 
 
     public static final WordPath PATH = KeyWordPath.PATH;

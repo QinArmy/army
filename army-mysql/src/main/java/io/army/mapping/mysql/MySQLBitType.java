@@ -1,5 +1,6 @@
 package io.army.mapping.mysql;
 
+import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
@@ -38,6 +39,12 @@ public final class MySQLBitType extends _ArmyNoInjectionMapping {
             throw noMappingError(meta);
         }
         return MySQLTypes.BIT;
+    }
+
+    @Override
+    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        //TODO
+        throw new UnsupportedOperationException();
     }
 
     @Override

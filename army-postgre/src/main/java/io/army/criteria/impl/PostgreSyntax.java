@@ -9,6 +9,8 @@ import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.util._StringUtils;
 
+import java.util.function.BiFunction;
+
 /**
  * <p>
  * Package class
@@ -29,7 +31,7 @@ abstract class PostgreSyntax extends PostgreStringFunctions {
 
     }
 
-    public interface WordDistinct extends Modifier, SQLSyntax.ArgDistinct {
+    public interface WordDistinct extends Modifier, SqlSyntax.ArgDistinct {
 
     }
 
@@ -152,6 +154,22 @@ abstract class PostgreSyntax extends PostgreStringFunctions {
     public static Expression excluded(FieldMeta<?> field) {
         return ContextStack.peek().insertValueField(field, PostgreExcludedField::excludedField);
     }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of operator return type: the {@link  MappingType} of leftText.
+     * </p>
+     *
+     * @param leftText not {@link SQLs#DEFAULT} etc.
+     * @see Expression#apply(BiFunction, Expression)
+     * @see Expression#apply(BiFunction, BiFunction, Object)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">text ^@ text → boolean</a>
+     */
+    public static Expression caretAt(Expression leftText, Expression rightText) {
+        return Expressions.dualExp((OperationExpression) leftText, DualOperator.CARET_AT, rightText);
+    }
+
 
 
 

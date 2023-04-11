@@ -14,6 +14,7 @@ import java.util.Map;
 import static io.army.criteria.impl.SQLs.AND;
 import static io.army.criteria.impl.SQLs.AS;
 
+
 public class DomainDeleteUnitTests extends StandardUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(DomainDeleteUnitTests.class);

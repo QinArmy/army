@@ -1124,7 +1124,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         int index = 0;
         for (Expression jsonDoc : jsonDocList) {
             if (index > 0) {
-                argList.add(SQLSyntax.FuncWord.COMMA);
+                argList.add(Functions.FuncWord.COMMA);
             }
             argList.add(jsonDoc);
             index++;

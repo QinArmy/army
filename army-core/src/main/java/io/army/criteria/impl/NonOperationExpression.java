@@ -452,6 +452,16 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
+    public final <E extends Expression> E apply(BiFunction<Expression, Expression, E> operator, Expression operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <E extends Expression, T> E apply(BiFunction<Expression, Expression, E> operator, BiFunction<Expression, T, Expression> valueOperator, T operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
     public final OperationExpression mapTo(TypeMeta typeMeta) {
         throw unsupportedOperation();
     }

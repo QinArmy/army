@@ -333,7 +333,7 @@ abstract class FunctionUtils {
         for (Object o : argumentList) {
             if (o instanceof Expression) {
                 ((ArmyExpression) o).appendSql(context); // convert to ArmyExpression to avoid non-army expression
-            } else if (o == SQLSyntax.FuncWord.LEFT_PAREN) {
+            } else if (o == Functions.FuncWord.LEFT_PAREN) {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
             } else if (o instanceof SQLWords) {
                 sqlBuilder.append(((SQLWords) o).render());
@@ -356,7 +356,7 @@ abstract class FunctionUtils {
         for (Object o : argumentList) {
             if (o instanceof Expression || o instanceof Clause) {
                 builder.append(o);
-            } else if (o == SQLSyntax.FuncWord.LEFT_PAREN) {
+            } else if (o == Functions.FuncWord.LEFT_PAREN) {
                 builder.append(((SQLWords) o).render());
             } else if (o instanceof SQLWords) {
                 builder.append(_Constant.SPACE)
@@ -386,7 +386,7 @@ abstract class FunctionUtils {
         }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(one);
-        argList.add(SQLSyntax.FuncWord.COMMA);
+        argList.add(Functions.FuncWord.COMMA);
         argList.add(two);
         return argList;
     }
@@ -484,9 +484,9 @@ abstract class FunctionUtils {
         final List<Object> argList = new ArrayList<>(5);
 
         argList.add(one);
-        argList.add(SQLSyntax.FuncWord.COMMA);
+        argList.add(Functions.FuncWord.COMMA);
         argList.add(two);
-        argList.add(SQLSyntax.FuncWord.COMMA);
+        argList.add(Functions.FuncWord.COMMA);
 
         argList.add(three);
         return argList;

@@ -468,6 +468,27 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
+    public final <E extends Expression> E apply(BiFunction<Expression, Expression, E> operator, Expression operand) {
+        final E result;
+        result = operator.apply(this, operand);
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
+
+    @Override
+    public final <E extends Expression, T> E apply(BiFunction<Expression, Expression, E> operator,
+                                                   BiFunction<Expression, T, Expression> valueOperator, T operand) {
+        final E result;
+        result = operator.apply(this, valueOperator.apply(this, operand));
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
+
+    @Override
     public final OperationExpression mapTo(final @Nullable TypeMeta typeMeta) {
         if (typeMeta == null) {
             throw ContextStack.nullPointer(ContextStack.peek());

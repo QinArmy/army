@@ -21,7 +21,7 @@ import java.util.Objects;
  *
  * @since 1.0
  */
-abstract class LiteralExpression extends OperationExpression {
+abstract class LiteralExpression extends Expressions {
 
     static LiteralExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object constant) {
         if (paramMeta == null) {
@@ -110,12 +110,6 @@ abstract class LiteralExpression extends OperationExpression {
     @Override
     public final TypeMeta typeMeta() {
         return this.paramType;
-    }
-
-    @Override
-    public final LiteralExpression bracket() {
-        //return this,don't create new instance.
-        return this;
     }
 
 

@@ -31,7 +31,7 @@ public abstract class Criteria {
         } else {
             stmt = SQLs.query()
                     .select("t", SQLs.PERIOD, table)
-                    .from(table,AS, "t")
+                    .from(table, AS, "t")
                     .where(table.id().equal(SQLs::param,id))
                     .asQuery();
         }

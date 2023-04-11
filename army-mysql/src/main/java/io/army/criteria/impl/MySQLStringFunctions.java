@@ -855,8 +855,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(remstr FROM str)</a>
      */
-    public static Expression trim(final Expression remstr, SQLs.WordFrom from, final Expression str) {
-        assert from == SQLs.FROM;
+    public static Expression trim(final Expression remstr, WordFrom from, final Expression str) {
+        assert from == Functions.FROM;
         return FunctionUtils.complexArgFunc("TRIM", StringType.INSTANCE, remstr, from, str);
     }
 
@@ -867,9 +867,9 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *
      * @param position non-null,should be below:
      *                 <ul>
-     *                      <li>{@link MySQLs#BOTH}</li>
-     *                      <li>{@link MySQLs#LEADING}</li>
-     *                      <li>{@link MySQLs#TRAILING}</li>
+     *                      <li>{@link Functions#BOTH}</li>
+     *                      <li>{@link Functions#LEADING}</li>
+     *                      <li>{@link Functions#TRAILING}</li>
      *                 </ul>
      * @param remstr   nullable parameter or {@link Expression}
      * @param str      nullable parameter or {@link Expression}
@@ -877,15 +877,15 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM([BOTH | LEADING | TRAILING] remstr FROM str), TRIM([remstr FROM] str),TRIM(remstr FROM str)</a>
      */
     public static Expression trim(final @Nullable MySQLs.TrimPosition position, final @Nullable Expression remstr
-            , final @Nullable SQLs.WordFrom from, final Expression str) {//TODO 优化方法定义
+            , final @Nullable WordFrom from, final Expression str) {//TODO 优化方法定义
         final String name = "TRIM";
         if (!(str instanceof ArmyExpression)) {
             throw CriteriaUtils.funcArgError(name, str);
-        } else if (position != null && !(position instanceof MySQLSyntax.WordTrimPosition)) {
+        } else if (position != null && !(position instanceof Functions.WordTrimPosition)) {
             throw CriteriaUtils.funcArgError(name, position);
-        } else if (remstr != null && from != SQLs.FROM) {
+        } else if (remstr != null && from != Functions.FROM) {
             throw ContextStack.criteriaError(ContextStack.peek(), "remstr and from syntax error");
-        } else if (position != null && from != SQLs.FROM) {
+        } else if (position != null && from != Functions.FROM) {
             throw ContextStack.criteriaError(ContextStack.peek(), "position and from syntax error");
         }
         return FunctionUtils.complexArgFunc(name, StringType.INSTANCE, position, remstr, from, str);
@@ -933,7 +933,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
             throw CriteriaUtils.funcArgError(name, n);
         }
         return FunctionUtils.complexArgFunc(name, StringType.INSTANCE
-                , str, as, type, SQLSyntax.FuncWord.LEFT_PAREN, n, SQLSyntax.FuncWord.RIGHT_PAREN);
+                , str, as, type, Functions.FuncWord.LEFT_PAREN, n, Functions.FuncWord.RIGHT_PAREN);
     }
 
 

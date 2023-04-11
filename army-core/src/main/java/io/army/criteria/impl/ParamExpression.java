@@ -20,7 +20,7 @@ import java.util.*;
  *
  * @since 1.0
  */
-abstract class ParamExpression extends OperationExpression implements SQLParam {
+abstract class ParamExpression extends Expressions implements SQLParam {
 
 
     static ParamExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object value) {
@@ -68,12 +68,6 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
 
     private ParamExpression(TypeMeta paramType) {
         this.paramType = paramType;
-    }
-
-    @Override
-    public final ParamExpression bracket() {
-        //return this,don't create new instance.
-        return this;
     }
 
     @Override
