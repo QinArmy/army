@@ -40,7 +40,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, addGdp)
                 .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", AND, "secondId")
-                .and(ChinaRegion_.name.equal(SQLs::literal, "江湖"))
+                .and(SQLs::bracket, ChinaRegion_.name.equal(SQLs::literal, "江湖"))
                 .and(ChinaRegion_.regionGdp::plus, SQLs::param, addGdp, Expression::greatEqual, BigDecimal.ZERO)
                 .asUpdate();
 

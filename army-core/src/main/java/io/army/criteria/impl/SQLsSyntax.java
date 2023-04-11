@@ -855,12 +855,16 @@ abstract class SQLsSyntax extends Functions {
         return Expressions.bracketExp(expression);
     }
 
-    public static IPredicate parens(IPredicate predicate) {
+    public static IPredicate bracket(IPredicate predicate) {
         return Expressions.bracketPredicate(predicate);
     }
 
     public static Expression bitwiseNot(Expression exp) {
-        return Expressions.unaryExp(exp, UnaryOperator.INVERT);
+        return Expressions.unaryExp(exp, UnaryOperator.BITWISE_NOT);
+    }
+
+    public static Expression negate(Expression exp) {
+        return Expressions.unaryExp(exp, UnaryOperator.NEGATE);
     }
 
     public static IPredicate not(IPredicate predicate) {

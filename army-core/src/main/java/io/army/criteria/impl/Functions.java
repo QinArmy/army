@@ -88,7 +88,7 @@ abstract class Functions extends SqlSyntax {
     }
 
 
-    enum FuncWord implements SQLWords {
+    enum FuncWord implements ArmyKeyWord {
 
         INTERVAL(" INTERVAL"),
         COMMA(_Constant.SPACE_COMMA),

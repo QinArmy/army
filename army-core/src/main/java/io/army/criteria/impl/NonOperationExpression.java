@@ -381,11 +381,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final OperationExpression negate() {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final OperationExpression bitwiseAnd(Expression operand) {
         throw unsupportedOperation();
     }
@@ -412,11 +407,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final <T> OperationExpression xor(BiFunction<Expression, T, Expression> operator, T operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final OperationExpression invert() {
         throw unsupportedOperation();
     }
 

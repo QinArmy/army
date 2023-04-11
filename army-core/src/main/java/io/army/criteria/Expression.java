@@ -239,8 +239,6 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
 
     <T> Expression divide(BiFunction<Expression, T, Expression> operator, T operand);
 
-    Expression negate();
-
     /**
      * Bitwise AND
      *
@@ -254,6 +252,8 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
      * Bitwise OR
      *
      * @return {@link BigInteger} expression
+     * @see #bitwiseAnd(Expression)
+     * @see SQLs#bitwiseNot(Expression)
      */
     Expression bitwiseOr(Expression operand);
 
@@ -268,12 +268,6 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
 
     <T> Expression xor(BiFunction<Expression, T, Expression> operator, T operand);
 
-    /**
-     * Bitwise Inversion
-     *
-     * @return {@link BigInteger} expression
-     */
-    Expression invert();
 
     /**
      * Shifts a  number to the right.

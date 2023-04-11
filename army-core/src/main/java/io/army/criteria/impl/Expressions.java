@@ -60,7 +60,7 @@ abstract class Expressions extends OperationExpression {
             throw ContextStack.clearStackAndNullPointer();
         }
         switch (operator) {
-            case INVERT:
+            case BITWISE_NOT:
             case NEGATE:
             case AT:
                 break;
@@ -467,7 +467,7 @@ abstract class Expressions extends OperationExpression {
                 case NEGATE:
                     outerBracket = false;
                     break;
-                case INVERT:
+                case BITWISE_NOT:
                 case AT:
                     outerBracket = true;
                     break;
@@ -508,7 +508,7 @@ abstract class Expressions extends OperationExpression {
                 case NEGATE:
                     outerBracket = false;
                     break;
-                case INVERT:
+                case BITWISE_NOT:
                     outerBracket = true;
                     break;
                 default:

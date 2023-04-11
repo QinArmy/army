@@ -105,6 +105,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">bit_length ( text ) → integer</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">bit_length ( bit ) → integer</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bit_length ( bytea ) → integer</a>
      */
     public static Expression bitLength(Expression exp) {
         return FunctionUtils.oneArgFunc("BIT_LENGTH", exp, IntegerType.INSTANCE);
@@ -173,6 +174,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">octet_length ( text ) → integer ; octet_length ( character ) → integer</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">octet_length ( bit ) → integer</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">octet_length ( bytea ) → integer</a>
      */
     public static Expression octetLength(Expression exp) {
         return FunctionUtils.oneArgFunc("OCTET_LENGTH", exp, IntegerType.INSTANCE);
@@ -186,6 +188,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @see #overlay(Expression, WordPlacing, Expression, WordFrom, Expression, WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">overlay ( string text PLACING newsubstring text FROM start integer [ FOR count integer ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">overlay ( bits bit PLACING newsubstring bit FROM start integer [ FOR count integer ] ) → bit</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">overlay ( bytes bytea PLACING newsubstring bytea FROM start integer [ FOR count integer ] ) → bytea</a>
      */
     public static Expression overlay(Expression string, WordPlacing placing, Expression newSubstring,
                                      WordFrom from, Expression start) {
@@ -200,6 +203,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @see #overlay(Expression, WordPlacing, Expression, WordFrom, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">overlay ( string text PLACING newsubstring text FROM start integer [ FOR count integer ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">overlay ( bits bit PLACING newsubstring bit FROM start integer [ FOR count integer ] ) → bit</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">overlay ( bytes bytea PLACING newsubstring bytea FROM start integer [ FOR count integer ] ) → bytea</a>
      */
     public static Expression overlay(Expression string, WordPlacing placing, Expression newSubstring,
                                      WordFrom from, Expression start, WordFor wordFor,
@@ -217,6 +221,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @param in {@link Functions#IN}
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">position ( substring text IN string text ) → integer</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">position ( substring bit IN bits bit ) → integer</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">position ( substring bytea IN bytes bytea ) → integer</a>
      */
     public static Expression position(Expression substring, WordIn in, Expression string) {
         final String name = "POSITION";
@@ -244,6 +249,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">substring ( string text [ FROM start integer ] [ FOR count integer ] ) → text ; substring ( string text FROM pattern text ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">substring ( bits bit [ FROM start integer ] [ FOR count integer ] ) → bit</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">substring ( bytes bytea [ FROM start integer ] [ FOR count integer ] ) → bytea</a>
      */
     public static Expression substring(Expression string, WordFrom from, Expression startOrPattern) {
         ContextStack.assertNonNull(startOrPattern);
@@ -260,6 +266,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">substring ( string text [ FROM start integer ] [ FOR count integer ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">substring ( bits bit [ FROM start integer ] [ FOR count integer ] ) → bit</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">substring ( bytes bytea [ FROM start integer ] [ FOR count integer ] ) → bytea</a>
      */
     public static Expression substring(Expression string, WordFor wordFor, Expression count) {
         ContextStack.assertNonNull(count);
@@ -278,6 +285,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @see #substring(Expression, WordSimilar, Expression, WordEscape, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">substring ( string text [ FROM start integer ] [ FOR count integer ] ) → text ; substring ( string text FROM pattern text FOR escape text ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">substring ( bits bit [ FROM start integer ] [ FOR count integer ] ) → bit</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">substring ( bytes bytea [ FROM start integer ] [ FOR count integer ] ) → bytea</a>
      */
     public static Expression substring(Expression string, WordFrom from, Expression startOrPattern,
                                        WordFor wordFor, Expression countOrEscape) {
@@ -383,6 +391,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @param from {@link Functions#FROM}
      * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ characters text ] FROM string text ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] bytesremoved bytea FROM bytes bytea ) → bytea</a>
      */
     public static Expression trim(Expression characters, WordFrom from, Expression string) {
         final String name = "TRIM";
@@ -411,6 +420,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @param from     {@link Functions#FROM}
      * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ characters text ] FROM string text ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] bytesremoved bytea FROM bytes bytea ) → bytea</a>
      */
     public static Expression trim(TrimPosition position, Expression characters, WordFrom from, Expression string) {
         final String name = "TRIM";
@@ -433,6 +443,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] string text [, characters text ] ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] bytes bytea, bytesremoved bytea ) → bytea</a>
      */
     public static Expression trim(Expression string, Expression characters) {
         final String name = "TRIM";
@@ -450,6 +461,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] string text [, characters text ] ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] bytes bytea, bytesremoved bytea ) → bytea</a>
      */
     public static Expression trim(WordFrom from, Expression string, Expression characters) {
         final String name = "TRIM";
@@ -478,6 +490,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      *                 </ul>
      * @param from     {@link Functions#FROM}
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] string text [, characters text ] ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] bytes bytea, bytesremoved bytea ) → bytea</a>
      */
     public static Expression trim(TrimPosition position, WordFrom from, Expression string, Expression characters) {
         final String name = "TRIM";
@@ -712,6 +725,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">ltrim ( string text [, characters text ] ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">ltrim ( bytes bytea, bytesremoved bytea ) → bytea</a>
      */
     public static Expression ltrim(Expression string, Expression characters) {
         return FunctionUtils.twoArgFunc("LTRIM", string, characters, string.typeMeta());
@@ -719,13 +733,14 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} of string.
+     * The {@link MappingType} of function return type: {@link TextType}.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">md5 ( text ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">md5 ( bytea ) → text</a>
      */
     public static Expression md5(Expression string) {
-        return FunctionUtils.oneArgFunc("MD5", string, string.typeMeta());
+        return FunctionUtils.oneArgFunc("MD5", string, TextType.INSTANCE);
     }
 
     /**
@@ -1127,13 +1142,14 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link TextType}
+     * The {@link MappingType} of function return type: the {@link MappingType} of string
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">rtrim ( string text [, characters text ] ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">rtrim ( bytes bytea, bytesremoved bytea ) → bytea</a>
      */
     public static Expression rtrim(Expression string, Expression characters) {
-        return FunctionUtils.twoArgFunc("RTRIM", string, characters, TextType.INSTANCE);
+        return FunctionUtils.twoArgFunc("RTRIM", string, characters, string.typeMeta());
     }
 
     /**
@@ -1218,24 +1234,26 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link TextType}
+     * The {@link MappingType} of function return type: the {@link MappingType} of string
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">substr ( string text, start integer [, count integer ] ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">substr ( bytes bytea, start integer [, count integer ] ) → bytea</a>
      */
     public static Expression substr(Expression string, Expression start) {
-        return FunctionUtils.twoArgFunc("SUBSTR", string, start, TextType.INSTANCE);
+        return FunctionUtils.twoArgFunc("SUBSTR", string, start, string.typeMeta());
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link TextType}
+     * The {@link MappingType} of function return type: the {@link MappingType} of string
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">substr ( string text, start integer [, count integer ] ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">substr ( bytes bytea, start integer [, count integer ] ) → bytea</a>
      */
     public static Expression substr(Expression string, Expression start, Expression count) {
-        return FunctionUtils.threeArgFunc("SUBSTR", string, start, count, TextType.INSTANCE);
+        return FunctionUtils.threeArgFunc("SUBSTR", string, start, count, string.typeMeta());
     }
 
     /**
@@ -1312,6 +1330,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">bit_count ( bit ) → bigint</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">bit_count ( bytes bytea ) → bigint</a>
      */
     public static Expression bitCount(Expression bit) {
         return FunctionUtils.oneArgFunc("BIT_COUNT", bit, LongType.INSTANCE);
@@ -1323,6 +1342,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">get_bit ( bits bit, n integer ) → integer</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">get_bit ( bytes bytea, n bigint ) → integer</a>
      */
     public static Expression getBit(Expression bits, Expression n) {
         return FunctionUtils.twoArgFunc("GET_BIT", bits, n, IntegerType.INSTANCE);
@@ -1334,12 +1354,159 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">set_bit ( bits bit, n integer, newvalue integer ) → bit</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">set_bit ( bytes bytea, n bigint, newvalue integer ) → bytea</a>
      */
     public static Expression setBit(Expression bits, Expression n) {
         return FunctionUtils.twoArgFunc("SET_BIT", bits, n, bits.typeMeta());
     }
 
     /*-------------------below Binary String Functions and Operators -------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">get_bit ( bytes bytea, n bigint ) → integer</a>
+     */
+    public static Expression getByte(Expression bits, Expression n) {
+        return FunctionUtils.twoArgFunc("GET_BIT", bits, n, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">length ( bytes bytea, encoding name ) → integer</a>
+     */
+    public static Expression length(Expression bytes, Expression encoding) {
+        return FunctionUtils.twoArgFunc("LENGTH", bytes, encoding, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of bits
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">set_bit ( bytes bytea, n bigint, newvalue integer ) → bytea</a>
+     */
+    public static Expression setBit(Expression bits, Expression n, Expression newValue) {
+        return FunctionUtils.threeArgFunc("SET_BIT", bits, n, newValue, bits.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of bits
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">set_byte ( bytes bytea, n integer, newvalue integer ) → bytea</a>
+     */
+    public static Expression setByte(Expression bits, Expression n, Expression newValue) {
+        return FunctionUtils.threeArgFunc("SET_BYTE", bits, n, newValue, bits.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of bytea
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">sha224 ( bytea ) → bytea</a>
+     */
+    public static Expression sha224(Expression bytea) {
+        return FunctionUtils.oneArgFunc("SHA224", bytea, bytea.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of bytea
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">sha256 ( bytea ) → bytea</a>
+     */
+    public static Expression sha256(Expression bytea) {
+        return FunctionUtils.oneArgFunc("SHA256", bytea, bytea.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of bytea
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">sha384 ( bytea ) → bytea</a>
+     */
+    public static Expression sha384(Expression bytea) {
+        return FunctionUtils.oneArgFunc("SHA384", bytea, bytea.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of bytea
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">sha512 ( bytea ) → bytea</a>
+     */
+    public static Expression sha512(Expression bytea) {
+        return FunctionUtils.oneArgFunc("SHA512", bytea, bytea.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of bytea
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">convert ( bytes bytea, src_encoding name, dest_encoding name ) → bytea</a>
+     */
+    public static Expression convert(Expression bytea, Expression srcEncoding, Expression destEncoding) {
+        return FunctionUtils.threeArgFunc("CONVERT", bytea, srcEncoding, destEncoding, bytea.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of bytea
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">convert_from ( bytes bytea, src_encoding name ) → text</a>
+     */
+    public static Expression convertFrom(Expression bytea, Expression srcEncoding) {
+        return FunctionUtils.twoArgFunc("CONVERT_FROM", bytea, srcEncoding, bytea.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of bytea
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">convert_to ( string text, dest_encoding name ) → bytea</a>
+     */
+    public static Expression convertTo(Expression bytea, Expression destEncoding) {
+        return FunctionUtils.twoArgFunc("CONVERT_TO", bytea, destEncoding, bytea.typeMeta());
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">encode ( bytes bytea, format text ) → text</a>
+     */
+    public static Expression encode(Expression bytea, Expression format) {
+        return FunctionUtils.twoArgFunc("ENCODE", bytea, format, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link PrimitiveByteArrayType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">decode ( string text, format text ) → bytea</a>
+     */
+    public static Expression decode(Expression text, Expression format) {
+        return FunctionUtils.twoArgFunc("DECODE", text, format, PrimitiveByteArrayType.INSTANCE);
+    }
+
+
 
 
     /*-------------------below private method -------------------*/

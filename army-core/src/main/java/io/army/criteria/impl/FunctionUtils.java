@@ -130,6 +130,10 @@ abstract class FunctionUtils {
         return new NoArgFuncExpression(name, returnType);
     }
 
+    static Expression noParensFunc(String name, TypeMeta returnType) {
+        return new NoParensFunction(name, returnType);
+    }
+
     static Expression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
         return new OneArgFunction(name, (ArmyExpression) exp, returnType);
     }
@@ -783,7 +787,66 @@ abstract class FunctionUtils {
 
     }//AggregateOverClause
 
-    private static class NoArgFuncExpression extends Expressions implements FunctionSpec, NoArgFunction {
+    private static final class NoParensFunction extends Expressions implements SQLFunction, NoParensExpression {
+
+        private final String name;
+
+        private final TypeMeta returnType;
+
+        /**
+         * @see #noParensFunc(String, TypeMeta)
+         */
+        private NoParensFunction(String name, TypeMeta returnType) {
+            this.name = name;
+            this.returnType = returnType;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.returnType;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name);
+            // no parens
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.returnType);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof NoParensFunction) {
+                final NoParensFunction o = (NoParensFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.returnType.equals(this.returnType);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .toString();
+        }
+
+
+    }//NoParensFunction
+
+    private static final class NoArgFuncExpression extends Expressions
+            implements FunctionSpec, NoArgFunction, SQLFunction {
 
         private final String name;
 
@@ -795,12 +858,12 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final TypeMeta typeMeta() {
+        public TypeMeta typeMeta() {
             return this.returnType;
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
+        public void appendSql(final _SqlContext context) {
             context.sqlBuilder()
                     .append(_Constant.SPACE)
                     .append(this.name)
@@ -808,18 +871,18 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final int hashCode() {
+        public int hashCode() {
             return Objects.hash(this.name, this.returnType);
         }
 
         @Override
-        public final boolean equals(final Object obj) {
+        public boolean equals(final Object obj) {
             //from different dialect
             return obj == this;
         }
 
         @Override
-        public final String toString() {
+        public String toString() {
             return _StringUtils.builder()
                     .append(_Constant.SPACE)
                     .append(this.name)

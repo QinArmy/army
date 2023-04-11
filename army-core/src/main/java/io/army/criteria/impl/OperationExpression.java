@@ -389,12 +389,6 @@ abstract class OperationExpression implements ArmyExpression {
         return Expressions.dualExp(this, DualOperator.DIVIDE, operator.apply(this, operand));
     }
 
-
-    @Override
-    public final OperationExpression negate() {
-        return Expressions.unaryExp(this, UnaryOperator.NEGATE);
-    }
-
     @Override
     public final OperationExpression bitwiseAnd(Expression operand) {
         return Expressions.dualExp(this, DualOperator.BITWISE_AND, operand);
@@ -427,12 +421,6 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final <T> OperationExpression xor(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.XOR, operator.apply(this, operand));
-    }
-
-
-    @Override
-    public final OperationExpression invert() {
-        return Expressions.unaryExp(this, UnaryOperator.INVERT);
     }
 
     @Override

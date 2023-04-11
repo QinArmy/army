@@ -18,7 +18,7 @@ import java.util.function.BiFunction;
  *
  * @since 1.0
  */
-abstract class PostgreSyntax extends PostgreStringFunctions {
+abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * Package constructor
