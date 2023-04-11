@@ -164,13 +164,32 @@ abstract class PostgreSyntax extends PostgreStringFunctions {
      * @param leftText not {@link SQLs#DEFAULT} etc.
      * @see Expression#apply(BiFunction, Expression)
      * @see Expression#apply(BiFunction, BiFunction, Object)
+     * @see Postgres#startsWith(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">text ^@ text → boolean</a>
      */
     public static Expression caretAt(Expression leftText, Expression rightText) {
         return Expressions.dualExp((OperationExpression) leftText, DualOperator.CARET_AT, rightText);
     }
 
-
+    /**
+     * <p>
+     * The {@link MappingType} of operator return type: the {@link  MappingType} of leftText.
+     * </p>
+     *
+     * @param left  not {@link SQLs#DEFAULT} etc.
+     * @param right not {@link SQLs#DEFAULT} etc.
+     * @see Expression#apply(BiFunction, Expression)
+     * @see Expression#apply(BiFunction, BiFunction, Object)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-OP-TABLE">bit || bit → bit</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">text || text → text <br/>
+     * text || anynonarray → text <br/>
+     * anynonarray || text → text
+     * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>
+     */
+    public static Expression doubleVertical(Expression left, Expression right) {
+        return Expressions.dualExp((OperationExpression) left, DualOperator.DOUBLE_VERTICAL, right);
+    }
 
 
     /*-------------------below operator method -------------------*/

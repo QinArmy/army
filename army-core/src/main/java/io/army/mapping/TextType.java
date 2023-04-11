@@ -43,7 +43,7 @@ import java.time.*;
  * @see MediumTextType
  * @since 1.0
  */
-public final class TextType extends _SQLStringType {
+public final class TextType extends _SQLStringType._ArmyTextType {
 
     public static final TextType INSTANCE = new TextType();
 
@@ -61,11 +61,6 @@ public final class TextType extends _SQLStringType {
     @Override
     public Class<?> javaType() {
         return String.class;
-    }
-
-    @Override
-    public int _length() {
-        return 2;
     }
 
     @Override

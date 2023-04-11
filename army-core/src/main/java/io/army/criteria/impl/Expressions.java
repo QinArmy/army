@@ -31,8 +31,8 @@ abstract class Expressions extends OperationExpression {
     }
 
 
-    static OperationExpression dualExp(final OperationExpression left
-            , final DualOperator operator, final Expression right) {
+    static OperationExpression dualExp(final OperationExpression left, final DualOperator operator,
+                                       final Expression right) {
         final ArmyExpression rightExp = (ArmyExpression) right;
         switch (operator) {
             case PLUS:
@@ -41,15 +41,12 @@ abstract class Expressions extends OperationExpression {
             case DIVIDE:
             case MOD:
             case CARET_AT: // postgre only
+            case DOUBLE_VERTICAL:// postgre only
             case BITWISE_AND:
             case BITWISE_OR:
             case XOR:
             case RIGHT_SHIFT:
-            case LEFT_SHIFT: {
-                if (rightExp.isNullValue()) {
-                    throw _Exceptions.operatorRightIsNullable(operator);
-                }
-            }
+            case LEFT_SHIFT:
             break;
             default:
                 throw _Exceptions.unexpectedEnum(operator);
@@ -57,12 +54,6 @@ abstract class Expressions extends OperationExpression {
         return new DualExpression(left, operator, rightExp);
     }
 
-    static OperationExpression concatStringExp(final OperationExpression left, final @Nullable Expression right) {
-        if (right == null) {
-            throw ContextStack.clearStackAndNullPointer();
-        }
-        return new ConcatStringExpression(left, (ArmyExpression) right);
-    }
 
     static OperationExpression unaryExp(final @Nullable Expression expression, final UnaryOperator operator) {
         if (expression == null) {
@@ -216,12 +207,12 @@ abstract class Expressions extends OperationExpression {
         return new BetweenPredicate(not, modifier, left, center, right);
     }
 
-    static OperationPredicate notPredicate(final OperationPredicate predicate) {
+    static OperationPredicate notPredicate(final Expression predicate) {
         final OperationPredicate notPredicate;
         if (predicate instanceof NotPredicate) {
             notPredicate = ((NotPredicate) predicate).predicate;
         } else {
-            notPredicate = new NotPredicate(predicate);
+            notPredicate = new NotPredicate((OperationPredicate) predicate);
         }
         return notPredicate;
     }
@@ -330,6 +321,7 @@ abstract class Expressions extends OperationExpression {
                 case DIVIDE:
                 case MOD:
                 case CARET_AT: // postgre only
+                case DOUBLE_VERTICAL: // postgre only
                     outerBracket = leftInnerBracket = rightInnerBracket = false;
                     break;
                 case LEFT_SHIFT:
@@ -372,6 +364,7 @@ abstract class Expressions extends OperationExpression {
                     }
                 }
                 break;
+                case DOUBLE_VERTICAL:
                 case CARET_AT: {
                     if (context.parser().dialect().database() != Database.PostgreSQL) {
                         String m = String.format("%s is supported only by %s", operator, Database.PostgreSQL);

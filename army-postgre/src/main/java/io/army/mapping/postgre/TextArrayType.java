@@ -13,34 +13,38 @@ import io.army.sqltype.SqlType;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class StringArrayType extends _ArmyArrayType {
+public final class TextArrayType extends _ArmyArrayType {
 
-    public static StringArrayType from(final Class<?> javaType) {
+
+    public static TextArrayType from(final Class<?> javaType) {
         if (!javaType.isArray()) {
             throw errorJavaType(StringArrayType.class, javaType);
         }
 
-        return INSTANCE_MAP.computeIfAbsent(javaType, StringArrayType::new);
+        return INSTANCE_MAP.computeIfAbsent(javaType, TextArrayType::new);
     }
 
-    public static final StringArrayType UNLIMITED = new StringArrayType();
 
-    private static final ConcurrentMap<Class<?>, StringArrayType> INSTANCE_MAP = new ConcurrentHashMap<>();
+    public static final TextArrayType UNLIMITED = new TextArrayType();
+
+    private static final ConcurrentMap<Class<?>, TextArrayType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
 
     private final Class<?> javaType;
 
     private final Class<?> underlyingType;
 
+
     /**
      * @see #UNLIMITED
      */
-    private StringArrayType() {
+    private TextArrayType() {
         this.javaType = Object.class;
         this.underlyingType = Object.class;
     }
 
-    private StringArrayType(Class<?> javaType) {
+
+    private TextArrayType(Class<?> javaType) {
         this.javaType = javaType;
         this.underlyingType = underlyingComponent(javaType);
     }
@@ -55,7 +59,7 @@ public final class StringArrayType extends _ArmyArrayType {
         if (meta.database() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreTypes.VARCHAR_ARRAY;
+        return PostgreTypes.TEXT_ARRAY;
     }
 
     @Override

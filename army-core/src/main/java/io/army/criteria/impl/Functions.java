@@ -1058,6 +1058,16 @@ abstract class Functions extends SqlSyntax {
         return returnType;
     }
 
+    static MappingType _sqlStringType(final MappingType type) {
+        final MappingType returnType;
+        if (type instanceof _SQLStringType) {
+            returnType = type;
+        } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
 
 
     /*-------------------below private method-------------------*/

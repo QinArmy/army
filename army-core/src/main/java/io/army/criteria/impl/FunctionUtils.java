@@ -66,7 +66,7 @@ abstract class FunctionUtils {
     }
 
     static Expression fourArgFunc(final String name, final Expression one, final Expression two,
-                                  final Expression three, final Expression four, TypeMeta returnType) {
+                                  final Expression three, final Expression four, final TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof SqlValueParam.MultiValue) {
@@ -77,6 +77,42 @@ abstract class FunctionUtils {
             throw CriteriaUtils.funcArgError(name, four);
         }
         return new FourArgFunction(name, one, two, three, four, returnType);
+    }
+
+    static Expression fiveArgFunc(final String name, final Expression one, final Expression two,
+                                  final Expression three, final Expression four, final Expression five,
+                                  final TypeMeta returnType) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (three instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, three);
+        } else if (four instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, four);
+        } else if (five instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, five);
+        }
+        return new FiveArgFunction(name, one, two, three, four, five, returnType);
+    }
+
+    static Expression sixArgFunc(final String name, final Expression one, final Expression two,
+                                 final Expression three, final Expression four, final Expression five,
+                                 final Expression six, final TypeMeta returnType) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (three instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, three);
+        } else if (four instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, four);
+        } else if (five instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, five);
+        } else if (six instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, six);
+        }
+        return new SixArgFunction(name, one, two, three, four, five, six, returnType);
     }
 
 
@@ -267,7 +303,7 @@ abstract class FunctionUtils {
 
     static Expression complexArgFunc(String name, TypeMeta returnType, Object... args) {
         final List<Object> argList = new ArrayList<>(args.length);
-         Collections.addAll(argList, args);
+        Collections.addAll(argList, args);
         return new ComplexArgFuncExpression(name, argList, returnType);
     }
 
@@ -821,44 +857,8 @@ abstract class FunctionUtils {
                     .append(this.name) // function name
                     .append(_Constant.LEFT_PAREN);
 
-            if (this instanceof OneArgFunction) {
-                ((OneArgFunction) this).argument.appendSql(context);
-            } else if (this instanceof TwoArgFunction) {
-                final TwoArgFunction func = (TwoArgFunction) this;
+            this.appendArg(context);
 
-                func.one.appendSql(context);
-                sqlBuilder.append(_Constant.SPACE_COMMA);
-                func.two.appendSql(context);
-            } else if (this instanceof ThreeArgFunction) {
-                final ThreeArgFunction func = (ThreeArgFunction) this;
-
-                func.one.appendSql(context);
-                sqlBuilder.append(_Constant.SPACE_COMMA);
-
-                func.two.appendSql(context);
-                sqlBuilder.append(_Constant.SPACE_COMMA);
-
-                func.three.appendSql(context);
-            } else if (this instanceof FourArgFunction) {
-                final FourArgFunction func = (FourArgFunction) this;
-
-                func.one.appendSql(context);
-                sqlBuilder.append(_Constant.SPACE_COMMA);
-
-                func.two.appendSql(context);
-                sqlBuilder.append(_Constant.SPACE_COMMA);
-
-                func.three.appendSql(context);
-                sqlBuilder.append(_Constant.SPACE_COMMA);
-
-                func.four.appendSql(context);
-            } else if (this instanceof MultiArgFunctionExpression) {
-                final MultiArgFunctionExpression e = (MultiArgFunctionExpression) this;
-                FunctionUtils.appendArguments(e.option, e.argList, context);
-            } else {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
@@ -870,41 +870,15 @@ abstract class FunctionUtils {
             builder.append(_Constant.SPACE)
                     .append(this.name) // function name
                     .append(_Constant.LEFT_PAREN);
-            if (this instanceof OneArgFunction) {
-                builder.append(((OneArgFunction) this).argument);
-            } else if (this instanceof TwoArgFunction) {
-                final TwoArgFunction func = (TwoArgFunction) this;
-
-                builder.append(func.one)
-                        .append(_Constant.SPACE_COMMA)
-                        .append(func.two);
-            } else if (this instanceof ThreeArgFunction) {
-                final ThreeArgFunction func = (ThreeArgFunction) this;
-
-                builder.append(func.one)
-                        .append(_Constant.SPACE_COMMA)
-                        .append(func.two)
-                        .append(_Constant.SPACE_COMMA)
-                        .append(func.three);
-            } else if (this instanceof FourArgFunction) {
-                final FourArgFunction func = (FourArgFunction) this;
-                builder.append(func.one)
-                        .append(_Constant.SPACE_COMMA)
-                        .append(func.two)
-                        .append(_Constant.SPACE_COMMA)
-                        .append(func.three)
-                        .append(_Constant.SPACE_COMMA)
-                        .append(func.four);
-            } else if (this instanceof MultiArgFunctionExpression) {
-                final MultiArgFunctionExpression e = (MultiArgFunctionExpression) this;
-                FunctionUtils.argumentsToString(e.option, e.argList, builder);
-            } else {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
+            this.argToString(builder);
             return builder.append(_Constant.SPACE_RIGHT_PAREN)
                     .toString();
         }
+
+
+        abstract void appendArg(_SqlContext context);
+
+        abstract void argToString(StringBuilder builder);
 
 
     }//FunctionExpression
@@ -917,7 +891,6 @@ abstract class FunctionUtils {
             super(name, returnType);
             this.argument = argument;
         }
-
 
         @Override
         public int hashCode() {
@@ -938,6 +911,16 @@ abstract class FunctionUtils {
                 match = false;
             }
             return match;
+        }
+
+        @Override
+        void appendArg(final _SqlContext context) {
+            this.argument.appendSql(context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.argument);
         }
 
 
@@ -979,6 +962,22 @@ abstract class FunctionUtils {
             }
             return match;
         }
+
+        @Override
+        void appendArg(final _SqlContext context) {
+            this.one.appendSql(context);
+            context.sqlBuilder()
+                    .append(_Constant.SPACE_COMMA);
+            this.two.appendSql(context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two);
+        }
+
 
     }//TwoArgFunction
 
@@ -1023,6 +1022,29 @@ abstract class FunctionUtils {
                 match = false;
             }
             return match;
+        }
+
+        @Override
+        void appendArg(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            this.one.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.two.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.three.appendSql(context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.three);
         }
 
 
@@ -1075,8 +1097,224 @@ abstract class FunctionUtils {
             return match;
         }
 
+        @Override
+        void appendArg(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            this.one.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.two.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.three.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.four.appendSql(context);
+
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.three)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.four);
+        }
+
 
     }//FourArgFunction
+
+    private static final class FiveArgFunction extends FunctionExpression {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        private final ArmyExpression three;
+
+        private final ArmyExpression four;
+
+        private final ArmyExpression five;
+
+
+        /**
+         * @see #fiveArgFunc(String, Expression, Expression, Expression, Expression, Expression, TypeMeta)
+         */
+        private FiveArgFunction(String name, Expression one, Expression two, Expression three, Expression four,
+                                Expression five, TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+            this.three = (ArmyExpression) three;
+            this.four = (ArmyExpression) four;
+            this.five = (ArmyExpression) five;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.one, this, two, this.three, this.four, this.five, this.returnType);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof FiveArgFunction) {
+                final FiveArgFunction o = (FiveArgFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.one.equals(this.one)
+                        && o.two.equals(this.two)
+                        && o.three.equals(this.three)
+                        && o.four.equals(this.four)
+                        && o.five.equals(this.five)
+                        && o.returnType.equals(this.returnType);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        void appendArg(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            this.one.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.two.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.three.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.four.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.five.appendSql(context);
+
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.three)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.four)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.five);
+        }
+
+
+    }//FiveArgFunction
+
+
+    private static final class SixArgFunction extends FunctionExpression {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        private final ArmyExpression three;
+
+        private final ArmyExpression four;
+
+        private final ArmyExpression five;
+
+        private final ArmyExpression six;
+
+
+        /**
+         * @see #fiveArgFunc(String, Expression, Expression, Expression, Expression, Expression, TypeMeta)
+         */
+        private SixArgFunction(String name, Expression one, Expression two, Expression three, Expression four,
+                               Expression five, Expression six, TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+            this.three = (ArmyExpression) three;
+            this.four = (ArmyExpression) four;
+
+            this.five = (ArmyExpression) five;
+            this.six = (ArmyExpression) six;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.one, this, two, this.three, this.four, this.five, this.six, this.returnType);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof SixArgFunction) {
+                final SixArgFunction o = (SixArgFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.one.equals(this.one)
+                        && o.two.equals(this.two)
+                        && o.three.equals(this.three)
+                        && o.four.equals(this.four)
+                        && o.five.equals(this.five)
+                        && o.six.equals(this.six)
+                        && o.returnType.equals(this.returnType);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        void appendArg(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            this.one.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.two.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.three.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.four.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.five.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.six.appendSql(context);
+
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.three)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.four)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.five)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.six);
+        }
+
+
+    }//SixArgFunction
 
 
     private static final class MultiArgFunctionExpression extends FunctionExpression {
@@ -1091,6 +1329,16 @@ abstract class FunctionUtils {
             assert argList.size() > 0;
             this.option = option;
             this.argList = argList;
+        }
+
+        @Override
+        void appendArg(final _SqlContext context) {
+            FunctionUtils.appendArguments(this.option, this.argList, context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            FunctionUtils.argumentsToString(this.option, this.argList, builder);
         }
 
 

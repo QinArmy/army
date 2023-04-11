@@ -17,6 +17,7 @@ enum DualOperator {
     LEFT_SHIFT(" <<"),
     RIGHT_SHIFT(" >>"),
     CARET_AT(" ^@"), // postgre only
+    DOUBLE_VERTICAL(" ||"), // postgre only
     /*################################## blow expression dual operator method ##################################*/
 
     EQUAL(" ="),

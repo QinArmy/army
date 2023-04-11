@@ -68,10 +68,6 @@ public final class StringType extends _SQLStringType {
         return String.class;
     }
 
-    @Override
-    public int _length() {
-        return 1;
-    }
 
     @Override
     public SqlType map(final ServerMeta meta) {

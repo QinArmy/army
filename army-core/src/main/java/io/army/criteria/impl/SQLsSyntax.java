@@ -426,8 +426,6 @@ abstract class SQLsSyntax extends Functions {
 
     public static final WordPercent PERCENT = KeyWordPercent.PERCENT;
 
-
-
     public static final Statement.NullsFirstLast NULLS_FIRST = KeyWordsNullsFirstLast.NULLS_FIRST;
 
     public static final Statement.NullsFirstLast NULLS_LAST = KeyWordsNullsFirstLast.NULLS_LAST;
@@ -859,6 +857,14 @@ abstract class SQLsSyntax extends Functions {
 
     public static IPredicate parens(IPredicate predicate) {
         return Expressions.bracketPredicate(predicate);
+    }
+
+    public static Expression bitwiseNot(Expression exp) {
+        return Expressions.unaryExp(exp, UnaryOperator.INVERT);
+    }
+
+    public static IPredicate not(IPredicate predicate) {
+        return Expressions.notPredicate(predicate);
     }
 
 

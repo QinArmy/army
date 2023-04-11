@@ -18,6 +18,32 @@ public abstract class _SQLStringType extends _ArmyInnerMapping {
 
     }
 
-    public abstract int _length();
+    public final int _length() {
+        final int len;
+
+        if (!(this instanceof _ArmyTextType)) {
+            len = 1;
+        } else if (this instanceof TextType) {
+            len = 2;
+        } else if (this instanceof MediumTextType) {
+            len = 3;
+        } else if (this instanceof _ArmyLongStringType) {
+            len = 4;
+        } else {
+            //no bug,never here
+            throw new IllegalStateException();
+        }
+        return len;
+
+    }
+
+    public static abstract class _ArmyTextType extends _SQLStringType {
+
+    }//_ArmyTextType
+
+    public static abstract class _ArmyLongStringType extends _ArmyTextType {
+
+
+    }//_ArmyLongStringType
 
 }
