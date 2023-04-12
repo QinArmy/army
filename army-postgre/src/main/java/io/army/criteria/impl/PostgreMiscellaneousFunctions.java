@@ -1104,6 +1104,18 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
         return FunctionUtils.oneArgFunc("TO_TIMESTAMP", exp, OffsetDateTimeType.INSTANCE);
     }
 
+    /*-------------------below Delaying Execution function -------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-DELAY">pg_sleep ( double precision )</a>
+     */
+    public static Expression pgSleep(Expression seconds) {
+        return FunctionUtils.oneArgFunc("PG_SLEEP", seconds, StringType.INSTANCE);
+    }
 
 
 

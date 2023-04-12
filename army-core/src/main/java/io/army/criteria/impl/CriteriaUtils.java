@@ -611,6 +611,11 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAnd(_Exceptions::derivedColumnAliasSizeNotMatch, selectionSize, aliasSize);
     }
 
+    static CriteriaException operandError(final Enum<?> operator, final @Nullable Expression operand) {
+        String m = String.format("%s don't support %s .", operator, _ClassUtils.safeClassName(operand));
+        throw ContextStack.clearStackAndCriteriaError(m);
+    }
+
 
     static CriteriaException criteriaContextNotMatch(CriteriaContext criteriaContext) {
         String m = "criteria context not match.";
@@ -649,9 +654,14 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(criteriaContext, "you don't add any item");
     }
 
+    static CriteriaException operandError(String operatorName, @Nullable Object errorOperand) {
+        String m = String.format("SQL operator %s don't support %s", operatorName, _ClassUtils.safeClassName(errorOperand));
+        throw ContextStack.clearStackAndCriteriaError(m);
+    }
+
     static CriteriaException funcArgError(String funcName, @Nullable Object errorArg) {
-        String m = String.format("%s don't support %s", funcName, errorArg);
-        throw ContextStack.criteriaError(ContextStack.peek(), m);
+        String m = String.format("SQL function %s don't support %s", funcName, _ClassUtils.safeClassName(errorArg));
+        throw ContextStack.clearStackAndCriteriaError(m);
     }
 
     static CriteriaException funcArgListIsEmpty(String name) {

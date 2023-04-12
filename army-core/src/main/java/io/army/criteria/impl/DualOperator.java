@@ -18,6 +18,7 @@ enum DualOperator {
     RIGHT_SHIFT(" >>"),
     CARET_AT(" ^@"), // postgre only
     DOUBLE_VERTICAL(" ||"), // postgre only
+    AT_TIME_ZONE(" AT TIME ZONE"), // postgre only
     /*################################## blow expression dual operator method ##################################*/
 
     EQUAL(" ="),

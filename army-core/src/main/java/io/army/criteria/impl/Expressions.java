@@ -24,6 +24,8 @@ import java.util.Objects;
 
 abstract class Expressions extends OperationExpression {
 
+    Expressions() {
+    }
 
     @Override
     public final Expression bracket() {
@@ -40,14 +42,12 @@ abstract class Expressions extends OperationExpression {
             case TIMES:
             case DIVIDE:
             case MOD:
-            case CARET_AT: // postgre only
-            case DOUBLE_VERTICAL:// postgre only
             case BITWISE_AND:
             case BITWISE_OR:
             case XOR:
             case RIGHT_SHIFT:
             case LEFT_SHIFT:
-            break;
+                break;
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
@@ -157,9 +157,6 @@ abstract class Expressions extends OperationExpression {
                         && operator != DualOperator.NOT_IN) {
                     String m = String.format("operator[%s] don't support multi  parameter(literal)", operator);
                     throw ContextStack.criteriaError(ContextStack.peek(), m);
-                }
-                if (((ArmyExpression) right).isNullValue()) { //TODO consider correct?
-                    throw _Exceptions.operatorRightIsNullable(operator);
                 }
             }
             break;
@@ -320,8 +317,6 @@ abstract class Expressions extends OperationExpression {
                 case TIMES:
                 case DIVIDE:
                 case MOD:
-                case CARET_AT: // postgre only
-                case DOUBLE_VERTICAL: // postgre only
                     outerBracket = leftInnerBracket = rightInnerBracket = false;
                     break;
                 case LEFT_SHIFT:
@@ -355,26 +350,11 @@ abstract class Expressions extends OperationExpression {
             }
 
             //2. append operator
-            switch (operator) {
-                case XOR: {
-                    if (context.parser().dialect().database() == Database.PostgreSQL) {
-                        builder.append(" #");
-                    } else {
-                        builder.append(operator.spaceOperator);
-                    }
-                }
-                break;
-                case DOUBLE_VERTICAL:
-                case CARET_AT: {
-                    if (context.parser().dialect().database() != Database.PostgreSQL) {
-                        String m = String.format("%s is supported only by %s", operator, Database.PostgreSQL);
-                        throw new CriteriaException(m);
-                    }
-                    builder.append(operator.spaceOperator);
-                }
-                break;
-                default:
-                    builder.append(operator.spaceOperator);
+            if (operator == DualOperator.XOR
+                    && context.parser().dialect().database() == Database.PostgreSQL) {
+                builder.append(" #");
+            } else {
+                builder.append(operator.spaceOperator);
             }
 
             //3. append right expression

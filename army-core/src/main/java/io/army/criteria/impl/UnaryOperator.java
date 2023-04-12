@@ -14,7 +14,7 @@ enum UnaryOperator implements SQLWords {
     NEGATE(" -"),
     POSITIVE(" +"),
     BITWISE_NOT(" ~"),
-    AT(" @");
+    AT(" @");   // postgre only
 
     final String spaceOperator;
 
