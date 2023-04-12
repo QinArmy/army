@@ -542,7 +542,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">pi ( ) → double precision</a>
      */
     public static Expression pi() {
-        return FunctionUtils.noArgFunc("PI", DoubleType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("PI", DoubleType.INSTANCE);
     }
 
     /**
@@ -576,7 +576,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_rand">RAND([N])</a>
      */
     public static Expression rand() {
-        return FunctionUtils.noArgFunc("RAND", DoubleType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("RAND", DoubleType.INSTANCE);
     }
 
     /**
@@ -745,7 +745,7 @@ abstract class Functions extends SqlSyntax {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
             throw _customFuncNameError(name);
         }
-        return FunctionUtils.noArgFunc(name, returnType);
+        return FunctionUtils.zeroArgFunc(name, returnType);
     }
 
     public static IPredicate customFunc(String name) {

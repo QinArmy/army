@@ -11,11 +11,7 @@ import java.util.function.BiFunction;
 
 /**
  * <p>
- * This class is base class of below:
- *     <ul>
- *         <li>{@code  SQLs.DefaultWord}</li>
- *         <li>{@code SQLs.NullWord}</li>
- *     </ul>
+ * This class representing non-operation expression
  * </p>
  */
 abstract class NonOperationExpression implements ArmyExpression {
@@ -453,33 +449,32 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final Selection as(String selectionAlas) {
-        return ArmySelections.forExp(this, selectionAlas);
+        throw unsupportedOperation();
     }
 
     @Override
     public final SortItem asSortItem() {
-        //always return this;
-        return this;
+        throw unsupportedOperation();
     }
 
     @Override
     public final SortItem asc() {
-        return ArmySortItems.create(this, SQLs.ASC, null);
+        throw unsupportedOperation();
     }
 
     @Override
     public final SortItem desc() {
-        return ArmySortItems.create(this, SQLs.DESC, null);
+        throw unsupportedOperation();
     }
 
     @Override
     public final SortItem ascSpace(@Nullable Statement.NullsFirstLast firstLast) {
-        return ArmySortItems.create(this, SQLs.ASC, firstLast);
+        throw unsupportedOperation();
     }
 
     @Override
     public final SortItem descSpace(@Nullable Statement.NullsFirstLast firstLast) {
-        return ArmySortItems.create(this, SQLs.DESC, firstLast);
+        throw unsupportedOperation();
     }
 
     static abstract class NonSelectionExpression extends NonOperationExpression {

@@ -4,12 +4,15 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.Query;
 import io.army.criteria.SQLWords;
+import io.army.criteria.TypeInfer;
 import io.army.dialect._Constant;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.util._StringUtils;
 
+import java.util.Collection;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -189,6 +192,20 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      */
     public static Expression doubleVertical(Expression left, Expression right) {
         return Expressions.dualExp((OperationExpression) left, DualOperator.DOUBLE_VERTICAL, right);
+    }
+
+    /**
+     * @param expression couldn't be multi-value parameter/literal, for example {@link SQLs#multiParams(TypeInfer, Collection)}
+     */
+    public static Expression namedNotation(String name, Expression expression) {
+        return FunctionUtils.namedNotation(name, expression);
+    }
+
+    /**
+     * @param valueOperator couldn't return multi-value parameter/literal, for example {@link SQLs#multiParams(TypeInfer, Collection)}
+     */
+    public static <T> Expression namedNotation(String name, Function<T, Expression> valueOperator, T value) {
+        return FunctionUtils.namedNotation(name, valueOperator.apply(value));
     }
 
 

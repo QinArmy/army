@@ -74,7 +74,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         final String name = "JSON_OBJECT";
         final Expression func;
         if (expMap.size() == 0) {
-            func = FunctionUtils.noArgFunc(name, JsonMapType.from(_NullType.INSTANCE, _NullType.INSTANCE));
+            func = FunctionUtils.zeroArgFunc(name, JsonMapType.from(_NullType.INSTANCE, _NullType.INSTANCE));
         } else {
             TypeMeta valueType = null;
             for (Expression value : expMap.values()) {
@@ -108,7 +108,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         final int expSize = expList.size();
         final Expression func;
         if (expSize == 0) {
-            func = FunctionUtils.noArgFunc(name, JsonMapType.from(_NullType.INSTANCE, _NullType.INSTANCE));
+            func = FunctionUtils.zeroArgFunc(name, JsonMapType.from(_NullType.INSTANCE, _NullType.INSTANCE));
         } else if ((expSize & 1) != 0) {
             throw CriteriaUtils.funcArgError(name, expList);
         } else {

@@ -103,7 +103,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/locking-functions.html#function_release-all-locks">RELEASE_ALL_LOCKS()</a>
      */
     public static Expression releaseAllLocks() {
-        return FunctionUtils.noArgFunc("RELEASE_ALL_LOCKS()", IntegerType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("RELEASE_ALL_LOCKS()", IntegerType.INSTANCE);
     }
 
     /**
@@ -185,7 +185,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_connection-id">CONNECTION_ID()</a>
      */
     public static Expression connectionId() {
-        return FunctionUtils.noArgFunc("CONNECTION_ID", LongType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("CONNECTION_ID", LongType.INSTANCE);
     }
 
     /**
@@ -197,7 +197,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_current-role">CURRENT_ROLE()</a>
      */
     public static Expression currentRole() {
-        return FunctionUtils.noArgFunc("CURRENT_ROLE", StringType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("CURRENT_ROLE", StringType.INSTANCE);
     }
 
     /**
@@ -209,7 +209,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_current-user">CURRENT_USER()</a>
      */
     public static Expression currentUser() {
-        return FunctionUtils.noArgFunc("CURRENT_USER", StringType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("CURRENT_USER", StringType.INSTANCE);
     }
 
     /**
@@ -221,7 +221,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_database">DATABASE()</a>
      */
     public static Expression database() {
-        return FunctionUtils.noArgFunc("DATABASE", StringType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("DATABASE", StringType.INSTANCE);
     }
 
     /**
@@ -233,7 +233,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_icu-version">ICU_VERSION()</a>
      */
     public static Expression icuVersion() {
-        return FunctionUtils.noArgFunc("ICU_VERSION", StringType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("ICU_VERSION", StringType.INSTANCE);
     }
 
     /**
@@ -245,7 +245,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id">LAST_INSERT_ID()</a>
      */
     public static Expression lastInsertId() {
-        return FunctionUtils.noArgFunc("LAST_INSERT_ID", LongType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("LAST_INSERT_ID", LongType.INSTANCE);
     }
 
     /**
@@ -270,7 +270,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_roles-graphml">ROLES_GRAPHML()</a>
      */
     public static Expression rolesGraphml() {
-        return FunctionUtils.noArgFunc("ROLES_GRAPHML", StringType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("ROLES_GRAPHML", StringType.INSTANCE);
     }
 
     /**
@@ -282,7 +282,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_row-count">ROW_COUNT()</a>
      */
     public static Expression rowCount() {
-        return FunctionUtils.noArgFunc("ROW_COUNT", LongType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("ROW_COUNT", LongType.INSTANCE);
     }
 
     /**
@@ -294,7 +294,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_user">USER()</a>
      */
     public static Expression user() {
-        return FunctionUtils.noArgFunc("USER", StringType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("USER", StringType.INSTANCE);
     }
 
     /**
@@ -306,7 +306,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_version">VERSION()</a>
      */
     public static Expression version() {
-        return FunctionUtils.noArgFunc("VERSION", StringType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("VERSION", StringType.INSTANCE);
     }
 
 
@@ -856,7 +856,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid">UUID()</a>
      */
     public static Expression uuid() {
-        return FunctionUtils.noArgFunc("UUID", StringType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("UUID", StringType.INSTANCE);
     }
 
     /**
@@ -868,7 +868,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-short">UUID_SHORT()</a>
      */
     public static Expression uuidShort() {
-        return FunctionUtils.noArgFunc("UUID_SHORT", LongType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("UUID_SHORT", LongType.INSTANCE);
     }
 
     /**
@@ -947,7 +947,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/performance-schema-functions.html#function_ps-current-thread-id">PS_CURRENT_THREAD_ID()</a>
      */
     public static Expression psCurrentThreadId() {
-        return FunctionUtils.noArgFunc("PS_CURRENT_THREAD_ID", LongType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("PS_CURRENT_THREAD_ID", LongType.INSTANCE);
     }
 
     /**

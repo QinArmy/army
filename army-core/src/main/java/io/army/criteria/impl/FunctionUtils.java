@@ -5,10 +5,7 @@ import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.standard.SQLFunction;
-import io.army.dialect.Dialect;
-import io.army.dialect.DialectParser;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
+import io.army.dialect.*;
 import io.army.function.BetweenOperator;
 import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
@@ -115,6 +112,131 @@ abstract class FunctionUtils {
         return new SixArgFunction(name, one, two, three, four, five, six, returnType);
     }
 
+    static Expression sevenArgFunc(final String name, final Expression one, final Expression two,
+                                   final Expression three, final Expression four, final Expression five,
+                                   final Expression six, final Expression seven, final TypeMeta returnType) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (three instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, three);
+        } else if (four instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, four);
+        } else if (five instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, five);
+        } else if (six instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, six);
+        } else if (seven instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, seven);
+        }
+        return new SevenArgFunction(name, one, two, three, four, five, six, seven, returnType);
+    }
+
+    static Expression oneNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                      final TypeMeta returnType) {
+        assertNotation(name, null, validator, one);
+        return oneArgFunc(name, one, returnType);
+    }
+
+    static Expression twoNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                      final Expression two, final TypeMeta returnType) {
+        String notation;
+
+        notation = assertNotation(name, null, validator, one);
+        assertNotation(name, notation, validator, two);
+
+        return twoArgFunc(name, one, two, returnType);
+    }
+
+    static Expression threeNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                        final Expression two, final Expression three, final TypeMeta returnType) {
+        String notation;
+
+        notation = assertNotation(name, null, validator, one);
+        notation = assertNotation(name, notation, validator, two);
+        assertNotation(name, notation, validator, three);
+
+        return threeArgFunc(name, one, two, three, returnType);
+    }
+
+    static Expression fourNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                       final Expression two, final Expression three, final Expression four,
+                                       final TypeMeta returnType) {
+        String notation;
+
+        notation = assertNotation(name, null, validator, one);
+        notation = assertNotation(name, notation, validator, two);
+        notation = assertNotation(name, notation, validator, three);
+        assertNotation(name, notation, validator, four);
+
+        return fourArgFunc(name, one, two, three, four, returnType);
+    }
+
+    static Expression fiveNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                       final Expression two, final Expression three, final Expression four,
+                                       final Expression five, final TypeMeta returnType) {
+        String notation;
+
+        notation = assertNotation(name, null, validator, one);
+        notation = assertNotation(name, notation, validator, two);
+        notation = assertNotation(name, notation, validator, three);
+        notation = assertNotation(name, notation, validator, four);
+
+        assertNotation(name, notation, validator, five);
+
+        return fiveArgFunc(name, one, two, three, four, five, returnType);
+    }
+
+    static Expression sixNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                      final Expression two, final Expression three, final Expression four,
+                                      final Expression five, final Expression six, final TypeMeta returnType) {
+        String notation;
+
+        notation = assertNotation(name, null, validator, one);
+        notation = assertNotation(name, notation, validator, two);
+        notation = assertNotation(name, notation, validator, three);
+        notation = assertNotation(name, notation, validator, four);
+
+        notation = assertNotation(name, notation, validator, five);
+        assertNotation(name, notation, validator, six);
+
+        return sixArgFunc(name, one, two, three, four, five, six, returnType);
+    }
+
+    static Expression sevenNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                        final Expression two, final Expression three, final Expression four,
+                                        final Expression five, final Expression six, final Expression seven,
+                                        final TypeMeta returnType) {
+        String notation;
+
+        notation = assertNotation(name, null, validator, one);
+        notation = assertNotation(name, notation, validator, two);
+        notation = assertNotation(name, notation, validator, three);
+        notation = assertNotation(name, notation, validator, four);
+
+        notation = assertNotation(name, notation, validator, five);
+        notation = assertNotation(name, notation, validator, six);
+        assertNotation(name, notation, validator, seven);
+
+        return sevenArgFunc(name, one, two, three, four, five, six, seven, returnType);
+    }
+
+
+    static Expression namedNotation(final String name, final Expression argument) {
+        if (!_DialectUtils.isSafeIdentifier(name)) {
+            String m = String.format("named notation[%s] isn't simple identifier.", name);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        if (argument instanceof NamedNotation) {
+            String m = String.format("argument[%s] of Named Notation[%s] couldn't be named Notation", name, argument);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (argument instanceof SqlValueParam.MultiValue) {
+            throw namedNotationIsMultiValue();
+        }
+        return new NamedNotation(name, (ArmyExpression) argument);
+    }
+
 
     static IPredicate twoArgPredicateFunc(final String name, final Expression one, final Expression two) {
         return new MultiArgFuncPredicate(name, null, twoExpList(name, one, two));
@@ -126,8 +248,8 @@ abstract class FunctionUtils {
     }
 
 
-    static Expression noArgFunc(String name, TypeMeta returnType) {
-        return new NoArgFuncExpression(name, returnType);
+    static Expression zeroArgFunc(String name, TypeMeta returnType) {
+        return new ZeroArgFunction(name, returnType);
     }
 
     static Expression noParensFunc(String name, TypeMeta returnType) {
@@ -211,7 +333,8 @@ abstract class FunctionUtils {
     }
 
 
-    static Expression multiArgFunc(String name, TypeMeta returnType, Expression firstArg, Expression... exps) {
+    static Expression multiArgFunc(final String name, final TypeMeta returnType, final Expression firstArg,
+                                   final Expression... exps) {
         final List<ArmyExpression> argList = new ArrayList<>(1 + exps.length);
         argList.add((ArmyExpression) firstArg);
         for (Expression exp : exps) {
@@ -222,6 +345,29 @@ abstract class FunctionUtils {
         }
         return new MultiArgFunctionExpression(name, null, argList, returnType);
     }
+
+    static Expression multiNotationFunc(final String name, final TypeMeta returnType, final Predicate<String> validator,
+                                        final Expression firstArg, final Expression... restExp) {
+        String notation = null;
+        if (firstArg instanceof NamedNotation) {
+            notation = ((NamedNotation) firstArg).name;
+            if (validator.test(notation)) {
+                throw errorNamedNotation(name, notation);
+            }
+        }
+        for (Expression exp : restExp) {
+            if (exp instanceof NamedNotation) {
+                notation = ((NamedNotation) exp).name;
+                if (validator.test(notation)) {
+                    throw errorNamedNotation(name, notation);
+                }
+            } else if (notation != null) {
+                throw positionalNotationAfterNamedNotation(notation);
+            }
+        }
+        return multiArgFunc(name, returnType, firstArg, restExp);
+    }
+
 
     static Expression safeMultiArgFunc(String name, List<ArmyExpression> argList, TypeMeta returnType) {
         return new MultiArgFunctionExpression(name, null, argList, returnType);
@@ -567,6 +713,39 @@ abstract class FunctionUtils {
         sqlBuilder.append(_Constant.RIGHT_PAREN);
     }
 
+    /*-------------------below private method -------------------*/
+
+    /**
+     * @see #sixNotationFunc(String, Predicate, Expression, Expression, Expression, Expression, Expression, Expression, TypeMeta)
+     */
+    @Nullable
+    private static String assertNotation(final String funcName, @Nullable String notation, Predicate<String> validator,
+                                         final Expression argument) {
+        if (argument instanceof NamedNotation) {
+            notation = ((NamedNotation) argument).name;
+            if (validator.test(notation)) {
+                throw errorNamedNotation(funcName, notation);
+            }
+        } else if (notation != null) {
+            throw positionalNotationAfterNamedNotation(notation);
+        }
+        return notation;
+    }
+
+    private static CriteriaException namedNotationIsMultiValue() {
+        throw ContextStack.clearStackAndCriteriaError("Named Notation couldn't be %s multi-value parameter/literal.");
+    }
+
+    private static CriteriaException errorNamedNotation(String funcName, String notation) {
+        String m = String.format("Named Notation[%s] isn't %s()'s Named Notation", notation, funcName);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
+    private static CriteriaException positionalNotationAfterNamedNotation(String notation) {
+        String m = String.format("Couldn't present Positional Notation after Named Notation[%s]", notation);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
 
     interface FunctionSpec extends _SelfDescribed, TypeInfer {
 
@@ -787,6 +966,87 @@ abstract class FunctionUtils {
 
     }//AggregateOverClause
 
+
+    static final class NamedNotation extends NonOperationExpression.NonSelectionExpression {
+
+        final String name;
+
+        private final ArmyExpression argument;
+
+        /**
+         * @see #namedNotation(String, Expression)
+         */
+        private NamedNotation(String name, ArmyExpression argument) {
+            if (argument instanceof SqlValueParam.MultiValue) {
+                throw namedNotationIsMultiValue();
+            }
+            this.name = name;
+            this.argument = argument;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.argument.typeMeta();
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final Database database;
+            database = context.parser().dialect().database();
+            switch (database) {
+                case PostgreSQL: {
+                    context.sqlBuilder()
+                            .append(_Constant.SPACE)
+                            .append(this.name) // TODO validate whether import key word or not.
+                            .append(" =>");
+                    this.argument.appendSql(context);
+                }
+                break;
+                case MySQL:
+                case H2:
+                default: {
+                    String m = String.format("%s don't support named notation", database);
+                    throw new CriteriaException(m);
+                }
+
+            }
+
+        }
+
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.argument);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof NamedNotation) {
+                final NamedNotation o = (NamedNotation) obj;
+                match = o.name.equals(this.name)
+                        && o.argument.equals(this.argument);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(" =>")
+                    .append(this.argument)
+                    .toString();
+        }
+
+
+    }//NamedNotation
+
     private static final class NoParensFunction extends Expressions implements SQLFunction, NoParensExpression {
 
         private final String name;
@@ -845,14 +1105,15 @@ abstract class FunctionUtils {
 
     }//NoParensFunction
 
-    private static final class NoArgFuncExpression extends Expressions
+
+    private static final class ZeroArgFunction extends Expressions
             implements FunctionSpec, NoArgFunction, SQLFunction {
 
         private final String name;
 
         private final TypeMeta returnType;
 
-        private NoArgFuncExpression(String name, TypeMeta returnType) {
+        private ZeroArgFunction(String name, TypeMeta returnType) {
             this.name = name;
             this.returnType = returnType;
         }
@@ -1297,7 +1558,7 @@ abstract class FunctionUtils {
 
 
         /**
-         * @see #fiveArgFunc(String, Expression, Expression, Expression, Expression, Expression, TypeMeta)
+         * @see #sixArgFunc(String, Expression, Expression, Expression, Expression, Expression, Expression, TypeMeta)
          */
         private SixArgFunction(String name, Expression one, Expression two, Expression three, Expression four,
                                Expression five, Expression six, TypeMeta returnType) {
@@ -1378,6 +1639,115 @@ abstract class FunctionUtils {
 
 
     }//SixArgFunction
+
+
+    private static final class SevenArgFunction extends FunctionExpression {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        private final ArmyExpression three;
+
+        private final ArmyExpression four;
+
+        private final ArmyExpression five;
+
+        private final ArmyExpression six;
+
+        private final ArmyExpression seven;
+
+
+        /**
+         * @see #sevenArgFunc(String, Expression, Expression, Expression, Expression, Expression, Expression, Expression, TypeMeta)
+         */
+        private SevenArgFunction(String name, Expression one, Expression two, Expression three, Expression four,
+                                 Expression five, Expression six, Expression seven, TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+            this.three = (ArmyExpression) three;
+            this.four = (ArmyExpression) four;
+
+            this.five = (ArmyExpression) five;
+            this.six = (ArmyExpression) six;
+            this.seven = (ArmyExpression) seven;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.one, this, two, this.three, this.four, this.five, this.six, this.seven,
+                    this.returnType);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof SevenArgFunction) {
+                final SevenArgFunction o = (SevenArgFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.one.equals(this.one)
+                        && o.two.equals(this.two)
+                        && o.three.equals(this.three)
+                        && o.four.equals(this.four)
+                        && o.five.equals(this.five)
+                        && o.six.equals(this.six)
+                        && o.seven.equals(this.seven)
+                        && o.returnType.equals(this.returnType);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        void appendArg(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            this.one.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.two.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.three.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.four.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.five.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.six.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.seven.appendSql(context);
+
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.three)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.four)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.five)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.six)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.seven);
+        }
+
+
+    }//SevenArgFunction
 
 
     private static final class MultiArgFunctionExpression extends FunctionExpression {

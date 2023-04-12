@@ -15,7 +15,6 @@ import io.army.lang.Nullable;
 import io.army.mapping._NullType;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.SingleParam;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -411,33 +410,6 @@ public abstract class SQLs extends SQLsSyntax {
 
     }//RowItemPair
 
-    private static final class NullParam extends NonOperationExpression
-            implements SingleParam, SqlValueParam.SingleValue {
-
-        private static final NullParam INSTANCE = new NullParam();
-
-        private NullParam() {
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return _NullType.INSTANCE;
-        }
-
-        @Override
-        public Object value() {
-            //always null
-            return null;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.appendParam(this);
-        }
-
-
-    }//StringTypeNull
-
 
     static final class CteImpl implements _Cte {
 
@@ -579,8 +551,10 @@ public abstract class SQLs extends SQLsSyntax {
      *
      * @see #NULL
      */
-    private static final class NullWord extends NonOperationExpression
-            implements SqlValueParam.SingleNonNamedValue, WordNull {
+    private static final class NullWord extends OperationExpression
+            implements SqlValueParam.SingleNonNamedValue,
+            WordNull,
+            ArmyKeyWord {
 
 
         private NullWord() {

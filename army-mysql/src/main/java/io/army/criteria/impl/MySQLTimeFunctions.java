@@ -139,7 +139,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_curdate">CURRENT_DATE()</a>
      */
     public static Expression currentDate() {
-        return FunctionUtils.noArgFunc("CURRENT_DATE", LocalDateType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("CURRENT_DATE", LocalDateType.INSTANCE);
     }
 
     /**
@@ -150,7 +150,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIME()</a>
      */
     public static Expression currentTime() {
-        return FunctionUtils.noArgFunc("CURRENT_TIME", LocalTimeType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("CURRENT_TIME", LocalTimeType.INSTANCE);
     }
 
     /**
@@ -173,7 +173,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-timestamp">CURRENT_TIMESTAMP()</a>
      */
     public static Expression currentTimestamp() {
-        return FunctionUtils.noArgFunc("CURRENT_TIMESTAMP", LocalDateTimeType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("CURRENT_TIMESTAMP", LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -484,7 +484,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_now">NOW([fsp])</a>
      */
     public static Expression now() {
-        return FunctionUtils.noArgFunc("NOW", LocalDateTimeType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("NOW", LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -509,7 +509,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_sysdate">SYSDATE([fsp])</a>
      */
     public static Expression sysDate() {
-        return FunctionUtils.noArgFunc("SYSDATE", LocalDateTimeType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("SYSDATE", LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -718,7 +718,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_unix-timestamp">UNIX_TIMESTAMP()</a>
      */
     public static Expression unixTimestamp() {
-        return FunctionUtils.noArgFunc("UNIX_TIMESTAMP", LongType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("UNIX_TIMESTAMP", LongType.INSTANCE);
     }
 
     /**
@@ -740,7 +740,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-date">UTC_DATE()</a>
      */
     public static Expression utcDate() {
-        return FunctionUtils.noArgFunc("UTC_DATE", LocalDateType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("UTC_DATE", LocalDateType.INSTANCE);
     }
 
     /**
@@ -751,7 +751,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-time">UTC_TIME()</a>
      */
     public static Expression utcTime() {
-        return FunctionUtils.noArgFunc("UTC_DATE", LocalTimeType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("UTC_DATE", LocalTimeType.INSTANCE);
     }
 
     /**
@@ -774,7 +774,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-timestamp">UTC_TIMESTAMP()</a>
      */
     public static Expression utcTimestamp() {
-        return FunctionUtils.noArgFunc("UTC_TIMESTAMP", LocalDateTimeType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("UTC_TIMESTAMP", LocalDateTimeType.INSTANCE);
     }
 
     /**

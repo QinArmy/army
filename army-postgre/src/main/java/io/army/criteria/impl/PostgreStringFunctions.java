@@ -778,7 +778,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">pg_client_encoding ( ) → name</a>
      */
     public static Expression pgClientEncoding() {
-        return FunctionUtils.noArgFunc("PG_CLIENT_ENCODING", StringType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("PG_CLIENT_ENCODING", StringType.INSTANCE);
     }
 
 
