@@ -236,6 +236,11 @@ abstract class CriteriaContexts {
         return new OtherPrimaryContext();
     }
 
+    static CriteriaContext deriveTableFunctionContext() {
+        return new DerivedTableFunctionContext(ContextStack.peek());
+    }
+
+
     static CriteriaContext dispatcherContext(final @Nullable CriteriaContext outerContext,
                                              final @Nullable CriteriaContext leftContext) {
         final CriteriaContext dispatcherContext;
@@ -2631,6 +2636,19 @@ abstract class CriteriaContexts {
 
 
     }//OtherPrimaryContext
+
+
+    private static final class DerivedTableFunctionContext extends StatementContext implements SubContext {
+
+        /**
+         * @see #deriveTableFunctionContext()
+         */
+        private DerivedTableFunctionContext(CriteriaContext outerContext) {
+            super(outerContext);
+        }
+
+
+    }//DerivedTableFunctionContext
 
 
     private static abstract class DispatcherContext extends StatementContext {

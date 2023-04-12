@@ -2,6 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
+import io.army.criteria.impl.inner._DerivedTable;
+import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.standard.SQLFunction;
@@ -235,6 +237,52 @@ abstract class FunctionUtils {
             throw namedNotationIsMultiValue();
         }
         return new NamedNotation(name, (ArmyExpression) argument);
+    }
+
+    static DerivedTableFunction oneArgDerivedFunction(final String name, final Expression one,
+                                                      final TypeMeta returnType) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        }
+        return new OneArgDerivedFunction(name, one, returnType);
+    }
+
+    static DerivedTableFunction twoArgDerivedFunction(final String name, final Expression one, final Expression two,
+                                                      final TypeMeta returnType) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        }
+        return new TwoArgDerivedFunction(name, one, two, returnType);
+    }
+
+    static DerivedTableFunction threeArgDerivedFunction(final String name, final Expression one, final Expression two,
+                                                        final Expression three,
+                                                        final TypeMeta returnType) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (three instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, three);
+        }
+        return new ThreeArgDerivedFunction(name, one, two, three, returnType);
+    }
+
+    static DerivedTableFunction fourArgDerivedFunction(final String name, final Expression one, final Expression two,
+                                                       final Expression three, final Expression four,
+                                                       final TypeMeta returnType) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (three instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, three);
+        } else if (four instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, four);
+        }
+        return new FourArgDerivedFunction(name, one, two, three, four, returnType);
     }
 
 
@@ -1113,6 +1161,9 @@ abstract class FunctionUtils {
 
         private final TypeMeta returnType;
 
+        /**
+         * @see #zeroArgFunc(String, TypeMeta)
+         */
         private ZeroArgFunction(String name, TypeMeta returnType) {
             this.name = name;
             this.returnType = returnType;
@@ -1138,8 +1189,17 @@ abstract class FunctionUtils {
 
         @Override
         public boolean equals(final Object obj) {
-            //from different dialect
-            return obj == this;
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof ZeroArgFunction) {
+                final ZeroArgFunction o = (ZeroArgFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.returnType.equals(this.returnType);
+            } else {
+                match = false;
+            }
+            return match;
         }
 
         @Override
@@ -1777,6 +1837,7 @@ abstract class FunctionUtils {
 
     }//MultiArgFunctionExpression
 
+
     /**
      * <p>
      * This class is base class of below:
@@ -2089,6 +2150,403 @@ abstract class FunctionUtils {
 
 
     }//ComplexArgFuncExpression
+
+    private static abstract class DerivedTableSqlFunction
+            implements _DerivedTable,
+            _SelfDescribed,
+            CriteriaContextSpec,
+            DerivedTableFunction,
+            _Selection {
+
+        private final CriteriaContext context;
+
+        final String name;
+
+        private final TypeMeta returnType;
+
+        private String selectionName;
+
+        private TypeMeta mapToType;
+
+        private DerivedTableSqlFunction(String name, TypeMeta returnType) {
+            this.context = CriteriaContexts.deriveTableFunctionContext();
+            this.name = name;
+            this.returnType = returnType;
+        }
+
+        @Override
+        public final CriteriaContext getContext() {
+            return this.context;
+        }
+
+
+        @Override
+        public final Selection as(final @Nullable String selectionAlas) {
+            if (selectionAlas == null) {
+                throw ContextStack.nullPointer(this.context);
+            } else if (this.selectionName != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.selectionName = selectionAlas;
+            return this;
+        }
+
+        @Override
+        public final String selectionName() {
+            final String selectionName = this.selectionName;
+            if (selectionName == null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            return selectionName;
+        }
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+
+            if (context.isLowerFunctionName()) {
+                sqlBuilder.append(this.name.toLowerCase(Locale.ROOT));
+            } else {
+                sqlBuilder.append(this.name);
+            }
+            sqlBuilder.append(_Constant.LEFT_PAREN);
+
+            appendArg(context);
+
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+        @Override
+        public final void appendSelectItem(final _SqlContext context) {
+            final String selectionName = this.selectionName;
+            if (selectionName == null) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            this.appendSql(context);
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE_AS_SPACE);
+
+            context.parser().identifier(selectionName, sqlBuilder);
+
+        }
+
+        @Override
+        public final Selection refSelection(final String name) {
+            String selectionName = this.selectionName;
+            if (selectionName == null) {
+                // use lower function name
+                selectionName = this.name.toLowerCase(Locale.ROOT);
+                this.selectionName = selectionName;
+            }
+            return selectionName.equals(name) ? this : null;
+        }
+
+        @Override
+        public final List<? extends Selection> refAllSelection() {
+            if (this.selectionName == null) {
+                // use lower function name
+                this.selectionName = this.name.toLowerCase(Locale.ROOT);
+            }
+            return Collections.singletonList(this);
+        }
+
+        @Override
+        public final TypeMeta typeMeta() {
+            TypeMeta type = this.mapToType;
+            if (type == null) {
+                type = this.returnType;
+            }
+            return type;
+        }
+
+        @Override
+        public final DerivedTableFunction mapTo(final @Nullable TypeMeta mapType) {
+            if (mapType == null) {
+                throw ContextStack.nullPointer(this.context);
+            } else if (this.mapToType != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.mapToType = mapType;
+            return this;
+        }
+
+        @Override
+        public final TableField tableField() {
+            // always null
+            return null;
+        }
+
+        @Override
+        public final Expression underlyingExp() {
+            // always null
+            return null;
+        }
+
+        @Override
+        public final String toString() {
+            final StringBuilder builder = new StringBuilder();
+            builder.append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN);
+            argToString(builder);
+            return builder.append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
+        }
+
+        abstract void appendArg(_SqlContext context);
+
+        abstract void argToString(StringBuilder builder);
+
+
+    }//DerivedTableSqlFunction
+
+    private static final class OneArgDerivedFunction extends DerivedTableSqlFunction {
+
+        private final ArmyExpression one;
+
+        /**
+         * @see #oneArgDerivedFunction(String, Expression, TypeMeta)
+         */
+        private OneArgDerivedFunction(String name, Expression one, TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+        }
+
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.one, this.typeMeta());
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof OneArgDerivedFunction) {
+                final OneArgDerivedFunction o = (OneArgDerivedFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.one.equals(this.one)
+                        && o.typeMeta().equals(this.typeMeta());
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        void appendArg(final _SqlContext context) {
+            this.one.appendSql(context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one);
+        }
+
+
+    }//OneArgDerivedFunction
+
+
+    private static final class TwoArgDerivedFunction extends DerivedTableSqlFunction {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        private TwoArgDerivedFunction(String name, Expression one, Expression two, TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+        }
+
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.one, this.two, this.typeMeta());
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof TwoArgDerivedFunction) {
+                final TwoArgDerivedFunction o = (TwoArgDerivedFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.one.equals(this.one)
+                        && o.two.equals(this.two)
+                        && o.typeMeta().equals(this.typeMeta());
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        void appendArg(final _SqlContext context) {
+            this.one.appendSql(context);
+            context.sqlBuilder().append(_Constant.SPACE_COMMA);
+            this.two.appendSql(context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two);
+        }
+
+
+    }//TwoArgDerivedFunction
+
+
+    private static final class ThreeArgDerivedFunction extends DerivedTableSqlFunction {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        private final ArmyExpression three;
+
+        private ThreeArgDerivedFunction(String name, Expression one, Expression two, Expression three,
+                                        TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+            this.three = (ArmyExpression) three;
+        }
+
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.one, this.two, this.three, this.typeMeta());
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof ThreeArgDerivedFunction) {
+                final ThreeArgDerivedFunction o = (ThreeArgDerivedFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.one.equals(this.one)
+                        && o.two.equals(this.two)
+                        && o.three.equals(this.three)
+                        && o.typeMeta().equals(this.typeMeta());
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        void appendArg(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            this.one.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.two.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.three.appendSql(context);
+
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.three);
+        }
+
+
+    }//ThreeArgDerivedFunction
+
+    private static final class FourArgDerivedFunction extends DerivedTableSqlFunction {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        private final ArmyExpression three;
+
+        private final ArmyExpression four;
+
+        private FourArgDerivedFunction(String name, Expression one, Expression two, Expression three, Expression four,
+                                       TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+            this.three = (ArmyExpression) three;
+            this.four = (ArmyExpression) four;
+        }
+
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.one, this.two, this.three, this.four, this.typeMeta());
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof FourArgDerivedFunction) {
+                final FourArgDerivedFunction o = (FourArgDerivedFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.one.equals(this.one)
+                        && o.two.equals(this.two)
+                        && o.three.equals(this.three)
+                        && o.four.equals(this.four)
+                        && o.typeMeta().equals(this.typeMeta());
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        void appendArg(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            this.one.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.two.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.three.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+
+            this.four.appendSql(context);
+
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.three)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.four);
+        }
+
+
+    }//FourArgDerivedFunction
 
     private static final class JsonObjectFunc extends Expressions implements SQLFunction {
 

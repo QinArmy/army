@@ -1,7 +1,9 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
+import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.type.Interval;
 
@@ -13,38 +15,38 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
     }
 
 
-    public interface TimeField {
+    public interface ExtractTimeField {
 
     }
 
 
-    public static final TimeField CENTURY = WordTimeField.CENTURY;
-    public static final TimeField DAY = WordTimeField.DAY;
-    public static final TimeField DECADE = WordTimeField.DECADE;
-    public static final TimeField DOW = WordTimeField.DOW;
+    public static final ExtractTimeField CENTURY = WordExtractTimeField.CENTURY;
+    public static final ExtractTimeField DAY = WordExtractTimeField.DAY;
+    public static final ExtractTimeField DECADE = WordExtractTimeField.DECADE;
+    public static final ExtractTimeField DOW = WordExtractTimeField.DOW;
 
-    public static final TimeField DOY = WordTimeField.DOY;
-    public static final TimeField EPOCH = WordTimeField.EPOCH;
-    public static final TimeField HOUR = WordTimeField.HOUR;
-    public static final TimeField ISODOW = WordTimeField.ISODOW;
+    public static final ExtractTimeField DOY = WordExtractTimeField.DOY;
+    public static final ExtractTimeField EPOCH = WordExtractTimeField.EPOCH;
+    public static final ExtractTimeField HOUR = WordExtractTimeField.HOUR;
+    public static final ExtractTimeField ISODOW = WordExtractTimeField.ISODOW;
 
-    public static final TimeField ISOYEAR = WordTimeField.ISOYEAR;
-    public static final TimeField JULIAN = WordTimeField.JULIAN;
-    public static final TimeField MICROSECONDS = WordTimeField.MICROSECONDS;
-    public static final TimeField MILLENNIUM = WordTimeField.MILLENNIUM;
+    public static final ExtractTimeField ISOYEAR = WordExtractTimeField.ISOYEAR;
+    public static final ExtractTimeField JULIAN = WordExtractTimeField.JULIAN;
+    public static final ExtractTimeField MICROSECONDS = WordExtractTimeField.MICROSECONDS;
+    public static final ExtractTimeField MILLENNIUM = WordExtractTimeField.MILLENNIUM;
 
-    public static final TimeField MILLISECONDS = WordTimeField.MILLISECONDS;
-    public static final TimeField MINUTE = WordTimeField.MINUTE;
-    public static final TimeField MONTH = WordTimeField.MONTH;
-    public static final TimeField QUARTER = WordTimeField.QUARTER;
+    public static final ExtractTimeField MILLISECONDS = WordExtractTimeField.MILLISECONDS;
+    public static final ExtractTimeField MINUTE = WordExtractTimeField.MINUTE;
+    public static final ExtractTimeField MONTH = WordExtractTimeField.MONTH;
+    public static final ExtractTimeField QUARTER = WordExtractTimeField.QUARTER;
 
-    public static final TimeField SECOND = WordTimeField.SECOND;
-    public static final TimeField TIMEZONE = WordTimeField.TIMEZONE;
-    public static final TimeField TIMEZONE_HOUR = WordTimeField.TIMEZONE_HOUR;
-    public static final TimeField TIMEZONE_MINUTE = WordTimeField.TIMEZONE_MINUTE;
+    public static final ExtractTimeField SECOND = WordExtractTimeField.SECOND;
+    public static final ExtractTimeField TIMEZONE = WordExtractTimeField.TIMEZONE;
+    public static final ExtractTimeField TIMEZONE_HOUR = WordExtractTimeField.TIMEZONE_HOUR;
+    public static final ExtractTimeField TIMEZONE_MINUTE = WordExtractTimeField.TIMEZONE_MINUTE;
 
-    public static final TimeField WEEK = WordTimeField.WEEK;
-    public static final TimeField YEAR = WordTimeField.YEAR;
+    public static final ExtractTimeField WEEK = WordExtractTimeField.WEEK;
+    public static final ExtractTimeField YEAR = WordExtractTimeField.YEAR;
 
 
     /**
@@ -608,8 +610,19 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
      * date_part ( text, interval ) → double precision
      * </a>
      */
-    public static Expression datePart(Expression text, Expression timestampOrInterval) {
-        return FunctionUtils.twoArgFunc("DATE_PART", text, timestampOrInterval, DoubleType.INSTANCE);
+    public static Expression datePart(final ExtractTimeField field, final Expression source) {
+        final String name = "DATE_PART";
+        if (!(field instanceof WordExtractTimeField)) {
+            throw CriteriaUtils.funcArgError(name, field);
+        }
+        final String fieldName;
+        fieldName = ((WordExtractTimeField) field).spaceWord;
+        assert fieldName.charAt(0) == _Constant.SPACE;
+
+        return FunctionUtils.twoArgFunc(name,
+                SQLs.literal(StringType.INSTANCE, fieldName.substring(1)),
+                source,
+                DoubleType.INSTANCE);
     }
 
     /**
@@ -625,8 +638,14 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
      * date_trunc ( text, interval ) → interval
      * </a>
      */
-    public static Expression dateTrunc(Expression text, Expression timestampOrInterval) {
-        return FunctionUtils.twoArgFunc("DATE_TRUNC", text, timestampOrInterval, _returnType(timestampOrInterval, PostgreMiscellaneousFunctions::localDateTimeOrString));
+    public static Expression dateTrunc(String field, Expression source) {
+        if (isErrorDateTruncField(field)) {
+            throw errorDateTruncField(field);
+        }
+        return FunctionUtils.twoArgFunc("DATE_TRUNC",
+                SQLs.literal(StringType.INSTANCE, field),
+                source,
+                OffsetDateTimeType.INSTANCE);
     }
 
     /**
@@ -636,9 +655,17 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_trunc ( text, timestamp with time zone, text ) → timestamp with time zone</a>
      */
-    public static Expression dateTrunc(Expression text, Expression timestamp, Expression text2) { // TODO 修改 date_trunc(field, source [, time_zone ])
-        return FunctionUtils.threeArgFunc("DATE_TRUNC", text, timestamp, text2, OffsetDateTimeType.INSTANCE);
+    public static Expression dateTrunc(String field, Expression source, String timeZone) {
+        if (isErrorDateTruncField(field)) {
+            throw errorDateTruncField(field);
+        }
+        return FunctionUtils.threeArgFunc("DATE_TRUNC",
+                SQLs.literal(StringType.INSTANCE, field),
+                source,
+                SQLs.literal(StringType.INSTANCE, timeZone),
+                OffsetDateTimeType.INSTANCE);
     }
+
 
     /**
      * <p>
@@ -649,9 +676,9 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
      * extract ( field from interval ) → numeric
      * </a>
      */
-    public static Expression extract(TimeField field, WordFrom from, Expression timestampOrInterval) {
+    public static Expression extract(ExtractTimeField field, WordFrom from, Expression timestampOrInterval) {
         final String name = "EXTRACT";
-        if (!(field instanceof WordTimeField)) {
+        if (!(field instanceof WordExtractTimeField)) {
             throw CriteriaUtils.funcArgError(name, from);
         } else if (from != Functions.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
@@ -958,9 +985,49 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
         return FunctionUtils.zeroArgFunc("NOW", OffsetDateTimeType.INSTANCE);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">statement_timestamp ( ) → timestamp with time zone</a>
+     */
+    public static Expression statementTimestamp() {
+        return FunctionUtils.zeroArgFunc("STATEMENT_TIMESTAMP", OffsetDateTimeType.INSTANCE);
+    }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">timeofday ( ) → text</a>
+     */
+    public static Expression timeOfDay() {
+        return FunctionUtils.zeroArgFunc("TIMEOFDAY", StringType.INSTANCE);
+    }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">transaction_timestamp ( ) → timestamp with time zone</a>
+     */
+    public static Expression transactionTimestamp() {
+        return FunctionUtils.zeroArgFunc("TRANSACTION_TIMESTAMP", OffsetDateTimeType.INSTANCE);
+    }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">to_timestamp ( double precision ) → timestamp with time zone</a>
+     */
+    public static Expression toTimestamp(Expression exp) {
+        return FunctionUtils.oneArgFunc("TO_TIMESTAMP", exp, OffsetDateTimeType.INSTANCE);
+    }
 
 
 
@@ -1001,7 +1068,49 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
     }
 
 
-    private enum WordTimeField implements TimeField, ArmyKeyWord {
+    /**
+     * @see #dateTrunc(String, Expression)
+     * @see #dateTrunc(String, Expression, String)
+     */
+    private static CriteriaException errorDateTruncField(String field) {
+        String m = String.format("'%s' isn't valid field for date_trunc() function.", field);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
+    /**
+     * @see #dateTrunc(String, Expression)
+     * @see #dateTrunc(String, Expression, String)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_trunc ( text, timestamp with time zone, text ) → timestamp with time zone</a>
+     */
+    private static boolean isErrorDateTruncField(final String field) {
+        final boolean error;
+        switch (field) {
+            case "microseconds":
+            case "milliseconds":
+            case "second":
+            case "minute":
+
+            case "hour":
+            case "day":
+            case "week":
+            case "month":
+
+            case "quarter":
+            case "year":
+            case "decade":
+            case "century":
+
+            case "millennium":
+                error = false;
+                break;
+            default:
+                error = true;
+        }
+        return error;
+    }
+
+
+    private enum WordExtractTimeField implements ExtractTimeField, ArmyKeyWord {
 
         CENTURY(" CENTURY"),
         DAY(" DAY"),
@@ -1033,7 +1142,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
 
         private final String spaceWord;
 
-        WordTimeField(String spaceWord) {
+        WordExtractTimeField(String spaceWord) {
             this.spaceWord = spaceWord;
         }
 

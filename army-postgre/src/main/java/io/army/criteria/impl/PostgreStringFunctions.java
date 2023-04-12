@@ -35,17 +35,17 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
     }
 
 
-    enum KeyWordNormalizeForm implements WordNormalizeForm, ArmyKeyWord, SQLWords {
+   private enum KeyWordNormalizeForm implements WordNormalizeForm, ArmyKeyWord, SQLWords {
 
-        NFC(" NFC"),
-        NFD(" NFD"),
-        NFKC(" NFKC"),
-        NFKD(" NFKD");
+       NFC(" NFC"),
+       NFD(" NFD"),
+       NFKC(" NFKC"),
+       NFKD(" NFKD");
 
-        private final String spaceWords;
+       private final String spaceWords;
 
-        KeyWordNormalizeForm(String spaceWords) {
-            this.spaceWords = spaceWords;
+       KeyWordNormalizeForm(String spaceWords) {
+           this.spaceWords = spaceWords;
         }
 
 
@@ -124,14 +124,14 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: the {@link  MappingType} of exp.
+     * The {@link MappingType} of function return type: {@link  TextType} .
      * </p>
      *
      * @see #upper(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">lower ( text ) → text</a>
      */
     public static Expression lower(Expression exp) {
-        return FunctionUtils.oneArgFunc("LOWER", exp, exp.typeMeta());
+        return FunctionUtils.oneArgFunc("LOWER", exp, TextType.INSTANCE);
     }
 
 
@@ -509,14 +509,14 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: the {@link  MappingType} of exp.
+     * The {@link MappingType} of function return type: {@link  TextType} .
      * </p>
      *
      * @see #lower(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">upper ( text ) → text</a>
      */
     public static Expression upper(Expression exp) {
-        return FunctionUtils.oneArgFunc("UPPER", exp, exp.typeMeta());
+        return FunctionUtils.oneArgFunc("UPPER", exp, TextType.INSTANCE);
     }
 
     /*-------------------below Other String Functions and Operators -------------------*/
@@ -882,7 +882,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * The {@link MappingType} of function return type: {@link TextArrayType}
      * </p>
      *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_match ( string text, pattern text [, flags text ] ) → text[] </a>
      */
     public static Expression regexpMatch(Expression string, Expression pattern) {
         return FunctionUtils.twoArgFunc("REGEXP_MATCH", string, pattern, TextArrayType.from(String[].class));
@@ -893,7 +893,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * The {@link MappingType} of function return type: {@link TextArrayType}
      * </p>
      *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_match ( string text, pattern text [, flags text ] ) → text[]</a>
      */
     public static Expression regexpMatch(Expression string, Expression pattern, Expression flags) {
         return FunctionUtils.threeArgFunc("REGEXP_MATCH", string, pattern, flags, TextArrayType.from(String[].class));
@@ -906,8 +906,9 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
      */
-    public static Expression regexpMatches(Expression string, Expression pattern) {
-        return FunctionUtils.twoArgFunc("REGEXP_MATCHES", string, pattern, TextArrayType.from(String[].class));
+    public static DerivedTableFunction regexpMatches(Expression string, Expression pattern) {
+        return FunctionUtils.twoArgDerivedFunction("REGEXP_MATCHES", string, pattern,
+                TextArrayType.from(String[].class));
     }
 
     /**
@@ -917,8 +918,9 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
      */
-    public static Expression regexpMatches(Expression string, Expression pattern, Expression flags) {
-        return FunctionUtils.threeArgFunc("REGEXP_MATCHES", string, pattern, flags, TextArrayType.from(String[].class));
+    public static DerivedTableFunction regexpMatches(Expression string, Expression pattern, Expression flags) {
+        return FunctionUtils.threeArgDerivedFunction("REGEXP_MATCHES", string, pattern, flags,
+                TextArrayType.from(String[].class));
     }
 
     /**
@@ -1001,8 +1003,8 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @see #regexpSplitToTable(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_split_to_table ( string text, pattern text [, flags text ] ) → setof text</a>
      */
-    public static Expression regexpSplitToTable(Expression string, Expression pattern) {
-        return FunctionUtils.twoArgFunc("REGEXP_SPLIT_TO_TABLE", string, pattern, TextType.INSTANCE);
+    public static DerivedTableFunction regexpSplitToTable(Expression string, Expression pattern) {
+        return FunctionUtils.twoArgDerivedFunction("REGEXP_SPLIT_TO_TABLE", string, pattern, TextType.INSTANCE);
     }
 
     /**
@@ -1013,8 +1015,8 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @see #regexpSplitToTable(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_split_to_table ( string text, pattern text [, flags text ] ) → setof text</a>
      */
-    public static Expression regexpSplitToTable(Expression string, Expression pattern, Expression flags) {
-        return FunctionUtils.threeArgFunc("REGEXP_SPLIT_TO_TABLE", string, pattern, flags, TextType.INSTANCE);
+    public static DerivedTableFunction regexpSplitToTable(Expression string, Expression pattern, Expression flags) {
+        return FunctionUtils.threeArgDerivedFunction("REGEXP_SPLIT_TO_TABLE", string, pattern, flags, TextType.INSTANCE);
     }
 
     /**
@@ -1205,8 +1207,8 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">string_to_table ( string text, delimiter text [, null_string text ] ) → setof text</a>
      */
-    public static Expression stringToTable(Expression string, Expression delimiter) {
-        return FunctionUtils.twoArgFunc("STRING_TO_TABLE", string, delimiter, TextType.INSTANCE);
+    public static DerivedTableFunction stringToTable(Expression string, Expression delimiter) {
+        return FunctionUtils.twoArgDerivedFunction("STRING_TO_TABLE", string, delimiter, TextType.INSTANCE);
     }
 
 
@@ -1217,8 +1219,8 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">string_to_table ( string text, delimiter text [, null_string text ] ) → setof text</a>
      */
-    public static Expression stringToTable(Expression string, Expression delimiter, Expression nullString) {
-        return FunctionUtils.threeArgFunc("STRING_TO_TABLE", string, delimiter, nullString, TextType.INSTANCE);
+    public static DerivedTableFunction stringToTable(Expression string, Expression delimiter, Expression nullString) {
+        return FunctionUtils.threeArgDerivedFunction("STRING_TO_TABLE", string, delimiter, nullString, TextType.INSTANCE);
     }
 
     /**
@@ -1463,24 +1465,24 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} of bytea
+     * The {@link MappingType} of function return type:  {@link TextType} .
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">convert_from ( bytes bytea, src_encoding name ) → text</a>
      */
     public static Expression convertFrom(Expression bytea, Expression srcEncoding) {
-        return FunctionUtils.twoArgFunc("CONVERT_FROM", bytea, srcEncoding, bytea.typeMeta());
+        return FunctionUtils.twoArgFunc("CONVERT_FROM", bytea, srcEncoding, TextType.INSTANCE);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} of bytea
+     * The {@link MappingType} of function return type:  {@link PrimitiveByteArrayType} .
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-CONVERSIONS">convert_to ( string text, dest_encoding name ) → bytea</a>
      */
     public static Expression convertTo(Expression bytea, Expression destEncoding) {
-        return FunctionUtils.twoArgFunc("CONVERT_TO", bytea, destEncoding, bytea.typeMeta());
+        return FunctionUtils.twoArgFunc("CONVERT_TO", bytea, destEncoding, PrimitiveByteArrayType.INSTANCE);
     }
 
 

@@ -18,7 +18,8 @@ import java.util.function.BiFunction;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortItem, RightOperand, AssignmentItem {
+public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortItem, RightOperand, AssignmentItem,
+        SelectionSpec {
 
 
     /**
@@ -297,9 +298,6 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
 
     @Deprecated
     Expression bracket();
-
-
-    Selection as(String selectionAlas);
 
 
     /**

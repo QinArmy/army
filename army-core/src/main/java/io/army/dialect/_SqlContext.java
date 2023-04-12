@@ -17,6 +17,8 @@ import io.army.meta.TypeMeta;
  */
 public interface _SqlContext {
 
+    boolean isLowerFunctionName();
+
 
     /**
      * <p>

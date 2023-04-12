@@ -18,9 +18,9 @@ import io.army.criteria.dialect.VarExpression;
 public interface SelectionSpec extends TypeInfer.TypeUpdateSpec, Item {
 
     /**
-     * @param alias non-null,non-empty.
+     * @param selectionAlas non-null,non-empty.
      */
-    Selection as(String alias);
+    Selection as(String selectionAlas);
 
 
 }
