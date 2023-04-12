@@ -38,6 +38,13 @@ abstract class Functions extends SqlSyntax {
         throw new UnsupportedOperationException();
     }
 
+    public interface _TabularFunction extends DerivedTable, SelectionSpec, SQLFunction, TypeInfer.TypeUpdateSpec {
+
+        @Override
+        SelectionSpec mapTo(TypeMeta mapType);
+
+    }
+
 
     interface _NullTreatmentClause<NR> {
 

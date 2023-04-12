@@ -239,16 +239,16 @@ abstract class FunctionUtils {
         return new NamedNotation(name, (ArmyExpression) argument);
     }
 
-    static DerivedTableFunction oneArgDerivedFunction(final String name, final Expression one,
-                                                      final TypeMeta returnType) {
+    static Functions._TabularFunction oneArgDerivedFunction(final String name, final Expression one,
+                                                            final TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         }
         return new OneArgDerivedFunction(name, one, returnType);
     }
 
-    static DerivedTableFunction twoArgDerivedFunction(final String name, final Expression one, final Expression two,
-                                                      final TypeMeta returnType) {
+    static Functions._TabularFunction twoArgDerivedFunction(final String name, final Expression one, final Expression two,
+                                                            final TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof SqlValueParam.MultiValue) {
@@ -257,9 +257,9 @@ abstract class FunctionUtils {
         return new TwoArgDerivedFunction(name, one, two, returnType);
     }
 
-    static DerivedTableFunction threeArgDerivedFunction(final String name, final Expression one, final Expression two,
-                                                        final Expression three,
-                                                        final TypeMeta returnType) {
+    static Functions._TabularFunction threeArgDerivedFunction(final String name, final Expression one, final Expression two,
+                                                              final Expression three,
+                                                              final TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof SqlValueParam.MultiValue) {
@@ -270,9 +270,9 @@ abstract class FunctionUtils {
         return new ThreeArgDerivedFunction(name, one, two, three, returnType);
     }
 
-    static DerivedTableFunction fourArgDerivedFunction(final String name, final Expression one, final Expression two,
-                                                       final Expression three, final Expression four,
-                                                       final TypeMeta returnType) {
+    static Functions._TabularFunction fourArgDerivedFunction(final String name, final Expression one, final Expression two,
+                                                             final Expression three, final Expression four,
+                                                             final TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof SqlValueParam.MultiValue) {
@@ -2155,7 +2155,7 @@ abstract class FunctionUtils {
             implements _DerivedTable,
             _SelfDescribed,
             CriteriaContextSpec,
-            DerivedTableFunction,
+            Functions._TabularFunction,
             _Selection {
 
         private final CriteriaContext context;
@@ -2264,7 +2264,7 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final DerivedTableFunction mapTo(final @Nullable TypeMeta mapType) {
+        public final SelectionSpec mapTo(final @Nullable TypeMeta mapType) {
             if (mapType == null) {
                 throw ContextStack.nullPointer(this.context);
             } else if (this.mapToType != null) {

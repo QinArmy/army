@@ -3,10 +3,10 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
-import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.type.Interval;
 
+import java.util.Locale;
 import java.util.function.Function;
 
 abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
@@ -606,34 +606,66 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
      * The {@link MappingType} of function return type: {@link DoubleType}
      * </p>
      *
+     * @param source timestamp or interval {@link Expression}
+     * @see #datePart(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-EXTRACT">field</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_part ( text, timestamp ) → double precision <br/>
      * date_part ( text, interval ) → double precision
      * </a>
      */
-    public static Expression datePart(final ExtractTimeField field, final Expression source) {
+    public static Expression datePart(final String field, final Expression source) {
         final String name = "DATE_PART";
-        if (!(field instanceof WordExtractTimeField)) {
-            throw CriteriaUtils.funcArgError(name, field);
+        try {
+            WordExtractTimeField.valueOf(field.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            String m = String.format("%s don't support field['%s'].", name, field);
+            throw ContextStack.clearStackAndCriteriaError(m);
         }
-        final String fieldName;
-        fieldName = ((WordExtractTimeField) field).spaceWord;
-        assert fieldName.charAt(0) == _Constant.SPACE;
+        return datePart(SQLs.literal(StringType.INSTANCE, field), source);
+    }
 
-        return FunctionUtils.twoArgFunc(name,
-                SQLs.literal(StringType.INSTANCE, fieldName.substring(1)),
-                source,
-                DoubleType.INSTANCE);
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType}
+     * </p>
+     *
+     * @param source timestamp or interval {@link Expression}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-EXTRACT">field</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_part ( text, timestamp ) → double precision <br/>
+     * date_part ( text, interval ) → double precision
+     * </a>
+     */
+    public static Expression datePart(Expression field, Expression source) {
+        return FunctionUtils.twoArgFunc("DATE_PART", field, source, DoubleType.INSTANCE);
     }
 
     /**
      * <p>
      * The {@link MappingType} of function return type:
      * <u>
-     * <li>If the {@link MappingType} of timestampOrInterval is {@link LocalDateTimeType},then the {@link MappingType} of timestampOrInterval</li>
-     * <li>Else {@link StringType}</li>
+     * <li>If the {@link MappingType} of source is {@link IntervalType},then the {@link MappingType} of source</li>
+     * <li>Else {@link LocalDateTimeType}</li>
      * </u>
      * </p>
      *
+     * @param field  lower field ,valid values for field are :
+     *               <ul>
+     *                   <li>microseconds</li>
+     *                   <li>milliseconds</li>
+     *                   <li>second</li>
+     *                   <li>minute</li>
+     *                   <li>hour</li>
+     *                   <li>day</li>
+     *                   <li>week</li>
+     *                   <li>month</li>
+     *                   <li>quarter</li>
+     *                   <li>year</li>
+     *                   <li>decade</li>
+     *                   <li>century</li>
+     *                   <li>millennium</li>
+     *               </ul>
+     * @param source timestamp or interval {@link Expression}
+     * @see #dateTrunc(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_trunc ( text, timestamp ) → timestamp <br/>
      * date_trunc ( text, interval ) → interval
      * </a>
@@ -642,10 +674,60 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
         if (isErrorDateTruncField(field)) {
             throw errorDateTruncField(field);
         }
-        return FunctionUtils.twoArgFunc("DATE_TRUNC",
-                SQLs.literal(StringType.INSTANCE, field),
+        return dateTrunc(SQLs.literal(StringType.INSTANCE, field), source);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
+     * </p>
+     *
+     * @param field  lower field ,valid values for field are :
+     *               <ul>
+     *                   <li>microseconds</li>
+     *                   <li>milliseconds</li>
+     *                   <li>second</li>
+     *                   <li>minute</li>
+     *                   <li>hour</li>
+     *                   <li>day</li>
+     *                   <li>week</li>
+     *                   <li>month</li>
+     *                   <li>quarter</li>
+     *                   <li>year</li>
+     *                   <li>decade</li>
+     *                   <li>century</li>
+     *                   <li>millennium</li>
+     *               </ul>
+     * @param source timestamp  {@link Expression}
+     * @see #dateTrunc(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_trunc ( text, timestamp with time zone, text ) → timestamp with time zone</a>
+     */
+    public static Expression dateTrunc(String field, Expression source, String timeZone) {
+        if (isErrorDateTruncField(field)) {
+            throw errorDateTruncField(field);
+        }
+        return dateTrunc(SQLs.literal(StringType.INSTANCE, field),
                 source,
-                OffsetDateTimeType.INSTANCE);
+                SQLs.literal(StringType.INSTANCE, timeZone));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * <u>
+     * <li>If the {@link MappingType} of source is {@link IntervalType},then the {@link MappingType} of source</li>
+     * <li>Else {@link LocalDateTimeType}</li>
+     * </u>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_trunc ( text, timestamp ) → timestamp <br/>
+     * date_trunc ( text, interval ) → interval
+     * </a>
+     */
+    public static Expression dateTrunc(Expression field, Expression source) {
+        return FunctionUtils.twoArgFunc("DATE_TRUNC", field, source,
+                _returnType(source, PostgreMiscellaneousFunctions::intervalOrDateTime)
+        );
     }
 
     /**
@@ -655,15 +737,8 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_trunc ( text, timestamp with time zone, text ) → timestamp with time zone</a>
      */
-    public static Expression dateTrunc(String field, Expression source, String timeZone) {
-        if (isErrorDateTruncField(field)) {
-            throw errorDateTruncField(field);
-        }
-        return FunctionUtils.threeArgFunc("DATE_TRUNC",
-                SQLs.literal(StringType.INSTANCE, field),
-                source,
-                SQLs.literal(StringType.INSTANCE, timeZone),
-                OffsetDateTimeType.INSTANCE);
+    public static Expression dateTrunc(Expression field, Expression source, Expression timeZone) {
+        return FunctionUtils.threeArgFunc("DATE_TRUNC", field, source, timeZone, OffsetDateTimeType.INSTANCE);
     }
 
 
@@ -1035,12 +1110,15 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
 
     /*-------------------below private -------------------*/
 
-    private static MappingType localDateTimeOrString(final MappingType type) {
+    /**
+     * @see #dateTrunc(Expression, Expression)
+     */
+    private static MappingType intervalOrDateTime(final MappingType type) {
         final MappingType returnType;
-        if (type instanceof LocalDateTimeType) {
+        if (type instanceof IntervalType) {
             returnType = type;
         } else {
-            returnType = StringType.INSTANCE;
+            returnType = LocalDateTimeType.INSTANCE;
         }
         return returnType;
     }

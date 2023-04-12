@@ -1,7 +1,7 @@
 package io.army.criteria;
 
 
-import io.army.criteria.dialect.VarExpression;
+import io.army.criteria.impl.Functions;
 
 /**
  * <p>
@@ -9,13 +9,13 @@ import io.army.criteria.dialect.VarExpression;
  * This interface is base interface of below:
  *     <ul>
  *         <li>{@link Expression}</li>
- *         <li>{@link VarExpression}</li>
+ *         <li>{@link Functions.DerivedTableFunction}</li>
  *     </ul>
  * </p>
  *
  * @since 1.0
  */
-public interface SelectionSpec extends TypeInfer.TypeUpdateSpec, Item {
+public interface SelectionSpec extends TypeInfer {
 
     /**
      * @param selectionAlas non-null,non-empty.

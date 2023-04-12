@@ -906,7 +906,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
      */
-    public static DerivedTableFunction regexpMatches(Expression string, Expression pattern) {
+    public static _TabularFunction regexpMatches(Expression string, Expression pattern) {
         return FunctionUtils.twoArgDerivedFunction("REGEXP_MATCHES", string, pattern,
                 TextArrayType.from(String[].class));
     }
@@ -918,7 +918,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
      */
-    public static DerivedTableFunction regexpMatches(Expression string, Expression pattern, Expression flags) {
+    public static _TabularFunction regexpMatches(Expression string, Expression pattern, Expression flags) {
         return FunctionUtils.threeArgDerivedFunction("REGEXP_MATCHES", string, pattern, flags,
                 TextArrayType.from(String[].class));
     }
@@ -1003,7 +1003,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @see #regexpSplitToTable(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_split_to_table ( string text, pattern text [, flags text ] ) → setof text</a>
      */
-    public static DerivedTableFunction regexpSplitToTable(Expression string, Expression pattern) {
+    public static _TabularFunction regexpSplitToTable(Expression string, Expression pattern) {
         return FunctionUtils.twoArgDerivedFunction("REGEXP_SPLIT_TO_TABLE", string, pattern, TextType.INSTANCE);
     }
 
@@ -1015,7 +1015,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @see #regexpSplitToTable(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_split_to_table ( string text, pattern text [, flags text ] ) → setof text</a>
      */
-    public static DerivedTableFunction regexpSplitToTable(Expression string, Expression pattern, Expression flags) {
+    public static _TabularFunction regexpSplitToTable(Expression string, Expression pattern, Expression flags) {
         return FunctionUtils.threeArgDerivedFunction("REGEXP_SPLIT_TO_TABLE", string, pattern, flags, TextType.INSTANCE);
     }
 
@@ -1207,7 +1207,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">string_to_table ( string text, delimiter text [, null_string text ] ) → setof text</a>
      */
-    public static DerivedTableFunction stringToTable(Expression string, Expression delimiter) {
+    public static _TabularFunction stringToTable(Expression string, Expression delimiter) {
         return FunctionUtils.twoArgDerivedFunction("STRING_TO_TABLE", string, delimiter, TextType.INSTANCE);
     }
 
@@ -1219,7 +1219,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">string_to_table ( string text, delimiter text [, null_string text ] ) → setof text</a>
      */
-    public static DerivedTableFunction stringToTable(Expression string, Expression delimiter, Expression nullString) {
+    public static _TabularFunction stringToTable(Expression string, Expression delimiter, Expression nullString) {
         return FunctionUtils.threeArgDerivedFunction("STRING_TO_TABLE", string, delimiter, nullString, TextType.INSTANCE);
     }
 
